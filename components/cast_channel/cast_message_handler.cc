@@ -89,7 +89,7 @@ void CastMessageHandler::EnsureConnection(int channel_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
-    DVLOG(2) << __func__ << ": socket not found: " << channel_id;
+    DVLOG(2) << "Socket not found: " << channel_id;
     return;
   }
 
@@ -128,6 +128,19 @@ void CastMessageHandler::RequestAppAvailability(
     SendCastMessage(socket, CreateGetAppAvailabilityRequest(
                                 sender_id_, request_id, app_id));
   }
+}
+
+void CastMessageHandler::RequestReceiverStatus(int channel_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  CastSocket* socket = socket_service_->GetSocket(channel_id);
+  if (!socket) {
+    DVLOG(2) << __func__ << ": socket not found: " << channel_id;
+    return;
+  }
+
+  int request_id = NextRequestId();
+  SendCastMessage(socket, CreateReceiverStatusRequest(sender_id_, request_id));
 }
 
 void CastMessageHandler::SendBroadcastMessage(

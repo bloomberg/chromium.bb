@@ -56,11 +56,13 @@ CastMediaRouteProvider::CastMediaRouteProvider(
       FROM_HERE,
       base::BindOnce(&CastMediaRouteProvider::Init, base::Unretained(this),
                      std::move(request), std::move(media_router),
+                     CastSessionTracker::GetInstance(),
                      std::make_unique<DataDecoder>(connector), hash_token));
 }
 
 void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
                                   mojom::MediaRouterPtrInfo media_router,
+                                  CastSessionTracker* session_tracker,
                                   std::unique_ptr<DataDecoder> data_decoder,
                                   const std::string& hash_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -69,8 +71,8 @@ void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
   media_router_.Bind(std::move(media_router));
 
   activity_manager_ = std::make_unique<CastActivityManager>(
-      media_sink_service_, message_handler_, media_router_.get(),
-      std::move(data_decoder), hash_token);
+      media_sink_service_, session_tracker, message_handler_,
+      media_router_.get(), std::move(data_decoder), hash_token);
 
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
@@ -104,7 +106,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
   }
 
   std::unique_ptr<CastMediaSource> cast_source =
-      CastMediaSource::From(media_source);
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source) {
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
@@ -169,7 +171,7 @@ void CastMediaRouteProvider::StartObservingMediaSinks(
     return;
 
   std::unique_ptr<CastMediaSource> cast_source =
-      CastMediaSource::From(media_source);
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source)
     return;
 

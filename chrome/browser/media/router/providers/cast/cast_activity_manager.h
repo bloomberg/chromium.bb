@@ -13,9 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,7 +30,6 @@ class CastActivityManager;
 class CastActivityRecord;
 class CastMediaSource;
 class DataDecoder;
-class MediaSinkServiceBase;
 
 // Represents a Cast SDK client connection to a Cast session. This class
 // contains PresentationConnection Mojo pipes to send and receive messages
@@ -101,20 +103,28 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
 // It keeps track of the set of Cast SDK clients connected to the application.
 // Note that we do not keep track of 1-UA mode presentations here. Instead, they
 // are handled by LocalPresentationManager.
+//
+// Instances of this class are associated with a specific session and app.
 class CastActivityRecord {
  public:
   CastActivityRecord(const MediaRoute& route,
+                     const std::string& app_id,
                      MediaSinkServiceBase* media_sink_service,
                      cast_channel::CastMessageHandler* message_handler,
+                     CastSessionTracker* session_tracker,
                      DataDecoder* data_decoder);
   ~CastActivityRecord();
 
   const MediaRoute& route() const { return route_; }
+  const std::string& app_id() const { return app_id_; }
   const base::flat_map<std::string, std::unique_ptr<CastSessionClient>>&
   connected_clients() {
     return connected_clients_;
   }
-  const CastSession* session() { return session_.get(); }
+  const std::string& session_id() const { return session_id_; }
+
+  bool pending() const { return pending_; }
+  void set_pending(bool pending) { pending_ = pending; }
 
   // Sends |cast_message|, which must be of type kAppMessage, to the receiver
   // hosting this session. Returns true if the message is sent successfully.
@@ -127,8 +137,16 @@ class CastActivityRecord {
                                                   const url::Origin& origin,
                                                   int tab_id);
 
-  // Also updates the description on |route_|.
-  void SetSession(std::unique_ptr<CastSession> session);
+  // On the first call, saves the ID of |session|.  On subsequent calls,
+  // notifies all connected clients that the session has been updated.  In both
+  // cases, the stored route description is updated to match the session
+  // description.
+  //
+  // The |hash_token| parameter is used for hashing receiver IDs in messages
+  // sent to the Cast SDK, and |sink| is the sink associated with |session|.
+  void SetOrUpdateSession(const CastSession& session,
+                          const MediaSinkInternal& sink,
+                          const std::string& hash_token);
 
   // Sends |message| to the client given by |client_id|.
   void SendMessageToClient(
@@ -144,30 +162,29 @@ class CastActivityRecord {
   friend class CastSessionClient;
 
   MediaRoute route_;
+  const std::string app_id_;
   base::flat_map<std::string, std::unique_ptr<CastSessionClient>>
       connected_clients_;
 
   // Set by CastActivityManager after the session is launched successfully.
-  // TODO(imcheng): Change this to a session ID when sessions are tracked
-  // by the CastSessionTracker singleton.
-  std::unique_ptr<CastSession> session_;
+  std::string session_id_;
 
   MediaSinkServiceBase* const media_sink_service_;
   // TODO(https://crbug.com/809249): Consider wrapping CastMessageHandler with
   // known parameters (sink, client ID, session transport ID) and passing them
   // to objects that need to send messges to the receiver.
   cast_channel::CastMessageHandler* const message_handler_;
+  CastSessionTracker* const session_tracker_;
   DataDecoder* const data_decoder_;
+  bool pending_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(CastActivityRecord);
 };
 
 // Handles launching and terminating Cast application on a Cast receiver, and
 // acts as the source of truth for Cast activities and MediaRoutes.
-// TODO(imcheng): CastActivityManager should listen for RECEIVER_STATUS and
-// MEDIA_STATUS messages to generate non-local routes and update existing
-// routes.
-class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
+class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
+                            public CastSessionTracker::Observer {
  public:
   // |media_sink_service|: Provides Cast MediaSinks.
   // |message_handler|: Used for sending and receiving messages to Cast
@@ -178,6 +195,7 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
   // |hash_token|: Used for hashing receiver IDs in messages sent to the Cast
   // SDK.
   CastActivityManager(MediaSinkServiceBase* media_sink_service,
+                      CastSessionTracker* session_tracker,
                       cast_channel::CastMessageHandler* message_handler,
                       mojom::MediaRouter* media_router,
                       std::unique_ptr<DataDecoder> data_decoder,
@@ -213,15 +231,61 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
   void OnAppMessage(int channel_id,
                     const cast_channel::CastMessage& message) override;
 
+  // CastSessionTracker::Observer implementation.
+  void OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
+                               const CastSession& session) override;
+  void OnSessionRemoved(const MediaSinkInternal& sink) override;
+
  private:
-  friend class CastActivityRecord;
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
 
-  void RemoveActivity(
-      ActivityMap::iterator activity_it,
-      blink::mojom::PresentationConnectionState state =
-          blink::mojom::PresentationConnectionState::TERMINATED);
+  // Bundle of parameters for DoLaunchSession().
+  struct DoLaunchSessionParams {
+    // Note: The compiler-generated constructors and destructor would be
+    // sufficient here, but the style guide requires them to be defined
+    // explicitly.
+    DoLaunchSessionParams(
+        const MediaRoute& route,
+        const CastMediaSource& cast_source,
+        const MediaSinkInternal& sink,
+        const url::Origin& origin,
+        int tab_id,
+        mojom::MediaRouteProvider::CreateRouteCallback callback);
+    DoLaunchSessionParams(DoLaunchSessionParams&& other) noexcept;
+    ~DoLaunchSessionParams();
+    DoLaunchSessionParams& operator=(DoLaunchSessionParams&&) = delete;
+
+    // The route for which a session is being launched.
+    MediaRoute route;
+
+    // The media source for which a session is being launched.
+    CastMediaSource cast_source;
+
+    // The sink for which a session is being launched.
+    MediaSinkInternal sink;
+
+    // The origin of the Cast SDK client. Used for auto-join.
+    url::Origin origin;
+
+    // The tab ID of the Cast SDK client. Used for auto-join.
+    int tab_id;
+
+    // Callback to execute after the launch request has been sent.
+    mojom::MediaRouteProvider::CreateRouteCallback callback;
+  };
+
+  void DoLaunchSession(DoLaunchSessionParams params);
+  void LaunchSessionAfterTerminatingExisting(
+      const MediaRoute::Id& existing_route_id,
+      DoLaunchSessionParams params,
+      const base::Optional<std::string>& error_string,
+      RouteRequestResult::ResultCode result);
+
+  void RemoveActivity(ActivityMap::iterator activity_it,
+                      blink::mojom::PresentationConnectionState state =
+                          blink::mojom::PresentationConnectionState::TERMINATED,
+                      bool notify = true);
   void NotifyAllOnRoutesUpdated();
   void NotifyOnRoutesUpdated(const MediaSource::Id& source_id,
                              const std::vector<MediaRoute>& routes);
@@ -236,6 +300,10 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       bool success);
 
+  // Creates and stores a CastActivityRecord representing a non-local activity.
+  void AddNonLocalActivityRecord(const MediaSinkInternal& sink,
+                                 const CastSession& session);
+
   void SendFailedToCastIssue(const MediaSink::Id& sink_id,
                              const MediaRoute::Id& route_id);
 
@@ -246,6 +314,7 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
 
   // The following raw pointer fields are assumed to outlive |this|.
   MediaSinkServiceBase* const media_sink_service_;
+  CastSessionTracker* const session_tracker_;
   cast_channel::CastMessageHandler* const message_handler_;
   mojom::MediaRouter* const media_router_;
 

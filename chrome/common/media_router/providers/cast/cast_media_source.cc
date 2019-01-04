@@ -220,7 +220,7 @@ CastAppInfo::~CastAppInfo() = default;
 CastAppInfo::CastAppInfo(const CastAppInfo& other) = default;
 
 // static
-std::unique_ptr<CastMediaSource> CastMediaSource::From(
+std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSourceId(
     const MediaSource::Id& source_id) {
   MediaSource source(source_id);
   if (IsTabMirroringMediaSource(source))
@@ -244,6 +244,12 @@ std::unique_ptr<CastMediaSource> CastMediaSource::From(
   }
 
   return nullptr;
+}
+
+// static
+std::unique_ptr<CastMediaSource> CastMediaSource::FromAppId(
+    const std::string& app_id) {
+  return FromMediaSourceId(kCastPresentationUrlScheme + (":" + app_id));
 }
 
 CastMediaSource::CastMediaSource(const MediaSource::Id& source_id,

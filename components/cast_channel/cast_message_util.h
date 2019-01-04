@@ -38,6 +38,7 @@ enum class CastMessageType {
   kPing,
   kPong,
   kGetAppAvailability,
+  kReceiverStatusRequest,
   kConnect,          // Virtual connection request
   kCloseConnection,  // Close virtual connection
   kBroadcast,        // Application broadcast / precache
@@ -115,6 +116,9 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
                                             int request_id,
                                             const std::string& app_id);
 
+CastMessage CreateReceiverStatusRequest(const std::string& source_id,
+                                        int request_id);
+
 // Represents a broadcast request. Currently it is used for precaching data
 // on a receiver.
 struct BroadcastRequest {
@@ -138,10 +142,6 @@ CastMessage CreateLaunchRequest(const std::string& source_id,
                                 int request_id,
                                 const std::string& app_id,
                                 const std::string& locale);
-
-CastMessage CreateStopRequest(const std::string& source_id,
-                              int request_id,
-                              const std::string& session_id);
 
 CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,

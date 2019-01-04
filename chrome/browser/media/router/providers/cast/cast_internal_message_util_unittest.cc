@@ -38,7 +38,7 @@ void ExpectNoCastSession(const MediaSinkInternal& sink,
                          const std::string& reason) {
   auto receiver_status = base::JSONReader::Read(receiver_status_str);
   ASSERT_TRUE(receiver_status);
-  auto session = CastSession::From(sink, kReceiverIdToken, *receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
   EXPECT_FALSE(session) << "Shouldn't have created session because of "
                         << reason;
 }
@@ -182,16 +182,16 @@ TEST(CastInternalMessageUtilTest, CastSessionFromReceiverStatusNoStatusText) {
   })";
   auto receiver_status = base::JSONReader::Read(receiver_status_str);
   ASSERT_TRUE(receiver_status);
-  auto session = CastSession::From(sink, kReceiverIdToken, *receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
   ASSERT_TRUE(session);
-  EXPECT_EQ("sessionId", session->session_id);
-  EXPECT_EQ("ABCDEFGH", session->app_id);
-  EXPECT_EQ("transportId", session->transport_id);
+  EXPECT_EQ("sessionId", session->session_id());
+  EXPECT_EQ("ABCDEFGH", session->app_id());
+  EXPECT_EQ("transportId", session->transport_id());
   base::flat_set<std::string> message_namespaces = {
       "urn:x-cast:com.google.cast.media", "urn:x-cast:com.google.foo"};
-  EXPECT_EQ(message_namespaces, session->message_namespaces);
-  EXPECT_TRUE(session->value.is_dict());
-  EXPECT_EQ("App display name", CastSession::GetRouteDescription(*session));
+  EXPECT_EQ(message_namespaces, session->message_namespaces());
+  EXPECT_TRUE(session->value().is_dict());
+  EXPECT_EQ("App display name", session->GetRouteDescription());
 }
 
 TEST(CastInternalMessageUtilTest, CastSessionFromInvalidReceiverStatuses) {
@@ -324,7 +324,7 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
   std::string client_id = "clientId";
   auto receiver_status = ReceiverStatus();
   ASSERT_TRUE(receiver_status);
-  auto session = CastSession::From(sink, kReceiverIdToken, *receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
   ASSERT_TRUE(session);
 
   std::string expected_message = R"({
@@ -357,7 +357,51 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
    "type": "new_session"
   })";
 
-  auto message = CreateNewSessionMessage(*session, client_id);
+  auto message =
+      CreateNewSessionMessage(*session, client_id, sink, kReceiverIdToken);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
+}
+
+TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  std::string client_id = "clientId";
+  auto receiver_status = ReceiverStatus();
+  ASSERT_TRUE(receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
+  ASSERT_TRUE(session);
+
+  std::string expected_message = R"({
+   "clientId": "clientId",
+   "message": {
+      "appId": "ABCDEFGH",
+      "appImages": [  ],
+      "displayName": "App display name",
+      "namespaces": [ {
+         "name": "urn:x-cast:com.google.cast.media"
+      }, {
+         "name": "urn:x-cast:com.google.foo"
+      } ],
+      "receiver": {
+         "capabilities": [ "video_out", "audio_out" ],
+         "displayStatus": null,
+         "friendlyName": "friendly name 1",
+         "isActiveInput": null,
+         "label": "yYH_HCL9CKJFmvKJ9m3Une2cS8s",
+         "receiverType": "cast",
+         "volume": null
+      },
+      "senderApps": [  ],
+      "sessionId": "sessionId",
+      "statusText": "App status",
+      "transportId": "transportId"
+   },
+   "sequenceNumber": -1,
+   "timeoutMillis": 0,
+   "type": "update_session"
+  })";
+
+  auto message =
+      CreateUpdateSessionMessage(*session, client_id, sink, kReceiverIdToken);
   ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 

@@ -29,6 +29,8 @@ struct CastInternalMessage {
     kReceiverAction,  // Message sent by MRP to inform SDK client of action.
     kNewSession,      // Message sent by MRP to inform SDK client of new
                       // session.
+    kUpdateSession,   // Message sent by MRP to inform SDK client of updated
+                      // session.
     kOther            // All other types of messages which are not considered
                       // part of communication with Cast SDK.
   };
@@ -58,43 +60,53 @@ class CastSession {
  public:
   // Returns a CastSession from |receiver_status| message sent by |sink|, or
   // nullptr if |receiver_status| is not a valid RECEIVER_STATUS message.
-  // |hash_token| is a per-profile value that is used to hash the sink ID.
   static std::unique_ptr<CastSession> From(const MediaSinkInternal& sink,
-                                           const std::string& hash_token,
                                            const base::Value& receiver_status);
-
-  // Returns a string that can be used as the description of the MediaRoute
-  // associated with this session.
-  static std::string GetRouteDescription(const CastSession& session);
 
   CastSession();
   ~CastSession();
 
+  // Returns a string that can be used as the description of the MediaRoute
+  // associated with this session.
+  std::string GetRouteDescription() const;
+
+  // Partially updates the contents of this object using data in |from|.
+  void UpdateSession(std::unique_ptr<CastSession> from);
+
   // ID of the session.
-  std::string session_id;
+  const std::string& session_id() const { return session_id_; }
 
   // ID of the app in the session.
-  std::string app_id;
+  const std::string& app_id() const { return app_id_; }
 
   // ID used for communicating with the session over the Cast channel.
-  std::string transport_id;
+  const std::string& transport_id() const { return transport_id_; }
 
   // The set of accepted message namespaces. Must be non-empty, unless the
   // session represents a multizone leader.
-  base::flat_set<std::string> message_namespaces;
-
-  // The human-readable name of the Cast application, for example, "YouTube".
-  // Mandatory.
-  std::string display_name;
-
-  // Descriptive text for the current application content, for example “My
-  // Wedding Slideshow”. May be empty.
-  std::string status;
+  const base::flat_set<std::string>& message_namespaces() const {
+    return message_namespaces_;
+  }
 
   // The dictionary representing this session, derived from |receiver_status|.
   // For convenience, this is used for generating messages sent to the SDK that
   // include the session value.
-  base::Value value;
+  const base::Value& value() const { return value_; }
+
+ private:
+  std::string session_id_;
+  std::string app_id_;
+  std::string transport_id_;
+  base::flat_set<std::string> message_namespaces_;
+  base::Value value_;
+
+  // The human-readable name of the Cast application, for example, "YouTube".
+  // Mandatory.
+  std::string display_name_;
+
+  // Descriptive text for the current application content, for example “My
+  // Wedding Slideshow”. May be empty.
+  std::string status_;
 };
 
 // Utility methods for generating messages sent to the SDK.
@@ -109,7 +121,14 @@ blink::mojom::PresentationConnectionMessagePtr CreateReceiverActionStopMessage(
     const std::string& hash_token);
 blink::mojom::PresentationConnectionMessagePtr CreateNewSessionMessage(
     const CastSession& session,
-    const std::string& client_id);
+    const std::string& client_id,
+    const MediaSinkInternal& sink,
+    const std::string& hash_token);
+blink::mojom::PresentationConnectionMessagePtr CreateUpdateSessionMessage(
+    const CastSession& session,
+    const std::string& client_id,
+    const MediaSinkInternal& sink,
+    const std::string& hash_token);
 blink::mojom::PresentationConnectionMessagePtr CreateAppMessageAck(
     const std::string& client_id,
     int sequence_number);
