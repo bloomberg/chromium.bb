@@ -48257,9 +48257,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Sign-in failed"/>
   <int value="13" label="Pairing added"/>
   <int value="14" label="No screenlock state handler"/>
-  <int value="15" label="RSSI too low"/>
+  <int value="15" label="Phone locked and RSSI too low"/>
   <int value="16" label="Forced Reauthentication"/>
   <int value="17" label="Required for login"/>
+  <int value="18" label="Phone not lockable"/>
 </enum>
 
 <enum name="SmartLockAuthMethodChoice">
