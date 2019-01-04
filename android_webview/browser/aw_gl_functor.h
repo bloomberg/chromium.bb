@@ -25,6 +25,9 @@ class AwGLFunctor : public RenderThreadManagerClient {
                               const base::android::JavaParamRef<jobject>& obj);
   jlong GetAwDrawGLViewContext(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
+  void RemoveFromCompositorFrameProducer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jlong GetCompositorFrameConsumer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

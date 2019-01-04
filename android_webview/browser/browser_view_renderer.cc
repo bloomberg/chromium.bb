@@ -107,14 +107,16 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false) {}
+      offscreen_pre_raster_(false),
+      weak_ptr_factory_(this) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
-  SetCurrentCompositorFrameConsumer(nullptr);
-  while (compositor_frame_consumers_.size()) {
-    RemoveCompositorFrameConsumer(*compositor_frame_consumers_.begin());
-  }
+  DCHECK(!current_compositor_frame_consumer_);
+}
+
+base::WeakPtr<CompositorFrameProducer> BrowserViewRenderer::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
@@ -124,7 +126,6 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
   }
   current_compositor_frame_consumer_ = compositor_frame_consumer;
   if (current_compositor_frame_consumer_) {
-    compositor_frame_consumers_.insert(current_compositor_frame_consumer_);
     current_compositor_frame_consumer_->SetCompositorFrameProducer(this);
     OnParentDrawConstraintsUpdated(current_compositor_frame_consumer_);
   }
@@ -220,7 +221,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
   external_draw_constraints_ =
       current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
 
-  ReturnResourceFromParent(current_compositor_frame_consumer_);
   UpdateMemoryPolicy();
 
   gfx::Transform transform_for_tile_priority =
@@ -255,12 +255,6 @@ gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {
   return viewport_rect_for_tile_priority;
 }
 
-void BrowserViewRenderer::ReturnedResourceAvailable(
-    CompositorFrameConsumer* compositor_frame_consumer) {
-  DCHECK(compositor_frame_consumers_.count(compositor_frame_consumer));
-  ReturnResourceFromParent(compositor_frame_consumer);
-}
-
 void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
     CompositorFrameConsumer* compositor_frame_consumer) {
   DCHECK(compositor_frame_consumer);
@@ -276,20 +270,10 @@ void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
 }
 
 void BrowserViewRenderer::RemoveCompositorFrameConsumer(
-    CompositorFrameConsumer* compositor_frame_consumer) {
-  DCHECK(compositor_frame_consumers_.count(compositor_frame_consumer));
-  compositor_frame_consumers_.erase(compositor_frame_consumer);
-  if (current_compositor_frame_consumer_ == compositor_frame_consumer) {
+    CompositorFrameConsumer* consumer) {
+  ReturnUncommittedFrames(consumer->PassUncommittedFrameOnUI());
+  if (current_compositor_frame_consumer_ == consumer)
     SetCurrentCompositorFrameConsumer(nullptr);
-  }
-
-  // At this point the compositor frame consumer has to hand back all resources
-  // to the child compositor.
-  compositor_frame_consumer->DeleteHardwareRendererOnUI();
-  ReturnUncommittedFrames(
-      compositor_frame_consumer->PassUncommittedFrameOnUI());
-  ReturnResourceFromParent(compositor_frame_consumer);
-  compositor_frame_consumer->SetCompositorFrameProducer(nullptr);
 }
 
 void BrowserViewRenderer::ReturnUncommittedFrames(
@@ -313,23 +297,14 @@ void BrowserViewRenderer::ReturnUnusedResource(
                                 std::move(resources));
 }
 
-void BrowserViewRenderer::ReturnResourceFromParent(
-    CompositorFrameConsumer* compositor_frame_consumer) {
-  CompositorFrameConsumer::ReturnedResourcesMap returned_resource_map;
-  compositor_frame_consumer->SwapReturnedResourcesOnUI(&returned_resource_map);
-  for (auto& pair : returned_resource_map) {
-    CompositorID compositor_id = pair.first;
-    content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
-    std::vector<viz::ReturnedResource> resources;
-    resources.swap(pair.second.resources);
-
-    if (compositor && !resources.empty()) {
-      compositor->ReturnResources(pair.second.layer_tree_frame_sink_id,
-                                  resources);
-    }
-
-    has_rendered_frame_ = true;
-  }
+void BrowserViewRenderer::ReturnUsedResources(
+    const std::vector<viz::ReturnedResource>& resources,
+    const CompositorID& compositor_id,
+    uint32_t layer_tree_frame_sink_id) {
+  content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
+  if (compositor && !resources.empty())
+    compositor->ReturnResources(layer_tree_frame_sink_id, resources);
+  has_rendered_frame_ = true;
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
@@ -468,11 +443,9 @@ void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
-  for (auto* compositor_frame_consumer : compositor_frame_consumers_) {
+  if (current_compositor_frame_consumer_) {
     ReturnUncommittedFrames(
-        compositor_frame_consumer->PassUncommittedFrameOnUI());
-    ReturnResourceFromParent(compositor_frame_consumer);
-    DCHECK(compositor_frame_consumer->ReturnedResourcesEmptyOnUI());
+        current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
   }
   hardware_enabled_ = false;
   has_rendered_frame_ = false;

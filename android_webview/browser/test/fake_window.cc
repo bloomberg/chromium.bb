@@ -75,6 +75,7 @@ FakeWindow::~FakeWindow() {
 
 void FakeWindow::Detach() {
   CheckCurrentlyOnUIThread();
+  view_->SetCurrentCompositorFrameConsumer(nullptr);
   view_->OnDetachedFromWindow();
 }
 
@@ -213,6 +214,10 @@ void FakeWindow::CheckCurrentlyOnRT() {
 FakeFunctor::FakeFunctor() : window_(nullptr) {}
 
 FakeFunctor::~FakeFunctor() {
+  if (render_thread_manager_) {
+    render_thread_manager_->RemoveFromCompositorFrameProducerOnUI();
+    render_thread_manager_->DeleteHardwareRendererOnUI();
+  }
   render_thread_manager_.reset();
 }
 
@@ -256,6 +261,12 @@ void FakeFunctor::Draw(WindowHooks* hooks) {
 
 CompositorFrameConsumer* FakeFunctor::GetCompositorFrameConsumer() {
   return render_thread_manager_.get();
+}
+
+void FakeFunctor::OnWindowDetached() {
+  if (!render_thread_manager_)
+    return;
+  render_thread_manager_->DeleteHardwareRendererOnUI();
 }
 
 void FakeFunctor::Invoke(WindowHooks* hooks) {

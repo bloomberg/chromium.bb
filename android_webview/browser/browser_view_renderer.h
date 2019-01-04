@@ -141,11 +141,13 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   ui::TouchHandleDrawable* CreateDrawable() override;
 
   // CompositorFrameProducer overrides
-  void ReturnedResourceAvailable(
-      CompositorFrameConsumer* compositor_frame_consumer) override;
-  void OnParentDrawConstraintsUpdated(
-      CompositorFrameConsumer* compositor_frame_consumer) override;
+  base::WeakPtr<CompositorFrameProducer> GetWeakPtr() override;
   void RemoveCompositorFrameConsumer(
+      CompositorFrameConsumer* consumer) override;
+  void ReturnUsedResources(const std::vector<viz::ReturnedResource>& resources,
+                           const CompositorID& compositor_id,
+                           uint32_t layer_tree_frame_sink_id) override;
+  void OnParentDrawConstraintsUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override;
 
   void SetActiveCompositorID(const CompositorID& compositor_id);
@@ -186,7 +188,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   CompositorFrameConsumer* current_compositor_frame_consumer_;
-  std::set<CompositorFrameConsumer*> compositor_frame_consumers_;
 
   // The current compositor that's owned by the current RVH.
   content::SynchronousCompositor* compositor_;
@@ -242,6 +243,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   gfx::Vector2dF overscroll_rounding_error_;
 
   ParentCompositorDrawConstraints external_draw_constraints_;
+
+  base::WeakPtrFactory<CompositorFrameProducer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

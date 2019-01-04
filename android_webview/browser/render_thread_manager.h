@@ -40,11 +40,10 @@ class RenderThreadManager : public CompositorFrameConsumer {
   std::unique_ptr<ChildFrame> SetFrameOnUI(
       std::unique_ptr<ChildFrame> frame) override;
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const override;
-  void SwapReturnedResourcesOnUI(
-      ReturnedResourcesMap* returned_resource_map) override;
-  bool ReturnedResourcesEmptyOnUI() const override;
   ChildFrameQueue PassUncommittedFrameOnUI() override;
-  void DeleteHardwareRendererOnUI() override;
+
+  void RemoveFromCompositorFrameProducerOnUI();
+  void DeleteHardwareRendererOnUI();
 
   // Render thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
@@ -76,14 +75,13 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // UI thread methods.
   void UpdateParentDrawConstraintsOnUI();
-  void ReturnedResourceAvailableOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);
 
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
   RenderThreadManagerClient* const client_;
-  CompositorFrameProducer* compositor_frame_producer_;
+  base::WeakPtr<CompositorFrameProducer> producer_weak_ptr_;
   base::WeakPtr<RenderThreadManager> ui_thread_weak_ptr_;
   // Whether any frame has been received on the UI thread by
   // RenderThreadManager.
@@ -98,8 +96,6 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ChildFrameQueue child_frames_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
-  bool returned_resource_available_pending_ = false;
-  ReturnedResourcesMap returned_resources_map_;
 
   base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_;
 
