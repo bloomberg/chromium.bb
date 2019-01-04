@@ -58,8 +58,7 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone);
 
 // IDs of the colors to use for infobar elements.
-constexpr int kInfoBarLabelBackgroundColor =
-    ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND;
+constexpr int kInfoBarLabelBackgroundColor = ThemeProperties::COLOR_INFOBAR;
 constexpr int kInfoBarLabelTextColor = ThemeProperties::COLOR_BOOKMARK_TEXT;
 
 bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {

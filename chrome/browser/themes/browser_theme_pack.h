@@ -115,9 +115,14 @@ class BrowserThemePack : public CustomThemeSupplier {
   // valid to call after BuildColorsFromJSON(), which creates |colors_|.
   void SetColor(int id, SkColor color);
 
-  // If |colors_| does not already contain an entry with identifier |id|, sets
-  // it to the dominant color of the top |height| rows of |image|.
-  void ComputeColorFromImage(int id, int height, const gfx::Image& image);
+  // If |colors_| does not already contain an entry with identifier |id|,
+  // modifies |colors_| to set the entry with identifier |id| to |color|.  If an
+  // entry for |id| already exists, does nothing.
+  // Only valid to call after BuildColorsFromJSON(), which creates |colors_|.
+  void SetColorIfUnspecified(int id, SkColor color);
+
+  // Calculates the dominant color of the top |height| rows of |image|.
+  SkColor ComputeImageColor(const gfx::Image& image, int height);
 
   // Builds a header ready to write to disk.
   void BuildHeader(const extensions::Extension* extension);
@@ -161,6 +166,10 @@ class BrowserThemePack : public CustomThemeSupplier {
   // displayed in the UI. Cropping is useful because images from custom themes
   // can be of any size. Source and destination is |images|.
   void CropImages(ImageCache* images) const;
+
+  // Creates a composited toolbar image. Source and destination is |images|.
+  // Also sets toolbar color corresponding to this image.
+  void CreateToolbarImageAndColors(ImageCache* images);
 
   // Creates tinted and composited frame images. Source and destination is
   // |images|.  Also sets frame colors corresponding to these images if no

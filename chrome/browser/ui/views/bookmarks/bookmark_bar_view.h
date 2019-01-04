@@ -380,6 +380,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // or -1 if |button| is not a bookmark button from this bar.
   int GetIndexForButton(views::View* button);
 
+  // Returns the color that should be used to draw text on the bookmark bar.
+  SkColor GetBookmarkBarTextColor();
+
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;
 

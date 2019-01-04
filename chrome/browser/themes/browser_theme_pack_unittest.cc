@@ -989,3 +989,57 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGImage) {
     EXPECT_TRUE(color_utils::IsDark(control_button_color));
   }
 }
+
+// Ensure that a specified 'toolbar' color is propagated to other 'bar' and
+// 'shelf' colors (before a new color is computed from the toolbar image).
+TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+
+  SkColor infobar_color;
+  SkColor bookmark_bar_color;
+  SkColor download_shelf_color;
+  SkColor status_bubble_color;
+
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
+                             &bookmark_bar_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
+
+  constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
+  EXPECT_EQ(infobar_color, kExpectedColor);
+  EXPECT_EQ(infobar_color, bookmark_bar_color);
+  EXPECT_EQ(infobar_color, download_shelf_color);
+  EXPECT_EQ(infobar_color, status_bubble_color);
+}
+
+// Ensure that, given an explicit toolbar color and a toolbar image, the output
+// color in COLOR_TOOLBAR reflects the color of the image (not the explicit
+// color).
+TEST_F(BrowserThemePackTest,
+       TestToolbarColorComputedFromImageOverridesInputColor) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+
+  SkColor toolbar_color;
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
+
+  constexpr SkColor kExplicitColor = SkColorSetRGB(0, 255, 0);
+  EXPECT_NE(toolbar_color, kExplicitColor);
+}
+
+// Ensure that, given an explicit frame color and a frame image, the output
+// color in COLOR_FRAME reflects the color of the image (not the explicit
+// color).
+TEST_F(BrowserThemePackTest,
+       TestFrameColorComputedFromImageOverridesInputColor) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors", &pack);
+
+  SkColor frame_color;
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+
+  constexpr SkColor kExplicitColor = SkColorSetRGB(255, 0, 255);
+  EXPECT_NE(frame_color, kExplicitColor);
+}
