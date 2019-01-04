@@ -3624,7 +3624,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       GetContentClient()->browser()->CanCreateWindow(
           this, GetLastCommittedURL(),
           frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
-          last_committed_origin_.GetURL(), params->window_container_type,
+          last_committed_origin_, params->window_container_type,
           params->target_url, params->referrer.To<Referrer>(),
           params->frame_name, params->disposition, *params->features,
           effective_transient_activation_state, params->opener_suppressed,

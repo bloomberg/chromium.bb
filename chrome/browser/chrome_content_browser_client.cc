@@ -2906,7 +2906,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     RenderFrameHost* opener,
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
-    const GURL& source_origin,
+    const url::Origin& source_origin,
     content::mojom::WindowContainerType container_type,
     const GURL& target_url,
     const content::Referrer& referrer,
@@ -2995,9 +2995,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     return false;
   }
 
-  BlockedWindowParams blocked_params(target_url, referrer, frame_name,
-                                     disposition, features, user_gesture,
-                                     opener_suppressed);
+  BlockedWindowParams blocked_params(target_url, source_origin, referrer,
+                                     frame_name, disposition, features,
+                                     user_gesture, opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
   if (MaybeBlockPopup(web_contents, opener_top_level_frame_url, &nav_params,
                       nullptr /*=open_url_params*/,
