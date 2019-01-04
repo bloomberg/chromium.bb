@@ -576,11 +576,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self didChangeTab:tab];
 }
 
-- (void)notifyTabLoading:(Tab*)tab {
-  [_observers tabModel:self willStartLoadingTab:tab];
-  [self notifyTabChanged:tab];
-}
-
 - (void)notifyTabFinishedLoading:(Tab*)tab {
   [self notifyTabChanged:tab];
   [_observers tabModel:self didFinishLoadingTab:tab];
@@ -861,7 +856,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabLoading:tab];
+  [self notifyTabChanged:tab];
 
   web::NavigationItem* previousItem = nullptr;
   if (load_details.previous_item_index >= 0) {

@@ -150,9 +150,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
 
-// Notifies observers that the given tab is loading a new URL.
-- (void)notifyTabLoading:(Tab*)tab;
-
 // Notifies observers that the given tab finished loading.
 - (void)notifyTabFinishedLoading:(Tab*)tab;
 

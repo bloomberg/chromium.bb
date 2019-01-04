@@ -170,6 +170,7 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
+#include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
@@ -198,6 +199,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
+#include "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -360,32 +362,33 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - BVC
 
-@interface BrowserViewController ()<ActivityServicePresentation,
-                                    BubblePresenterDelegate,
-                                    CaptivePortalDetectorTabHelperDelegate,
-                                    CRWNativeContentProvider,
-                                    CRWWebStateDelegate,
-                                    DialogPresenterDelegate,
-                                    FullscreenUIElement,
-                                    InfobarPositioner,
-                                    KeyCommandsPlumbing,
-                                    MainContentUI,
-                                    ManageAccountsDelegate,
-                                    MFMailComposeViewControllerDelegate,
-                                    NetExportTabHelperDelegate,
-                                    NewTabPageTabHelperDelegate,
-                                    OverscrollActionsControllerDelegate,
-                                    PasswordControllerDelegate,
-                                    PreloadControllerDelegate,
-                                    SadTabCoordinatorDelegate,
-                                    SideSwipeControllerDelegate,
-                                    SnapshotGeneratorDelegate,
-                                    TabDialogDelegate,
-                                    TabModelObserver,
-                                    TabStripPresentation,
-                                    ToolbarHeightProviderForFullscreen,
-                                    UIGestureRecognizerDelegate,
-                                    WebStatePrinter> {
+@interface BrowserViewController () <ActivityServicePresentation,
+                                     BubblePresenterDelegate,
+                                     CaptivePortalDetectorTabHelperDelegate,
+                                     CRWNativeContentProvider,
+                                     CRWWebStateDelegate,
+                                     CRWWebStateObserver,
+                                     DialogPresenterDelegate,
+                                     FullscreenUIElement,
+                                     InfobarPositioner,
+                                     KeyCommandsPlumbing,
+                                     MainContentUI,
+                                     ManageAccountsDelegate,
+                                     MFMailComposeViewControllerDelegate,
+                                     NetExportTabHelperDelegate,
+                                     NewTabPageTabHelperDelegate,
+                                     OverscrollActionsControllerDelegate,
+                                     PasswordControllerDelegate,
+                                     PreloadControllerDelegate,
+                                     SadTabCoordinatorDelegate,
+                                     SideSwipeControllerDelegate,
+                                     SnapshotGeneratorDelegate,
+                                     TabDialogDelegate,
+                                     TabModelObserver,
+                                     TabStripPresentation,
+                                     ToolbarHeightProviderForFullscreen,
+                                     UIGestureRecognizerDelegate,
+                                     WebStatePrinter> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
   BrowserViewControllerDependencyFactory* _dependencyFactory;
@@ -502,6 +505,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // is used to determine whether the pre-rendering animation should be played
   // or not.
   BOOL _insertedTabWasPrerenderedTab;
+
+  // Forwards observer methods for all WebStates in the WebStateList to this
+  // BrowserViewController object.
+  std::unique_ptr<AllWebStateObservationForwarder>
+      _allWebStateObservationForwarder;
+
+  // Bridges C++ WebStateObserver methods to this BrowserViewController.
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -1416,6 +1427,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // before self.tabModel is released.
   _sideSwipeController = nil;
   [self.tabModel removeObserver:self];
+  _allWebStateObservationForwarder = nullptr;
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(nil);
   [_paymentRequestManager setActiveWebState:nullptr];
@@ -1863,6 +1875,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       ->SetWebStateList(self.tabModel.webStateList);
 
   [self.tabModel addObserver:self];
+  _webStateObserverBridge = std::make_unique<web::WebStateObserverBridge>(self);
+  _allWebStateObservationForwarder =
+      std::make_unique<AllWebStateObservationForwarder>(
+          self.tabModel.webStateList, _webStateObserverBridge.get());
 
   if (!_isOffTheRecord) {
     [DefaultIOSWebViewFactory
@@ -3457,6 +3473,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       web::PolicyForNavigation(url, referrer));
 }
 
+#pragma mark - CRWWebStateObserver methods.
+
+// TODO(crbug.com/918934): didCommitNavigationWithDetails is deprecated, and
+// this call to closeFindInPage incorrectly triggers for all navigations, not
+// just navigations in the active WebState.
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:
+        (const web::LoadCommittedDetails&)load_details {
+  // Stop any Find in Page searches and close the find bar when navigating to a
+  // new page.
+  [self closeFindInPage];
+}
+
 #pragma mark - OverscrollActionsControllerDelegate methods.
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
@@ -4548,12 +4577,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_paymentRequestManager setActiveWebState:newTab.webState];
 
   [self tabSelected:newTab notifyToolbar:YES];
-}
-
-- (void)tabModel:(TabModel*)model willStartLoadingTab:(Tab*)tab {
-  // Stop any Find in Page searches and close the find bar when navigating to a
-  // new page.
-  [self closeFindInPage];
 }
 
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
