@@ -171,8 +171,9 @@ cr.define('settings', function() {
     enableLanguage(languageCode) {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
-      if (languages.indexOf(languageCode) != -1)
+      if (languages.indexOf(languageCode) != -1) {
         return;
+      }
       languages.push(languageCode);
       languageCodes = languages.join(',');
       this.settingsPrefs_.set(
@@ -191,8 +192,9 @@ cr.define('settings', function() {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
-      if (index == -1)
+      if (index == -1) {
         return;
+      }
       languages.splice(index, 1);
       languageCodes = languages.join(',');
       this.settingsPrefs_.set(
@@ -215,13 +217,15 @@ cr.define('settings', function() {
           this.settingsPrefs_.prefs.translate_blocked_languages.value.indexOf(
               languageCode);
       if (enable) {
-        if (index == -1)
+        if (index == -1) {
           return;
+        }
         this.settingsPrefs_.splice(
             'prefs.translate_blocked_languages.value', index, 1);
       } else {
-        if (index != -1)
+        if (index != -1) {
           return;
+        }
         this.settingsPrefs_.push(
             'prefs.translate_blocked_languages.value', languageCode);
       }
@@ -239,21 +243,24 @@ cr.define('settings', function() {
       const index = languages.indexOf(languageCode);
 
       if (moveType == chrome.languageSettingsPrivate.MoveType.TOP) {
-        if (index < 1)
+        if (index < 1) {
           return;
+        }
 
         languages.splice(index, 1);
         languages.unshift(languageCode);
       } else if (moveType == chrome.languageSettingsPrivate.MoveType.UP) {
-        if (index < 1)
+        if (index < 1) {
           return;
+        }
 
         let temp = languages[index - 1];
         languages[index - 1] = languageCode;
         languages[index] = temp;
       } else if (moveType == chrome.languageSettingsPrivate.MoveType.DOWN) {
-        if (index == -1 || index == languages.length - 1)
+        if (index == -1 || index == languages.length - 1) {
           return;
+        }
 
         let temp = languages[index + 1];
         languages[index + 1] = languageCode;
@@ -319,8 +326,9 @@ cr.define('settings', function() {
      *     callback
      */
     getInputMethodLists(callback) {
-      if (!cr.isChromeOS)
+      if (!cr.isChromeOS) {
         assertNotReached();
+      }
       callback({
         componentExtensionImes:
             JSON.parse(JSON.stringify(this.componentExtensionImes)),

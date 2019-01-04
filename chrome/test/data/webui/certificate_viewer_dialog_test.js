@@ -186,10 +186,13 @@ GEN('#endif');
 function getElementWithValue(tree) {
   for (var i = 0; i < tree.childNodes.length; i++) {
     var element = tree.childNodes[i];
-    if (element.detail && element.detail.payload && element.detail.payload.val)
+    if (element.detail && element.detail.payload &&
+        element.detail.payload.val) {
       return element;
-    if (element = getElementWithValue(element))
+    }
+    if (element = getElementWithValue(element)) {
       return element;
+    }
   }
   return null;
 }

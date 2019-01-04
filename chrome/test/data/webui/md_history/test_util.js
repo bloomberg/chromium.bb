@@ -43,8 +43,9 @@ function replaceApp() {
  * @return {!HistoryEntry} An object representing a history entry.
  */
 function createHistoryEntry(timestamp, urlStr) {
-  if (typeof timestamp === 'string')
+  if (typeof timestamp === 'string') {
     timestamp += ' UTC';
+  }
 
   const d = new Date(timestamp);
   const url = new URL(urlStr);
@@ -108,15 +109,17 @@ function polymerSelectAll(element, selector) {
  * @return {Promise}
  */
 function waitForEvent(element, eventName, predicate) {
-  if (!predicate)
+  if (!predicate) {
     predicate = function() {
       return true;
     };
+  }
 
   return new Promise(function(resolve) {
     const listener = function(e) {
-      if (!predicate(e))
+      if (!predicate(e)) {
         return;
+      }
 
       resolve();
       element.removeEventListener(eventName, listener);
@@ -148,8 +151,9 @@ function shiftClick(element) {
 
 function disableLinkClicks() {
   document.addEventListener('click', function(e) {
-    if (e.defaultPrevented)
+    if (e.defaultPrevented) {
       return;
+    }
 
     const eventPath = e.path;
     let anchor = null;
@@ -163,8 +167,9 @@ function disableLinkClicks() {
       }
     }
 
-    if (!anchor)
+    if (!anchor) {
       return;
+    }
 
     e.preventDefault();
   });

@@ -140,8 +140,7 @@ suite('Multidevice', function() {
     });
   });
 
-  test('Smart Lock enable feature toggle without authentication', function()
-  {
+  test('Smart Lock enable feature toggle without authentication', function() {
     smartLockSubPage = createSmartLockSubPage();
     setSuiteState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
     setSmartLockFeatureState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);

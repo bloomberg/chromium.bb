@@ -56,8 +56,9 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
           // All the sections must be hidden by the TestSearchManager, just like
           // the real SearchManager. Otherwise, the bug doesn't manifest.
           const sections = page.parentNode.querySelectorAll('settings-section');
-          for (let section of sections)
+          for (let section of sections) {
             section.hiddenBySearch = !!text;
+          }
 
           this.searchRequest_.resolver.resolve(this.searchRequest_);
           this.methodCalled('search', text);
@@ -77,10 +78,11 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
       const page = self.basicPage;
       let sections = ['appearance', 'onStartup', 'people', 'search'];
       expectTrue(!!self.getSection(page, 'appearance'));
-      if (!cr.isChromeOS)
+      if (!cr.isChromeOS) {
         sections.push('defaultBrowser');
-      else
+      } else {
         sections = sections.concat(['internet', 'bluetooth', 'device']);
+      }
 
       for (let i = 0; i < sections.length; i++) {
         const section = self.getSection(page, sections[i]);

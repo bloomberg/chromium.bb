@@ -33,8 +33,9 @@ cr.define('settings_prefs', function() {
       let pref = prefStore;
       for (const part of path) {
         pref = pref[part];
-        if (!pref)
+        if (!pref) {
           return undefined;
+        }
       }
       return pref;
     }

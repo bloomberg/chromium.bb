@@ -5,6 +5,8 @@
 module.exports = {
   'env': {'browser': true, 'es6': true},
   'rules': {
+    'brace-style': ['error', '1tbs'],
+    'curly': ['error', 'multi-line', 'consistent'],
     'no-restricted-properties': 'off',
   },
 };

@@ -58,8 +58,9 @@ cr.define('destination_select_test', function() {
       document.body.appendChild(page);
 
       const promises = [nativeLayer.whenCalled('getInitialSettings')];
-      if (!opt_expectPrinterFailure)
+      if (!opt_expectPrinterFailure) {
         promises.push(nativeLayer.whenCalled('getPrinterCapabilities'));
+      }
       return Promise.all(promises);
     }
 
@@ -177,8 +178,9 @@ cr.define('destination_select_test', function() {
             const reportedPrinters = page.destinationStore_.destinations();
             assertEquals(2, reportedPrinters.length);
             destinations.forEach((destination, index) => {
-              if (destination.id == 'ID1')
+              if (destination.id == 'ID1') {
                 return;
+              }
 
               assertFalse(reportedPrinters.some(p => p.id == destination.id));
             });

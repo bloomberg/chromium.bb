@@ -23,10 +23,11 @@ suiteSetup(function() {
        * @override
        */
       setTimeout(fn, delay) {
-        if (this.immediatelyResolveTimeouts)
+        if (this.immediatelyResolveTimeouts) {
           fn();
-        else
+        } else {
           this.activeTimeouts_.set(this.nextTimeoutId_, fn);
+        }
 
         return this.nextTimeoutId_++;
       }

@@ -19,8 +19,9 @@ cr.define('settings_about_page', function() {
             'getHasEndOfLife', 'refreshTPMFirmwareUpdateStatus', 'setChannel');
       }
 
-      if (cr.isMac)
+      if (cr.isMac) {
         methodNames.push('promoteUpdater');
+      }
 
       super(methodNames);
 

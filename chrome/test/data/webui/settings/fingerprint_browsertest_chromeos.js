@@ -32,8 +32,9 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
    * @param {number} percent
    */
   scanReceived(result, complete, percent) {
-    if (complete)
+    if (complete) {
       this.fingerprintsList_.push('New Label');
+    }
 
     cr.webUIListenerCallback(
         'on-fingerprint-scan-received',

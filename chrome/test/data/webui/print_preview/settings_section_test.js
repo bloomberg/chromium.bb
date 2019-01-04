@@ -75,8 +75,9 @@ cr.define('settings_sections_tests', function() {
     function initDocumentInfo(isPdf, hasSelection) {
       const info = new print_preview.DocumentInfo();
       info.init(!isPdf, 'title', hasSelection);
-      if (isPdf)
+      if (isPdf) {
         info.updateFitToPageScaling(98);
+      }
       info.updatePageCount(3);
       page.set('documentInfo_', info);
       Polymer.dom.flush();

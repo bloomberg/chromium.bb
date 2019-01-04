@@ -83,8 +83,9 @@ cr.define('print_preview', function() {
      * @param {number} index The preview index.
      */
     loadPreviewPage(previewUid, pageIndex, index) {
-      if (this.loadCallback_)
+      if (this.loadCallback_) {
         this.loadCallback_(true);
+      }
     }
   }
 

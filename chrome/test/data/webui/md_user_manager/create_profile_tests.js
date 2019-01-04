@@ -98,8 +98,9 @@ cr.define('user_manager.create_profile_tests', function() {
         return new Promise(function(resolve, reject) {
           // Create was successful. We expect to leave the page.
           createProfileElement.addEventListener('change-page', function(event) {
-            if (event.detail.page == 'user-pods-page')
+            if (event.detail.page == 'user-pods-page') {
               resolve();
+            }
           });
 
           // Simulate clicking 'Create'.

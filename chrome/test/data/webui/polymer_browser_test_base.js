@@ -74,10 +74,12 @@ PolymerTest.prototype = {
             'is already registered, perhaps you have loaded a script twice. ' +
             'Incorrect resource URLs can redirect to base WebUI pages; make ' +
             'sure the following URLs are correct and unique:\n';
-        for (var i = 0; i < PolymerTest.importUrls_.length; i++)
+        for (var i = 0; i < PolymerTest.importUrls_.length; i++) {
           msg += '  ' + PolymerTest.importUrls_[i] + '\n';
-        for (var i = 0; i < PolymerTest.scriptUrls_.length; i++)
+        }
+        for (var i = 0; i < PolymerTest.scriptUrls_.length; i++) {
           msg += '  ' + PolymerTest.scriptUrls_[i] + '\n';
+        }
         console.error(msg);
 
         // Mocha will handle the error.
@@ -112,8 +114,9 @@ PolymerTest.testIronIcons = function(e) {
   e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
     // Early return if the src is set instead of the icon, since the tests
     // below will not work correctly in this case.
-    if (icon.src && !icon.icon)
+    if (icon.src && !icon.icon) {
       return;
+    }
 
     // If the icon isn't set (or is set to ''), then don't test this. Having no
     // set icon is valid for cases when we don't want to display anything.
@@ -175,8 +178,9 @@ PolymerTest.clearBody = function() {
   var vulcanizeDiv =
       document.querySelector('body > div[hidden][by-polymer-bundler]');
   document.body.innerHTML = '';
-  if (vulcanizeDiv)
+  if (vulcanizeDiv) {
     document.body.appendChild(vulcanizeDiv);
+  }
 };
 
 /**
@@ -184,8 +188,9 @@ PolymerTest.clearBody = function() {
  */
 PolymerTest.getLibraries = function(basePath) {
   // Ensure basePath ends in '/'.
-  if (basePath.length && basePath[basePath.length - 1] != '/')
+  if (basePath.length && basePath[basePath.length - 1] != '/') {
     basePath += '/';
+  }
 
   return PolymerTest.prototype.extraLibraries.map(function(library) {
     return basePath + library;

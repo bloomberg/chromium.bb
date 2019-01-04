@@ -103,13 +103,15 @@ function filtersForPage(pageName, isRTL) {
   };
 
   var dir = isRTL ? 'RTL' : 'LTR';
-  if (!filters.hasOwnProperty(pageName))
-    pageName += '/';
   if (!filters.hasOwnProperty(pageName)) {
-    if (pageName.charAt(pageName.length - 2) == '/')
+    pageName += '/';
+  }
+  if (!filters.hasOwnProperty(pageName)) {
+    if (pageName.charAt(pageName.length - 2) == '/') {
       pageName = pageName.substr(0, pageName.length - 2);
-    else
+    } else {
       return globalFilters[dir];
+    }
   }
   if (filters.hasOwnProperty(pageName) &&
       filters[pageName].hasOwnProperty(dir)) {

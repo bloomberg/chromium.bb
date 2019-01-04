@@ -114,8 +114,9 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     // Remove entries from the current prefs which have the same origin.
     const newPrefs = /** @type {!Array<RawSiteException>} */
         (this.prefs_.exceptions[category].filter((categoryException) => {
-          if (categoryException.origin != newException.origin)
+          if (categoryException.origin != newException.origin) {
             return true;
+          }
         }));
     newPrefs.push(newException);
     this.prefs_.exceptions[category] = newPrefs;
@@ -197,8 +198,9 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     contentTypes.forEach((contentType) => {
       this.prefs_.exceptions[contentType].forEach((exception) => {
-        if (exception.origin.includes('*'))
+        if (exception.origin.includes('*')) {
           return;
+        }
         origins_set.add(exception.origin);
       });
     });

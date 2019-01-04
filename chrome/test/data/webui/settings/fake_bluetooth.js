@@ -44,11 +44,13 @@ cr.define('settings', function() {
 
     /** @param {!Array<!chrome.bluetooth.Device>} devices */
     setDevicesForTest: function(devices) {
-      for (const d of this.devices)
+      for (const d of this.devices) {
         this.onDeviceRemoved.callListeners(d);
+      }
       this.devices = devices.slice();
-      for (const d of this.devices)
+      for (const d of this.devices) {
         this.onDeviceAdded.callListeners(d);
+      }
     },
 
     /**
@@ -86,8 +88,9 @@ cr.define('settings', function() {
 
     /** @override */
     getDevices: function(opt_filter, opt_callback) {
-      if (opt_callback)
+      if (opt_callback) {
         opt_callback(this.devices.slice());
+      }
     },
 
     /** @override */

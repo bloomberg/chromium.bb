@@ -742,11 +742,13 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  if (cr.isMac || cr.isWindows)
+  if (cr.isMac || cr.isWindows) {
     registerNativeCertificateManagerTests();
+  }
 
-  if (!cr.isChromeOS)
+  if (!cr.isChromeOS) {
     registerClearBrowsingDataTestsDice();
+  }
 
   registerClearBrowsingDataTests();
   registerPrivacyPageTests();

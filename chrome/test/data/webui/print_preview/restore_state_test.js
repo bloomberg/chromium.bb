@@ -260,8 +260,9 @@ cr.define('restore_state_test', function() {
           .then(function() {
             // Set all the settings sections.
             testData.forEach((testValue, index) => {
-              if (index == testData.length - 1)
+              if (index == testData.length - 1) {
                 nativeLayer.resetResolver('saveAppState');
+              }
               page.$$(testValue.section)
                   .setSetting(testValue.settingName, testValue.value);
             });

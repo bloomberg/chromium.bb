@@ -99,8 +99,9 @@ cr.define('print_preview_test_utils', function() {
       numSettings, printerId, opt_printerName) {
     const template =
         print_preview_test_utils.getCddTemplate(printerId, opt_printerName);
-    if (numSettings < 1)
+    if (numSettings < 1) {
       return template;
+    }
 
     template.capabilities.printer.vendor_capability = [{
       display_name: 'Print Area',
@@ -115,8 +116,9 @@ cr.define('print_preview_test_utils', function() {
       },
     }];
 
-    if (numSettings < 2)
+    if (numSettings < 2) {
       return template;
+    }
 
     // Add new capability.
     template.capabilities.printer.vendor_capability.push({
@@ -132,8 +134,9 @@ cr.define('print_preview_test_utils', function() {
       }
     });
 
-    if (numSettings < 3)
+    if (numSettings < 3) {
       return template;
+    }
 
     template.capabilities.printer.vendor_capability.push({
       display_name: 'Watermark',

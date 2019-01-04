@@ -27,19 +27,22 @@ suite('Metrics', function() {
       recordHistogram: function(histogram, value, max) {
         assertTrue(value < max);
 
-        if (!(histogram in this.histogramMap))
+        if (!(histogram in this.histogramMap)) {
           this.histogramMap[histogram] = {};
+        }
 
-        if (!(value in this.histogramMap[histogram]))
+        if (!(value in this.histogramMap[histogram])) {
           this.histogramMap[histogram][value] = 0;
+        }
 
         this.histogramMap[histogram][value]++;
       },
 
       /** @override */
       recordAction: function(action) {
-        if (!(action in this.actionMap))
+        if (!(action in this.actionMap)) {
           this.actionMap[action] = 0;
+        }
 
         this.actionMap[action]++;
       },

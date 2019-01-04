@@ -414,8 +414,9 @@ cr.define('languages_page_tests', function() {
 
       test('move up/down buttons', function() {
         // Add several languages.
-        for (const language of ['en-CA', 'en-US', 'tk', 'no'])
+        for (const language of ['en-CA', 'en-US', 'tk', 'no']) {
           languageHelper.enableLanguage(language);
+        }
 
         Polymer.dom.flush();
 
@@ -557,8 +558,9 @@ cr.define('languages_page_tests', function() {
       });
 
       test('error handling', function() {
-        if (cr.isMac)
+        if (cr.isMac) {
           return;
+        }
 
         const checkAllHidden = nodes => {
           assertTrue(nodes.every(node => node.hidden));

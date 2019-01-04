@@ -90,8 +90,9 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       assertNotEquals(field.$.searchInput, field.root.activeElement);
 
       let modifier = 'ctrl';
-      if (cr.isMac)
+      if (cr.isMac) {
         modifier = 'meta';
+      }
 
       MockInteractions.pressAndReleaseKeyOn(document.body, 70, modifier, 'f');
       assertTrue(field.showingSearch);

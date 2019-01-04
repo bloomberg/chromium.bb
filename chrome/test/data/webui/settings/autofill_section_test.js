@@ -82,7 +82,9 @@ cr.define('settings_autofill_section', function() {
       section.address = address;
       document.body.appendChild(section);
       test_util.eventToPromise('on-update-address-wrapper', section)
-        .then(function() { resolve(section); });
+          .then(function() {
+            resolve(section);
+          });
     });
   }
 
@@ -124,10 +126,11 @@ cr.define('settings_autofill_section', function() {
 
         function loop() {
           const item = items[index++];
-          if (item)
+          if (item) {
             loopBody(item).then(loop);
-          else
+          } else {
             resolve();
+          }
         }
 
         loop();

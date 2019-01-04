@@ -53,12 +53,14 @@ cr.define('media_router_header', function() {
       // Checks whether the elements specified in |elementIdList| are visible.
       // Checks whether all other elements are hidden.
       var checkElementsVisibleWithId = function(elementIdList) {
-        for (var i = 0; i < elementIdList.length; i++)
+        for (var i = 0; i < elementIdList.length; i++) {
           checkElementHidden(false, elementIdList[i]);
+        }
 
         for (var j = 0; j < hiddenCheckElementIdList.length; j++) {
-          if (elementIdList.indexOf(hiddenCheckElementIdList[j]) == -1)
+          if (elementIdList.indexOf(hiddenCheckElementIdList[j]) == -1) {
             checkElementHidden(true, hiddenCheckElementIdList[j]);
+          }
         }
       };
 

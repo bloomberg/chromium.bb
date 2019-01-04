@@ -62,8 +62,9 @@ cr.define('settings', function() {
       }
 
       if (info.mirroringSourceId != undefined) {
-        for (let d of this.fakeDisplays)
+        for (let d of this.fakeDisplays) {
           d.mirroringSourceId = info.mirroringSourceId;
+        }
       }
 
       if (info.isPrimary != undefined) {
@@ -80,8 +81,9 @@ cr.define('settings', function() {
         }
         this.updateLayouts_();
       }
-      if (info.rotation != undefined)
+      if (info.rotation != undefined) {
         display.rotation = info.rotation;
+      }
     },
 
     /** @override */
@@ -113,8 +115,9 @@ cr.define('settings', function() {
           }
         }
       }
-      for (let d of this.fakeDisplays)
+      for (let d of this.fakeDisplays) {
         d.mirroringSourceId = mirroringSourceId;
+      }
       callback();
     },
 
@@ -126,8 +129,9 @@ cr.define('settings', function() {
       const idx = this.fakeDisplays.findIndex(function(display) {
         return display.id == id;
       });
-      if (idx >= 0)
+      if (idx >= 0) {
         return this.fakeDisplays[idx];
+      }
       return undefined;
     },
 
