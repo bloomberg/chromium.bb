@@ -176,7 +176,8 @@ IntersectionObserver* IntersectionObserver::Create(
     return nullptr;
 
   return MakeGarbageCollected<IntersectionObserver>(
-      delegate, root, root_margin, thresholds, delay, track_visibility);
+      delegate, root, root_margin, thresholds, kFractionOfTarget, delay,
+      track_visibility);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
@@ -195,14 +196,15 @@ IntersectionObserver* IntersectionObserver::Create(
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
+    ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       new IntersectionObserverDelegateImpl(document, std::move(callback));
   return MakeGarbageCollected<IntersectionObserver>(
-      *intersection_observer_delegate, nullptr, root_margin, thresholds, delay,
-      track_visibility);
+      *intersection_observer_delegate, nullptr, root_margin, thresholds,
+      semantics, delay, track_visibility);
 }
 
 IntersectionObserver::IntersectionObserver(
@@ -210,6 +212,7 @@ IntersectionObserver::IntersectionObserver(
     Element* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds,
+    ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility)
     : ContextClient(delegate.GetExecutionContext()),
@@ -222,7 +225,8 @@ IntersectionObserver::IntersectionObserver(
       bottom_margin_(kFixed),
       left_margin_(kFixed),
       root_is_implicit_(root ? 0 : 1),
-      track_visibility_(track_visibility ? 1 : 0) {
+      track_visibility_(track_visibility ? 1 : 0),
+      track_fraction_of_root_(semantics == kFractionOfRoot) {
   switch (root_margin.size()) {
     case 0:
       break;

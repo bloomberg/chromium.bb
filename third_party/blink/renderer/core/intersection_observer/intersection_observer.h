@@ -39,6 +39,24 @@ class CORE_EXPORT IntersectionObserver final
   using EventCallback = base::RepeatingCallback<void(
       const HeapVector<Member<IntersectionObserverEntry>>&)>;
 
+  // The IntersectionObserver can be configured to notify based on changes to
+  // how much of the target element's area intersects with the root, or based on
+  // changes to how much of the root element's area intersects with the
+  // target. Examples illustrating the distinction:
+  //
+  //     1.0 of target,         0.5 of target,         1.0 of target,
+  //      0.25 of root           0.5 of root            1.0 of root
+  //  +------------------+   +------------------+   *~~~~~~~~~~~~~~~~~~*
+  //  |   //////////     |   |                  |   ;//////////////////;
+  //  |   //////////     |   |                  |   ;//////////////////;
+  //  |   //////////     |   ;//////////////////;   ;//////////////////;
+  //  |                  |   ;//////////////////;   ;//////////////////;
+  //  +------------------+   *~~~~~~~~~~~~~~~~~~*   *~~~~~~~~~~~~~~~~~~*
+  //                         ////////////////////
+  //                         ////////////////////
+  //                         ////////////////////
+  enum ThresholdInterpretation { kFractionOfTarget, kFractionOfRoot };
+
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
                                       ExceptionState&);
@@ -46,19 +64,32 @@ class CORE_EXPORT IntersectionObserver final
                                       V8IntersectionObserverCallback*,
                                       const IntersectionObserverInit*,
                                       ExceptionState&);
-  static IntersectionObserver* Create(const Vector<Length>& root_margin,
-                                      const Vector<float>& thresholds,
-                                      Document*,
-                                      EventCallback,
-                                      DOMHighResTimeStamp delay = 0,
-                                      bool track_visbility = false,
-                                      ExceptionState& = ASSERT_NO_EXCEPTION);
+
+  // Creates an IntersectionObserver that monitors changes to the intersection
+  // between its target element relative to its implicit root and notifies via
+  // the given |callback|. |thresholds| should be in the range [0,1], and are
+  // interpreted according to the given |semantics|. |delay| specifies the
+  // minimum period between change notifications.
+  //
+  // TODO(crbug.com/915495): The |delay| feature is broken. See comments in
+  // intersection_observation.cc.
+  static IntersectionObserver* Create(
+      const Vector<Length>& root_margin,
+      const Vector<float>& thresholds,
+      Document* document,
+      EventCallback callback,
+      ThresholdInterpretation semantics = kFractionOfTarget,
+      DOMHighResTimeStamp delay = 0,
+      bool track_visbility = false,
+      ExceptionState& = ASSERT_NO_EXCEPTION);
+
   static void ResumeSuspendedObservers();
 
   explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Element*,
                                 const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds,
+                                ThresholdInterpretation semantics,
                                 DOMHighResTimeStamp delay,
                                 bool track_visibility);
 
@@ -74,6 +105,7 @@ class CORE_EXPORT IntersectionObserver final
   const Vector<float>& thresholds() const { return thresholds_; }
   DOMHighResTimeStamp delay() const { return delay_; }
   bool trackVisibility() const { return track_visibility_; }
+  bool trackFractionOfRoot() const { return track_fraction_of_root_; }
 
   // An observer can either track intersections with an explicit root Element,
   // or with the the top-level frame's viewport (the "implicit root").  When
@@ -118,6 +150,7 @@ class CORE_EXPORT IntersectionObserver final
   Length left_margin_;
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
+  unsigned track_fraction_of_root_ : 1;
 };
 
 }  // namespace blink
