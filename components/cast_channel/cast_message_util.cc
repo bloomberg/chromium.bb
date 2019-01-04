@@ -27,6 +27,7 @@ constexpr char kRequestIdNodeId[] = "requestId";
 constexpr char kKeepAlivePingType[] = "PING";
 constexpr char kKeepAlivePongType[] = "PONG";
 constexpr char kGetAppAvailabilityRequestType[] = "GET_APP_AVAILABILITY";
+constexpr char kReceiverStatusRequestType[] = "GET_STATUS";
 constexpr char kConnectionRequestType[] = "CONNECT";
 constexpr char kCloseConnectionRequestType[] = "CLOSE";
 constexpr char kBroadcastRequestType[] = "APPLICATION_BROADCAST";
@@ -115,6 +116,8 @@ const char* CastMessageTypeToString(CastMessageType message_type) {
       return kKeepAlivePongType;
     case CastMessageType::kGetAppAvailability:
       return kGetAppAvailabilityRequestType;
+    case CastMessageType::kReceiverStatusRequest:
+      return kReceiverStatusRequestType;
     case CastMessageType::kConnect:
       return kConnectionRequestType;
     case CastMessageType::kCloseConnection:
@@ -143,6 +146,8 @@ CastMessageType CastMessageTypeFromString(const std::string& type) {
     return CastMessageType::kPong;
   if (type == kGetAppAvailabilityRequestType)
     return CastMessageType::kGetAppAvailability;
+  if (type == kReceiverStatusRequestType)
+    return CastMessageType::kReceiverStatusRequest;
   if (type == kConnectionRequestType)
     return CastMessageType::kConnect;
   if (type == kCloseConnectionRequestType)
@@ -285,6 +290,15 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
   dict.SetKey("appId", std::move(app_id_value));
   dict.SetKey(kRequestIdNodeId, Value(request_id));
 
+  return CreateCastMessage(kReceiverNamespace, dict, source_id,
+                           kPlatformReceiverId);
+}
+
+CastMessage CreateReceiverStatusRequest(const std::string& source_id,
+                                        int request_id) {
+  Value dict(Value::Type::DICTIONARY);
+  dict.SetKey(kTypeNodeId, Value(kReceiverStatusRequestType));
+  dict.SetKey(kRequestIdNodeId, Value(request_id));
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);
 }

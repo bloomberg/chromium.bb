@@ -47,7 +47,10 @@ struct CastAppInfo {
 class CastMediaSource {
  public:
   // Returns the parsed form of |source|, or nullptr if it cannot be parsed.
-  static std::unique_ptr<CastMediaSource> From(const MediaSource::Id& source);
+  static std::unique_ptr<CastMediaSource> FromMediaSourceId(
+      const MediaSource::Id& source);
+
+  static std::unique_ptr<CastMediaSource> FromAppId(const std::string& app_id);
 
   CastMediaSource(const MediaSource::Id& source_id,
                   const std::vector<CastAppInfo>& app_infos);

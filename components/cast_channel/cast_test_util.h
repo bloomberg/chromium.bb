@@ -153,6 +153,7 @@ class MockCastMessageHandler : public CastMessageHandler {
                void(CastSocket* socket,
                     const std::string& app_id,
                     GetAppAvailabilityCallback callback));
+  MOCK_METHOD1(RequestReceiverStatus, void(int channel_id));
   MOCK_METHOD3(SendBroadcastMessage,
                void(int,
                     const std::vector<std::string>&,

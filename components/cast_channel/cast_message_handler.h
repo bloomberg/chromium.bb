@@ -146,6 +146,9 @@ class CastMessageHandler : public CastSocket::Observer {
                                       const std::string& app_id,
                                       GetAppAvailabilityCallback callback);
 
+  // Sends a receiver status request to the socket given by |channel_id|.
+  virtual void RequestReceiverStatus(int channel_id);
+
   // Sends a broadcast message containing |app_ids| and |request| to the socket
   // given by |channel_id|.
   virtual void SendBroadcastMessage(int channel_id,

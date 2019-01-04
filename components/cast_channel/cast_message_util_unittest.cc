@@ -99,4 +99,25 @@ TEST(CastMessageUtilTest, CreateStopRequest) {
   EXPECT_EQ(*expected_value, *actual_value);
 }
 
+TEST(CastMessageUtilTest, CreateReceiverStatusRequest) {
+  std::string expected_message = R"(
+    {
+       "type": "GET_STATUS",
+       "requestId": 123
+    }
+  )";
+
+  std::unique_ptr<base::Value> expected_value =
+      base::JSONReader::Read(expected_message);
+  ASSERT_TRUE(expected_value);
+
+  CastMessage message = CreateReceiverStatusRequest("sourceId", 123);
+  ASSERT_TRUE(IsCastMessageValid(message));
+
+  std::unique_ptr<base::Value> actual_value =
+      base::JSONReader::Read(message.payload_utf8());
+  ASSERT_TRUE(actual_value);
+  EXPECT_EQ(*expected_value, *actual_value);
+}
+
 }  // namespace cast_channel
