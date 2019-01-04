@@ -23,6 +23,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/paint_shader.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -561,6 +562,11 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
+  // TODO(corising): Make sure that accessibility is solved properly for hover
+  // cards.
+  // Tab hover cards replace tooltips.
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return false;
   // Note: Anything that affects the tooltip text should be accounted for when
   // calling TooltipTextChanged() from Tab::SetData().
   *tooltip = GetTooltipText(data_.title, data_.alert_state);
