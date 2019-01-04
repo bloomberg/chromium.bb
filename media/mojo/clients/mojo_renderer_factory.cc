@@ -8,6 +8,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "media/mojo/clients/mojo_renderer.h"
+#include "media/renderers/decrypting_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connect.h"
@@ -16,10 +17,12 @@
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
+    media::MediaLog* media_log,
     mojom::HostedRendererType type,
     const GetGpuFactoriesCB& get_gpu_factories_cb,
     media::mojom::InterfaceFactory* interface_factory)
-    : get_gpu_factories_cb_(get_gpu_factories_cb),
+    : media_log_(media_log),
+      get_gpu_factories_cb_(get_gpu_factories_cb),
       interface_factory_(interface_factory),
       hosted_renderer_type_(type) {
   DCHECK(interface_factory_);
@@ -48,9 +51,12 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
         std::make_unique<VideoOverlayFactory>(get_gpu_factories_cb_.Run());
   }
 
-  return std::unique_ptr<Renderer>(
-      new MojoRenderer(media_task_runner, std::move(overlay_factory),
-                       video_renderer_sink, GetRendererPtr()));
+  // TODO(xhwang): use DecryptingRenderer in other renderer factories.
+  return std::make_unique<DecryptingRenderer>(
+      std::make_unique<MojoRenderer>(media_task_runner,
+                                     std::move(overlay_factory),
+                                     video_renderer_sink, GetRendererPtr()),
+      media_log_, media_task_runner);
 }
 
 mojom::RendererPtr MojoRendererFactory::GetRendererPtr() {

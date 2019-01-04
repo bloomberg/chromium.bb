@@ -421,7 +421,7 @@ MediaFactory::CreateRendererFactorySelector(
   // MediaPlayerRendererClientFactory setup.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media::mojom::HostedRendererType::kMediaPlayer,
+          media_log, media::mojom::HostedRendererType::kMediaPlayer,
           media::MojoRendererFactory::GetGpuFactoriesCB(),
           GetMediaInterfaceFactory());
 
@@ -441,7 +441,7 @@ MediaFactory::CreateRendererFactorySelector(
 
   // FlingingRendererClientFactory (FRCF) setup.
   auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      media::mojom::HostedRendererType::kFlinging,
+      media_log, media::mojom::HostedRendererType::kFlinging,
       media::MojoRendererFactory::GetGpuFactoriesCB(),
       GetMediaInterfaceFactory());
 
@@ -485,7 +485,7 @@ MediaFactory::CreateRendererFactorySelector(
     factory_selector->AddFactory(
         media::RendererFactorySelector::FactoryType::MOJO,
         std::make_unique<media::MojoRendererFactory>(
-            media::mojom::HostedRendererType::kDefault,
+            media_log, media::mojom::HostedRendererType::kDefault,
             base::Bind(&RenderThreadImpl::GetGpuFactories,
                        base::Unretained(render_thread)),
             GetMediaInterfaceFactory()));

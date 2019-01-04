@@ -18,6 +18,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
+#include "media/base/mock_filters.h"
 #include "ui/gfx/geometry/rect.h"
 
 using ::testing::_;
@@ -370,6 +371,30 @@ bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
   return (success && header == kFakeVideoBufferHeader &&
           width == config.coded_size().width() &&
           height == config.coded_size().height());
+}
+
+std::unique_ptr<StrictMock<MockDemuxerStream>> CreateMockDemuxerStream(
+    DemuxerStream::Type type,
+    bool encrypted) {
+  auto stream = std::make_unique<StrictMock<MockDemuxerStream>>(type);
+
+  switch (type) {
+    case DemuxerStream::AUDIO:
+      stream->set_audio_decoder_config(encrypted
+                                           ? TestAudioConfig::NormalEncrypted()
+                                           : TestAudioConfig::Normal());
+      break;
+    case DemuxerStream::VIDEO:
+      stream->set_video_decoder_config(encrypted
+                                           ? TestVideoConfig::NormalEncrypted()
+                                           : TestVideoConfig::Normal());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return stream;
 }
 
 }  // namespace media

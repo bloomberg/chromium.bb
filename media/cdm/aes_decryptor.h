@@ -84,6 +84,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
                              const VideoDecodeCB& video_decode_cb) override;
   void ResetDecoder(StreamType stream_type) override;
   void DeinitializeDecoder(StreamType stream_type) override;
+  bool CanAlwaysDecrypt() override;
 
  private:
   // Testing classes that needs to manipulate internal states for testing.

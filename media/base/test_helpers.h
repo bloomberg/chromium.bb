@@ -33,6 +33,7 @@ namespace media {
 class AudioBuffer;
 class AudioBus;
 class DecoderBuffer;
+class MockDemuxerStream;
 
 // Return a callback that expects to be run once.
 base::Closure NewExpectedClosure();
@@ -193,6 +194,10 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 // Verify if a fake video DecoderBuffer is valid.
 bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
                                   const VideoDecoderConfig& config);
+
+// Create a MockDemuxerStream for testing purposes.
+std::unique_ptr<::testing::StrictMock<MockDemuxerStream>>
+CreateMockDemuxerStream(DemuxerStream::Type type, bool encrypted);
 
 // Compares two {Audio|Video}DecoderConfigs
 MATCHER_P(DecoderConfigEq, config, "") {
