@@ -155,20 +155,22 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
 
  private:
   // content::MediaStreamUI interface.
-  gfx::NativeViewId OnStarted(const base::Closure& stop_callback) override {
+  gfx::NativeViewId OnStarted(base::OnceClosure stop_callback,
+                              base::RepeatingClosure source_callback) override {
     DCHECK(!started_);
     started_ = true;
 
     if (device_usage_) {
       // |device_usage_| handles |stop_callback| when |ui_| is unspecified.
-      device_usage_->AddDevices(devices_,
-                                ui_ ? base::Closure() : stop_callback);
+      device_usage_->AddDevices(
+          devices_, ui_ ? base::OnceClosure() : std::move(stop_callback));
     }
 
     // If a custom |ui_| is specified, notify it that the stream started and let
-    // it handle the |stop_callback|.
+    // it handle the |stop_callback| and |source_callback|.
     if (ui_)
-      return ui_->OnStarted(stop_callback);
+      return ui_->OnStarted(std::move(stop_callback),
+                            std::move(source_callback));
 
     return 0;
   }

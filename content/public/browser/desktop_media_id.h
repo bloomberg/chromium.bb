@@ -41,14 +41,16 @@ struct CONTENT_EXPORT DesktopMediaID {
   static aura::Window* GetAuraWindowById(const DesktopMediaID& id);
 #endif  // defined(USE_AURA)
 
-  DesktopMediaID() = default;
+  constexpr DesktopMediaID() = default;
 
-  DesktopMediaID(Type type, Id id) : type(type), id(id) {}
+  constexpr DesktopMediaID(Type type, Id id) : type(type), id(id) {}
 
-  DesktopMediaID(Type type, Id id, WebContentsMediaCaptureId web_contents_id)
+  constexpr DesktopMediaID(Type type,
+                           Id id,
+                           WebContentsMediaCaptureId web_contents_id)
       : type(type), id(id), web_contents_id(web_contents_id) {}
 
-  DesktopMediaID(Type type, Id id, bool audio_share)
+  constexpr DesktopMediaID(Type type, Id id, bool audio_share)
       : type(type), id(id), audio_share(audio_share) {}
 
   // Operators so that DesktopMediaID can be used with STL containers.

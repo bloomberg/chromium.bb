@@ -233,9 +233,11 @@ class MediaStreamUI {
   virtual ~MediaStreamUI() {}
 
   // Called when MediaStream capturing is started. Chrome layer can call |stop|
-  // to stop the stream. Returns the platform-dependent window ID for the UI, or
-  // 0 if not applicable.
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop) = 0;
+  // to stop the stream, or |source| to change the source of the stream.
+  // Returns the platform-dependent window ID for the UI, or 0 if not
+  // applicable.
+  virtual gfx::NativeViewId OnStarted(base::OnceClosure stop,
+                                      base::RepeatingClosure source) = 0;
 };
 
 // Callback used return results of media access requests.

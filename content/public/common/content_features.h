@@ -41,6 +41,7 @@ CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kCSSFragmentIdentifiers;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
+CONTENT_EXPORT extern const base::Feature kDesktopCaptureChangeSource;
 CONTENT_EXPORT extern const base::Feature kExperimentalProductivityFeatures;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;

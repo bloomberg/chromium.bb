@@ -313,8 +313,6 @@ void DesktopCaptureAccessHandler::HandleRequest(
     return;
   }
 
-  // The extension name that the stream is registered with.
-  std::string original_extension_name;
   // Resolve DesktopMediaID for the specified device id.
   content::DesktopMediaID media_id;
   // TODO(miu): Replace "main RenderFrame" IDs with the request's actual
@@ -331,7 +329,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
         content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
             request.requested_video_device_id,
             main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
-            request.security_origin, &original_extension_name,
+            request.security_origin, nullptr,
             content::kRegistryStreamTypeDesktop);
   }
 
@@ -375,13 +373,13 @@ void DesktopCaptureAccessHandler::HandleRequest(
   const bool display_notification =
       display_notification_ && ShouldDisplayNotification(extension);
 
-  ui = GetDevicesForDesktopCapture(web_contents, &devices, media_id,
-                                   content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                   content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                                   capture_audio, request.disable_local_echo,
-                                   display_notification,
-                                   GetApplicationTitle(web_contents, extension),
-                                   base::UTF8ToUTF16(original_extension_name));
+  ui = GetDevicesForDesktopCapture(
+      web_contents, &devices, media_id,
+      content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+      content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
+      request.disable_local_echo, display_notification,
+      GetApplicationTitle(web_contents, extension),
+      GetApplicationTitle(web_contents, extension));
   UpdateExtensionTrusted(request, extension);
   std::move(callback).Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }
@@ -441,8 +439,6 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
   const PendingAccessRequest& pending_request = *queue.front();
 
   std::vector<content::DesktopMediaID::Type> media_types = {
-      content::DesktopMediaID::TYPE_SCREEN,
-      content::DesktopMediaID::TYPE_WINDOW,
       content::DesktopMediaID::TYPE_WEB_CONTENTS};
   auto source_lists = picker_factory_->CreateMediaList(media_types);
 

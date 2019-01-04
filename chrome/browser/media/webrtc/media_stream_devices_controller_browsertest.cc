@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   std::unique_ptr<content::MediaStreamUI> video_stream_ui =
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           GetWebContents(), video_devices);
-  video_stream_ui->OnStarted(base::Closure());
+  video_stream_ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
 
   // Request mic and deny.
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);

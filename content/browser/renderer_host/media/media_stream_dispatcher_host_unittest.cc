@@ -224,6 +224,7 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
       : FakeMediaStreamUIProxy(/*tests_use_fake_render_frame_hosts=*/true) {}
   void OnStarted(
       base::OnceClosure stop,
+      base::RepeatingClosure source,
       MediaStreamUIProxy::WindowIdCallback window_id_callback) override {
     // gmock cannot handle move-only types:
     MockOnStarted(base::AdaptCallbackForRepeating(std::move(stop)));

@@ -65,7 +65,7 @@ class MediaStreamUIProxy::Core {
   ~Core();
 
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
-  void OnStarted(gfx::NativeViewId* window_id);
+  void OnStarted(gfx::NativeViewId* window_id, bool has_source_callback);
 
   void ProcessAccessRequestResponse(int render_process_id,
                                     int render_frame_id,
@@ -76,6 +76,7 @@ class MediaStreamUIProxy::Core {
  private:
   friend class FakeMediaStreamUIProxy;
   void ProcessStopRequestFromUI();
+  void ProcessChangeSourceRequestFromUI();
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
 
@@ -127,11 +128,20 @@ void MediaStreamUIProxy::Core::RequestAccess(
                      request->render_frame_id));
 }
 
-void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
+void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id,
+                                         bool has_source_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::RepeatingClosure device_change_cb;
+  if (has_source_callback) {
+    device_change_cb = base::BindRepeating(
+        &Core::ProcessChangeSourceRequestFromUI, base::Unretained(this));
+  }
+
   if (ui_) {
     *window_id = ui_->OnStarted(
-        base::Bind(&Core::ProcessStopRequestFromUI, base::Unretained(this)));
+        base::BindOnce(&Core::ProcessStopRequestFromUI, base::Unretained(this)),
+        device_change_cb);
   }
 }
 
@@ -164,7 +174,9 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   if (filtered_devices.empty() && result == MEDIA_DEVICE_OK)
     result = MEDIA_DEVICE_PERMISSION_DENIED;
 
-  ui_ = std::move(stream_ui);
+  if (stream_ui)
+    ui_ = std::move(stream_ui);
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse, proxy_,
@@ -177,6 +189,15 @@ void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
+}
+
+void MediaStreamUIProxy::Core::ProcessChangeSourceRequestFromUI() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&MediaStreamUIProxy::ProcessChangeSourceRequestFromUI,
+                     proxy_));
 }
 
 RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
@@ -225,18 +246,20 @@ void MediaStreamUIProxy::RequestAccess(
 }
 
 void MediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
+                                   base::RepeatingClosure source_callback,
                                    WindowIdCallback window_id_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   stop_callback_ = std::move(stop_callback);
+  source_callback_ = std::move(source_callback);
 
   // Owned by the PostTaskAndReply callback.
   gfx::NativeViewId* window_id = new gfx::NativeViewId(0);
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&Core::OnStarted, base::Unretained(core_.get()),
-                     window_id),
+      base::BindOnce(&Core::OnStarted, base::Unretained(core_.get()), window_id,
+                     !!source_callback_),
       base::BindOnce(&MediaStreamUIProxy::OnWindowId,
                      weak_factory_.GetWeakPtr(), std::move(window_id_callback),
                      base::Owned(window_id)));
@@ -256,6 +279,13 @@ void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   DCHECK(!stop_callback_.is_null());
 
   base::ResetAndReturn(&stop_callback_).Run();
+}
+
+void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (source_callback_)
+    source_callback_.Run();
 }
 
 void MediaStreamUIProxy::OnWindowId(WindowIdCallback window_id_callback,
@@ -347,6 +377,7 @@ void FakeMediaStreamUIProxy::RequestAccess(
 }
 
 void FakeMediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
+                                       base::RepeatingClosure source_callback,
                                        WindowIdCallback window_id_callback) {}
 
 }  // namespace content

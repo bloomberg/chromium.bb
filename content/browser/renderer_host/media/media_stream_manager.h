@@ -430,6 +430,7 @@ class CONTENT_EXPORT MediaStreamManager
                              DeviceRequest* request,
                              content::MediaStreamRequestResult result);
   void FinalizeOpenDevice(const std::string& label, DeviceRequest* request);
+  void FinalizeChangeDevice(const std::string& label, DeviceRequest* request);
   void FinalizeMediaAccessRequest(const std::string& label,
                                   DeviceRequest* request,
                                   const MediaStreamDevices& devices);

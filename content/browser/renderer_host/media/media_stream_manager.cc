@@ -419,6 +419,7 @@ class MediaStreamManager::DeviceRequest {
   const MediaDeviceSaltAndOrigin salt_and_origin;
 
   MediaStreamDevices devices;
+  MediaStreamDevices old_devices;
 
   // Callback to the requester which audio/video devices have been selected.
   // It can be null if the requester has no interest to know the result.
@@ -1124,22 +1125,12 @@ void MediaStreamManager::PostRequestToUI(
     if (request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE) {
       devices.push_back(MediaStreamDeviceFromFakeDeviceConfig());
     } else if (request->video_type() == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
-      MediaStreamDevice device;
-      // Set media type according to request type for explicit expectation in
-      // the unit test and cache the |label| in the device name field.
-      // These are for unit test purpose only.
-      if (request->request_type() == MEDIA_DEVICE_UPDATE) {
-        DesktopMediaID media_id(DesktopMediaID::TYPE_WINDOW,
-                                DesktopMediaID::kNullId);
-        device = MediaStreamDevice(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                   media_id.ToString(), label);
-      } else {
-        DesktopMediaID media_id(DesktopMediaID::TYPE_SCREEN,
-                                DesktopMediaID::kNullId);
-        device = MediaStreamDevice(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                   media_id.ToString(), label);
-      }
-      devices.push_back(device);
+      // Cache the |label| in the device name field, for unit test purpose only.
+      devices.push_back(MediaStreamDevice(
+          MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+          DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)
+              .ToString(),
+          label));
     } else {
       MediaStreamDevices audio_devices = ConvertToMediaStreamDevices(
           request->audio_type(), enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]);
@@ -1508,6 +1499,32 @@ void MediaStreamManager::FinalizeOpenDevice(const std::string& label,
   }
 }
 
+void MediaStreamManager::FinalizeChangeDevice(const std::string& label,
+                                              DeviceRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(request->device_changed_cb);
+
+  std::vector<std::vector<MediaStreamDevice>> old_devices_by_type(
+      NUM_MEDIA_TYPES);
+  for (const auto& old_device : request->old_devices)
+    old_devices_by_type[old_device.type].push_back(old_device);
+
+  for (const auto& new_device : request->devices) {
+    MediaStreamDevice old_device;
+    auto& old_devices = old_devices_by_type[new_device.type];
+    if (!old_devices.empty()) {
+      old_device = old_devices.back();
+      old_devices.pop_back();
+    }
+
+    request->device_changed_cb.Run(label, old_device, new_device);
+  }
+
+  for (const auto& old_devices : old_devices_by_type)
+    for (const auto& old_device : old_devices)
+      request->device_changed_cb.Run(label, old_device, MediaStreamDevice());
+}
+
 void MediaStreamManager::FinalizeMediaAccessRequest(
     const std::string& label,
     DeviceRequest* request,
@@ -1628,6 +1645,7 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
       break;
     }
     case MEDIA_DEVICE_UPDATE:
+      FinalizeChangeDevice(label, request);
       OnStreamStarted(label);
       break;
     default:
@@ -1839,47 +1857,22 @@ void MediaStreamManager::HandleChangeSourceRequestResponse(
     DeviceRequest* request,
     const MediaStreamDevices& devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request->device_changed_cb);
   DVLOG(1) << "HandleChangeSourceRequestResponse("
            << ", {label = " << label << "})";
 
-  MediaStreamDevices new_devices;
+  request->old_devices.clear();
+  request->old_devices.swap(request->devices);
+
   bool found_audio = false;
-  size_t device_count = std::max(devices.size(), request->devices.size());
-  for (size_t i = 0; i < device_count; i++) {
-    MediaStreamDevice old_device = MediaStreamDevice();
-    MediaStreamDevice new_device = MediaStreamDevice();
+  for (const MediaStreamDevice& media_stream_device : devices) {
+    MediaStreamDevice new_device = media_stream_device;
+    found_audio |= IsAudioInputMediaType(new_device.type);
 
-    if (i < devices.size()) {
-      new_device = devices[i];
-
-      if (IsAudioInputMediaType(new_device.type)) {
-        found_audio = true;
-      }
-    }
-
-    for (auto device_it = request->devices.begin();
-         device_it != request->devices.end(); ++device_it) {
-      if (new_device.type == MEDIA_NO_SERVICE ||
-          device_it->type == new_device.type) {
-        old_device = *device_it;
-        request->devices.erase(device_it);
-        break;
-      }
-    }
-
-    if (new_device.type != MEDIA_NO_SERVICE) {
-      new_device.session_id =
-          GetDeviceManager(new_device.type)->Open(new_device);
-      request->SetState(new_device.type, MEDIA_REQUEST_STATE_OPENING);
-      new_devices.push_back(new_device);
-    }
-
-    request->device_changed_cb.Run(label, old_device, new_device);
+    new_device.session_id = GetDeviceManager(new_device.type)->Open(new_device);
+    request->SetState(new_device.type, MEDIA_REQUEST_STATE_OPENING);
+    request->devices.push_back(new_device);
   }
 
-  request->devices.clear();
-  request->devices = new_devices;
   request->SetAudioType(found_audio ? request->controls.audio.stream_type
                                     : MEDIA_NO_SERVICE);
 }
@@ -2131,10 +2124,28 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
   if (!request)
     return;
 
+  // Show "Change source" button on notification bar only for tab sharing by
+  // desktopCapture API.
+  bool enable_change_source = std::any_of(
+      request->devices.cbegin(), request->devices.cend(), [](auto device) {
+        DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
+        return device.type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
+               media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS;
+      });
+
+  base::RepeatingClosure device_changed_cb;
+  if (enable_change_source &&
+      base::FeatureList::IsEnabled(features::kDesktopCaptureChangeSource)) {
+    device_changed_cb = base::BindRepeating(
+        &MediaStreamManager::ChangeMediaStreamSourceFromBrowser,
+        base::Unretained(this), label);
+  }
+
   if (request->ui_proxy) {
     request->ui_proxy->OnStarted(
         base::BindOnce(&MediaStreamManager::StopMediaStreamFromBrowser,
                        base::Unretained(this), label),
+        device_changed_cb,
         base::BindOnce(&MediaStreamManager::OnMediaStreamUIWindowId,
                        base::Unretained(this), request->video_type(),
                        request->devices));
