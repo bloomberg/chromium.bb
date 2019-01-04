@@ -3083,7 +3083,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE txk_end = TX_TYPES - 1;
   if ((!is_inter && x->use_default_intra_tx_type) ||
       (is_inter && x->use_default_inter_tx_type)) {
-    txk_start = txk_end = get_default_tx_type(0, xd, tx_size);
+    txk_start = txk_end =
+        get_default_tx_type(0, xd, tx_size, cpi->is_screen_content_type);
   } else if (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan) {
     if (plane == 0) txk_end = DCT_DCT;
   }

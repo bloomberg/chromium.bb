@@ -3957,6 +3957,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
           cm->seq_params.force_screen_content_tools;
     }
   }
+  cpi->is_screen_content_type = (cm->allow_screen_content_tools != 0);
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,

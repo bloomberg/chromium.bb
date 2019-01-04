@@ -854,6 +854,8 @@ typedef struct AV1_COMP {
 #if CONFIG_MULTITHREAD
   pthread_mutex_t *row_mt_mutex_;
 #endif
+  // Set if screen content is set or relevant tools are enabled
+  int is_screen_content_type;
 } AV1_COMP;
 
 // Must not be called more than once.
