@@ -653,7 +653,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 
   ProvisionallySavePassword(password_form, driver);
 
-  if (CanProvisionalManagerSave())
+  if (IsReadyForAutomaticSaving())
     OnLoginSuccessful();
 }
 
@@ -957,7 +957,7 @@ void PasswordManager::ProvisionallySaveManager(
   provisional_save_manager_.swap(manager);
 }
 
-bool PasswordManager::CanProvisionalManagerSave() {
+bool PasswordManager::IsReadyForAutomaticSaving() {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -983,7 +983,8 @@ bool PasswordManager::CanProvisionalManagerSave() {
         submitted_manager->GetOrigin(), logger.get());
     return false;
   }
-  return true;
+
+  return !submitted_manager->GetPendingCredentials().only_for_fallback_saving;
 }
 
 bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
@@ -1007,7 +1008,7 @@ void PasswordManager::OnPasswordFormsRendered(
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
   }
 
-  if (!CanProvisionalManagerSave())
+  if (!IsReadyForAutomaticSaving())
     return;
 
   PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();

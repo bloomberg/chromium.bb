@@ -2984,6 +2984,29 @@ TEST_F(PasswordManagerTest, NoSavePromptWhenPasswordManagerDisabled) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
 }
 
+TEST_F(PasswordManagerTest, NoSavePromptForNotPasswordForm) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  PasswordForm form(MakeSimpleForm());
+  // Make the form to be credit card form.
+  form.form_data.fields[1].autocomplete_attribute = "cc-csc";
+
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  auto submitted_form = form;
+  submitted_form.form_data.fields[0].value = ASCIIToUTF16("text");
+  submitted_form.form_data.fields[1].value = ASCIIToUTF16("1234");
+
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
+}
+
 // Check that when autofill predictions are received before a form is found then
 // server predictions are not ignored and used for filling.
 TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
