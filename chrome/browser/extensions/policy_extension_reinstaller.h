@@ -24,8 +24,9 @@ namespace extensions {
 // it will retry reinstallation with backoff.
 class PolicyExtensionReinstaller {
  public:
-  using ReinstallCallback = base::Callback<void(const base::Closure& callback,
-                                                base::TimeDelta delay)>;
+  using ReinstallCallback =
+      base::RepeatingCallback<void(base::OnceClosure callback,
+                                   base::TimeDelta delay)>;
 
   explicit PolicyExtensionReinstaller(content::BrowserContext* context);
   ~PolicyExtensionReinstaller();

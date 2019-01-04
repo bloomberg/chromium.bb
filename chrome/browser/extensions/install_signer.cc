@@ -316,17 +316,17 @@ void LogRequestStartHistograms() {
 
 }  // namespace
 
-void InstallSigner::GetSignature(const SignatureCallback& callback) {
+void InstallSigner::GetSignature(SignatureCallback callback) {
   CHECK(!simple_loader_.get());
   CHECK(callback_.is_null());
   CHECK(salt_.empty());
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   // If the set of ids is empty, just return an empty signature and skip the
   // call to the server.
   if (ids_.empty()) {
     if (!callback_.is_null())
-      callback_.Run(std::unique_ptr<InstallSignature>(new InstallSignature()));
+      std::move(callback_).Run(std::make_unique<InstallSignature>());
     return;
   }
 
@@ -417,9 +417,8 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
 }
 
 void InstallSigner::ReportErrorViaCallback() {
-  InstallSignature* null_signature = NULL;
   if (!callback_.is_null())
-    callback_.Run(std::unique_ptr<InstallSignature>(null_signature));
+    std::move(callback_).Run(nullptr);
 }
 
 void InstallSigner::ParseFetchResponse(
@@ -513,7 +512,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
   }
 
   if (!callback_.is_null())
-    callback_.Run(std::move(result));
+    std::move(callback_).Run(std::move(result));
 }
 
 
