@@ -126,7 +126,7 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 constexpr char kCrostiniDefaultImageServerUrl[] =
-    "https://storage.googleapis.com/cros-containers";
+    "https://storage.googleapis.com/cros-containers/%d";
 constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 
 // Whether running Crostini is allowed for unaffiliated users per enterprise
