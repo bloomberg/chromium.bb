@@ -343,10 +343,6 @@ void Bluetooth::ContextDestroyed(ExecutionContext*) {
   client_bindings_.CloseAllBindings();
 }
 
-void Bluetooth::Dispose() {
-  DCHECK(client_bindings_.empty());
-}
-
 void Bluetooth::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_instance_map_);
   EventTargetWithInlineData::Trace(visitor);
@@ -355,6 +351,10 @@ void Bluetooth::Trace(blink::Visitor* visitor) {
 
 Bluetooth::Bluetooth(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
+
+Bluetooth::~Bluetooth() {
+  DCHECK(client_bindings_.empty());
+}
 
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     mojom::blink::WebBluetoothDevicePtr device_ptr,
