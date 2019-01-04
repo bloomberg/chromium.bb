@@ -438,11 +438,6 @@ AutomationNodeImpl.prototype = {
       return;
 
     if (!GetBoolAttribute(this.treeID, this.id, 'supportsTextLocation')) {
-      // GetBoundsForRange should only be called on INLINE_TEXT_BOX.
-      if (this.role != RoleType.INLINE_TEXT_BOX) {
-        callback(null);
-        return;
-      }
       try {
         callback(
             GetBoundsForRange(this.treeID, this.id, startIndex, endIndex));
