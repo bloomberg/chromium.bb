@@ -44,6 +44,7 @@ public class AwGLFunctor implements AwFunctor {
     @Override
     public void destroy() {
         assert mRefCount > 0;
+        nativeRemoveFromCompositorFrameProducer(mNativeAwGLFunctor);
         removeReference();
     }
 
@@ -111,6 +112,7 @@ public class AwGLFunctor implements AwFunctor {
 
     private native void nativeDeleteHardwareRenderer(long nativeAwGLFunctor);
     private native long nativeGetAwDrawGLViewContext(long nativeAwGLFunctor);
+    private native void nativeRemoveFromCompositorFrameProducer(long nativeAwGLFunctor);
     private native long nativeGetCompositorFrameConsumer(long nativeAwGLFunctor);
 
     private static native long nativeGetAwDrawGLFunction();

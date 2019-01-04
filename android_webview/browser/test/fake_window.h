@@ -112,6 +112,7 @@ class FakeFunctor : public RenderThreadManagerClient {
   void Invoke(WindowHooks* hooks);
 
   CompositorFrameConsumer* GetCompositorFrameConsumer();
+  void OnWindowDetached();
 
   // RenderThreadManagerClient overrides
   bool RequestInvokeGL(bool wait_for_completion) override;

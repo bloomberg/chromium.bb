@@ -24,17 +24,11 @@
 
 namespace android_webview {
 
-namespace {
-constexpr base::TimeDelta kSlightlyMoreThanOneFrame =
-    base::TimeDelta::FromMilliseconds(17);
-}
-
 RenderThreadManager::RenderThreadManager(
     RenderThreadManagerClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
     : ui_loop_(ui_loop),
       client_(client),
-      compositor_frame_producer_(nullptr),
       has_received_frame_(false),
       inside_hardware_release_(false),
       weak_factory_on_ui_thread_(this) {
@@ -45,16 +39,14 @@ RenderThreadManager::RenderThreadManager(
 
 RenderThreadManager::~RenderThreadManager() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  if (compositor_frame_producer_) {
-    compositor_frame_producer_->RemoveCompositorFrameConsumer(this);
-  }
   DCHECK(!hardware_renderer_.get());
+  DCHECK(child_frames_.empty());
 }
 
 void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  if (compositor_frame_producer_) {
-    compositor_frame_producer_->OnParentDrawConstraintsUpdated(this);
+  if (producer_weak_ptr_) {
+    producer_weak_ptr_->OnParentDrawConstraintsUpdated(this);
   }
 }
 
@@ -135,61 +127,16 @@ bool RenderThreadManager::IsInsideHardwareRelease() const {
   return inside_hardware_release_;
 }
 
-RenderThreadManager::ReturnedResources::ReturnedResources()
-    : layer_tree_frame_sink_id(0u) {}
-
-RenderThreadManager::ReturnedResources::~ReturnedResources() {}
-
 void RenderThreadManager::InsertReturnedResourcesOnRT(
     const std::vector<viz::ReturnedResource>& resources,
     const CompositorID& compositor_id,
     uint32_t layer_tree_frame_sink_id) {
   if (resources.empty())
     return;
-
-  base::AutoLock lock(lock_);
-  ReturnedResources& returned_resources =
-      returned_resources_map_[compositor_id];
-  if (returned_resources.layer_tree_frame_sink_id != layer_tree_frame_sink_id) {
-    returned_resources.resources.clear();
-  }
-  returned_resources.resources.insert(returned_resources.resources.end(),
-                                      resources.begin(), resources.end());
-  returned_resources.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
-
-  if (!returned_resource_available_pending_) {
-    returned_resource_available_pending_ = true;
-    ui_loop_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&RenderThreadManager::ReturnedResourceAvailableOnUI,
-                       ui_thread_weak_ptr_),
-        kSlightlyMoreThanOneFrame * 2);
-  }
-}
-
-void RenderThreadManager::ReturnedResourceAvailableOnUI() {
-  bool empty = false;
-  {
-    base::AutoLock lock(lock_);
-    DCHECK(returned_resource_available_pending_);
-    returned_resource_available_pending_ = false;
-    empty = returned_resources_map_.empty();
-  }
-  if (!empty && compositor_frame_producer_) {
-    compositor_frame_producer_->ReturnedResourceAvailable(this);
-  }
-}
-
-void RenderThreadManager::SwapReturnedResourcesOnUI(
-    ReturnedResourcesMap* returned_resource_map) {
-  DCHECK(returned_resource_map->empty());
-  base::AutoLock lock(lock_);
-  returned_resource_map->swap(returned_resources_map_);
-}
-
-bool RenderThreadManager::ReturnedResourcesEmptyOnUI() const {
-  base::AutoLock lock(lock_);
-  return returned_resources_map_.empty();
+  ui_loop_->PostTask(
+      FROM_HERE, base::BindOnce(&CompositorFrameProducer::ReturnUsedResources,
+                                producer_weak_ptr_, resources, compositor_id,
+                                layer_tree_frame_sink_id));
 }
 
 void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
@@ -232,6 +179,12 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
     hardware_renderer_->DrawGL(draw_info);
 }
 
+void RenderThreadManager::RemoveFromCompositorFrameProducerOnUI() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  if (producer_weak_ptr_)
+    producer_weak_ptr_->RemoveCompositorFrameConsumer(this);
+}
+
 void RenderThreadManager::DeleteHardwareRendererOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
 
@@ -260,10 +213,8 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 
 void RenderThreadManager::SetCompositorFrameProducer(
     CompositorFrameProducer* compositor_frame_producer) {
-  DCHECK(compositor_frame_producer == compositor_frame_producer_ ||
-         compositor_frame_producer_ == nullptr ||
-         compositor_frame_producer == nullptr);
-  compositor_frame_producer_ = compositor_frame_producer;
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  producer_weak_ptr_ = compositor_frame_producer->GetWeakPtr();
 }
 
 bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {

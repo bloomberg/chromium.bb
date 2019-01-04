@@ -85,6 +85,13 @@ jlong AwGLFunctor::GetAwDrawGLViewContext(
   return reinterpret_cast<intptr_t>(&render_thread_manager_);
 }
 
+void AwGLFunctor::RemoveFromCompositorFrameProducer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  render_thread_manager_.RemoveFromCompositorFrameProducerOnUI();
+}
+
 jlong AwGLFunctor::GetCompositorFrameConsumer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

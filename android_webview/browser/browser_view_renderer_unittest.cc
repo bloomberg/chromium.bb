@@ -500,10 +500,16 @@ class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
   }
 
   void CheckResults() override {
-    GetCompositorFrameConsumer()->DeleteHardwareRendererOnUI();
     window_->Detach();
+    functor_->OnWindowDetached();
     window_.reset();
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SwitchLayerTreeFrameSinkIdTest::PostedCheckResults,
+                       base::Unretained(this)));
+  }
 
+  void PostedCheckResults() {
     // Make sure resources for the last output surface are returned.
     EXPECT_EQ(expected_return_count_,
               GetReturnedResourceCounts()[last_layer_tree_frame_sink_id_]);
@@ -539,6 +545,13 @@ class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
   void CheckResults() override {
     LayerTreeFrameSinkResourceCountMap resource_counts;
     functor_.reset();
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RenderThreadManagerDeletionTest::PostedCheckResults,
+                       base::Unretained(this)));
+  }
+
+  void PostedCheckResults() {
     // Make sure resources for the last frame are returned.
     EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
     EndTest();
@@ -601,6 +614,13 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
   void CheckResults() override {
     LayerTreeFrameSinkResourceCountMap resource_counts;
     functor_.reset();
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RenderThreadManagerSwitchTest::PostedCheckResults,
+                       base::Unretained(this)));
+  }
+
+  void PostedCheckResults() {
     // Make sure resources for all frames are returned.
     EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
     EndTest();
