@@ -317,6 +317,14 @@ void FeedSchedulerHost::OnSuggestionsShown() {
 }
 
 void FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
+  base::TimeDelta attempt_age =
+      clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "ContentSuggestions.Feed.Scheduler.TimeSinceLastFetchOnClear",
+      attempt_age, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromDays(7),
+      /*bucket_count=*/50);
+
   // Since there are no stored articles, a refresh will be needed soon.
   profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
 

@@ -887,6 +887,16 @@ void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
 }
 
 void RemoteSuggestionsSchedulerImpl::ClearLastFetchAttemptTime() {
+  // Added during Feed rollout to help investigate https://crbug.com/908963.
+  base::TimeDelta attempt_age =
+      clock_->Now() -
+      profile_prefs_->GetTime(prefs::kSnippetLastFetchAttemptTime);
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "ContentSuggestions.Feed.Scheduler.TimeSinceLastFetchOnClear",
+      attempt_age, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromDays(7),
+      /*bucket_count=*/50);
+
   profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttemptTime);
   // To mark the last fetch as stale, we need to keep the time in prefs, only
   // making sure it is long ago.
