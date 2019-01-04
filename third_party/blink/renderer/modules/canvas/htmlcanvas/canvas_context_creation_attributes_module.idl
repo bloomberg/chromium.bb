@@ -48,5 +48,5 @@ dictionary CanvasContextCreationAttributesModule {
     boolean premultipliedAlpha = true;
     boolean preserveDrawingBuffer = false;
     boolean failIfMajorPerformanceCaveat = false;
-    [OriginTrialEnabled=WebXR] XRDevice compatibleXRDevice = null;
+    [OriginTrialEnabled=WebXR] boolean xrCompatible = false;
 };

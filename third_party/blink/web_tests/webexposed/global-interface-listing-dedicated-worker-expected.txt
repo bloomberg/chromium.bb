@@ -2088,6 +2088,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method isVertexArray
 [Worker]     method lineWidth
 [Worker]     method linkProgram
+[Worker]     method makeXRCompatible
 [Worker]     method memoryBarrier
 [Worker]     method memoryBarrierByRegion
 [Worker]     method pauseTransformFeedback
@@ -2102,7 +2103,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method samplerParameterf
 [Worker]     method samplerParameteri
 [Worker]     method scissor
-[Worker]     method setCompatibleXRDevice
 [Worker]     method shaderSource
 [Worker]     method stencilFunc
 [Worker]     method stencilFuncSeparate
@@ -2881,6 +2881,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method isVertexArray
 [Worker]     method lineWidth
 [Worker]     method linkProgram
+[Worker]     method makeXRCompatible
 [Worker]     method pauseTransformFeedback
 [Worker]     method pixelStorei
 [Worker]     method polygonOffset
@@ -2893,7 +2894,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method samplerParameterf
 [Worker]     method samplerParameteri
 [Worker]     method scissor
-[Worker]     method setCompatibleXRDevice
 [Worker]     method shaderSource
 [Worker]     method stencilFunc
 [Worker]     method stencilFuncSeparate
@@ -3375,13 +3375,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method isTexture
 [Worker]     method lineWidth
 [Worker]     method linkProgram
+[Worker]     method makeXRCompatible
 [Worker]     method pixelStorei
 [Worker]     method polygonOffset
 [Worker]     method readPixels
 [Worker]     method renderbufferStorage
 [Worker]     method sampleCoverage
 [Worker]     method scissor
-[Worker]     method setCompatibleXRDevice
 [Worker]     method shaderSource
 [Worker]     method stencilFunc
 [Worker]     method stencilFuncSeparate

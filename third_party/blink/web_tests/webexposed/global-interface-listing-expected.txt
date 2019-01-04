@@ -8710,6 +8710,7 @@ interface WebGL2ComputeRenderingContext
     method isVertexArray
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method memoryBarrier
     method memoryBarrierByRegion
     method pauseTransformFeedback
@@ -8724,7 +8725,6 @@ interface WebGL2ComputeRenderingContext
     method samplerParameterf
     method samplerParameteri
     method scissor
-    method setCompatibleXRDevice
     method shaderSource
     method stencilFunc
     method stencilFuncSeparate
@@ -9503,6 +9503,7 @@ interface WebGL2RenderingContext
     method isVertexArray
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pauseTransformFeedback
     method pixelStorei
     method polygonOffset
@@ -9515,7 +9516,6 @@ interface WebGL2RenderingContext
     method samplerParameterf
     method samplerParameteri
     method scissor
-    method setCompatibleXRDevice
     method shaderSource
     method stencilFunc
     method stencilFuncSeparate
@@ -10001,13 +10001,13 @@ interface WebGLRenderingContext
     method isTexture
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pixelStorei
     method polygonOffset
     method readPixels
     method renderbufferStorage
     method sampleCoverage
     method scissor
-    method setCompatibleXRDevice
     method shaderSource
     method stencilFunc
     method stencilFuncSeparate

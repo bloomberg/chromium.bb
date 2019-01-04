@@ -61,10 +61,10 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  if (!webgl_context->IsXRDeviceCompatible(session->device())) {
+  if (!webgl_context->IsXRCompatible()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "The session's device is not the compatible device for this context.");
+        "This context is not marked as XR compatible.");
     return nullptr;
   }
 

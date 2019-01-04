@@ -169,7 +169,6 @@ bool CanvasRenderingContext::WouldTaintOrigin(CanvasImageSource* image_source) {
 
 void CanvasRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(host_);
-  visitor->Trace(creation_attributes_);
   ScriptWrappable::Trace(visitor);
 }
 

@@ -17,7 +17,7 @@ function xr_session_promise_test(
         })
         .then((device) => {
           if (gl) {
-            return gl.setCompatibleXRDevice(device).then(
+            return gl.makeXRCompatible(device).then(
                 () => Promise.resolve(device));
           } else {
             return Promise.resolve(device);
