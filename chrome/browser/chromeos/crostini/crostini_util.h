@@ -78,10 +78,7 @@ std::string CryptohomeIdForProfile(Profile* profile);
 
 // Retrieves username from profile.  This is the text until '@' in
 // profile->GetProfileUserName() email address.
-std::string ContainerUserNameForProfile(Profile* profile);
-
-// Returns the home directory within the container for a given profile.
-base::FilePath ContainerHomeDirectoryForProfile(Profile* profile);
+std::string DefaultContainerUserNameForProfile(Profile* profile);
 
 // Returns the mount directory within the container where paths from the Chrome
 // OS host such as within Downloads are shared with the container.

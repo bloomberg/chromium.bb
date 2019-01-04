@@ -74,6 +74,22 @@ enum class UninstallPackageProgressStatus {
   UNINSTALLING,  // In progress
 };
 
+struct VmInfo {
+  VmState state;
+  vm_tools::concierge::VmInfo info;
+};
+
+struct ContainerInfo {
+  ContainerInfo(std::string name, std::string username, std::string homedir);
+  ~ContainerInfo();
+  ContainerInfo(const ContainerInfo&);
+
+  std::string name;
+  std::string username;
+  base::FilePath homedir;
+  bool sshfs_mounted = false;
+};
+
 // Return type when getting app icons from within a container.
 struct Icon {
   std::string desktop_file_id;
@@ -429,12 +445,16 @@ class CrostiniManager : public KeyedService,
 
   void SetVmState(std::string vm_name, VmState vm_state);
   bool IsVmRunning(std::string vm_name);
-
   // Returns null if VM is not running.
-  base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(std::string vm_name);
-  void AddRunningVmForTesting(std::string vm_name,
-                              vm_tools::concierge::VmInfo vm_info);
-  bool IsContainerRunning(std::string vm_name, std::string container_name);
+  base::Optional<VmInfo> GetVmInfo(std::string vm_name);
+  void AddRunningVmForTesting(std::string vm_name);
+
+  void SetContainerSshfsMounted(std::string vm_name,
+                                std::string container_name);
+  // Returns null if VM or container is not running.
+  base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
+                                                 std::string container_name);
+  void AddRunningContainerForTesting(std::string vm_name, ContainerInfo info);
 
   // If the Crostini reporting policy is set, save the last app launch
   // time window and the Termina version in prefs for asynchronous reporting.
@@ -612,11 +632,10 @@ class CrostiniManager : public KeyedService,
   // start.
   std::multimap<std::string, base::OnceClosure> tremplin_started_callbacks_;
 
-  std::map<std::string, std::pair<VmState, vm_tools::concierge::VmInfo>>
-      running_vms_;
+  std::map<std::string, VmInfo> running_vms_;
 
   // Running containers as keyed by vm name.
-  std::multimap<std::string, std::string> running_containers_;
+  std::multimap<std::string, ContainerInfo> running_containers_;
 
   std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 

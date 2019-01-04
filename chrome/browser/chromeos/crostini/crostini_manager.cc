@@ -89,13 +89,11 @@ class CrostiniManager::CrostiniRestarter
                     base::WeakPtr<CrostiniManager> crostini_manager,
                     std::string vm_name,
                     std::string container_name,
-                    std::string container_username,
                     CrostiniManager::RestartCrostiniCallback callback)
       : profile_(profile),
         crostini_manager_(crostini_manager),
         vm_name_(std::move(vm_name)),
         container_name_(std::move(container_name)),
-        container_username_(std::move(container_username)),
         callback_(std::move(callback)),
         restart_id_(next_restart_id_++) {}
 
@@ -303,7 +301,7 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
     crostini_manager_->SetUpLxdContainerUser(
-        vm_name_, container_name_, container_username_,
+        vm_name_, container_name_, DefaultContainerUserNameForProfile(profile_),
         base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
                        this));
   }
@@ -324,18 +322,21 @@ class CrostiniManager::CrostiniRestarter
 
     // If default termina/penguin, then do sshfs mount and reshare folders,
     // else we are finished.
+    auto info = crostini_manager_->GetContainerInfo(vm_name_, container_name_);
     if (vm_name_ == kCrostiniDefaultVmName &&
-        container_name_ == kCrostiniDefaultContainerName) {
+        container_name_ == kCrostiniDefaultContainerName && info &&
+        !info->sshfs_mounted) {
       crostini_manager_->GetContainerSshKeys(
           vm_name_, container_name_,
-          base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished,
-                         this));
+          base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished, this,
+                         info->username));
     } else {
       FinishRestart(result);
     }
   }
 
-  void GetContainerSshKeysFinished(crostini::CrostiniResult result,
+  void GetContainerSshKeysFinished(const std::string& container_username,
+                                   crostini::CrostiniResult result,
                                    const std::string& container_public_key,
                                    const std::string& host_private_key,
                                    const std::string& hostname) {
@@ -358,7 +359,7 @@ class CrostiniManager::CrostiniRestarter
 
     // Call to sshfs to mount.
     source_path_ = base::StringPrintf(
-        "sshfs://%s@%s:", container_username_.c_str(), hostname.c_str());
+        "sshfs://%s@%s:", container_username.c_str(), hostname.c_str());
     dmgr->MountPath(source_path_, "",
                     file_manager::util::GetCrostiniMountPointName(profile_),
                     file_manager::util::GetCrostiniMountOptions(
@@ -388,6 +389,8 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_type=" << mount_info.mount_type
                  << ", mount_condition=" << mount_info.mount_condition;
     } else {
+      crostini_manager_->SetContainerSshfsMounted(vm_name_, container_name_);
+
       // Register filesystem and add volume to VolumeManager.
       base::FilePath mount_path = base::FilePath(mount_info.mount_path);
       storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
@@ -415,7 +418,6 @@ class CrostiniManager::CrostiniRestarter
 
   std::string vm_name_;
   std::string container_name_;
-  std::string container_username_;
   std::string source_path_;
   CrostiniManager::RestartCrostiniCallback callback_;
   base::ObserverList<CrostiniManager::RestartObserver>::Unchecked
@@ -437,7 +439,7 @@ bool CrostiniManager::is_dev_kvm_present_ = true;
 void CrostiniManager::SetVmState(std::string vm_name, VmState vm_state) {
   auto vm_info = running_vms_.find(std::move(vm_name));
   if (vm_info != running_vms_.end()) {
-    vm_info->second.first = vm_state;
+    vm_info->second.state = vm_state;
     return;
   }
   // This can happen normally when StopVm is called right after start up.
@@ -447,43 +449,62 @@ void CrostiniManager::SetVmState(std::string vm_name, VmState vm_state) {
 bool CrostiniManager::IsVmRunning(std::string vm_name) {
   auto vm_info = running_vms_.find(std::move(vm_name));
   if (vm_info != running_vms_.end()) {
-    return vm_info->second.first == VmState::STARTED;
+    return vm_info->second.state == VmState::STARTED;
   }
   return false;
 }
 
-base::Optional<vm_tools::concierge::VmInfo> CrostiniManager::GetVmInfo(
-    std::string vm_name) {
+base::Optional<VmInfo> CrostiniManager::GetVmInfo(std::string vm_name) {
   auto it = running_vms_.find(std::move(vm_name));
   if (it != running_vms_.end())
-    return it->second.second;
+    return it->second;
   return base::nullopt;
 }
 
-void CrostiniManager::AddRunningVmForTesting(
-    std::string vm_name,
-    vm_tools::concierge::VmInfo vm_info) {
-  running_vms_[std::move(vm_name)] =
-      std::make_pair(VmState::STARTED, std::move(vm_info));
+void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
+  running_vms_[std::move(vm_name)] = VmInfo{VmState::STARTED};
 }
 
 LinuxPackageInfo::LinuxPackageInfo() = default;
 LinuxPackageInfo::~LinuxPackageInfo() = default;
 
-bool CrostiniManager::IsContainerRunning(std::string vm_name,
-                                         std::string container_name) {
-  if (!IsVmRunning(vm_name)) {
-    return false;
-  }
-  // TODO(jopra): Ensure the container not marked running if the vm is not
-  // running.
+ContainerInfo::ContainerInfo(std::string container_name,
+                             std::string container_username,
+                             std::string container_homedir)
+    : name(container_name),
+      username(container_username),
+      homedir(container_homedir) {}
+ContainerInfo::~ContainerInfo() = default;
+ContainerInfo::ContainerInfo(const ContainerInfo&) = default;
+
+void CrostiniManager::SetContainerSshfsMounted(std::string vm_name,
+                                               std::string container_name) {
   auto range = running_containers_.equal_range(std::move(vm_name));
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second == container_name) {
-      return true;
+    if (it->second.name == container_name) {
+      it->second.sshfs_mounted = true;
     }
   }
-  return false;
+}
+
+base::Optional<ContainerInfo> CrostiniManager::GetContainerInfo(
+    std::string vm_name,
+    std::string container_name) {
+  if (!IsVmRunning(vm_name)) {
+    return base::nullopt;
+  }
+  auto range = running_containers_.equal_range(std::move(vm_name));
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second.name == container_name) {
+      return it->second;
+    }
+  }
+  return base::nullopt;
+}
+
+void CrostiniManager::AddRunningContainerForTesting(std::string vm_name,
+                                                    ContainerInfo info) {
+  running_containers_.emplace(std::move(vm_name), info);
 }
 
 void CrostiniManager::UpdateLaunchMetricsForEnterpriseReporting() {
@@ -1146,8 +1167,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
 
   auto restarter = base::MakeRefCounted<CrostiniRestarter>(
       profile_, weak_ptr_factory_.GetWeakPtr(), std::move(vm_name),
-      std::move(container_name), ContainerUserNameForProfile(profile_),
-      std::move(callback));
+      std::move(container_name), std::move(callback));
   if (observer)
     restarter->AddObserver(observer);
   auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
@@ -1316,7 +1336,7 @@ void CrostiniManager::OnStartTerminaVm(
   // If the vm is already marked "running" run the callback.
   if (response.status() == vm_tools::concierge::VM_STATUS_RUNNING) {
     running_vms_[vm_name] =
-        std::make_pair(VmState::STARTED, std::move(response.vm_info()));
+        VmInfo{VmState::STARTED, std::move(response.vm_info())};
     std::move(callback).Run(CrostiniResult::SUCCESS);
     return;
   }
@@ -1327,7 +1347,7 @@ void CrostiniManager::OnStartTerminaVm(
   VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
           << vm_name;
   running_vms_[vm_name] =
-      std::make_pair(VmState::STARTING, std::move(response.vm_info()));
+      VmInfo{VmState::STARTING, std::move(response.vm_info())};
   // If we thought a container was running for this VM, we're wrong. This can
   // happen if the vm was formerly running, then stopped via crosh.
   running_containers_.erase(vm_name);
@@ -1391,6 +1411,10 @@ void CrostiniManager::OnContainerStarted(
     const vm_tools::cicerone::ContainerStartedSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+  running_containers_.emplace(
+      signal.vm_name(),
+      ContainerInfo(signal.container_name(), signal.container_username(),
+                    signal.container_homedir()));
   // Find the callbacks to call, then erase them from the map.
   auto range = start_container_callbacks_.equal_range(
       std::make_tuple(signal.vm_name(), signal.container_name()));
@@ -1398,7 +1422,6 @@ void CrostiniManager::OnContainerStarted(
     std::move(it->second).Run(CrostiniResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
-  running_containers_.emplace(signal.vm_name(), signal.container_name());
 }
 
 void CrostiniManager::OnContainerStartupFailed(
@@ -1419,12 +1442,22 @@ void CrostiniManager::OnContainerShutdown(
   if (signal.owner_id() != owner_id_)
     return;
   // Find the callbacks to call, then erase them from the map.
-  auto range = shutdown_container_callbacks_.equal_range(
+  auto range_callbacks = shutdown_container_callbacks_.equal_range(
       std::make_tuple(signal.vm_name(), signal.container_name()));
-  for (auto it = range.first; it != range.second; ++it) {
+  for (auto it = range_callbacks.first; it != range_callbacks.second; ++it) {
     std::move(it->second).Run();
   }
-  shutdown_container_callbacks_.erase(range.first, range.second);
+  shutdown_container_callbacks_.erase(range_callbacks.first,
+                                      range_callbacks.second);
+
+  // Remove from running containers multimap.
+  auto range_containers = running_containers_.equal_range(signal.vm_name());
+  for (auto it = range_containers.first; it != range_containers.second; ++it) {
+    if (it->second.name == signal.container_name()) {
+      running_containers_.erase(it);
+      break;
+    }
+  }
 }
 
 void CrostiniManager::OnInstallLinuxPackageProgress(
@@ -1604,7 +1637,7 @@ void CrostiniManager::OnSetUpLxdContainerUser(
     return;
   }
 
-  if (!IsContainerRunning(vm_name, container_name)) {
+  if (!GetContainerInfo(vm_name, container_name)) {
     start_container_callbacks_.emplace(std::make_tuple(vm_name, container_name),
                                        std::move(callback));
     return;

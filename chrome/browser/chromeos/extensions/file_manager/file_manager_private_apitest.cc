@@ -551,9 +551,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   crostini::CrostiniManager* crostini_manager =
       crostini::CrostiniManager::GetForProfile(browser()->profile());
   crostini_manager->set_skip_restart_for_testing();
-  vm_tools::concierge::VmInfo vm_info;
-  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
-                                           std::move(vm_info));
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+  crostini_manager->AddRunningContainerForTesting(
+      crostini::kCrostiniDefaultVmName,
+      crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
+                              "testuser", "/home/testuser"));
 
   ExpectCrostiniMount();
 
@@ -585,8 +587,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
   base::test::ScopedFeatureList scoped_feature_list;
   EnableCrostiniForProfile(&scoped_feature_list);
-  crostini::CrostiniManager::GetForProfile(browser()->profile())
-      ->set_skip_restart_for_testing();
+
+  // Setup CrostiniManager for testing.
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(browser()->profile());
+  crostini_manager->set_skip_restart_for_testing();
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+  crostini_manager->AddRunningContainerForTesting(
+      crostini::kCrostiniDefaultVmName,
+      crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
+                              "testuser", "/home/testuser"));
+
   ExpectCrostiniMount();
 
   scoped_refptr<extensions::FileManagerPrivateMountCrostiniFunction> function(

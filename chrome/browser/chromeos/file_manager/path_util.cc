@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -270,7 +271,14 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   base::FilePath base_to_exclude(id);
   if (id == GetCrostiniMountPointName(profile)) {
     // Crostini.
-    *inside = crostini::ContainerHomeDirectoryForProfile(profile);
+    base::Optional<crostini::ContainerInfo> container_info =
+        crostini::CrostiniManager::GetForProfile(profile)->GetContainerInfo(
+            crostini::kCrostiniDefaultVmName,
+            crostini::kCrostiniDefaultContainerName);
+    if (!container_info) {
+      return false;
+    }
+    *inside = container_info->homedir;
   } else if (id == GetDownloadsMountPointName(profile)) {
     // MyFiles or Downloads.
     if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {

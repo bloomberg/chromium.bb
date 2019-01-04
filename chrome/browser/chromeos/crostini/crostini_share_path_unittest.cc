@@ -208,9 +208,8 @@ class CrostiniSharePathTest : public testing::Test {
     volume_downloads_ = file_manager::Volume::CreateForDownloads(downloads_);
 
     // Create 'vm-running' VM instance which is running.
-    vm_tools::concierge::VmInfo vm_info;
     CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-        "vm-running", vm_info);
+        "vm-running");
   }
 
   void TearDown() override {
@@ -499,9 +498,8 @@ TEST_F(CrostiniSharePathTest, SharePersistedPaths) {
   features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   base::FilePath share_path2_ = downloads_.AppendASCII("path-to-share-2");
   ASSERT_TRUE(base::CreateDirectory(share_path2_));
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
   base::ListValue shared_paths = base::ListValue();
   shared_paths.GetList().push_back(base::Value(share_path_.value()));
   shared_paths.GetList().push_back(base::Value(share_path2_.value()));
@@ -695,9 +693,8 @@ TEST_F(CrostiniSharePathTest, GetPersistedSharedPaths) {
 
 TEST_F(CrostiniSharePathTest, ShareOnMountSuccessParentMount) {
   features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
   crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
       base::BindRepeating(&CrostiniSharePathTest::MountEventSharePathCallback,
                           base::Unretained(this), "share-on-mount",
@@ -711,9 +708,8 @@ TEST_F(CrostiniSharePathTest, ShareOnMountSuccessParentMount) {
 
 TEST_F(CrostiniSharePathTest, ShareOnMountSuccessSelfMount) {
   features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
   crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
@@ -729,9 +725,8 @@ TEST_F(CrostiniSharePathTest, ShareOnMountSuccessSelfMount) {
 
 TEST_F(CrostiniSharePathTest, ShareOnMountFeatureNotEnabled) {
   features_.InitAndDisableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
 
   // Test mount.
   crostini_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
@@ -746,9 +741,8 @@ TEST_F(CrostiniSharePathTest, ShareOnMountFeatureNotEnabled) {
 
 TEST_F(CrostiniSharePathTest, ShareOnMountMountError) {
   features_.InitAndDisableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
 
   // Test mount.
   crostini_share_path_->OnVolumeMounted(
@@ -793,9 +787,8 @@ TEST_F(CrostiniSharePathTest, ShareOnMountVolumeUnrelated) {
 
 TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessParentMount) {
   features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
   crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
       base::BindRepeating(
           &CrostiniSharePathTest::MountEventUnsharePathCallback,
@@ -809,9 +802,8 @@ TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessParentMount) {
 
 TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessSelfMount) {
   features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
-  vm_tools::concierge::VmInfo vm_info;
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName, vm_info);
+      kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
   crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
