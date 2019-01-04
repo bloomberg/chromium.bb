@@ -85,9 +85,12 @@ class VIEWS_EXPORT SelectionController {
   // Returns whether |point| is inside any substring of the text.
   bool IsInsideText(const gfx::Point& point);
 
-  // A timer and point used to modify the selection when dragging.
+  // A timer and point used to modify the selection when dragging. The
+  // |first_drag_location_| field is used to store where the drag-to-select
+  // started.
   base::RepeatingTimer drag_selection_timer_;
   gfx::Point last_drag_location_;
+  gfx::Point first_drag_location_;
 
   // State variables used to track the last click time and location.
   base::TimeTicks last_click_time_;

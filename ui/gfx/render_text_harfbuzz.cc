@@ -1215,7 +1215,9 @@ SizeF RenderTextHarfBuzz::GetStringSizeF() {
   return total_size_;
 }
 
-SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& view_point) {
+SelectionModel RenderTextHarfBuzz::FindCursorPosition(
+    const Point& view_point,
+    const Point& drag_origin) {
   EnsureLayout();
   DCHECK(!lines().empty());
 
@@ -1225,7 +1227,9 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& view_point) {
   if (RenderText::kDragToEndIfOutsideVerticalBounds && !multiline() &&
       (line_index < 0 || line_index >= static_cast<int>(lines().size()))) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    bool left = view_point.x() < GetCursorBounds(selection_start, true).x();
+    int edge = drag_origin.x() == 0 ? GetCursorBounds(selection_start, true).x()
+                                    : drag_origin.x();
+    bool left = view_point.x() < edge;
     return EdgeSelectionModel(left ? CURSOR_LEFT : CURSOR_RIGHT);
   }
   // Otherwise, clamp |line_index| to a valid value or drag to logical ends.

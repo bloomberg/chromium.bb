@@ -211,7 +211,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
-  SelectionModel FindCursorPosition(const Point& point) override;
+  SelectionModel FindCursorPosition(const Point& point,
+                                    const Point& drag_origin) override;
   bool IsSelectionSupported() const override;
   std::vector<FontSpan> GetFontSpansForTesting() override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
