@@ -67,6 +67,7 @@ if (safe_browsing_mode == 1) {
       "LARGEFILE_SOURCE",
       "RAR_SMP",
       "SILENT",
+      "NOVOLUME",
 
       # The following is set to disable certain macro definitions in the unrar
       # source code.

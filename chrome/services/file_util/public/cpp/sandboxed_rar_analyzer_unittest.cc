@@ -272,5 +272,19 @@ TEST_F(SandboxedRarAnalyzerTest,
 #endif
 }
 
+TEST_F(SandboxedRarAnalyzerTest, AnalyzeMultipartRarContainingExecutable) {
+  base::FilePath path;
+  // Contains one part of an exe file.
+  ASSERT_NO_FATAL_FAILURE(path = GetFilePath("multipart.part0001.rar"));
+
+  safe_browsing::ArchiveAnalyzerResults results;
+  AnalyzeFile(path, &results);
+
+  ASSERT_TRUE(results.success);
+  ASSERT_TRUE(results.has_executable);
+  EXPECT_EQ(1, results.archived_binary.size());
+  EXPECT_TRUE(results.archived_archive_filenames.empty());
+}
+
 }  // namespace
 }  // namespace safe_browsing
