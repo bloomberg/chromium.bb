@@ -25,11 +25,6 @@ bool ShouldDisplayManagedUi(Profile* profile) {
   if (!base::FeatureList::IsEnabled(features::kShowManagedUi))
     return false;
 
-  // Most policies don't apply to incognito mode, and incognito already
-  // discloses that you may be tracked/MITM'd by your admin.
-  if (profile->IsOffTheRecord())
-    return false;
-
   // This profile may have policies configured.
   auto* profile_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
