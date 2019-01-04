@@ -5,6 +5,7 @@
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 
 #include "base/android/jni_android.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -55,6 +56,12 @@ void FeedLifecycleBridge::OnURLsDeleted(
   }
 
   if (deletion_info.IsAllHistory() || deletion_info.deleted_rows().size() > 0) {
+    if (!deletion_info.IsAllHistory()) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "ContentSuggestions.Feed.AppLifecycle.NumRowsForDeletion",
+          deletion_info.deleted_rows().size(), 50);
+    }
+
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FeedLifecycleBridge_onHistoryDeleted(env);
   }

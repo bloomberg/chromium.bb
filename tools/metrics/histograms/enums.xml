@@ -1465,6 +1465,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Enter Background"/>
   <int value="2" label="Clear All"/>
   <int value="3" label="Initialize"/>
+  <int value="4" label="Sign In"/>
+  <int value="5" label="Sign Out"/>
+  <int value="6" label="History Deleted"/>
+  <int value="7" label="Cached Data Cleared"/>
 </enum>
 
 <enum name="AppListAppMovingType">

@@ -36,7 +36,11 @@ public class FeedAppLifecycle
         int ENTER_BACKGROUND = 1;
         int CLEAR_ALL = 2;
         int INITIALIZE = 3;
-        int NUM_ENTRIES = 4;
+        int SIGN_IN = 4;
+        int SIGN_OUT = 5;
+        int HISTORY_DELETED = 6;
+        int CACHED_DATA_CLEARED = 7;
+        int NUM_ENTRIES = 8;
     }
 
     private AppLifecycleListener mAppLifecycleListener;
@@ -102,6 +106,7 @@ public class FeedAppLifecycle
      * We call onClearAll to avoid presenting personalized suggestions based on deleted history.
      */
     public void onHistoryDeleted() {
+        reportEvent(AppLifecycleEvent.HISTORY_DELETED);
         onClearAll(/*suppressRefreshes*/ true);
     }
 
@@ -110,6 +115,7 @@ public class FeedAppLifecycle
      * Feed deletes its cached browsing data.
      */
     public void onCachedDataCleared() {
+        reportEvent(AppLifecycleEvent.CACHED_DATA_CLEARED);
         onClearAll(/*suppressRefreshes*/ false);
     }
 
@@ -152,11 +158,13 @@ public class FeedAppLifecycle
 
     @Override
     public void onSignedIn() {
+        reportEvent(AppLifecycleEvent.SIGN_IN);
         onClearAll(/*suppressRefreshes*/ false);
     }
 
     @Override
     public void onSignedOut() {
+        reportEvent(AppLifecycleEvent.SIGN_OUT);
         onClearAll(/*suppressRefreshes*/ false);
     }
 
