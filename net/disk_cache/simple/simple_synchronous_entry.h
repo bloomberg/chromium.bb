@@ -36,7 +36,10 @@ FORWARD_DECLARE_TEST(DiskCacheBackendTest, SimpleCacheEnumerationLongKeys);
 namespace disk_cache {
 
 NET_EXPORT_PRIVATE extern const base::Feature kSimpleCachePrefetchExperiment;
-NET_EXPORT_PRIVATE extern const char kSimplePrefetchBytesParam[];
+NET_EXPORT_PRIVATE extern const char kSimpleCacheFullPrefetchBytesParam[];
+NET_EXPORT_PRIVATE extern const char kSimpleCacheTrailerPrefetchHintParam[];
+NET_EXPORT_PRIVATE extern const char
+    kSimpleCacheTrailerPrefetchSpeculativeBytesParam[];
 
 // Returns how large a file would get prefetched on reading the entry.
 // If the experiment is disabled, returns 0.
@@ -101,7 +104,12 @@ struct SimpleEntryCreationResults {
   SimpleStreamPrefetchData stream_prefetch_data[2];
 
   SimpleEntryStat entry_stat;
+  int32_t computed_trailer_prefetch_size = -1;
   int result;
+};
+
+struct SimpleEntryCloseResults {
+  int32_t estimated_trailer_prefetch_size = -1;
 };
 
 // Worker thread interface to the very simple cache. This interface is not
@@ -187,6 +195,7 @@ class SimpleSynchronousEntry {
                         bool had_index,
                         const base::TimeTicks& time_enqueued,
                         SimpleFileTracker* file_tracker,
+                        int32_t trailer_prefetch_size,
                         SimpleEntryCreationResults* out_results);
 
   static void CreateEntry(net::CacheType cache_type,
@@ -259,7 +268,8 @@ class SimpleSynchronousEntry {
   // CRCRecord entries in |crc32s_to_write|.
   void Close(const SimpleEntryStat& entry_stat,
              std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
-             net::GrowableIOBuffer* stream_0_data);
+             net::GrowableIOBuffer* stream_0_data,
+             SimpleEntryCloseResults* out_results);
 
   const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }
@@ -270,10 +280,15 @@ class SimpleSynchronousEntry {
   NET_EXPORT_PRIVATE base::FilePath GetFilenameForSubfile(
       SimpleFileTracker::SubFile sub_file) const;
 
+  int32_t computed_trailer_prefetch_size() const {
+    return computed_trailer_prefetch_size_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(::DiskCacheBackendTest,
                            SimpleCacheEnumerationLongKeys);
   friend class SimpleFileTrackerTest;
+  class PrefetchData;
 
   enum CreateEntryResult {
     CREATE_ENTRY_SUCCESS = 0,
@@ -310,7 +325,8 @@ class SimpleSynchronousEntry {
       const std::string& key,
       uint64_t entry_hash,
       bool had_index,
-      SimpleFileTracker* simple_file_tracker);
+      SimpleFileTracker* simple_file_tracker,
+      int32_t stream_0_size);
 
   // Like Entry, the SimpleSynchronousEntry self releases when Close() is
   // called.
@@ -364,7 +380,7 @@ class SimpleSynchronousEntry {
   // Puts the result into |*eof_record| and sanity-checks it.
   // Returns net status, and records any failures to UMA.
   int GetEOFRecordData(base::File* file,
-                       base::StringPiece file_0_prefetch,
+                       PrefetchData* prefetch_data,
                        int file_index,
                        int file_offset,
                        SimpleFileEOF* eof_record);
@@ -372,7 +388,7 @@ class SimpleSynchronousEntry {
   // Reads either from |file_0_prefetch| or |file|.
   // Range-checks all the in-memory reads.
   bool ReadFromFileOrPrefetched(base::File* file,
-                                base::StringPiece file_0_prefetch,
+                                PrefetchData* prefetch_data,
                                 int file_index,
                                 int offset,
                                 int size,
@@ -387,7 +403,7 @@ class SimpleSynchronousEntry {
   // and |*out_crc32| will get the checksum, which will be verified against
   // |eof_record|.
   int PreReadStreamPayload(base::File* file,
-                           base::StringPiece file_0_prefetch,
+                           PrefetchData* prefetch_data,
                            int stream_index,
                            int extra_size,
                            const SimpleEntryStat& entry_stat,
@@ -467,6 +483,18 @@ class SimpleSynchronousEntry {
   };
 
   SimpleFileTracker* file_tracker_;
+
+  // The number of trailing bytes in file 0 that we believe should be
+  // prefetched in order to read the EOF record and stream 0.  This is
+  // a hint from the index and may not be exactly right.  -1 if we
+  // don't have a hinted value.
+  int32_t trailer_prefetch_size_;
+
+  // The exact number of trailing bytes that were needed to read the
+  // EOF record and stream 0 when the entry was actually opened.  This
+  // may be different from the trailer_prefetch_size_ hint and is
+  // propagated back to the index in order to optimize the next open.
+  int32_t computed_trailer_prefetch_size_;
 
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.

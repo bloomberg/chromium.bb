@@ -728,9 +728,15 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
 
-  base::OnceClosure task = base::BindOnce(
-      &SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_, entry_hash_,
-      have_index, start_time, file_tracker_, results.get());
+  int32_t trailer_prefetch_size =
+      cache_type_ == net::APP_CACHE && backend_.get()
+          ? backend_->index()->GetTrailerPrefetchSize(entry_hash_)
+          : -1;
+
+  base::OnceClosure task =
+      base::BindOnce(&SimpleSynchronousEntry::OpenEntry, cache_type_, path_,
+                     key_, entry_hash_, have_index, start_time, file_tracker_,
+                     trailer_prefetch_size, results.get());
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
@@ -810,13 +816,17 @@ void SimpleEntryImpl::CloseInternal() {
     DCHECK(STATE_UNINITIALIZED == state_ || STATE_FAILURE == state_);
   }
 
+  std::unique_ptr<SimpleEntryCloseResults> results =
+      std::make_unique<SimpleEntryCloseResults>();
   if (synchronous_entry_) {
-    Closure task = base::Bind(
+    OnceClosure task = base::BindOnce(
         &SimpleSynchronousEntry::Close, base::Unretained(synchronous_entry_),
         SimpleEntryStat(last_used_, last_modified_, data_size_,
                         sparse_data_size_),
-        base::Passed(&crc32s_to_write), base::RetainedRef(stream_0_data_));
-    Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
+        base::Passed(&crc32s_to_write), base::RetainedRef(stream_0_data_),
+        results.get());
+    OnceClosure reply = base::BindOnce(&SimpleEntryImpl::CloseOperationComplete,
+                                       this, base::Passed(&results));
     synchronous_entry_ = NULL;
     prioritized_task_runner_->PostTaskAndReply(
         FROM_HERE, std::move(task), std::move(reply), entry_priority_);
@@ -829,7 +839,7 @@ void SimpleEntryImpl::CloseInternal() {
       }
     }
   } else {
-    CloseOperationComplete();
+    CloseOperationComplete(std::move(results));
   }
 }
 
@@ -1311,6 +1321,10 @@ void SimpleEntryImpl::CreationOperationComplete(
     DCHECK_EQ(key_, synchronous_entry_->key());
   }
   UpdateDataFromEntryStat(in_results->entry_stat);
+  if (cache_type_ == net::APP_CACHE && backend_.get() && backend_->index()) {
+    backend_->index()->SetTrailerPrefetchSize(
+        entry_hash_, in_results->computed_trailer_prefetch_size);
+  }
   SIMPLE_CACHE_UMA(TIMES,
                    "EntryCreationTime", cache_type_,
                    (base::TimeTicks::Now() - start_time));
@@ -1492,13 +1506,20 @@ void SimpleEntryImpl::RecordReadResultConsideringChecksum(
   }
 }
 
-void SimpleEntryImpl::CloseOperationComplete() {
+void SimpleEntryImpl::CloseOperationComplete(
+    std::unique_ptr<SimpleEntryCloseResults> in_results) {
   DCHECK(!synchronous_entry_);
   DCHECK_EQ(0, open_count_);
   DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_ ||
          STATE_UNINITIALIZED == state_);
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_END);
   AdjustOpenEntryCountBy(cache_type_, -1);
+  if (cache_type_ == net::APP_CACHE &&
+      in_results->estimated_trailer_prefetch_size > 0 && backend_.get() &&
+      backend_->index()) {
+    backend_->index()->SetTrailerPrefetchSize(
+        entry_hash_, in_results->estimated_trailer_prefetch_size);
+  }
   ResetEntry();
   RunNextOperationIfNeeded();
 }

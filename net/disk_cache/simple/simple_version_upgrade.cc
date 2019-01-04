@@ -209,6 +209,11 @@ SimpleCacheConsistencyResult UpgradeSimpleCacheOnDisk(
     version_from++;
   }
 
+  if (version_from == 8) {
+    // Likewise, V8 -> V9 is handled entirely by the index reader.
+    version_from++;
+  }
+
   DCHECK_EQ(kSimpleVersion, version_from);
 
   if (!new_fake_index_needed)

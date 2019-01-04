@@ -349,11 +349,11 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
     return false;
   }
 
-  static_assert(kSimpleVersion == 8, "index metadata reader out of date");
+  static_assert(kSimpleVersion == 9, "index metadata reader out of date");
   // No |reason_| is saved in the version 6 file format.
   if (version_ == 6)
     return reason_ == SimpleIndex::INDEX_WRITE_REASON_MAX;
-  return (version_ == 7 || version_ == 8) &&
+  return (version_ == 7 || version_ == 8 || version_ == 9) &&
          reason_ < SimpleIndex::INDEX_WRITE_REASON_MAX;
 }
 
@@ -383,7 +383,8 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
   worker_pool_->PostTaskAndReply(FROM_HERE, task, callback);
 }
 
-void SimpleIndexFile::WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,
+                                  SimpleIndex::IndexWriteToDiskReason reason,
                                   const SimpleIndex::EntrySet& entry_set,
                                   uint64_t cache_size,
                                   const base::TimeTicks& start,
@@ -391,7 +392,8 @@ void SimpleIndexFile::WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
                                   const base::Closure& callback) {
   UmaRecordIndexWriteReason(reason, cache_type_);
   IndexMetadata index_metadata(reason, entry_set.size(), cache_size);
-  std::unique_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
+  std::unique_ptr<base::Pickle> pickle =
+      Serialize(cache_type, index_metadata, entry_set);
   base::Closure task =
       base::Bind(&SimpleIndexFile::SyncWriteToDisk,
                  cache_type_, cache_directory_, index_file_, temp_index_file_,
@@ -411,7 +413,8 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     SimpleIndexLoadResult* out_result) {
   // Load the index and find its age.
   base::Time last_cache_seen_by_index;
-  SyncLoadFromDisk(index_file_path, &last_cache_seen_by_index, out_result);
+  SyncLoadFromDisk(cache_type, index_file_path, &last_cache_seen_by_index,
+                   out_result);
 
   // Consider the index loaded if it is fresh.
   const bool index_file_existed = base::PathExists(index_file_path);
@@ -474,7 +477,8 @@ void SimpleIndexFile::SyncLoadIndexEntries(
 }
 
 // static
-void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
+void SimpleIndexFile::SyncLoadFromDisk(net::CacheType cache_type,
+                                       const base::FilePath& index_filename,
                                        base::Time* out_last_cache_seen_by_index,
                                        SimpleIndexLoadResult* out_result) {
   out_result->Reset();
@@ -504,8 +508,8 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
     return;
   }
 
-  SimpleIndexFile::Deserialize(buffer.get(), read, out_last_cache_seen_by_index,
-                               out_result);
+  SimpleIndexFile::Deserialize(cache_type, buffer.get(), read,
+                               out_last_cache_seen_by_index, out_result);
 
   if (!out_result->did_load)
     simple_util::SimpleCacheDeleteFile(index_filename);
@@ -513,6 +517,7 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
 
 // static
 std::unique_ptr<base::Pickle> SimpleIndexFile::Serialize(
+    net::CacheType cache_type,
     const SimpleIndexFile::IndexMetadata& index_metadata,
     const SimpleIndex::EntrySet& entries) {
   std::unique_ptr<base::Pickle> pickle = std::make_unique<SimpleIndexPickle>();
@@ -520,13 +525,15 @@ std::unique_ptr<base::Pickle> SimpleIndexFile::Serialize(
   index_metadata.Serialize(pickle.get());
   for (auto it = entries.begin(); it != entries.end(); ++it) {
     pickle->WriteUInt64(it->first);
-    it->second.Serialize(pickle.get());
+    it->second.Serialize(cache_type, pickle.get());
   }
   return pickle;
 }
 
 // static
-void SimpleIndexFile::Deserialize(const char* data, int data_len,
+void SimpleIndexFile::Deserialize(net::CacheType cache_type,
+                                  const char* data,
+                                  int data_len,
                                   base::Time* out_cache_last_modified,
                                   SimpleIndexLoadResult* out_result) {
   DCHECK(data);
@@ -567,7 +574,8 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
     EntryMetadata entry_metadata;
     if (!pickle_it.ReadUInt64(&hash_key) ||
         !entry_metadata.Deserialize(
-            &pickle_it, index_metadata.has_entry_in_memory_data())) {
+            cache_type, &pickle_it, index_metadata.has_entry_in_memory_data(),
+            index_metadata.app_cache_has_trailer_prefetch_size())) {
       LOG(WARNING) << "Invalid EntryMetadata in Simple Index file.";
       entries->clear();
       return;

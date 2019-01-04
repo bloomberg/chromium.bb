@@ -4303,7 +4303,7 @@
             ]
         }
     ],
-    "SimpleCachePrefetchExperiment": [
+    "SimpleCachePrefetchExperiment2": [
         {
             "platforms": [
                 "android",
@@ -4312,12 +4312,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Prefetch32K",
+                    "name": "PrefetchFull32KTrailer4k",
                     "params": {
-                        "Bytes": "32768"
+                        "FullPrefetchBytes": "32768",
+                        "TrailerPrefetchHint": "true",
+                        "TrailerPrefetchSpeculativeBytes": "4096"
                     },
                     "enable_features": [
-                        "SimpleCachePrefetchExperiment"
+                        "SimpleCachePrefetchExperiment2"
                     ]
                 }
             ]

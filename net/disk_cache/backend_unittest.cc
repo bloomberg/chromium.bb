@@ -162,7 +162,8 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDoomRecent();
   void BackendDoomBetween();
   void BackendCalculateSizeOfAllEntries();
-  void BackendCalculateSizeOfEntriesBetween();
+  void BackendCalculateSizeOfEntriesBetween(
+      bool expect_access_time_range_comparisons);
   void BackendTransaction(const std::string& name, int num_entries, bool load);
   void BackendRecoverInsert();
   void BackendRecoverRemove();
@@ -2185,7 +2186,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheCalculateSizeOfAllEntries) {
   BackendCalculateSizeOfAllEntries();
 }
 
-void DiskCacheBackendTest::BackendCalculateSizeOfEntriesBetween() {
+void DiskCacheBackendTest::BackendCalculateSizeOfEntriesBetween(
+    bool expect_access_time_comparisons) {
   InitCache();
 
   EXPECT_EQ(0, CalculateSizeOfEntriesBetween(base::Time(), base::Time::Max()));
@@ -2218,12 +2220,14 @@ void DiskCacheBackendTest::BackendCalculateSizeOfEntriesBetween() {
   ASSERT_EQ(CalculateSizeOfAllEntries(),
             CalculateSizeOfEntriesBetween(base::Time(), base::Time::Max()));
 
-  int start_end = CalculateSizeOfEntriesBetween(start, end);
-  ASSERT_EQ(CalculateSizeOfAllEntries(), start_end);
-  ASSERT_EQ(size_1 + size_2 + size_3, start_end);
+  if (expect_access_time_comparisons) {
+    int start_end = CalculateSizeOfEntriesBetween(start, end);
+    ASSERT_EQ(CalculateSizeOfAllEntries(), start_end);
+    ASSERT_EQ(size_1 + size_2 + size_3, start_end);
 
-  ASSERT_EQ(size_1, CalculateSizeOfEntriesBetween(start, middle));
-  ASSERT_EQ(size_2 + size_3, CalculateSizeOfEntriesBetween(middle, end));
+    ASSERT_EQ(size_1, CalculateSizeOfEntriesBetween(start, middle));
+    ASSERT_EQ(size_2 + size_3, CalculateSizeOfEntriesBetween(middle, end));
+  }
 
   // After dooming the entries, the size should be back to zero.
   ASSERT_THAT(DoomAllEntries(), IsOk());
@@ -2238,15 +2242,21 @@ TEST_F(DiskCacheBackendTest, CalculateSizeOfEntriesBetween) {
 
 TEST_F(DiskCacheBackendTest, MemoryOnlyCalculateSizeOfEntriesBetween) {
   SetMemoryOnlyMode();
-  BackendCalculateSizeOfEntriesBetween();
+  BackendCalculateSizeOfEntriesBetween(true);
 }
 
 TEST_F(DiskCacheBackendTest, SimpleCacheCalculateSizeOfEntriesBetween) {
-  // Use net::APP_CACHE to make size estimations deterministic via
-  // non-optimistic writes.
+  // Test normal mode in where access time range comparisons are supported.
+  SetSimpleCacheMode();
+  BackendCalculateSizeOfEntriesBetween(true);
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheCalculateSizeOfEntriesBetween) {
+  // Test SimpleCache in APP_CACHE mode separately since it does not support
+  // access time range comparisons.
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
-  BackendCalculateSizeOfEntriesBetween();
+  BackendCalculateSizeOfEntriesBetween(false);
 }
 
 void DiskCacheBackendTest::BackendTransaction(const std::string& name,
@@ -3850,6 +3860,8 @@ TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
 }
 
 TEST_F(DiskCacheBackendTest, SimpleCacheShutdownWithPendingCreate) {
+  // Use net::APP_CACHE to make size estimations deterministic via
+  // non-optimistic writes.
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   BackendShutdownWithPendingCreate(false);
