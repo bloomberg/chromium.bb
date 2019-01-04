@@ -548,6 +548,26 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
 }
 
+// Only Chrome OS supports emoji panel callbacks.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForEmojiPanel_NoCallback) {
+  // Reset the emoji callback.
+  ui::SetShowEmojiKeyboardCallback(base::RepeatingClosure());
+
+  content::ContextMenuParams params;
+  params.is_editable = true;
+
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      params);
+  menu.Init();
+
+  // If there's no callback, the emoji context menu should not be present.
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
+}
+#endif  // defined(OS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
