@@ -321,8 +321,11 @@ class SlaveBuilderStatus(object):
         None if buildbucket_info_dict is None else
         [bb_info.buildbucket_id for bb_info in buildbucket_info_dict.values()])
 
-    stage_failures = self.db.GetSlaveFailures(
-        self.master_build_id, buildbucket_ids=slave_buildbucket_ids)
+    child_build_ids = [
+        c['id']
+        for c in self.db.GetBuildStatusesWithBuildbucketIds(
+            slave_buildbucket_ids)]
+    stage_failures = self.db.GetBuildsFailures(child_build_ids)
     stage_failures_by_build = cros_collections.GroupNamedtuplesByKey(
         stage_failures, 'build_config')
 

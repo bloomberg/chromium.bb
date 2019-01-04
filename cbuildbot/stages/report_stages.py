@@ -326,7 +326,7 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
                    'Doing nothing.')
       return
 
-    build_id, db = self._run.GetCIDBHandle()
+    _, db = self._run.GetCIDBHandle()
 
     if not db:
       logging.info('No cidb connection for this build. '
@@ -334,11 +334,13 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
       return
 
     slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
-    slave_failures = db.GetSlaveFailures(
-        build_id, buildbucket_ids=slave_buildbucket_ids)
+    child_build_ids = [
+        c['id']
+        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
+    child_failures = db.GetBuildsFailures(child_build_ids)
     failures_by_build = cros_collections.GroupNamedtuplesByKey(
-        slave_failures, 'build_id')
-    for build_id, build_failures in sorted(failures_by_build.items()):
+        child_failures, 'build_id')
+    for _, build_failures in sorted(failures_by_build.items()):
       failures_by_stage = cros_collections.GroupNamedtuplesByKey(
           build_failures, 'build_stage_id')
       # Surface a link to each slave stage that failed, in stage_id sorted

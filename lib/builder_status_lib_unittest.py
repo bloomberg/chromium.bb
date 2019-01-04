@@ -351,7 +351,8 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
         build_config=self.slave_2, failure_id=3)
     failure_entries = [entry_1, entry_2, entry_3]
     mock_db = mock.Mock()
-    mock_db.GetSlaveFailures.return_value = failure_entries
+    mock_db.GetBuildStatusesWithBuildbucketIds.return_value = []
+    mock_db.GetBuildsFailures.return_value = failure_entries
     manager = self.ConstructBuilderStatusManager(db=mock_db)
     slave_failures_dict = manager._GetSlaveFailures(None)
 

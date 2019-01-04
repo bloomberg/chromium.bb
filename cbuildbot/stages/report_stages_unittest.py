@@ -120,7 +120,7 @@ class SlaveFailureSummaryStageTest(
             stage_name='FailingStage',
             stage_status=constants.BUILDER_STATUS_FAILED,
             build_status=constants.BUILDER_STATUS_FAILED))
-    self.PatchObject(self.db, 'GetSlaveFailures', return_value=[fake_failure])
+    self.PatchObject(self.db, 'GetBuildsFailures', return_value=[fake_failure])
     self.PatchObject(logging, 'PrintBuildbotLink')
     self.RunStage()
     self.assertEqual(logging.PrintBuildbotLink.call_count, 1)

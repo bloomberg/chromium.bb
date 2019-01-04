@@ -1283,39 +1283,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(query).fetchall()
     return [failure_message_lib.StageFailure(*values) for values in results]
 
-  @minimum_schema(44)
-  def GetSlaveFailures(self, master_build_id, buildbucket_ids=None):
-    """Gets the failure entries for slave builds to given build.
-
-    Args:
-      master_build_id: build id of the master build to fetch failures
-                       for.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the failures of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list of failure_message_lib.StageFailure instances.
-    """
-    columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
-
-    query = ('SELECT %s FROM failureView WHERE master_build_id = %s ' %
-             (columns_string, master_build_id))
-
-    results = []
-    if buildbucket_ids is None:
-      results = self._Execute(query).fetchall()
-    else:
-      if not buildbucket_ids:
-        return []
-
-      query += (' AND buildbucket_id IN (%s)' %
-                (','.join('"%s"' % x for x in buildbucket_ids)))
-      results = self._Execute(query).fetchall()
-
-    return [failure_message_lib.StageFailure(*values) for values in results]
-
   @minimum_schema(32)
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining till the deadline for given build_id.
