@@ -25,7 +25,6 @@ import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//third_party/webrtc/webrtc.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
 
@@ -3464,11 +3463,6 @@ jumbo_split_static_library("browser") {
         "fullscreen_ozone.cc",
         "media/webrtc/window_icon_util_ozone.cc",
       ]
-    }
-
-    if (rtc_use_pipewire) {
-      configs +=
-          [ "//third_party/webrtc/modules/desktop_capture:pipewire_config" ]
     }
   }
 

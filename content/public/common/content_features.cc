@@ -697,13 +697,6 @@ const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-#if defined(WEBRTC_USE_PIPEWIRE)
-// Controls whether the PipeWire support for screen capturing is enabled on the
-// Wayland display server.
-const base::Feature kWebRtcPipeWireCapturer{"WebRTCPipeWireCapturer",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(WEBRTC_USE_PIPEWIRE)
-
 enum class VideoCaptureServiceConfiguration {
   kEnabledForOutOfProcess,
   kEnabledForBrowserProcess,

@@ -167,10 +167,6 @@ CONTENT_EXPORT extern const base::Feature kMacV2GPUSandbox;
 CONTENT_EXPORT extern const base::Feature kTextSuggestionsTouchBar;
 #endif  // defined(OS_MACOSX)
 
-#if defined(WEBRTC_USE_PIPEWIRE)
-CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;
-#endif  // defined(WEBRTC_USE_PIPEWIRE)
-
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 
