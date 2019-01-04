@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_io_handler.h"
+#include "services/device/serial/serial_io_handler.h"
 
 #include <memory>
 #include <utility>
@@ -57,10 +57,12 @@ void SerialIoHandler::Open(const std::string& port,
       base::ThreadTaskRunnerHandle::Get();
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &chromeos::PermissionBrokerClient::OpenPath, base::Unretained(client),
-          port, base::Bind(&SerialIoHandler::OnPathOpened, this, task_runner),
-          base::Bind(&SerialIoHandler::OnPathOpenError, this, task_runner)));
+      base::BindOnce(&chromeos::PermissionBrokerClient::OpenPath,
+                     base::Unretained(client), port,
+                     base::BindRepeating(&SerialIoHandler::OnPathOpened, this,
+                                         task_runner),
+                     base::BindRepeating(&SerialIoHandler::OnPathOpenError,
+                                         this, task_runner)));
 #else
   base::PostTaskWithTraits(
       FROM_HERE,

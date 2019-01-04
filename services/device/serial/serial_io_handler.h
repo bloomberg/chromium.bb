@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
-#define DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
+#ifndef SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
+#define SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
 
 #include <stdint.h>
 
@@ -17,8 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/serial/buffer.h"
 #include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/serial/buffer.h"
 
 namespace device {
 
@@ -248,4 +248,4 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_SERIAL_IO_HANDLER_H_
+#endif  // SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_H_

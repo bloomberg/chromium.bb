@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_device_enumerator_linux.h"
+#include "services/device/serial/serial_device_enumerator_linux.h"
 
 #include <stdint.h>
 
@@ -29,8 +29,7 @@ const char kProductNameKey[] = "ID_MODEL";
 
 // static
 std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::unique_ptr<SerialDeviceEnumerator>(
-      new SerialDeviceEnumeratorLinux());
+  return std::make_unique<SerialDeviceEnumeratorLinux>();
 }
 
 SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {

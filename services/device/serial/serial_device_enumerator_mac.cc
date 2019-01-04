@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_device_enumerator_mac.h"
+#include "services/device/serial/serial_device_enumerator_mac.h"
 
 #include <IOKit/serial/IOSerialKeys.h>
 #include <IOKit/usb/IOUSBLib.h>
@@ -209,8 +209,7 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
 
 // static
 std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::unique_ptr<SerialDeviceEnumerator>(
-      new SerialDeviceEnumeratorMac());
+  return std::make_unique<SerialDeviceEnumeratorMac>();
 }
 
 SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}

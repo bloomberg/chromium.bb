@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_io_handler_win.h"
+#include "services/device/serial/serial_io_handler_win.h"
 
 #define INITGUID
 #include <devpkey.h>
@@ -166,10 +166,10 @@ class SerialIoHandlerWin::UiThreadHelper final
         io_handler_(io_handler),
         io_thread_task_runner_(io_thread_task_runner) {}
 
-  ~UiThreadHelper() { DCHECK(thread_checker_.CalledOnValidThread()); }
+  ~UiThreadHelper() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
   static void Start(UiThreadHelper* self) {
-    self->thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(self->thread_checker_);
     DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
     if (device_monitor)
       self->device_observer_.Add(device_monitor);
@@ -179,13 +179,13 @@ class SerialIoHandlerWin::UiThreadHelper final
   // DeviceMonitorWin::Observer
   void OnDeviceRemoved(const GUID& class_guid,
                        const std::string& device_path) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     io_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SerialIoHandlerWin::OnDeviceRemoved, io_handler_,
-                              device_path));
+        FROM_HERE, base::BindOnce(&SerialIoHandlerWin::OnDeviceRemoved,
+                                  io_handler_, device_path));
   }
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
 
   // This weak pointer is only valid when checked on this task runner.
@@ -249,7 +249,7 @@ bool SerialIoHandlerWin::PostOpen() {
   helper_ =
       new UiThreadHelper(weak_factory_.GetWeakPtr(), io_thread_task_runner);
   ui_thread_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&UiThreadHelper::Start, helper_));
+      FROM_HERE, base::BindOnce(&UiThreadHelper::Start, helper_));
 
   // A ReadIntervalTimeout of MAXDWORD will cause async reads to complete
   // immediately with any data that's available, even if there is none.
@@ -275,8 +275,8 @@ void SerialIoHandlerWin::ReadImpl() {
   }
 
   event_mask_ = 0;
-  BOOL ok = ::WaitCommEvent(
-      file().GetPlatformFile(), &event_mask_, &comm_context_->overlapped);
+  BOOL ok = ::WaitCommEvent(file().GetPlatformFile(), &event_mask_,
+                            &comm_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Failed to receive serial event";
     QueueReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
@@ -289,10 +289,8 @@ void SerialIoHandlerWin::WriteImpl() {
   DCHECK(pending_write_buffer());
   DCHECK(file().IsValid());
 
-  BOOL ok = ::WriteFile(file().GetPlatformFile(),
-                        pending_write_buffer(),
-                        pending_write_buffer_len(),
-                        NULL,
+  BOOL ok = ::WriteFile(file().GetPlatformFile(), pending_write_buffer(),
+                        pending_write_buffer_len(), NULL,
                         &write_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Write failed";
@@ -401,10 +399,8 @@ void SerialIoHandlerWin::OnIOCompleted(
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
       ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
     } else if (pending_read_buffer()) {
-      BOOL ok = ::ReadFile(file().GetPlatformFile(),
-                           pending_read_buffer(),
-                           pending_read_buffer_len(),
-                           NULL,
+      BOOL ok = ::ReadFile(file().GetPlatformFile(), pending_read_buffer(),
+                           pending_read_buffer_len(), NULL,
                            &read_context_->overlapped);
       if (!ok && GetLastError() != ERROR_IO_PENDING) {
         VPLOG(1) << "Read failed";

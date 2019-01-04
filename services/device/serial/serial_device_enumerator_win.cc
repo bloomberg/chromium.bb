@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_device_enumerator_win.h"
+#include "services/device/serial/serial_device_enumerator_win.h"
 
 #include <windows.h>  // Must be in front of other Windows header files.
 
@@ -160,8 +160,7 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
 
 // static
 std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::unique_ptr<SerialDeviceEnumerator>(
-      new SerialDeviceEnumeratorWin());
+  return std::make_unique<SerialDeviceEnumeratorWin>();
 }
 
 SerialDeviceEnumeratorWin::SerialDeviceEnumeratorWin() {}

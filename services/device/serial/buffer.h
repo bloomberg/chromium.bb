@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SERIAL_BUFFER_H_
-#define DEVICE_SERIAL_BUFFER_H_
+#ifndef SERVICES_DEVICE_SERIAL_BUFFER_H_
+#define SERVICES_DEVICE_SERIAL_BUFFER_H_
 
 #include <stdint.h>
 
@@ -82,4 +82,4 @@ class ReceiveBuffer : public device::WritableBuffer {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_BUFFER_H_
+#endif  // SERVICES_DEVICE_SERIAL_BUFFER_H_

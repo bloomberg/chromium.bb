@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
-#define DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
+#ifndef SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
+#define SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/serial/serial_io_handler.h"
+#include "services/device/serial/serial_io_handler.h"
 
 namespace device {
 
@@ -74,4 +74,4 @@ class SerialIoHandlerPosix : public SerialIoHandler {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
+#endif  // SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
