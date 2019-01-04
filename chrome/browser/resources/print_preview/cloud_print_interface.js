@@ -14,7 +14,6 @@ cloudprint.CloudPrintInterfaceEventType = {
   PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
   PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
   PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
-  PROCESS_INVITE_FAILED: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_FAILED',
   SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
   SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
   SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
@@ -25,25 +24,19 @@ cloudprint.CloudPrintInterfaceEventType = {
  * @typedef {{
  *   user: string,
  *   origin: !print_preview.DestinationOrigin,
- *   printers: (!Array<!print_preview.Destination>|undefined)
+ *   printers: (!Array<!print_preview.Destination>|undefined),
+ *   searchDone: boolean,
  * }}
  */
-cloudprint.CloudPrintInterfaceSearchDoneEvent;
-
-/**
- * @typedef {{
- *   printer: !print_preview.Destination,
- * }}
- */
-cloudprint.CloudPrintInterfacePrinterDoneEvent;
+cloudprint.CloudPrintInterfaceSearchDoneDetail;
 
 /**
  * @typedef {{
  *   destinationId: string,
- *   destinationOrigin: !print_preview.DestinationOrigin,
+ *   origin: !print_preview.DestinationOrigin,
  * }}
  */
-cloudprint.CloudPrintInterfacePrinterFailedEvent;
+cloudprint.CloudPrintInterfacePrinterFailedDetail;
 
 /**
  * @typedef {{
@@ -51,21 +44,17 @@ cloudprint.CloudPrintInterfacePrinterFailedEvent;
  *   user: string,
  * }}
  */
-cloudprint.CloudPrintInterfaceInvitesDoneEvent;
-
-/**
- * @typedef {{
- *   user: string,
- * }}
- */
-cloudprint.CloudPrintInterfaceInvitesFailedEvent;
+cloudprint.CloudPrintInterfaceInvitesDoneDetail;
 
 /**
  * @typedef {{
  *   invitation: !print_preview.Invitation,
+ *   printer: ?print_preview.Destination,
+ *   accept: boolean,
+ *   user: string,
  * }}
  */
-cloudprint.CloudPrintInterfaceProcessInviteEvent;
+cloudprint.CloudPrintInterfaceProcessInviteDetail;
 
 cr.define('cloudprint', function() {
   /** @interface */
