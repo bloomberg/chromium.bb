@@ -152,15 +152,24 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   enum class State {
     // Initializing resources required to create a codec.
     kInitializing,
+
     // Initialization has completed and we're running. This is the only state
     // in which |codec_| might be non-null. If |codec_| is null, a codec
     // creation is pending.
     kRunning,
+
     // The decoder cannot make progress because it doesn't have the key to
     // decrypt the buffer. Waiting for a new key to be available.
     // This should only be transitioned from kRunning, and should only
-    // transition to kRunning.
+    // transition to kRunning or kWaitingForReset.
     kWaitingForNewKey,
+
+    // The decoder cannot make progress because it's waiting for a Reset(). This
+    // could happen as a result of CdmContext hardware context loss. This should
+    // only be transitioned from kRunning or kWaitingForNewKey, and should only
+    // transition to kRunning.
+    kWaitingForReset,
+
     // A fatal error occurred. A terminal state.
     kError,
   };

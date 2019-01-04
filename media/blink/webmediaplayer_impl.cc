@@ -2102,9 +2102,18 @@ void WebMediaPlayerImpl::OnWaiting(WaitingReason reason) {
       // |has_additional_usable_key| = true). http://crbug.com/461903
       encrypted_client_->DidResumePlaybackBlockedForKey();
       return;
-  }
 
-  // TODO(xhwang): Handle other |reason| when added.
+    // Ideally this should be handled by PipelineController directly without
+    // being proxied here. But currently Pipeline::Client (|this|) is passed to
+    // PipelineImpl directly without going through |pipeline_controller_|,
+    // making it difficult to do.
+    // TODO(xhwang): Handle this in PipelineController when we have a clearer
+    // picture on how to refactor WebMediaPlayerImpl, PipelineController and
+    // PipelineImpl.
+    case WaitingReason::kDecoderStateLost:
+      pipeline_controller_.OnDecoderStateLost();
+      return;
+  }
 }
 
 void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {

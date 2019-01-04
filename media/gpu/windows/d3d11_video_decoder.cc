@@ -219,6 +219,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(output_cb);
   DCHECK(waiting_cb);
 
+  state_ = State::kInitializing;
+
   if (!IsPotentiallySupported(config)) {
     DVLOG(3) << "D3D11 video decoder not supported for the config.";
     init_cb.Run(false);
@@ -229,13 +231,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   init_cb_ = init_cb;
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
-
-  D3D11VideoDecoderImpl::InitCB cb = base::BindOnce(
-      &D3D11VideoDecoder::OnGpuInitComplete, weak_factory_.GetWeakPtr());
-
-  D3D11VideoDecoderImpl::ReturnPictureBufferCB return_picture_buffer_cb =
-      base::BindRepeating(&D3D11VideoDecoder::ReceivePictureBufferFromClient,
-                          weak_factory_.GetWeakPtr());
 
   // Initialize the video decoder.
 
@@ -349,12 +344,20 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
             &D3D11VideoDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
   }
 
+  auto impl_init_cb = base::BindOnce(&D3D11VideoDecoder::OnGpuInitComplete,
+                                     weak_factory_.GetWeakPtr());
+
+  auto get_picture_buffer_cb =
+      base::BindRepeating(&D3D11VideoDecoder::ReceivePictureBufferFromClient,
+                          weak_factory_.GetWeakPtr());
+
   // Initialize the gpu side.  We wait until everything else is initialized,
   // since we allow it to call us back re-entrantly to reduce latency.  Note
   // that if we're not on the same thread, then we should probably post the
   // call earlier, since re-entrancy won't be an issue.
   if (impl_task_runner_->RunsTasksInCurrentSequence()) {
-    impl_->Initialize(std::move(cb), std::move(return_picture_buffer_cb));
+    impl_->Initialize(std::move(impl_init_cb),
+                      std::move(get_picture_buffer_cb));
     return;
   }
 
@@ -365,8 +368,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   impl_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&D3D11VideoDecoderImpl::Initialize, impl_weak_,
-                     BindToCurrentLoop(std::move(cb)),
-                     BindToCurrentLoop(std::move(return_picture_buffer_cb))));
+                     BindToCurrentLoop(std::move(impl_init_cb)),
+                     BindToCurrentLoop(std::move(get_picture_buffer_cb))));
 }
 
 void D3D11VideoDecoder::ReceivePictureBufferFromClient(
@@ -424,8 +427,11 @@ void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 void D3D11VideoDecoder::DoDecode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (state_ != State::kRunning)
+  if (state_ != State::kRunning) {
+    DVLOG(2) << __func__ << ": Do nothing in " << static_cast<int>(state_)
+             << " state.";
     return;
+  }
 
   if (!current_buffer_) {
     if (input_buffer_queue_.empty()) {
@@ -509,9 +515,10 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
   // TODO(liberato): how do we signal an error?
   accelerated_video_decoder_->Reset();
 
-  // Transition from kWaitingForNewKey to kRunning upon reset since the new
-  // buffer could be clear or have a different key ID.
-  if (state_ == State::kWaitingForNewKey)
+  // Transition out of kWaitingForNewKey since the new buffer could be clear or
+  // have a different key ID. Transition out of kWaitingForReset since reset
+  // just happened.
+  if (state_ == State::kWaitingForNewKey || state_ == State::kWaitingForReset)
     state_ = State::kRunning;
 
   closure.Run();
@@ -650,6 +657,12 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
 
 void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << __func__ << ": event = " << static_cast<int>(event);
+
+  if (state_ == State::kInitializing || state_ == State::kError) {
+    DVLOG(1) << "Do nothing in " << static_cast<int>(state_) << " state.";
+    return;
+  }
 
   switch (event) {
     case CdmContext::Event::kHasAdditionalUsableKey:
@@ -667,7 +680,8 @@ void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
       return;
 
     case CdmContext::Event::kHardwareContextLost:
-      // TODO(xhwang): Handle this event.
+      state_ = State::kWaitingForReset;
+      waiting_cb_.Run(WaitingReason::kDecoderStateLost);
       return;
   }
 }

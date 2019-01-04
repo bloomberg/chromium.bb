@@ -19,10 +19,20 @@ namespace media {
 // [2]
 // https://www.w3.org/TR/html5/semantics-embedded-content.html#eventdef-media-waiting
 
-// TODO(xhwang): Add more waiting reasons.
 enum class WaitingReason {
+  // The playback cannot proceed because some decryption key is not available.
+  // This could happen when the license exchange is delayed or failed. The
+  // playback will resume after the decryption key becomes available.
   kNoDecryptionKey,
-  kMaxValue = kNoDecryptionKey,
+
+  // The playback cannot proceed because the decoder has lost its state, e.g.
+  // information about reference frames. Usually this only happens to hardware
+  // decoders. To recover from this state, reset the decoder and start decoding
+  // from a key frame, which can typically be accomplished by a pipeline seek.
+  kDecoderStateLost,
+
+  // Must be assigned with the last enum value above.
+  kMaxValue = kDecoderStateLost,
 };
 
 // Callback to notify waiting state and the reason.
