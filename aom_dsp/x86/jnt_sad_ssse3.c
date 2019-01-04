@@ -192,7 +192,7 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
   return res;
 }
 
-#define jnt_sadMxN_sse2(m, n)                                                 \
+#define dist_wtd_sadMxN_sse2(m, n)                                            \
   unsigned int aom_dist_wtd_sad##m##x##n##_avg_ssse3(                         \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {    \
@@ -202,7 +202,7 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
     return aom_sad##m##xh_sse2(src, src_stride, comp_pred, m, m, n);          \
   }
 
-#define jnt_sadMxN_avx2(m, n)                                                 \
+#define dist_wtd_sadMxN_avx2(m, n)                                            \
   unsigned int aom_dist_wtd_sad##m##x##n##_avg_avx2(                          \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {    \
@@ -213,26 +213,26 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 
 /* clang-format off */
-jnt_sadMxN_sse2(128, 128)
-jnt_sadMxN_sse2(128, 64)
-jnt_sadMxN_sse2(64, 128)
-jnt_sadMxN_sse2(64, 64)
-jnt_sadMxN_sse2(64, 32)
-jnt_sadMxN_sse2(32, 64)
-jnt_sadMxN_sse2(32, 32)
-jnt_sadMxN_sse2(32, 16)
-jnt_sadMxN_sse2(16, 32)
-jnt_sadMxN_sse2(16, 16)
-jnt_sadMxN_sse2(16, 8)
-jnt_sadMxN_sse2(8, 16)
-jnt_sadMxN_sse2(8, 8)
-jnt_sadMxN_sse2(8, 4)
-jnt_sadMxN_sse2(4, 8)
-jnt_sadMxN_sse2(4, 4)
-jnt_sadMxN_sse2(4, 16)
-jnt_sadMxN_sse2(16, 4)
-jnt_sadMxN_sse2(8, 32)
-jnt_sadMxN_sse2(32, 8)
-jnt_sadMxN_sse2(16, 64)
-jnt_sadMxN_sse2(64, 16)
+dist_wtd_sadMxN_sse2(128, 128)
+dist_wtd_sadMxN_sse2(128, 64)
+dist_wtd_sadMxN_sse2(64, 128)
+dist_wtd_sadMxN_sse2(64, 64)
+dist_wtd_sadMxN_sse2(64, 32)
+dist_wtd_sadMxN_sse2(32, 64)
+dist_wtd_sadMxN_sse2(32, 32)
+dist_wtd_sadMxN_sse2(32, 16)
+dist_wtd_sadMxN_sse2(16, 32)
+dist_wtd_sadMxN_sse2(16, 16)
+dist_wtd_sadMxN_sse2(16, 8)
+dist_wtd_sadMxN_sse2(8, 16)
+dist_wtd_sadMxN_sse2(8, 8)
+dist_wtd_sadMxN_sse2(8, 4)
+dist_wtd_sadMxN_sse2(4, 8)
+dist_wtd_sadMxN_sse2(4, 4)
+dist_wtd_sadMxN_sse2(4, 16)
+dist_wtd_sadMxN_sse2(16, 4)
+dist_wtd_sadMxN_sse2(8, 32)
+dist_wtd_sadMxN_sse2(32, 8)
+dist_wtd_sadMxN_sse2(16, 64)
+dist_wtd_sadMxN_sse2(64, 16)
     /* clang-format on */
