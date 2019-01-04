@@ -71,6 +71,19 @@ void NotifyEventDispatched(void* browser_context_id,
                                          args);
 }
 
+LazyContextId LazyContextIdForBrowserContext(BrowserContext* browser_context,
+                                             const EventListener* listener) {
+  if (listener->is_for_service_worker())
+    return LazyContextId(browser_context, listener->extension_id(),
+                         listener->listener_url());
+  return LazyContextId(browser_context, listener->extension_id());
+}
+
+LazyContextId LazyContextIdForListener(const EventListener* listener) {
+  return LazyContextIdForBrowserContext(
+      listener->process()->GetBrowserContext(), listener);
+}
+
 // A global identifier used to distinguish extension events.
 base::AtomicSequenceNumber g_extension_event_id;
 
@@ -574,16 +587,12 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
         restrict_to_extension_id != listener->extension_id()) {
       continue;
     }
-    if (listener->IsLazy()) {
-      if (listener->is_for_service_worker()) {
-        lazy_event_dispatcher.DispatchToServiceWorker(
-            *event, listener->extension_id(), listener->listener_url(),
-            listener->filter());
-      } else {
-        lazy_event_dispatcher.DispatchToEventPage(
-            *event, listener->extension_id(), listener->filter());
-      }
-    }
+    if (!listener->IsLazy())
+      continue;
+
+    lazy_event_dispatcher.Dispatch(
+        *event, LazyContextIdForBrowserContext(browser_context_, listener),
+        listener->filter());
   }
 
   for (const EventListener* listener : listeners) {
@@ -591,10 +600,10 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
         restrict_to_extension_id != listener->extension_id()) {
       continue;
     }
-    if (!listener->process())
+    if (listener->IsLazy())
       continue;
     if (lazy_event_dispatcher.HasAlreadyDispatched(
-            listener->process()->GetBrowserContext(), listener)) {
+            LazyContextIdForListener(listener))) {
       continue;
     }
 
