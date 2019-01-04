@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {

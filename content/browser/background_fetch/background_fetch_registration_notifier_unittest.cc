@@ -9,11 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,11 +275,6 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
 }
 
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRequestCompleted) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kBackgroundFetchAccessActiveFetches);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(
-      features::kBackgroundFetchAccessActiveFetches));
   auto observer = std::make_unique<TestRegistrationObserver>();
 
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());

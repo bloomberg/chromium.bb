@@ -198,18 +198,6 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     mojom::blink::QueryParamsPtr cache_query_params,
     ExceptionState& exception_state,
     bool match_all) {
-  // TODO(crbug.com/875201): Update this check once we remove the feature flag
-  // for active fetches.
-  if (result_ == mojom::BackgroundFetchResult::UNSET &&
-      !RuntimeEnabledFeatures::BackgroundFetchAccessActiveFetchesEnabled()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(
-            DOMExceptionCode::kInvalidStateError,
-            "Access to records for in-progress background fetches is not yet "
-            "implemented. Please see crbug.com/875201 for more details."));
-  }
-
   if (!records_available_) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
