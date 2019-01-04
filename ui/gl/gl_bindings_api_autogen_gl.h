@@ -607,9 +607,9 @@ void glGetProgramPipelineInfoLogFn(GLuint pipeline,
 void glGetProgramPipelineivFn(GLuint pipeline,
                               GLenum pname,
                               GLint* params) override;
-void glGetProgramResourceIndexFn(GLuint program,
-                                 GLenum programInterface,
-                                 const GLchar* name) override;
+GLuint glGetProgramResourceIndexFn(GLuint program,
+                                   GLenum programInterface,
+                                   const GLchar* name) override;
 void glGetProgramResourceivFn(GLuint program,
                               GLenum programInterface,
                               GLuint index,

@@ -79,6 +79,12 @@ GLenum GLStubApiBase::glGetGraphicsResetStatusARBFn() {
   return 0;
 }
 
+GLuint GLStubApiBase::glGetProgramResourceIndexFn(GLuint program,
+                                                  GLenum programInterface,
+                                                  const GLchar* name) {
+  return 0;
+}
+
 GLint GLStubApiBase::glGetProgramResourceLocationFn(GLuint program,
                                                     GLenum programInterface,
                                                     const char* name) {
