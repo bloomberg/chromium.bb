@@ -9,13 +9,14 @@
 
 #include <string>
 
-#include "ppapi/cpp/compositor.h"
-#include "ppapi/cpp/compositor_layer.h"
+#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/private/flash_fullscreen.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/tests/test_case.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/utility/completion_callback_factory.h"
+
+struct PPB_OpenGLES2;
 
 // This is a special TestCase whose purpose is *not* to test the correctness of
 // the Pepper APIs.  Instead, this is a simulated Flash plugin, used to place
@@ -41,24 +42,30 @@ class TestFlashFullscreenForBrowserUI : public TestCase {
 
  private:
   std::string TestEnterFullscreen();
-  void Paint(int32_t last_compositor_result);
+  void RequestPaint();
+  void DoPaint();
+  void DidSwap(int32_t last_compositor_result);
   void SimulateUserGesture();
   bool GotError();
   std::string Error();
   void FailFullscreenTest(const std::string& error);
+
+  // OpenGL ES2 interface.
+  const PPB_OpenGLES2* opengl_es2_ = nullptr;
 
   std::string error_;
 
   pp::FlashFullscreen screen_mode_;
   NestedEvent view_change_event_;
 
-  pp::Compositor compositor_;
+  pp::Graphics3D graphics_3d_;
   pp::Size layer_size_;
-  pp::CompositorLayer color_layer_;
   pp::Rect normal_position_;
 
-  int num_trigger_events_;
-  bool request_fullscreen_;
+  int num_trigger_events_ = 0;
+  bool request_fullscreen_ = false;
+  bool swap_pending_ = false;
+  bool needs_paint_ = false;
 
   pp::CompletionCallbackFactory<TestFlashFullscreenForBrowserUI>
       callback_factory_;
