@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -19,31 +23,31 @@ const char kDummyExtensionId[] = "whatever";
 class TestReinstallerTracker {
  public:
   TestReinstallerTracker()
-      : action_(base::Bind(&TestReinstallerTracker::ReinstallAction,
-                           base::Unretained(this))) {
+      : action_(base::BindRepeating(&TestReinstallerTracker::ReinstallAction,
+                                    base::Unretained(this))) {
     PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(&action_);
   }
   ~TestReinstallerTracker() {
     PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
   }
-  void ReinstallAction(const base::Closure& callback,
+  void ReinstallAction(base::OnceClosure callback,
                        base::TimeDelta reinstall_delay) {
     ++call_count_;
-    saved_callback_ = callback;
+    saved_callback_ = std::move(callback);
   }
   void Proceed() {
     DCHECK(saved_callback_);
     DCHECK(!saved_callback_->is_null());
     // Run() will set |saved_callback_| again, so use a temporary.
-    base::Closure callback = saved_callback_.value();
+    base::OnceClosure callback = std::move(saved_callback_.value());
     saved_callback_.reset();
-    callback.Run();
+    std::move(callback).Run();
   }
   int call_count() { return call_count_; }
 
  private:
   int call_count_ = 0;
-  base::Optional<base::Closure> saved_callback_;
+  base::Optional<base::OnceClosure> saved_callback_;
   PolicyExtensionReinstaller::ReinstallCallback action_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReinstallerTracker);

@@ -93,14 +93,13 @@ class DelayTracker {
   ~DelayTracker();
 
   const std::vector<base::TimeDelta>& calls();
-  void ReinstallAction(const base::RepeatingClosure& callback,
-                       base::TimeDelta delay);
+  void ReinstallAction(base::OnceClosure callback, base::TimeDelta delay);
   void Proceed();
   void StopWatching();
 
  private:
   std::vector<base::TimeDelta> calls_;
-  base::Optional<base::RepeatingClosure> saved_callback_;
+  base::Optional<base::OnceClosure> saved_callback_;
   PolicyExtensionReinstaller::ReinstallCallback action_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayTracker);

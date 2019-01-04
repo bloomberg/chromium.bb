@@ -583,8 +583,8 @@ void InstallVerifier::BeginFetch() {
       content::BrowserContext::GetDefaultStoragePartition(context_)
           ->GetURLLoaderFactoryForBrowserProcess();
   signer_ = std::make_unique<InstallSigner>(url_loader_factory, ids_to_sign);
-  signer_->GetSignature(base::Bind(&InstallVerifier::SignatureCallback,
-                                   weak_factory_.GetWeakPtr()));
+  signer_->GetSignature(base::BindOnce(&InstallVerifier::SignatureCallback,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void InstallVerifier::SaveToPrefs() {

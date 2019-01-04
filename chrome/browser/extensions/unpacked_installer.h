@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -34,9 +35,9 @@ class PreloadCheckGroup;
 class UnpackedInstaller
     : public base::RefCountedThreadSafe<UnpackedInstaller> {
  public:
-  using CompletionCallback = base::Callback<void(const Extension* extension,
-                                                 const base::FilePath&,
-                                                 const std::string&)>;
+  using CompletionCallback = base::OnceCallback<void(const Extension* extension,
+                                                     const base::FilePath&,
+                                                     const std::string&)>;
 
   static scoped_refptr<UnpackedInstaller> Create(
       ExtensionService* extension_service);
@@ -72,8 +73,8 @@ class UnpackedInstaller
     be_noisy_on_failure_ = be_noisy_on_failure;
   }
 
-  void set_completion_callback(const CompletionCallback& callback) {
-    callback_ = callback;
+  void set_completion_callback(CompletionCallback callback) {
+    callback_ = std::move(callback);
   }
 
  private:
