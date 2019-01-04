@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
@@ -72,7 +73,11 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
     @Override
     public void onTabCreated(ViewGroup view) {
         super.onTabCreated(view);
-        PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, mModel);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            PasswordAccessorySheetModernViewBinder.initializeView((RecyclerView) view, mModel);
+        } else {
+            PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, mModel);
+        }
     }
 
     @Override
@@ -91,8 +96,8 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
 
     /**
      * Creates an adapter to an {@link PasswordAccessorySheetViewBinder} that is wired
-     * up to a model change processor listening to the {@link ListModel <AccessorySheetDataPiece>}.
-     * @param model the {@link ListModel <Item>} the adapter gets its data from.
+     * up to a model change processor listening to the {@link AccessorySheetTabModel}.
+     * @param model the {@link AccessorySheetTabModel} the adapter gets its data from.
      * @return Returns a fully initialized and wired adapter to a PasswordAccessorySheetViewBinder.
      */
     static RecyclerViewAdapter<AccessorySheetTabViewBinder.ElementViewHolder, Void> createAdapter(
@@ -101,6 +106,20 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
                 new SimpleRecyclerViewMcp<>(model, AccessorySheetDataPiece::getType,
                         AccessorySheetTabViewBinder.ElementViewHolder::bind),
                 PasswordAccessorySheetViewBinder::create);
+    }
+
+    /**
+     * Creates an adapter to an {@link PasswordAccessorySheetModernViewBinder} that is wired up to
+     * the model change processor which listens to the {@link AccessorySheetTabModel}.
+     * @param model the {@link AccessorySheetTabModel} the adapter gets its data from.
+     * @return Returns an {@link PasswordAccessorySheetModernViewBinder} wired to a MCP.
+     */
+    static RecyclerViewAdapter<AccessorySheetTabViewBinder.ElementViewHolder, Void>
+    createModernAdapter(ListModel<AccessorySheetDataPiece> model) {
+        return new RecyclerViewAdapter<>(
+                new SimpleRecyclerViewMcp<>(model, AccessorySheetDataPiece::getType,
+                        AccessorySheetTabViewBinder.ElementViewHolder::bind),
+                PasswordAccessorySheetModernViewBinder::create);
     }
 
     @VisibleForTesting
