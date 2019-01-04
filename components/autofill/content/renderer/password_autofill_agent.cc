@@ -1322,6 +1322,7 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
   if (!is_same_document_navigation) {
     checked_safe_browsing_reputation_ = false;
+    recorded_first_filling_result_ = false;
   }
 }
 
@@ -1472,6 +1473,7 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
       FindUsernamePasswordElements(form_data);
   if (password_element.IsNull()) {
     MaybeStoreFallbackData(form_data);
+    LogFirstFillingResult(FillingResult::kNoPasswordElement);
     return;
   }
 
@@ -1500,8 +1502,13 @@ void PasswordAutofillAgent::FillPasswordForm(
 
   // If wait_for_username is true, we don't want to initially fill the form
   // until the user types in a valid username.
-  if (form_data.wait_for_username)
+  if (form_data.wait_for_username) {
+    LogFirstFillingResult(FillingResult::kWaitForUsername);
     return;
+  }
+
+  if (elements.empty())
+    LogFirstFillingResult(FillingResult::kNoFillableElementsFound);
 
   for (auto element : elements) {
     WebInputElement username_element = !element.IsPasswordFieldForAutofill()
@@ -1778,6 +1785,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
     }
+    LogFirstFillingResult(FillingResult::kPasswordElementIsNotAutocompleteable);
     return false;
   }
 
@@ -1827,12 +1835,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
           PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden);
       if (logger)
         logger->LogMessage(Logger::STRING_FAILED_TO_FILL_PREFILLED_USERNAME);
+      LogFirstFillingResult(
+          FillingResult::kUsernamePrefilledWithIncompatibleValue);
       return false;
     }
     if (logger) {
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME);
     }
+    LogFirstFillingResult(FillingResult::kFoundNoPasswordForUsername);
     return false;
   }
 
@@ -1886,6 +1897,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   autofilled_elements_cache_.emplace(
       password_element->UniqueRendererFormControlId(),
       WebString::FromUTF16(password));
+  LogFirstFillingResult(FillingResult::kSuccess);
   return true;
 }
 
@@ -1918,6 +1930,7 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
             cur_frame->GetSecurityOrigin().ToString().Utf8())) {
       if (logger)
         logger->LogMessage(Logger::STRING_FAILED_TO_FILL_INTO_IFRAME);
+      LogFirstFillingResult(FillingResult::kBlockedByFrameHierarchy);
       return false;
     }
   }
@@ -1928,6 +1941,7 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
     }
+    LogFirstFillingResult(FillingResult::kPasswordElementIsNotAutocompleteable);
     return false;
   }
 
@@ -2082,6 +2096,14 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   password_info.fill_data = form_data;
   web_input_to_password_info_[WebInputElement()] = password_info;
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
+}
+
+void PasswordAutofillAgent::LogFirstFillingResult(FillingResult result) {
+  if (recorded_first_filling_result_)
+    return;
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstRendererFillingResult",
+                            result);
+  recorded_first_filling_result_ = true;
 }
 
 PasswordAutofillAgent::FormStructureInfo

@@ -40767,6 +40767,44 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="From Android"/>
 </enum>
 
+<enum name="PasswordManagerFirstRendererFillingResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="No password element">
+    Filling only happens in iframes, if all parent frames PSL match the security
+    origin of the iframe containing the password field.
+  </int>
+  <int value="2" label="Blocked by frame hierarchy">
+    Passwords are not filled into fields that are not editable.
+  </int>
+  <int value="3" label="Password element is not autocompleteable">
+    The username field contains a string that does not match the username of any
+    available credential
+  </int>
+  <int value="4" label="Username prefilled with incompatible value">
+    The site had no password for the presented username (e.g. username field is
+    empty and readonly).
+  </int>
+  <int value="5" label="Found no password for username">
+    No credential was filled due to mismatches with the username. This can
+    happen in a number of cases: In case the username field is empty and
+    readonly. In case of a username-first-flow where a user's credentials do
+    contain a username but the form contains only a password field and no
+    username field. In case of change password forms that contain no username
+    field. In case the user name is given on a page but only PSL matched
+    credentials exist for this username. There may be further cases.
+  </int>
+  <int value="6" label="Wait for username">
+    Renderer was instructed to wait until user has manually picked a credential.
+    This happens for example if the session is an incognito session, the
+    credendial's URL matches the mainframe only via the PSL, the site is on
+    HTTP, or the form has no current password field. TODO(crbug.com/918846):
+    Record root causes in a separate histogram.
+  </int>
+  <int value="7" label="No fillable elements found">
+    No fillable elements were found, only possible for the old form parser.
+  </int>
+</enum>
+
 <enum name="PasswordManagerHttpCredentialType">
   <summary>
     This enum records the type of a given HTTP credential. Depending on its
