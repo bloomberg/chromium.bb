@@ -794,7 +794,8 @@ class BuildImageStage(BuildPackagesStage):
     parallel.RunParallelSteps([self._BuildVMImage, self._BuildGceTarballs])
 
   def _BuildVMImage(self):
-    if self._run.config.vm_tests and not self._afdo_generate_min:
+    if ((self._run.config.vm_tests or self._run.config.tast_vm_tests)
+        and not self._afdo_generate_min):
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,

@@ -560,7 +560,10 @@ class BuildImageStageTest(BuildPackagesStageTest):
         cfg = self._run.config
         cmd = ['./build_image', '--version=%s' % (self._release_tag or '')]
         rc.assertCommandContains(cmd, expected=cfg['images'])
-        rc.assertCommandContains(['./image_to_vm.sh'], expected=cfg['vm_tests'])
+        rc.assertCommandContains(
+            ['./image_to_vm.sh'],
+            expected=cfg['vm_tests'] or cfg['tast_vm_tests']
+        )
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
     """Test with the config for the specified bot_id."""
