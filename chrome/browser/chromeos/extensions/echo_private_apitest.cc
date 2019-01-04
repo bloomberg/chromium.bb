@@ -9,7 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -38,14 +39,6 @@ class ExtensionEchoPrivateApiTest : public extensions::ExtensionApiTest {
   }
 
   ~ExtensionEchoPrivateApiTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-
-    // Force usage of stub cros settings provider instead of device settings
-    // provider.
-    command_line->AppendSwitch(switches::kStubCrosSettings);
-  }
 
   void RunDefaultGetUserFunctionAndExpectResultEquals(int tab_id,
                                                       bool expected_result) {
@@ -130,8 +123,7 @@ class ExtensionEchoPrivateApiTest : public extensions::ExtensionApiTest {
  protected:
   int expected_dialog_buttons_;
   DialogTestAction dialog_action_;
-  chromeos::ScopedCrosSettingsTestHelper settings_helper_{
-      /* create_settings_service= */ false};
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   int dialog_invocation_count_;
@@ -242,8 +234,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
                        GetUserConsent_AllowRedeemPrefTrue) {
   const int tab_id = OpenAndActivateTab();
-  settings_helper_.SetBoolean(chromeos::kAllowRedeemChromeOsRegistrationOffers,
-                              true);
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kAllowRedeemChromeOsRegistrationOffers, base::Value(true));
 
   expected_dialog_buttons_ = ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
   dialog_action_ = DIALOG_TEST_ACTION_ACCEPT;
@@ -256,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
                        GetUserConsent_ConsentDenied) {
   const int tab_id = OpenAndActivateTab();
-  settings_helper_.SetBoolean(chromeos::kAllowRedeemChromeOsRegistrationOffers,
-                              true);
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kAllowRedeemChromeOsRegistrationOffers, base::Value(true));
 
   expected_dialog_buttons_ = ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
   dialog_action_ = DIALOG_TEST_ACTION_CANCEL;
@@ -270,8 +262,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest,
                        GetUserConsent_AllowRedeemPrefFalse) {
   const int tab_id = OpenAndActivateTab();
-  settings_helper_.SetBoolean(chromeos::kAllowRedeemChromeOsRegistrationOffers,
-                              false);
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kAllowRedeemChromeOsRegistrationOffers, base::Value(false));
 
   expected_dialog_buttons_ = ui::DIALOG_BUTTON_CANCEL;
   dialog_action_ = DIALOG_TEST_ACTION_CANCEL;

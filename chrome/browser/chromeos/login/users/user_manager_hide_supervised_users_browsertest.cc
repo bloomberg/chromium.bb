@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -53,13 +53,9 @@ class UserManagerHideSupervisedUsersBrowserTest : public LoginManagerTest {
     scoped_user_manager_.reset();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
-  }
-
  protected:
   std::vector<AccountId> test_users_;
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   void InitializeTestUsers() {
