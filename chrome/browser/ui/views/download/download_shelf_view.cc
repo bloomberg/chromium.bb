@@ -156,8 +156,7 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
     // For custom themes, we have to make up a background color for the
     // button. Use a slight tint of the shelf background.
     bg_color = color_utils::BlendTowardOppositeLuma(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF),
-        0x10);
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR), 0x10);
   }
   button->SetBgColorOverride(bg_color);
 }
@@ -306,7 +305,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   ConfigureButtonForTheme(show_all_view_);
 
   SetBackground(views::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 
   views::SetImageFromVectorIcon(
       close_button_, vector_icons::kCloseRoundedIcon,

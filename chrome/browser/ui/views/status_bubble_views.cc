@@ -478,7 +478,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   const SkColor bubble_color =
-      theme_provider_->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
+      theme_provider_->GetColor(ThemeProperties::COLOR_TOOLBAR);
   flags.setColor(bubble_color);
   canvas->sk_canvas()->drawPath(fill_path, flags);
 
