@@ -21,10 +21,21 @@ ScreenCaptureNotificationUIChromeOS::~ScreenCaptureNotificationUIChromeOS() {
 }
 
 gfx::NativeViewId ScreenCaptureNotificationUIChromeOS::OnStarted(
-    const base::Closure& stop_callback) {
+    base::OnceClosure stop_callback,
+    base::RepeatingClosure source_callback) {
+  stop_callback_ = std::move(stop_callback);
   ash::Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
-      stop_callback, text_);
+      base::BindRepeating(
+          &ScreenCaptureNotificationUIChromeOS::ProcessStopRequestFromUI,
+          base::Unretained(this)),
+      text_);
   return 0;
+}
+
+void ScreenCaptureNotificationUIChromeOS::ProcessStopRequestFromUI() {
+  if (!stop_callback_.is_null()) {
+    std::move(stop_callback_).Run();
+  }
 }
 
 }  // namespace chromeos

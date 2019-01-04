@@ -474,7 +474,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   auto iter = sessions_.find(session_id);
   if (iter->second->ui) {
     // Notify the UI that the devices are being used.
-    iter->second->ui->OnStarted(base::OnceClosure(),
+    iter->second->ui->OnStarted(base::OnceClosure(), base::RepeatingClosure(),
                                 MediaStreamUIProxy::WindowIdCallback());
   }
 

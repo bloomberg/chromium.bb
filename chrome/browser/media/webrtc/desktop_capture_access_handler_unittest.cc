@@ -40,7 +40,7 @@ class DesktopCaptureAccessHandlerTest : public ChromeRenderViewHostTestHarness {
       content::MediaStreamRequestType request_type,
       bool request_audio) {
     FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
-        {true /* expect_screens */, true /* expect_windows*/,
+        {false /* expect_screens */, false /* expect_windows*/,
          true /* expect_tabs */, request_audio /* expect_audio */,
          fake_desktop_media_id_response /* selected_source */}};
     picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
@@ -135,7 +135,7 @@ TEST_F(DesktopCaptureAccessHandlerTest,
   const content::MediaStreamType stream_type =
       content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
-      {true /* expect_screens */, true /* expect_windows*/,
+      {false /* expect_screens */, false /* expect_windows*/,
        true /* expect_tabs */, false /* expect_audio */,
        content::DesktopMediaID(), true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
@@ -166,7 +166,7 @@ TEST_F(DesktopCaptureAccessHandlerTest,
 
 TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceWebContentsDestroyed) {
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
-      {true /* expect_screens */, true /* expect_windows*/,
+      {false /* expect_screens */, false /* expect_windows*/,
        true /* expect_tabs */, false /* expect_audio */,
        content::DesktopMediaID(), true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
@@ -190,12 +190,12 @@ TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceWebContentsDestroyed) {
 
 TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceMultipleRequests) {
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
-      {true /* expect_screens */, true /* expect_windows*/,
+      {false /* expect_screens */, false /* expect_windows*/,
        true /* expect_tabs */, false /* expect_audio */,
        content::DesktopMediaID(
            content::DesktopMediaID::TYPE_SCREEN,
            content::DesktopMediaID::kFakeId) /* selected_source */},
-      {true /* expect_screens */, true /* expect_windows*/,
+      {false /* expect_screens */, false /* expect_windows*/,
        true /* expect_tabs */, false /* expect_audio */,
        content::DesktopMediaID(
            content::DesktopMediaID::TYPE_WINDOW,

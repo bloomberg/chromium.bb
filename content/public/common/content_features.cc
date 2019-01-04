@@ -139,6 +139,10 @@ const base::Feature kCSSFragmentIdentifiers{"CSSFragmentIdentifiers",
 const base::Feature kDataSaverHoldback{"DataSaverHoldback",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable changing source dynamically for desktop capture.
+const base::Feature kDesktopCaptureChangeSource{
+    "DesktopCaptureChangeSource", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{

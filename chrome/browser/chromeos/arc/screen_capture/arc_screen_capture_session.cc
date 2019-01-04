@@ -138,8 +138,9 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
                                    base::UTF8ToUTF16(display_name));
     notification_ui_ = ScreenCaptureNotificationUI::Create(notification_text);
     notification_ui_->OnStarted(
-        base::BindRepeating(&ArcScreenCaptureSession::NotificationStop,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ArcScreenCaptureSession::NotificationStop,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::RepeatingClosure());
   }
 
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();

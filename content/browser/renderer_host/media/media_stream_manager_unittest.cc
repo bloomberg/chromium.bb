@@ -249,6 +249,8 @@ class MediaStreamManagerTest : public ::testing::Test {
 
 TEST_F(MediaStreamManagerTest, MakeMediaAccessRequest) {
   MakeMediaAccessRequest(0);
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
+      .Times(testing::AtLeast(1));
 
   // Expecting the callback will be triggered and quit the test.
   EXPECT_CALL(*this, Response(0));
@@ -522,7 +524,7 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
       base::BindRepeating(
           [](const std::string& label, const MediaStreamDevice& device) {
             EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, device.type);
-            EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+            EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(device.id).type);
           });
   MediaStreamManager::DeviceChangedCallback changed_callback;
@@ -536,7 +538,7 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
       std::move(changed_callback));
   run_loop_.Run();
   EXPECT_EQ(controls.video.stream_type, video_device.type);
-  EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+  EXPECT_NE(DesktopMediaID::TYPE_NONE,
             DesktopMediaID::Parse(video_device.id).type);
 
   // |request_label| is cached in the |device.name| for testing purpose.
@@ -581,10 +583,10 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
              const MediaStreamDevice& old_device,
              const MediaStreamDevice& new_device) {
             EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, old_device.type);
-            EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+            EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(old_device.id).type);
             EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, new_device.type);
-            EXPECT_EQ(DesktopMediaID::TYPE_WINDOW,
+            EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(new_device.id).type);
             *video_device = new_device;
           },
@@ -599,7 +601,7 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
       std::move(changed_callback));
   run_loop_.Run();
   EXPECT_EQ(controls.video.stream_type, video_device.type);
-  EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+  EXPECT_NE(DesktopMediaID::TYPE_NONE,
             DesktopMediaID::Parse(video_device.id).type);
 
   // |request_label| is cached in the |device.name| for testing purpose.

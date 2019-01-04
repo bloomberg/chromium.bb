@@ -31,10 +31,14 @@ class MediaStreamUI {
   // Called when stream capture is stopped.
   virtual ~MediaStreamUI() = default;
 
-  // Called when stream capture starts. |stop_callback| is a callback to stop
-  // the stream. Returns the platform-dependent window ID for the UI, or 0 if
-  // not applicable.
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop) = 0;
+  // Called when stream capture starts.
+  // |stop_callback| is a callback to stop the stream.
+  // |source_callback| is a callback to change the desktop capture source.
+  // Returns the platform-dependent window ID for the UI, or 0 if not
+  // applicable.
+  virtual gfx::NativeViewId OnStarted(
+      base::OnceClosure stop_callback,
+      base::RepeatingClosure source_callback) = 0;
 };
 
 // Keeps track of which WebContents are capturing media streams. Used to display

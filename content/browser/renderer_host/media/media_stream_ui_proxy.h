@@ -43,11 +43,15 @@ class CONTENT_EXPORT MediaStreamUIProxy {
                              ResponseCallback response_callback);
 
   // Notifies the UI that the MediaStream has been started. Must be called after
-  // access has been approved using RequestAccess(). |stop_callback| is be
-  // called on the IO thread after the user has requests the stream to be
-  // stopped. |window_id_callback| is called on the IO thread with the platform-
+  // access has been approved using RequestAccess().
+  // |stop_callback| is be called on the IO thread after the user has requests
+  // the stream to be stopped.
+  // |source_callback| is be called on the IO thread after the user has requests
+  // the stream source to be changed.
+  // |window_id_callback| is called on the IO thread with the platform-
   // dependent window ID of the UI.
   virtual void OnStarted(base::OnceClosure stop_callback,
+                         base::RepeatingClosure source_callback,
                          WindowIdCallback window_id_callback);
 
  protected:
@@ -62,6 +66,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
       const MediaStreamDevices& devices,
       content::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
+  void ProcessChangeSourceRequestFromUI();
   void OnWindowId(WindowIdCallback window_id_callback,
                   gfx::NativeViewId* window_id);
   void OnCheckedAccess(base::Callback<void(bool)> callback, bool have_access);
@@ -69,6 +74,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   std::unique_ptr<Core, content::BrowserThread::DeleteOnUIThread> core_;
   ResponseCallback response_callback_;
   base::OnceClosure stop_callback_;
+  base::RepeatingClosure source_callback_;
 
   base::WeakPtrFactory<MediaStreamUIProxy> weak_factory_;
 
@@ -91,6 +97,7 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
                      ResponseCallback response_callback) override;
   void OnStarted(base::OnceClosure stop_callback,
+                 base::RepeatingClosure source_callback,
                  WindowIdCallback window_id_callback) override;
 
  private:
