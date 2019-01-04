@@ -480,7 +480,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // in the "physical coordinates in flipped block-flow direction" of the box.
   LayoutRect NoOverflowRect() const;
   LayoutRect LayoutOverflowRect() const {
-    return overflow_ ? overflow_->LayoutOverflowRect() : NoOverflowRect();
+    return layout_overflow_ ? layout_overflow_->LayoutOverflowRect()
+                            : NoOverflowRect();
   }
   LayoutRect PhysicalLayoutOverflowRect() const {
     LayoutRect overflow_rect = LayoutOverflowRect();
@@ -518,10 +519,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutRect SelfVisualOverflowRect() const {
-    return overflow_ ? overflow_->SelfVisualOverflowRect() : BorderBoxRect();
+    return visual_overflow_ ? visual_overflow_->SelfVisualOverflowRect()
+                            : BorderBoxRect();
   }
   LayoutRect ContentsVisualOverflowRect() const {
-    return overflow_ ? overflow_->ContentsVisualOverflowRect() : LayoutRect();
+    return visual_overflow_ ? visual_overflow_->ContentsVisualOverflowRect()
+                            : LayoutRect();
   }
 
   // Returns the visual overflow rect, expanded to the area affected by any
@@ -1308,16 +1311,19 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutObject* container) const;
   LayoutRect LayoutOverflowRectForPropagation(LayoutObject* container) const;
 
-  bool HasOverflowModel() const { return overflow_.get(); }
+  // TODO(chrishtr): delete callsites of this.
+  bool HasOverflowModel() const {
+    return layout_overflow_.get() || visual_overflow_.get();
+  }
   bool HasSelfVisualOverflow() const {
-    return overflow_ &&
-           !BorderBoxRect().Contains(overflow_->SelfVisualOverflowRect());
+    return visual_overflow_ && !BorderBoxRect().Contains(
+                                   visual_overflow_->SelfVisualOverflowRect());
   }
   bool HasVisualOverflow() const {
-    return overflow_ && !BorderBoxRect().Contains(VisualOverflowRect());
+    return visual_overflow_ && !BorderBoxRect().Contains(VisualOverflowRect());
   }
   bool HasLayoutOverflow() const {
-    return overflow_ && !BorderBoxRect().Contains(LayoutOverflowRect());
+    return layout_overflow_ && !BorderBoxRect().Contains(LayoutOverflowRect());
   }
 
   // Return true if re-laying out the containing block of this object means that
@@ -1374,20 +1380,20 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasRelativeLogicalHeight() const;
 
   bool HasHorizontalLayoutOverflow() const {
-    if (!overflow_)
+    if (!layout_overflow_)
       return false;
 
-    LayoutRect layout_overflow_rect = overflow_->LayoutOverflowRect();
+    LayoutRect layout_overflow_rect = layout_overflow_->LayoutOverflowRect();
     LayoutRect no_overflow_rect = NoOverflowRect();
     return layout_overflow_rect.X() < no_overflow_rect.X() ||
            layout_overflow_rect.MaxX() > no_overflow_rect.MaxX();
   }
 
   bool HasVerticalLayoutOverflow() const {
-    if (!overflow_)
+    if (!layout_overflow_)
       return false;
 
-    LayoutRect layout_overflow_rect = overflow_->LayoutOverflowRect();
+    LayoutRect layout_overflow_rect = layout_overflow_->LayoutOverflowRect();
     LayoutRect no_overflow_rect = NoOverflowRect();
     return layout_overflow_rect.Y() < no_overflow_rect.Y() ||
            layout_overflow_rect.MaxY() > no_overflow_rect.MaxY();
@@ -1796,8 +1802,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
         &LayoutBox::SetMarginBottom, &LayoutBox::SetMarginLeft);
   }
 
-  // Our overflow information.
-  std::unique_ptr<BoxOverflowModel> overflow_;
+  std::unique_ptr<BoxLayoutOverflowModel> layout_overflow_;
+  std::unique_ptr<BoxVisualOverflowModel> visual_overflow_;
 
   union {
     // The inline box containing this LayoutBox, for atomic inline elements.
