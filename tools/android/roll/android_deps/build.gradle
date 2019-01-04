@@ -70,8 +70,9 @@ dependencies {
     annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
 
     // JavaPoet
-    // Matches version depended on by Dagger.
-    compile "com.squareup:javapoet:1.11.0"
+    // Matches version depended on by Dagger. Uses annotationProcessor so that
+    // it doesn't get supports_android, which is given by compile.
+    annotationProcessor "com.squareup:javapoet:1.11.0"
 
     compile "com.google.protobuf:protobuf-lite:3.0.1"
 
