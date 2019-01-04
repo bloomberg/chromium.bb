@@ -611,9 +611,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL(),
             embedded_test_server()->GetURL(kChangePasswordUrl));
-  EXPECT_THAT(histograms.GetAllSamples(
-                  "PasswordProtection.InterstitialActionByUserNavigation"),
-              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
