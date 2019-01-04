@@ -10,7 +10,7 @@
 Polymer({
   is: 'network-ip-config',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, CrPolicyNetworkBehavior],
 
   properties: {
     /**
@@ -108,6 +108,28 @@ Polymer({
     } else {
       this.ipConfig_ = undefined;
     }
+  },
+
+  /**
+   * Checks whether IP address config type can be changed.
+   * @param {boolean} editable
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean} true only if 'IPAddressConfigType' as well as all other
+   * IP address config related fields are editable.
+   * @private
+   */
+  canChangeIPConfigType_: function(editable, networkProperties) {
+    if (!editable) {
+      return false;
+    }
+    const controlledProps = [
+      'IPAddressConfigType', 'StaticIPConfig.IPAddress',
+      'StaticIPConfig.RoutingPrefix', 'StaticIPConfig.Gateway'
+    ];
+
+    return controlledProps.every(
+        setting =>
+            !this.isNetworkPolicyPathEnforced(networkProperties, setting));
   },
 
   /** @private */
