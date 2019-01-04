@@ -10,9 +10,7 @@
 // Item to display a non-personnalized sign-in cell.
 @interface AccountSignInItem : TableViewItem
 
-// Title for the sign-in cell (required).
-@property(nonatomic, strong) NSString* text;
-// Subtitle for the sign-in cell.
+// Subtitle for the sign-in cell (optional).
 @property(nonatomic, strong) NSString* detailText;
 
 @end

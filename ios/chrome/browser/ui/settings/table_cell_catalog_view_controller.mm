@@ -185,7 +185,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AccountSignInItem* accountSignInItem =
       [[AccountSignInItem alloc] initWithType:ItemTypeAccountSignInItem];
-  accountSignInItem.text = @"Account sign-in cell";
   accountSignInItem.detailText = @"Get cool stuff on all your devices";
   [model addItem:accountSignInItem
       toSectionWithIdentifier:SectionIdentifierSettings];
