@@ -99,6 +99,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // Called when the UI of a background fetch job is activated.
     virtual void OnUIActivated(const std::string& job_unique_id) = 0;
 
+    // Called after the UI has been updated.
+    virtual void OnUIUpdated(const std::string& job_unique_id) = 0;
+
     // Called by the Download Client when it needs the upload data for
     // the given |download_guid|.
     virtual void GetUploadData(const std::string& job_unique_id,
