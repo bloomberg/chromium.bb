@@ -44,11 +44,11 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.ViewProvider;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

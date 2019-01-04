@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Data model for the password generation modal dialog.

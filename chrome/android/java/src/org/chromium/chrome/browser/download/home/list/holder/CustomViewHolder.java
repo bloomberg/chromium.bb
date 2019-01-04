@@ -10,7 +10,7 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} that holds a {@link View} that is opaque to the holder. */
 public class CustomViewHolder extends ListItemViewHolder {

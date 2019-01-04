@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
 
 /**

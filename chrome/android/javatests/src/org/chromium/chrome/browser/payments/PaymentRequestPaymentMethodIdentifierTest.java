@@ -23,9 +23,9 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -155,7 +155,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123"});
     }
@@ -188,7 +188,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"5555555555554444", "12", "Jane Jones", "123", "mastercard"});
     }
@@ -221,7 +221,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"4242424242424242", "12", "Jane Jones", "123", "basic-card"});
     }

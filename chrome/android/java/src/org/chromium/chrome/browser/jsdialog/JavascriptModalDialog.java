@@ -11,16 +11,15 @@ import android.view.LayoutInflater;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * A base class for creating, showing and dismissing a modal dialog for a JavaScript popup.
  */
-public abstract class JavascriptModalDialog implements ModalDialogView.Controller {
+public abstract class JavascriptModalDialog implements ModalDialogProperties.Controller {
     private static final String TAG = "JSModalDialog";
 
     private final String mTitle;
@@ -87,11 +86,11 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
     public void onClick(PropertyModel model, int buttonType) {
         if (mModalDialogManager == null) return;
         switch (buttonType) {
-            case ModalDialogView.ButtonType.POSITIVE:
+            case ModalDialogProperties.ButtonType.POSITIVE:
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
-            case ModalDialogView.ButtonType.NEGATIVE:
+            case ModalDialogProperties.ButtonType.NEGATIVE:
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 break;

@@ -10,15 +10,11 @@ import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnCreateContextMenuListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -27,6 +23,8 @@ import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;

@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.download.home.empty;
 
 import android.support.annotation.IntDef;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

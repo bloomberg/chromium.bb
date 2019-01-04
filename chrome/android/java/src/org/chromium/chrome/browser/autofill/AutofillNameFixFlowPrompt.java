@@ -20,16 +20,15 @@ import android.widget.TextView.BufferType;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Prompt that asks users to confirm user's name before saving card to Google.
  */
-public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogView.Controller {
+public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProperties.Controller {
     /**
      * An interface to handle the interaction with
      * an AutofillNameFixFlowPrompt object.
@@ -87,7 +86,7 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogView.C
         // Hitting the "submit" button on the software keyboard should submit.
         mUserNameInput.setOnEditorActionListener((view, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(mDialogModel, ModalDialogView.ButtonType.POSITIVE);
+                onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
                 return true;
             }
             return false;
@@ -143,9 +142,9 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogView.C
 
     @Override
     public void onClick(PropertyModel model, int buttonType) {
-        if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
+        if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
             mDelegate.onUserAccept(mUserNameInput.getText().toString());
-        } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+        } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
     }

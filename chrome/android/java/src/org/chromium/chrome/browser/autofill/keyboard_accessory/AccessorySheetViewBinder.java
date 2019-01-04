@@ -17,8 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Observes {@link AccessorySheetProperties} changes (like a newly available tab) and triggers the

@@ -17,9 +17,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 /**
  * Contains the controller logic of the AccessorySheet component.

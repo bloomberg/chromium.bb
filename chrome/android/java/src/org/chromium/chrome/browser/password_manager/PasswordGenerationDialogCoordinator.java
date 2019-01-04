@@ -10,9 +10,9 @@ import android.view.LayoutInflater;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * The coordinator for the password generation modal dialog. Manages the sub-component objects

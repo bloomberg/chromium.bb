@@ -22,13 +22,13 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.jsdialog.JavascriptAppModalDialog;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;

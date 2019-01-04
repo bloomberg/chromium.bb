@@ -16,11 +16,11 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Helper that supports all typical actions for OfflineItems.

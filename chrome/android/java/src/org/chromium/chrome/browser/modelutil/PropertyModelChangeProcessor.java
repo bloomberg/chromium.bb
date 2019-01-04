@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.modelutil;
 
-import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
+import org.chromium.ui.modelutil.PropertyObservable;
+import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 
 /**
  * A model change processor for use with a {@link PropertyObservable} model. The

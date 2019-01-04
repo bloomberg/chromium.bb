@@ -14,15 +14,15 @@ import android.text.SpannableStringBuilder;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyObservable;
 import org.chromium.ui.widget.ChromeBulletSpan;
 import org.chromium.ui.widget.TextViewWithLeading;
 

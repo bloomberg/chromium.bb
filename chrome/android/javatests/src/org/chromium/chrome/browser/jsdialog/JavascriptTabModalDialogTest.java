@@ -33,9 +33,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -43,6 +40,8 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;
@@ -105,8 +104,8 @@ public class JavascriptTabModalDialogTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             PropertyModel model = mActivity.getModalDialogManager().getCurrentDialogForTest();
-            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
-            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
+            jsDialog.onClick(model, ModalDialogProperties.ButtonType.POSITIVE);
+            jsDialog.onClick(model, ModalDialogProperties.ButtonType.POSITIVE);
         });
 
         Assert.assertTrue("JavaScript execution should continue after closing prompt.",

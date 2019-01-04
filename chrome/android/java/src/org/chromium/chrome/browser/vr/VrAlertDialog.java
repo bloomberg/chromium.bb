@@ -9,11 +9,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
 
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * This class implements a VrAlertDialog which is similar to Android AlertDialog in VR.
@@ -89,10 +88,10 @@ public class VrAlertDialog extends AlertDialog {
                 || whichButton == DialogInterface.BUTTON_NEGATIVE);
         if (whichButton == DialogInterface.BUTTON_POSITIVE) {
             mButtonPositive = new DialogButton(
-                    ModalDialogView.ButtonType.POSITIVE, text.toString(), listener);
+                    ModalDialogProperties.ButtonType.POSITIVE, text.toString(), listener);
         } else if (whichButton == DialogInterface.BUTTON_NEGATIVE) {
             mButtonNegative = new DialogButton(
-                    ModalDialogView.ButtonType.NEGATIVE, text.toString(), listener);
+                    ModalDialogProperties.ButtonType.NEGATIVE, text.toString(), listener);
         }
     }
 
@@ -105,12 +104,12 @@ public class VrAlertDialog extends AlertDialog {
     }
 
     private PropertyModel createDialogModel() {
-        ModalDialogView.Controller controller = new ModalDialogView.Controller() {
+        ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
             @Override
             public void onClick(PropertyModel model, int buttonType) {
-                if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
+                if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
                     mButtonPositive.getListener().onClick(null, mButtonPositive.getId());
-                } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+                } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
                     mButtonNegative.getListener().onClick(null, mButtonNegative.getId());
                 }
                 dismiss();

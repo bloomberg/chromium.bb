@@ -8,9 +8,9 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ItemAnimator;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 class ListPropertyViewBinder implements ViewBinder<PropertyModel, RecyclerView, PropertyKey> {
     @Override

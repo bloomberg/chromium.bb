@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * This class is responsible for binding view properties from {@link ModalDialogProperties} to a
@@ -26,16 +27,16 @@ public class ModalDialogViewBinder
         } else if (ModalDialogProperties.CUSTOM_VIEW == propertyKey) {
             view.setCustomView(model.get(ModalDialogProperties.CUSTOM_VIEW));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_TEXT == propertyKey) {
-            view.setButtonText(ModalDialogView.ButtonType.POSITIVE,
+            view.setButtonText(ModalDialogProperties.ButtonType.POSITIVE,
                     model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_DISABLED == propertyKey) {
-            view.setButtonEnabled(ModalDialogView.ButtonType.POSITIVE,
+            view.setButtonEnabled(ModalDialogProperties.ButtonType.POSITIVE,
                     !model.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_TEXT == propertyKey) {
-            view.setButtonText(ModalDialogView.ButtonType.NEGATIVE,
+            view.setButtonText(ModalDialogProperties.ButtonType.NEGATIVE,
                     model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_DISABLED == propertyKey) {
-            view.setButtonEnabled(ModalDialogView.ButtonType.NEGATIVE,
+            view.setButtonEnabled(ModalDialogProperties.ButtonType.NEGATIVE,
                     !model.get(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.TITLE_SCROLLABLE == propertyKey) {
             view.setTitleScrollable(model.get(ModalDialogProperties.TITLE_SCROLLABLE));

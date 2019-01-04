@@ -8,9 +8,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * A dialog shown via JavaScript. This can be an alert dialog, a prompt dialog, a confirm dialog,

@@ -20,12 +20,12 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewHolder;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 import org.chromium.ui.ViewProvider;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Creates and owns all elements which are part of the keyboard accessory component.

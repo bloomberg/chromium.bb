@@ -19,9 +19,9 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -69,7 +69,7 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
         mRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"freeShipping"});
     }
 
@@ -88,7 +88,7 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
         mRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"freeShipping"});
     }
 
@@ -106,7 +106,7 @@ public class PaymentRequestNoUpdateWithTest implements MainActivityStartCallback
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
         mRule.clickCardUnmaskButtonAndWait(
-                ModalDialogView.ButtonType.POSITIVE, mRule.getDismissed());
+                ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"updatedShipping"});
     }
 }

@@ -38,11 +38,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -51,7 +50,8 @@ import java.util.Calendar;
 /**
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
  */
-public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDialogView.Controller {
+public class CardUnmaskPrompt
+        implements TextWatcher, OnClickListener, ModalDialogProperties.Controller {
     private static CardUnmaskObserverForTest sObserverForTest;
 
     private final CardUnmaskPromptDelegate mDelegate;
@@ -218,7 +218,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(mDialogModel, ModalDialogView.ButtonType.POSITIVE);
+                onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
                 return true;
             }
             return false;
@@ -742,11 +742,11 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
 
     @Override
     public void onClick(PropertyModel model, int buttonType) {
-        if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
+        if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
             mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                     mMonthInput.getText().toString(), Integer.toString(getFourDigitYear()),
                     mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
-        } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+        } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
     }

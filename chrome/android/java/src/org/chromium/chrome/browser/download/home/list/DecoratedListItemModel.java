@@ -10,8 +10,8 @@ import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.chrome.browser.modelutil.ListObservableImpl;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.SimpleList;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.List;

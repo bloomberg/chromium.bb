@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * As model of the keyboard accessory component, this class holds the data relevant to the visual

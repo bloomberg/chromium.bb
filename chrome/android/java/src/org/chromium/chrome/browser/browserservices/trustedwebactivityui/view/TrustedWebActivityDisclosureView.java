@@ -15,10 +15,10 @@ import android.support.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 import javax.inject.Inject;
 

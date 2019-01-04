@@ -8,10 +8,10 @@ import android.support.v4.view.ViewPager;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * This model holds all view state of the accessory sheet.

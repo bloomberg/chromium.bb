@@ -11,8 +11,8 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.view.AutoAnimatorDrawable;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.download.R;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress image {@code

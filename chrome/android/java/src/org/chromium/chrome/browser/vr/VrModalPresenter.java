@@ -12,13 +12,13 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** The presenter that shows a {@link ModalDialogView} in an Android dialog. */
 public class VrModalPresenter extends ModalDialogManager.Presenter {

@@ -31,10 +31,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -59,6 +55,10 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -75,7 +75,7 @@ import java.util.Date;
  * Java side of Android implementation of the page info UI.
  */
 public class PageInfoController
-        implements ModalDialogView.Controller, SystemSettingsActivityRequiredListener {
+        implements ModalDialogProperties.Controller, SystemSettingsActivityRequiredListener {
     @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpenedFromSource {

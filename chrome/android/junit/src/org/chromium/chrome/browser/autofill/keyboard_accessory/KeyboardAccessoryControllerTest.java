@@ -33,10 +33,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 
 import java.util.HashMap;
 

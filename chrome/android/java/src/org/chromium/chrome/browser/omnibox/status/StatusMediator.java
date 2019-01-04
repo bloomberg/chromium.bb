@@ -10,7 +10,7 @@ import android.support.annotation.StringRes;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Contains the controller logic of the Status component.

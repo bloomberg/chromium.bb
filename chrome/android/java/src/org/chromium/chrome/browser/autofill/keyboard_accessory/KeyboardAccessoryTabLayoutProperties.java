@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.design.widget.TabLayout;
 
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * These properties are used to describe a model for the tab layout component as used in the

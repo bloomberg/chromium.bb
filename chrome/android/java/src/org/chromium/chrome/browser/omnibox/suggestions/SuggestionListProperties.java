@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.util.Pair;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.util.List;
 

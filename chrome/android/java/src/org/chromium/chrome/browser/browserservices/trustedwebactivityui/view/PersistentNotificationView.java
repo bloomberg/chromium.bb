@@ -32,13 +32,13 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedW
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyObservable;
+import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 
 import javax.inject.Inject;
 import javax.inject.Named;
