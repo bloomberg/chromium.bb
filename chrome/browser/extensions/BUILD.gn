@@ -956,6 +956,7 @@ jumbo_static_library("extensions") {
       "//ash",
       "//ash/public/cpp",
       "//chromeos/components/proximity_auth",
+      "//chromeos/cryptohome",
       "//chromeos/login/login_state",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",

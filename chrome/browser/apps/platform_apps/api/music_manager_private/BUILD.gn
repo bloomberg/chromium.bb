@@ -24,15 +24,15 @@ source_set("music_manager_private") {
     "//base",
     "//chrome/common/apps/platform_apps/api",
     "//content/public/browser",
+    "//crypto",
     "//extensions/browser",
     "//rlz/buildflags",
-    "//crypto",
   ]
 
   if (is_chromeos) {
     sources -= [ "device_id_linux.cc" ]
 
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/cryptohome" ]
   }
 
   if (enable_rlz_support) {
