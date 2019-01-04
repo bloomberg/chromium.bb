@@ -198,6 +198,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
       if self._run.config.chrome_sdk_build_chrome:
         test_stage = TestSimpleChromeWorkflowStage(self._run,
+                                                   self.buildstore,
                                                    self._current_board)
         test_stage.Run()
 
