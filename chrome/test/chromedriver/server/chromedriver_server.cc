@@ -64,14 +64,14 @@ int ListenOnIPv4(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   std::string binding_ip = net::IPAddress::IPv4Localhost().ToString();
   if (allow_remote)
     binding_ip = net::IPAddress::IPv4AllZeros().ToString();
-  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+  return socket->ListenWithAddressAndPort(binding_ip, port, 5);
 }
 
 int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   std::string binding_ip = net::IPAddress::IPv6Localhost().ToString();
   if (allow_remote)
     binding_ip = net::IPAddress::IPv6AllZeros().ToString();
-  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+  return socket->ListenWithAddressAndPort(binding_ip, port, 5);
 }
 
 class HttpServer : public net::HttpServer::Delegate {
