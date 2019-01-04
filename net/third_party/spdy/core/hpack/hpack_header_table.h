@@ -8,12 +8,11 @@
 #include <cstddef>
 #include <deque>
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 #include "base/macros.h"
 #include "net/third_party/spdy/core/hpack/hpack_entry.h"
+#include "net/third_party/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
@@ -67,11 +66,9 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
   struct SPDY_EXPORT_PRIVATE EntriesEq {
     bool operator()(const HpackEntry* lhs, const HpackEntry* rhs) const;
   };
-
-  using UnorderedEntrySet =
-      std::unordered_set<HpackEntry*, EntryHasher, EntriesEq>;
-  using NameToEntryMap = std::
-      unordered_map<SpdyStringPiece, const HpackEntry*, base::StringPieceHash>;
+  using UnorderedEntrySet = SpdyHashSet<HpackEntry*, EntryHasher, EntriesEq>;
+  using NameToEntryMap =
+      SpdyHashMap<SpdyStringPiece, const HpackEntry*, base::StringPieceHash>;
 
   HpackHeaderTable();
   HpackHeaderTable(const HpackHeaderTable&) = delete;
