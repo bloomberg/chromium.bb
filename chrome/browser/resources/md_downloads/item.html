@@ -1,5 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://downloads/browser_proxy.html">
+<link rel="import" href="chrome://downloads/constants.html">
+<link rel="import" href="chrome://downloads/i18n_setup.html">
+<link rel="import" href="chrome://downloads/icon_loader.html">
+<link rel="import" href="chrome://downloads/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -13,11 +18,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="chrome://downloads/browser_proxy.html">
-<link rel="import" href="chrome://downloads/constants.html">
-<link rel="import" href="chrome://downloads/i18n_setup.html">
-<link rel="import" href="chrome://downloads/icon_loader.html">
-<link rel="import" href="chrome://downloads/icons.html">
 
 <dom-module id="downloads-item">
   <template>
@@ -67,6 +67,11 @@
         border: 1px var(--google-grey-300) solid;
       }
 
+      :host-context([dark]) #content:not(.is-active) {
+        background: none;  /* override */
+        border-color: rgba(var(--google-grey-800-rgb), .8);
+      }
+
       #details {
         border-inline-start: 1px #d8d8d8 solid;
         display: flex;
@@ -79,12 +84,24 @@
         padding-top: 16px;
       }
 
+      :host-context([dark]) #details {
+        border-color: rgba(var(--google-grey-800-rgb), .8);
+      }
+
       #content:not(.is-active) #details {
         color: rgba(27, 27, 27, .6);
       }
 
+      :host-context([dark]) #content:not(.is-active) #details {
+        color: rgba(var(--google-grey-500-rgb), .6);
+      }
+
       #content:not(.is-active) #name {
         text-decoration: line-through;
+      }
+
+      :host-context([dark]) #content:not(.is-active) #name {
+        color: var(--google-grey-500);
       }
 
       .icon-wrapper {
@@ -137,7 +154,8 @@
         word-break: break-all;
       }
 
-      .is-active :-webkit-any(#name, #file-link, #show) {
+      :host-context(html:not([dark])) .is-active
+          :-webkit-any(#name, #file-link, #show) {
         color: var(--google-blue-600);
       }
 
@@ -214,6 +232,10 @@
         margin-inline-start: 0;
         margin-top: 8px;
         width: 32px;
+      }
+
+      :host-context([dark]) #remove-wrapper > paper-icon-button-light {
+        color: var(--google-grey-500);
       }
 
       #incognito {

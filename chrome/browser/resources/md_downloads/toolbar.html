@@ -2,16 +2,17 @@
 
 <link rel="import" href="chrome://downloads/search_service.html">
 <link rel="import" href="chrome://downloads/browser_proxy.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 
 <dom-module id="downloads-toolbar">
   <template>
@@ -26,6 +27,10 @@
 
       #toolbar {
         flex: 1;
+      }
+
+      :host-context([dark]) #toolbar {
+        color: var(--cr-primary-text-color);
       }
 
       #moreActionsContainer {
