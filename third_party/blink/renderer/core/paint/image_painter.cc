@@ -187,11 +187,17 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
           ? ToHTMLImageElement(node)->GetDecodingModeForPainting(
                 image->paint_image_id())
           : Image::kUnspecifiedDecode;
+
   if (layout_image_.IsImagePolicyViolated()) {
-    // Does not an observer for the placeholder image, setting it to null.
-    image = PlaceholderImage::Create(nullptr, image->Size(),
-                                     image->Data() ? image->Data()->size() : 0);
+    // Does not set an observer for the placeholder image, setting it to null.
+    scoped_refptr<PlaceholderImage> placeholder_image =
+        PlaceholderImage::Create(nullptr, image->Size(),
+                                 image->Data() ? image->Data()->size() : 0);
+    placeholder_image->SetIconAndTextScaleFactor(
+        layout_image_.GetFrame()->PageZoomFactor());
+    image = std::move(placeholder_image);
   }
+
   context.DrawImage(
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,
