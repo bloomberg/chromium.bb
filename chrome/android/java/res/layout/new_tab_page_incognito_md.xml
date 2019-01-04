@@ -42,13 +42,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/new_tab_otr_title"
-                android:textAppearance="@style/WhiteHeadline" />
+                android:textAppearance="@style/TextAppearance.WhiteHeadline" />
 
             <org.chromium.ui.widget.TextViewWithClickableSpans
                 android:id="@+id/new_tab_incognito_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/WhiteBodyIncognito"
+                android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
                 android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
             <LinearLayout
@@ -62,14 +62,14 @@
                   android:id="@+id/new_tab_incognito_features"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:textAppearance="@style/WhiteBodyIncognito"
+                  android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
                   android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
               <TextView
                   android:id="@+id/new_tab_incognito_warning"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:textAppearance="@style/WhiteBodyIncognito"
+                  android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
                   android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
             </LinearLayout>

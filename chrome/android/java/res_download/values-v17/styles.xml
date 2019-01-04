@@ -11,7 +11,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:minHeight">18dp</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
     </style>
@@ -22,7 +22,7 @@
         <item name="android:layout_alignParentStart">true</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackTitle1</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
     </style>
     <style name="DownloadDescriptionStyle">
         <item name="android:layout_width">wrap_content</item>
@@ -34,7 +34,7 @@
         <item name="android:textAlignment">viewStart</item>
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
     </style>
     <style name="DownloadIconView" parent="@style/ListItemStartIcon">
         <item name="android:background">@color/light_active_color</item>

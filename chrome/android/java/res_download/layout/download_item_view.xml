@@ -57,7 +57,7 @@
                     android:layout_toStartOf="@+id/pause_button"
                     android:minHeight="18dp"
                     android:singleLine="true"
-                    android:textAppearance="@style/BlackTitle1" />
+                    android:textAppearance="@style/TextAppearance.BlackTitle1" />
 
             <org.chromium.chrome.browser.widget.MaterialProgressBar
                     android:id="@+id/download_progress_view"

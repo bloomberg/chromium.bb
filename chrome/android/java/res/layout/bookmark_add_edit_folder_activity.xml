@@ -31,7 +31,7 @@
                 android:hint="@string/title"
                 android:imeOptions="flagNoExtractUi"
                 android:inputType="textCapSentences|textAutoCorrect"
-                android:textAppearance="@style/BlackHeadline"
+                android:textAppearance="@style/TextAppearance.BlackHeadline"
                 app:alertMessage="@string/bookmark_missing_title" />
 
             <TextView
@@ -42,7 +42,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
                 android:text="@string/bookmark_parent_folder"
-                android:textAppearance="@style/BlackHint2" />
+                android:textAppearance="@style/TextAppearance.BlackHint2" />
 
             <TextView
                 android:id="@+id/parent_folder"
@@ -51,7 +51,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="32dp"
-                android:textAppearance="@style/BlackTitle1" />
+                android:textAppearance="@style/TextAppearance.BlackTitle1" />
         </LinearLayout>
     </ScrollView>
 

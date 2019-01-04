@@ -65,7 +65,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/dialog_header_margin"
                         android:layout_marginBottom="@dimen/dialog_header_margin"
-                        android:textAppearance="@style/BlackHeadline" />
+                        android:textAppearance="@style/TextAppearance.BlackHeadline" />
 
                     <TextView
                         android:id="@+id/subheader"

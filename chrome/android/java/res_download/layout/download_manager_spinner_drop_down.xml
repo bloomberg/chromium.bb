@@ -12,4 +12,4 @@
     android:minWidth="176dp"
     android:minHeight="48dp"
     android:paddingStart="16dp"
-    android:textAppearance="@style/BlackTitle1" />
+    android:textAppearance="@style/TextAppearance.BlackTitle1" />

@@ -14,7 +14,7 @@
         <item name="android:alertDialogTheme">@style/PreferencesDialogTheme</item>
         <item name="android:divider">@null</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
-        <item name="floatLabelTextAppearance">@style/BlackCaption</item>
+        <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
@@ -27,7 +27,7 @@
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">4dp</item>
     </style>
-    <style name="TextAppearance.PreferenceCategoryText" parent="RobotoMediumStyle">
+    <style name="TextAppearance.PreferenceCategoryText" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">12sp</item>
     </style>
@@ -37,7 +37,7 @@
         <item name="android:textAppearance">?android:attr/textAppearanceListItem</item>
     </style>
     <style name="PreferenceSummary">
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
     </style>
     <style name="PreferenceLayoutBase">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>

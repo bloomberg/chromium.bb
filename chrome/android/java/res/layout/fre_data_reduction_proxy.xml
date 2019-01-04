@@ -62,7 +62,7 @@
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
                         android:text="@string/data_reduction_promo_summary"
-                        android:textAppearance="@style/BlackBodyDefault" />
+                        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/enable_data_saver_switch"
@@ -71,7 +71,7 @@
                         android:lineSpacingMultiplier="1.4"
                         android:showText="false"
                         android:text="@string/data_reduction_enabled_switch"
-                        style="@style/BlackTitle2" />
+                        style="@style/TextAppearance.BlackTitle2" />
 
                 </LinearLayout>
             </LinearLayout>

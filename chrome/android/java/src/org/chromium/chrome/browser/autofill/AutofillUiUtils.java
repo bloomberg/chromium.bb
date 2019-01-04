@@ -40,7 +40,7 @@ public class AutofillUiUtils {
         TextView textView = new TextView(context);
         textView.setText(text);
         textView.setWidth(width);
-        TextViewCompat.setTextAppearance(textView, R.style.WhiteBody);
+        TextViewCompat.setTextAppearance(textView, R.style.TextAppearance_WhiteBody);
         Resources resources = context.getResources();
         int hPadding = resources.getDimensionPixelSize(
                 R.dimen.autofill_card_unmask_tooltip_horizontal_padding);

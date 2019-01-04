@@ -164,7 +164,8 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
             if (mLink != null) builder.append(" ").append(mLink);
 
             TextView prompt = new InfoBarMessageView(mLayout.getContext());
-            ApiCompatibilityUtils.setTextAppearance(prompt, R.style.BlackBodyDefault);
+            ApiCompatibilityUtils.setTextAppearance(
+                    prompt, R.style.TextAppearance_BlackBodyDefault);
             prompt.setText(builder);
             prompt.setGravity(Gravity.CENTER_VERTICAL);
             prompt.setPadding(0, messagePadding, 0, messagePadding);

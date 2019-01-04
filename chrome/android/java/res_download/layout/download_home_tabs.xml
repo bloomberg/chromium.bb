@@ -19,7 +19,7 @@
         app:tabMaxWidth="2000dp"
         app:tabMode="fixed"
         app:tabGravity="center"
-        app:tabTextAppearance="@style/BlackLink"
+        app:tabTextAppearance="@style/TextAppearance.BlackLink"
         app:tabIndicatorColor="@color/light_active_color"
         android:background="@drawable/download_home_tabs_bg">
 

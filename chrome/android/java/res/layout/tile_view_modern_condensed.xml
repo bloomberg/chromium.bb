@@ -58,6 +58,6 @@
         android:gravity="center_horizontal"
         android:lines="2"
         android:lineSpacingMultiplier="1.17"
-        android:textAppearance="@style/BlackCaption" />
+        android:textAppearance="@style/TextAppearance.BlackCaption" />
 
 </merge>

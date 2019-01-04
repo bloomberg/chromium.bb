@@ -118,7 +118,7 @@ public class SurveyInfoBar extends InfoBar {
         prompt.setText(infoBarText);
         prompt.setMovementMethod(LinkMovementMethod.getInstance());
         prompt.setGravity(Gravity.CENTER_VERTICAL);
-        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.BlackTitle1);
+        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.TextAppearance_BlackTitle1);
         addAccessibilityClickListener(prompt, tab);
         layout.addContent(prompt, 1f);
     }

@@ -119,7 +119,7 @@
     </style>
 
     <style name="AlertDialogTitleStyle" parent="RtlOverlay.DialogWindowTitle.AppCompat">
-        <item name="android:textAppearance">@style/BlackHeadline</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackHeadline</item>
     </style>
 
     <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
@@ -139,10 +139,10 @@
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>
         <item name="android:textAppearanceMedium">@style/TextAppearance.PreferenceMediumText</item>
-        <item name="android:textAppearanceSmall">@style/BlackBody</item>
+        <item name="android:textAppearanceSmall">@style/TextAppearance.BlackBody</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
-        <item name="floatLabelTextAppearance">@style/BlackCaption</item>
+        <item name="floatLabelTextAppearance">@style/TextAppearance.BlackCaption</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
@@ -152,7 +152,7 @@
         <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-      <item name="titleTextStyle">@style/BlackHeadline</item>
+      <item name="titleTextStyle">@style/TextAppearance.BlackHeadline</item>
     </style>
     <style name="TextAppearance.PreferenceMediumText">
         <item name="android:textSize">18sp</item>
@@ -169,7 +169,7 @@
         <item name="android:paddingTop">16dp</item>
         <item name="android:layout_marginBottom">16dp</item>
     </style>
-    <style name="TextAppearance.PreferenceCategoryText" parent="RobotoMediumStyle">
+    <style name="TextAppearance.PreferenceCategoryText" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">12sp</item>
     </style>
@@ -179,7 +179,7 @@
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
     </style>
     <style name="PreferenceSummary">
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
     </style>
     <style name="PreferenceScreenLayout">
         <item name="android:paddingTop">16dp</item>
@@ -235,7 +235,7 @@
         <item name="actionBarStyle">@style/ManageSpaceActionBarModern</item>
     </style>
     <style name="ManageSpaceActionBarModern" parent="PreferenceActionBarModern">
-        <item name="titleTextStyle">@style/WhiteHeadline</item>
+        <item name="titleTextStyle">@style/TextAppearance.WhiteHeadline</item>
     </style>
     <style name="ManageSpaceActivityButton">
       <item name="android:layout_width">wrap_content</item>
@@ -279,7 +279,7 @@
         <item name="android:popupBackground">@null</item>
         <item name="android:listDivider">@null</item>
         <item name="android:listPreferredItemHeightSmall">48dp</item>
-        <item name="android:textAppearance">@style/BlackTitle1</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
     </style>
     <style name="OverflowMenuButton">
@@ -377,7 +377,7 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-    <style name="PromoDialogNormalText" parent="@style/BlackBody">
+    <style name="PromoDialogNormalText" parent="@style/TextAppearance.BlackBody">
         <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
 
@@ -397,7 +397,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center</item>
         <item name="android:lineSpacingMultiplier">1.4</item>
-        <item name="android:textAppearance">@style/BlackHeadline</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackHeadline</item>
     </style>
 
     <!-- Web Notifications -->
@@ -465,7 +465,7 @@
          explicitly specified. -->
     <style name="DialogWhenLargeBase" parent="Theme.AppCompat.Light.DialogWhenLarge" >
         <item name="android:windowBackground">@drawable/bg_white_dialog</item>
-        <item name="android:textAppearance">@style/BlackBodyDefault</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBodyDefault</item>
         <item name="android:textColorLink">@color/default_text_color_link</item>
         <item name="colorPrimaryDark">@android:color/black</item>
         <item name="colorAccent">@color/light_active_color</item>
@@ -487,7 +487,7 @@
     </style>
 
     <style name="SigninDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
     </style>
 
     <!-- Contextual Search styles -->
@@ -501,7 +501,7 @@
         <item name="android:paddingStart">53dp</item>
         <item name="android:paddingEnd">53dp</item>
     </style>
-    <style name="ContextualSearchTextView" parent="@style/BlackTitle1">
+    <style name="ContextualSearchTextView" parent="@style/TextAppearance.BlackTitle1">
         <item name="android:layout_height">match_parent</item>
         <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
@@ -534,7 +534,7 @@
         <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
     </style>
 
     <!-- Payments UI -->
@@ -542,17 +542,17 @@
         <item name="android:textColor">@color/error_text_color</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned" parent="BlackBody">
+    <style name="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned" parent="TextAppearance.BlackBody">
         <item name="android:textAlignment">viewEnd</item>
     </style>
     <style name="TextAppearance.PaymentsUiSectionPendingTextEndAligned"
         parent="TextAppearance.PaymentsUiSectionDescriptiveTextEndAligned">
         <item name="android:textColor">@color/explanation_text_color</item>
     </style>
-    <style name="TextAppearance.EditorDialogSectionAddButton" parent="BlueLink2">
+    <style name="TextAppearance.EditorDialogSectionAddButton" parent="TextAppearance.BlueLink2">
         <item name="android:textAllCaps">true</item>
     </style>
-    <style name="TextAppearance.PaymentRequestHeaderTitle" parent="BlackTitle1">
+    <style name="TextAppearance.PaymentRequestHeaderTitle" parent="TextAppearance.BlackTitle1">
         <item name="android:textStyle">bold</item>
     </style>
     <style name="TextAppearance.PaymentRequestErrorText">
@@ -587,7 +587,7 @@
         <item name="tint">@color/dark_mode_tint</item>
     </style>
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
-        <item name="titleTextAppearance">@style/BlackHeadline</item>
+        <item name="titleTextAppearance">@style/TextAppearance.BlackHeadline</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:background">@color/modern_primary_color</item>
     </style>
@@ -621,15 +621,38 @@
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
     <style name="SadTabBodyText">
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
         <item name="android:layout_gravity">start</item>
     </style>
     <style name="SigninButtonBorderlessRegular" parent="@style/TextButton">
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
-        <item name="android:textAppearance">@style/BlueLink2</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueLink2</item>
     </style>
     <style name="NavigationPopupDialog" parent="Widget.AppCompat.Light.ListPopupWindow" />
+
+    <!-- Misc text appearance styles -->
+    <style name="TextAppearance.AddToHomeScreenEditText">
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="TextAppearance.AddToHomeScreenWebAppName" parent="TextAppearance.BlackTitle1">
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="TextAppearance.ConnectionInfoHeadline" parent="TextAppearance.RobotoMediumStyle">
+        <item name="android:textColor">@color/connection_info_popup_text</item>
+    </style>
+    <style name="TextAppearance.ConnectionInfoDescription">
+        <item name="android:textColor">@color/connection_info_popup_text</item>
+    </style>
+    <style name="TextAppearance.PageInfoPermissionSubtitle" parent="TextAppearance.BlackBody">
+        <item name="android:textColor">@color/secondary_text_default_material_light</item>
+    </style>
+    <style name="TextAppearance.PhotoPickerSpecialTile" parent="TextAppearance.BlackTitle2">
+        <item name="android:textColor">@color/photo_picker_special_tile_color</item>
+    </style>
+    <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
+        <item name="android:textColor">@color/default_text_color_link</item>
+    </style>
 
     <!-- New Tab Page -->
     <style name="NewTabPageRecyclerView">
@@ -687,11 +710,11 @@
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
         <item name="android:layout_marginEnd">@dimen/list_item_default_margin</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
     </style>
 
     <!-- Data Reduction -->
-    <style name="TextAppearance.DataUsageBreakdownColumnLabel" parent="@style/BlackButtonText">
+    <style name="TextAppearance.DataUsageBreakdownColumnLabel" parent="@style/TextAppearance.BlackButtonText">
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="DataUsageBreakdownColumnLabel">
@@ -702,7 +725,7 @@
         <item name="android:textAppearance">
             @style/TextAppearance.DataUsageBreakdownColumnLabel</item>
     </style>
-    <style name="TextAppearance.DataUsageBreakdownSavedColumnLabel" parent="@style/BlueButtonText2">
+    <style name="TextAppearance.DataUsageBreakdownSavedColumnLabel" parent="@style/TextAppearance.BlueButtonText2">
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="DataUsageBreakdownSavedColumnLabel" parent="DataUsageBreakdownColumnLabel">
@@ -714,26 +737,26 @@
         <item name="android:paddingBottom">10dp</item>
         <item name="android:paddingTop">10dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackCaption</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackCaption</item>
     </style>
     <style name="DataUsageBreakdownSavedColumnItem" parent="DataUsageBreakdownColumnItem">
-        <item name="android:textAppearance">@style/BlueLink3</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueLink3</item>
     </style>
-    <style name="TextAppearance.DataReductionHeadline" parent="BlackHeadline">
+    <style name="TextAppearance.DataReductionHeadline" parent="TextAppearance.BlackHeadline">
         <item name="android:textColor">@color/default_text_color_link</item>
     </style>
 
     <!-- Incognito New Tab Page -->
     <style name="IncognitoNewTabMessage">
         <item name="android:maxWidth">660dp</item>
-        <item name="android:textAppearance">@style/WhiteBodyIncognito</item>
+        <item name="android:textAppearance">@style/TextAppearance.WhiteBodyIncognito</item>
         <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
     <style name="IncognitoNewTabLearnMoreLink">
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
-        <item name="android:textAppearance">@style/BlueButtonText1</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText1</item>
         <item name="android:padding">16dp</item>
       </style>
     <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
@@ -755,14 +778,14 @@
     </style>
     <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
      for these requires updating the NTP article suggestions thumbnail size as well. -->
-    <style name="SuggestionCardTitleModern" parent="BlackTitle1">
+    <style name="SuggestionCardTitleModern" parent="TextAppearance.BlackTitle1">
         <item name="android:ellipsize">end</item>
         <item name="leading">20sp</item>
     </style>
     <style name="ContextualSuggestionCardTitleModern" parent="SuggestionCardTitleModern">
         <item name="leading">@dimen/text_size_large_leading</item>
     </style>
-    <style name="SuggestionCardBodyModern" parent="BlackBody">
+    <style name="SuggestionCardBodyModern" parent="TextAppearance.BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
@@ -780,7 +803,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
-    <style name="TextAppearance.PasswordEntryName" parent="BlueButtonText2">
+    <style name="TextAppearance.PasswordEntryName" parent="TextAppearance.BlueButtonText2">
         <item name="android:textAllCaps">false</item>
     </style>
 

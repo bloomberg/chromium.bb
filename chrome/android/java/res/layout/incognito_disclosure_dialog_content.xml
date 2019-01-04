@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/incognito_disclosure_text"
-        android:textAppearance="@style/BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
     <CheckBox
         android:id="@+id/incognito_disclosure_close_incognito_checkbox"
         android:layout_width="wrap_content"
@@ -17,5 +17,5 @@
         android:layout_marginTop="15dp"
         android:layout_marginStart="-5dp"
         android:text="@string/incognito_disclosure_checkbox_text"
-        android:textAppearance="@style/BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
 </LinearLayout>
