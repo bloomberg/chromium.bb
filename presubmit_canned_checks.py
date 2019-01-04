@@ -1312,7 +1312,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     ('%s/' % cs['location']) == loc_pref
   }
   cs_to_files = collections.defaultdict(list)
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(include_deletes=False):
     # windows
     file_path = f.LocalPath().replace(_os.sep, '/')
     logging.debug('Affected file path: %s', file_path)
