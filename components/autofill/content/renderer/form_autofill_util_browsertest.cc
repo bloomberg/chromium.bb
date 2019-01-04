@@ -303,6 +303,38 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
   EXPECT_EQ(expected, actual);
 }
 
+TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {
+  const char kNoFormHtml[] =
+      "<div class='reg-form'>"
+      "  <input type='button' value='\n Show\t password '>"
+      "  <button>Sign Up</button>"
+      "  <button type='button'>Register</button>"
+      "</div>"
+      "<form id='ignored-form'>"
+      "  <input type='button' value='Ignore this'>"
+      "  <button>Ignore this</button>"
+      "  <a id='Submit' value='Ignore this'>"
+      "  <div name='BTN'>Ignore this</div>"
+      "</form>";
+
+  LoadHTML(kNoFormHtml);
+  WebLocalFrame* web_frame = GetMainFrame();
+  ASSERT_NE(nullptr, web_frame);
+  const WebElement& body = web_frame->GetDocument().Body();
+  ASSERT_FALSE(body.IsNull());
+
+  autofill::ButtonTitleList actual =
+      autofill::form_util::InferButtonTitlesForTesting(body);
+  autofill::ButtonTitleList expected = {
+      {base::UTF8ToUTF16("Show password"),
+       autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
+      {base::UTF8ToUTF16("Sign Up"),
+       autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
+      {base::UTF8ToUTF16("Register"),
+       autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE}};
+  EXPECT_EQ(expected, actual);
+}
+
 TEST_F(FormAutofillUtilsTest, IsEnabled) {
   LoadHTML(
       "<input type='text' id='name1'>"

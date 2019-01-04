@@ -279,7 +279,7 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source);
 ButtonTitleList InferButtonTitlesForTesting(
-    const blink::WebFormElement& form_element);
+    const blink::WebElement& form_element);
 
 // Returns form by unique renderer id. Return null element if there is no form
 // with given form renderer id.
