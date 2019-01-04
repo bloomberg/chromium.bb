@@ -13,6 +13,7 @@
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
@@ -185,6 +186,14 @@ class TestInputMethodManager
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
+};
+
+class NiceMockIMEEngine : public chromeos::MockIMEEngineHandler {
+ public:
+  MOCK_METHOD1(FocusIn, void(const InputContext&));
+  MOCK_METHOD0(FocusOut, void());
+  MOCK_METHOD4(SetSurroundingText,
+               void(const std::string&, uint32_t, uint32_t, uint32_t));
 };
 
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
@@ -824,6 +833,43 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_BecomeEmptyText) {
   ime_->OnCaretBoundsChanged(this);
   EXPECT_EQ(0,
             mock_ime_engine_handler_->set_surrounding_text_call_count());
+}
+
+TEST_F(InputMethodChromeOSTest, SurroundingText_EventOrder) {
+  ::testing::NiceMock<NiceMockIMEEngine> mock_engine;
+  IMEBridge::Get()->SetCurrentEngineHandler(&mock_engine);
+
+  {
+    // Switches the text input client.
+    ::testing::InSequence seq;
+    EXPECT_CALL(mock_engine, FocusOut);
+    EXPECT_CALL(mock_engine, FocusIn);
+    EXPECT_CALL(mock_engine, SetSurroundingText);
+
+    surrounding_text_ = UTF8ToUTF16("a");
+    text_range_ = gfx::Range(0, 1);
+    selection_range_ = gfx::Range(0, 0);
+
+    input_type_ = TEXT_INPUT_TYPE_TEXT;
+    ime_->OnWillChangeFocusedClient(nullptr, this);
+    ime_->OnDidChangeFocusedClient(nullptr, this);
+  }
+
+  {
+    // Changes text input type.
+    ::testing::InSequence seq;
+    EXPECT_CALL(mock_engine, FocusOut);
+    EXPECT_CALL(mock_engine, FocusIn);
+    EXPECT_CALL(mock_engine, SetSurroundingText);
+
+    surrounding_text_ = UTF8ToUTF16("b");
+    text_range_ = gfx::Range(0, 1);
+    selection_range_ = gfx::Range(0, 0);
+
+    input_type_ = TEXT_INPUT_TYPE_EMAIL;
+    ime_->OnTextInputTypeChanged(this);
+  }
+  IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
 }
 
 class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {

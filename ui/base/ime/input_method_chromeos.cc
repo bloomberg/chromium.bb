@@ -199,11 +199,13 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
     engine->FocusIn(context);
   }
 
+  OnCaretBoundsChanged(client);
+
   InputMethodBase::OnTextInputTypeChanged(client);
 }
 
 void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (!IsInputFieldFocused() || !IsTextInputClientFocused(client))
+  if (IsTextInputTypeNone() || !IsTextInputClientFocused(client))
     return;
 
   NotifyTextInputCaretBoundsChanged(client);
@@ -315,6 +317,8 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
         GetClientFocusReason(), GetClientShouldDoLearning());
     GetEngine()->FocusIn(context);
   }
+
+  OnCaretBoundsChanged(GetTextInputClient());
 }
 
 void InputMethodChromeOS::ConfirmCompositionText() {
@@ -359,9 +363,6 @@ void InputMethodChromeOS::UpdateContextFocusState() {
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
       GetClientFocusReason(), GetClientShouldDoLearning());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
-
-  if (!IsTextInputTypeNone())
-    OnCaretBoundsChanged(GetTextInputClient());
 }
 
 ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventPostIME(
