@@ -530,6 +530,7 @@ cr.define('extensions', function() {
     /** @private */
     onOptionsDialogClose_: function() {
       this.showOptionsDialog_ = false;
+      this.$$('extensions-detail-view').focusOptionsButton();
     },
 
     /** @private */
