@@ -44,7 +44,7 @@ NavigationHandle::CreateNavigationHandleForTesting(
   }
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
-          url, std::vector<GURL>(), rfhi->frame_tree_node(),
+          url, base::nullopt, std::vector<GURL>(), rfhi->frame_tree_node(),
           true,  // is_renderer_initiated
           is_same_document, base::TimeTicks::Now(), 0,
           false,                  // started_from_context_menu

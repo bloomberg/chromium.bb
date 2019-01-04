@@ -145,6 +145,7 @@ void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
 // static
 std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
+    const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
@@ -167,17 +168,19 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const std::string& href_translate,
     base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
-      url, redirect_chain, frame_tree_node, is_renderer_initiated,
-      is_same_document, navigation_start, pending_nav_entry_id,
-      started_from_context_menu, should_check_main_world_csp,
-      is_form_submission, std::move(navigation_ui_data), method,
-      std::move(request_headers), resource_request_body, sanitized_referrer,
-      has_user_gesture, transition, is_external_protocol, request_context_type,
-      mixed_content_context_type, href_translate, input_start));
+      url, initiator_origin, redirect_chain, frame_tree_node,
+      is_renderer_initiated, is_same_document, navigation_start,
+      pending_nav_entry_id, started_from_context_menu,
+      should_check_main_world_csp, is_form_submission,
+      std::move(navigation_ui_data), method, std::move(request_headers),
+      resource_request_body, sanitized_referrer, has_user_gesture, transition,
+      is_external_protocol, request_context_type, mixed_content_context_type,
+      href_translate, input_start));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
     const GURL& url,
+    const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
@@ -200,6 +203,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     const std::string& href_translate,
     base::TimeTicks input_start)
     : url_(url),
+      initiator_origin_(initiator_origin),
       has_user_gesture_(has_user_gesture),
       transition_(transition),
       is_external_protocol_(is_external_protocol),
@@ -661,6 +665,10 @@ bool NavigationHandleImpl::IsFormSubmission() {
 
 const std::string& NavigationHandleImpl::GetHrefTranslate() {
   return href_translate_;
+}
+
+const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
+  return initiator_origin_;
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {

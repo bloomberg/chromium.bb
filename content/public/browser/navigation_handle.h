@@ -285,6 +285,10 @@ class CONTENT_EXPORT NavigationHandle {
   // initiated from a link that had that attribute set.
   virtual const std::string& GetHrefTranslate() = 0;
 
+  // Returns, if available, the origin of the document that has initiated the
+  // navigation for this NavigationHandle.
+  virtual const base::Optional<url::Origin>& GetInitiatorOrigin() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.
