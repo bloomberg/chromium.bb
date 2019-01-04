@@ -920,27 +920,27 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
     LogIsSameProcess(transition_, is_same_process_);
 
-    // Don't log process-priority-specific UMAs for TimeToReadyToCommit metric
+    // Don't log process-priority-specific UMAs for TimeToReadyToCommit2 metric
     // (which shouldn't be influenced by renderer priority).
     constexpr base::Optional<bool> kIsBackground = base::nullopt;
 
     base::TimeDelta delta = ready_to_commit_time_ - navigation_start_;
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_,
+    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2", transition_,
                                     kIsBackground, delta);
 
     if (IsInMainFrame()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.MainFrame",
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.MainFrame",
                                       transition_, kIsBackground, delta);
     } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.Subframe",
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.Subframe",
                                       transition_, kIsBackground, delta);
     }
 
     if (is_same_process_) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.SameProcess",
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.SameProcess",
                                       transition_, kIsBackground, delta);
     } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.CrossProcess",
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
                                       transition_, kIsBackground, delta);
     }
   }
@@ -1027,7 +1027,7 @@ void NavigationHandleImpl::DidCommitNavigation(
     }
 
     if (!ready_to_commit_time_.is_null()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit", transition_,
+      LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit2", transition_,
                                       is_background,
                                       now - ready_to_commit_time_);
     }
