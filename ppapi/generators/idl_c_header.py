@@ -276,7 +276,7 @@ class HGen(GeneratorByFile):
         release_numbers = re.findall('[\d\_]+', releasestr)
         release = re.findall('\d+', release_numbers[-1])[0]
         if release:
-          out.Write('\n#define PPAPI_RELEASE %s\n' % release)
+          out.Write('#define PPAPI_RELEASE %s\n' % release)
 
     # Generate all interface defines
     out.Write('\n')
