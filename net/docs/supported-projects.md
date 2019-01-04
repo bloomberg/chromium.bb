@@ -73,10 +73,12 @@ For official Android devices, WebView has the following capabilities.
   * **Automatic Updates**: Varies. Updates are made available on the Android
     App Store, but users must explicitly choose to update. As such, the
     rate of update varies much more than for the Chromium browser.
-  * **Command-line Flags**: No
-  * **Field Trials (Finch)**: No
-  * **Enterprise Policy**: No
-  * **User Metrics (UMA)**: No
+  * **Command-line Flags**: No for production devices, [yes for userdebug
+    devices](https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/commandline-flags.md)
+  * **Field Trials (Finch)**: Yes, [with
+    caveats](https://g3doc.corp.google.com/analysis/uma/g3doc/finch/platforms.md?cl=head)
+  * **Enterprise Policy**: Yes, with caveats (TODO(rsleevi): document caveats)
+  * **User Metrics (UMA)**: Yes, [with caveats](http://go/clank-webview/uma)
   * **Component Updater**: No
 
 ## `//content` Embedders
