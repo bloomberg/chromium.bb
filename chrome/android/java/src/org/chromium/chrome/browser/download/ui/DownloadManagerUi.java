@@ -236,8 +236,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
-                normalGroupId, R.id.selection_mode_menu_group, R.color.modern_primary_color, this,
-                true, isSeparateActivity);
+                normalGroupId, R.id.selection_mode_menu_group, this, true, isSeparateActivity);
         mToolbar.getMenu().setGroupVisible(normalGroupId, true);
         mToolbar.setManager(this);
         mToolbar.initialize(mFilterAdapter);

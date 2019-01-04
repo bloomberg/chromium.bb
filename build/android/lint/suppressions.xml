@@ -167,6 +167,7 @@ Still reading?
   <issue id="InconsistentArrays" severity="Error">
     <ignore regexp="android_webview/locale_paks.resources.zip/values/locale-paks.xml"/>
     <ignore regexp="chrome/android/chrome_locale_paks.resources.zip/values/locale-paks.xml"/>
+    <ignore regexp="preloaded_fonts.xml"/>
   </issue>
   <issue id="InconsistentLayout" severity="ignore"/>
   <issue id="InefficientWeight" severity="Error">

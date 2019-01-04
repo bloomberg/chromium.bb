@@ -88,12 +88,15 @@
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <!-- This style is overridden downstream to set accent_font_medium as the font family. -->
+    <style name="TextAppearance.ButtonMediumStyle" parent="TextAppearance.RobotoMediumStyle" />
 
     <!-- Black Text Styles -->
     <!-- TODO(huayinz): remove tools:ignore once these text styles are all used in ui/android -->
     <style name="TextAppearance.BlackHeadline" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_list</item>
         <item name="android:textSize">@dimen/headline_size</item>
+        <item name="android:fontFamily">@font/accent_font</item>
     </style>
     <style name="TextAppearance.BlackTitle1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_list</item>
@@ -139,7 +142,7 @@
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
-    <style name="TextAppearance.BlackButtonText" parent="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
+    <style name="TextAppearance.BlackButtonText" parent="TextAppearance.ButtonMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
@@ -153,6 +156,7 @@
     <style name="TextAppearance.WhiteHeadline" tools:ignore="UnusedResources">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/headline_size</item>
+        <item name="android:fontFamily">@font/accent_font</item>
     </style>
     <style name="TextAppearance.WhiteBodyIncognito" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/white_alpha_70</item>
@@ -170,7 +174,10 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.WhiteButtonText" parent="TextAppearance.WhiteTitle2" />
+    <style name="TextAppearance.WhiteButtonText" parent="TextAppearance.ButtonMediumStyle">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
     <style name="TextAppearance.WhiteLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
@@ -178,15 +185,18 @@
     </style>
 
     <!-- Blue Text Styles -->
-    <style name="TextAppearance.BlueTitle2" parent="TextAppearance.RobotoMediumStyle">
+    <style name="TextAppearance.BlueTitle2" parent="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlueButtonText1" parent="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
+    <style name="TextAppearance.BlueButtonText1" parent="TextAppearance.ButtonMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlueButtonText2" parent="TextAppearance.BlueTitle2" />
+    <style name="TextAppearance.BlueButtonText2" parent="TextAppearance.ButtonMediumStyle">
+        <item name="android:textColor">@color/blue_when_enabled</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
     <style name="TextAppearance.BlueLink1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_large</item>

@@ -139,8 +139,8 @@ public class PickerCategoryView
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;
         mToolbar = (ContactsPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0,
-                R.color.modern_primary_color, null, false, false);
+                R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0, null,
+                false, false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
 
