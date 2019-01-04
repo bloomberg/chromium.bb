@@ -66,11 +66,13 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
   // we need a new set of them, or when an error occurs.
   virtual DecodeResult Decode() WARN_UNUSED_RESULT = 0;
 
-  // Return dimensions/required number of output surfaces that client should
-  // be ready to provide for the decoder to function properly.
-  // To be used after Decode() returns kAllocateNewSurfaces.
+  // Return dimensions/required number of pictures that client should be ready
+  // to provide for the decoder to function properly (of which up to
+  // GetNumReferenceFrames() might be needed for internal decoding). To be used
+  // after Decode() returns kAllocateNewSurfaces.
   virtual gfx::Size GetPicSize() const = 0;
   virtual size_t GetRequiredNumOfPictures() const = 0;
+  virtual size_t GetNumReferenceFrames() const = 0;
 
   // About 3 secs for 30 fps video. When the new sized keyframe is missed, the
   // decoder cannot decode the frame. The number of frames are skipped until
