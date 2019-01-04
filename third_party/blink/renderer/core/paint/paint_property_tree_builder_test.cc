@@ -3444,106 +3444,121 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
-  SetBodyInnerHTML(R"HTML(
-    <style>body { margin: 20px 30px; }</style>
-    <div id='clipper'
-        style='contain: paint; width: 300px; height: 200px;'>
-      <div id='child'
-          style='position: relative; width: 400px; height: 500px;'></div>
-    </div>
-  )HTML");
+TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
+  for (const char* containment : {"paint", "style layout"}) {
+    SCOPED_TRACE(containment);
+    SetBodyInnerHTML(String::Format(R"HTML(
+      <style>body { margin: 20px 30px; }</style>
+      <div id='clipper'
+          style='contain: %s; width: 300px; height: 200px;'>
+        <div id='child'
+            style='position: relative; width: 400px; height: 500px;'></div>
+      </div>
+    )HTML",
+                                    containment));
 
-  LayoutBoxModelObject* clipper =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
-  const ObjectPaintProperties* clip_properties =
-      clipper->FirstFragment().PaintProperties();
-  LayoutObject* child = GetLayoutObjectByElementId("child");
-  const auto& clip_local_properties =
-      clipper->FirstFragment().LocalBorderBoxProperties();
+    LayoutBoxModelObject* clipper =
+        ToLayoutBoxModelObject(GetLayoutObjectByElementId("clipper"));
+    const ObjectPaintProperties* clip_properties =
+        clipper->FirstFragment().PaintProperties();
+    LayoutObject* child = GetLayoutObjectByElementId("child");
+    const auto& clip_local_properties =
+        clipper->FirstFragment().LocalBorderBoxProperties();
 
-  // Verify that we created isolation nodes.
-  EXPECT_TRUE(clip_properties->TransformIsolationNode());
-  EXPECT_TRUE(clip_properties->EffectIsolationNode());
-  EXPECT_TRUE(clip_properties->ClipIsolationNode());
+    // Verify that we created isolation nodes.
+    EXPECT_TRUE(clip_properties->TransformIsolationNode());
+    EXPECT_TRUE(clip_properties->EffectIsolationNode());
+    EXPECT_TRUE(clip_properties->ClipIsolationNode());
 
-  // Verify parenting:
+    // Verify parenting:
 
-  // Transform isolation node should be parented to the local border box
-  // properties transform, which should be the paint offset translation.
-  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
-            clip_local_properties.Transform());
-  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
-            clip_properties->PaintOffsetTranslation());
-  // Similarly, effect isolation node is parented to the local border box
-  // properties effect.
-  EXPECT_EQ(clip_properties->EffectIsolationNode()->Parent(),
-            clip_local_properties.Effect());
-  // Clip isolation node, however, is parented to the overflow clip, which is in
-  // turn parented to the local border box properties clip.
-  EXPECT_EQ(clip_properties->ClipIsolationNode()->Parent(),
-            clip_properties->OverflowClip());
-  EXPECT_EQ(clip_properties->OverflowClip()->Parent(),
-            clip_local_properties.Clip());
+    // Transform isolation node should be parented to the local border box
+    // properties transform, which should be the paint offset translation.
+    EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+              clip_local_properties.Transform());
+    EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+              clip_properties->PaintOffsetTranslation());
+    // Similarly, effect isolation node is parented to the local border box
+    // properties effect.
+    EXPECT_EQ(clip_properties->EffectIsolationNode()->Parent(),
+              clip_local_properties.Effect());
+    if (strcmp(containment, "paint") == 0) {
+      // If we contain paint, then clip isolation node is parented to the
+      // overflow clip, which is in turn parented to the local border box
+      // properties clip.
+      EXPECT_EQ(clip_properties->ClipIsolationNode()->Parent(),
+                clip_properties->OverflowClip());
+      EXPECT_EQ(clip_properties->OverflowClip()->Parent(),
+                clip_local_properties.Clip());
+    } else {
+      // Otherwise, the clip isolation node is parented to the local border box
+      // properties clip directly.
+      EXPECT_EQ(clip_properties->ClipIsolationNode()->Parent(),
+                clip_local_properties.Clip());
+    }
 
-  // Verify transform:
+    // Verify transform:
 
-  // Isolation transform node should be identity.
-  EXPECT_EQ(clip_properties->TransformIsolationNode()->Matrix(),
-            TransformationMatrix());
+    // Isolation transform node should be identity.
+    EXPECT_EQ(clip_properties->TransformIsolationNode()->Matrix(),
+              TransformationMatrix());
 
-  // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_FALSE(DocScrollTranslation());
-    EXPECT_TRUE(DocPreTranslation());
-    // Isolation induces paint offset translation, so the node should be
-    // different from the doc node, but its parent is the same as the doc node.
-    EXPECT_EQ(DocPreTranslation(), clipper->FirstFragment()
-                                       .LocalBorderBoxProperties()
-                                       .Transform()
-                                       ->Parent());
-  } else {
-    // Always create scroll translation for layout view even the document does
-    // not scroll (not enough content).
-    EXPECT_TRUE(DocScrollTranslation());
-    // Isolation induces paint offset translation, so the node should be
-    // different from the doc node, but its parent is the same as the doc node.
-    EXPECT_EQ(DocScrollTranslation(), clipper->FirstFragment()
-                                          .LocalBorderBoxProperties()
-                                          .Transform()
-                                          ->Parent());
+    // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
+    // scrolling.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      EXPECT_FALSE(DocScrollTranslation());
+      EXPECT_TRUE(DocPreTranslation());
+      // Isolation induces paint offset translation, so the node should be
+      // different from the doc node, but its parent is the same as the doc
+      // node.
+      EXPECT_EQ(DocPreTranslation(), clipper->FirstFragment()
+                                         .LocalBorderBoxProperties()
+                                         .Transform()
+                                         ->Parent());
+    } else {
+      // Always create scroll translation for layout view even the document does
+      // not scroll (not enough content).
+      EXPECT_TRUE(DocScrollTranslation());
+      // Isolation induces paint offset translation, so the node should be
+      // different from the doc node, but its parent is the same as the doc
+      // node.
+      EXPECT_EQ(DocScrollTranslation(), clipper->FirstFragment()
+                                            .LocalBorderBoxProperties()
+                                            .Transform()
+                                            ->Parent());
+    }
+
+    // Verify clip:
+
+    EXPECT_EQ(DocContentClip(),
+              clipper->FirstFragment().LocalBorderBoxProperties().Clip());
+    // Clip isolation node should be big enough to encompass all other clips,
+    // including DocContentClip.
+    EXPECT_TRUE(
+        clip_properties->ClipIsolationNode()->ClipRect().Rect().Contains(
+            DocContentClip()->ClipRect().Rect()));
+
+    // Verify contents properties and child properties:
+
+    auto contents_properties = clipper->FirstFragment().ContentsProperties();
+    // Since the clipper is isolated, its paint offset should be 0, 0.
+    EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
+    // Ensure that the contents properties match isolation nodes.
+    EXPECT_EQ(clip_properties->TransformIsolationNode(),
+              contents_properties.Transform());
+    EXPECT_EQ(clip_properties->ClipIsolationNode(), contents_properties.Clip());
+    EXPECT_EQ(clip_properties->EffectIsolationNode(),
+              contents_properties.Effect());
+
+    // Child should be using isolation nodes as its local border box properties.
+    EXPECT_EQ(contents_properties.Transform(),
+              child->FirstFragment().LocalBorderBoxProperties().Transform());
+    EXPECT_EQ(contents_properties.Clip(),
+              child->FirstFragment().LocalBorderBoxProperties().Clip());
+    EXPECT_EQ(contents_properties.Effect(),
+              child->FirstFragment().LocalBorderBoxProperties().Effect());
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
   }
-
-  // Verify clip:
-
-  EXPECT_EQ(DocContentClip(),
-            clipper->FirstFragment().LocalBorderBoxProperties().Clip());
-  // Clip isolation node should be big enough to encompass all other clips,
-  // including DocContentClip.
-  EXPECT_TRUE(clip_properties->ClipIsolationNode()->ClipRect().Rect().Contains(
-      DocContentClip()->ClipRect().Rect()));
-
-  // Verify contents properties and child properties:
-
-  auto contents_properties = clipper->FirstFragment().ContentsProperties();
-  // Since the clipper is isolated, its paint offset should be 0, 0.
-  EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
-  // Ensure that the contents properties match isolation nodes.
-  EXPECT_EQ(clip_properties->TransformIsolationNode(),
-            contents_properties.Transform());
-  EXPECT_EQ(clip_properties->ClipIsolationNode(), contents_properties.Clip());
-  EXPECT_EQ(clip_properties->EffectIsolationNode(),
-            contents_properties.Effect());
-
-  // Child should be using isolation nodes as its local border box properties.
-  EXPECT_EQ(contents_properties.Transform(),
-            child->FirstFragment().LocalBorderBoxProperties().Transform());
-  EXPECT_EQ(contents_properties.Clip(),
-            child->FirstFragment().LocalBorderBoxProperties().Clip());
-  EXPECT_EQ(contents_properties.Effect(),
-            child->FirstFragment().LocalBorderBoxProperties().Effect());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
