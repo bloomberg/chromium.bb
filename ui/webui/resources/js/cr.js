@@ -2,18 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * The global object.
- * @type {!Object}
- * @const
- */
-var global = this;
-
 /** @typedef {{eventName: string, uid: number}} */
 var WebUIListener;
 
 /** Platform, package, object property, and Event support. **/
-var cr = cr || function() {
+var cr = cr || function(global) {
   'use strict';
 
   /**
@@ -497,4 +490,4 @@ var cr = cr || function() {
       return /iPad|iPhone|iPod/.test(navigator.platform);
     }
   };
-}();
+}(this);
