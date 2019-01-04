@@ -82,6 +82,7 @@ static_library("arc") {
     "//chromeos",
     "//chromeos:login_manager_proto",
     "//chromeos:power_manager_proto",
+    "//chromeos/login/login_state",
     "//components/account_id",
     "//components/exo",
     "//components/google/core/browser",
