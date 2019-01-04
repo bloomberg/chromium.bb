@@ -874,12 +874,13 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
 }
 
 void URLRequest::FollowDeferredRedirect(
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
   DCHECK(job_.get());
   DCHECK(status_.is_success());
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
-  job_->FollowDeferredRedirect(modified_request_headers);
+  job_->FollowDeferredRedirect(removed_headers, modified_headers);
 }
 
 void URLRequest::SetAuth(const AuthCredentials& credentials) {
@@ -944,7 +945,8 @@ void URLRequest::PrepareToRestart() {
 
 void URLRequest::Redirect(
     const RedirectInfo& redirect_info,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
   // This method always succeeds. Whether |job_| is allowed to redirect to
   // |redirect_info| is checked in URLRequestJob::CanFollowRedirect, before
   // NotifyReceivedRedirect. This means the delegate can assume that, if it
@@ -967,7 +969,7 @@ void URLRequest::Redirect(
 
   bool clear_body = false;
   net::RedirectUtil::UpdateHttpRequest(url(), method_, redirect_info,
-                                       modified_request_headers,
+                                       removed_headers, modified_headers,
                                        &extra_request_headers_, &clear_body);
   if (clear_body)
     upload_data_stream_.reset();

@@ -637,10 +637,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // This method may be called to follow a redirect that was deferred in
   // response to an OnReceivedRedirect call. If non-null,
-  // |modified_request_headers| are changes applied to the request headers after
+  // |modified_headers| are changes applied to the request headers after
   // updating them for the redirect.
   void FollowDeferredRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // One of the following two methods should be called in response to an
   // OnAuthRequired() callback (and only then).
@@ -760,11 +761,12 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void set_status(URLRequestStatus status);
 
   // Allow the URLRequestJob to redirect this request. If non-null,
-  // |modified_request_headers| are changes applied to the request headers after
-  // updating them for the redirect.
+  // |removed_headers| and |modified_headers| are changes
+  // applied to the request headers after updating them for the redirect.
   void Redirect(
       const RedirectInfo& redirect_info,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Called by URLRequestJob to allow interception when a redirect occurs.
   void NotifyReceivedRedirect(const RedirectInfo& redirect_info,

@@ -51,7 +51,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   ~ThrottlingURLLoader() override;
 
   void FollowRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
@@ -254,8 +255,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   bool response_intercepted_ = false;
 
-  base::Optional<std::vector<std::string>> to_be_removed_request_headers_;
-  base::Optional<net::HttpRequestHeaders> modified_request_headers_;
+  base::Optional<std::vector<std::string>> removed_headers_;
+  base::Optional<net::HttpRequestHeaders> modified_headers_;
 
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;

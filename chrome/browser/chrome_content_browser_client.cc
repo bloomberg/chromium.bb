@@ -2301,7 +2301,7 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
 void ChromeContentBrowserClient::NavigationRequestRedirected(
     int frame_tree_node_id,
     const GURL& url,
-    base::Optional<net::HttpRequestHeaders>* modified_request_headers) {
+    base::Optional<net::HttpRequestHeaders>* modified_headers) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
@@ -2315,7 +2315,7 @@ void ChromeContentBrowserClient::NavigationRequestRedirected(
       std::unique_ptr<net::HttpRequestHeaders> extra_headers;
       policy_header_service->AddPolicyHeaders(url, &extra_headers);
       if (extra_headers)
-        *modified_request_headers = std::move(*extra_headers);
+        *modified_headers = std::move(*extra_headers);
     }
   }
 
@@ -2323,9 +2323,9 @@ void ChromeContentBrowserClient::NavigationRequestRedirected(
       ClientHintsFactory::GetForBrowserContext(browser_context)
           ->GetAdditionalNavigationRequestClientHintsHeaders(url);
   if (client_hints_extra_headers) {
-    if (!modified_request_headers->has_value())
-      *modified_request_headers = net::HttpRequestHeaders();
-    modified_request_headers->value().MergeFrom(*client_hints_extra_headers);
+    if (!modified_headers->has_value())
+      *modified_headers = net::HttpRequestHeaders();
+    modified_headers->value().MergeFrom(*client_hints_extra_headers);
   }
 }
 

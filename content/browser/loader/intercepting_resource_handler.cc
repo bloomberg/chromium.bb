@@ -29,11 +29,13 @@ class InterceptingResourceHandler::Controller : public ResourceController {
     intercepting_handler_->ResumeInternal();
   }
 
-  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                             modified_request_headers) override {
-    DCHECK(!modified_request_headers.has_value())
-        << "Redirect with modified headers was not supported yet. "
-           "crbug.com/845683";
+  void ResumeForRedirect(
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers)
+      override {
+    DCHECK(!removed_headers && !modified_headers)
+        << "Removing or modifying headers from the |new_handler| is not used "
+           "and not supported. See https://crbug.com/845683.";
     Resume();
   }
 

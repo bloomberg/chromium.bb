@@ -160,7 +160,8 @@ class CONTENT_EXPORT ResourceHandler {
   // passed to HoldController and then destroy it.
   void Resume();
   void ResumeForRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
   void Cancel();
   void CancelWithError(int error_code);
 

@@ -205,10 +205,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
       int* extra_load_flags) override;
-  void NavigationRequestRedirected(int frame_tree_node_id,
-                                   const GURL& url,
-                                   base::Optional<net::HttpRequestHeaders>*
-                                       modified_request_headers) override;
+  void NavigationRequestRedirected(
+      int frame_tree_node_id,
+      const GURL& url,
+      base::Optional<net::HttpRequestHeaders>* modified_headers) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;

@@ -653,9 +653,8 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
 // ServiceWorkerSubresourceLoader: URLLoader implementation -----------------
 
 void ServiceWorkerSubresourceLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers,
     const base::Optional<GURL>& new_url) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::FollowRedirect",
@@ -663,17 +662,20 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "new_url",
       redirect_info_->new_url.spec());
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
-  DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
+  // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
+  // not used so far. Add tests and remove this DCHECK to support this feature
+  // if needed. See https://crbug.com/845683.
+  DCHECK(!removed_headers && !modified_headers)
+      << "Redirect with removed or modified headers is not supported yet. See "
+         "https://crbug.com/845683";
+  DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(redirect_info_);
 
   bool should_clear_upload = false;
   net::RedirectUtil::UpdateHttpRequest(
       resource_request_.url, resource_request_.method, *redirect_info_,
-      modified_request_headers, &resource_request_.headers,
+      removed_headers, modified_headers, &resource_request_.headers,
       &should_clear_upload);
   if (should_clear_upload)
     resource_request_.request_body = nullptr;

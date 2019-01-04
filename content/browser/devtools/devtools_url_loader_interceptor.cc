@@ -299,9 +299,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
 
   // network::mojom::URLLoader methods
   void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers,
       const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
@@ -1286,13 +1285,15 @@ void InterceptionJob::Shutdown() {
 
 // URLLoader methods
 void InterceptionJob::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers,
     const base::Optional<GURL>& new_url) {
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
+  // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
+  // not used nor tested so far. Add tests and remove this DCHECK to support
+  // this feature if needed. See https://crbug.com/845683.
+  DCHECK(!removed_headers && !modified_headers)
+      << "Redirect with removed or modified headers is not supported yet. See "
+         "https://crbug.com/845683";
   DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(!waiting_for_resolution_);
@@ -1301,10 +1302,9 @@ void InterceptionJob::FollowRedirect(
   const net::RedirectInfo& info = *response_metadata_->redirect_info;
 
   bool clear_body = false;
-  net::RedirectUtil::UpdateHttpRequest(
-      request->url, request->method, info,
-      base::nullopt /* modified_request_headers */, &request->headers,
-      &clear_body);
+  net::RedirectUtil::UpdateHttpRequest(request->url, request->method, info,
+                                       removed_headers, modified_headers,
+                                       &request->headers, &clear_body);
   if (clear_body)
     request->request_body = nullptr;
   request->method = info.new_method;
@@ -1334,7 +1334,8 @@ void InterceptionJob::FollowRedirect(
   }
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
-    loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+    loader_->FollowRedirect(removed_headers, modified_headers,
+                            base::nullopt /* new_url */);
     return;
   }
 

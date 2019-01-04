@@ -74,11 +74,13 @@ class MimeSniffingResourceHandler::Controller : public ResourceController {
     mime_handler_->ResumeInternal();
   }
 
-  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                             modified_request_headers) override {
-    DCHECK(!modified_request_headers.has_value())
-        << "Redirect with modified headers was not supported yet. "
-           "crbug.com/845683";
+  void ResumeForRedirect(
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers)
+      override {
+    DCHECK(!removed_headers && !modified_headers)
+        << "Redirect with removed or modified headers is not used nor "
+           "supported. See https://crbug.com/845683.";
     Resume();
   }
 
