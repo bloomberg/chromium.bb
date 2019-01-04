@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_utils.h"
-#include "content/test/mock_navigation_client_impl.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
@@ -970,8 +969,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
 
   if (IsPerNavigationMojoInterfaceEnabled()) {
     mojom::NavigationClientAssociatedPtr navigation_client_ptr;
-    StoreNavigationClientRequest(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr));
+    mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr);
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,
@@ -1094,12 +1092,6 @@ void NavigationSimulator::SetSessionHistoryOffset(int session_history_offset) {
   session_history_offset_ = session_history_offset;
   transition_ =
       ui::PageTransitionFromInt(transition_ | ui::PAGE_TRANSITION_FORWARD_BACK);
-}
-
-void NavigationSimulator::StoreNavigationClientRequest(
-    mojom::NavigationClientAssociatedRequest navigation_client_request) {
-  navigation_client_impl_.reset(
-      new MockNavigationClientImpl(std::move(navigation_client_request)));
 }
 
 }  // namespace content

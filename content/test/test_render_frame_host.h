@@ -184,6 +184,37 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   static service_manager::mojom::InterfaceProviderRequest
   CreateStubInterfaceProviderRequest();
 
+ protected:
+  void SendCommitNavigation(
+      mojom::NavigationClient* navigation_client,
+      int64_t navigation_id,
+      const network::ResourceResponseHead& head,
+      const content::CommonNavigationParams& common_params,
+      const content::CommitNavigationParams& commit_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      const base::UnguessableToken& devtools_navigation_token,
+      mojom::FrameNavigationControl::CommitNavigationCallback callback)
+      override;
+  void SendCommitFailedNavigation(
+      mojom::NavigationClient* navigation_client,
+      int64_t navigation_id,
+      const content::CommonNavigationParams& common_params,
+      const content::CommitNavigationParams& commit_params,
+      bool has_stale_copy_in_cache,
+      int32_t error_code,
+      const base::Optional<std::string>& error_page_content,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      mojom::FrameNavigationControl::CommitFailedNavigationCallback callback)
+      override;
+
  private:
   void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
@@ -212,6 +243,16 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // The last commit was for an error page.
   bool last_commit_was_error_page_;
+
+  std::map<int64_t, mojom::FrameNavigationControl::CommitNavigationCallback>
+      commit_callback_;
+  std::map<int64_t, mojom::NavigationClient::CommitNavigationCallback>
+      navigation_client_commit_callback_;
+  std::map<int64_t,
+           mojom::FrameNavigationControl::CommitFailedNavigationCallback>
+      commit_failed_callback_;
+  std::map<int64_t, mojom::NavigationClient::CommitFailedNavigationCallback>
+      navigation_client_commit_failed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };
