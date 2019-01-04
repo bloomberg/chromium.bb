@@ -1205,10 +1205,11 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   if (remove_mask_ & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
     IncrementTaskCountOnUI();
     filesystem_context->default_file_task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ClearPluginPrivateDataOnFileTaskRunner,
-                       base::WrapRefCounted(filesystem_context), storage_origin,
-                       begin, end, std::move(decrement_callback)));
+        FROM_HERE, base::BindOnce(&ClearPluginPrivateDataOnFileTaskRunner,
+                                  base::WrapRefCounted(filesystem_context),
+                                  storage_origin, origin_matcher,
+                                  base::WrapRefCounted(special_storage_policy),
+                                  begin, end, std::move(decrement_callback)));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
