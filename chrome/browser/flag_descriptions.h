@@ -2243,13 +2243,6 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-#if defined(WEBRTC_USE_PIPEWIRE)
-
-extern const char kWebrtcPipeWireCapturerName[];
-extern const char kWebrtcPipeWireCapturerDescription[];
-
-#endif  // #if defined(WEBRTC_USE_PIPEWIRE)
-
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 extern const char kReopenTabInProductHelpName[];

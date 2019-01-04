@@ -4,7 +4,6 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
-import("//third_party/webrtc/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
 group("browser") {
@@ -335,11 +334,6 @@ jumbo_source_set("browser_sources") {
     "//build/config/compiler:wexit_time_destructors",
     "//content:content_implementation",
   ]
-
-  if (rtc_use_pipewire) {
-    configs +=
-        [ "//third_party/webrtc/modules/desktop_capture:pipewire_config" ]
-  }
 
   public_deps = [
     "//components/download/public/common:public",

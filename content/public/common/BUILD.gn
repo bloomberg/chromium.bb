@@ -297,11 +297,6 @@ jumbo_source_set("common_sources") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
   }
 
-  if (rtc_use_pipewire) {
-    configs +=
-        [ "//third_party/webrtc/modules/desktop_capture:pipewire_config" ]
-  }
-
   # //content/common needs to include public headers.
   allow_circular_includes_from = [
     ":interfaces",
