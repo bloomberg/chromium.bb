@@ -72,7 +72,8 @@ class SmartLockMetricsRecorder {
     kPhoneLockedAndRssiTooLow = 15,
     kForcedReauth = 16,
     kRequiredForLogin = 17,
-    kMaxValue = kRequiredForLogin
+    kPhoneNotLockable = 18,
+    kMaxValue = kPhoneNotLockable
   };
 
   static void RecordSmartLockUnlockAuthMethodChoice(

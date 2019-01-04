@@ -645,6 +645,9 @@ EasyUnlockService::GetSmartUnlockPasswordAuthEvent() const {
       case ScreenlockState::PASSWORD_REAUTH:
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
             kForcedReauth;
+      case ScreenlockState::PHONE_NOT_LOCKABLE:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPhoneNotLockable;
       default:
         NOTREACHED();
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
