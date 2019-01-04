@@ -62,6 +62,11 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   leveldb::Status Commit();
 
+  // If is_commit_pending_ is true this method does the necessary state
+  // manipulation to prepare the transaction to be committed, processes its
+  // task_queue_, and commits the transaction.
+  void ForcePendingCommit();
+
   // This object is destroyed by this method.
   void Abort(const IndexedDBDatabaseError& error);
 
@@ -104,6 +109,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   IndexedDBDatabase* database() const { return database_.get(); }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
   IndexedDBConnection* connection() const { return connection_.get(); }
+  bool is_commit_pending() const { return is_commit_pending_; }
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }
@@ -182,7 +188,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   bool used_ = false;
   State state_ = CREATED;
-  bool commit_pending_ = false;
+  bool is_commit_pending_ = false;
   // We are owned by the connection object, but during force closes sometimes
   // there are issues if there is a pending OpenRequest. So use a WeakPtr.
   base::WeakPtr<IndexedDBConnection> connection_;

@@ -435,7 +435,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   EXPECT_FALSE(transaction->should_process_queue_);
   EXPECT_TRUE(transaction->backing_store_transaction_begun_);
   EXPECT_TRUE(transaction->used_);
-  EXPECT_FALSE(transaction->commit_pending_);
+  EXPECT_FALSE(transaction->is_commit_pending_);
 
   // This task will be ignored.
   transaction->ScheduleTask(

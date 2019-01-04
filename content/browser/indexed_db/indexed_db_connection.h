@@ -66,7 +66,11 @@ class CONTENT_EXPORT IndexedDBConnection {
   void AbortTransaction(IndexedDBTransaction* transaction,
                         const IndexedDBDatabaseError& error);
 
-  void AbortAllTransactions(const IndexedDBDatabaseError& error);
+  // Aborts or commits each transaction owned by this connection depending on
+  // the transaction's current state. Any transaction with is_commit_pending_
+  // false is aborted, and any transaction with is_commit_pending_ true is
+  // committed.
+  void FinishAllTransactions(const IndexedDBDatabaseError& error);
 
   IndexedDBTransaction* GetTransaction(int64_t id) const;
 
