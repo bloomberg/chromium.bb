@@ -106,6 +106,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
+  size_t GetNumReferenceFrames() const override;
 
  private:
   // Update ref_frames_ based on the information in current frame header.
