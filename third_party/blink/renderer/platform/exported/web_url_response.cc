@@ -344,10 +344,6 @@ bool WebURLResponse::HasUrlListViaServiceWorker() const {
   return resource_response_->UrlListViaServiceWorker().size() > 0;
 }
 
-void WebURLResponse::SetMultipartBoundary(const char* bytes, size_t size) {
-  resource_response_->SetMultipartBoundary(bytes, size);
-}
-
 void WebURLResponse::SetCacheStorageCacheName(
     const WebString& cache_storage_cache_name) {
   resource_response_->SetCacheStorageCacheName(cache_storage_cache_name);

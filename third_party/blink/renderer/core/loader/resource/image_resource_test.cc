@@ -377,7 +377,8 @@ TEST(ImageResourceTest, MultipartImage) {
   // flagged as multipart.
   ResourceResponse multipart_response(NullURL());
   multipart_response.SetMimeType("multipart/x-mixed-replace");
-  multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
+  multipart_response.SetHTTPHeaderField(
+      http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
   EXPECT_FALSE(image_resource->ResourceBuffer());
@@ -457,7 +458,8 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
 
   ResourceResponse multipart_response(NullURL());
   multipart_response.SetMimeType("multipart/x-mixed-replace");
-  multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
+  multipart_response.SetHTTPHeaderField(
+      http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
   EXPECT_FALSE(image_resource->GetContent()->HasImage());

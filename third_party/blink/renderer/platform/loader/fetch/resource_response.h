@@ -200,8 +200,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   void ClearHTTPHeaderField(const AtomicString& name);
   const HTTPHeaderMap& HttpHeaderFields() const;
 
-  bool IsMultipart() const { return MimeType() == "multipart/x-mixed-replace"; }
-
   bool IsAttachment() const;
 
   AtomicString HttpContentType() const;
@@ -328,12 +326,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   void SetURLListViaServiceWorker(const Vector<KURL>& url_list) {
     url_list_via_service_worker_ = url_list;
-  }
-
-  const Vector<char>& MultipartBoundary() const { return multipart_boundary_; }
-  void SetMultipartBoundary(const char* bytes, uint32_t size) {
-    multipart_boundary_.clear();
-    multipart_boundary_.Append(bytes, size);
   }
 
   const String& CacheStorageCacheName() const {
@@ -529,9 +521,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // The manifest url of the appcache this response was retrieved from, if any.
   // Note: only valid for main resource responses.
   KURL app_cache_manifest_url_;
-
-  // The multipart boundary of this response.
-  Vector<char> multipart_boundary_;
 
   // The URL list of the response which was fetched by the ServiceWorker.
   // This is empty if the response was created inside the ServiceWorker.

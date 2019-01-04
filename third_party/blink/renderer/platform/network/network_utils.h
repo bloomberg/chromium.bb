@@ -46,6 +46,9 @@ PLATFORM_EXPORT bool IsLegacySymantecCertError(int);
 
 PLATFORM_EXPORT String GenerateAcceptLanguageHeader(const String&);
 
+PLATFORM_EXPORT Vector<char> ParseMultipartBoundary(
+    const AtomicString& content_type_header);
+
 }  // namespace network_utils
 
 }  // namespace blink

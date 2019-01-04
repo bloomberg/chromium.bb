@@ -45,7 +45,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -840,20 +839,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
-
-  if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
-    std::string content_type;
-    info.headers->EnumerateHeader(nullptr, "content-type", &content_type);
-
-    std::string mime_type;
-    std::string charset;
-    bool had_charset = false;
-    std::string boundary;
-    net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
-                                    &had_charset, &boundary);
-    base::TrimString(boundary, " \"", &boundary);
-    response.SetMultipartBoundary(boundary.data(), boundary.size());
-  }
 
   if (use_stream_on_response_) {
     auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
