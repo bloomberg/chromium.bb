@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 

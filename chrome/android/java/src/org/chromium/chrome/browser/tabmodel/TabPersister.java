@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.util.Log;
 
-import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tab.TabState;
 
 import java.io.File;
 
