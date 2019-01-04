@@ -7,8 +7,7 @@
 
 #include <map>
 
-#include "android_webview/browser/render_thread_manager_client.h"
-#include "android_webview/public/browser/draw_gl.h"
+#include "android_webview/browser/hardware_renderer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -41,7 +40,7 @@ class WindowHooks {
   virtual void DidSyncOnRT() = 0;
   virtual void WillProcessOnRT() = 0;
   virtual void DidProcessOnRT() = 0;
-  virtual bool WillDrawOnRT(AwDrawGLInfo* draw_info) = 0;
+  virtual bool WillDrawOnRT(HardwareRendererDrawParams* params) = 0;
   virtual void DidDrawOnRT() = 0;
 };
 
@@ -98,12 +97,10 @@ class FakeWindow {
   DISALLOW_COPY_AND_ASSIGN(FakeWindow);
 };
 
-class FakeFunctor : public RenderThreadManagerClient {
+class FakeFunctor {
  public:
-  using DrawGLCallback = base::RepeatingCallback<void(AwDrawGLInfo*)>;
-
   FakeFunctor();
-  ~FakeFunctor() override;
+  ~FakeFunctor();
 
   void Init(FakeWindow* window,
             std::unique_ptr<RenderThreadManager> render_thread_manager);
@@ -114,13 +111,10 @@ class FakeFunctor : public RenderThreadManagerClient {
   CompositorFrameConsumer* GetCompositorFrameConsumer();
   void OnWindowDetached();
 
-  // RenderThreadManagerClient overrides
-  bool RequestInvokeGL(bool wait_for_completion) override;
-  void DetachFunctorFromView() override;
-
  private:
+  bool RequestInvokeGL(bool wait_for_completion);
+
   FakeWindow* window_;
-  DrawGLCallback callback_;
   std::unique_ptr<RenderThreadManager> render_thread_manager_;
   gfx::Rect committed_location_;
 };

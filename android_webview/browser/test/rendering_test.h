@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "android_webview/browser/browser_view_renderer_client.h"
-#include "android_webview/browser/render_thread_manager_client.h"
 #include "android_webview/browser/test/fake_window.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -66,7 +65,7 @@ class RenderingTest : public testing::Test,
   void DidSyncOnRT() override {}
   void WillProcessOnRT() override {}
   void DidProcessOnRT() override {}
-  bool WillDrawOnRT(AwDrawGLInfo* draw_info) override;
+  bool WillDrawOnRT(HardwareRendererDrawParams* params) override;
   void DidDrawOnRT() override {}
 
   virtual void OnParentDrawConstraintsUpdated() {}
@@ -96,8 +95,6 @@ class RenderingTest : public testing::Test,
   std::unique_ptr<content::TestSynchronousCompositor> compositor_;
 
  private:
-  void DrawGL(AwDrawGLInfo* aw_draw_gl_info);
-
   const std::unique_ptr<base::MessageLoop> message_loop_;
   base::RunLoop run_loop_;
 

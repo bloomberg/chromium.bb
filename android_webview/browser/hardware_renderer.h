@@ -14,8 +14,6 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
-struct AwDrawGLInfo;
-
 namespace viz {
 class CompositorFrameSinkSupport;
 class ParentLocalSurfaceIdAllocator;
@@ -26,6 +24,17 @@ namespace android_webview {
 class ChildFrame;
 class RenderThreadManager;
 class SurfacesInstance;
+
+struct HardwareRendererDrawParams {
+  int clip_left;
+  int clip_top;
+  int clip_right;
+  int clip_bottom;
+  int width;
+  int height;
+  bool is_layer;
+  float transform[16];
+};
 
 class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
  public:
@@ -44,7 +53,7 @@ class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
   explicit HardwareRenderer(RenderThreadManager* state);
   ~HardwareRenderer() override;
 
-  void DrawGL(AwDrawGLInfo* draw_info);
+  void DrawGL(HardwareRendererDrawParams* params);
   void CommitFrame();
 
  private:

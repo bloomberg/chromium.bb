@@ -644,7 +644,6 @@ source_set("common") {
     "browser/popup_touch_handle_drawable.h",
     "browser/render_thread_manager.cc",
     "browser/render_thread_manager.h",
-    "browser/render_thread_manager_client.h",
     "browser/renderer_host/auto_login_parser.cc",
     "browser/renderer_host/auto_login_parser.h",
     "browser/renderer_host/aw_render_view_host_ext.cc",
