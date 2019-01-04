@@ -1415,7 +1415,8 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormData* form,
     FormFieldData* field) {
   form->origin = GetCanonicalOriginForDocument(document);
-  form->button_titles = InferButtonTitlesForForm(document.Body());
+  if (!document.Body().IsNull())
+    form->button_titles = InferButtonTitlesForForm(document.Body());
   if (document.GetFrame() && document.GetFrame()->Top()) {
     form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
   } else {
