@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.tab;
 
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -282,8 +282,9 @@ public class TabState {
                 // Skip ahead to avoid re-reading data that mmap'd.
                 long skipped = input.skip(size);
                 if (skipped != size) {
-                    Log.e(TAG, "Only skipped " + skipped + " bytes when " + size + " should've "
-                            + "been skipped. Tab restore may fail.");
+                    Log.e(TAG,
+                            "Only skipped " + skipped + " bytes when " + size + " should've "
+                                    + "been skipped. Tab restore may fail.");
                 }
             }
             tabState.parentId = stream.readInt();
@@ -303,8 +304,9 @@ public class TabState {
 
                 // Could happen if reading a version of a TabState that does not include the
                 // version id.
-                Log.w(TAG, "Failed to read saved state version id from tab state. Assuming "
-                        + "version " + tabState.contentsState.version());
+                Log.w(TAG,
+                        "Failed to read saved state version id from tab state. Assuming "
+                                + "version " + tabState.contentsState.version());
             }
             try {
                 // Skip obsolete sync ID.
@@ -316,8 +318,9 @@ public class TabState {
             } catch (EOFException eof) {
                 // Could happen if reading a version of TabState without this flag set.
                 tabState.shouldPreserve = false;
-                Log.w(TAG, "Failed to read shouldPreserve flag from tab state. "
-                        + "Assuming shouldPreserve is false");
+                Log.w(TAG,
+                        "Failed to read shouldPreserve flag from tab state. "
+                                + "Assuming shouldPreserve is false");
             }
             tabState.mIsIncognito = encrypted;
             try {
@@ -327,8 +330,9 @@ public class TabState {
                 // Could happen if reading a version of TabState without a theme color.
                 tabState.themeColor = Color.WHITE;
                 tabState.mHasThemeColor = false;
-                Log.w(TAG, "Failed to read theme color from tab state. "
-                        + "Assuming theme color is white");
+                Log.w(TAG,
+                        "Failed to read theme color from tab state. "
+                                + "Assuming theme color is white");
             }
             try {
                 tabState.tabLaunchTypeAtCreation = stream.readInt();
@@ -536,8 +540,7 @@ public class TabState {
                         name.substring(SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO.length()));
                 return Pair.create(id, true);
             } else if (name.startsWith(SAVED_TAB_STATE_FILE_PREFIX)) {
-                int id = Integer.parseInt(
-                        name.substring(SAVED_TAB_STATE_FILE_PREFIX.length()));
+                int id = Integer.parseInt(name.substring(SAVED_TAB_STATE_FILE_PREFIX.length()));
                 return Pair.create(id, false);
             }
         } catch (NumberFormatException ex) {

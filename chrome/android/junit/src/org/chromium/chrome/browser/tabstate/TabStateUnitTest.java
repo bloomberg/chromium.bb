@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 
 import java.io.DataOutputStream;
