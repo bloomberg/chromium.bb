@@ -28,7 +28,7 @@ def CheckVersionUpdatedInDownloadFileTypeList(input_api, output_api):
   # At worst, the submitter can skip the presubmit check on upload if it isn't
   # correct.
   return [output_api.PresubmitError(
-      'Increment |version_id| in download_file_types.ascipb if you are '
+      'Increment |version_id| in download_file_types.asciipb if you are '
       'updating the file types proto.')]
 
 def CheckChangeOnUpload(input_api, output_api):
