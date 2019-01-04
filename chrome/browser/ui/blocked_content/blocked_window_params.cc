@@ -14,6 +14,7 @@
 
 BlockedWindowParams::BlockedWindowParams(
     const GURL& target_url,
+    const url::Origin& initiator_origin,
     const content::Referrer& referrer,
     const std::string& frame_name,
     WindowOpenDisposition disposition,
@@ -21,6 +22,7 @@ BlockedWindowParams::BlockedWindowParams(
     bool user_gesture,
     bool opener_suppressed)
     : target_url_(target_url),
+      initiator_origin_(initiator_origin),
       referrer_(referrer),
       frame_name_(frame_name),
       disposition_(disposition),
@@ -40,6 +42,7 @@ NavigateParams BlockedWindowParams::CreateNavigateParams(
   NavigateParams nav_params(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), popup_url,
       ui::PAGE_TRANSITION_LINK);
+  nav_params.initiator_origin = initiator_origin_;
   nav_params.referrer = referrer_;
   nav_params.frame_name = frame_name_;
   nav_params.source_contents = web_contents;
