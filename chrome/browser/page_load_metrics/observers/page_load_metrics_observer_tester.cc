@@ -119,11 +119,19 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
 
 void PageLoadMetricsObserverTester::SimulateResourceDataUseUpdate(
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
-  observer_->OnTimingUpdated(
-      web_contents()->GetMainFrame(), mojom::PageLoadTimingPtr(base::in_place),
-      mojom::PageLoadMetadataPtr(base::in_place),
-      mojom::PageLoadFeaturesPtr(base::in_place), resources,
-      mojom::PageRenderDataPtr(base::in_place));
+  SimulateResourceDataUseUpdate(resources, web_contents()->GetMainFrame());
+}
+
+void PageLoadMetricsObserverTester::SimulateResourceDataUseUpdate(
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+    content::RenderFrameHost* render_frame_host) {
+  auto timing = mojom::PageLoadTimingPtr(base::in_place);
+  InitPageLoadTimingForTest(timing.get());
+  observer_->OnTimingUpdated(render_frame_host, std::move(timing),
+                             mojom::PageLoadMetadataPtr(base::in_place),
+                             mojom::PageLoadFeaturesPtr(base::in_place),
+                             resources,
+                             mojom::PageRenderDataPtr(base::in_place));
 }
 
 void PageLoadMetricsObserverTester::SimulateLoadedResource(

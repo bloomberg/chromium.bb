@@ -1,0 +1,12 @@
+<html>
+<iframe id="blank_frame" name="google_ads_iframe"></iframe>
+
+<script>
+  let iframe = document.getElementById("blank_frame");
+  let doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write("<html>Rewritten. <img src=pixel.png> <img src=pixel2.png> <img src=pixel3.png></html>");
+  doc.close();
+</script>
+
+</html>

@@ -111,6 +111,7 @@ PageCappingPageLoadMetricsObserver::OnCommit(
 }
 
 void PageCappingPageLoadMetricsObserver::OnResourceDataUseObserved(
+    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   last_data_use_time_ = clock_->NowTicks();

@@ -83,6 +83,9 @@ class PageLoadMetricsObserverTestHarness
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+  void SimulateResourceDataUseUpdate(
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+      content::RenderFrameHost* render_frame_host);
   void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
 
   // Simulates a loaded resource. Main frame resources must specify a
