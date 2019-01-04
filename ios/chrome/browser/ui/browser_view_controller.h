@@ -106,11 +106,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // bubble will not be shown.
 - (void)presentBubblesIfEligible;
 
-// Called when the browser state provided to this instance is being destroyed.
-// At this point the browser will no longer ever be active, and will likely be
-// deallocated soon.
-- (void)browserStateDestroyed;
-
 // Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;

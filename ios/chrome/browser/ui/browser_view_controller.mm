@@ -1272,32 +1272,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [self.bubblePresenter presentBubblesIfEligible];
 }
 
-- (void)browserStateDestroyed {
-  [self setActive:NO];
-  [_paymentRequestManager close];
-  _paymentRequestManager = nil;
-  [self.tabModel browserStateDestroyed];
-
-  TextToSpeechPlaybackControllerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
-
-  WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
-
-  // Disconnect child coordinators.
-  [_activityServiceCoordinator disconnect];
-  [self.popupMenuCoordinator stop];
-  [self.tabStripCoordinator stop];
-  self.tabStripCoordinator = nil;
-  self.tabStripView = nil;
-
-  _browserState = nullptr;
-  [self.commandDispatcher stopDispatchingToTarget:self];
-  self.commandDispatcher = nil;
-}
-
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox {
   NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
@@ -1468,6 +1442,37 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)shutdown {
   DCHECK(!_isShutdown);
   _isShutdown = YES;
+
+  [self setActive:NO];
+  [_paymentRequestManager close];
+  _paymentRequestManager = nil;
+  [self.tabModel browserStateDestroyed];
+
+  if (_browserState) {
+    TextToSpeechPlaybackController* controller =
+        TextToSpeechPlaybackControllerFactory::GetInstance()
+            ->GetForBrowserState(_browserState);
+    if (controller)
+      controller->SetWebStateList(nullptr);
+
+    WebStateListWebUsageEnabler* webUsageEnabler =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            _browserState);
+    if (webUsageEnabler)
+      webUsageEnabler->SetWebStateList(nullptr);
+  }
+
+  // Disconnect child coordinators.
+  [_activityServiceCoordinator disconnect];
+  [self.popupMenuCoordinator stop];
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  self.tabStripView = nil;
+
+  _browserState = nullptr;
+  [self.commandDispatcher stopDispatchingToTarget:self];
+  self.commandDispatcher = nil;
+
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
   [self.primaryToolbarCoordinator stop];
@@ -2536,6 +2541,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (void)dismissPopups {
+  // The dispatcher may not be fully connected during shutdown, so selectors may
+  // be unrecognized.
+  if (_isShutdown)
+    return;
   [self.dispatcher hidePageInfo];
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.bubblePresenter dismissBubbles];
@@ -4321,7 +4330,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     _locationBarEditCancelledLoad = NO;
 
     web::WebState* webState = self.tabModel.currentTab.webState;
-    if (webState && ![self.helper isToolbarLoading:webState])
+    if (!_isShutdown && webState && ![self.helper isToolbarLoading:webState])
       webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
                                                false /* check_for_repost */);
   }

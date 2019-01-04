@@ -169,7 +169,6 @@
 
 // Shuts down the BrowserViewController.
 - (void)destroyViewController {
-  [self.viewController browserStateDestroyed];
   [self.viewController shutdown];
   _viewController = nil;
 }
