@@ -260,6 +260,7 @@ function wrap(value) {
   // frames[0].document.body instanceof Object == false even though
   // typeof(frames[0].document.body) == 'object'.
   if ((typeof(value) == 'object' && value != null) ||
+      (value instanceof HTMLAllCollection) ||
       (typeof(value) == 'function' && value.nodeName &&
        value.nodeType == NodeType.ELEMENT)) {
     var nodeType = value['nodeType'];
