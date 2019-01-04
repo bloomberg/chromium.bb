@@ -329,7 +329,8 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "ReceiveBeginFrameDiscard");
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
-    // sink know that we didn't use this BeginFrame.
+    // sink know that we didn't use this BeginFrame. OnBeginFrame() can also be
+    // called to deliver presentation feedback.
     DidNotProduceFrame(viz::BeginFrameAck(args, false));
     return;
   }

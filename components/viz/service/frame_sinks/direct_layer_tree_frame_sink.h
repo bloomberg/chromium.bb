@@ -99,7 +99,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void OnBeginFramePausedChanged(bool paused) override;
 
   // ExternalBeginFrameSourceClient implementation:
-  void OnNeedsBeginFrames(bool needs_begin_frame) override;
+  void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   // ContextLostObserver implementation:
   void OnContextLost() override;
@@ -112,6 +112,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
+  bool needs_begin_frames_ = false;
   const FrameSinkId frame_sink_id_;
   CompositorFrameSinkSupportManager* const support_manager_;
   FrameSinkManagerImpl* frame_sink_manager_;
