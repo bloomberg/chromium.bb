@@ -70,15 +70,11 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaMuteButton:
     case kMediaPlayButton:
     case kMediaSliderThumb:
-    case kMediaShowClosedCaptionsButton:
-    case kMediaHideClosedCaptionsButton:
     case kMediaTextTrackList:
     case kMediaUnMuteButton:
     case kMediaPauseButton:
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
-    case kMediaVolumeSliderContainer:
-    case kMediaVolumeSliderThumb:
     case kMediaExitFullscreenButton:
     case kMediaCastOffButton:
     case kMediaCastOnButton:
@@ -94,8 +90,8 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaAnimatedArrowContainer:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
-    // Removed as a part of the a11y tree rewrite https://crbug.com/836549.
-    case kMediaVolumeSlider:
+    // Removed as a part of the a11y tree rewrite https://crbug/836549.
+    case kMediaIgnore:
       NOTREACHED();
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
@@ -148,10 +144,6 @@ String AccessibilityMediaControl::TextAlternative(
       return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplay);
     case kMediaTimeRemainingDisplay:
       return QueryString(WebLocalizedString::kAXMediaTimeRemainingDisplay);
-    case kMediaShowClosedCaptionsButton:
-      return QueryString(WebLocalizedString::kAXMediaShowClosedCaptionsButton);
-    case kMediaHideClosedCaptionsButton:
-      return QueryString(WebLocalizedString::kAXMediaHideClosedCaptionsButton);
     case kMediaCastOffButton:
     case kMediaOverlayCastOffButton:
       return QueryString(WebLocalizedString::kAXMediaCastOffButton);
@@ -167,8 +159,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
-    case kMediaVolumeSliderContainer:
-    case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
@@ -183,7 +173,8 @@ String AccessibilityMediaControl::TextAlternative(
       return QueryString(
           WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton);
     case kMediaSlider:
-    case kMediaVolumeSlider:
+    // Removed as a part of the a11y tree rewrite https://crbug/836549.
+    case kMediaIgnore:
       NOTREACHED();
       return QueryString(WebLocalizedString::kAXMediaDefault);
   }
@@ -213,8 +204,6 @@ String AccessibilityMediaControl::Description(
     case kMediaUnMuteButton:
     case kMediaPlayButton:
     case kMediaPauseButton:
-    case kMediaShowClosedCaptionsButton:
-    case kMediaHideClosedCaptionsButton:
     case kMediaCastOffButton:
     case kMediaOverlayCastOffButton:
     case kMediaCastOnButton:
@@ -227,15 +216,14 @@ String AccessibilityMediaControl::Description(
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
-    case kMediaVolumeSliderContainer:
-    case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
     case kMediaDownloadButton:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
-    case kMediaVolumeSlider:
+    // Removed as a part of the a11y tree rewrite https://crbug/836549.
+    case kMediaIgnore:
       NOTREACHED();
       return QueryString(WebLocalizedString::kAXMediaDefault);
   }
@@ -262,8 +250,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaPlayButton:
     case kMediaUnMuteButton:
     case kMediaPauseButton:
-    case kMediaShowClosedCaptionsButton:
-    case kMediaHideClosedCaptionsButton:
     case kMediaOverlayCastOffButton:
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:
@@ -276,7 +262,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
       return ax::mojom::Role::kButton;
 
     case kMediaTimelineContainer:
-    case kMediaVolumeSliderContainer:
     case kMediaTextTrackList:
     case kMediaOverflowList:
       return ax::mojom::Role::kGroup;
@@ -286,13 +271,12 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaTimeRemainingDisplay:
     case kMediaSliderThumb:
     case kMediaTrackSelectionCheckmark:
-    case kMediaVolumeSliderThumb:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return ax::mojom::Role::kUnknown;
 
     case kMediaSlider:
-    case kMediaVolumeSlider:
+    case kMediaIgnore:
       // Not using AccessibilityMediaControl.
       NOTREACHED();
       return ax::mojom::Role::kUnknown;

@@ -312,11 +312,10 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXList::Create(layout_object, *this);
 
   // media controls
-  // TODO(https://crbug.com/836549): Remove for the rest of the controls.
-  // kMediaVolumeSlider has already been removed.
+  // TODO(836549): Remove for the rest of the controls.
   if (node && node->IsMediaControlElement() &&
       MediaControlElementsHelper::GetMediaControlElementType(node) !=
-          kMediaVolumeSlider) {
+          kMediaIgnore) {
     return AccessibilityMediaControl::Create(layout_object, *this);
   }
 
