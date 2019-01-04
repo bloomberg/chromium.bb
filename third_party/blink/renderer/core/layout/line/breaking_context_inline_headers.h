@@ -87,9 +87,6 @@ class BreakingContext {
         floats_fit_on_line_(true),
         collapse_white_space_(false),
         starting_new_paragraph_(line_info_.PreviousLineBrokeCleanly()),
-        allow_images_to_break_(
-            !block.GetDocument().InQuirksMode() || !block.IsTableCell() ||
-            !block_style_->LogicalWidth().IsIntrinsicOrAuto()),
         at_end_(false),
         line_midpoint_state_(resolver.GetMidpointState()) {
     line_info_.SetPreviousLineBrokeCleanly(false);
@@ -217,7 +214,6 @@ class BreakingContext {
   bool floats_fit_on_line_;
   bool collapse_white_space_;
   bool starting_new_paragraph_;
-  bool allow_images_to_break_;
   bool at_end_;
 
   LineMidpointState& line_midpoint_state_;
@@ -643,7 +639,6 @@ inline void BreakingContext::HandleReplaced() {
   // Break on replaced elements if either has normal white-space,
   // or if the replaced element is ruby that can break before.
   if ((auto_wrap_ || ComputedStyle::AutoWrap(last_ws_)) &&
-      (!current_.GetLineLayoutItem().IsImage() || allow_images_to_break_) &&
       (!current_.GetLineLayoutItem().IsRubyRun() ||
        LineLayoutRubyRun(current_.GetLineLayoutItem())
            .CanBreakBefore(layout_text_info_.line_break_iterator_))) {
@@ -1602,7 +1597,6 @@ inline void BreakingContext::CommitAndUpdateLineBreakIfNeeded() {
   if (!current_.GetLineLayoutItem().IsFloatingOrOutOfFlowPositioned()) {
     last_object_ = current_.GetLineLayoutItem();
     if (last_object_.IsAtomicInlineLevel() && auto_wrap_ &&
-        (!last_object_.IsImage() || allow_images_to_break_) &&
         (!last_object_.IsListMarker() ||
          LineLayoutListMarker(last_object_).IsInside()) &&
         !last_object_.IsRubyRun()) {
