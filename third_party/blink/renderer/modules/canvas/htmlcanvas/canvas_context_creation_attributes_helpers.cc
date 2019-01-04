@@ -23,7 +23,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.premultiplied_alpha = attrs->premultipliedAlpha();
   result.preserve_drawing_buffer = attrs->preserveDrawingBuffer();
   result.stencil = attrs->stencil();
-  result.compatible_xr_device = attrs->compatibleXRDevice();
+  result.xr_compatible = attrs->xrCompatible();
   return result;
 }
 

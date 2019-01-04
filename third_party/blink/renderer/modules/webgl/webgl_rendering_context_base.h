@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
@@ -614,8 +613,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   scoped_refptr<StaticBitmapImage> GetStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
-  ScriptPromise setCompatibleXRDevice(ScriptState*, XRDevice*);
-  bool IsXRDeviceCompatible(const XRDevice*);
+  ScriptPromise makeXRCompatible(ScriptState*);
+  bool IsXRCompatible();
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -760,7 +759,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   TraceWrapperMember<WebGLFramebuffer> framebuffer_binding_;
   TraceWrapperMember<WebGLRenderbuffer> renderbuffer_binding_;
 
-  Member<XRDevice> compatible_xr_device_;
+  bool xr_compatible_;
 
   HeapVector<TextureUnitState> texture_units_;
   wtf_size_t active_texture_unit_;
@@ -1714,9 +1713,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }
 
-  // Returns true if the context is compatible with the given device as defined
+  // Returns true if the context is compatible with the XR device as defined
   // by https://immersive-web.github.io/webxr/spec/latest/#contextcompatibility
-  bool ContextCreatedOnCompatibleAdapter(const XRDevice*);
+  bool ContextCreatedOnXRCompatibleAdapter();
 
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) const;

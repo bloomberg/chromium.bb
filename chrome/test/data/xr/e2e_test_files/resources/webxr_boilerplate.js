@@ -15,6 +15,7 @@ if (typeof initializationSteps !== 'undefined') {
 var webglCanvas = document.getElementById('webgl-canvas');
 var glAttribs = {
   alpha: false,
+  xrCompatible: true,
 };
 var gl = null;
 var xrDevice = null;
@@ -112,8 +113,6 @@ function onSessionStarted(session) {
   session.addEventListener('end', onSessionEnded);
   // Initialize the WebGL context for use with XR if it hasn't been already
   if (!gl) {
-    glAttribs['compatibleXRDevice'] = session.device;
-
     // Create an offscreen canvas and get its context
     let offscreenCanvas = document.createElement('canvas');
     gl = offscreenCanvas.getContext('webgl', glAttribs);

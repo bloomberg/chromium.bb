@@ -31,11 +31,7 @@ class CORE_EXPORT CanvasContextCreationAttributesCore {
   bool premultiplied_alpha = true;
   bool preserve_drawing_buffer = false;
   bool stencil = false;
-
-  // This attribute is of type XRDevice, defined in modules/xr/xr_device.h
-  Member<ScriptWrappable> compatible_xr_device;
-
-  void Trace(blink::Visitor*);
+  bool xr_compatible = false;
 };
 
 }  // namespace blink

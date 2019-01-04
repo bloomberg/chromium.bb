@@ -92,7 +92,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -816,38 +815,35 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   return resource_provider->Snapshot();
 }
 
-ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
-    ScriptState* script_state,
-    XRDevice* xr_device) {
-
+ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
+    ScriptState* script_state) {
   if (isContextLost()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            "Context lost."));
   }
 
-  if (xr_device == compatible_xr_device_) {
+  if (xr_compatible_) {
     // Returns a script promise resolved with undefined.
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  if (ContextCreatedOnCompatibleAdapter(xr_device)) {
-    compatible_xr_device_ = xr_device;
+  if (ContextCreatedOnXRCompatibleAdapter()) {
+    xr_compatible_ = true;
     return ScriptPromise::CastUndefined(script_state);
-  } else {
-    // TODO(http://crbug.com/876140) Trigger context loss and recreate on
-    // compatible GPU.
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(
-            DOMExceptionCode::kNotSupportedError,
-            "Context is not compatible. Switching not yet implemented."));
   }
+
+  // TODO(http://crbug.com/876140) Trigger context loss and recreate on
+  // compatible GPU.
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      DOMException::Create(
+          DOMExceptionCode::kNotSupportedError,
+          "Context is not compatible. Switching not yet implemented."));
 }
 
-bool WebGLRenderingContextBase::IsXRDeviceCompatible(
-    const XRDevice* xr_device) {
-  return xr_device == compatible_xr_device_;
+bool WebGLRenderingContextBase::IsXRCompatible() {
+  return xr_compatible_;
 }
 
 namespace {
@@ -1022,8 +1018,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a
   // compatible adapter.
-  compatible_xr_device_ =
-      static_cast<XRDevice*>(requested_attributes.compatible_xr_device.Get());
+  xr_compatible_ = requested_attributes.xr_compatible;
 
   context_group_->AddContext(this);
 
@@ -1576,8 +1571,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   return true;
 }
 
-bool WebGLRenderingContextBase::ContextCreatedOnCompatibleAdapter(
-    const XRDevice* device) {
+bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
   // TODO(http://crbug.com/876140) Determine if device is compatible with
   // current context.
   return true;
@@ -2906,9 +2900,7 @@ WebGLContextAttributes* WebGLRenderingContextBase::getContextAttributes()
   if (CreationAttributes().stencil && !GetDrawingBuffer()->HasStencilBuffer())
     result->setStencil(false);
   result->setAntialias(GetDrawingBuffer()->Multisample());
-  if (compatible_xr_device_) {
-    result->setCompatibleXRDevice(compatible_xr_device_);
-  }
+  result->setXrCompatible(xr_compatible_);
   return result;
 }
 
@@ -7998,7 +7990,6 @@ void WebGLRenderingContextBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_program_);
   visitor->Trace(framebuffer_binding_);
   visitor->Trace(renderbuffer_binding_);
-  visitor->Trace(compatible_xr_device_);
   visitor->Trace(texture_units_);
   visitor->Trace(extensions_);
   CanvasRenderingContext::Trace(visitor);

@@ -34,7 +34,7 @@ dictionary WebGLContextAttributes {
     boolean premultipliedAlpha = true;
     boolean preserveDrawingBuffer = false;
     boolean failIfMajorPerformanceCaveat = false;
-    [OriginTrialEnabled=WebXR] XRDevice compatibleXRDevice = null;
+    [OriginTrialEnabled=WebXR] boolean xrCompatible = false;
     // TODO(crbug.com/788439): remove OriginTrialEnabled.
     [OriginTrialEnabled=LowLatencyCanvas] boolean lowLatency = false;
 };
