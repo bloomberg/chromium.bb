@@ -575,6 +575,7 @@ class VM(device.Device):
       qemu_args.extend(['-display', 'none'])
     logging.info('Pid file: %s', self.pidfile)
     self.RunCommand(qemu_args)
+    self.WaitForBoot()
 
   def _GetVMPid(self):
     """Get the pid of the VM.

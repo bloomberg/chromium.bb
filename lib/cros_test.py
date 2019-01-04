@@ -69,8 +69,10 @@ class CrOSTest(object):
 
   def Run(self):
     """Start a VM, build/deploy, run tests, stop the VM."""
-    self._StartVM()
-    self._device.WaitForBoot()
+    if self._device.is_vm:
+      self._StartVM()
+    else:
+      self._device.WaitForBoot()
 
     self._Build()
     self._Deploy()
