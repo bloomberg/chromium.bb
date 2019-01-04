@@ -259,6 +259,15 @@ void FakeSmbProviderClient::ContinueReadDirectory(
       base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry_list));
 }
 
+void FakeSmbProviderClient::UpdateMountCredentials(int32_t mount_id,
+                                                   std::string workgroup,
+                                                   std::string username,
+                                                   base::ScopedFD password_fd,
+                                                   StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
+}
+
 void FakeSmbProviderClient::ClearShares() {
   shares_.clear();
 }
