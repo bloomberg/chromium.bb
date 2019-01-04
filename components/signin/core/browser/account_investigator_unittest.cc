@@ -62,7 +62,6 @@ class AccountInvestigatorTest : public testing::Test {
 
   ~AccountInvestigatorTest() override { investigator_.Shutdown(); }
 
-  FakeSigninManager* signin_manager() { return &signin_manager_; }
   identity::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
