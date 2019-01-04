@@ -26,7 +26,7 @@ class AppInstaller : public extensions::WebstoreStandaloneInstaller {
                const std::string& item_id,
                Profile* profile,
                bool silent_installation,
-               const Callback& callback);
+               Callback callback);
 
  protected:
   friend class base::RefCountedThreadSafe<AppInstaller>;
@@ -47,7 +47,6 @@ class AppInstaller : public extensions::WebstoreStandaloneInstaller {
   class WebContentsObserver;
 
   bool silent_installation_;
-  Callback callback_;
   content::WebContents* web_contents_;
   std::unique_ptr<WebContentsObserver> web_contents_observer_;
 

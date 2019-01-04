@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
+#include <utility>
+
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -15,8 +17,10 @@ namespace extensions {
 WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
     const std::string& webstore_item_id,
     Profile* profile,
-    const Callback& callback)
-    : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
+    Callback callback)
+    : WebstoreStandaloneInstaller(webstore_item_id,
+                                  profile,
+                                  std::move(callback)),
       show_post_install_ui_(true),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))),
@@ -28,8 +32,10 @@ WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
     const std::string& webstore_item_id,
     Profile* profile,
     gfx::NativeWindow parent_window,
-    const Callback& callback)
-    : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
+    Callback callback)
+    : WebstoreStandaloneInstaller(webstore_item_id,
+                                  profile,
+                                  std::move(callback)),
       show_post_install_ui_(true),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))),

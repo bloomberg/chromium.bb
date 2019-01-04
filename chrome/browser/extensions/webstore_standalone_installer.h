@@ -46,20 +46,21 @@ class WebstoreStandaloneInstaller
   // A callback for when the install process completes, successfully or not. If
   // there was a failure, |success| will be false and |error| may contain a
   // developer-readable error message about why it failed.
-  typedef base::Callback<void(bool success,
-                              const std::string& error,
-                              webstore_install::Result result)> Callback;
+  using Callback = base::OnceCallback<void(bool success,
+                                           const std::string& error,
+                                           webstore_install::Result result)>;
 
   WebstoreStandaloneInstaller(const std::string& webstore_item_id,
                               Profile* profile,
-                              const Callback& callback);
+                              Callback callback);
   void BeginInstall();
 
  protected:
   ~WebstoreStandaloneInstaller() override;
 
   // Runs the callback; primarily used for running a callback before it is
-  // cleared in AbortInstall().
+  // cleared in AbortInstall(). This should only be called once for the lifetime
+  // of the class.
   void RunCallback(
       bool success, const std::string& error, webstore_install::Result result);
 

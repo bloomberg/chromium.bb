@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/apps/platform_apps/api/webstore_widget_private/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,20 +45,19 @@ WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
   if (params->silent_installation && !allow_silent_install)
     return RespondNow(Error("Silent installation not allowed."));
 
-  const extensions::WebstoreStandaloneInstaller::Callback callback = base::Bind(
-      &WebstoreWidgetPrivateInstallWebstoreItemFunction::OnInstallComplete,
-      this);
-
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     return RespondNow(
         Error(extensions::function_constants::kCouldNotFindSenderWebContents));
   }
-  scoped_refptr<webstore_widget::AppInstaller> installer(
-      new webstore_widget::AppInstaller(
-          web_contents, params->item_id,
-          Profile::FromBrowserContext(browser_context()),
-          params->silent_installation, callback));
+
+  auto installer = base::MakeRefCounted<webstore_widget::AppInstaller>(
+      web_contents, params->item_id,
+      Profile::FromBrowserContext(browser_context()),
+      params->silent_installation,
+      base::BindOnce(
+          &WebstoreWidgetPrivateInstallWebstoreItemFunction::OnInstallComplete,
+          this));
   // installer will be AddRef()'d in BeginInstall().
   installer->BeginInstall();
 
