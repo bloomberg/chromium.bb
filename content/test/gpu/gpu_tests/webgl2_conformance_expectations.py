@@ -39,8 +39,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=864524)
     self.Skip('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['android'], bug=808744)
-    self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
-        ['linux', 'intel'], bug=867675)
     self.Skip('WebglExtension_KHR_parallel_shader_compile',
         ['no_passthrough'], bug=849576)
 
@@ -879,11 +877,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
-        ['linux'], bug=905006)
+        ['linux', 'nvidia'], bug=905006)
 
     # Linux Multi-vendor failures.
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
-        ['linux', 'amd', 'intel'], bug=483282)
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
@@ -1003,22 +999,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
-    # Linux Intel
+    # Already fixed with Mesa 17.2.3
     self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
        ['linux', 'intel'], bug=905011) # WebGL 2.0.1
-
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
        ['linux', 'intel'], bug=666384)
     self.Fail('conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html',
        ['linux', 'intel'], bug=666384)
-    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
-        ['linux', 'intel'], bug=680675)
 
-    # Linux Intel with ANGLE only
-    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
-        ['linux', 'intel', 'opengl'], bug=680276)
-    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
-        ['linux', 'intel', 'opengl'], bug=680276)
+    # Already fixed with Mesa 17.1.6
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+       ['linux', 'intel'], bug=680675)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -1035,6 +1026,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/conversions.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/arrays.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/internalformatquery.html',
         ['linux', 'amd'], bug=483282)
