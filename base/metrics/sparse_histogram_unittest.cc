@@ -16,6 +16,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -354,7 +355,7 @@ TEST_P(SparseHistogramTest, ExtremeValues) {
       {2147483647, 2147483648LL},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     HistogramBase* histogram =
         SparseHistogram::FactoryGet(StringPrintf("ExtremeValues_%zu", i),
                                     HistogramBase::kUmaTargetedHistogramFlag);

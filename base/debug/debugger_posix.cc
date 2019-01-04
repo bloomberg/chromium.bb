@@ -17,7 +17,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/clang_coverage.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -97,13 +97,13 @@ bool BeingDebugged() {
   size_t info_size = sizeof(info);
 
 #if defined(OS_OPENBSD)
-  if (sysctl(mib, arraysize(mib), NULL, &info_size, NULL, 0) < 0)
+  if (sysctl(mib, base::size(mib), NULL, &info_size, NULL, 0) < 0)
     return -1;
 
   mib[5] = (info_size / sizeof(struct kinfo_proc));
 #endif
 
-  int sysctl_result = sysctl(mib, arraysize(mib), &info, &info_size, NULL, 0);
+  int sysctl_result = sysctl(mib, base::size(mib), &info, &info_size, NULL, 0);
   DCHECK_EQ(sysctl_result, 0);
   if (sysctl_result != 0) {
     is_set = true;

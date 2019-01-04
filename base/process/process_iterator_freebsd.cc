@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
@@ -29,7 +29,7 @@ ProcessIterator::ProcessIterator(const ProcessFilter* filter)
 
   do {
     size_t len = 0;
-    if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) < 0) {
+    if (sysctl(mib, base::size(mib), NULL, &len, NULL, 0) < 0) {
       LOG(ERROR) << "failed to get the size needed for the process list";
       kinfo_procs_.resize(0);
       done = true;
@@ -40,7 +40,7 @@ ProcessIterator::ProcessIterator(const ProcessFilter* filter)
       num_of_kinfo_proc += 16;
       kinfo_procs_.resize(num_of_kinfo_proc);
       len = num_of_kinfo_proc * sizeof(struct kinfo_proc);
-      if (sysctl(mib, arraysize(mib), &kinfo_procs_[0], &len, NULL, 0) <0) {
+      if (sysctl(mib, base::size(mib), &kinfo_procs_[0], &len, NULL, 0) < 0) {
         // If we get a mem error, it just means we need a bigger buffer, so
         // loop around again.  Anything else is a real error and give up.
         if (errno != ENOMEM) {
@@ -78,14 +78,14 @@ bool ProcessIterator::CheckForNextProcess() {
       continue;
 
     length = 0;
-    if (sysctl(mib, arraysize(mib), NULL, &length, NULL, 0) < 0) {
+    if (sysctl(mib, base::size(mib), NULL, &length, NULL, 0) < 0) {
       LOG(ERROR) << "failed to figure out the buffer size for a command line";
       continue;
     }
 
     data.resize(length);
 
-    if (sysctl(mib, arraysize(mib), &data[0], &length, NULL, 0) < 0) {
+    if (sysctl(mib, base::size(mib), &data[0], &length, NULL, 0) < 0) {
       LOG(ERROR) << "failed to fetch a commandline";
       continue;
     }

@@ -26,7 +26,7 @@ namespace {
 
 const char* const kTypeNames[] = {"null",   "boolean", "integer",    "double",
                                   "string", "binary",  "dictionary", "list"};
-static_assert(arraysize(kTypeNames) ==
+static_assert(base::size(kTypeNames) ==
                   static_cast<size_t>(Value::Type::LIST) + 1,
               "kTypeNames Has Wrong Size");
 
@@ -223,7 +223,7 @@ Value::~Value() {
 // static
 const char* Value::GetTypeName(Value::Type type) {
   DCHECK_GE(static_cast<int>(type), 0);
-  DCHECK_LT(static_cast<size_t>(type), arraysize(kTypeNames));
+  DCHECK_LT(static_cast<size_t>(type), base::size(kTypeNames));
   return kTypeNames[static_cast<size_t>(type)];
 }
 
@@ -1404,7 +1404,7 @@ std::ostream& operator<<(std::ostream& out, const Value& value) {
 
 std::ostream& operator<<(std::ostream& out, const Value::Type& type) {
   if (static_cast<int>(type) < 0 ||
-      static_cast<size_t>(type) >= arraysize(kTypeNames))
+      static_cast<size_t>(type) >= base::size(kTypeNames))
     return out << "Invalid Type (index = " << static_cast<int>(type) << ")";
   return out << Value::GetTypeName(type);
 }

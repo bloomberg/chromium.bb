@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ const char *const kLanguageFunctionNames[] = {
   &kThreadLanguagesFunctionName[0]
 };
 
-static_assert(NUM_FUNCTIONS == arraysize(kLanguageFunctionNames),
+static_assert(NUM_FUNCTIONS == base::size(kLanguageFunctionNames),
               "LanguageFunction enum and kLanguageFunctionNames array must be "
               "kept in sync");
 
@@ -96,7 +96,7 @@ bool GetUserDefaultUILanguage(std::wstring* language, std::wstring* region) {
     wchar_t result_buffer[9];
     int result_length =
         GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME, &result_buffer[0],
-                      arraysize(result_buffer));
+                      base::size(result_buffer));
     DPCHECK(0 != result_length) << "Failed getting language id";
     if (1 < result_length) {
       language->assign(&result_buffer[0], result_length - 1);
@@ -104,7 +104,7 @@ bool GetUserDefaultUILanguage(std::wstring* language, std::wstring* region) {
       if (SUBLANG_NEUTRAL != SUBLANGID(lang_id)) {
         result_length =
             GetLocaleInfo(locale_id, LOCALE_SISO3166CTRYNAME, &result_buffer[0],
-                          arraysize(result_buffer));
+                          base::size(result_buffer));
         DPCHECK(0 != result_length) << "Failed getting region id";
         if (1 < result_length)
           region->assign(&result_buffer[0], result_length - 1);

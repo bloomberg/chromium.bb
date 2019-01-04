@@ -4,7 +4,7 @@
 
 #include "base/i18n/bidi_line_iterator.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -167,17 +167,17 @@ TEST_P(BiDiLineIteratorTest, RTLPunctuationAsURL) {
       {44, UBIDI_RTL},
   };
 
-  ASSERT_EQ(arraysize(expected_runs),
+  ASSERT_EQ(base::size(expected_runs),
             static_cast<size_t>(iterator()->CountRuns()));
 
-  for (size_t i = 0; i < arraysize(expected_runs); ++i) {
+  for (size_t i = 0; i < base::size(expected_runs); ++i) {
     const auto& expected_run = expected_runs[i];
-    int expected_run_end = i >= arraysize(expected_runs) - 1
+    int expected_run_end = i >= base::size(expected_runs) - 1
                                ? kStringSize
                                : expected_runs[i + 1].start;
 
     size_t visual_index = GetParam() == TextDirection::RIGHT_TO_LEFT
-                              ? arraysize(expected_runs) - 1 - i
+                              ? base::size(expected_runs) - 1 - i
                               : i;
     int start, length;
     EXPECT_EQ(expected_run.dir,

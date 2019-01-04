@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_bstr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,8 +15,8 @@ namespace {
 
 static const wchar_t kTestString1[] = L"123";
 static const wchar_t kTestString2[] = L"456789";
-size_t test1_len = arraysize(kTestString1) - 1;
-size_t test2_len = arraysize(kTestString2) - 1;
+size_t test1_len = base::size(kTestString1) - 1;
+size_t test2_len = base::size(kTestString2) - 1;
 
 void DumbBstrTests() {
   ScopedBstr b;

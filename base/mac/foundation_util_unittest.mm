@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -283,16 +283,13 @@ TEST(FoundationUtilTest, GetValueFromDictionary) {
   CFStringRef keys[] = { CFSTR("one"), CFSTR("two"), CFSTR("three") };
   CFNumberRef values[] = { cf_one, cf_two, cf_three };
 
-  static_assert(arraysize(keys) == arraysize(values),
+  static_assert(base::size(keys) == base::size(values),
                 "keys and values arrays must have the same size");
 
-  ScopedCFTypeRef<CFDictionaryRef> test_dict(
-      CFDictionaryCreate(kCFAllocatorDefault,
-                         reinterpret_cast<const void**>(keys),
-                         reinterpret_cast<const void**>(values),
-                         arraysize(values),
-                         &kCFCopyStringDictionaryKeyCallBacks,
-                         &kCFTypeDictionaryValueCallBacks));
+  ScopedCFTypeRef<CFDictionaryRef> test_dict(CFDictionaryCreate(
+      kCFAllocatorDefault, reinterpret_cast<const void**>(keys),
+      reinterpret_cast<const void**>(values), base::size(values),
+      &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
 
   // GetValueFromDictionary<>(_, _) should produce the correct
   // expected output.
@@ -369,7 +366,7 @@ TEST(StringNumberConversionsTest, FormatNSInteger) {
 #endif  // !defined(ARCH_CPU_64_BITS)
   };
 
-  for (size_t i = 0; i < arraysize(nsinteger_cases); ++i) {
+  for (size_t i = 0; i < base::size(nsinteger_cases); ++i) {
     EXPECT_EQ(nsinteger_cases[i].expected,
               StringPrintf("%" PRIdNS, nsinteger_cases[i].value));
     EXPECT_EQ(nsinteger_cases[i].expected_hex,
@@ -393,7 +390,7 @@ TEST(StringNumberConversionsTest, FormatNSInteger) {
 #endif  // !defined(ARCH_CPU_64_BITS)
   };
 
-  for (size_t i = 0; i < arraysize(nsuinteger_cases); ++i) {
+  for (size_t i = 0; i < base::size(nsuinteger_cases); ++i) {
     EXPECT_EQ(nsuinteger_cases[i].expected,
               StringPrintf("%" PRIuNS, nsuinteger_cases[i].value));
     EXPECT_EQ(nsuinteger_cases[i].expected_hex,

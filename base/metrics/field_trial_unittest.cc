@@ -9,11 +9,11 @@
 #include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
@@ -1102,7 +1102,7 @@ TEST_F(FieldTrialTest, CreateSimulatedFieldTrial) {
     { 0.95, kDefaultGroupName },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
     scoped_refptr<FieldTrial> trial(
        FieldTrial::CreateSimulatedFieldTrial(kTrialName, 100, kDefaultGroupName,

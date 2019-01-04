@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,7 +126,7 @@ static const struct normalize_name_encoding_test_cases {
 };
 
 TEST_F(FileUtilICUTest, NormalizeFileNameEncoding) {
-  for (size_t i = 0; i < arraysize(kNormalizeFileNameEncodingTestCases); i++) {
+  for (size_t i = 0; i < base::size(kNormalizeFileNameEncodingTestCases); i++) {
     FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
     NormalizeFileNameEncoding(&path);
     EXPECT_EQ(FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),

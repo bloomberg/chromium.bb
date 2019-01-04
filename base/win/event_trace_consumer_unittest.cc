@@ -13,8 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
@@ -155,8 +155,8 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
       return HRESULT_FROM_WIN32(::GetLastError());
 
     HANDLE events[] = { consumer_ready_.Get(), consumer_thread_.Get() };
-    DWORD result = ::WaitForMultipleObjects(arraysize(events), events,
-                                            FALSE, INFINITE);
+    DWORD result =
+        ::WaitForMultipleObjects(base::size(events), events, FALSE, INFINITE);
     switch (result) {
       case WAIT_OBJECT_0:
         // The event was set, the consumer_ is ready.

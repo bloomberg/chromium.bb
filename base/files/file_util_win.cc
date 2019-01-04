@@ -22,10 +22,10 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -918,8 +918,7 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 
   wchar_t volume_path[MAX_PATH];
   if (!GetVolumePathNameW(path.NormalizePathSeparators().value().c_str(),
-                          volume_path,
-                          arraysize(volume_path))) {
+                          volume_path, base::size(volume_path))) {
     return -1;
   }
 

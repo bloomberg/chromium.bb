@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -401,7 +402,7 @@ TEST_F(JSONParserTest, ParseNumberErrors) {
       // clang-format on
   };
 
-  for (unsigned int i = 0; i < arraysize(kCases); ++i) {
+  for (unsigned int i = 0; i < base::size(kCases); ++i) {
     auto test_case = kCases[i];
     SCOPED_TRACE(StringPrintf("case %u: \"%s\"", i, test_case.input));
 
@@ -447,7 +448,7 @@ TEST_F(JSONParserTest, UnterminatedInputs) {
       // clang-format on
   };
 
-  for (unsigned int i = 0; i < arraysize(kCases); ++i) {
+  for (unsigned int i = 0; i < base::size(kCases); ++i) {
     auto* test_case = kCases[i];
     SCOPED_TRACE(StringPrintf("case %u: \"%s\"", i, test_case));
 

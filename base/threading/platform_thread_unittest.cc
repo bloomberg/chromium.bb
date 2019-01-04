@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
@@ -54,11 +54,11 @@ TEST(PlatformThreadTest, TrivialJoin) {
 
 TEST(PlatformThreadTest, TrivialJoinTimesTen) {
   TrivialThread thread[10];
-  PlatformThreadHandle handle[arraysize(thread)];
+  PlatformThreadHandle handle[base::size(thread)];
 
   for (auto& n : thread)
     ASSERT_FALSE(n.run_event().IsSignaled());
-  for (size_t n = 0; n < arraysize(thread); n++)
+  for (size_t n = 0; n < base::size(thread); n++)
     ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
   for (auto n : handle)
     PlatformThread::Join(n);
@@ -81,11 +81,11 @@ TEST(PlatformThreadTest, TrivialDetach) {
 
 TEST(PlatformThreadTest, TrivialDetachTimesTen) {
   TrivialThread thread[10];
-  PlatformThreadHandle handle[arraysize(thread)];
+  PlatformThreadHandle handle[base::size(thread)];
 
   for (auto& n : thread)
     ASSERT_FALSE(n.run_event().IsSignaled());
-  for (size_t n = 0; n < arraysize(thread); n++) {
+  for (size_t n = 0; n < base::size(thread); n++) {
     ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
     PlatformThread::Detach(handle[n]);
   }
@@ -187,17 +187,17 @@ TEST(PlatformThreadTest, FunctionTimesTen) {
   PlatformThreadId main_thread_id = PlatformThread::CurrentId();
 
   FunctionTestThread thread[10];
-  PlatformThreadHandle handle[arraysize(thread)];
+  PlatformThreadHandle handle[base::size(thread)];
 
   for (const auto& n : thread)
     ASSERT_FALSE(n.IsRunning());
 
-  for (size_t n = 0; n < arraysize(thread); n++)
+  for (size_t n = 0; n < base::size(thread); n++)
     ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
   for (auto& n : thread)
     n.WaitForTerminationReady();
 
-  for (size_t n = 0; n < arraysize(thread); n++) {
+  for (size_t n = 0; n < base::size(thread); n++) {
     ASSERT_TRUE(thread[n].IsRunning());
     EXPECT_NE(thread[n].thread_id(), main_thread_id);
 

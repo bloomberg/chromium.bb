@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
 
@@ -149,7 +149,7 @@ FilePath GetUserLibraryPath() {
 //   returns - path to the application bundle, or empty on error
 FilePath GetAppBundlePath(const FilePath& exec_name) {
   const char kExt[] = ".app";
-  const size_t kExtLength = arraysize(kExt) - 1;
+  const size_t kExtLength = base::size(kExt) - 1;
 
   // Split the path into components.
   std::vector<std::string> components;

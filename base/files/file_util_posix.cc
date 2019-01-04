@@ -29,7 +29,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -520,7 +519,8 @@ bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
   DCHECK(!symlink_path.empty());
   DCHECK(target_path);
   char buf[PATH_MAX];
-  ssize_t count = ::readlink(symlink_path.value().c_str(), buf, arraysize(buf));
+  ssize_t count =
+      ::readlink(symlink_path.value().c_str(), buf, base::size(buf));
 
   if (count <= 0) {
     target_path->clear();
@@ -955,7 +955,7 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   std::set<gid_t> allowed_group_ids;
-  for (int i = 0, ie = arraysize(kAdminGroupNames); i < ie; ++i) {
+  for (int i = 0, ie = base::size(kAdminGroupNames); i < ie; ++i) {
     struct group *group_record = getgrnam(kAdminGroupNames[i]);
     if (!group_record) {
       DPLOG(ERROR) << "Could not get the group ID of group \""

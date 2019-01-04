@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/containers/checked_iterators.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -105,7 +105,7 @@ TEST(SpanTest, ConstructFromArray) {
 
   span<const int> const_span(array);
   EXPECT_EQ(array, const_span.data());
-  EXPECT_EQ(arraysize(array), const_span.size());
+  EXPECT_EQ(base::size(array), const_span.size());
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(array[i], const_span[i]);
 
@@ -1070,7 +1070,7 @@ TEST(SpanTest, EnsureConstexprGoodness) {
 
   constexpr span<const int> lasts = constexpr_span.last(size);
   for (size_t i = 0; i < lasts.size(); ++i) {
-    const size_t j = (arraysize(kArray) - size) + i;
+    const size_t j = (base::size(kArray) - size) + i;
     EXPECT_EQ(kArray[j], lasts[i]);
   }
 
