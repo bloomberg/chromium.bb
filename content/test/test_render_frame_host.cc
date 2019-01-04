@@ -488,9 +488,41 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
 
 void TestRenderFrameHost::SimulateCommitProcessed(int64_t navigation_id,
                                                   bool was_successful) {
-  RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
-      navigation_id, was_successful ? blink::mojom::CommitResult::Ok
-                                    : blink::mojom::CommitResult::Aborted);
+  blink::mojom::CommitResult result = was_successful
+                                          ? blink::mojom::CommitResult::Ok
+                                          : blink::mojom::CommitResult::Aborted;
+  {
+    auto callback_it = commit_callback_.find(navigation_id);
+    if (callback_it != commit_callback_.end()) {
+      std::move(callback_it->second).Run(result);
+      return;
+    }
+  }
+
+  {
+    auto callback_it = navigation_client_commit_callback_.find(navigation_id);
+    if (callback_it != navigation_client_commit_callback_.end()) {
+      std::move(callback_it->second).Run(result);
+      return;
+    }
+  }
+
+  {
+    auto callback_it = commit_failed_callback_.find(navigation_id);
+    if (callback_it != commit_failed_callback_.end()) {
+      std::move(callback_it->second).Run(result);
+      return;
+    }
+  }
+
+  {
+    auto callback_it =
+        navigation_client_commit_failed_callback_.find(navigation_id);
+    if (callback_it != navigation_client_commit_failed_callback_.end()) {
+      std::move(callback_it->second).Run(result);
+      return;
+    }
+  }
 }
 
 WebBluetoothServiceImpl*
@@ -505,6 +537,46 @@ void TestRenderFrameHost::SendFramePolicy(
     blink::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& declared_policy) {
   DidSetFramePolicyHeaders(sandbox_flags, declared_policy);
+}
+
+void TestRenderFrameHost::SendCommitNavigation(
+    mojom::NavigationClient* navigation_client,
+    int64_t navigation_id,
+    const network::ResourceResponseHead& head,
+    const content::CommonNavigationParams& common_params,
+    const content::CommitNavigationParams& commit_params,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    const base::UnguessableToken& devtools_navigation_token,
+    mojom::FrameNavigationControl::CommitNavigationCallback callback) {
+  if (navigation_client)
+    navigation_client_commit_callback_[navigation_id] = std::move(callback);
+  else
+    commit_callback_[navigation_id] = std::move(callback);
+}
+
+void TestRenderFrameHost::SendCommitFailedNavigation(
+    mojom::NavigationClient* navigation_client,
+    int64_t navigation_id,
+    const content::CommonNavigationParams& common_params,
+    const content::CommitNavigationParams& commit_params,
+    bool has_stale_copy_in_cache,
+    int32_t error_code,
+    const base::Optional<std::string>& error_page_content,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback) {
+  if (navigation_client) {
+    navigation_client_commit_failed_callback_[navigation_id] =
+        std::move(callback);
+  } else {
+    commit_failed_callback_[navigation_id] = std::move(callback);
+  }
 }
 
 // static

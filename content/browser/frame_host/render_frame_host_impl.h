@@ -847,6 +847,38 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       bool hidden,
                       bool renderer_initiated_creation);
 
+  // The SendCommit* functions below are wrappers for commit calls
+  // made to mojom::FrameNavigationControl and mojom::NavigationClient.
+  // These exist to be overridden in tests to retain mojo callbacks.
+  // Note: |navigation_id| is used in test overrides, but is unused otherwise.
+  virtual void SendCommitNavigation(
+      mojom::NavigationClient* navigation_client,
+      int64_t navigation_id,
+      const network::ResourceResponseHead& head,
+      const content::CommonNavigationParams& common_params,
+      const content::CommitNavigationParams& commit_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      const base::UnguessableToken& devtools_navigation_token,
+      mojom::FrameNavigationControl::CommitNavigationCallback callback);
+  virtual void SendCommitFailedNavigation(
+      mojom::NavigationClient* navigation_client,
+      int64_t navigation_id,
+      const content::CommonNavigationParams& common_params,
+      const content::CommitNavigationParams& commit_params,
+      bool has_stale_copy_in_cache,
+      int32_t error_code,
+      const base::Optional<std::string>& error_page_content,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      mojom::FrameNavigationControl::CommitFailedNavigationCallback callback);
+
  private:
   friend class RenderFrameHostFeaturePolicyTest;
   friend class TestRenderFrameHost;
