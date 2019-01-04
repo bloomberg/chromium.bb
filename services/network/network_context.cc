@@ -746,6 +746,10 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
   return sum;
 }
 
+bool NetworkContext::SkipReportingPermissionCheck() const {
+  return params_ && params_->skip_reporting_send_permission_check;
+}
+
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {
@@ -1809,10 +1813,16 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  if (base::FeatureList::IsEnabled(features::kReporting))
-    builder->set_reporting_policy(net::ReportingPolicy::Create());
-  else
+  if (base::FeatureList::IsEnabled(features::kReporting)) {
+    auto reporting_policy = net::ReportingPolicy::Create();
+    if (params_->reporting_delivery_interval) {
+      reporting_policy->delivery_interval =
+          *params_->reporting_delivery_interval;
+    }
+    builder->set_reporting_policy(std::move(reporting_policy));
+  } else {
     builder->set_reporting_policy(nullptr);
+  }
 
   builder->set_network_error_logging_enabled(
       base::FeatureList::IsEnabled(features::kNetworkErrorLogging));

@@ -129,6 +129,11 @@ void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
     return;
   }
 
+  if (network_context_->SkipReportingPermissionCheck()) {
+    std::move(result_callback).Run(std::move(origins));
+    return;
+  }
+
   std::vector<url::Origin> origin_vector;
   std::copy(origins.begin(), origins.end(), std::back_inserter(origin_vector));
   client->OnCanSendReportingReports(

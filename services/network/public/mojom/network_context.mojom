@@ -290,6 +290,15 @@ struct NetworkContextParams {
   // Whether to discard Domain Reliability uploads.
   bool discard_domain_reliablity_uploads = false;
 
+  // When reporting is enabled, this sets the delay between sending reports.
+  // When omitted a default value is used.
+  mojo_base.mojom.TimeDelta? reporting_delivery_interval;
+
+  // Whether to bypass the ordinary permission checks for sending reports,
+  // rather than calling NetworkContextClient.OnCanSendReportingReports() to
+  // decide. This should only be used by tests.
+  bool skip_reporting_send_permission_check = false;
+
   // Sets whether the NetworkContext should be used for globally scoped tasks
   // that need to make network requests. Currently this includes DNS over HTTPS
   // requests and certain cert validation requests (OCSP, AIA, etc) on some

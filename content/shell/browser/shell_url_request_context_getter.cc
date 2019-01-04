@@ -231,7 +231,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
           net::ReportingPolicy::Create();
       if (command_line.HasSwitch(switches::kRunWebTests))
         reporting_policy->delivery_interval =
-            base::TimeDelta::FromMilliseconds(100);
+            kReportingDeliveryIntervalTimeForWebTests;
       builder.set_reporting_policy(std::move(reporting_policy));
     }
 

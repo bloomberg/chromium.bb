@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -41,11 +42,14 @@
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/grit/shell_resources.h"
 #include "media/mojo/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/test/echo/public/mojom/echo.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -450,6 +454,41 @@ bool ShellContentBrowserClient::PreSpawnRenderer(
   return true;
 }
 #endif  // OS_WIN
+
+network::mojom::NetworkContextPtr
+ShellContentBrowserClient::CreateNetworkContext(
+    BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  DCHECK(context);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = "en-us,en";
+  context_params->enable_data_url_support = true;
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRunWebTests)) {
+    // Configure the Reporting service in a manner expected by certain Web
+    // Platform Tests (network-error-logging and reporting-api).
+    //
+    //   (1) Always send reports (irrespective of BACKGROUND_SYNC permission)
+    //   (2) Lower the timeout for sending reports.
+    context_params->reporting_delivery_interval =
+        kReportingDeliveryIntervalTimeForWebTests;
+    context_params->skip_reporting_send_permission_check = true;
+  }
+#endif
+
+  GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
+                                            std::move(context_params));
+  return network_context;
+}
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
