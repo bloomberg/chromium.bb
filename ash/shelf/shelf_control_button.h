@@ -9,13 +9,13 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 
 // Base class for controls shown on the shelf that are not app shortcuts, such
 // as the app list, back, and overflow buttons.
-class ASH_EXPORT ShelfControlButton : public views::ImageButton {
+class ASH_EXPORT ShelfControlButton : public views::Button {
  public:
   ShelfControlButton();
   ~ShelfControlButton() override;
@@ -25,7 +25,7 @@ class ASH_EXPORT ShelfControlButton : public views::ImageButton {
   gfx::Point GetCenterPoint() const;
 
  protected:
-  // views::ImageButton:
+  // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;

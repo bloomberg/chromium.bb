@@ -34,7 +34,7 @@ BackButton::BackButton() : ShelfControlButton() {
 BackButton::~BackButton() = default;
 
 void BackButton::OnGestureEvent(ui::GestureEvent* event) {
-  ImageButton::OnGestureEvent(event);
+  Button::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_DOWN) {
     GenerateAndSendBackEvent(event->type());
@@ -42,13 +42,13 @@ void BackButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool BackButton::OnMousePressed(const ui::MouseEvent& event) {
-  ImageButton::OnMousePressed(event);
+  Button::OnMousePressed(event);
   GenerateAndSendBackEvent(event.type());
   return true;
 }
 
 void BackButton::OnMouseReleased(const ui::MouseEvent& event) {
-  ImageButton::OnMouseReleased(event);
+  Button::OnMouseReleased(event);
   GenerateAndSendBackEvent(event.type());
 }
 

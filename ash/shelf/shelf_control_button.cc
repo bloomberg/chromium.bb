@@ -17,7 +17,7 @@
 
 namespace ash {
 
-ShelfControlButton::ShelfControlButton() : views::ImageButton(nullptr) {
+ShelfControlButton::ShelfControlButton() : views::Button(nullptr) {
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(kShelfInkDropBaseColor);

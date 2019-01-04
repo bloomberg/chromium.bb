@@ -124,10 +124,10 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
 
-      ImageButton::OnGestureEvent(event);
+      Button::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      // If |!ShouldEnterPushedState|, ImageButton::OnGestureEvent will not set
+      // If |!ShouldEnterPushedState|, Button::OnGestureEvent will not set
       // the event to be handled. This will cause the |ET_GESTURE_TAP| or
       // |ET_GESTURE_TAP_CANCEL| not to be sent to |app_list_button|, therefore
       // leaving the assistant overlay ripple stays visible.
@@ -145,7 +145,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
 
-      ImageButton::OnGestureEvent(event);
+      Button::OnGestureEvent(event);
       // If assistant overlay animation starts, we need to make sure the event
       // is handled in order to end the animation in |ET_GESTURE_TAP| or
       // |ET_GESTURE_TAP_CANCEL|.
@@ -166,7 +166,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
           Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         }
       } else {
-        ImageButton::OnGestureEvent(event);
+        Button::OnGestureEvent(event);
       }
       return;
     case ui::ET_GESTURE_LONG_TAP:
@@ -177,33 +177,33 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         AnimateInkDrop(views::InkDropState::HIDDEN, event);
         event->SetHandled();
       } else {
-        ImageButton::OnGestureEvent(event);
+        Button::OnGestureEvent(event);
       }
       return;
     default:
-      ImageButton::OnGestureEvent(event);
+      Button::OnGestureEvent(event);
       return;
   }
 }
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
-  ImageButton::OnMousePressed(event);
+  Button::OnMousePressed(event);
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
   return true;
 }
 
 void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
-  ImageButton::OnMouseReleased(event);
+  Button::OnMouseReleased(event);
   shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
 }
 
 void AppListButton::OnMouseCaptureLost() {
   shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
-  ImageButton::OnMouseCaptureLost();
+  Button::OnMouseCaptureLost();
 }
 
 bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
-  ImageButton::OnMouseDragged(event);
+  Button::OnMouseDragged(event);
   shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
   return true;
 }
@@ -227,7 +227,7 @@ std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
 }
 
 void AppListButton::NotifyClick(const ui::Event& event) {
-  ImageButton::NotifyClick(event);
+  Button::NotifyClick(event);
   if (listener_)
     listener_->ButtonPressed(this, event, GetInkDrop());
 }
@@ -235,7 +235,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  return views::ImageButton::ShouldEnterPushedState(event);
+  return views::Button::ShouldEnterPushedState(event);
 }
 
 std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
