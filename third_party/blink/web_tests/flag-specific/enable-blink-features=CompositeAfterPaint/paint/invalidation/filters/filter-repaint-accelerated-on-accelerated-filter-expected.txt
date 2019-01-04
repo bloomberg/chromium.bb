@@ -15,7 +15,7 @@
         {
           "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
           "rect": [0, 0, 160, 260],
-          "reason": "paint property change"
+          "reason": "geometry"
         }
       ],
       "transform": 1

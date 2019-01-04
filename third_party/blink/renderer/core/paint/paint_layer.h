@@ -638,7 +638,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // coordinate system of the object with the filter. Filter bounds is the
   // reference box, offset by the object's location in the graphics layer.
   FloatRect FilterReferenceBox() const;
-  FloatRect BackdropFilterReferenceBox() const;
   FloatRect BackdropFilterBounds() const;
 
   void UpdateFilterReferenceBox();
