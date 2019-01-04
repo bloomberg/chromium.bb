@@ -5,8 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -32,6 +34,9 @@ class CORE_EXPORT PaintTimingDetector
                             const PaintLayer& painting_layer);
   void NotifyNodeRemoved(const LayoutObject& object);
   void NotifyPrePaintFinished();
+  void NotifyInputEvent(WebInputEvent::Type);
+  bool NeedToNotifyInputOrScroll();
+  void NotifyScroll(ScrollType scroll_type);
   void DidChangePerformanceTiming();
   uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
                                const PaintLayer& painting_layer) const;

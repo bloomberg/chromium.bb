@@ -34,7 +34,10 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -321,6 +324,18 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
   if (GetScrollOffset() != old_offset) {
     GetScrollAnimator().NotifyContentAreaScrolled(
         GetScrollOffset() - old_offset, scroll_type);
+  }
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    if (GetScrollOffset() != old_offset && GetLayoutBox() &&
+        GetLayoutBox()->GetFrameView() &&
+        GetLayoutBox()
+            ->GetFrameView()
+            ->GetPaintTimingDetector()
+            .NeedToNotifyInputOrScroll()) {
+      GetLayoutBox()->GetFrameView()->GetPaintTimingDetector().NotifyScroll(
+          scroll_type);
+    }
   }
 
   GetScrollAnimator().SetCurrentOffset(offset);

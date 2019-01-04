@@ -117,6 +117,8 @@ void TextPaintTimingDetector::OnPrePaintFinished() {
 }
 
 void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
+  if (!is_recording_)
+    return;
   for (TextRecord& record : texts_to_record_swap_time_) {
     if (record.node_id == node_id)
       record.node_id = kInvalidDOMNodeId;
@@ -215,15 +217,15 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
   if (recorded_text_node_ids_.size() + size_zero_node_ids_.size() +
           texts_to_record_swap_time_.size() >=
       kTextNodeNumberLimit) {
-    Deactivate();
+    TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
+                         TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
+                         recorded_text_node_ids_.size(), "size_zero_node_count",
+                         size_zero_node_ids_.size());
+    StopRecordEntries();
   }
 }
 
-void TextPaintTimingDetector::Deactivate() {
-  TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
-                       TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
-                       recorded_text_node_ids_.size(), "size_zero_node_count",
-                       size_zero_node_ids_.size());
+void TextPaintTimingDetector::StopRecordEntries() {
   timer_.Stop();
   is_recording_ = false;
 }

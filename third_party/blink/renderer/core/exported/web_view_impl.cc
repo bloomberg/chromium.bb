@@ -139,6 +139,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -1736,6 +1737,22 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
         InteractiveDetector::From(main_frame_document));
     if (interactive_detector) {
       interactive_detector->OnInvalidatingInputEvent(input_event.TimeStamp());
+    }
+  }
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    // Notify the focus frame of the input. Note that the other frames are not
+    // notified as input is only handled by the focused frame.
+    Frame* frame = FocusedCoreFrame();
+    if (frame && frame->IsLocalFrame()) {
+      LocalFrame* local_frame = ToLocalFrame(frame);
+      if (local_frame && local_frame->View() &&
+          local_frame->View()
+              ->GetPaintTimingDetector()
+              .NeedToNotifyInputOrScroll()) {
+        local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
+            input_event.GetType());
+      }
     }
   }
 
