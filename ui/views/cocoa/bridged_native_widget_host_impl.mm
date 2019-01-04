@@ -153,8 +153,8 @@ BridgedNativeWidgetHostImpl::bridge() const {
 void BridgedNativeWidgetHostImpl::CreateLocalBridge(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
   local_window_ = window;
-  bridge_impl_ =
-      std::make_unique<BridgedNativeWidgetImpl>(widget_id_, this, this);
+  bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(
+      widget_id_, this, this, text_input_host_.get());
   bridge_impl_->SetWindow(window);
 }
 
@@ -180,8 +180,11 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   views_bridge_mac::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
                           ui::WindowResizeHelperMac::Get()->task_runner());
+  views_bridge_mac::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
+  text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   bridge_factory_host_->GetFactory()->CreateBridgedNativeWidget(
-      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface());
+      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface(),
+      text_input_host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
   bridge()->CreateWindow(std::move(window_create_params));
@@ -1152,10 +1155,6 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
   // is nil), then the textInputClient will be cleared.
   DCHECK(!!focused_now || !new_text_input_client);
   text_input_host_->SetTextInputClient(new_text_input_client);
-}
-
-void BridgedNativeWidgetHostImpl::GetHasInputContext(bool* has_input_context) {
-  return text_input_host_->GetHasInputContext(has_input_context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

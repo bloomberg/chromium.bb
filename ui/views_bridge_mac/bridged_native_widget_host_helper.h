@@ -59,10 +59,6 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
   // Return a pointer to the host's ui::TextInputClient.
   // TODO(ccameron): Remove the needs for this call.
   virtual ui::TextInputClient* GetTextInputClient() = 0;
-
-  // Return true if -[NSView inputContext] should return a non-nil value.
-  // TODO(ccameron): Move this function to the mojo interface.
-  virtual void GetHasInputContext(bool* has_input_context) = 0;
 };
 
 }  // namespace views_bridge_mac
