@@ -3230,6 +3230,7 @@ crbug.com/919035 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConn
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-backgrounds/border-image-calc.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/boundary-shaping/boundary-shaping-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-nowrap-attribute-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/boundary-shaping/boundary-shaping-010.html [ Failure ]
