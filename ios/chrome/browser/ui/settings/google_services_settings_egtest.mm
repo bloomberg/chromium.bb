@@ -40,8 +40,7 @@ using chrome_test_util::SettingsDoneButton;
 @synthesize scrollViewMatcher = _scrollViewMatcher;
 
 // Opens the Google services settings view, and closes it.
-// TODO(crbug.com/918711): Tests failing.
-- (void)DISABLED_testOpenGoogleServicesSettings {
+- (void)testOpenGoogleServicesSettings {
   [self openGoogleServicesSettings];
 
   // Assert title and accessibility.
@@ -55,8 +54,7 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 // Tests the Google Services settings.
-// TODO(crbug.com/918711): Tests failing.
-- (void)DISABLED_testOpeningServices {
+- (void)testOpeningServices {
   [self openGoogleServicesSettings];
   [self assertNonPersonalizedServices];
 }
@@ -90,7 +88,7 @@ using chrome_test_util::SettingsDoneButton;
                                    GetNSString(detailTextID)];
   }
   return grey_allOf(grey_accessibilityLabel(accessibilityLabel),
-                    grey_kindOfClass([UICollectionViewCell class]),
+                    grey_kindOfClass([UITableViewCell class]),
                     grey_sufficientlyVisible(), nil);
 }
 
