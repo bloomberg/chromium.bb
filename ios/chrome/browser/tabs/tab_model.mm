@@ -607,11 +607,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _webStateListMetricsObserver->RecordSessionMetrics();
 }
 
-- (void)notifyTabSnapshotChanged:(Tab*)tab withImage:(UIImage*)image {
-  DCHECK([NSThread isMainThread]);
-  [_observers tabModel:self didChangeTabSnapshot:tab withImage:image];
-}
-
 - (void)setPrimary:(BOOL)primary {
   if (_tabUsageRecorder) {
     _tabUsageRecorder->RecordPrimaryTabModelChange(primary,

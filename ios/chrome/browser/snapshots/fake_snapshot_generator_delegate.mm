@@ -32,11 +32,6 @@
     willUpdateSnapshotForWebState:(web::WebState*)webState {
 }
 
-- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
-    didUpdateSnapshotForWebState:(web::WebState*)webState
-                       withImage:(UIImage*)snapshot {
-}
-
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
          baseViewForWebState:(web::WebState*)webState {
   return self.view;

@@ -41,13 +41,6 @@ class WebState;
 - (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     willUpdateSnapshotForWebState:(web::WebState*)webState;
 
-// Invoked after capturing a snapshot for |webState|. The delegate can insert
-// subviews that were removed during -willUpdateSnapshotForWebState: or take
-// other actions necessary after a snapshot has been captured.
-- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
-    didUpdateSnapshotForWebState:(web::WebState*)webState
-                       withImage:(UIImage*)snapshot;
-
 // Returns the base view to be snapshotted.
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
          baseViewForWebState:(web::WebState*)webState;
