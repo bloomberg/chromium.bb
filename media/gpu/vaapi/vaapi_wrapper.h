@@ -110,7 +110,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Creates a VA Context associated with |format| and |size|, and sets
   // |va_context_id_|. The |va_context_id_| will be destroyed by
   // DestroyContextAndSurfaces().
-  bool CreateContext(unsigned int va_format, const gfx::Size& size);
+  virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
 
   // Frees all memory allocated in CreateContextAndSurfaces() and destroys
   // |va_context_id_|.
