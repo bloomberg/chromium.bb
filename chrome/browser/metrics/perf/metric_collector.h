@@ -25,8 +25,9 @@ class SampledProfile;
 // pointer across threads safely.
 class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
  public:
-  MetricCollector();
-  explicit MetricCollector(const CollectionParams& collection_params);
+  explicit MetricCollector(const std::string& uma_histogram);
+  explicit MetricCollector(const std::string& uma_histogram,
+                           const CollectionParams& collection_params);
   virtual ~MetricCollector();
 
   // Collector specific initialization.
@@ -52,11 +53,37 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   void OnSessionRestoreDone(int num_tabs_restored);
 
  protected:
+  // Perf proto type.
+  enum class PerfProtoType {
+    PERF_TYPE_DATA,
+    PERF_TYPE_STAT,
+    PERF_TYPE_UNSUPPORTED,
+  };
+
+  // Enumeration representing success and various failure modes for collecting
+  // and sending perf data.
+  enum class CollectionAttemptStatus {
+    SUCCESS,
+    NOT_READY_TO_UPLOAD,
+    NOT_READY_TO_COLLECT,
+    INCOGNITO_ACTIVE,
+    INCOGNITO_LAUNCHED,
+    PROTOBUF_NOT_PARSED,
+    ILLEGAL_DATA_RETURNED,
+    ALREADY_COLLECTING,
+    NUM_OUTCOMES
+  };
+
+  // Saves the given outcome to the uma histogram associated with the collector.
+  void AddToUmaHistogram(CollectionAttemptStatus outcome) const;
+
   const CollectionParams& collection_params() const {
     return collection_params_;
   }
 
   const base::OneShotTimer& timer() const { return timer_; }
+
+  base::TimeTicks login_time() const { return login_time_; }
 
   // Collects perf data after a resume. |sleep_duration| is the duration the
   // system was suspended before resuming. |time_after_resume_ms| is how long
@@ -94,14 +121,18 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   // implementation can override this logic.
   virtual bool ShouldUpload() const;
 
+  // Parses the given serialized perf proto of the given type (data or stat).
+  // If valid, it adds it to the given sampled_profile and stores it in the
+  // local profile data cache.
+  void SaveSerializedPerfProto(std::unique_ptr<SampledProfile> sampled_profile,
+                               PerfProtoType type,
+                               const std::string& serialized_proto);
+
+  // Returns the size of the cached profile data.
+  size_t cached_profile_data_size() const;
+
   // Parameters controlling how profiles are collected.
   CollectionParams collection_params_;
-
-  // Vector of SampledProfile protobufs containing perf profiles.
-  std::vector<SampledProfile> cached_profile_data_;
-
-  // Record of the last login time.
-  base::TimeTicks login_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -109,11 +140,21 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   // For scheduling collection of profile data.
   base::OneShotTimer timer_;
 
+  // Vector of SampledProfile protobufs containing perf profiles.
+  std::vector<SampledProfile> cached_profile_data_;
+
+  // Record of the last login time.
+  base::TimeTicks login_time_;
+
   // Record of the start of the upcoming profiling interval.
   base::TimeTicks next_profiling_interval_start_;
 
   // Tracks the last time a session restore was collected.
   base::TimeTicks last_session_restore_collection_time_;
+
+  // Name of the histogram that represents the success and various failure modes
+  // for a collector.
+  std::string uma_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricCollector);
 };

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/metrics/perf/metric_collector.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/system/sys_info.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
@@ -24,21 +26,62 @@ base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
       base::RandGenerator(max.InMicroseconds()));
 }
 
+// PerfDataProto is defined elsewhere with more fields than the definition in
+// Chromium's copy of perf_data.proto. During deserialization, the protobuf
+// data could contain fields that are defined elsewhere but not in
+// perf_data.proto, resulting in some data in |unknown_fields| for the message
+// types within PerfDataProto.
+//
+// This function deletes those dangling unknown fields if they are in messages
+// containing strings. See comments in perf_data.proto describing the fields
+// that have been intentionally left out. Note that all unknown fields will be
+// removed from those messages, not just unknown string fields.
+void RemoveUnknownFieldsFromMessagesWithStrings(PerfDataProto* proto) {
+  // Clean up PerfEvent::MMapEvent and PerfEvent::CommEvent.
+  for (PerfDataProto::PerfEvent& event : *proto->mutable_events()) {
+    if (event.has_comm_event())
+      event.mutable_comm_event()->mutable_unknown_fields()->clear();
+    if (event.has_mmap_event())
+      event.mutable_mmap_event()->mutable_unknown_fields()->clear();
+  }
+  // Clean up PerfBuildID.
+  for (PerfDataProto::PerfBuildID& build_id : *proto->mutable_build_ids()) {
+    build_id.mutable_unknown_fields()->clear();
+  }
+  // Clean up StringMetadata and StringMetadata::StringAndMd5sumPrefix.
+  if (proto->has_string_metadata()) {
+    proto->mutable_string_metadata()->mutable_unknown_fields()->clear();
+    if (proto->string_metadata().has_perf_command_line_whole()) {
+      proto->mutable_string_metadata()
+          ->mutable_perf_command_line_whole()
+          ->mutable_unknown_fields()
+          ->clear();
+    }
+  }
+}
+
 }  // namespace
 
-MetricCollector::MetricCollector() {}
+MetricCollector::MetricCollector(const std::string& uma_histogram)
+    : uma_histogram_(uma_histogram) {}
 
-MetricCollector::MetricCollector(const CollectionParams& collection_params)
-    : collection_params_(collection_params) {}
+MetricCollector::MetricCollector(const std::string& uma_histogram,
+                                 const CollectionParams& collection_params)
+    : collection_params_(collection_params), uma_histogram_(uma_histogram) {}
 
 MetricCollector::~MetricCollector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void MetricCollector::AddToUmaHistogram(CollectionAttemptStatus outcome) const {
+  base::UmaHistogramEnumeration(uma_histogram_, outcome,
+                                CollectionAttemptStatus::NUM_OUTCOMES);
+}
+
 bool MetricCollector::GetSampledProfiles(
     std::vector<SampledProfile>* sampled_profiles) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!ShouldUpload() || cached_profile_data_.empty())
+  if (!ShouldUpload())
     return false;
 
   sampled_profiles->insert(
@@ -50,6 +93,12 @@ bool MetricCollector::GetSampledProfiles(
 }
 
 bool MetricCollector::ShouldUpload() const {
+  if (cached_profile_data_.empty()) {
+    AddToUmaHistogram(CollectionAttemptStatus::NOT_READY_TO_UPLOAD);
+    return false;
+  }
+
+  AddToUmaHistogram(CollectionAttemptStatus::SUCCESS);
   return true;
 }
 
@@ -202,6 +251,58 @@ void MetricCollector::Deactivate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Stop the timer, but leave |cached_profile_data_| intact.
   timer_.Stop();
+}
+
+void MetricCollector::SaveSerializedPerfProto(
+    std::unique_ptr<SampledProfile> sampled_profile,
+    PerfProtoType type,
+    const std::string& serialized_proto) {
+  if (serialized_proto.empty()) {
+    AddToUmaHistogram(CollectionAttemptStatus::ILLEGAL_DATA_RETURNED);
+    return;
+  }
+
+  switch (type) {
+    case PerfProtoType::PERF_TYPE_DATA: {
+      PerfDataProto perf_data_proto;
+      if (!perf_data_proto.ParseFromString(serialized_proto)) {
+        AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
+        return;
+      }
+      RemoveUnknownFieldsFromMessagesWithStrings(&perf_data_proto);
+      sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
+      break;
+    }
+    case PerfProtoType::PERF_TYPE_STAT: {
+      PerfStatProto perf_stat_proto;
+      if (!perf_stat_proto.ParseFromString(serialized_proto)) {
+        AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
+        return;
+      }
+      sampled_profile->mutable_perf_stat()->Swap(&perf_stat_proto);
+      break;
+    }
+    case PerfProtoType::PERF_TYPE_UNSUPPORTED:
+      AddToUmaHistogram(CollectionAttemptStatus::PROTOBUF_NOT_PARSED);
+      return;
+  }
+
+  sampled_profile->set_ms_after_boot(base::SysInfo::Uptime().InMilliseconds());
+  DCHECK(!login_time_.is_null());
+  sampled_profile->set_ms_after_login(
+      (base::TimeTicks::Now() - login_time_).InMilliseconds());
+
+  // Add the collected data to the container of collected SampledProfiles.
+  cached_profile_data_.resize(cached_profile_data_.size() + 1);
+  cached_profile_data_.back().Swap(sampled_profile.get());
+}
+
+size_t MetricCollector::cached_profile_data_size() const {
+  size_t data_size = 0;
+  for (size_t i = 0; i < cached_profile_data_.size(); ++i) {
+    data_size += cached_profile_data_[i].ByteSize();
+  }
+  return data_size;
 }
 
 }  // namespace metrics
