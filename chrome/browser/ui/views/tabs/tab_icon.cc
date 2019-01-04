@@ -57,7 +57,7 @@ bool NetworkStateIsAnimated(TabNetworkState network_state) {
 // Returns a rect in which the throbber should be painted.
 gfx::RectF GetThrobberBounds(const gfx::Rect& bounds) {
   gfx::RectF throbber_bounds(bounds);
-  constexpr float kThrobberHeightDp = 2;
+  constexpr float kThrobberHeightDp = 3;
   // The throbber starts 1dp below the tab icon.
   throbber_bounds.set_y(bounds.bottom() + 1);
   throbber_bounds.set_height(kThrobberHeightDp);
@@ -359,15 +359,13 @@ void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Disable anti-aliasing to effectively "pixel align" the rectangle.
-  flags.setAntiAlias(false);
   if (animation_state_.finished_loading_animation_fade_out) {
     flags.setAlpha(
         (1.0 - *animation_state_.finished_loading_animation_fade_out) *
         SK_AlphaOPAQUE);
   }
 
-  canvas->DrawRect(bounds, flags);
+  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
 }
 
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
