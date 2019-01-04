@@ -212,11 +212,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "ash-keyboard-shortcut-viewer-app",
-    "owners": [ "msw" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "ash-shelf-color",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

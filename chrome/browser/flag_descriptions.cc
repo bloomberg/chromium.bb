@@ -3084,11 +3084,6 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kAshKeyboardShortcutViewerAppName[] =
-    "Keyboard Shortcut Viewer mojo app";
-const char kAshKeyboardShortcutViewerAppDescription[] =
-    "Use an out-of-process mojo app to show the Keyboard Shortcut Viewer.";
-
 const char kAshShelfColorName[] = "Shelf color in Chrome OS system UI";
 const char kAshShelfColorDescription[] =
     "Enables/disables the shelf color to be a derived from the wallpaper. The "
