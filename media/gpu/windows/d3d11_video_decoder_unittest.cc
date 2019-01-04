@@ -232,4 +232,6 @@ TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
   EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
 }
 
+// TODO(xhwang): Add tests to cover kWaitingForNewKey and kWaitingForReset.
+
 }  // namespace media

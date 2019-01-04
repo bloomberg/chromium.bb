@@ -253,6 +253,40 @@ TEST_F(PipelineControllerTest, Seek) {
   EXPECT_TRUE(pipeline_controller_.IsStable());
 }
 
+// Makes sure OnDecoderStateLost() triggers a seek to the current media time.
+TEST_F(PipelineControllerTest, DecoderStateLost) {
+  Complete(StartPipeline());
+
+  constexpr auto kCurrentMediaTime = base::TimeDelta::FromSeconds(7);
+  EXPECT_CALL(*pipeline_, GetMediaTime())
+      .WillRepeatedly(Return(kCurrentMediaTime));
+
+  EXPECT_CALL(demuxer_, StartWaitingForSeek(kCurrentMediaTime));
+  EXPECT_CALL(*pipeline_, Seek(kCurrentMediaTime, _));
+
+  pipeline_controller_.OnDecoderStateLost();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Makes sure OnDecoderStateLost() does not trigger a seek during pending seek.
+TEST_F(PipelineControllerTest, DecoderStateLost_DuringPendingSeek) {
+  Complete(StartPipeline());
+
+  // Create a pending seek.
+  base::TimeDelta kSeekTime = base::TimeDelta::FromSeconds(5);
+  EXPECT_CALL(demuxer_, StartWaitingForSeek(kSeekTime));
+  PipelineStatusCB seek_cb = SeekPipeline(kSeekTime);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClear(&demuxer_);
+
+  // OnDecoderStateLost() should not trigger another seek.
+  EXPECT_CALL(*pipeline_, GetMediaTime()).Times(0);
+  pipeline_controller_.OnDecoderStateLost();
+  base::RunLoop().RunUntilIdle();
+
+  Complete(seek_cb);
+}
+
 TEST_F(PipelineControllerTest, SuspendResumeTime) {
   Complete(StartPipeline());
   Complete(SuspendPipeline());
