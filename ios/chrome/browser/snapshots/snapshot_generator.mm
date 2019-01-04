@@ -116,9 +116,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (UIImage*)updateSnapshot {
   UIImage* snapshot = [self generateSnapshotWithOverlays:YES];
-  if (snapshot) {
-    [self.snapshotCache setImage:snapshot withSessionID:self.sessionID];
-  }
+  [self updateSnapshotCacheWithImage:snapshot];
   return snapshot;
 }
 
