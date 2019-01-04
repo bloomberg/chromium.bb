@@ -130,6 +130,21 @@ bool IsFieldCVC(const ProcessedField& field) {
          StringMatchesCVC(field.field->id_attribute);
 }
 
+// Returns true iff |field_type| is one of password types.
+bool IsPasswordPrediction(const CredentialFieldType field_type) {
+  switch (field_type) {
+    case CredentialFieldType::kUsername:
+    case CredentialFieldType::kNone:
+      return false;
+    case CredentialFieldType::kCurrentPassword:
+    case CredentialFieldType::kNewPassword:
+    case CredentialFieldType::kConfirmationPassword:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // Returns true iff |processed_field| matches the |interactability_bar|. That is
 // when either:
 // (1) |processed_field.interactability| is not less than |interactability_bar|,
@@ -199,12 +214,10 @@ ProcessedField* FindFieldWithUniqueRendererId(
 
 // Tries to parse |processed_fields| based on server |predictions|. Uses |mode|
 // to decide which of two username hints are relevant, if present.
-std::unique_ptr<SignificantFields> ParseUsingPredictions(
-    std::vector<ProcessedField>* processed_fields,
-    const FormPredictions& predictions,
-    FormDataParser::Mode mode) {
-  auto result = std::make_unique<SignificantFields>();
-
+void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
+                           const FormPredictions& predictions,
+                           FormDataParser::Mode mode,
+                           SignificantFields* result) {
   // Following the design from https://goo.gl/Mc2KRe, this code will attempt to
   // understand the special case when there are two usernames hinted by the
   // server. In that case, they are considered the sign-in and sign-up
@@ -219,7 +232,16 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
   const FormFieldData* second_username = nullptr;
   for (const auto& prediction : predictions) {
     ProcessedField* processed_field = nullptr;
-    switch (DeriveFromServerFieldType(prediction.second.type)) {
+
+    CredentialFieldType field_type =
+        DeriveFromServerFieldType(prediction.second.type);
+    bool is_password_prediction = IsPasswordPrediction(field_type);
+    if (mode == FormDataParser::Mode::kSaving && is_password_prediction) {
+      // TODO(crbug.com/913965): Consider server predictions for password fields
+      // in SAVING mode when the server predictions become complete.
+      continue;
+    }
+    switch (field_type) {
       case CredentialFieldType::kUsername:
         if (!result->username) {
           processed_field =
@@ -245,7 +267,7 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
           if (processed_field) {
             if (!processed_field->is_password)
-              return nullptr;
+              continue;
             result->password = processed_field->field;
           }
         }
@@ -266,7 +288,7 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
           if (processed_field) {
             if (!processed_field->is_password)
-              return nullptr;
+              continue;
             result->new_password = processed_field->field;
           }
         }
@@ -276,7 +298,7 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
             FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         if (processed_field) {
           if (!processed_field->is_password)
-            return nullptr;
+            continue;
           result->confirmation_password = processed_field->field;
         }
         break;
@@ -317,46 +339,44 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         processed_field->server_hints_CVC = true;
     }
   }
-
-  return result->HasPasswords() ? std::move(result) : nullptr;
 }
 
-// Tries to parse |processed_fields| based on autocomplete attributes.
-// Assumption on the usage autocomplete attributes:
+// Looks for autocomplete attributes in |processed_fields| and saves predictions
+// to |result|. Assumption on the usage autocomplete attributes:
 // 1. Not more than 1 field with autocomplete=username.
 // 2. Not more than 1 field with autocomplete=current-password.
 // 3. Not more than 2 fields with autocomplete=new-password.
 // 4. Only password fields have "*-password" attribute and only non-password
 //    fields have the "username" attribute.
-// Are these assumptions violated, or is there no password with an autocomplete
-// attribute, parsing is unsuccessful. Returns nullptr if parsing is
-// unsuccessful.
-std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
-    const std::vector<ProcessedField>& processed_fields) {
-  auto result = std::make_unique<SignificantFields>();
+// If any assumption is violated, the autocomplete attribute is ignored.
+void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
+                            SignificantFields* result) {
+  bool new_password_found_by_server = result->new_password;
+  const FormFieldData* field_marked_as_username = nullptr;
+  int username_fields_found = 0;
   for (const ProcessedField& processed_field : processed_fields) {
     switch (processed_field.autocomplete_flag) {
       case AutocompleteFlag::kUsername:
         if (processed_field.is_password || result->username)
-          return nullptr;
-        result->username = processed_field.field;
+          continue;
+
+        username_fields_found++;
+        field_marked_as_username = processed_field.field;
         break;
       case AutocompleteFlag::kCurrentPassword:
         if (!processed_field.is_password || result->password)
-          return nullptr;
+          continue;
         result->password = processed_field.field;
         break;
       case AutocompleteFlag::kNewPassword:
-        if (!processed_field.is_password)
-          return nullptr;
+        if (!processed_field.is_password || new_password_found_by_server)
+          continue;
         // The first field with autocomplete=new-password is considered to be
         // new_password and the second is confirmation_password.
         if (!result->new_password)
           result->new_password = processed_field.field;
         else if (!result->confirmation_password)
           result->confirmation_password = processed_field.field;
-        else
-          return nullptr;
         break;
       case AutocompleteFlag::kCreditCard:
         NOTREACHED();
@@ -365,8 +385,8 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
         break;
     }
   }
-
-  return result->HasPasswords() ? std::move(result) : nullptr;
+  if (!result->username && username_fields_found == 1)
+    result->username = field_marked_as_username;
 }
 
 // This computes the "likely" condition from the design https://goo.gl/ERvoEN .
@@ -879,42 +899,38 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
   if (processed_fields.empty())
     return nullptr;
 
-  std::unique_ptr<SignificantFields> significant_fields;
+  SignificantFields significant_fields;
   UsernameDetectionMethod username_detection_method =
       UsernameDetectionMethod::kNoUsernameDetected;
 
   // (1) First, try to parse with server predictions.
   if (predictions_) {
-    significant_fields =
-        ParseUsingPredictions(&processed_fields, *predictions_, mode);
-    if (significant_fields && significant_fields->username) {
+    ParseUsingPredictions(&processed_fields, *predictions_, mode,
+                          &significant_fields);
+    if (significant_fields.username) {
       username_detection_method =
           UsernameDetectionMethod::kServerSidePrediction;
     }
   }
 
   // (2) If that failed, try to parse with autocomplete attributes.
-  if (!significant_fields) {
-    significant_fields = ParseUsingAutocomplete(processed_fields);
-    if (significant_fields && significant_fields->username) {
-      username_detection_method =
-          UsernameDetectionMethod::kAutocompleteAttribute;
-    }
+  ParseUsingAutocomplete(processed_fields, &significant_fields);
+  if (username_detection_method ==
+          UsernameDetectionMethod::kNoUsernameDetected &&
+      significant_fields.username) {
+    username_detection_method = UsernameDetectionMethod::kAutocompleteAttribute;
   }
 
   // (3) Now try to fill the gaps.
-  if (!significant_fields)
-    significant_fields = std::make_unique<SignificantFields>();
-
-  const bool username_found_before_heuristic = significant_fields->username;
+  const bool username_found_before_heuristic = significant_fields.username;
 
   // Try to parse with base heuristic.
   Interactability username_max = Interactability::kUnlikely;
-  ParseUsingBaseHeuristics(processed_fields, mode, significant_fields.get(),
+  ParseUsingBaseHeuristics(processed_fields, mode, &significant_fields,
                            &username_max, &readonly_status_);
   if (username_detection_method ==
           UsernameDetectionMethod::kNoUsernameDetected &&
-      significant_fields && significant_fields->username) {
+      significant_fields.username) {
     username_detection_method = UsernameDetectionMethod::kBaseHeuristic;
   }
 
@@ -930,7 +946,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
     if (username_field_by_context &&
         !(mode == FormDataParser::Mode::kSaving &&
           username_field_by_context->value.empty())) {
-      significant_fields->username = username_field_by_context;
+      significant_fields.username = username_field_by_context;
       if (username_detection_method ==
               UsernameDetectionMethod::kNoUsernameDetected ||
           username_detection_method ==
@@ -945,7 +961,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
                             username_detection_method,
                             UsernameDetectionMethod::kCount);
 
-  return AssemblePasswordForm(form_data, *significant_fields,
+  return AssemblePasswordForm(form_data, significant_fields,
                               std::move(all_possible_passwords),
                               std::move(all_possible_usernames), predictions_);
 }
