@@ -17,13 +17,4 @@ Polymer({
       },
     },
   },
-
-  /**
-   * @param {appManagement.mojom.App} app
-   * @return {string}
-   * @private
-   */
-  iconUrlFromId_: function(app) {
-    return app_management.util.getAppIcon(app);
-  },
 });

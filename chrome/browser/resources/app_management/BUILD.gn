@@ -69,6 +69,8 @@ if (!is_android) {
   js_library("chrome_app_permission_view") {
     deps = [
       ":fake_page_handler",
+      ":metadata_view",
+      ":permission_view_header",
     ]
   }
 
@@ -107,6 +109,9 @@ if (!is_android) {
     ]
   }
 
+  js_library("permission_view_header") {
+  }
+
   js_library("permission_item") {
     deps = [
       ":constants",
@@ -120,6 +125,7 @@ if (!is_android) {
       ":fake_page_handler",
       ":metadata_view",
       ":permission_item",
+      ":permission_view_header",
       ":store_client",
     ]
   }

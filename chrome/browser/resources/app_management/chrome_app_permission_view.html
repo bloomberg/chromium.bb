@@ -1,9 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="shared_style.html">
-<link rel="import" href="browser_proxy.html">
 <link rel="import" href="shared_style.html">
-<link rel="import" href="util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="app-management-chrome-app-permission-view">
@@ -11,15 +9,8 @@
     <style include="app-management-shared-css">
 
     </style>
-    <div class="permission-view-header">
-      <paper-icon-button-light class="icon-arrow-back">
-          <button>
-            <paper-ripple class="circle"></paper-ripple>
-          </button>
-      </paper-icon-button-light>
-      <img class="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
-      <div class="app-title">[[app_.title]]</div>
-    </div>
+    <app-management-permission-view-header app="[[app_]]">
+    </app-management-permission-view-header>
     <app-management-metadata-view app="[[app_]]"></app-management-metadata-view>
   </template>
   <script src="chrome_app_permission_view.js"></script>

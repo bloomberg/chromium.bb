@@ -247,6 +247,8 @@
         <include name="IDR_APP_MANAGEMENT_ITEM_JS" file="resources\app_management\item.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML" file="resources\app_management\permission_view_header.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS" file="resources\app_management\permission_view_header.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_METADATA_VIEW_HTML" file="resources\app_management\metadata_view.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_METADATA_VIEW_JS" file="resources\app_management\metadata_view.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_PERMISSION_ITEM_HTML" file="resources\app_management\permission_item.html" type="BINDATA"/>

@@ -6,6 +6,7 @@
 <link rel="import" href="permission_item.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="shared_vars.html">
+<link rel="import" href="permission_view_header.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
@@ -19,16 +20,6 @@
 <dom-module id="app-management-pwa-permission-view">
   <template>
     <style include="app-management-shared-css cr-icons paper-button-style">
-    #site-settings-button {
-      color: var(--secondary-text-color);
-      font-size: 12px;
-    }
-
-    #site-settings-icon {
-      display: flex;
-      margin-inline-end: 24px;
-    }
-
     #permission-list {
       display: flex;
       flex-direction: column;
@@ -40,26 +31,34 @@
       margin: 0 24px;
       width: 1px;
     }
+
+    #site-settings-button {
+      --paper-button-ink-color: none;
+      border: none;
+      color: var(--secondary-text-color);
+      display: flex;
+      font-size: 12px;
+      font-weight: var(--secondary-font-weight);
+    }
+
+    #site-settings-icon {
+      display: flex;
+      margin-inline-end: 24px;
+      margin-inline-start: 0;
+    }
+
     </style>
-    <div class="permission-view-header">
-      <paper-icon-button-light class="icon-arrow-back">
-          <button id="closeButton" on-click="onClickBackButton_"
-          aria-label="$i18n{back}">
-            <paper-ripple class="circle"></paper-ripple>
-          </button>
-      </paper-icon-button-light>
-      <img class="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
-      <div class="app-title">[[app_.title]]</div>
-      <div id="site-settings-button">$i18n{openSiteSettings}</div>
-      <paper-icon-button-light id="site-settings-icon" class="icon-external">
-          <button aria-label="$i18n{openSiteSettings}"></button>
-      </paper-icon-button-light>
-      <paper-button class="secondary-button" on-click="onClickUninstallButton_"
-      role="button"
-          tabindex="0" aria-disabled="false" elevation="0">
-        $i18n{uninstall}
-      </paper-button>
-    </div>
+    <app-management-permission-view-header app="[[app_]]">
+      <div slot="extra-right-buttons">
+        <paper-button id="site-settings-button">
+          $i18n{openSiteSettings}
+          <paper-icon-button-light id="site-settings-icon"
+              class="icon-external">
+            <button></button>
+          </paper-icon-button-light>
+        </paper-button>
+      </div>
+    </app-management-permission-view-header>
 
     <div id="permission-list" class="card-container">
       <app-management-permission-item app="[[app_]]"
