@@ -164,14 +164,18 @@ function mkCase(testcases, {name, params, run}) {
   caserun.click(runCase);
 }
 
+function basepath(path) {
+  const at = path.lastIndexOf("/");
+  return path.slice(0, at);
+}
+
 (async () => {
   const url = new URL(window.location);
-  const suite = url.searchParams.get("suite") || "cts";
-  const base = "./out/" + suite;
-  const listingurl = base + "/listing.json";
-  document.getElementById("suitename").innerText = listingurl;
+  const suite = url.searchParams.get("suite") || "out/cts/listing.json";
+  const base = "./" + basepath(suite);
+  document.getElementById("suitename").innerText = suite;
 
-  const listing = await (await fetch(listingurl)).json();
+  const listing = await (await fetch(suite)).json();
 
   const log = new Logger();
 

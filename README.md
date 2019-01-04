@@ -9,8 +9,8 @@ grunt
 ```
 
 After `build` and `serve`, open:
-* http://localhost:8080/?suite=cts
-* http://localhost:8080/?suite=unittests
+* http://localhost:8080/?suite=out/cts/listing.json (default)
+* http://localhost:8080/?suite=out/unittests/listing.json
 
 ## TODO
 

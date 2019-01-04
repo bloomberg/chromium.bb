@@ -26,7 +26,7 @@ module.exports = function(grunt) {
     },
 
     "http-server": {
-      "out/": {
+      ".": {
         root: ".",
         port: 8080,
         host: "127.0.0.1",
@@ -74,7 +74,7 @@ module.exports = function(grunt) {
     "run:list-unittests",
   ]);
   publishTask("serve", "Serve out/ on 127.0.0.1:8080", [
-    "http-server:out/",
+    "http-server:.",
   ]);
   publishedTasks.push({name: "clean", desc: "Clean out/"});
 
