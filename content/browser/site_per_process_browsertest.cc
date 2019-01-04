@@ -8702,8 +8702,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   // feature. If its parent frame's policy was replicated correctly to the
   // proxy, then this will be enabled. Otherwise, it will be disabled, as
   // geolocation is disabled by default in cross-origin frames.
-  EXPECT_EQ(true, EvalJs(root->child_at(1)->child_at(0),
-                         "document.policy.allowsFeature('geolocation')"));
+  EXPECT_EQ(true,
+            EvalJs(root->child_at(1)->child_at(0),
+                   "document.featurePolicy.allowsFeature('geolocation')"));
 
   // Now navigate the iframe to a page with no policy, and the same nested
   // cross-site iframe. The policy should be cleared in the proxy.
@@ -8716,8 +8717,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   // Ask the deepest iframe to report the enabled state of the geolocation
   // feature. If its parent frame's policy was replicated correctly to the
   // proxy, then this will now be disabled.
-  EXPECT_EQ(false, EvalJs(root->child_at(1)->child_at(0),
-                          "document.policy.allowsFeature('geolocation')"));
+  EXPECT_EQ(false,
+            EvalJs(root->child_at(1)->child_at(0),
+                   "document.featurePolicy.allowsFeature('geolocation')"));
 }
 
 // Test that the constructed feature policy is correct in sandboxed
@@ -8758,7 +8760,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       root->child_at(0),
       "window.domAutomationController.send("
-      "document.policy.allowsFeature('geolocation'));",
+      "document.featurePolicy.allowsFeature('geolocation'));",
       &success));
   EXPECT_TRUE(success);
 
@@ -8778,7 +8780,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       root->child_at(0),
       "window.domAutomationController.send("
-      "document.policy.allowsFeature('geolocation'));",
+      "document.featurePolicy.allowsFeature('geolocation'));",
       &success));
   EXPECT_TRUE(success);
 }
@@ -8814,7 +8816,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       root->child_at(0),
       "window.domAutomationController.send("
-      "document.policy.allowsFeature('geolocation'));",
+      "document.featurePolicy.allowsFeature('geolocation'));",
       &success));
   EXPECT_TRUE(success);
 
@@ -8835,7 +8837,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       root->child_at(0),
       "window.domAutomationController.send("
-      "document.policy.allowsFeature('geolocation'));",
+      "document.featurePolicy.allowsFeature('geolocation'));",
       &success));
   EXPECT_FALSE(success);
 }
@@ -9129,11 +9131,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   // cross-origin to frame 3, it will use the proxy's replicated policy as the
   // parent policy; otherwise we would just ask frame 3 to report its own state.
   bool success = false;
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractBool(root->child_at(1)->child_at(0),
-                                  "window.domAutomationController.send("
-                                  "document.policy.allowsFeature('autoplay'));",
-                                  &success));
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->child_at(0),
+      "window.domAutomationController.send("
+      "document.featurePolicy.allowsFeature('autoplay'));",
+      &success));
   EXPECT_TRUE(success);
 }
 

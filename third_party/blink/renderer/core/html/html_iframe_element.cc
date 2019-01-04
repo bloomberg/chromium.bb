@@ -82,7 +82,7 @@ DOMTokenList* HTMLIFrameElement::sandbox() const {
   return sandbox_.Get();
 }
 
-Policy* HTMLIFrameElement::policy() {
+DOMFeaturePolicy* HTMLIFrameElement::featurePolicy() {
   if (!policy_) {
     policy_ = MakeGarbageCollected<IFramePolicy>(
         &GetDocument(), ContainerPolicy(), GetOriginForFeaturePolicy());

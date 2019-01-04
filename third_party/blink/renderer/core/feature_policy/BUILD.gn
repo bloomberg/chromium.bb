@@ -7,12 +7,12 @@ import("//third_party/blink/renderer/core/core.gni")
 blink_core_sources("feature_policy") {
   sources = [
     "document_policy.h",
+    "dom_feature_policy.cc",
+    "dom_feature_policy.h",
     "feature_policy.cc",
     "feature_policy.h",
     "iframe_policy.h",
     "layout_animations_policy.cc",
     "layout_animations_policy.h",
-    "policy.cc",
-    "policy.h",
   ]
 }

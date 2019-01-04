@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceFeaturePolicyTest,
                        ViewSourceNotAffectedByHeaderPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const std::string k_verify_feature = R"(
-      var all_features = document.policy.allowedFeatures();
+      var all_features = document.featurePolicy.allowedFeatures();
       var vs = all_features.find((f) => f === 'vertical-scroll');
       console.log(vs);
       domAutomationController.send("" + vs);)";

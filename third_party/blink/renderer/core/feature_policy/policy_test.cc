@@ -31,11 +31,11 @@ class PolicyTest : public testing::Test {
         "https://example.com https://example.net");
   }
 
-  Policy* GetPolicy() const { return policy_; }
+  DOMFeaturePolicy* GetPolicy() const { return policy_; }
 
  protected:
   Persistent<Document> document_;
-  Persistent<Policy> policy_;
+  Persistent<DOMFeaturePolicy> policy_;
 };
 
 class DocumentPolicyTest : public PolicyTest {

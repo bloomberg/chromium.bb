@@ -109,6 +109,7 @@ class DocumentParser;
 class DocumentState;
 class DocumentTimeline;
 class DocumentType;
+class DOMFeaturePolicy;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
@@ -151,7 +152,6 @@ class NthIndexCache;
 class OriginAccessEntry;
 class Page;
 class PendingAnimations;
-class Policy;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
@@ -260,7 +260,7 @@ class CORE_EXPORT Document : public ContainerNode,
                                                const Position&);
 
   // Support JS introspection of frame policy (e.g. feature policy).
-  Policy* policy();
+  DOMFeaturePolicy* featurePolicy();
 
   MediaQueryMatcher& GetMediaQueryMatcher();
 
@@ -1902,7 +1902,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool needs_to_record_ukm_outlive_time_;
 
-  Member<Policy> policy_;
+  Member<DOMFeaturePolicy> policy_;
 
   Member<SlotAssignmentEngine> slot_assignment_engine_;
 

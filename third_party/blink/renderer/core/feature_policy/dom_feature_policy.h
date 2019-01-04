@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_DOM_FEATURE_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_DOM_FEATURE_POLICY_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -15,13 +15,13 @@ namespace blink {
 class Document;
 class SecurityOrigin;
 
-// Policy provides an interface for feature policy introspection of a document
-// (DocumentPolicy) or an iframe (IFramePolicy).
-class CORE_EXPORT Policy : public ScriptWrappable {
+// DOMFeaturePolicy provides an interface for feature policy introspection of a
+// document (DocumentPolicy) or an iframe (IFramePolicy).
+class CORE_EXPORT DOMFeaturePolicy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ~Policy() override = default;
+  ~DOMFeaturePolicy() override = default;
 
   // Implementation of methods of the policy interface:
   // Returns whether or not the given feature is allowed on the origin of the
@@ -36,8 +36,8 @@ class CORE_EXPORT Policy : public ScriptWrappable {
   // URL.
   Vector<String> getAllowlistForFeature(const String& url) const;
 
-  // Inform the Policy object when the container policy on its frame element has
-  // changed.
+  // Inform the DOMFeaturePolicy object when the container policy on its frame
+  // element has changed.
   virtual void UpdateContainerPolicy(
       const ParsedFeaturePolicy& container_policy = {},
       scoped_refptr<const SecurityOrigin> src_origin = nullptr);
@@ -56,4 +56,4 @@ class CORE_EXPORT Policy : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_DOM_FEATURE_POLICY_H_
