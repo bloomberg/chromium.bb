@@ -518,11 +518,9 @@ cr.define('print_preview', function() {
 
         if (capabilities) {
           this.selectedDestination_.capabilities = capabilities;
-
-          cr.dispatchSimpleEvent(
-              this,
-              DestinationStore.EventType
-                  .CACHED_SELECTED_DESTINATION_INFO_READY);
+          this.dispatchEvent(
+              new CustomEvent(DestinationStore.EventType
+                                  .SELECTED_DESTINATION_CAPABILITIES_READY));
         }
         return true;
       }
@@ -690,8 +688,8 @@ cr.define('print_preview', function() {
       }
       if (destination == null) {
         this.selectedDestination_ = null;
-        cr.dispatchSimpleEvent(
-            this, DestinationStore.EventType.DESTINATION_SELECT);
+        this.dispatchEvent(
+            new CustomEvent(DestinationStore.EventType.DESTINATION_SELECT));
         return;
       }
 
@@ -715,8 +713,8 @@ cr.define('print_preview', function() {
                                        .CLOUD_DUPLICATE_SELECTED);
       }
       // Notify about selected destination change.
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SELECT);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.DESTINATION_SELECT));
       // Request destination capabilities from backend, since they are not
       // known yet.
       if (destination.capabilities == null) {
@@ -768,26 +766,20 @@ cr.define('print_preview', function() {
                 /**
                  * Removes the destination from the store and replaces it with a
                  * destination created from the resolved destination properties,
-                 * if any are reported. Then sends a
-                 * PROVISIONAL_DESTINATION_RESOLVED event.
+                 * if any are reported. Then returns the new destination.
                  */
                 this.removeProvisionalDestination_(destination.id);
                 const parsedDestination =
                     print_preview.parseExtensionDestination(destinationInfo);
                 this.insertIntoStore_(parsedDestination);
-                this.dispatchProvisionalDestinationResolvedEvent_(
-                    destination.id, parsedDestination);
                 return parsedDestination;
               },
               () => {
                 /**
-                 * The provisional destination is removed from the store and a
-                 * PROVISIONAL_DESTINATION_RESOLVED event is dispatched with a
-                 * null destination.
+                 * The provisional destination is removed from the store and
+                 * null is returned.
                  */
                 this.removeProvisionalDestination_(destination.id);
-                this.dispatchProvisionalDestinationResolvedEvent_(
-                    destination.id, null);
                 return null;
               });
     }
@@ -861,8 +853,6 @@ cr.define('print_preview', function() {
             this.destinationSearchStatus_.set(
                 type, print_preview.DestinationStorePrinterSearchStatus.DONE);
           });
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     }
 
     /**
@@ -878,8 +868,6 @@ cr.define('print_preview', function() {
             (opt_origin && origins.indexOf(opt_origin) < 0)) {
           this.cloudPrintInterface_.search(
               this.userInfo_.activeUser, opt_origin);
-          cr.dispatchSimpleEvent(
-              this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
         }
       }
     }
@@ -888,8 +876,8 @@ cr.define('print_preview', function() {
     reloadUserCookieBasedDestinations() {
       const origins = this.loadedCloudOrigins_[this.userInfo_.activeUser] || [];
       if (origins.indexOf(print_preview.DestinationOrigin.COOKIES) >= 0) {
-        cr.dispatchSimpleEvent(
-            this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+        this.dispatchEvent(new CustomEvent(
+            DestinationStore.EventType.DESTINATION_SEARCH_DONE));
       } else {
         this.startLoadCloudDestinations(
             print_preview.DestinationOrigin.COOKIES);
@@ -947,22 +935,6 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Dispatches the PROVISIONAL_DESTINATION_RESOLVED event for id
-     * |provisionalId| and destination |destination|.
-     * @param {string} provisionalId The ID of the destination that was
-     *     resolved.
-     * @param {?print_preview.Destination} destination Information about the
-     *     destination if it was resolved successfully.
-     */
-    dispatchProvisionalDestinationResolvedEvent_(provisionalId, destination) {
-      const event = new Event(
-          DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED);
-      event.provisionalId = provisionalId;
-      event.destination = destination;
-      this.dispatchEvent(event);
-    }
-
-    /**
      * Inserts {@code destination} to the data store and dispatches a
      * DESTINATIONS_INSERTED event.
      * @param {!print_preview.Destination} destination Print destination to
@@ -1010,8 +982,8 @@ cr.define('print_preview', function() {
      *     {@code autoSelectMatchingDestination_}.
      */
     destinationsInserted_(opt_destination) {
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATIONS_INSERTED);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.DESTINATIONS_INSERTED));
       if (this.autoSelectMatchingDestination_) {
         const destinationsToSearch =
             opt_destination && [opt_destination] || this.destinations_;
@@ -1030,12 +1002,11 @@ cr.define('print_preview', function() {
      * @private
      */
     sendSelectedDestinationUpdateEvent_() {
-      cr.dispatchSimpleEvent(
-          this,
+      this.dispatchEvent(new CustomEvent(
           this.selectedDestination_.shouldShowInvalidCertificateError ?
               DestinationStore.EventType.SELECTED_DESTINATION_UNSUPPORTED :
               DestinationStore.EventType
-                  .SELECTED_DESTINATION_CAPABILITIES_READY);
+                  .SELECTED_DESTINATION_CAPABILITIES_READY));
     }
 
     /**
@@ -1152,8 +1123,8 @@ cr.define('print_preview', function() {
       this.autoSelectTimeout_ = setTimeout(
           this.selectDefaultDestination_.bind(this),
           DestinationStore.AUTO_SELECT_TIMEOUT_);
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATIONS_RESET);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.DESTINATIONS_RESET));
     }
 
 
@@ -1165,8 +1136,8 @@ cr.define('print_preview', function() {
     onDestinationSearchDone_(type) {
       this.destinationSearchStatus_.set(
           type, print_preview.DestinationStorePrinterSearchStatus.DONE);
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.DESTINATION_SEARCH_DONE));
       if (type === print_preview.PrinterType.EXTENSION_PRINTER) {
         this.endExtensionPrinterSearch_();
       }
@@ -1236,10 +1207,8 @@ cr.define('print_preview', function() {
           'Failed to get print capabilities for printer ' + destinationId);
       if (this.selectedDestination_ &&
           this.selectedDestination_.id == destinationId) {
-        const event =
-            new Event(DestinationStore.EventType.SELECTED_DESTINATION_INVALID);
-        event.destinationId = destinationId;
-        this.dispatchEvent(event);
+        this.dispatchEvent(new CustomEvent(
+            DestinationStore.EventType.SELECTED_DESTINATION_INVALID));
       }
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
@@ -1269,8 +1238,8 @@ cr.define('print_preview', function() {
           this.loadedCloudOrigins_[event.user] = origins.concat([event.origin]);
         }
       }
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.DESTINATION_SEARCH_DONE));
       this.sendNoPrinterEventIfNeeded_();
     }
 
@@ -1286,8 +1255,8 @@ cr.define('print_preview', function() {
       }
 
       this.selectFirstDestination_ = false;
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.NO_DESTINATIONS_FOUND);
+      this.dispatchEvent(
+          new CustomEvent(DestinationStore.EventType.NO_DESTINATIONS_FOUND));
     }
 
     /**
@@ -1399,22 +1368,16 @@ cr.define('print_preview', function() {
   }
 
   /**
-   * Event types dispatched by the data store.
+   * Event types dispatched by the destination store.
    * @enum {string}
    */
   DestinationStore.EventType = {
     DESTINATION_SEARCH_DONE:
         'print_preview.DestinationStore.DESTINATION_SEARCH_DONE',
-    DESTINATION_SEARCH_STARTED:
-        'print_preview.DestinationStore.DESTINATION_SEARCH_STARTED',
     DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
-    DESTINATIONS_RESET: 'print_preview.DestinationStore.DESTINATIONS_RESET',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
-    PROVISIONAL_DESTINATION_RESOLVED:
-        'print_preview.DestinationStore.PROVISIONAL_DESTINATION_RESOLVED',
-    CACHED_SELECTED_DESTINATION_INFO_READY:
-        'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
+    DESTINATIONS_RESET: 'print_preview.DestinationStore.DESTINATIONS_RESET',
     NO_DESTINATIONS_FOUND:
         'print_preview.DestinationStore.NO_DESTINATIONS_FOUND',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
