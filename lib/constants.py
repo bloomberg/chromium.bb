@@ -635,7 +635,8 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'grunt-no-vmtest-pre-cq',         # stoneyridge  kernel 4.14
     'guado_moblab-no-vmtest-pre-cq',  # broadwell    kernel 3.14  moblab
     'kevin-arcnext-no-vmtest-pre-cq', # arm64        kernel 4.4   arcnext
-    'lakitu-no-vmtest-pre-cq',        # container    kernel 4.14
+    # Disabled until crbug.com/918723
+    #'lakitu-no-vmtest-pre-cq',        # container    kernel 4.14
     'nyan_blaze-no-vmtest-pre-cq',    # arm32        kernel 3.10
     'reef-no-vmtest-pre-cq',          # apollolake   kernel 4.4   vulkan
     'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
