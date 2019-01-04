@@ -15,7 +15,6 @@
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/controls/button/image_button.h"
 
 namespace base {
 class OneShotTimer;
