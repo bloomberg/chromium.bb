@@ -317,8 +317,12 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
     return false;
 
   // Paint containment establishes isolation.
-  if (object.ShouldApplyPaintContainment())
+  // Style & Layout containment also establish isolation.
+  if (object.ShouldApplyPaintContainment() ||
+      (object.ShouldApplyStyleContainment() &&
+       object.ShouldApplyLayoutContainment())) {
     return true;
+  }
 
   // Layout view establishes isolation with the exception of local roots (since
   // they are already essentially isolated).
