@@ -575,7 +575,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['mac', 'debug', ('nvidia', 0xfe9)], bug=871352)
 
-    # Linux failures
+    # Already fixed with Mesa 17.1.6
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
         ['linux', 'intel'], bug=680675)
 
