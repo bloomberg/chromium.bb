@@ -15,15 +15,6 @@
 # https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 
-# https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
--DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
-# Addendum to the above: These three were previously marked as flaky. After
-# resolving https://crbug.com/810329, they will need to be monitored to see
-# if flake is still an issue.
--DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
--DnsProbeBrowserTest.CorrectionsLoadStopped
--DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
-
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest

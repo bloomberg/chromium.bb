@@ -171,13 +171,12 @@ void ExpectDisplayingLocalErrorPage(const std::string& url,
 // Checks that an error page with information retrieved from the navigation
 // correction service is being displayed, with the specified specified error
 // string.
-void ExpectDisplayingNavigationCorrections(const std::string& url,
-                                           Browser* browser,
+void ExpectDisplayingNavigationCorrections(Browser* browser,
                                            const std::string& error_string) {
   EXPECT_TRUE(IsDisplayingText(browser, error_string));
 
   // Check that the mock navigation corrections are displayed.
-  EXPECT_TRUE(IsDisplayingText(browser, url));
+  EXPECT_TRUE(IsDisplayingText(browser, "http://mock.http/title2.html"));
 
   // Check that the search terms are displayed as a link.
   EXPECT_TRUE(IsDisplayingText(browser, "search query"));
@@ -190,10 +189,9 @@ void ExpectDisplayingNavigationCorrections(const std::string& url,
 // Checks that an error page with information retrieved from the navigation
 // correction service is being displayed, with the specified specified error
 // code.
-void ExpectDisplayingNavigationCorrections(const std::string& url,
-                                           Browser* browser,
+void ExpectDisplayingNavigationCorrections(Browser* browser,
                                            net::Error error_code) {
-  ExpectDisplayingNavigationCorrections(url, browser,
+  ExpectDisplayingNavigationCorrections(browser,
                                         net::ErrorToShortString(error_code));
 }
 
@@ -383,17 +381,27 @@ class DNSErrorPageTest : public ErrorPageTest {
                     FROM_HERE, {BrowserThread::UI},
                     base::BindOnce(&DNSErrorPageTest::RequestCreated,
                                    base::Unretained(owner)));
-                return chrome_browser_net::WriteFileToURLLoader(
-                    owner->embedded_test_server(), params,
-                    "mock-link-doctor.json");
+                content::URLLoaderInterceptor::WriteResponse(
+                    "chrome/test/data/mock-link-doctor.json",
+                    params->client.get());
+                return true;
+              }
+
+              // Referenced by mock Link Doctor page.
+              if (params->url_request.url.spec() ==
+                  "http://mock.http/title2.html") {
+                content::URLLoaderInterceptor::WriteResponse(
+                    "chrome/test/data/title2.html", params->client.get());
+                return true;
               }
 
               // Add an interceptor for the search engine the error page will
               // use.
               if (params->url_request.url.host() ==
                   owner->search_term_url_.host()) {
-                return chrome_browser_net::WriteFileToURLLoader(
-                    owner->embedded_test_server(), params, "title3.html");
+                content::URLLoaderInterceptor::WriteResponse(
+                    "chrome/test/data/title3.html", params->client.get());
+                return true;
               }
 
               return false;
@@ -512,7 +520,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_Basic) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 }
@@ -524,7 +531,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack1) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   EXPECT_EQ(1, num_requests());
@@ -538,7 +544,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
@@ -546,7 +551,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2) {
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(2, num_requests());
 
@@ -562,24 +566,19 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2AndForward) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
 
-  std::string url =
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec();
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
   NavigateToFileURL("/title3.html");
 
   GoBackAndWaitForNavigations(2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(2, num_requests());
 
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
 
   GoForwardAndWaitForNavigations(2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(3, num_requests());
 }
 
@@ -588,26 +587,21 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2AndForward) {
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2Forward2) {
   NavigateToFileURL("/title3.html");
 
-  std::string url =
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec();
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
   NavigateToFileURL("/title2.html");
 
   GoBackAndWaitForNavigations(2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(2, num_requests());
 
   GoBackAndWaitForTitle("Title Of More Awesomeness", 1);
 
   GoForwardAndWaitForNavigations(2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(3, num_requests());
 
   GoForwardAndWaitForTitle("Title Of Awesomeness", 1);
@@ -621,7 +615,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoSearch) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
@@ -659,7 +652,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoSearch) {
   // Go back to the error page, to make sure the history is correct.
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(3, num_requests());
 }
@@ -672,8 +664,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoReload) {
       embedded_test_server()->GetURL("mock.http", "/title2.html").spec();
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
@@ -688,8 +679,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoReload) {
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
 
   // There should have been two more requests to the correction service:  One
   // for the new error page, and one for tracking purposes.  Have to make sure
@@ -709,8 +699,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest,
       embedded_test_server()->GetURL("mock.http", "/title2.html").spec();
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
   content::WebContents* web_contents =
@@ -722,8 +711,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest,
       base::ASCIIToUTF16("document.location='#';"));
   content::WaitForLoadStop(web_contents);
   // Page being displayed should not change.
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   // No new requests should have been issued.
   EXPECT_EQ(1, num_requests());
 
@@ -736,8 +724,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest,
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer2.Wait();
-  ExpectDisplayingNavigationCorrections(url, browser(),
-                                        net::ERR_NAME_NOT_RESOLVED);
+  ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
 
   // There should have been two more requests to the correction service:  One
   // for the new error page, and one for tracking purposes.  Have to make sure
@@ -754,7 +741,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoClickLink) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
@@ -767,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoClickLink) {
       web_contents,
       base::ASCIIToUTF16("Title Of Awesomeness"));
   std::string link_selector =
-      "document.querySelector('a[href=\"" + url.spec() + "\"]')";
+      "document.querySelector('a[href=\"http://mock.http/title2.html\"]')";
   // The tracking request is triggered by onmousedown, so it catches middle
   // mouse button clicks, as well as left clicks.
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
@@ -919,7 +905,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Empty404) {
   // This depends on the non-internationalized error ID string in
   // localized_error.cc.
   ExpectDisplayingNavigationCorrections(
-      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), "HTTP ERROR 404");
   EXPECT_EQ(1, num_requests());
 }
