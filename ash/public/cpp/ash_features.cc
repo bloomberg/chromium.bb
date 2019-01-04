@@ -19,9 +19,6 @@ const base::Feature kDragAppsInTabletMode{"DragAppsInTabletMode",
 const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kKeyboardShortcutViewerApp{
-    "KeyboardShortcutViewerApp", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -71,10 +68,6 @@ const base::Feature kSupervisedUserDeprecationNotice{
 
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
-}
-
-bool IsKeyboardShortcutViewerAppEnabled() {
-  return base::FeatureList::IsEnabled(kKeyboardShortcutViewerApp);
 }
 
 bool IsLockScreenNotificationsEnabled() {

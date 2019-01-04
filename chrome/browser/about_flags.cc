@@ -3470,11 +3470,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
 #if defined(OS_CHROMEOS)
-    {"ash-keyboard-shortcut-viewer-app",
-     flag_descriptions::kAshKeyboardShortcutViewerAppName,
-     flag_descriptions::kAshKeyboardShortcutViewerAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kKeyboardShortcutViewerApp)},
-
     {"ash-disable-login-dim-and-blur",
      flag_descriptions::kAshDisableLoginDimAndBlurName,
      flag_descriptions::kAshDisableLoginDimAndBlurDescription, kOsCrOS,
