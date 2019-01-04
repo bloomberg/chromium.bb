@@ -247,13 +247,12 @@ bool MediaRecorderHandler::Start(int timeslice) {
   }
 
   const bool use_video_tracks =
-      !video_tracks_.IsEmpty() && video_tracks_[0].IsEnabled() &&
+      !video_tracks_.IsEmpty() &&
       video_tracks_[0].Source().GetReadyState() !=
           blink::WebMediaStreamSource::kReadyStateEnded;
   const bool use_audio_tracks =
       !audio_tracks_.IsEmpty() &&
       MediaStreamAudioTrack::From(audio_tracks_[0]) &&
-      audio_tracks_[0].IsEnabled() &&
       audio_tracks_[0].Source().GetReadyState() !=
           blink::WebMediaStreamSource::kReadyStateEnded;
 
