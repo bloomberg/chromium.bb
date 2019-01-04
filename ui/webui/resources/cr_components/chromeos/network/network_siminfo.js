@@ -318,7 +318,7 @@ Polymer({
         this.focusDialogInput_();
       } else {
         this.error_ = ErrorType.NONE;
-        this.$.closeDialogs_();
+        this.closeDialogs_();
         this.delayUpdateLockEnabled_();
       }
     });
