@@ -41,6 +41,12 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   bool IsCandidatePopupOpen() const override;
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
+  // Overridden from InputMethodBase:
+  void OnWillChangeFocusedClient(TextInputClient* focused_before,
+                                 TextInputClient* focused) override;
+  void OnDidChangeFocusedClient(TextInputClient* focused_before,
+                                TextInputClient* focused) override;
+
  protected:
   // Converts |text| into CompositionText.
   void ExtractCompositionText(const CompositionText& text,
@@ -59,12 +65,6 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
 
  private:
   class PendingKeyEvent;
-
-  // Overridden from InputMethodBase:
-  void OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                 TextInputClient* focused) override;
-  void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                TextInputClient* focused) override;
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
