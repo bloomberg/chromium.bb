@@ -242,6 +242,10 @@ class UserActivityManager : public ui::UserActivityObserver,
   // regarding whether to proceed with a dim or not. It is only set
   // to true in OnIdleEventObserved() when we request a dim decision.
   bool waiting_for_model_decision_ = false;
+  // Represents the time when a dim decision request was made. It is used to
+  // calculate time deltas while logging ML service dim decision request
+  // results.
+  base::TimeTicks time_dim_decision_requested_;
 
   // Model prediction for the current ScreenDimImminent event. Unset if
   // model prediction is disabled by an experiment.

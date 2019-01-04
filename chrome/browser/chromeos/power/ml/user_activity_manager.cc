@@ -51,6 +51,14 @@ void LogPowerMLModelNoDimResult(FinalResult result) {
   UMA_HISTOGRAM_ENUMERATION("PowerML.ModelNoDim.Result", result);
 }
 
+void LogPowerMLSmartDimModelRequestCancel(base::TimeDelta time) {
+  UMA_HISTOGRAM_TIMES("PowerML.SmartDimModel.RequestCanceledDuration", time);
+}
+
+void LogPowerMLSmartDimModelRequestComplete(base::TimeDelta time) {
+  UMA_HISTOGRAM_TIMES("PowerML.SmartDimModel.RequestCompleteDuration", time);
+}
+
 void LogMetricsToUMA(const UserActivityEvent& event) {
   const FinalResult result =
       event.event().type() == UserActivityEvent::Event::REACTIVATE
@@ -262,6 +270,7 @@ void UserActivityManager::OnIdleEventObserved(
       base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
       smart_dim_model_) {
     waiting_for_model_decision_ = true;
+    time_dim_decision_requested_ = base::TimeTicks::Now();
     smart_dim_model_->RequestDimDecision(
         features_, base::Bind(&UserActivityManager::ApplyDimDecision,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -273,6 +282,10 @@ void UserActivityManager::ApplyDimDecision(
     UserActivityEvent::ModelPrediction prediction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   waiting_for_model_decision_ = false;
+  const base::TimeDelta wait_time =
+      base::TimeTicks::Now() - time_dim_decision_requested_;
+  LogPowerMLSmartDimModelRequestComplete(wait_time);
+  time_dim_decision_requested_ = base::TimeTicks();
   // Only defer the dim if the model predicts so and also if the dim was not
   // previously deferred.
   if (prediction.response() == UserActivityEvent::ModelPrediction::NO_DIM &&
@@ -594,13 +607,15 @@ void UserActivityManager::ResetAfterLogging() {
 }
 
 void UserActivityManager::CancelDimDecisionRequest() {
-  // TODO(crbug.com/893425): Log the time after which a dim decision request
-  // was cancelled, in UMA.
   // TODO(crbug.com/893425): Add a unit-test to verify UMA logging of
   // cancellation time.
   LOG(WARNING) << "Cancelling pending Smart Dim decision request.";
   smart_dim_model_->CancelPreviousRequest();
   waiting_for_model_decision_ = false;
+  const base::TimeDelta wait_time =
+      base::TimeTicks::Now() - time_dim_decision_requested_;
+  LogPowerMLSmartDimModelRequestCancel(wait_time);
+  time_dim_decision_requested_ = base::TimeTicks();
 }
 
 }  // namespace ml
