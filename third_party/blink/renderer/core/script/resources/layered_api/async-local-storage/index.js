@@ -22,7 +22,11 @@ export class StorageArea {
     throwForDisallowedKey(key);
 
     return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
-      store.put(value, key);
+      if (value === undefined) {
+        store.delete(key);
+      } else {
+        store.put(value, key);
+      }
 
       return new Promise((resolve, reject) => {
         transaction.oncomplete = () => resolve();
@@ -40,19 +44,6 @@ export class StorageArea {
 
       return new Promise((resolve, reject) => {
         request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-    });
-  }
-
-  async has(key) {
-    throwForDisallowedKey(key);
-
-    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      const request = store.count(key);
-
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result === 0 ? false : true);
         request.onerror = () => reject(request.error);
       });
     });
