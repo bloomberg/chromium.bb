@@ -174,14 +174,11 @@ js2gtest("unit_tests_js") {
   test_type = "unit"
   sources = [
     "../../../browser/resources/md_downloads/search_service_unittest.gtestjs",
-    "../../../browser/resources/print_preview/print_preview_utils_unittest.gtestjs",
     "../../../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
     "../unit/framework_unittest.gtestjs",
   ]
   extra_js_files = [
     "../../../browser/resources/md_downloads/browser_proxy.js",
-    "../../../browser/resources/print_preview/data/measurement_system.js",
-    "../../../browser/resources/print_preview/print_preview_utils.js",
     "../../../browser/resources/md_downloads/search_service.js",
     "../../../renderer/resources/extensions/notifications_custom_bindings.js",
     "../../../renderer/resources/extensions/notifications_test_util.js",
