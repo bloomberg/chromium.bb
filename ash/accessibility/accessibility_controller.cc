@@ -934,11 +934,8 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
 }
 
 void AccessibilityController::UpdateAutoclickEventTypeFromPref() {
-  DCHECK(active_user_prefs_);
-  mojom::AutoclickEventType event_type = static_cast<mojom::AutoclickEventType>(
-      active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickEventType));
-
-  Shell::Get()->autoclick_controller()->SetAutoclickEventType(event_type);
+  Shell::Get()->autoclick_controller()->SetAutoclickEventType(
+      GetAutoclickEventType());
 }
 
 void AccessibilityController::SetAutoclickEventType(
@@ -948,6 +945,13 @@ void AccessibilityController::SetAutoclickEventType(
   active_user_prefs_->SetInteger(prefs::kAccessibilityAutoclickEventType,
                                  static_cast<int>(event_type));
   active_user_prefs_->CommitPendingWrite();
+  Shell::Get()->autoclick_controller()->SetAutoclickEventType(event_type);
+}
+
+mojom::AutoclickEventType AccessibilityController::GetAutoclickEventType() {
+  DCHECK(active_user_prefs_);
+  return static_cast<mojom::AutoclickEventType>(
+      active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickEventType));
 }
 
 void AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref() {

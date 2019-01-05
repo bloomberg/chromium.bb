@@ -74,7 +74,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void DoAutoclickAction();
   void StartAutoclickGesture();
   void CancelAutoclickAction();
-  void OnActionCompleted();
+  void OnActionCompleted(mojom::AutoclickEventType event_type);
   void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
   void RecordUserAction(mojom::AutoclickEventType event_type) const;

@@ -72,6 +72,7 @@ class ASH_EXPORT AccessibilityController
   void SetAutoclickEnabled(bool enabled);
   bool autoclick_enabled() const { return autoclick_enabled_; }
   void SetAutoclickEventType(mojom::AutoclickEventType event_type);
+  mojom::AutoclickEventType GetAutoclickEventType();
 
   void SetCaretHighlightEnabled(bool enabled);
   bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
