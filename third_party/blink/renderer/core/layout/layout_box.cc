@@ -96,7 +96,7 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[4];
+  void* pointers[3];
 };
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
@@ -763,7 +763,7 @@ void LayoutBox::UpdateAfterLayout() {
 }
 
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
-  if (!layout_overflow_ || HasOverflowClip())
+  if (!LayoutOverflowIsSet() || HasOverflowClip())
     return LogicalHeight();
   LayoutRect overflow = LayoutOverflowRect();
   if (StyleRef().IsHorizontalWritingMode())
@@ -5223,8 +5223,8 @@ void LayoutBox::AddVisualEffectOverflow() {
   visual_effect_overflow.Expand(outsets);
   AddSelfVisualOverflow(visual_effect_overflow);
 
-  if (visual_overflow_) {
-    visual_overflow_->SetHasSubpixelVisualEffectOutsets(
+  if (VisualOverflowIsSet()) {
+    overflow_->visual_overflow->SetHasSubpixelVisualEffectOutsets(
         !IsIntegerValue(outsets.Top()) || !IsIntegerValue(outsets.Right()) ||
         !IsIntegerValue(outsets.Bottom()) || !IsIntegerValue(outsets.Left()));
   }
@@ -5292,13 +5292,14 @@ void LayoutBox::AddLayoutOverflowFromChild(const LayoutBox& child,
 }
 
 void LayoutBox::SetLayoutClientAfterEdge(LayoutUnit client_after_edge) {
-  if (layout_overflow_)
-    layout_overflow_->SetLayoutClientAfterEdge(client_after_edge);
+  if (LayoutOverflowIsSet())
+    overflow_->layout_overflow->SetLayoutClientAfterEdge(client_after_edge);
 }
 
 LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
-  return layout_overflow_ ? layout_overflow_->LayoutClientAfterEdge()
-                          : ClientLogicalBottom();
+  return LayoutOverflowIsSet()
+             ? overflow_->layout_overflow->LayoutClientAfterEdge()
+             : ClientLogicalBottom();
 }
 
 LayoutRect LayoutBox::VisualOverflowRectIncludingFilters() const {
@@ -5356,11 +5357,13 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
       return;
   }
 
-  if (!layout_overflow_) {
-    layout_overflow_ = std::make_unique<BoxLayoutOverflowModel>(client_box);
+  if (!LayoutOverflowIsSet()) {
+    if (!overflow_)
+      overflow_ = std::make_unique<BoxOverflowModel>();
+    overflow_->layout_overflow.emplace(client_box);
   }
 
-  layout_overflow_->AddLayoutOverflow(overflow_rect);
+  overflow_->layout_overflow->AddLayoutOverflow(overflow_rect);
 }
 
 void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
@@ -5371,11 +5374,14 @@ void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   if (border_box.Contains(rect))
     return;
 
-  if (!visual_overflow_) {
-    visual_overflow_ = std::make_unique<BoxVisualOverflowModel>(border_box);
+  if (!VisualOverflowIsSet()) {
+    if (!overflow_)
+      overflow_ = std::make_unique<BoxOverflowModel>();
+
+    overflow_->visual_overflow.emplace(border_box);
   }
 
-  visual_overflow_->AddSelfVisualOverflow(rect);
+  overflow_->visual_overflow->AddSelfVisualOverflow(rect);
 }
 
 void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
@@ -5391,18 +5397,29 @@ void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
   if (!HasOverflowClip() && border_box.Contains(rect))
     return;
 
-  if (!visual_overflow_) {
-    visual_overflow_ = std::make_unique<BoxVisualOverflowModel>(border_box);
+  if (!VisualOverflowIsSet()) {
+    if (!overflow_)
+      overflow_ = std::make_unique<BoxOverflowModel>();
+
+    overflow_->visual_overflow.emplace(border_box);
   }
-  visual_overflow_->AddContentsVisualOverflow(rect);
+  overflow_->visual_overflow->AddContentsVisualOverflow(rect);
 }
 
 void LayoutBox::ClearLayoutOverflow() {
-  layout_overflow_.reset();
+  if (!overflow_)
+    return;
+  overflow_->layout_overflow.reset();
+  if (!overflow_->visual_overflow)
+    overflow_.reset();
 }
 
 void LayoutBox::ClearVisualOverflow() {
-  visual_overflow_.reset();
+  if (!overflow_)
+    return;
+  overflow_->visual_overflow.reset();
+  if (!overflow_->layout_overflow)
+    overflow_.reset();
 }
 
 bool LayoutBox::PercentageLogicalHeightIsResolvable() const {
@@ -5587,12 +5604,12 @@ LayoutRect LayoutBox::NoOverflowRect() const {
 }
 
 LayoutRect LayoutBox::VisualOverflowRect() const {
-  if (!visual_overflow_)
+  if (!VisualOverflowIsSet())
     return BorderBoxRect();
   if (HasOverflowClip() || HasMask())
-    return visual_overflow_->SelfVisualOverflowRect();
-  return UnionRect(visual_overflow_->SelfVisualOverflowRect(),
-                   visual_overflow_->ContentsVisualOverflowRect());
+    return overflow_->visual_overflow->SelfVisualOverflowRect();
+  return UnionRect(overflow_->visual_overflow->SelfVisualOverflowRect(),
+                   overflow_->visual_overflow->ContentsVisualOverflowRect());
 }
 
 LayoutPoint LayoutBox::OffsetPoint(const Element* parent) const {
@@ -6044,7 +6061,8 @@ float LayoutBox::VisualRectOutsetForRasterEffects() const {
   // painted along the pixel-snapped border box, the pixels on the anti-aliased
   // edge of the effect may overflow the calculated visual rect. Expand visual
   // rect by one pixel in the case.
-  return visual_overflow_ && visual_overflow_->HasSubpixelVisualEffectOutsets()
+  return VisualOverflowIsSet() &&
+                 overflow_->visual_overflow->HasSubpixelVisualEffectOutsets()
              ? 1
              : 0;
 }
