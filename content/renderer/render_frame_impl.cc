@@ -6502,8 +6502,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
   request.SetHasUserGesture(common_params.has_user_gesture);
 #endif
 
-  request.SetNavigationStartTime(common_params.navigation_start);
-
   return request;
 }
 

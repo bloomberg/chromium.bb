@@ -421,6 +421,10 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
       const int64_t encoded_data_length = response.EncodedDataLength();
       navigation_timing_info_->AddFinalTransferSize(
           encoded_data_length == -1 ? 0 : encoded_data_length);
+      if (response.HttpStatusCode() < 400 && report_timing_info_to_parent_) {
+        navigation_timing_info_->SetLoadFinishTime(resource->LoadFinishTime());
+        fetcher_->Context().AddResourceTiming(*navigation_timing_info_);
+      }
     }
     FinishedLoading(resource->LoadFinishTime());
     return;
@@ -986,6 +990,8 @@ void DocumentLoader::StartLoading() {
         fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
         true /* is_main_resource */);
     navigation_timing_info_->SetInitialURL(request_.Url());
+    report_timing_info_to_parent_ = To<FrameFetchContext>(fetcher_->Context())
+                                        .UpdateTimingInfoForIFrameNavigation();
 
     ResourceLoaderOptions options;
     options.data_buffering_policy = kDoNotBufferData;

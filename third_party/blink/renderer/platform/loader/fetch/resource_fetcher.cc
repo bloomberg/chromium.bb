@@ -1034,17 +1034,11 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
 
-  bool is_main_resource = resource->GetType() == ResourceType::kMainResource;
+  if (resource->GetType() == ResourceType::kMainResource)
+    return;
 
-  // The request can already be fetched in a previous navigation. Thus
-  // startTime must be set accordingly.
-  TimeTicks start_time =
-      !resource->GetResourceRequest().NavigationStartTime().is_null()
-          ? resource->GetResourceRequest().NavigationStartTime()
-          : CurrentTimeTicks();
-
-  scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create(fetch_initiator, start_time, is_main_resource);
+  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+      fetch_initiator, CurrentTimeTicks(), false /* is_main_resource */);
 
   if (resource->IsCacheValidator()) {
     const AtomicString& timing_allow_origin =
@@ -1053,10 +1047,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
       info->SetOriginalTimingAllowOrigin(timing_allow_origin);
   }
 
-  if (!is_main_resource ||
-      Context().UpdateTimingInfoForIFrameNavigation(info.get())) {
-    resource_timing_info_map_.insert(resource, std::move(info));
-  }
+  resource_timing_info_map_.insert(resource, std::move(info));
 }
 
 void ResourceFetcher::RecordResourceTimingOnRedirect(

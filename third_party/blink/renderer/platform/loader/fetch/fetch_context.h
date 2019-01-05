@@ -195,9 +195,6 @@ class PLATFORM_EXPORT FetchContext
   virtual bool IsMainFrame() const { return true; }
   virtual bool DefersLoading() const { return false; }
   virtual bool IsLoadComplete() const { return false; }
-  virtual bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) {
-    return false;
-  }
 
   virtual void CountUsage(mojom::WebFeature) const = 0;
   virtual void CountDeprecation(mojom::WebFeature) const = 0;

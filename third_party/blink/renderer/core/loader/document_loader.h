@@ -423,6 +423,7 @@ class CORE_EXPORT DocumentLoader
   bool loading_mhtml_archive_ = false;
   unsigned long main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
+  bool report_timing_info_to_parent_ = false;
 
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
