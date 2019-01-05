@@ -479,26 +479,16 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
-  bool DragInputToNotifyWhenDone(int x, int y, base::OnceClosure task) {
-    if (input_source() == INPUT_SOURCE_MOUSE)
-      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, std::move(task));
-#if defined(OS_CHROMEOS)
-    ui_controls::SendTouchEventsNotifyWhenDone(ui_controls::MOVE, 0, x, y,
-                                               std::move(task));
-#else
-    NOTREACHED();
-#endif
-    return true;
-  }
+  bool DragInputToNotifyWhenDone(const gfx::Point& location,
+                                 base::OnceClosure task) {
+    if (input_source() == INPUT_SOURCE_MOUSE) {
+      return ui_controls::SendMouseMoveNotifyWhenDone(
+          location.x(), location.y(), std::move(task));
+    }
 
-  bool DragInput2ToNotifyWhenDone(int x,
-                                 int y,
-                                 const base::Closure& task) {
-    if (input_source() == INPUT_SOURCE_MOUSE)
-      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(OS_CHROMEOS)
-    ui_controls::SendTouchEventsNotifyWhenDone(ui_controls::MOVE, 1, x, y,
-                                               std::move(task));
+    ui_controls::SendTouchEventsNotifyWhenDone(
+        ui_controls::MOVE, 0, location.x(), location.y(), std::move(task));
 #else
     NOTREACHED();
 #endif
@@ -633,8 +623,7 @@ class DetachToBrowserTabDragControllerTest
     ASSERT_TRUE(PressInput(tab_0_center));
     const gfx::Point target =
         tab_0_center + gfx::Vector2d(drag_x_offset, GetDetachY(tab_strip));
-    ASSERT_TRUE(
-        DragInputToNotifyWhenDone(target.x(), target.y(), std::move(task)));
+    ASSERT_TRUE(DragInputToNotifyWhenDone(target, std::move(task)));
     QuitWhenNotDragging();
   }
 
@@ -1637,7 +1626,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      tab_0_center + gfx::Vector2d(0, GetDetachY(tab_strip)),
       base::Bind(&CancelOnNewTabWhenDraggingStep2, this, browser_list)));
   observer.Wait();
 
@@ -2194,7 +2183,7 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
     DetachToBrowserTabDragControllerTest* test,
     const gfx::Point& target_point) {
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
-      target_point.x(), target_point.y(),
+      target_point,
       base::Bind(&DragSingleTabToSeparateWindowInSecondDisplayStep3, test)));
 }
 
@@ -2363,7 +2352,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
         // system does not create it automatically as the result of pointer
         // warp.
         ASSERT_TRUE(DragInputToNotifyWhenDone(
-            first_display_warp_edge_x, detach_y,
+            gfx::Point(first_display_warp_edge_x, detach_y),
             base::BindRepeating(
                 &DragSingleTabToSeparateWindowInSecondDisplayStep2, this,
                 warped_point)));
@@ -2612,15 +2601,8 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
 namespace {
 
 // The points where a tab is dragged in CursorDeviceScaleFactorStep.
-const struct DragPoint {
-  int x;
-  int y;
-} kDragPoints[] = {
-  {300, 200},
-  {399, 200},
-  {500, 200},
-  {400, 200},
-  {300, 200},
+constexpr gfx::Point kDragPoints[] = {
+    {300, 200}, {399, 200}, {500, 200}, {400, 200}, {300, 200},
 };
 
 // The expected device scale factors after the cursor is moved to the
@@ -2648,18 +2630,16 @@ void CursorDeviceScaleFactorStep(
   ASSERT_TRUE(TabDragController::IsActive());
 
   if (index > 0) {
-    const DragPoint p = kDragPoints[index - 1];
-    EXPECT_EQ(gfx::Point(p.x, p.y),
+    EXPECT_EQ(kDragPoints[index - 1],
               ash::Shell::Get()->aura_env()->last_mouse_location());
     EXPECT_EQ(kDeviceScaleFactorExpectations[index - 1],
               test->GetCursorDeviceScaleFactor());
   }
 
   if (index < base::size(kDragPoints)) {
-    const DragPoint p = kDragPoints[index];
     ASSERT_TRUE(test->DragInputToNotifyWhenDone(
-        p.x, p.y, base::Bind(&CursorDeviceScaleFactorStep,
-                             test, not_attached_tab_strip, index + 1)));
+        kDragPoints[index], base::Bind(&CursorDeviceScaleFactorStep, test,
+                                       not_attached_tab_strip, index + 1)));
   } else {
     // Finishes a series of CursorDeviceScaleFactorStep calls and ends drag.
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
@@ -2742,7 +2722,7 @@ void CancelDragTabToWindowInSeparateDisplayStep2(
           .id());
 
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
-      final_destination.x(), final_destination.y(),
+      final_destination,
       base::BindOnce(&CancelDragTabToWindowInSeparateDisplayStep3, tab_strip,
                      browser_list)));
 }
@@ -2859,7 +2839,7 @@ void PressSecondFingerWhileDetachedStep2(
   // Continue dragging after adding a second finger.
   ASSERT_TRUE(test->PressInput2());
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
-      target_point.x(), target_point.y(),
+      target_point,
       base::Bind(&PressSecondFingerWhileDetachedStep3, test)));
 }
 
@@ -2931,8 +2911,7 @@ void SecondFingerPressTestStep2(DetachToBrowserTabDragControllerTest* test,
   ASSERT_TRUE(test->ReleaseInput2());
 
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
-      target_point.x(), target_point.y(),
-      base::BindOnce(&SecondFingerPressTestStep3, test)));
+      target_point, base::BindOnce(&SecondFingerPressTestStep3, test)));
 }
 
 }  // namespace
@@ -2980,11 +2959,12 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
       tab_strip, base::BindLambdaForTesting([&]() {
         gfx::Rect display_bounds =
             display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-        ASSERT_TRUE(DragInputToNotifyWhenDone(display_bounds.x(),
-                                              display_bounds.CenterPoint().y(),
-                                              base::BindLambdaForTesting([&]() {
-                                                ASSERT_TRUE(ReleaseInput());
-                                              })));
+        const gfx::Point target(display_bounds.x(),
+                                display_bounds.CenterPoint().y());
+        ASSERT_TRUE(
+            DragInputToNotifyWhenDone(target, base::BindLambdaForTesting([&]() {
+                                        ASSERT_TRUE(ReleaseInput());
+                                      })));
       }),
       1);
 
@@ -3001,20 +2981,18 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  int detach_y = GetDetachY(tab_strip);
+  const gfx::Vector2d detach(0, GetDetachY(tab_strip));
   base::SimpleTestTickClock clock;
   clock.SetNowTicks(base::TimeTicks::Now());
   ui::SetEventTickClockForTesting(&clock);
   ASSERT_TRUE(PressInput(tab_0_center));
   clock.Advance(base::TimeDelta::FromMilliseconds(5));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + detach_y,
-      base::BindLambdaForTesting([&]() {
+      tab_0_center + detach, base::BindLambdaForTesting([&]() {
         // Drag down again; this should cause a fling-down event.
         clock.Advance(base::TimeDelta::FromMilliseconds(5));
         ASSERT_TRUE(DragInputToNotifyWhenDone(
-            tab_0_center.x(), tab_0_center.y() + detach_y * 2,
-            base::BindLambdaForTesting([&]() {
+            tab_0_center + detach + detach, base::BindLambdaForTesting([&]() {
               clock.Advance(base::TimeDelta::FromMilliseconds(5));
               ASSERT_TRUE(ReleaseInput());
             })));
