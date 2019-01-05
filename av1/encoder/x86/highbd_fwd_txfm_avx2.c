@@ -92,6 +92,20 @@ static INLINE void av1_store_buffer_avx2(const __m256i *const in, int32_t *out,
     out += stride;
   }
 }
+#define btf_32_avx2_type0(w0, w1, in0, in1, out0, out1, bit) \
+  do {                                                       \
+    const __m256i ww0 = _mm256_set1_epi32(w0);               \
+    const __m256i ww1 = _mm256_set1_epi32(w1);               \
+    const __m256i in0_w0 = _mm256_mullo_epi32(in0, ww0);     \
+    const __m256i in1_w1 = _mm256_mullo_epi32(in1, ww1);     \
+    out0 = _mm256_add_epi32(in0_w0, in1_w1);                 \
+    av1_round_shift_32_8xn_avx2(&out0, 1, -bit, 1);          \
+    const __m256i in0_w1 = _mm256_mullo_epi32(in0, ww1);     \
+    const __m256i in1_w0 = _mm256_mullo_epi32(in1, ww0);     \
+    out1 = _mm256_sub_epi32(in0_w1, in1_w0);                 \
+    av1_round_shift_32_8xn_avx2(&out1, 1, -bit, 1);          \
+  } while (0)
+
 #define btf_32_type0_avx2_new(ww0, ww1, in0, in1, out0, out1, r, bit) \
   do {                                                                \
     const __m256i in0_w0 = _mm256_mullo_epi32(in0, ww0);              \
@@ -111,6 +125,519 @@ typedef void (*transform_1d_avx2)(__m256i *in, __m256i *out,
                                   const int8_t *stage_range, int instride,
                                   int outstride);
 
+static INLINE void av1_fdct32_avx2(__m256i *input, __m256i *output,
+                                   const int8_t cos_bit,
+                                   const int8_t *stage_range,
+                                   const int instride, const int outstride) {
+  (void)stage_range;
+  __m256i buf0[32];
+  __m256i buf1[32];
+  const int32_t *cospi;
+  int startidx = 0 * instride;
+  int endidx = 31 * instride;
+  // stage 0
+  // stage 1
+  buf1[0] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[31] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[1] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[30] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[2] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[29] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[3] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[28] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[4] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[27] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[5] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[26] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[6] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[25] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[7] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[24] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[8] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[23] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[9] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[22] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[10] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[21] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[11] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[20] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[12] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[19] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[13] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[18] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[14] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[17] = _mm256_sub_epi32(input[startidx], input[endidx]);
+  startidx += instride;
+  endidx -= instride;
+  buf1[15] = _mm256_add_epi32(input[startidx], input[endidx]);
+  buf1[16] = _mm256_sub_epi32(input[startidx], input[endidx]);
+
+  // stage 2
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = _mm256_add_epi32(buf1[0], buf1[15]);
+  buf0[15] = _mm256_sub_epi32(buf1[0], buf1[15]);
+  buf0[1] = _mm256_add_epi32(buf1[1], buf1[14]);
+  buf0[14] = _mm256_sub_epi32(buf1[1], buf1[14]);
+  buf0[2] = _mm256_add_epi32(buf1[2], buf1[13]);
+  buf0[13] = _mm256_sub_epi32(buf1[2], buf1[13]);
+  buf0[3] = _mm256_add_epi32(buf1[3], buf1[12]);
+  buf0[12] = _mm256_sub_epi32(buf1[3], buf1[12]);
+  buf0[4] = _mm256_add_epi32(buf1[4], buf1[11]);
+  buf0[11] = _mm256_sub_epi32(buf1[4], buf1[11]);
+  buf0[5] = _mm256_add_epi32(buf1[5], buf1[10]);
+  buf0[10] = _mm256_sub_epi32(buf1[5], buf1[10]);
+  buf0[6] = _mm256_add_epi32(buf1[6], buf1[9]);
+  buf0[9] = _mm256_sub_epi32(buf1[6], buf1[9]);
+  buf0[7] = _mm256_add_epi32(buf1[7], buf1[8]);
+  buf0[8] = _mm256_sub_epi32(buf1[7], buf1[8]);
+  buf0[16] = buf1[16];
+  buf0[17] = buf1[17];
+  buf0[18] = buf1[18];
+  buf0[19] = buf1[19];
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf1[20], buf1[27], buf0[20],
+                    buf0[27], cos_bit);
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf1[21], buf1[26], buf0[21],
+                    buf0[26], cos_bit);
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf1[22], buf1[25], buf0[22],
+                    buf0[25], cos_bit);
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf1[23], buf1[24], buf0[23],
+                    buf0[24], cos_bit);
+  buf0[28] = buf1[28];
+  buf0[29] = buf1[29];
+  buf0[30] = buf1[30];
+  buf0[31] = buf1[31];
+
+  // stage 3
+  cospi = cospi_arr(cos_bit);
+  buf1[0] = _mm256_add_epi32(buf0[0], buf0[7]);
+  buf1[7] = _mm256_sub_epi32(buf0[0], buf0[7]);
+  buf1[1] = _mm256_add_epi32(buf0[1], buf0[6]);
+  buf1[6] = _mm256_sub_epi32(buf0[1], buf0[6]);
+  buf1[2] = _mm256_add_epi32(buf0[2], buf0[5]);
+  buf1[5] = _mm256_sub_epi32(buf0[2], buf0[5]);
+  buf1[3] = _mm256_add_epi32(buf0[3], buf0[4]);
+  buf1[4] = _mm256_sub_epi32(buf0[3], buf0[4]);
+  buf1[8] = buf0[8];
+  buf1[9] = buf0[9];
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf0[10], buf0[13], buf1[10],
+                    buf1[13], cos_bit);
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf0[11], buf0[12], buf1[11],
+                    buf1[12], cos_bit);
+  buf1[14] = buf0[14];
+  buf1[15] = buf0[15];
+  buf1[16] = _mm256_add_epi32(buf0[16], buf0[23]);
+  buf1[23] = _mm256_sub_epi32(buf0[16], buf0[23]);
+  buf1[17] = _mm256_add_epi32(buf0[17], buf0[22]);
+  buf1[22] = _mm256_sub_epi32(buf0[17], buf0[22]);
+  buf1[18] = _mm256_add_epi32(buf0[18], buf0[21]);
+  buf1[21] = _mm256_sub_epi32(buf0[18], buf0[21]);
+  buf1[19] = _mm256_add_epi32(buf0[19], buf0[20]);
+  buf1[20] = _mm256_sub_epi32(buf0[19], buf0[20]);
+  buf1[24] = _mm256_sub_epi32(buf0[31], buf0[24]);
+  buf1[31] = _mm256_add_epi32(buf0[31], buf0[24]);
+  buf1[25] = _mm256_sub_epi32(buf0[30], buf0[25]);
+  buf1[30] = _mm256_add_epi32(buf0[30], buf0[25]);
+  buf1[26] = _mm256_sub_epi32(buf0[29], buf0[26]);
+  buf1[29] = _mm256_add_epi32(buf0[29], buf0[26]);
+  buf1[27] = _mm256_sub_epi32(buf0[28], buf0[27]);
+  buf1[28] = _mm256_add_epi32(buf0[28], buf0[27]);
+
+  // stage 4
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = _mm256_add_epi32(buf1[0], buf1[3]);
+  buf0[3] = _mm256_sub_epi32(buf1[0], buf1[3]);
+  buf0[1] = _mm256_add_epi32(buf1[1], buf1[2]);
+  buf0[2] = _mm256_sub_epi32(buf1[1], buf1[2]);
+  buf0[4] = buf1[4];
+  btf_32_avx2_type0(-cospi[32], cospi[32], buf1[5], buf1[6], buf0[5], buf0[6],
+                    cos_bit);
+  buf0[7] = buf1[7];
+  buf0[8] = _mm256_add_epi32(buf1[8], buf1[11]);
+  buf0[11] = _mm256_sub_epi32(buf1[8], buf1[11]);
+  buf0[9] = _mm256_add_epi32(buf1[9], buf1[10]);
+  buf0[10] = _mm256_sub_epi32(buf1[9], buf1[10]);
+  buf0[12] = _mm256_sub_epi32(buf1[15], buf1[12]);
+  buf0[15] = _mm256_add_epi32(buf1[15], buf1[12]);
+  buf0[13] = _mm256_sub_epi32(buf1[14], buf1[13]);
+  buf0[14] = _mm256_add_epi32(buf1[14], buf1[13]);
+  buf0[16] = buf1[16];
+  buf0[17] = buf1[17];
+  btf_32_avx2_type0(-cospi[16], cospi[48], buf1[18], buf1[29], buf0[18],
+                    buf0[29], cos_bit);
+  btf_32_avx2_type0(-cospi[16], cospi[48], buf1[19], buf1[28], buf0[19],
+                    buf0[28], cos_bit);
+  btf_32_avx2_type0(-cospi[48], -cospi[16], buf1[20], buf1[27], buf0[20],
+                    buf0[27], cos_bit);
+  btf_32_avx2_type0(-cospi[48], -cospi[16], buf1[21], buf1[26], buf0[21],
+                    buf0[26], cos_bit);
+  buf0[22] = buf1[22];
+  buf0[23] = buf1[23];
+  buf0[24] = buf1[24];
+  buf0[25] = buf1[25];
+  buf0[30] = buf1[30];
+  buf0[31] = buf1[31];
+
+  // stage 5
+  cospi = cospi_arr(cos_bit);
+  btf_32_avx2_type0(cospi[32], cospi[32], buf0[0], buf0[1], buf1[0], buf1[1],
+                    cos_bit);
+  btf_32_avx2_type0(cospi[16], cospi[48], buf0[3], buf0[2], buf1[2], buf1[3],
+                    cos_bit);
+  buf1[4] = _mm256_add_epi32(buf0[4], buf0[5]);
+  buf1[5] = _mm256_sub_epi32(buf0[4], buf0[5]);
+  buf1[6] = _mm256_sub_epi32(buf0[7], buf0[6]);
+  buf1[7] = _mm256_add_epi32(buf0[7], buf0[6]);
+  buf1[8] = buf0[8];
+  btf_32_avx2_type0(-cospi[16], cospi[48], buf0[9], buf0[14], buf1[9], buf1[14],
+                    cos_bit);
+  btf_32_avx2_type0(-cospi[48], -cospi[16], buf0[10], buf0[13], buf1[10],
+                    buf1[13], cos_bit);
+  buf1[11] = buf0[11];
+  buf1[12] = buf0[12];
+  buf1[15] = buf0[15];
+  buf1[16] = _mm256_add_epi32(buf0[16], buf0[19]);
+  buf1[19] = _mm256_sub_epi32(buf0[16], buf0[19]);
+  buf1[17] = _mm256_add_epi32(buf0[17], buf0[18]);
+  buf1[18] = _mm256_sub_epi32(buf0[17], buf0[18]);
+  buf1[20] = _mm256_sub_epi32(buf0[23], buf0[20]);
+  buf1[23] = _mm256_add_epi32(buf0[23], buf0[20]);
+  buf1[21] = _mm256_sub_epi32(buf0[22], buf0[21]);
+  buf1[22] = _mm256_add_epi32(buf0[22], buf0[21]);
+  buf1[24] = _mm256_add_epi32(buf0[24], buf0[27]);
+  buf1[27] = _mm256_sub_epi32(buf0[24], buf0[27]);
+  buf1[25] = _mm256_add_epi32(buf0[25], buf0[26]);
+  buf1[26] = _mm256_sub_epi32(buf0[25], buf0[26]);
+  buf1[28] = _mm256_sub_epi32(buf0[31], buf0[28]);
+  buf1[31] = _mm256_add_epi32(buf0[31], buf0[28]);
+  buf1[29] = _mm256_sub_epi32(buf0[30], buf0[29]);
+  buf1[30] = _mm256_add_epi32(buf0[30], buf0[29]);
+
+  // stage 6
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = buf1[0];
+  buf0[1] = buf1[1];
+  buf0[2] = buf1[2];
+  buf0[3] = buf1[3];
+  btf_32_avx2_type0(cospi[8], cospi[56], buf1[7], buf1[4], buf0[4], buf0[7],
+                    cos_bit);
+  btf_32_avx2_type0(cospi[40], cospi[24], buf1[6], buf1[5], buf0[5], buf0[6],
+                    cos_bit);
+  buf0[8] = _mm256_add_epi32(buf1[8], buf1[9]);
+  buf0[9] = _mm256_sub_epi32(buf1[8], buf1[9]);
+  buf0[10] = _mm256_sub_epi32(buf1[11], buf1[10]);
+  buf0[11] = _mm256_add_epi32(buf1[11], buf1[10]);
+  buf0[12] = _mm256_add_epi32(buf1[12], buf1[13]);
+  buf0[13] = _mm256_sub_epi32(buf1[12], buf1[13]);
+  buf0[14] = _mm256_sub_epi32(buf1[15], buf1[14]);
+  buf0[15] = _mm256_add_epi32(buf1[15], buf1[14]);
+  buf0[16] = buf1[16];
+  btf_32_avx2_type0(-cospi[8], cospi[56], buf1[17], buf1[30], buf0[17],
+                    buf0[30], cos_bit);
+  btf_32_avx2_type0(-cospi[56], -cospi[8], buf1[18], buf1[29], buf0[18],
+                    buf0[29], cos_bit);
+  buf0[19] = buf1[19];
+  buf0[20] = buf1[20];
+  btf_32_avx2_type0(-cospi[40], cospi[24], buf1[21], buf1[26], buf0[21],
+                    buf0[26], cos_bit);
+  btf_32_avx2_type0(-cospi[24], -cospi[40], buf1[22], buf1[25], buf0[22],
+                    buf0[25], cos_bit);
+  buf0[23] = buf1[23];
+  buf0[24] = buf1[24];
+  buf0[27] = buf1[27];
+  buf0[28] = buf1[28];
+  buf0[31] = buf1[31];
+
+  // stage 7
+  cospi = cospi_arr(cos_bit);
+  buf1[0] = buf0[0];
+  buf1[1] = buf0[1];
+  buf1[2] = buf0[2];
+  buf1[3] = buf0[3];
+  buf1[4] = buf0[4];
+  buf1[5] = buf0[5];
+  buf1[6] = buf0[6];
+  buf1[7] = buf0[7];
+  btf_32_avx2_type0(cospi[4], cospi[60], buf0[15], buf0[8], buf1[8], buf1[15],
+                    cos_bit);
+  btf_32_avx2_type0(cospi[36], cospi[28], buf0[14], buf0[9], buf1[9], buf1[14],
+                    cos_bit);
+  btf_32_avx2_type0(cospi[20], cospi[44], buf0[13], buf0[10], buf1[10],
+                    buf1[13], cos_bit);
+  btf_32_avx2_type0(cospi[52], cospi[12], buf0[12], buf0[11], buf1[11],
+                    buf1[12], cos_bit);
+  buf1[16] = _mm256_add_epi32(buf0[16], buf0[17]);
+  buf1[17] = _mm256_sub_epi32(buf0[16], buf0[17]);
+  buf1[18] = _mm256_sub_epi32(buf0[19], buf0[18]);
+  buf1[19] = _mm256_add_epi32(buf0[19], buf0[18]);
+  buf1[20] = _mm256_add_epi32(buf0[20], buf0[21]);
+  buf1[21] = _mm256_sub_epi32(buf0[20], buf0[21]);
+  buf1[22] = _mm256_sub_epi32(buf0[23], buf0[22]);
+  buf1[23] = _mm256_add_epi32(buf0[23], buf0[22]);
+  buf1[24] = _mm256_add_epi32(buf0[24], buf0[25]);
+  buf1[25] = _mm256_sub_epi32(buf0[24], buf0[25]);
+  buf1[26] = _mm256_sub_epi32(buf0[27], buf0[26]);
+  buf1[27] = _mm256_add_epi32(buf0[27], buf0[26]);
+  buf1[28] = _mm256_add_epi32(buf0[28], buf0[29]);
+  buf1[29] = _mm256_sub_epi32(buf0[28], buf0[29]);
+  buf1[30] = _mm256_sub_epi32(buf0[31], buf0[30]);
+  buf1[31] = _mm256_add_epi32(buf0[31], buf0[30]);
+
+  // stage 8
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = buf1[0];
+  buf0[1] = buf1[1];
+  buf0[2] = buf1[2];
+  buf0[3] = buf1[3];
+  buf0[4] = buf1[4];
+  buf0[5] = buf1[5];
+  buf0[6] = buf1[6];
+  buf0[7] = buf1[7];
+  buf0[8] = buf1[8];
+  buf0[9] = buf1[9];
+  buf0[10] = buf1[10];
+  buf0[11] = buf1[11];
+  buf0[12] = buf1[12];
+  buf0[13] = buf1[13];
+  buf0[14] = buf1[14];
+  buf0[15] = buf1[15];
+  btf_32_avx2_type0(cospi[2], cospi[62], buf1[31], buf1[16], buf0[16], buf0[31],
+                    cos_bit);
+  btf_32_avx2_type0(cospi[34], cospi[30], buf1[30], buf1[17], buf0[17],
+                    buf0[30], cos_bit);
+  btf_32_avx2_type0(cospi[18], cospi[46], buf1[29], buf1[18], buf0[18],
+                    buf0[29], cos_bit);
+  btf_32_avx2_type0(cospi[50], cospi[14], buf1[28], buf1[19], buf0[19],
+                    buf0[28], cos_bit);
+  btf_32_avx2_type0(cospi[10], cospi[54], buf1[27], buf1[20], buf0[20],
+                    buf0[27], cos_bit);
+  btf_32_avx2_type0(cospi[42], cospi[22], buf1[26], buf1[21], buf0[21],
+                    buf0[26], cos_bit);
+  btf_32_avx2_type0(cospi[26], cospi[38], buf1[25], buf1[22], buf0[22],
+                    buf0[25], cos_bit);
+  btf_32_avx2_type0(cospi[58], cospi[6], buf1[24], buf1[23], buf0[23], buf0[24],
+                    cos_bit);
+
+  startidx = 0 * outstride;
+  endidx = 31 * outstride;
+  // stage 9
+  output[startidx] = buf0[0];
+  output[endidx] = buf0[31];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[16];
+  output[endidx] = buf0[15];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[8];
+  output[endidx] = buf0[23];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[24];
+  output[endidx] = buf0[7];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[4];
+  output[endidx] = buf0[27];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[20];
+  output[endidx] = buf0[11];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[12];
+  output[endidx] = buf0[19];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[28];
+  output[endidx] = buf0[3];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[2];
+  output[endidx] = buf0[29];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[18];
+  output[endidx] = buf0[13];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[10];
+  output[endidx] = buf0[21];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[26];
+  output[endidx] = buf0[5];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[6];
+  output[endidx] = buf0[25];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[22];
+  output[endidx] = buf0[9];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[14];
+  output[endidx] = buf0[17];
+  startidx += outstride;
+  endidx -= outstride;
+  output[startidx] = buf0[30];
+  output[endidx] = buf0[1];
+}
+static INLINE void idtx32x32_avx2(__m256i *input, __m256i *output,
+                                  const int8_t cos_bit,
+                                  const int8_t *stage_range, int instride,
+                                  int outstride) {
+  (void)stage_range;
+  (void)cos_bit;
+  for (int i = 0; i < 32; i += 8) {
+    output[i * outstride] = _mm256_slli_epi32(input[i * instride], 2);
+    output[(i + 1) * outstride] =
+        _mm256_slli_epi32(input[(i + 1) * instride], 2);
+    output[(i + 2) * outstride] =
+        _mm256_slli_epi32(input[(i + 2) * instride], 2);
+    output[(i + 3) * outstride] =
+        _mm256_slli_epi32(input[(i + 3) * instride], 2);
+    output[(i + 4) * outstride] =
+        _mm256_slli_epi32(input[(i + 4) * instride], 2);
+    output[(i + 5) * outstride] =
+        _mm256_slli_epi32(input[(i + 5) * instride], 2);
+    output[(i + 6) * outstride] =
+        _mm256_slli_epi32(input[(i + 6) * instride], 2);
+    output[(i + 7) * outstride] =
+        _mm256_slli_epi32(input[(i + 7) * instride], 2);
+  }
+}
+static const transform_1d_avx2 col_txfm8x32_arr[TX_TYPES] = {
+  av1_fdct32_avx2,  // DCT_DCT
+  NULL,             // ADST_DCT
+  NULL,             // DCT_ADST
+  NULL,             // ADST_ADST
+  NULL,             // FLIPADST_DCT
+  NULL,             // DCT_FLIPADST
+  NULL,             // FLIPADST_FLIPADST
+  NULL,             // ADST_FLIPADST
+  NULL,             // FLIPADST_ADST
+  idtx32x32_avx2,   // IDTX
+  NULL,             // V_DCT
+  NULL,             // H_DCT
+  NULL,             // V_ADST
+  NULL,             // H_ADST
+  NULL,             // V_FLIPADST
+  NULL              // H_FLIPADST
+};
+static const transform_1d_avx2 row_txfm8x32_arr[TX_TYPES] = {
+  av1_fdct32_avx2,  // DCT_DCT
+  NULL,             // ADST_DCT
+  NULL,             // DCT_ADST
+  NULL,             // ADST_ADST
+  NULL,             // FLIPADST_DCT
+  NULL,             // DCT_FLIPADST
+  NULL,             // FLIPADST_FLIPADST
+  NULL,             // ADST_FLIPADST
+  NULL,             // FLIPADST_ADST
+  idtx32x32_avx2,   // IDTX
+  NULL,             // V_DCT
+  NULL,             // H_DCT
+  NULL,             // V_ADST
+  NULL,             // H_ADST
+  NULL,             // V_FLIPADST
+  NULL              // H_FLIPADST
+};
+void av1_fwd_txfm2d_32x32_avx2(const int16_t *input, int32_t *output,
+                               int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  __m256i buf0[128], buf1[128];
+
+  TXFM_2D_FLIP_CFG cfg;
+  av1_get_fwd_txfm_cfg(tx_type, TX_32X32, &cfg);
+  TXFM_2D_FLIP_CFG *cfg1 = &cfg;
+  const int tx_size = cfg1->tx_size;
+  const int8_t *shift = fwd_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int8_t *stage_range_col = cfg1->stage_range_col;
+  const int8_t *stage_range_row = cfg1->stage_range_row;
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int width = tx_size_wide[cfg1->tx_size];
+  const int height = tx_size_high[cfg1->tx_size];
+  const transform_1d_avx2 col_txfm = col_txfm8x32_arr[tx_type];
+  const transform_1d_avx2 row_txfm = row_txfm8x32_arr[tx_type];
+  int r, c;
+  const int width_div16 = (width >> 4);
+  const int width_div8 = (width >> 3);
+
+  for (int i = 0; i < width_div16; i++) {
+    av1_load_buffer_16xn_avx2(input + (i << 4), &buf0[(i << 1)], stride, height,
+                              width_div8);
+    av1_round_shift_32_8xn_avx2(&buf0[(i << 1)], height, shift[0], width_div8);
+    av1_round_shift_32_8xn_avx2(&buf0[(i << 1) + 1], height, shift[0],
+                                width_div8);
+    col_txfm(&buf0[(i << 1)], &buf0[(i << 1)], cos_bit_col, stage_range_col,
+             width_div8, width_div8);
+    col_txfm(&buf0[(i << 1) + 1], &buf0[(i << 1) + 1], cos_bit_col,
+             stage_range_col, width_div8, width_div8);
+    av1_round_shift_32_8xn_avx2(&buf0[(i << 1)], height, shift[1], width_div8);
+    av1_round_shift_32_8xn_avx2(&buf0[(i << 1) + 1], height, shift[1],
+                                width_div8);
+  }
+
+  for (r = 0; r < height; r += 8) {
+    for (c = 0; c < width_div8; c++) {
+      av1_fwd_txfm_transpose_8x8_avx2(&buf0[r * width_div8 + c],
+                                      &buf1[c * 8 * width_div8 + (r >> 3)],
+                                      width_div8, width_div8);
+    }
+  }
+
+  for (int i = 0; i < width_div16; i++) {
+    row_txfm(&buf1[(i << 1)], &buf1[(i << 1)], cos_bit_row, stage_range_row,
+             width_div8, width_div8);
+    row_txfm(&buf1[(i << 1) + 1], &buf1[(i << 1) + 1], cos_bit_row,
+             stage_range_row, width_div8, width_div8);
+    av1_round_shift_32_8xn_avx2(&buf1[(i << 1)], height, shift[2], width_div8);
+    av1_round_shift_32_8xn_avx2(&buf1[(i << 1) + 1], height, shift[2],
+                                width_div8);
+  }
+
+  for (r = 0; r < height; r += 8) {
+    for (c = 0; c < width_div8; c++) {
+      av1_fwd_txfm_transpose_8x8_avx2(&buf1[r * width_div8 + c],
+                                      &buf0[c * 8 * width_div8 + (r >> 3)],
+                                      width_div8, width_div8);
+    }
+  }
+
+  av1_store_buffer_avx2(buf0, output, 8, 128);
+}
 static INLINE void av1_fdct64_stage2_avx2(__m256i *x1, __m256i *x2,
                                           __m256i *cospi_m32,
                                           __m256i *cospi_p32,
