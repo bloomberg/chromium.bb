@@ -20,7 +20,6 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
-#include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -60,6 +58,11 @@ using content::WebContents;
 namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
+
+// If received bytes is more than the size limit and resumption will restart
+// from the beginning, throttle it.
+int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
+const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
 void CreateContextMenuDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -111,6 +114,16 @@ void CreateContextMenuDownload(
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
   dl_params->set_download_source(download::DownloadSource::CONTEXT_MENU);
   dlm->DownloadUrl(std::move(dl_params));
+}
+
+int GetAutoResumptionSizeLimit() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      chrome::android::kDownloadAutoResumptionThrottling,
+      kAutoResumptionSizeLimitParamName);
+  int size_limit;
+  return base::StringToInt(value, &size_limit)
+             ? size_limit
+             : kDefaultAutoResumptionSizeLimit;
 }
 
 // Helper class for retrieving a DownloadManager.
@@ -382,8 +395,6 @@ void DownloadController::OnDownloadStarted(
   download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
-  download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
-
   OnDownloadUpdated(download_item);
 }
 
@@ -469,7 +480,7 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
   if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
 
-  static int size_limit = DownloadUtils::GetAutoResumptionSizeLimit();
+  static int size_limit = GetAutoResumptionSizeLimit();
   bool exceeds_size_limit = download_item->GetReceivedBytes() > size_limit;
   std::string etag = download_item->GetETag();
   std::string last_modified = download_item->GetLastModifiedTime();

@@ -409,12 +409,6 @@ void InProgressDownloadManager::OnInitialized(
   on_initialized_callbacks_.clear();
 }
 
-void InProgressDownloadManager::GetAllDownloads(
-    std::vector<download::DownloadItem*>* downloads) const {
-  for (auto& item : in_progress_downloads_)
-    downloads->push_back(item.get());
-}
-
 DownloadItemImpl* InProgressDownloadManager::GetInProgressDownload(
     const std::string& guid) {
   for (auto& item : in_progress_downloads_) {

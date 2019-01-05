@@ -122,9 +122,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Called to remove an in-progress download.
   void RemoveInProgressDownload(const std::string& guid);
 
-  // Called to get all in-progress downloads.
-  void GetAllDownloads(std::vector<download::DownloadItem*>* downloads) const;
-
   // Called to retrieve an in-progress download.
   DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 

@@ -11,7 +11,6 @@
 class DownloadUtils {
  public:
   static base::FilePath GetUriStringForPath(const base::FilePath& file_path);
-  static int GetAutoResumptionSizeLimit();
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_
