@@ -221,6 +221,11 @@ Polymer({
     return true;
   },
 
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    return this.$$('cr-toolbar').getSearchField().isSearchFocused();
+  },
+
   /**
    * @param {!CustomEvent} e
    * @private

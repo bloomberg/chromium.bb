@@ -141,11 +141,13 @@ Polymer({
     if (modalContextOpen) {
       return false;
     }
-    const subpageSearch = this.$$('cr-search-field');
-    const searchInput = subpageSearch.getSearchInput();
-    if (searchInput != subpageSearch.shadowRoot.activeElement) {
-      searchInput.focus();
-    }
+    this.$$('cr-search-field').getSearchInput().focus();
     return true;
+  },
+
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    const field = this.$$('cr-search-field');
+    return field.getSearchInput() == field.shadowRoot.activeElement;
   },
 });

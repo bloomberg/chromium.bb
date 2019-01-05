@@ -54,11 +54,17 @@ Polymer({
   handleFindShortcut: function(modalContextOpen) {
     // Assumes this is the only open modal.
     const searchInput = this.$.search.getSearchInput();
-    if (searchInput != this.$.search.shadowRoot.activeElement) {
-      searchInput.scrollIntoViewIfNeeded();
+    searchInput.scrollIntoViewIfNeeded();
+    if (!this.searchInputHasFocus()) {
       searchInput.focus();
     }
     return true;
+  },
+
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    return this.$.search.getSearchInput() ==
+        this.$.search.shadowRoot.activeElement;
   },
 
   /**
