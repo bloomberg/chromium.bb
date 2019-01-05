@@ -1546,22 +1546,24 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
   return urls;
 }
 
-ArchiveResource* ResourceFetcher::CreateArchive(Resource* resource) {
+ArchiveResource* ResourceFetcher::CreateArchive(
+    const KURL& url,
+    scoped_refptr<const SharedBuffer> buffer) {
   // Only the top-frame can load MHTML.
   if (!Context().IsMainFrame()) {
     console_logger_->AddErrorMessage(
         ConsoleLogger::Source::kScript,
         "Attempted to load a multipart archive into an subframe: " +
-            resource->Url().GetString());
+            url.GetString());
     return nullptr;
   }
 
-  archive_ = MHTMLArchive::Create(resource->Url(), resource->ResourceBuffer());
+  archive_ = MHTMLArchive::Create(url, buffer);
   if (!archive_) {
     // Log if attempting to load an invalid archive resource.
     console_logger_->AddErrorMessage(
         ConsoleLogger::Source::kScript,
-        "Malformed multipart archive: " + resource->Url().GetString());
+        "Malformed multipart archive: " + url.GetString());
     return nullptr;
   }
 
