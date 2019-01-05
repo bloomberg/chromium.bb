@@ -455,6 +455,17 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual bool HasOverrideContainingBlockContentWidth() const { return false; }
   virtual bool HasOverrideContainingBlockContentHeight() const { return false; }
 
+  // Returns the continuation associated with |this|.
+  // Returns nullptr if no continuation is associated with |this|.
+  //
+  // See the section about CONTINUATIONS AND ANONYMOUS LAYOUTBLOCKFLOWS in
+  // LayoutInline for more details about them.
+  //
+  // Our implementation uses a HashMap to store them to avoid paying the cost
+  // for each LayoutBoxModelObject (|continuationMap| in the cpp file).
+  // public only for NGOutOfFlowLayoutPart, otherwise protected.
+  LayoutBoxModelObject* Continuation() const;
+
  protected:
   // Compute absolute quads for |this|, but not any continuations. May only be
   // called for objects which can be or have continuations, i.e. LayoutInline or
@@ -466,16 +477,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutPoint AdjustedPositionRelativeTo(const LayoutPoint&,
                                          const Element*) const;
-
-  // Returns the continuation associated with |this|.
-  // Returns nullptr if no continuation is associated with |this|.
-  //
-  // See the section about CONTINUATIONS AND ANONYMOUS LAYOUTBLOCKFLOWS in
-  // LayoutInline for more details about them.
-  //
-  // Our implementation uses a HashMap to store them to avoid paying the cost
-  // for each LayoutBoxModelObject (|continuationMap| in the cpp file).
-  LayoutBoxModelObject* Continuation() const;
 
   // Set the next link in the continuation chain.
   //

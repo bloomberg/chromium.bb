@@ -86,6 +86,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   const ChildrenVector& Children() const { return children_; }
 
+  // Returns offset for given child. DCHECK if child not found.
+  // Warning: Do not call unless necessary.
+  NGLogicalOffset GetChildOffset(const LayoutObject* child);
+
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
   // out-of-flow descendants by layout algorithms.
