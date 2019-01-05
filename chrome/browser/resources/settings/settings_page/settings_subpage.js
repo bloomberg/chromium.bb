@@ -59,6 +59,9 @@ Polymer({
   /** @private {boolean} */
   lastActiveValue_: false,
 
+  // Override FindShortcutBehavior property.
+  findShortcutListenOnAttach: false,
+
   /** @override */
   attached: function() {
     if (!!this.searchLabel) {

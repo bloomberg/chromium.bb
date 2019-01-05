@@ -181,13 +181,10 @@ Polymer({
       scrollToTop(e.detail.bottom - this.$.container.clientHeight)
           .then(e.detail.callback);
     });
-
-    this.becomeActiveFindShortcutListener();
   },
 
   /** @override */
   detached: function() {
-    this.removeSelfAsFindShortcutListener();
     settings.resetRouteForTesting();
   },
 

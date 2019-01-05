@@ -16,26 +16,6 @@ suite('find-shortcut', () => {
   let nextWait;
 
   /**
-   * @param {!Array} fns
-   * @return {!Promise}
-   */
-  const promiseSeries = fns =>
-      fns.reduce((acc, fn) => acc.then(fn), Promise.resolve());
-
-  /**
-   * This method registers the |testElement| as a find shortcut listener, runs
-   * the |wrapped| function, then removes |testElement| from being a listener.
-   * The listeners stack is global and should be empty after a successful test.
-   * @param {!HTMLElement} testElement
-   * @return {!function(!Function)): !Promise}
-   */
-  const listenScope = testElement => wrapped => promiseSeries([
-    () => testElement.becomeActiveFindShortcutListener(),
-    wrapped,
-    () => testElement.removeSelfAsFindShortcutListener(),
-  ]);
-
-  /**
    * Checks that the handleFindShortcut method is being called for all the
    * |expectedSelves| element references in the order that they are passed in
    * when a single find shortcut is invoked.
@@ -43,12 +23,12 @@ suite('find-shortcut', () => {
    * @param {?boolean} expectedModalContextOpen
    * @return {!Promise}
    */
-  const checkMultiple = (expectedSelves, expectedModalContextOpen) => {
+  const checkMultiple = async (expectedSelves, expectedModalContextOpen) => {
     waits = expectedSelves.map(() => new PromiseResolver());
     nextWait = 0;
     MockInteractions.pressAndReleaseKeyOn(
         window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
-    return Promise.all(waits.map(wait => wait.promise)).then(argss => {
+    await Promise.all(waits.map(wait => wait.promise)).then(argss => {
       argss.forEach((args, index) => {
         assertEquals(expectedSelves[index], args.self);
         assertEquals(!!expectedModalContextOpen, args.modalContextOpen);
@@ -67,36 +47,37 @@ suite('find-shortcut', () => {
       checkMultiple([expectedSelf], expectedModalContextOpen);
 
   /**
-   * Register |expectedSelf| element as a listener, check that
-   * handleFindShortcut is called, then remove as a listener.
-   * @param {!HTMLElement} expectedSelf
-   * @param {?boolean} expectedModalContextOpen
-   * @return {!Promise}
-   */
-  const wrappedCheck = (expectedSelf, expectedModalContextOpen) => listenScope(
-      expectedSelf)(() => check(expectedSelf, expectedModalContextOpen));
-
-  /**
    * Registers for a keydown event to check whether the bubbled up event has
    * defaultPrevented set to true, in which case the event was handled.
    * @param {boolean} defaultPrevented
    * @return {!Promise}
    */
-  const listenOnceAndCheckDefaultPrevented = defaultPrevented => {
-    const resolver = new PromiseResolver();
-    const handler = e => {
-      window.removeEventListener('keydown', handler);
-      if (e.defaultPrevented == defaultPrevented) {
-        resolver.resolve();
-      } else {
-        resolver.reject();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return resolver.promise;
+  const listenOnceAndCheckDefaultPrevented = async defaultPrevented => {
+    const e = await test_util.eventToPromise('keydown', window);
+    assertEquals(e.defaultPrevented, defaultPrevented);
   };
 
   suiteSetup(() => {
+    document.body.innerHTML = `
+        <dom-module id="find-shortcut-element-manual-listen">
+          <template></template>
+        </dom-module>
+      `;
+
+    Polymer({
+      is: 'find-shortcut-element-manual-listen',
+      behaviors: [FindShortcutBehavior],
+
+      findShortcutListenOnAttach: false,
+      handledResponse: true,
+
+      handleFindShortcut(modalContextOpen) {
+        assert(nextWait < waits.length);
+        waits[nextWait++].resolve({modalContextOpen, self: this});
+        return this.handledResponse;
+      },
+    });
+
     document.body.innerHTML = `
         <dom-module id="find-shortcut-element">
           <template></template>
@@ -115,29 +96,31 @@ suite('find-shortcut', () => {
         return this.handledResponse;
       },
     });
-  });
-
-  setup(() => {
     PolymerTest.clearBody();
   });
 
-  test('handled', () => {
-    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
-    const testElement = document.body.querySelector('find-shortcut-element');
-    return wrappedCheck(testElement);
+  teardown(() => {
+    PolymerTest.clearBody();
+    assertEquals(0, FindShortcutManager.listeners.length);
   });
 
-  test('handled with modal context open', () => {
+  test('handled', async () => {
+    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
+    const testElement = document.body.querySelector('find-shortcut-element');
+    await check(testElement);
+  });
+
+  test('handled with modal context open', async () => {
     document.body.innerHTML = `
         <find-shortcut-element></find-shortcut-element>
         <cr-dialog></cr-dialog>`;
     const testElement = document.body.querySelector('find-shortcut-element');
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
-    return wrappedCheck(testElement, true);
+    await check(testElement, true);
   });
 
-  test('handled with modal context closed', () => {
+  test('handled with modal context closed', async () => {
     document.body.innerHTML = `
         <find-shortcut-element></find-shortcut-element>
         <cr-dialog></cr-dialog>`;
@@ -147,83 +130,86 @@ suite('find-shortcut', () => {
     assertTrue(dialog.open);
     const whenCloseFired = test_util.eventToPromise('close', dialog);
     dialog.close();
-    return whenCloseFired.then(() => wrappedCheck(testElement));
+    await whenCloseFired;
+    await check(testElement);
   });
 
-  test('last listener is active', () => {
+  test('last listener is active', async () => {
     document.body.innerHTML = `
         <find-shortcut-element></find-shortcut-element>
         <find-shortcut-element></find-shortcut-element>`;
+    assertEquals(2, FindShortcutManager.listeners.length);
     const testElements =
         document.body.querySelectorAll('find-shortcut-element');
-    return promiseSeries([
-      () => listenScope(testElements[0])(() => wrappedCheck(testElements[1])),
-      () => listenScope(testElements[1])(() => wrappedCheck(testElements[0])),
-    ]);
+    await check(testElements[1]);
   });
 
-  test('can remove listeners out of order', () => {
+  test('can remove listeners out of order', async () => {
     document.body.innerHTML = `
-        <find-shortcut-element></find-shortcut-element>
-        <find-shortcut-element></find-shortcut-element>`;
+        <find-shortcut-element-manual-listen>
+        </find-shortcut-element-manual-listen>
+        <find-shortcut-element-manual-listen>
+        </find-shortcut-element-manual-listen>`;
     const testElements =
-        document.body.querySelectorAll('find-shortcut-element');
+        document.body.querySelectorAll('find-shortcut-element-manual-listen');
     testElements[0].becomeActiveFindShortcutListener();
     testElements[1].becomeActiveFindShortcutListener();
     testElements[0].removeSelfAsFindShortcutListener();
-    return check(testElements[1]).then(() => {
-      testElements[1].removeSelfAsFindShortcutListener();
-    });
+    await check(testElements[1]);
+    testElements[1].removeSelfAsFindShortcutListener();
   });
 
   test('removing self when not active throws exception', () => {
-    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
-    const testElement = document.body.querySelector('find-shortcut-element');
+    document.body.innerHTML = `
+        <find-shortcut-element-manual-listen>
+        </find-shortcut-element-manual-listen>`;
+    const testElement =
+        document.body.querySelector('find-shortcut-element-manual-listen');
     assertThrows(() => testElement.removeSelfAsFindShortcutListener());
   });
 
-  test('becoming active when already active throws exception', () => {
-    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
-    const testElement = document.body.querySelector('find-shortcut-element');
-    return listenScope(testElement)(() => {
-      assertThrows(() => testElement.becomeActiveFindShortcutListener());
-    });
-  });
-
-  test('becoming active when an inactive listener throws exception', () => {
+  test('throw exception when try to become active already a listener', () => {
     document.body.innerHTML = `
-        <find-shortcut-element></find-shortcut-element>
-        <find-shortcut-element></find-shortcut-element>`;
+        <find-shortcut-element>
+          <find-shortcut-element></find-shortcut-element>
+        </find-shortcut-element>`;
     const testElements =
         document.body.querySelectorAll('find-shortcut-element');
-    return listenScope(testElements[0])(
-        () => listenScope(testElements[1])(() => {
-          assertThrows(
-              () => testElements[0].becomeActiveFindShortcutListener());
-        }));
+    assertThrows(() => testElements[0].becomeActiveFindShortcutListener());
+    assertThrows(() => testElements[1].becomeActiveFindShortcutListener());
   });
 
-  test('cmd+ctrl+f bubbles up (defaultPrevented=false)', () => {
+  test('cmd+ctrl+f bubbles up', async () => {
     const bubbledUp = listenOnceAndCheckDefaultPrevented(false);
     document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
     const testElement = document.body.querySelector('find-shortcut-element');
-    return listenScope(testElement)(() => {
-      MockInteractions.pressAndReleaseKeyOn(window, 70, ['meta', 'ctrl'], 'f');
-      return bubbledUp;
-    });
+    MockInteractions.pressAndReleaseKeyOn(window, 70, ['meta', 'ctrl'], 'f');
+    await bubbledUp;
   });
 
-  test('find shortcut bubbles up (defaultPrevented=true)', () => {
+  test('find shortcut bubbles up', async () => {
     const bubbledUp = listenOnceAndCheckDefaultPrevented(true);
     document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
     const testElement = document.body.querySelector('find-shortcut-element');
-    return Promise.all([wrappedCheck(testElement), bubbledUp]);
+    await check(testElement);
+    await bubbledUp;
   });
 
-  test('shortcut with no listeners bubbles up (defaultPrevented=false)', () => {
+  test('shortcut with no listeners bubbles up', async () => {
     const bubbledUp = listenOnceAndCheckDefaultPrevented(false);
     MockInteractions.pressAndReleaseKeyOn(
         window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
-    return bubbledUp;
+    await bubbledUp;
+  });
+
+  test('inner listener is active when listening on attach', async () => {
+    document.body.innerHTML = `
+        <find-shortcut-element>
+          <find-shortcut-element></find-shortcut-element>
+        </find-shortcut-element>`;
+    const testElements =
+        document.body.querySelectorAll('find-shortcut-element');
+    assertEquals(2, FindShortcutManager.listeners.length);
+    await check(testElements[1]);
   });
 });

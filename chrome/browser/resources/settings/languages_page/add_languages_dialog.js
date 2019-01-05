@@ -48,12 +48,6 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
-    this.becomeActiveFindShortcutListener();
-  },
-
-  /** @override */
-  detached: function() {
-    this.removeSelfAsFindShortcutListener();
   },
 
   // Override FindShortcutBehavior methods.
