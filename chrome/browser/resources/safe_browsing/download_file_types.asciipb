@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 25
+version_id: 26
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -281,180 +281,210 @@ file_types {
   uma_value: 195
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r01"
   uma_value: 196
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r02"
   uma_value: 197
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r03"
   uma_value: 198
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r04"
   uma_value: 199
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r05"
   uma_value: 200
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r06"
   uma_value: 201
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r07"
   uma_value: 202
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r08"
   uma_value: 203
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r09"
   uma_value: 204
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r10"
   uma_value: 205
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r11"
   uma_value: 206
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r12"
   uma_value: 207
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r13"
   uma_value: 208
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r14"
   uma_value: 209
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r15"
   uma_value: 210
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r16"
   uma_value: 211
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r17"
   uma_value: 212
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r18"
   uma_value: 213
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r19"
   uma_value: 214
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r20"
   uma_value: 215
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r21"
   uma_value: 216
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r22"
   uma_value: 217
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r23"
   uma_value: 218
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r24"
   uma_value: 219
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r25"
   uma_value: 220
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r26"
   uma_value: 221
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r27"
   uma_value: 222
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r28"
   uma_value: 223
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "r29"
   uma_value: 224
   is_archive: true
   ping_setting: FULL_PING
+  inspection_type: RAR
 }
 file_types {
   extension: "rar"
