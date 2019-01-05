@@ -1028,9 +1028,7 @@ void FrameLoader::CommitNavigation(
   RecordLatestRequiredCSP();
 
   if (!CancelProvisionalLoaderForNewNavigation(
-          false /* cancel_scheduled_navigations */,
-          DocumentLoader::WillLoadUrlAsEmpty(
-              navigation_params->request.Url()))) {
+          false /* cancel_scheduled_navigations */)) {
     return;
   }
 
@@ -1124,8 +1122,7 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
     const WebNavigationInfo& info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   if (!CancelProvisionalLoaderForNewNavigation(
-          true /* cancel_scheduled_navigations */,
-          false /* is_starting_blank_navigation */)) {
+          true /* cancel_scheduled_navigations */)) {
     return false;
   }
 
@@ -1568,8 +1565,7 @@ void FrameLoader::MarkAsLoading() {
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
-    bool cancel_scheduled_navigations,
-    bool is_starting_blank_navigation) {
+    bool cancel_scheduled_navigations) {
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
 
@@ -1597,22 +1593,9 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
 
   progress_tracker_->ProgressStarted();
 
-  // If this is an about:blank navigation committing asynchronously, don't
-  // cancel scheduled navigations, so that the scheduled navigation still goes
-  // through. This handles the case where a navigation is scheduled between the
-  // about:blank navigation starting and finishing, where previously it would
-  // have happened after about:blank completed.
-  // TODO(japhet): This is an atrocious hack. Get rid of NavigationScheduler
-  // so it isn't needed.
-  bool skip_cancel_for_about_blank =
-      state_machine_.CommittedFirstRealDocumentLoad() &&
-      is_starting_blank_navigation;
   // We need to ensure that script initiated navigations are honored.
-  if (!skip_cancel_for_about_blank &&
-      (!had_placeholder_client_document_loader ||
-       cancel_scheduled_navigations)) {
+  if (!had_placeholder_client_document_loader || cancel_scheduled_navigations)
     frame_->GetNavigationScheduler().Cancel();
-  }
 
   return true;
 }
