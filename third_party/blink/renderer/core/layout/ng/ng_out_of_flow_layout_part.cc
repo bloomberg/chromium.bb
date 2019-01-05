@@ -34,6 +34,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       contains_fixed_(contains_fixed) {
   if (!container_builder->HasOutOfFlowDescendantCandidates())
     return;
+
   NGPhysicalBoxStrut physical_border_scrollbar =
       border_scrollbar.ConvertToPhysical(container_style.GetWritingMode(),
                                          container_style.Direction());
@@ -62,8 +63,45 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 
 void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
   Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
+  const LayoutObject* current_container = container_builder_->GetLayoutObject();
+
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-      &descendant_candidates, container_builder_->GetLayoutObject());
+      &descendant_candidates, current_container);
+
+  // Containing block traversal copied from
+  // LayoutBox::ContainingBlockLogicalWidthForPositioned.
+  // This code can be removed once we stop inline splitting.
+
+  if (descendant_candidates.size() > 0 && current_container &&
+      current_container->IsAnonymousBlock() &&
+      current_container->IsRelPositioned()) {
+    // Comments copied from LayoutBox::ContainingBlockLogicalWidthForPositioned
+    // Ensure we compute our width based on the width of our rel-pos inline
+    // container rather than any anonymous block created to manage a block-flow
+    // ancestor of ours in the rel-pos inline's inline flow.
+    LayoutBoxModelObject* absolute_containing_block =
+        ToLayoutBox(current_container)->Continuation();
+    // There may be nested parallel inline continuations. We have now found the
+    // innermost inline (which may not be relatively positioned). Locate the
+    // inline that serves as the containing block of this box.
+    while (!absolute_containing_block->CanContainOutOfFlowPositionedElement(
+        EPosition::kAbsolute)) {
+      absolute_containing_block =
+          ToLayoutBoxModelObject(absolute_containing_block->Container());
+    }
+    DCHECK(absolute_containing_block->IsLayoutInline());
+    // Make absolute_containing_block continuation root.
+    absolute_containing_block = ToLayoutBoxModelObject(
+        absolute_containing_block->GetNode()->GetLayoutObject());
+    for (auto& candidate : descendant_candidates) {
+      if (absolute_containing_block->CanContainOutOfFlowPositionedElement(
+              candidate.node.Style().GetPosition())) {
+        candidate.inline_container = absolute_containing_block;
+        container_builder_->AddOutOfFlowDescendant(candidate);
+      }
+    }
+    return;
+  }
 
   while (descendant_candidates.size() > 0) {
     ComputeInlineContainingBlocks(descendant_candidates);
@@ -84,7 +122,7 @@ void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
     // This happens when an absolute container has a fixed child.
     descendant_candidates.Shrink(0);
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-        &descendant_candidates, container_builder_->GetLayoutObject());
+        &descendant_candidates, current_container);
   }
 }
 
@@ -375,6 +413,34 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       offset->inline_offset = y.value();
   }
 
+  // Nonobvious special case: css container is an inline, with inline splitting.
+  // If Layout tree looks like this:
+  // LayoutNGBlockFlow#container
+  //   LayoutNGBlockFlow (anonymous#1)
+  //     LayoutInline#1 (relative)
+  //   LayoutNGBlockFlow (anonymous#2 relative)
+  //     LayoutNGBlockFlow#oof (positioned)
+  //   LayoutNGBlockFlow (anonymous#3)
+  //     LayoutInline#3 (continuation)
+  //
+  // The containing block geometry is defined by LayoutInline#1, and
+  // LayoutInline#3. This breaks the assumption that Element's css container
+  // is also ELement's ascendant.
+  // Because css container anonymous#2, does not have information needed
+  // to compute containing block geometry,
+  // Therefore, #oof cannot be placed by anonymous#2. NG handles this case
+  // by placing #oof in anonymous parent, #container.
+
+  // But, PaintPropertyTreeBuilder expects #oof.Location() to be wrt
+  // css container, #anonymous2. This is why the code below adjusts
+  // the legacy offset from being wrt #container to being wrt #anonymous2.
+
+  const LayoutObject* container = descendant.node.GetLayoutBox()->Container();
+  if (container->IsAnonymousBlock()) {
+    NGLogicalOffset container_offset =
+        container_builder_->GetChildOffset(container);
+    *offset -= container_offset;
+  }
   return layout_result;
 }
 

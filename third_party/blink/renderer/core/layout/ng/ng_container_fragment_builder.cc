@@ -102,6 +102,16 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   return *this;
 }
 
+NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
+    const LayoutObject* child) {
+  for (wtf_size_t i = 0; i < children_.size(); ++i) {
+    if (children_[i]->GetLayoutObject() == child)
+      return offsets_[i];
+  }
+  NOTREACHED();
+  return NGLogicalOffset();
+}
+
 NGContainerFragmentBuilder&
 NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
