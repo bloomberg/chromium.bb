@@ -154,9 +154,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   virtual bool ShouldCreateOutgoingBidirectionalStream() = 0;
   virtual bool ShouldCreateOutgoingUnidirectionalStream() = 0;
 
-  // Overridden to buffer incoming streams for version 99.
-  bool ShouldBufferIncomingStream(QuicStreamId id) const override;
-
   // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
   // separate from QuicSpdySession::WriteHeaders because tests call
   // this but mock the latter.

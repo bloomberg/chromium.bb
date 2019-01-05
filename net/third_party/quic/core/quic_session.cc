@@ -136,13 +136,8 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
     return;
   }
 
-  StreamHandler handler = GetOrCreateStreamImpl(stream_id, frame.offset != 0);
-  if (handler.is_pending) {
-    handler.pending->OnStreamFrame(frame);
-    return;
-  }
-
-  if (!handler.stream) {
+  QuicStream* stream = GetOrCreateStream(stream_id);
+  if (!stream) {
     // The stream no longer exists, but we may still be interested in the
     // final stream byte offset sent by the peer. A frame with a FIN can give
     // us this offset.
@@ -152,7 +147,7 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
     }
     return;
   }
-  handler.stream->OnStreamFrame(frame);
+  stream->OnStreamFrame(frame);
 }
 
 bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
@@ -250,20 +245,12 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     visitor_->OnRstStreamReceived(frame);
   }
 
-  // may_buffer is true here to allow subclasses to buffer streams until the
-  // first byte of payload arrives which would allow sessions to delay
-  // creation of the stream until the type is known.
-  StreamHandler handler = GetOrCreateStreamImpl(stream_id, /*may_buffer=*/true);
-  if (handler.is_pending) {
-    handler.pending->OnRstStreamFrame(frame);
-    ClosePendingStream(stream_id);
-    return;
-  }
-  if (!handler.stream) {
+  QuicStream* stream = GetOrCreateDynamicStream(stream_id);
+  if (!stream) {
     HandleRstOnValidNonexistentStream(frame);
     return;  // Errors are handled by GetOrCreateStream.
   }
-  handler.stream->OnStreamReset(frame);
+  stream->OnStreamReset(frame);
 }
 
 void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
@@ -704,33 +691,6 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   }
 }
 
-void QuicSession::ClosePendingStream(QuicStreamId stream_id) {
-  QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
-
-  if (pending_stream_map_.find(stream_id) == pending_stream_map_.end()) {
-    QUIC_BUG << ENDPOINT << "Stream is already closed: " << stream_id;
-    return;
-  }
-
-  SendRstStream(stream_id, QUIC_RST_ACKNOWLEDGEMENT, 0);
-
-  // The pending stream may have been deleted and removed during SendRstStream.
-  // Remove the stream from pending stream map iff it is still in the map.
-  if (pending_stream_map_.find(stream_id) != pending_stream_map_.end()) {
-    pending_stream_map_.erase(stream_id);
-  }
-
-  --num_dynamic_incoming_streams_;
-
-  if (connection_->transport_version() == QUIC_VERSION_99) {
-    v99_streamid_manager_.OnStreamClosed(stream_id);
-  }
-
-  // Decrease the number of streams being emulated when a new one is opened.
-  connection_->SetNumOpenStreams(dynamic_stream_map_.size());
-  OnCanCreateNewOutgoingStream();
-}
-
 void QuicSession::OnFinalByteOffsetReceived(
     QuicStreamId stream_id,
     QuicStreamOffset final_byte_offset) {
@@ -1035,20 +995,11 @@ bool QuicSession::CanOpenNextOutgoingUnidirectionalStream() {
 }
 
 QuicStream* QuicSession::GetOrCreateStream(const QuicStreamId stream_id) {
-  StreamHandler handler =
-      GetOrCreateStreamImpl(stream_id, /*may_buffer=*/false);
-  DCHECK(!handler.is_pending);
-  return handler.stream;
-}
-
-QuicSession::StreamHandler QuicSession::GetOrCreateStreamImpl(
-    QuicStreamId stream_id,
-    bool may_buffer) {
   StaticStreamMap::iterator it = static_stream_map_.find(stream_id);
   if (it != static_stream_map_.end()) {
-    return StreamHandler(it->second);
+    return it->second;
   }
-  return GetOrCreateDynamicStreamImpl(stream_id, may_buffer);
+  return GetOrCreateDynamicStream(stream_id);
 }
 
 void QuicSession::StreamDraining(QuicStreamId stream_id) {
@@ -1085,49 +1036,25 @@ bool QuicSession::ShouldYield(QuicStreamId stream_id) {
 
 QuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
-  StreamHandler handler =
-      GetOrCreateDynamicStreamImpl(stream_id, /*may_buffer=*/false);
-  DCHECK(!handler.is_pending);
-  return handler.stream;
-}
-
-QuicSession::StreamHandler QuicSession::GetOrCreateDynamicStreamImpl(
-    QuicStreamId stream_id,
-    bool may_buffer) {
   DCHECK(!QuicContainsKey(static_stream_map_, stream_id))
       << "Attempt to call GetOrCreateDynamicStream for a static stream";
 
   DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it != dynamic_stream_map_.end()) {
-    return StreamHandler(it->second.get());
+    return it->second.get();
   }
 
   if (IsClosedStream(stream_id)) {
-    return StreamHandler();
+    return nullptr;
   }
 
   if (!IsIncomingStream(stream_id)) {
     HandleFrameOnNonexistentOutgoingStream(stream_id);
-    return StreamHandler();
-  }
-
-  auto pending_it = pending_stream_map_.find(stream_id);
-  if (pending_it != pending_stream_map_.end()) {
-    DCHECK_EQ(QUIC_VERSION_99, connection_->transport_version());
-    if (may_buffer) {
-      return StreamHandler(pending_it->second.get());
-    }
-    // The stream limit accounting has already been taken care of
-    // when the PendingStream was created, so there is no need to
-    // do so here. Now we can create the actual stream from the
-    // PendingStream.
-    StreamHandler handler(CreateIncomingStream(std::move(*pending_it->second)));
-    pending_stream_map_.erase(pending_it);
-    return handler;
+    return nullptr;
   }
 
   if (!MaybeIncreaseLargestPeerStreamId(stream_id)) {
-    return StreamHandler();
+    return nullptr;
   }
 
   if (connection_->transport_version() != QUIC_VERSION_99) {
@@ -1137,23 +1064,11 @@ QuicSession::StreamHandler QuicSession::GetOrCreateDynamicStreamImpl(
             GetNumOpenIncomingStreams())) {
       // Refuse to open the stream.
       SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
-      return StreamHandler();
+      return nullptr;
     }
   }
 
-  if (connection_->transport_version() == QUIC_VERSION_99 && may_buffer &&
-      ShouldBufferIncomingStream(stream_id)) {
-    ++num_dynamic_incoming_streams_;
-    // Since STREAM frames may arrive out of order, delay creating the
-    // stream object until the first byte arrives. Buffer the frames and
-    // handle flow control accounting in the PendingStream.
-    auto pending = QuicMakeUnique<PendingStream>(stream_id, this);
-    StreamHandler handler(pending.get());
-    pending_stream_map_[stream_id] = std::move(pending);
-    return handler;
-  }
-
-  return StreamHandler(CreateIncomingStream(stream_id));
+  return CreateIncomingStream(stream_id);
 }
 
 void QuicSession::set_largest_peer_created_stream_id(
@@ -1186,8 +1101,7 @@ bool QuicSession::IsOpenStream(QuicStreamId id) {
   DCHECK_NE(QuicUtils::GetInvalidStreamId(connection_->transport_version()),
             id);
   if (QuicContainsKey(static_stream_map_, id) ||
-      QuicContainsKey(dynamic_stream_map_, id) ||
-      QuicContainsKey(pending_stream_map_, id)) {
+      QuicContainsKey(dynamic_stream_map_, id)) {
     // Stream is active
     return true;
   }
@@ -1242,10 +1156,8 @@ void QuicSession::SendPing() {
 }
 
 size_t QuicSession::GetNumDynamicOutgoingStreams() const {
-  DCHECK_GE(dynamic_stream_map_.size() + pending_stream_map_.size(),
-            num_dynamic_incoming_streams_);
-  return dynamic_stream_map_.size() + pending_stream_map_.size() -
-         num_dynamic_incoming_streams_;
+  DCHECK_GE(dynamic_stream_map_.size(), num_dynamic_incoming_streams_);
+  return dynamic_stream_map_.size() - num_dynamic_incoming_streams_;
 }
 
 size_t QuicSession::GetNumDrainingOutgoingStreams() const {

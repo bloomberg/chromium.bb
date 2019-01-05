@@ -266,7 +266,6 @@ class TestSession : public QuicSpdySession {
 
   using QuicSession::closed_streams;
   using QuicSession::zombie_streams;
-  using QuicSpdySession::ShouldBufferIncomingStream;
 
  private:
   StrictMock<TestCryptoStream> crypto_stream_;
@@ -391,24 +390,6 @@ class QuicSpdySessionTestServer : public QuicSpdySessionTestBase {
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSpdySessionTestServer,
                         ::testing::ValuesIn(AllSupportedVersions()));
-
-TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamUnidirectional) {
-  if (connection_->transport_version() != QUIC_VERSION_99) {
-    return;
-  }
-  EXPECT_TRUE(session_.ShouldBufferIncomingStream(
-      QuicUtils::GetFirstUnidirectionalStreamId(
-          connection_->transport_version(), Perspective::IS_CLIENT)));
-}
-
-TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamBidirectional) {
-  if (connection_->transport_version() != QUIC_VERSION_99) {
-    return;
-  }
-  EXPECT_FALSE(session_.ShouldBufferIncomingStream(
-      QuicUtils::GetFirstBidirectionalStreamId(connection_->transport_version(),
-                                               Perspective::IS_CLIENT)));
-}
 
 TEST_P(QuicSpdySessionTestServer, PeerAddress) {
   EXPECT_EQ(QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort),
