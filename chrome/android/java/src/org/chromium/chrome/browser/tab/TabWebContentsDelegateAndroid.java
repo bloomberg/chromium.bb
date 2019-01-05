@@ -307,7 +307,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @Override
     public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
             int disposition, boolean isRendererInitiated) {
-        mTab.openNewTab(url, extraHeaders, postData, disposition, true, isRendererInitiated);
+        mTab.openNewTab(url, null, extraHeaders, postData, disposition, true, isRendererInitiated);
     }
 
     private Pair<WebContents, String> mWebContentsUrlMapping;

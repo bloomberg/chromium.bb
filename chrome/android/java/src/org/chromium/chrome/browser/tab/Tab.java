@@ -639,7 +639,8 @@ public class Tab
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
             int loadType = nativeLoadUrl(mNativeTabAndroid, params.getUrl(),
-                    params.getVerbatimHeaders(), params.getPostData(), params.getTransitionType(),
+                    params.getInitiatorOrigin(), params.getVerbatimHeaders(), params.getPostData(),
+                    params.getTransitionType(),
                     params.getReferrer() != null ? params.getReferrer().getUrl() : null,
                     // Policy will be ignored for null referrer url, 0 is just a placeholder.
                     // TODO(ppi): Should we pass Referrer jobject and add JNI methods to read it
@@ -2580,8 +2581,9 @@ public class Tab
     }
 
     @CalledByNative
-    protected void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
-            int disposition, boolean hasParent, boolean isRendererInitiated) {
+    protected void openNewTab(String url, String initiatorOrigin, String extraHeaders,
+            ResourceRequestBody postData, int disposition, boolean hasParent,
+            boolean isRendererInitiated) {
         if (isClosing()) return;
 
         boolean incognito = isIncognito();
@@ -2611,6 +2613,7 @@ public class Tab
         if (shouldIgnoreNewTab(url, incognito) || getTabModelSelector() == null) return;
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setInitiatorOrigin(initiatorOrigin);
         loadUrlParams.setVerbatimHeaders(extraHeaders);
         loadUrlParams.setPostData(postData);
         loadUrlParams.setIsRendererInitiated(isRendererInitiated);
@@ -2990,10 +2993,10 @@ public class Tab
     private native void nativeOnPhysicalBackingSizeChanged(
             long nativeTabAndroid, WebContents webContents, int width, int height);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
-    private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
-            ResourceRequestBody postData, int transition, String referrerUrl, int referrerPolicy,
-            boolean isRendererInitiated, boolean shoulReplaceCurrentEntry, boolean hasUserGesture,
-            boolean shouldClearHistoryList, long inputStartTimestamp);
+    private native int nativeLoadUrl(long nativeTabAndroid, String url, String initiatorOrigin,
+            String extraHeaders, ResourceRequestBody postData, int transition, String referrerUrl,
+            int referrerPolicy, boolean isRendererInitiated, boolean shoulReplaceCurrentEntry,
+            boolean hasUserGesture, boolean shouldClearHistoryList, long inputStartTimestamp);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(

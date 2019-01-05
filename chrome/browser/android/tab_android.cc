@@ -316,14 +316,20 @@ void TabAndroid::HandlePopupNavigation(NavigateParams* params) {
     ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
     ScopedJavaLocalRef<jstring> jheaders(
         ConvertUTF8ToJavaString(env, params->extra_headers));
+    ScopedJavaLocalRef<jstring> jinitiator_origin;
+    if (params->initiator_origin) {
+      jinitiator_origin =
+          ConvertUTF8ToJavaString(env, params->initiator_origin->Serialize());
+    }
     ScopedJavaLocalRef<jobject> jpost_data;
     if (params->uses_post && params->post_data) {
       jpost_data = content::ConvertResourceRequestBodyToJavaObject(
           env, params->post_data);
     }
-    Java_Tab_openNewTab(
-        env, jobj, jurl, jheaders, jpost_data, static_cast<int>(disposition),
-        params->created_with_opener, params->is_renderer_initiated);
+    Java_Tab_openNewTab(env, jobj, jurl, jinitiator_origin, jheaders,
+                        jpost_data, static_cast<int>(disposition),
+                        params->created_with_opener,
+                        params->is_renderer_initiated);
   } else {
     NOTIMPLEMENTED();
   }
@@ -510,6 +516,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
+    const JavaParamRef<jstring>& j_initiator_origin,
     const JavaParamRef<jstring>& j_extra_headers,
     const JavaParamRef<jobject>& j_post_data,
     jint page_transition,
@@ -577,6 +584,10 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
       load_params.referrer = content::Referrer(
           GURL(base::android::ConvertJavaStringToUTF8(env, j_referrer_url)),
           static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+    }
+    if (j_initiator_origin) {
+      load_params.initiator_origin = url::Origin::Create(GURL(
+          base::android::ConvertJavaStringToUTF8(env, j_initiator_origin)));
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.should_replace_current_entry = should_replace_current_entry;
