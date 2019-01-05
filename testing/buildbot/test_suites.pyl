@@ -3728,7 +3728,6 @@
       'network_service_content_browsertests': {
         'args': [
           '--enable-features=NetworkService',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
         ],
         'swarming': {
           'shards': 5,
@@ -3756,7 +3755,6 @@
       'network_service_in_process_content_browsertests': {
         'args': [
           '--enable-features=NetworkService,NetworkServiceInProcess',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
         ],
         'swarming': {
           'shards': 5,
@@ -3834,7 +3832,6 @@
       'network_service_content_browsertests': {
         'args': [
           '--enable-features=NetworkService',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
         ],
         'swarming': {
           'shards': 2,
@@ -3879,7 +3876,6 @@
       'network_service_content_browsertests': {
         'args': [
           '--enable-features=NetworkService',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
         ],
         'swarming': {
           'shards': 2,
@@ -3917,7 +3913,6 @@
       'network_service_in_process_content_browsertests': {
         'args': [
           '--enable-features=NetworkService,NetworkServiceInProcess',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
         ],
         'swarming': {
           'shards': 2,
