@@ -303,14 +303,6 @@ cr.define('print_preview', function() {
   /** @private {?print_preview.NativeLayer} */
   let currentInstance = null;
 
-  /**
-   * Version of the serialized state of the print preview.
-   * @type {number}
-   * @const
-   * @private
-   */
-  NativeLayer.SERIALIZED_STATE_VERSION_ = 1;
-
   // Export
   return {
     NativeLayer: NativeLayer
