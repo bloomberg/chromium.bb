@@ -467,7 +467,7 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
   };
 
   if (id.bustype == BUS_USB) {
-    for (size_t i = 0; i < arraysize(kUSBInternalDevices); ++i) {
+    for (size_t i = 0; i < base::size(kUSBInternalDevices); ++i) {
       if (id.vendor == kUSBInternalDevices[i].vid &&
           id.product == kUSBInternalDevices[i].pid)
         return InputDeviceType::INPUT_DEVICE_INTERNAL;
