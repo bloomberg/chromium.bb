@@ -45,7 +45,7 @@ class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
 
   void FlushHelper(int32_t put_offset);
   void SetGetBufferHelper(int transfer_buffer_id, int32_t token);
-  scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(uint32_t size,
                                                         int32_t* id);
   void DestroyTransferBufferHelper(int32_t id);
 
@@ -66,7 +66,7 @@ class MockClientCommandBuffer : public CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int transfer_buffer_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                   int32_t* id) override;
 
   // This is so we can use all the gmock functions when Flush is called.

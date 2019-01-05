@@ -957,7 +957,7 @@ void InProcessCommandBuffer::SetGetBufferOnGpuThread(
 }
 
 scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(
-    size_t size,
+    uint32_t size,
     int32_t* id) {
   scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
   *id = GetNextBufferId();

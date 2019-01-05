@@ -145,7 +145,7 @@ void CommandBufferService::SetReleaseCount(uint64_t release_count) {
   UpdateState();
 }
 
-scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
+scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(uint32_t size,
                                                                  int32_t* id) {
   *id = GetNextBufferId();
   auto result = CreateTransferBufferWithId(size, *id);
@@ -170,7 +170,7 @@ bool CommandBufferService::RegisterTransferBuffer(
 }
 
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
-    size_t size,
+    uint32_t size,
     int32_t id) {
   scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
   if (!RegisterTransferBuffer(id, buffer)) {

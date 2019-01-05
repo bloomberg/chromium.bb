@@ -231,9 +231,9 @@ class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
   ~MockClientCommandBufferCanFail() override = default;
 
   MOCK_METHOD2(CreateTransferBuffer,
-               scoped_refptr<Buffer>(size_t size, int32_t* id));
+               scoped_refptr<Buffer>(uint32_t size, int32_t* id));
 
-  scoped_refptr<gpu::Buffer> RealCreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> RealCreateTransferBuffer(uint32_t size,
                                                       int32_t* id) {
     return MockClientCommandBufferMockFlush::CreateTransferBuffer(size, id);
   }

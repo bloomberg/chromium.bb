@@ -24,7 +24,8 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
   CommandBuffer::State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
                                                int32_t start,
                                                int32_t end) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(uint32_t size,
+                                             int32_t* id) override;
 
   void LockFlush() { flush_locked_ = true; }
 

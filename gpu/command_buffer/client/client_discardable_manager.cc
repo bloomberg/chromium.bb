@@ -6,6 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/flat_set.h"
+#include "base/numerics/checked_math.h"
 #include "base/system/sys_info.h"
 
 namespace gpu {
@@ -108,17 +109,17 @@ void FreeOffsetSet::ReturnFreeOffset(uint32_t offset) {
 // Returns the size of the allocation which ClientDiscardableManager will
 // sub-allocate from. This should be at least as big as the minimum shared
 // memory allocation size.
-size_t AllocationSize() {
+uint32_t AllocationSize() {
 #if defined(OS_NACL)
   // base::SysInfo isn't available under NaCl.
-  size_t allocation_size = getpagesize();
+  size_t system_allocation_size = getpagesize();
 #else
-  size_t allocation_size = base::SysInfo::VMAllocationGranularity();
+  size_t system_allocation_size = base::SysInfo::VMAllocationGranularity();
 #endif
+  DCHECK(base::CheckedNumeric<uint32_t>(system_allocation_size).IsValid());
 
   // If the allocation is small (less than 2K), round it up to at least 2K.
-  allocation_size = std::max(static_cast<size_t>(2048), allocation_size);
-  return allocation_size;
+  return std::max(2048u, static_cast<uint32_t>(system_allocation_size));
 }
 
 ClientDiscardableHandle::Id GetNextHandleId() {

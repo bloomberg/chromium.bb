@@ -86,7 +86,7 @@ void* MockTransferBuffer::AllocUpTo(unsigned int size,
   // reallocated.
   actual_buffer_index_ = (actual_buffer_index_ + 1) % kNumBuffers;
 
-  size = std::min(static_cast<size_t>(size), MaxTransferBufferSize());
+  size = std::min(size, MaxTransferBufferSize());
   if (actual_offset_ + size > size_) {
     actual_offset_ = result_size_;
   }
@@ -136,7 +136,7 @@ unsigned int MockTransferBuffer::GetFragmentedFreeSize() const {
 
 void MockTransferBuffer::ShrinkLastBlock(unsigned int new_size) {}
 
-size_t MockTransferBuffer::MaxTransferBufferSize() {
+uint32_t MockTransferBuffer::MaxTransferBufferSize() {
   return size_ - result_size_;
 }
 
@@ -150,7 +150,7 @@ bool MockTransferBuffer::InSync() {
 }
 
 MockTransferBuffer::ExpectedMemoryInfo MockTransferBuffer::GetExpectedMemory(
-    size_t size) {
+    uint32_t size) {
   ExpectedMemoryInfo mem;
   mem.offset = AllocateExpectedTransferBuffer(size);
   mem.id = GetExpectedTransferBufferId();
@@ -160,7 +160,7 @@ MockTransferBuffer::ExpectedMemoryInfo MockTransferBuffer::GetExpectedMemory(
 }
 
 MockTransferBuffer::ExpectedMemoryInfo
-MockTransferBuffer::GetExpectedResultMemory(size_t size) {
+MockTransferBuffer::GetExpectedResultMemory(uint32_t size) {
   ExpectedMemoryInfo mem;
   mem.offset = GetExpectedResultBufferOffset();
   mem.id = GetExpectedResultBufferId();
@@ -169,7 +169,7 @@ MockTransferBuffer::GetExpectedResultMemory(size_t size) {
   return mem;
 }
 
-uint32_t MockTransferBuffer::AllocateExpectedTransferBuffer(size_t size) {
+uint32_t MockTransferBuffer::AllocateExpectedTransferBuffer(uint32_t size) {
   EXPECT_LE(size, MaxTransferBufferSize());
 
   // Toggle which buffer we get each time to simulate the buffer being
@@ -187,7 +187,7 @@ uint32_t MockTransferBuffer::AllocateExpectedTransferBuffer(size_t size) {
 }
 
 void* MockTransferBuffer::GetExpectedTransferAddressFromOffset(uint32_t offset,
-                                                               size_t size) {
+                                                               uint32_t size) {
   EXPECT_GE(offset, expected_buffer_index_ * alignment_);
   EXPECT_LE(offset + size, size_ + expected_buffer_index_ * alignment_);
   return expected_buffer() + offset;

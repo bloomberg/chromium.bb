@@ -51,10 +51,10 @@
 namespace gpu {
 namespace {
 
-const size_t kCommandBufferSize = 16384;
-const size_t kTransferBufferSize = 16384;
-const size_t kSmallTransferBufferSize = 16;
-const size_t kTinyTransferBufferSize = 3;
+const uint32_t kCommandBufferSize = 16384;
+const uint32_t kTransferBufferSize = 16384;
+const uint32_t kSmallTransferBufferSize = 16;
+const uint32_t kTinyTransferBufferSize = 3;
 
 #if !defined(GPU_FUZZER_USE_ANGLE) && !defined(GPU_FUZZER_USE_SWIFTSHADER)
 #define GPU_FUZZER_USE_STUB
@@ -453,7 +453,7 @@ class CommandBufferSetup {
   }
 
  private:
-  void CreateTransferBuffer(size_t size, int32_t id) {
+  void CreateTransferBuffer(uint32_t size, int32_t id) {
     scoped_refptr<Buffer> buffer =
         command_buffer_->CreateTransferBufferWithId(size, id);
     memset(buffer->memory(), 0, size);
