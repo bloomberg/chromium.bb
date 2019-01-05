@@ -151,10 +151,14 @@ std::unique_ptr<views::View> CreateTip(const base::string16& tip_message) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   // Set up the tip text container with inset, background and a solid border.
   auto tip_text_container = std::make_unique<views::View>();
+  gfx::Insets container_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION);
+  int container_child_space =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+
   tip_text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
-      gfx::Insets(provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+      views::BoxLayout::kHorizontal, gfx::Insets(container_insets),
+      container_child_space));
   tip_text_container->SetBackground(
       views::CreateSolidBackground(gfx::kGoogleGrey050));
   constexpr int kTipValuePromptBorderThickness = 1;
@@ -173,8 +177,12 @@ std::unique_ptr<views::View> CreateTip(const base::string16& tip_message) {
                                ChromeTextStyle::STYLE_SECONDARY);
   tip->SetMultiLine(true);
   tip->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
+  tip->SizeToFit(
+      provider->GetDistanceMetric(DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH) -
+      kMigrationDialogInsets.width() - container_insets.width() -
+      kTipImageSize - container_child_space);
   tip_text_container->AddChildView(tip);
+
   return tip_text_container;
 }
 
