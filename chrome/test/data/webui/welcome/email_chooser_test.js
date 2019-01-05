@@ -33,9 +33,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
 
     setup(function() {
       testEmailBrowserProxy = new TestNuxEmailProxy();
-      nux.NuxEmailProxyImpl.instance_ = testEmailBrowserProxy;
       testEmailMetricsProxy = new TestMetricsProxy();
-      nux.EmailMetricsProxyImpl.instance_ = testEmailMetricsProxy;
       testBookmarkBrowserProxy = new TestBookmarkProxy();
       nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
       // Reset w/ new proxy for test.
@@ -44,13 +42,17 @@ cr.define('onboarding_welcome_email_chooser', function() {
       testEmailBrowserProxy.setEmailList(emails);
 
       PolymerTest.clearBody();
-      testElement = document.createElement('email-chooser');
+      testElement = document.createElement('app-chooser');
       document.body.appendChild(testElement);
+      testElement.singleSelect = true;
+      testElement.appProxy = testEmailBrowserProxy;
+      testElement.metricsManager =
+          new nux.ModuleMetricsManager(testEmailMetricsProxy);
       // Simulate nux-email's onRouteEnter call.
       testElement.onRouteEnter();
       return Promise.all([
         testEmailMetricsProxy.whenCalled('recordPageShown'),
-        testEmailBrowserProxy.whenCalled('getEmailList'),
+        testEmailBrowserProxy.whenCalled('getAppList'),
       ]);
     });
 
@@ -140,8 +142,6 @@ cr.define('onboarding_welcome_email_chooser', function() {
 
             // Id for the provider that was selected.
             assertEquals(0, recordProviderSelectedResponse[0]);
-            // Length of the email list array.
-            assertEquals(2, recordProviderSelectedResponse[1]);
           });
     });
   });

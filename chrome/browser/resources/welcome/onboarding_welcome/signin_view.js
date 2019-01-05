@@ -54,7 +54,7 @@ Polymer({
    */
   getTargetUrl_: function() {
     const savedProvider =
-        nux.NuxEmailProxyImpl.getInstance().getSavedProvider();
+        nux.EmailAppProxyImpl.getInstance().getSavedProvider();
     if (savedProvider != undefined && this.shouldShowEmailInterstitial_) {
       return `chrome://welcome/email-interstitial?provider=${savedProvider}`;
     } else {
