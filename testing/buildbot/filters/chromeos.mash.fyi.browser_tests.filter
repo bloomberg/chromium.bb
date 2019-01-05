@@ -37,7 +37,7 @@
 -SwitchAccessPredicateTest.IsActionable
 -SwitchAccessPredicateTest.IsGroup
 -SwitchAccessPredicateTest.IsInterestingSubtree
--SwitchAccessPredicateTest.IsSubtreeLeaf
+-SwitchAccessPredicateTest.IsInteresting
 -SwitchAccessPredicateTest.LeafPredicate
 -SwitchAccessPredicateTest.RootPredicate
 -SwitchAccessPredicateTest.VisitPredicate

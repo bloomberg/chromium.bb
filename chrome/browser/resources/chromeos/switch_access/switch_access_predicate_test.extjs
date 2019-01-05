@@ -96,24 +96,24 @@ function getTree(desktop) {
            leaf4, leaf5, leaf6, leaf7 };
 }
 
-TEST_F('SwitchAccessPredicateTest', 'IsSubtreeLeaf', function() {
+TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
   this.runWithLoadedTree(testWebsite(),
       function(desktop) {
         const t = getTree(desktop);
 
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.root, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper1, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper2, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.lower1, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.lower2, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.lower3, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf1, t.lower1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf2, t.lower1));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf3, t.lower1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf4, t.upper1));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf5, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf6, t.lower3));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf7, t.lower3));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.root, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper1, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper2, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.lower1, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower2, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower3, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf1, t.lower1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf2, t.lower1));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf3, t.lower1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf4, t.upper1));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf5, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf6, t.lower3));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf7, t.lower3));
       }
   );
 });

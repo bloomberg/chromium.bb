@@ -266,7 +266,7 @@ class NavigationManager {
     this.node_ = event.target;
 
     // In case the node that gained focus is not a subtreeLeaf.
-    if (SwitchAccessPredicate.isSubtreeLeaf(this.node_, this.scope_))
+    if (SwitchAccessPredicate.isInteresting(this.node_, this.scope_))
       this.updateFocusRing_();
     else
       this.moveForward();
