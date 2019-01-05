@@ -155,7 +155,7 @@ cr.define('cloudprint', function() {
     }
 
     /** @override */
-    submit(destination, printTicket, documentInfo, data) {
+    submit(destination, printTicket, documentTitle, data) {
       const result = VERSION_REGEXP_.exec(navigator.userAgent);
       let chromeVersion = 'unknown';
       if (result && result.length == 2) {
@@ -164,7 +164,7 @@ cr.define('cloudprint', function() {
       const params = [
         new HttpParam('printerid', destination.id),
         new HttpParam('contentType', 'dataUrl'),
-        new HttpParam('title', documentInfo.title),
+        new HttpParam('title', documentTitle),
         new HttpParam('ticket', printTicket),
         new HttpParam('content', 'data:application/pdf;base64,' + data),
         new HttpParam('tag', '__google__chrome_version=' + chromeVersion),

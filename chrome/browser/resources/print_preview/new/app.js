@@ -44,11 +44,17 @@ Polymer({
       value: null,
     },
 
-    /** @private {print_preview.DocumentInfo} */
-    documentInfo_: {
-      type: Object,
-      notify: true,
-    },
+    /** @private {print_preview.DocumentSettings} */
+    documentSettings_: Object,
+
+    /** @private {print_preview.Margins} */
+    margins_: Object,
+
+    /** @private {!print_preview.Size} */
+    pageSize_: Object,
+
+    /** @private {!print_preview.PrintableArea} */
+    printableArea_: Object,
 
     /** @private {?print_preview.InvitationStore} */
     invitationStore_: {
@@ -178,7 +184,6 @@ Polymer({
   /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
-    this.documentInfo_ = new print_preview.DocumentInfo();
     this.userInfo_ = new print_preview.UserInfo();
     this.addWebUIListener(
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
@@ -337,13 +342,9 @@ Polymer({
    * @private
    */
   onInitialSettingsSet_: function(settings) {
-    this.documentInfo_.init(
+    this.$.documentInfo.init(
         settings.previewModifiable, settings.documentTitle,
         settings.documentHasSelection);
-    this.notifyPath('documentInfo_.isModifiable');
-    this.notifyPath('documentInfo_.hasSelection');
-    this.notifyPath('documentInfo_.title');
-    this.notifyPath('documentInfo_.pageCount');
     this.$.model.setStickySettings(settings.serializedAppStateStr);
     this.$.model.setPolicySettings(
         settings.headerFooter, settings.isHeaderFooterManaged);
@@ -528,7 +529,7 @@ Polymer({
     const destination = assert(this.destinationStore_.selectedDestination);
     this.cloudPrintInterface_.submit(
         destination, this.$.model.createCloudJobTicket(destination),
-        assert(this.documentInfo_), data);
+        this.$.documentInfo.title, data);
   },
 
   // <if expr="not chromeos">
@@ -640,7 +641,7 @@ Polymer({
    */
   onPrintPresetOptions_: function(disableScaling, copies, duplex) {
     if (disableScaling) {
-      this.documentInfo_.updateIsScalingDisabled(true);
+      this.$.documentInfo.updateIsScalingDisabled(true);
     }
 
     if (copies > 0 && this.getSetting('copies').available) {
@@ -682,6 +683,14 @@ Polymer({
     // Expand the settings if the user has requested them expanded or if more
     // settings is not displayed (i.e. less than 6 total settings available).
     return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
+  },
+
+  /**
+   * @param {!CustomEvent} e Contains the new preview request ID.
+   * @private
+   */
+  onPreviewStart_: function(e) {
+    this.$.documentInfo.inFlightRequestId = /** @type {number} */ (e.detail);
   },
 
   // <if expr="chromeos">

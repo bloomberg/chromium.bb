@@ -95,10 +95,10 @@ cr.define('cloudprint', function() {
      * @param {!print_preview.Destination} destination Cloud destination to
      *     print to.
      * @param {string} printTicket The print ticket to print.
-     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+     * @param {string} documentTitle Title of the document.
      * @param {string} data Base64 encoded data of the document.
      */
-    submit(destination, printTicket, documentInfo, data) {}
+    submit(destination, printTicket, documentTitle, data) {}
 
     /**
      * Sends a Google Cloud Print printer API request.

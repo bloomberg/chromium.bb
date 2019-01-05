@@ -11,7 +11,6 @@
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="../data/coordinate2d.html">
 <link rel="import" href="../data/destination.html">
-<link rel="import" href="../data/document_info.html">
 <link rel="import" href="../data/margins.html">
 <link rel="import" href="../data/printable_area.html">
 <link rel="import" href="../data/size.html">
@@ -132,8 +131,8 @@
           data="chrome://print/dummy.pdf"></object>
     </div>
     <print-preview-margin-control-container id="marginControlContainer"
-        page-size="[[documentInfo.pageSize]]" settings="{{settings}}"
-        document-margins="[[documentInfo.margins]]"
+        page-size="[[pageSize]]" settings="{{settings}}"
+        document-margins="[[margins]]"
         measurement-system="[[measurementSystem]]" state="[[state]]"
         preview-loaded="[[previewLoaded_]]"
         on-text-focus-position="onTextFocusPosition_"

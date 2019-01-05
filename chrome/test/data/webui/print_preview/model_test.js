@@ -189,9 +189,18 @@ cr.define('model_test', function() {
     }
 
     function initializeModel() {
-      model.documentInfo = new print_preview.DocumentInfo();
-      model.documentInfo.init(true, 'title', true);
-      model.documentInfo.updatePageCount(3);
+      model.documentSettings = {
+        hasCssMediaStyles: false,
+        hasSelection: true,
+        isModifiable: true,
+        isScalingDisabled: false,
+        fitToPageScaling: 100,
+        pageCount: 3,
+        title: 'title',
+      };
+
+      model.pageSize = new print_preview.Size(612, 792);
+
       // Update pages accordingly.
       model.set('settings.pages.value', [1, 2, 3]);
 

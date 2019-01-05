@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="../data/document_info.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="input_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -62,8 +61,7 @@
                 tabindex="[[computeTabIndex_(optionSelected_)]]"
                 placeholder="$i18n{examplePageRangeText}"
                 invalid="[[hasError_]]"
-                error-message="[[getHintMessage_(errorState_,
-                    documentInfo.pageCount)]]">
+                error-message="[[getHintMessage_(errorState_, pageCount)]]">
             </cr-input>
           </cr-radio-button>
         </cr-radio-group>

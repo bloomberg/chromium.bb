@@ -94,7 +94,7 @@ js_library("document_info") {
     ":printable_area",
     ":size",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr:event_target",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

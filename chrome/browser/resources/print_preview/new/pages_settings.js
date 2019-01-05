@@ -40,8 +40,7 @@ Polymer({
   behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
 
   properties: {
-    /** @type {!print_preview.DocumentInfo} */
-    documentInfo: Object,
+    pageCount: Number,
 
     /** @private {string} */
     inputString_: {
@@ -52,7 +51,7 @@ Polymer({
     /** @private {!Array<number>} */
     allPagesArray_: {
       type: Array,
-      computed: 'computeAllPagesArray_(documentInfo.pageCount)',
+      computed: 'computeAllPagesArray_(pageCount)',
     },
 
     /** @private {string} */
@@ -148,16 +147,7 @@ Polymer({
    * @private
    */
   computeAllPagesArray_: function() {
-    // This computed function will unnecessarily get triggered if
-    // this.documentInfo is set to a new object, which happens whenever the
-    // preview refreshes, but the page count is the same as before. We do not
-    // want to trigger all observers unnecessarily.
-    if (!!this.allPagesArray_ &&
-        this.allPagesArray_.length == this.documentInfo.pageCount) {
-      return this.allPagesArray_;
-    }
-
-    const array = new Array(this.documentInfo.pageCount);
+    const array = new Array(this.pageCount);
     for (let i = 0; i < array.length; i++) {
       array[i] = i + 1;
     }
@@ -452,11 +442,10 @@ Polymer({
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
     } else {
-      formattedMessage = (this.documentInfo === undefined) ?
+      formattedMessage = (this.pageCount === 0) ?
           '' :
           loadTimeData.getStringF(
-              'pageRangeLimitInstructionWithValue',
-              this.documentInfo.pageCount);
+              'pageRangeLimitInstructionWithValue', this.pageCount);
     }
     return formattedMessage.replace(/<\/b>|<b>/g, '');
   },
