@@ -223,44 +223,17 @@ TEST_F(ResourceFetcherTest, Vary) {
   new_resource->Loader()->Cancel();
 }
 
-TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
-  KURL url("http://127.0.0.1:8000/foo.html");
-  ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
-
-  ResourceFetcher* fetcher =
-      MakeGarbageCollected<ResourceFetcher>(CreateFetchContext());
-  ResourceRequest resource_request(url);
-  resource_request.SetFrameType(
-      network::mojom::RequestContextFrameType::kNested);
-  resource_request.SetRequestContext(mojom::RequestContextType::FORM);
-  FetchParameters fetch_params(resource_request);
-  platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
-  Resource* resource = RawResource::FetchMainResource(fetch_params, fetcher,
-                                                      nullptr, SubstituteData(),
-                                                      CreateUniqueIdentifier());
-  resource->ResponseReceived(response, nullptr);
-  EXPECT_EQ(resource->GetType(), ResourceType::kMainResource);
-
-  ResourceTimingInfo* navigation_timing_info =
-      fetcher->GetNavigationTimingInfo();
-  ASSERT_TRUE(navigation_timing_info);
-  long long encoded_data_length = 123;
-  resource->Loader()->DidFinishLoading(
-      TimeTicks(), encoded_data_length, 0, 0, false,
-      std::vector<network::cors::PreflightTimingInfo>());
-  EXPECT_EQ(navigation_timing_info->TransferSize(), encoded_data_length);
-
-  // When there are redirects.
-  KURL redirect_url("http://127.0.0.1:8000/redirect.html");
-  ResourceResponse redirect_response(redirect_url);
+TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
+  auto info = ResourceTimingInfo::Create(fetch_initiator_type_names::kDocument,
+                                         CurrentTimeTicks(),
+                                         true /* is_main_resource */);
+  info->AddFinalTransferSize(5);
+  EXPECT_EQ(info->TransferSize(), 5);
+  ResourceResponse redirect_response(BlankURL());
   redirect_response.SetHTTPStatusCode(200);
-  long long redirect_encoded_data_length = 123;
-  redirect_response.SetEncodedDataLength(redirect_encoded_data_length);
-  ResourceRequest redirect_resource_request(url);
-  fetcher->RecordResourceTimingOnRedirect(resource, redirect_response, false);
-  EXPECT_EQ(navigation_timing_info->TransferSize(),
-            encoded_data_length + redirect_encoded_data_length);
+  redirect_response.SetEncodedDataLength(7);
+  info->AddRedirect(redirect_response, false);
+  EXPECT_EQ(info->TransferSize(), 12);
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {

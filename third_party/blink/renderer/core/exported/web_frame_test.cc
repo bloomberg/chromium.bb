@@ -150,6 +150,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/scoped_fake_plugin_registry.h"
@@ -12804,6 +12805,18 @@ TEST_F(WebFrameTest, GetCanonicalUrlForSharingMultiple) {
     </head>)", ToKURL("https://example.com/test_page.html"));
   EXPECT_EQ(WebURL(ToKURL("https://example.com/canonical1.html")),
             frame->GetDocument().CanonicalUrlForSharing());
+}
+
+TEST_F(WebFrameTest, NavigationTimingInfo) {
+  RegisterMockedHttpURLLoad("foo.html");
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
+  ResourceTimingInfo* navigation_timing_info = web_view_helper.LocalMainFrame()
+                                                   ->GetFrame()
+                                                   ->Loader()
+                                                   .GetDocumentLoader()
+                                                   ->GetNavigationTimingInfo();
+  EXPECT_EQ(navigation_timing_info->TransferSize(), 34);
 }
 
 TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {

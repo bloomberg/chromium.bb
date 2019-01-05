@@ -234,8 +234,7 @@ unsigned long DocumentLoader::MainResourceIdentifier() const {
 }
 
 ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
-  DCHECK(Fetcher());
-  return Fetcher()->GetNavigationTimingInfo();
+  return navigation_timing_info_.get();
 }
 
 const KURL& DocumentLoader::OriginalUrl() const {
@@ -416,6 +415,13 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
   DCHECK(GetResource());
 
   if (!resource->ErrorOccurred() && !resource->WasCanceled()) {
+    const ResourceResponse& response = resource->GetResponse();
+    if (response.IsHTTP()) {
+      navigation_timing_info_->SetFinalResponse(response);
+      const int64_t encoded_data_length = response.EncodedDataLength();
+      navigation_timing_info_->AddFinalTransferSize(
+          encoded_data_length == -1 ? 0 : encoded_data_length);
+    }
     FinishedLoading(resource->LoadFinishTime());
     return;
   }
@@ -519,10 +525,14 @@ bool DocumentLoader::RedirectReceived(
   DCHECK_EQ(resource, GetResource());
   DCHECK(!redirect_response.IsNull());
   request_ = request;
+  const KURL& request_url = request_.Url();
+
+  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
+      redirect_response.CurrentRequestUrl(), request_url);
+  navigation_timing_info_->AddRedirect(redirect_response, cross_origin);
 
   // If the redirecting url is not allowed to display content from the target
   // origin, then block the redirect.
-  const KURL& request_url = request_.Url();
   scoped_refptr<const SecurityOrigin> redirecting_origin =
       SecurityOrigin::Create(redirect_response.CurrentRequestUrl());
   if (!redirecting_origin->CanDisplay(request_url)) {
@@ -963,6 +973,14 @@ void DocumentLoader::StartLoading() {
     // so we don't MarkFetchStart here.
 
     main_resource_identifier_ = CreateUniqueIdentifier();
+
+    // This buffer is created and populated for providing transferSize
+    // and redirect timing opt-in information.
+    navigation_timing_info_ = ResourceTimingInfo::Create(
+        fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
+        true /* is_main_resource */);
+    navigation_timing_info_->SetInitialURL(request_.Url());
+
     ResourceLoaderOptions options;
     options.data_buffering_policy = kDoNotBufferData;
     options.initiator_info.name = fetch_initiator_type_names::kDocument;
