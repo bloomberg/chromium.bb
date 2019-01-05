@@ -218,6 +218,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -1647,6 +1648,10 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
       site_instance, transition, is_renderer_initiated, referrer);
 #endif
+
+  // Clear the referrer if it is for the internal lite page preview domain.
+  if (previews::IsLitePageRedirectPreviewDomain(referrer->url))
+    *referrer = content::Referrer();
 }
 
 bool ChromeContentBrowserClient::ShouldStayInParentProcessForNTP(
