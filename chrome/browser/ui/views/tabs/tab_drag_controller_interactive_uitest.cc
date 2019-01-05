@@ -431,25 +431,14 @@ class DetachToBrowserTabDragControllerTest
 
   // The following methods update one of the mouse or touch input depending upon
   // the InputSource.
-  bool PressInput(const gfx::Point& location) {
+  bool PressInput(const gfx::Point& location, int id = 0) {
     if (input_source() == INPUT_SOURCE_MOUSE) {
       return ui_test_utils::SendMouseMoveSync(location) &&
           ui_test_utils::SendMouseEventsSync(
               ui_controls::LEFT, ui_controls::DOWN);
     }
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::PRESS, 0, location);
-#else
-    NOTREACHED();
-#endif
-    return true;
-  }
-
-  bool PressInput2() {
-    // Second touch input is only used for touch sequence tests.
-    EXPECT_EQ(INPUT_SOURCE_TOUCH, input_source());
-#if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::PRESS, 1, gfx::Point());
+    SendTouchEventsSync(ui_controls::PRESS, id, location);
 #else
     NOTREACHED();
 #endif
@@ -495,26 +484,15 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
-  bool ReleaseInput() {
+  bool ReleaseInput(int id = 0, bool async = false) {
     if (input_source() == INPUT_SOURCE_MOUSE) {
-      return ui_test_utils::SendMouseEventsSync(
-              ui_controls::LEFT, ui_controls::UP);
+      return async ? ui_controls::SendMouseEvents(ui_controls::LEFT,
+                                                  ui_controls::UP)
+                   : ui_test_utils::SendMouseEventsSync(ui_controls::LEFT,
+                                                        ui_controls::UP);
     }
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::RELEASE, 0, gfx::Point());
-#else
-    NOTREACHED();
-#endif
-    return true;
-  }
-
-  bool ReleaseInput2() {
-    if (input_source() == INPUT_SOURCE_MOUSE) {
-      return ui_test_utils::SendMouseEventsSync(
-              ui_controls::LEFT, ui_controls::UP);
-    }
-#if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::RELEASE, 1, gfx::Point());
+    SendTouchEventsSync(ui_controls::RELEASE, id, gfx::Point());
 #else
     NOTREACHED();
 #endif
@@ -537,14 +515,7 @@ class DetachToBrowserTabDragControllerTest
     }
 
     // Windows hangs if you use a sync mouse event here.
-    ASSERT_TRUE(ReleaseInputAsync());
-  }
-
-  bool ReleaseInputAsync() {
-    return (input_source() == INPUT_SOURCE_MOUSE)
-               ? ui_controls::SendMouseEvents(ui_controls::LEFT,
-                                              ui_controls::UP)
-               : ReleaseInput();
+    ASSERT_TRUE(ReleaseInput(0, true));
   }
 
   bool MoveInputTo(const gfx::Point& location) {
@@ -1316,7 +1287,7 @@ void DragAllStep2(DetachToBrowserTabDragControllerTest* test,
   // Should only be one window.
   ASSERT_EQ(1u, browser_list->size());
   // Windows hangs if you use a sync mouse event here.
-  ASSERT_TRUE(test->ReleaseInputAsync());
+  ASSERT_TRUE(test->ReleaseInput(0, true));
 }
 
 }  // namespace
@@ -2826,7 +2797,7 @@ void PressSecondFingerWhileDetachedStep3(
   ASSERT_TRUE(test->browser_list->get(1)->window()->IsActive());
 
   ASSERT_TRUE(test->ReleaseInput());
-  ASSERT_TRUE(test->ReleaseInput2());
+  ASSERT_TRUE(test->ReleaseInput(1));
 }
 
 void PressSecondFingerWhileDetachedStep2(
@@ -2837,7 +2808,7 @@ void PressSecondFingerWhileDetachedStep2(
   ASSERT_TRUE(test->browser_list->get(1)->window()->IsActive());
 
   // Continue dragging after adding a second finger.
-  ASSERT_TRUE(test->PressInput2());
+  ASSERT_TRUE(test->PressInput(gfx::Point(), 1));
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
       target_point,
       base::Bind(&PressSecondFingerWhileDetachedStep3, test)));
@@ -2907,8 +2878,8 @@ void SecondFingerPressTestStep2(DetachToBrowserTabDragControllerTest* test,
   // Now add a second finger to tap on it.
   not_attached_tab_strip->GetWidget()->GetNativeWindow()->env()->set_touch_down(
       true);
-  ASSERT_TRUE(test->PressInput2());
-  ASSERT_TRUE(test->ReleaseInput2());
+  ASSERT_TRUE(test->PressInput(gfx::Point(), 1));
+  ASSERT_TRUE(test->ReleaseInput(1));
 
   ASSERT_TRUE(test->DragInputToNotifyWhenDone(
       target_point, base::BindOnce(&SecondFingerPressTestStep3, test)));
