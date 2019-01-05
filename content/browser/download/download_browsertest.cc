@@ -2146,27 +2146,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, Resume_Hash) {
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume(true);
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume(true);
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume(true);
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume(true);
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume(true);
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_EQ(expected_hash, download->GetHash());

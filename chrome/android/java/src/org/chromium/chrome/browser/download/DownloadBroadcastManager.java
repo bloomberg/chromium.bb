@@ -34,16 +34,21 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class that spins up native when an interaction with a notification happens and passes the
@@ -197,7 +202,10 @@ public class DownloadBroadcastManager extends Service {
             @Override
             public boolean startServiceManagerOnly() {
                 if (!LegacyHelpers.isLegacyDownload(id)) return false;
-                return DownloadUtils.shouldStartServiceManagerOnly()
+                Set<String> features = new HashSet<String>();
+                features.add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
+                features.add(ChromeFeatureList.NETWORK_SERVICE);
+                return ServiceManagerStartupUtils.canStartServiceManager(features)
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };

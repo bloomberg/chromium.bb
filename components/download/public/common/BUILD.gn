@@ -15,8 +15,6 @@ config("components_download_implementation") {
 
 component("public") {
   sources = [
-    "auto_resumption_handler.cc",
-    "auto_resumption_handler.h",
     "base_file.h",
     "download_content.h",
     "download_create_info.h",
@@ -67,9 +65,6 @@ component("public") {
 
   public_deps = [
     ":interfaces",
-    "//components/download/network",
-    "//components/download/public/background_service:public",
-    "//services/network/public/cpp",
   ]
 
   deps = [
