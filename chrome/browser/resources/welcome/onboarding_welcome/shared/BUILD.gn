@@ -20,6 +20,7 @@ js_library("app_chooser") {
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:util",
   ]
 }
 
