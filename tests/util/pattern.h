@@ -41,4 +41,6 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 
 void util_smpte_c8_gamma(unsigned size, struct drm_color_lut *lut);
 
+enum util_fill_pattern util_pattern_enum(const char *name);
+
 #endif /* UTIL_PATTERN_H */

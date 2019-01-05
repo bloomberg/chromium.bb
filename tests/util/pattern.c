@@ -35,6 +35,7 @@
 #include <math.h>
 #endif
 
+#include "common.h"
 #include "format.h"
 #include "pattern.h"
 
@@ -1260,4 +1261,23 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 		printf("Error: unsupported test pattern %u.\n", pattern);
 		break;
 	}
+}
+
+static const char *pattern_names[] = {
+	[UTIL_PATTERN_TILES] = "tiles",
+	[UTIL_PATTERN_SMPTE] = "smpte",
+	[UTIL_PATTERN_PLAIN] = "plain",
+	[UTIL_PATTERN_GRADIENT] = "gradient",
+};
+
+enum util_fill_pattern util_pattern_enum(const char *name)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(pattern_names); i++)
+		if (!strcmp(pattern_names[i], name))
+			return (enum util_fill_pattern)i;
+
+	printf("Error: unsupported test pattern %s.\n", name);
+	return UTIL_PATTERN_SMPTE;
 }

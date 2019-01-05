@@ -67,6 +67,9 @@
 #include "buffers.h"
 #include "cursor.h"
 
+static enum util_fill_pattern primary_fill = UTIL_PATTERN_SMPTE;
+static enum util_fill_pattern secondary_fill = UTIL_PATTERN_TILES;
+
 struct crtc {
 	drmModeCrtc *crtc;
 	drmModeObjectProperties *props;
@@ -1259,7 +1262,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 		p->w, p->h, p->format_str, plane_id);
 
 	plane_bo = bo_create(dev->fd, p->fourcc, p->w, p->h, handles,
-			     pitches, offsets, UTIL_PATTERN_TILES);
+			     pitches, offsets, secondary_fill);
 	if (plane_bo == NULL)
 		return -1;
 
@@ -1300,12 +1303,12 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 static void atomic_set_planes(struct device *dev, struct plane_arg *p,
 			      unsigned int count, bool update)
 {
-	unsigned int i, pattern = UTIL_PATTERN_SMPTE;
+	unsigned int i, pattern = primary_fill;
 
 	/* set up planes */
 	for (i = 0; i < count; i++) {
 		if (i > 0)
-			pattern = UTIL_PATTERN_TILES;
+			pattern = secondary_fill;
 		else
 			set_gamma(dev, p[i].crtc_id, p[i].fourcc);
 
@@ -1450,7 +1453,7 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 
 	bo = bo_create(dev->fd, pipes[0].fourcc, dev->mode.width,
 		       dev->mode.height, handles, pitches, offsets,
-		       UTIL_PATTERN_SMPTE);
+		       primary_fill);
 	if (bo == NULL)
 		return;
 
@@ -1794,6 +1797,18 @@ static int parse_property(struct property_arg *p, const char *arg)
 	return 0;
 }
 
+static void parse_fill_patterns(char *arg)
+{
+	char *fill = strtok(arg, ",");
+	if (!fill)
+		return;
+	primary_fill = util_pattern_enum(fill);
+	fill = strtok(NULL, ",");
+	if (!fill)
+		return;
+	secondary_fill = util_pattern_enum(fill);
+}
+
 static void usage(char *name)
 {
 	fprintf(stderr, "usage: %s [-acDdefMPpsCvw]\n", name);
@@ -1811,6 +1826,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
 	fprintf(stderr, "\t-a \tuse atomic API\n");
+	fprintf(stderr, "\t-F pattern1,pattern2\tspecify fill patterns\n");
 
 	fprintf(stderr, "\n Generic options:\n\n");
 	fprintf(stderr, "\t-d\tdrop master after mode set\n");
@@ -1874,7 +1890,7 @@ static int pipe_resolve_connectors(struct device *dev, struct pipe_arg *pipe)
 	return 0;
 }
 
-static char optstr[] = "acdD:efM:P:ps:Cvw:";
+static char optstr[] = "acdD:efF:M:P:ps:Cvw:";
 
 int main(int argc, char **argv)
 {
@@ -1922,6 +1938,9 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			framebuffers = 1;
+			break;
+		case 'F':
+			parse_fill_patterns(optarg);
 			break;
 		case 'M':
 			module = optarg;
