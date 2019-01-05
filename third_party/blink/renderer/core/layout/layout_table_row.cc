@@ -359,11 +359,6 @@ void LayoutTableRow::AddVisualOverflowFromCell(const LayoutTableCell* cell) {
     AddSelfVisualOverflow(collapsed_border_rect);
   }
 
-  // Should propagate cell's overflow to row if the cell has row span or has
-  // overflow.
-  if (cell->ResolvedRowSpan() == 1 && !cell->HasOverflowModel())
-    return;
-
   LayoutRect cell_visual_overflow_rect =
       cell->VisualOverflowRectForPropagation();
   cell_visual_overflow_rect.Move(cell_row_offset);
