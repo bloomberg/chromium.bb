@@ -942,6 +942,12 @@ const KURL& DocumentLoader::UnreachableURL() const {
 bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
   if (url.IsEmpty())
     return true;
+  // Usually, we load urls with about: scheme as empty.
+  // However, about:srcdoc is only used as a marker for non-existent
+  // url of iframes with srcdoc attribute, which have possibly non-empty
+  // content of the srcdoc attribute used as document's html.
+  if (url.IsAboutSrcdocURL())
+    return false;
   return SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(url.Protocol());
 }
 
