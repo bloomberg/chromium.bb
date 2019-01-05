@@ -120,8 +120,8 @@ void AutoclickController::SetAutoclickEventType(
     mojom::AutoclickEventType type) {
   if (event_type_ == type)
     return;
-  event_type_ = type;
   CancelAutoclickAction();
+  event_type_ = type;
 }
 
 void AutoclickController::CreateAutoclickRingWidget(
@@ -156,7 +156,10 @@ void AutoclickController::UpdateAutoclickRingWidget(
 }
 
 void AutoclickController::DoAutoclickAction() {
-  RecordUserAction(event_type_);
+  // Set the in-progress event type locally so that if the event type is updated
+  // in the middle of this event being executed it doesn't change execution.
+  mojom::AutoclickEventType in_progress_event_type = event_type_;
+  RecordUserAction(in_progress_event_type);
 
   aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
@@ -166,17 +169,19 @@ void AutoclickController::DoAutoclickAction() {
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
 
-  bool drag_start = event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
-                    !drag_event_rewriter_->IsEnabled();
+  bool drag_start =
+      in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&
+      !drag_event_rewriter_->IsEnabled();
   bool drag_stop = DragInProgress();
 
-  if (event_type_ == mojom::AutoclickEventType::kLeftClick ||
-      event_type_ == mojom::AutoclickEventType::kRightClick ||
-      event_type_ == mojom::AutoclickEventType::kDoubleClick || drag_start ||
-      drag_stop) {
-    int button = event_type_ == mojom::AutoclickEventType::kRightClick
-                     ? ui::EF_RIGHT_MOUSE_BUTTON
-                     : ui::EF_LEFT_MOUSE_BUTTON;
+  if (in_progress_event_type == mojom::AutoclickEventType::kLeftClick ||
+      in_progress_event_type == mojom::AutoclickEventType::kRightClick ||
+      in_progress_event_type == mojom::AutoclickEventType::kDoubleClick ||
+      drag_start || drag_stop) {
+    int button =
+        in_progress_event_type == mojom::AutoclickEventType::kRightClick
+            ? ui::EF_RIGHT_MOUSE_BUTTON
+            : ui::EF_LEFT_MOUSE_BUTTON;
 
     ui::EventDispatchDetails details;
     if (!drag_stop) {
@@ -191,7 +196,7 @@ void AutoclickController::DoAutoclickAction() {
         return;
       }
       if (details.dispatcher_destroyed) {
-        OnActionCompleted();
+        OnActionCompleted(in_progress_event_type);
         return;
       }
     }
@@ -203,9 +208,9 @@ void AutoclickController::DoAutoclickAction() {
     details = host->event_sink()->OnEventFromSource(&release_event);
 
     // Now a single click, or half the drag & drop, has been completed.
-    if (event_type_ != mojom::AutoclickEventType::kDoubleClick ||
+    if (in_progress_event_type != mojom::AutoclickEventType::kDoubleClick ||
         details.dispatcher_destroyed) {
-      OnActionCompleted();
+      OnActionCompleted(in_progress_event_type);
       return;
     }
 
@@ -219,11 +224,11 @@ void AutoclickController::DoAutoclickAction() {
         mouse_event_flags_ | button | ui::EF_IS_DOUBLE_CLICK, button);
     details = host->event_sink()->OnEventFromSource(&double_press_event);
     if (details.dispatcher_destroyed) {
-      OnActionCompleted();
+      OnActionCompleted(in_progress_event_type);
       return;
     }
     details = host->event_sink()->OnEventFromSource(&double_release_event);
-    OnActionCompleted();
+    OnActionCompleted(in_progress_event_type);
   }
 }
 
@@ -252,9 +257,13 @@ void AutoclickController::CancelAutoclickAction() {
   SetTapDownTarget(nullptr);
 }
 
-void AutoclickController::OnActionCompleted() {
+void AutoclickController::OnActionCompleted(
+    mojom::AutoclickEventType completed_event_type) {
+  // No need to change to left click if the setting is not enabled or the
+  // event that just executed already was a left click.
   if (!revert_to_left_click_ ||
-      event_type_ == mojom::AutoclickEventType::kLeftClick)
+      event_type_ == mojom::AutoclickEventType::kLeftClick ||
+      completed_event_type == mojom::AutoclickEventType::kLeftClick)
     return;
   // Change the preference, but set it locally so we do not reset any state when
   // AutoclickController::SetAutoclickEventType is called.
