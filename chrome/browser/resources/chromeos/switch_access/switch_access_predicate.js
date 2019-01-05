@@ -7,150 +7,22 @@ const RoleType = chrome.automation.RoleType;
 const DefaultActionVerb = chrome.automation.DefaultActionVerb;
 
 /**
- * Contains predicates for the chrome automation API. Each predicate can be run
- * on one or more AutomationNodes and returns a boolean value.
+ * Contains predicates for the chrome automation API. The following basic
+ * predicates are available:
+ *    - isActionable
+ *    - isGroup
+ *    - isInteresting
+ *    - isInterestingSubtree
+ *    - isNotContainer
+ *    - isContextMenu
+ *
+ * In addition to these basic predicates, there are also methods to get the
+ * restrictions required by TreeWalker for specific traversal situations.
  */
 const SwitchAccessPredicate = {
   /**
-   * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
-   *
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {!AutomationTreeWalkerRestriction}
-   */
-  restrictions: (scope) => {
-    return {
-      leaf: SwitchAccessPredicate.leaf(scope),
-      root: SwitchAccessPredicate.root(scope),
-      visit: SwitchAccessPredicate.visit(scope)
-    };
-  },
-
-  /**
-   * Creates a function that confirms if |node| is a terminal leaf node of a
-   * SwitchAccess scope tree when |scope| is the root.
-   *
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {function(!chrome.automation.AutomationNode): boolean}
-   */
-  leaf: function(scope) {
-    return (node) => node.state[StateType.INVISIBLE] ||
-        (node !== scope && SwitchAccessPredicate.isSubtreeLeaf(node, scope)) ||
-        !SwitchAccessPredicate.isInterestingSubtree(node);
-  },
-
-  /**
-   * Creates a function that confirms if |node| is the root of a SwitchAccess
-   * scope tree when |scope| is the root.
-   *
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {function(!chrome.automation.AutomationNode): boolean}
-   */
-  root: function(scope) {
-    return (node) => node === scope;
-  },
-
-  /**
-   * Creates a function that determines whether |node| is to be visited in the
-   * SwitchAccess scope tree with |scope| as the root.
-   *
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {function(!chrome.automation.AutomationNode): boolean}
-   */
-  visit: function(scope) {
-    return (node) => node.role !== RoleType.DESKTOP &&
-        SwitchAccessPredicate.isSubtreeLeaf(node, scope);
-  },
-
-  /**
-   * Returns a Restrictions object for finding the Context Menu root.
-   * @return {!AutomationTreeWalkerRestriction}
-   */
-  contextMenuDiscoveryRestrictions: () => {
-    return {
-      leaf: SwitchAccessPredicate.isNotContainer,
-      visit: SwitchAccessPredicate.isContextMenu
-    };
-  },
-
-  /**
-   * Returns true if |node| does not have a role of desktop, window, web view,
-   * or root web area.
-   * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean}
-   */
-  isNotContainer: (node) => node.role !== RoleType.ROOT_WEB_AREA &&
-      node.role !== RoleType.WINDOW && node.role !== RoleType.DESKTOP &&
-      node.role !== RoleType.WEB_VIEW,
-
-  /**
-   * Returns true if |node| is the context menu.
-   * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean}
-   */
-  isContextMenu: (node) => node.htmlAttributes.id === ContextMenuManager.MenuId,
-
-  /**
-   * Returns true if |node| is a subtreeLeaf, meaning that |node|
-   * is either interesting or a group (both defined below).
-   *
-   * @param {!chrome.automation.AutomationNode} node
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {boolean}
-   */
-  isSubtreeLeaf: (node, scope) => SwitchAccessPredicate.isActionable(node) ||
-      SwitchAccessPredicate.isGroup(node, scope),
-
-  /**
-   * Returns true if |node| is a group, meaning that the node has more than one
-   * interesting descendant, and that its interesting descendants exist in more
-   * than one subtree of its immediate children.
-   *
-   * Additionally, for |node| to be a group, it cannot have the same bounding
-   * box as its scope.
-   *
-   * @param {!chrome.automation.AutomationNode} node
-   * @param {!chrome.automation.AutomationNode} scope
-   * @return {boolean}
-   */
-  isGroup: (node, scope) => {
-    if (node !== scope && SwitchAccessPredicate.hasSameLocation_(node, scope))
-      return false;
-    if (node.state[StateType.INVISIBLE])
-      return false;
-
-    // Work around for client nested in client. No need to have user select both
-    // clients for a window. Once locations for outer client updates correctly,
-    // this won't be needed.
-    if (node.role === RoleType.CLIENT && node.role === scope.role &&
-        node !== scope)
-      return false;
-
-    let interestingBranchesCount =
-        SwitchAccessPredicate.isActionable(node) ? 1 : 0;
-    let child = node.firstChild;
-    while (child) {
-      if (SwitchAccessPredicate.isInterestingSubtree(child))
-        interestingBranchesCount += 1;
-      if (interestingBranchesCount > 1)
-        return true;
-      child = child.nextSibling;
-    }
-    return false;
-  },
-
-  /**
-   * Returns true if there is an interesting node in the subtree containing
-   * |node| as its root (including |node| itself).
-   *
-   * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean}
-   */
-  isInterestingSubtree: (node) => SwitchAccessPredicate.isActionable(node) ||
-      node.children.some(SwitchAccessPredicate.isInterestingSubtree),
-
-  /**
-   * Returns true if |node| is interesting, meaning that a user can perform some
-   * type of action on it.
+   * Returns true if |node| is actionable, meaning that a user can interact with
+   * it in some way.
    *
    * @param {!chrome.automation.AutomationNode} node
    * @return {boolean}
@@ -210,12 +82,152 @@ const SwitchAccessPredicate = {
     // Current heuristic is to show as actionble any focusable item where no
     // child is an interesting subtree.
     if (state[StateType.FOCUSABLE]) {
-      return !(
-          node.children &&
-          node.children.some(SwitchAccessPredicate.isInterestingSubtree));
+      return !node.children ||
+          !node.children.some(SwitchAccessPredicate.isInterestingSubtree);
     }
 
     return false;
+  },
+
+  /**
+   * Returns true if |node| is a group, meaning that the node has more than one
+   * interesting descendant, and that its interesting descendants exist in more
+   * than one subtree of its immediate children.
+   *
+   * Additionally, for |node| to be a group, it cannot have the same bounding
+   * box as its scope.
+   *
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {boolean}
+   */
+  isGroup: (node, scope) => {
+    if (node !== scope && SwitchAccessPredicate.hasSameLocation_(node, scope))
+      return false;
+    if (node.state[StateType.INVISIBLE])
+      return false;
+
+    // Work around for client nested in client. No need to have user select both
+    // clients for a window. Once locations for outer client updates correctly,
+    // this won't be needed.
+    if (node.role === RoleType.CLIENT && node.role === scope.role &&
+        node !== scope)
+      return false;
+
+    let interestingBranchesCount =
+        SwitchAccessPredicate.isActionable(node) ? 1 : 0;
+    let child = node.firstChild;
+    while (child) {
+      if (SwitchAccessPredicate.isInterestingSubtree(child))
+        interestingBranchesCount += 1;
+      if (interestingBranchesCount > 1)
+        return true;
+      child = child.nextSibling;
+    }
+    return false;
+  },
+
+  /**
+   * Returns true if |node| is interesting for the user, meaning that |node|
+   * is either actionable or a group.
+   *
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {boolean}
+   */
+  isInteresting: (node, scope) => SwitchAccessPredicate.isActionable(node) ||
+      SwitchAccessPredicate.isGroup(node, scope),
+
+  /**
+   * Returns true if there is an interesting node in the subtree containing
+   * |node| as its root (including |node| itself).
+   *
+   * This function does not call isInteresting directly, because that would
+   * cause a loop (isInteresting calls isGroup, and isGroup calls
+   * isInterestingSubtree).
+   *
+   * @param {!chrome.automation.AutomationNode} node
+   * @return {boolean}
+   */
+  isInterestingSubtree: (node) => SwitchAccessPredicate.isActionable(node) ||
+      node.children.some(SwitchAccessPredicate.isInterestingSubtree),
+
+  /**
+   * Returns true if |node| does not have a role of desktop, window, web view,
+   * or root web area.
+   * @param {!chrome.automation.AutomationNode} node
+   * @return {boolean}
+   */
+  isNotContainer: (node) => node.role !== RoleType.ROOT_WEB_AREA &&
+      node.role !== RoleType.WINDOW && node.role !== RoleType.DESKTOP &&
+      node.role !== RoleType.WEB_VIEW,
+
+  /**
+   * Returns true if |node| is the context menu.
+   * @param {!chrome.automation.AutomationNode} node
+   * @return {boolean}
+   */
+  isContextMenu: (node) => node.htmlAttributes.id === ContextMenuManager.MenuId,
+
+  /**
+   * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
+   *
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {!AutomationTreeWalkerRestriction}
+   */
+  restrictions: (scope) => {
+    return {
+      leaf: SwitchAccessPredicate.leaf(scope),
+      root: SwitchAccessPredicate.root(scope),
+      visit: SwitchAccessPredicate.visit(scope)
+    };
+  },
+
+  /**
+   * Creates a function that confirms if |node| is a terminal leaf node of a
+   * SwitchAccess scope tree when |scope| is the root.
+   *
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {function(!chrome.automation.AutomationNode): boolean}
+   */
+  leaf: function(scope) {
+    return (node) => node.state[StateType.INVISIBLE] ||
+        (node !== scope && SwitchAccessPredicate.isInteresting(node, scope)) ||
+        !SwitchAccessPredicate.isInterestingSubtree(node);
+  },
+
+  /**
+   * Creates a function that confirms if |node| is the root of a SwitchAccess
+   * scope tree when |scope| is the root.
+   *
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {function(!chrome.automation.AutomationNode): boolean}
+   */
+  root: function(scope) {
+    return (node) => node === scope;
+  },
+
+  /**
+   * Creates a function that determines whether |node| is to be visited in the
+   * SwitchAccess scope tree with |scope| as the root.
+   *
+   * @param {!chrome.automation.AutomationNode} scope
+   * @return {function(!chrome.automation.AutomationNode): boolean}
+   */
+  visit: function(scope) {
+    return (node) => node.role !== RoleType.DESKTOP &&
+        SwitchAccessPredicate.isInteresting(node, scope);
+  },
+
+  /**
+   * Returns a Restrictions object for finding the Context Menu root.
+   * @return {!AutomationTreeWalkerRestriction}
+   */
+  contextMenuDiscoveryRestrictions: () => {
+    return {
+      leaf: SwitchAccessPredicate.isNotContainer,
+      visit: SwitchAccessPredicate.isContextMenu
+    };
   },
 
   /**
