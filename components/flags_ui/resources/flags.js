@@ -89,8 +89,9 @@ function highlightReferencedFlag() {
     var el = document.querySelector(window.location.hash);
     if (el && !el.classList.contains('referenced')) {
       // Unhighlight whatever's highlighted.
-      if (document.querySelector('.referenced'))
+      if (document.querySelector('.referenced')) {
         document.querySelector('.referenced').classList.remove('referenced');
+      }
       // Highlight the referenced element.
       el.classList.add('referenced');
 
@@ -172,15 +173,17 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
   var bodyContainer = $('body-container');
   renderTemplate(experimentalFeaturesData);
 
-  if (experimentalFeaturesData.showBetaChannelPromotion)
+  if (experimentalFeaturesData.showBetaChannelPromotion) {
     $('channel-promo-beta').hidden = false;
-  else if (experimentalFeaturesData.showDevChannelPromotion)
+  } else if (experimentalFeaturesData.showDevChannelPromotion) {
     $('channel-promo-dev').hidden = false;
+  }
 
   bodyContainer.style.visibility = 'visible';
   var ownerWarningDiv = $('owner-warning');
-  if (ownerWarningDiv)
+  if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
+  }
 }
 
 /**

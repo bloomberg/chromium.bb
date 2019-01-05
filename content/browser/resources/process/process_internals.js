@@ -28,16 +28,18 @@ function selectTab(id) {
     tabContent.classList.toggle('selected', isTargetTab);
     tabHeader.classList.toggle('selected', isTargetTab);
   }
-  if (!found)
+  if (!found) {
     return false;
+  }
   window.location.hash = id;
   return true;
 }
 
 function onHashChange() {
   let hash = window.location.hash.slice(1).toLowerCase();
-  if (!selectTab(hash))
+  if (!selectTab(hash)) {
     selectTab('general');
+  }
 }
 
 function setupTabs() {
@@ -87,12 +89,15 @@ function frameToTreeItem(frame) {
   // Compose the string which will appear in the entry for this frame.
   let itemLabel = `Frame[${frame.processId}:${frame.routingId}]:`;
   itemLabel += ` SI:${frame.siteInstance.id}`;
-  if (frame.siteInstance.locked)
+  if (frame.siteInstance.locked) {
     itemLabel += ', locked';
-  if (frame.siteInstance.siteUrl)
+  }
+  if (frame.siteInstance.siteUrl) {
     itemLabel += `, site:${frame.siteInstance.siteUrl.url}`;
-  if (frame.lastCommittedUrl)
+  }
+  if (frame.lastCommittedUrl) {
     itemLabel += ` | url: ${frame.lastCommittedUrl.url}`;
+  }
 
   let item = new cr.ui.TreeItem(
       {label: itemLabel, detail: {payload: {}, children: {}}});
@@ -121,8 +126,9 @@ function frameToTreeItem(frame) {
  */
 function webContentsToTreeItem(webContents) {
   let itemLabel = 'WebContents: ';
-  if (webContents.title.length > 0)
+  if (webContents.title.length > 0) {
     itemLabel += webContents.title + ', ';
+  }
 
   let item = new cr.ui.TreeItem(
       {label: itemLabel, detail: {payload: {}, children: {}}});

@@ -67,8 +67,9 @@ var Manager = (function() {
      * @param componentData The actual component data dictionary.
      */
     updateAudioComponent: function(componentType, componentId, componentData) {
-      if (!(componentType in this.audioComponents_))
+      if (!(componentType in this.audioComponents_)) {
         this.audioComponents_[componentType] = {};
+      }
       if (!(componentId in this.audioComponents_[componentType])) {
         this.audioComponents_[componentType][componentId] = componentData;
       } else {

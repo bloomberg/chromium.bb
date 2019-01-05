@@ -47,8 +47,9 @@ var TabView = (function() {
      * @return {!Element} The tab body element.
      */
     addTab: function(id, title) {
-      if (this.tabElements_[id])
+      if (this.tabElements_[id]) {
         throw 'Tab already exists: ' + id;
+      }
 
       var head = document.createElement('span');
       head.className = this.TAB_HEAD_CLASS_;
@@ -72,8 +73,9 @@ var TabView = (function() {
 
     /** Removes the tab. @param {string} id */
     removeTab: function(id) {
-      if (!this.tabElements_[id])
+      if (!this.tabElements_[id]) {
         return;
+      }
       this.tabElements_[id].head.parentNode.removeChild(
           this.tabElements_[id].head);
       this.tabElements_[id].body.parentNode.removeChild(
