@@ -18,10 +18,9 @@
 namespace blink {
 
 SimTest::SimTest()
-    : web_frame_client_(*this),
-      // SimCompositor overrides the LayerTreeViewDelegate to respond to
-      // BeginMainFrame(), which will update and paint the WebViewImpl given to
-      // SetWebView().
+    :  // SimCompositor overrides the LayerTreeViewDelegate to respond to
+       // BeginMainFrame(), which will update and paint the WebViewImpl given to
+       // SetWebView().
       web_view_client_(&web_widget_client_, &compositor_) {
   Document::SetThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
@@ -88,22 +87,24 @@ WebLocalFrameImpl& SimTest::MainFrame() {
   return *WebView().MainFrameImpl();
 }
 
-const SimWebViewClient& SimTest::WebViewClient() const {
+frame_test_helpers::TestWebViewClient& SimTest::WebViewClient() {
   return web_view_client_;
+}
+
+frame_test_helpers::TestWebWidgetClient& SimTest::WebWidgetClient() {
+  return web_widget_client_;
+}
+
+frame_test_helpers::TestWebFrameClient& SimTest::WebFrameClient() {
+  return web_frame_client_;
 }
 
 SimCompositor& SimTest::Compositor() {
   return compositor_;
 }
 
-void SimTest::SetEffectiveConnectionTypeForTesting(
-    WebEffectiveConnectionType effective_connection_type) {
-  web_frame_client_.SetEffectiveConnectionTypeForTesting(
-      effective_connection_type);
-}
-
-void SimTest::AddConsoleMessage(const String& message) {
-  console_messages_.push_back(message);
+Vector<String>& SimTest::ConsoleMessages() {
+  return web_frame_client_.ConsoleMessages();
 }
 
 }  // namespace blink
