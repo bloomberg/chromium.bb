@@ -24,6 +24,8 @@ nux.AppItem;
  */
 nux.AppItemModel;
 
+const KEYBOARD_FOCUSED = 'keyboard-focused';
+
 Polymer({
   is: 'app-chooser',
 
@@ -111,6 +113,36 @@ Polymer({
   },
 
   /**
+   * @param {EventTarget} element
+   * @param {number} direction
+   * @private
+   */
+  changeFocus_: function(element, direction) {
+    if (isRTL()) {
+      direction *= -1;  // Reverse direction if RTL.
+    }
+
+    const buttons = this.root.querySelectorAll('button');
+    const targetIndex = Array.prototype.indexOf.call(buttons, element);
+
+    const oldFocus = buttons[targetIndex];
+    if (!oldFocus) {
+      return;
+    }
+
+    const newFocus = buttons[targetIndex + direction];
+
+    // New target and we're changing direction.
+    if (newFocus && direction) {
+      newFocus.classList.add(KEYBOARD_FOCUSED);
+      oldFocus.classList.remove(KEYBOARD_FOCUSED);
+      newFocus.focus();
+    } else {
+      oldFocus.classList.add(KEYBOARD_FOCUSED);
+    }
+  },
+
+  /**
    * Called when bookmarks should be removed for all selected apps.
    * @private
    */
@@ -181,7 +213,13 @@ Polymer({
    * @private
    */
   onAppKeyUp_: function(e) {
-    e.currentTarget.classList.add('keyboard-focused');
+    if (e.key == 'ArrowRight') {
+      this.changeFocus_(e.currentTarget, 1);
+    } else if (e.key == 'ArrowLeft') {
+      this.changeFocus_(e.currentTarget, -1);
+    } else {
+      this.changeFocus_(e.currentTarget, 0);
+    }
   },
 
   /**
@@ -189,7 +227,7 @@ Polymer({
    * @private
    */
   onAppPointerDown_: function(e) {
-    e.currentTarget.classList.remove('keyboard-focused');
+    e.currentTarget.classList.remove(KEYBOARD_FOCUSED);
   },
 
   /** @private */
