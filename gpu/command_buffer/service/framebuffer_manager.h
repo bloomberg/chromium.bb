@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -279,7 +280,7 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   unsigned framebuffer_complete_state_count_id_;
 
   // A map of attachments.
-  typedef base::hash_map<GLenum, scoped_refptr<Attachment> > AttachmentMap;
+  typedef std::unordered_map<GLenum, scoped_refptr<Attachment>> AttachmentMap;
   AttachmentMap attachments_;
 
   // User's draw buffers setting through DrawBuffers() call.
@@ -370,8 +371,7 @@ class GPU_GLES2_EXPORT FramebufferManager {
   }
 
   // Info for each framebuffer in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Framebuffer> >
-      FramebufferMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<Framebuffer>> FramebufferMap;
   FramebufferMap framebuffers_;
 
   // Incremented anytime anything changes that might effect framebuffer

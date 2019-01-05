@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -149,7 +150,7 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
   ShmBufferList available_shm_buffers_;
 
   // Map of GL texture id to texture info.
-  using TextureMap = base::hash_map<uint32_t, Texture>;
+  using TextureMap = std::unordered_map<uint32_t, Texture>;
   TextureMap textures_;
 
   // Queue of received pictures.

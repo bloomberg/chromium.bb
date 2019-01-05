@@ -16,7 +16,7 @@ namespace ui {
 namespace {
 
 // A global map from AXNodes to TestAXNodeWrappers.
-base::hash_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
+std::unordered_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
 
 // A global coordinate offset.
 gfx::Vector2d g_offset;

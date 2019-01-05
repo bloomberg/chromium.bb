@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
@@ -116,7 +118,10 @@ namespace {
 
 // <process id, routing id>
 using RenderViewHostID = std::pair<int32_t, int32_t>;
-using RoutingIDViewMap = base::hash_map<RenderViewHostID, RenderViewHostImpl*>;
+using RoutingIDViewMap =
+    std::unordered_map<RenderViewHostID,
+                       RenderViewHostImpl*,
+                       base::IntPairHash<RenderViewHostID>>;
 base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
     LAZY_INSTANCE_INITIALIZER;
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
@@ -58,9 +59,9 @@ class CONTENT_EXPORT AppCacheWorkingSet {
   }
 
  private:
-  using CacheMap = base::hash_map<int64_t, AppCache*>;
+  using CacheMap = std::unordered_map<int64_t, AppCache*>;
   using GroupsByOriginMap = std::map<url::Origin, GroupMap>;
-  using ResponseInfoMap = base::hash_map<int64_t, AppCacheResponseInfo*>;
+  using ResponseInfoMap = std::unordered_map<int64_t, AppCacheResponseInfo*>;
 
   GroupMap* GetMutableGroupsInOrigin(const url::Origin& origin) {
     GroupsByOriginMap::iterator it = groups_by_origin_.find(origin);

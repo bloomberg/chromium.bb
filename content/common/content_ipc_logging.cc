@@ -21,7 +21,7 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::hash_map<uint32_t, LogFunction>>::Leaky
+base::LazyInstance<std::unordered_map<uint32_t, LogFunction>>::Leaky
     g_log_function_mapping = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

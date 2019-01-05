@@ -12,6 +12,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -156,7 +157,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
  private:
   typedef std::map<int32_t, scoped_refptr<gpu::Buffer>> TransferBufferMap;
-  typedef base::hash_map<uint32_t, base::OnceClosure> SignalTaskMap;
+  typedef std::unordered_map<uint32_t, base::OnceClosure> SignalTaskMap;
 
   void CheckLock() {
     if (lock_) {

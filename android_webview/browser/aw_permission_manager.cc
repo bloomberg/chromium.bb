@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
@@ -142,7 +143,7 @@ class LastRequestResultCache {
     return requesting + "," + embedding;
   }
 
-  using StatusMap = base::hash_map<std::string, PermissionStatus>;
+  using StatusMap = std::unordered_map<std::string, PermissionStatus>;
   StatusMap pmi_result_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(LastRequestResultCache);

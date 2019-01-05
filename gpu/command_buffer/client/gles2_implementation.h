@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -777,7 +778,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   MappedBufferMap mapped_buffers_;
 
   // TODO(zmo): Consolidate |mapped_buffers_| and |mapped_buffer_range_map_|.
-  typedef base::hash_map<GLuint, MappedBuffer> MappedBufferRangeMap;
+  typedef std::unordered_map<GLuint, MappedBuffer> MappedBufferRangeMap;
   MappedBufferRangeMap mapped_buffer_range_map_;
 
   typedef std::map<const void*, MappedTexture> MappedTextureMap;

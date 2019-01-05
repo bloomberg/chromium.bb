@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -244,7 +245,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   return ax_platform_node.Get();
 }
 
-using UniqueIdMap = base::hash_map<int32_t, AXPlatformNode*>;
+using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
 // Map from each AXPlatformNode's unique id to its instance.
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;

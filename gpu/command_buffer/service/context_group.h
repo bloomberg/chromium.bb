@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -228,7 +229,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   }
 
   bool GetSyncServiceId(GLuint client_id, GLsync* service_id) const {
-    base::hash_map<GLuint, GLsync>::const_iterator iter =
+    std::unordered_map<GLuint, GLsync>::const_iterator iter =
         syncs_id_map_.find(client_id);
     if (iter == syncs_id_map_.end())
       return false;
@@ -324,7 +325,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<DecoderContext>> decoders_;
 
   // Mappings from client side IDs to service side IDs.
-  base::hash_map<GLuint, GLsync> syncs_id_map_;
+  std::unordered_map<GLuint, GLsync> syncs_id_map_;
 
   bool use_passthrough_cmd_decoder_;
   std::unique_ptr<PassthroughResources> passthrough_resources_;

@@ -107,7 +107,7 @@ BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityAndroid();
 }
 
-using UniqueIdMap = base::hash_map<int32_t, BrowserAccessibilityAndroid*>;
+using UniqueIdMap = std::unordered_map<int32_t, BrowserAccessibilityAndroid*>;
 // Map from each AXPlatformNode's unique id to its instance.
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;

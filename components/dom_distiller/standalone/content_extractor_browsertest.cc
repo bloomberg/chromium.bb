@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 
 #include "base/command_line.h"
@@ -48,8 +49,7 @@ namespace dom_distiller {
 
 namespace {
 
-typedef base::hash_map<std::string, std::string> FileToUrlMap;
-
+typedef std::unordered_map<std::string, std::string> FileToUrlMap;
 }
 
 // Factory for creating a Distiller that creates different DomDistillerOptions

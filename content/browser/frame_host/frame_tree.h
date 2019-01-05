@@ -10,6 +10,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -247,7 +248,7 @@ class CONTENT_EXPORT FrameTree {
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
-  typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
+  typedef std::unordered_map<int, RenderViewHostImpl*> RenderViewHostMap;
 
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order, skipping the subtree rooted at

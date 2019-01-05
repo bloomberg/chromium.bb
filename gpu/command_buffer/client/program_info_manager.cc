@@ -184,7 +184,7 @@ void ProgramInfoManager::Program::CacheFragDataIndex(const std::string& name,
 
 GLint ProgramInfoManager::Program::GetFragDataLocation(
     const std::string& name) const {
-  base::hash_map<std::string, GLint>::const_iterator iter =
+  std::unordered_map<std::string, GLint>::const_iterator iter =
       frag_data_locations_.find(name);
   if (iter == frag_data_locations_.end())
     return -1;

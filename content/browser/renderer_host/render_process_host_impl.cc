@@ -11,6 +11,7 @@
 #include <limits>
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -408,7 +409,7 @@ base::LazyInstance<base::IDMap<RenderProcessHost*>>::Leaky g_all_hosts =
 // site in process-per-site mode.  Each map is specific to a BrowserContext.
 class SiteProcessMap : public base::SupportsUserData::Data {
  public:
-  typedef base::hash_map<std::string, RenderProcessHost*> SiteToProcessMap;
+  typedef std::unordered_map<std::string, RenderProcessHost*> SiteToProcessMap;
   SiteProcessMap() {}
 
   void RegisterProcess(const std::string& site, RenderProcessHost* process) {

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -54,7 +55,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   };
 
   typedef PrefValueMap::const_iterator const_iterator;
-  typedef base::hash_map<std::string, uint32_t> PrefRegistrationFlagsMap;
+  typedef std::unordered_map<std::string, uint32_t> PrefRegistrationFlagsMap;
 
   PrefRegistry();
 

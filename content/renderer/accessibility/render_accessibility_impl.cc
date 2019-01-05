@@ -551,7 +551,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     return;
 
   // Do a breadth-first explore of the whole blink AX tree.
-  base::hash_map<int, ui::AXRelativeBounds> new_locations;
+  std::unordered_map<int, ui::AXRelativeBounds> new_locations;
   base::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {

@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
 
   // Mapping from URL request to the last time data was received for that
   // request.
-  typedef base::hash_map<const URLRequest*, base::TimeTicks> Requests;
+  typedef std::unordered_map<const URLRequest*, base::TimeTicks> Requests;
 
   // Set of URL requests to hold the requests that reduce the accuracy of
   // throughput computation. These requests are not used in throughput

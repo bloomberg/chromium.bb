@@ -37,7 +37,7 @@ namespace {
 // always access it from the main thread, the provider is accessing it from the
 // WebThread, a thread created by the UIWebView/CFURL. For this reason access to
 // this variable must always gated by |g_trackers_lock|.
-typedef base::hash_map<std::string, web::RequestTrackerImpl*> TrackerMap;
+typedef std::unordered_map<std::string, web::RequestTrackerImpl*> TrackerMap;
 
 TrackerMap* g_trackers = NULL;
 base::Lock* g_trackers_lock = NULL;

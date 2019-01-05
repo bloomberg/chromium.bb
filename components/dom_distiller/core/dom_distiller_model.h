@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -62,8 +63,8 @@ class DomDistillerModel {
 
  private:
   typedef int32_t KeyType;
-  typedef base::hash_map<KeyType, ArticleEntry> EntryMap;
-  typedef base::hash_map<std::string, KeyType> StringToKeyMap;
+  typedef std::unordered_map<KeyType, ArticleEntry> EntryMap;
+  typedef std::unordered_map<std::string, KeyType> StringToKeyMap;
 
   void AddEntry(const ArticleEntry& entry);
   void RemoveEntry(const ArticleEntry& entry);

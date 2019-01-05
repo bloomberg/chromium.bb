@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -94,7 +95,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   friend class appcache_update_job_unittest::AppCacheUpdateJobTest;
   friend class MockAppCacheStorageTest;
 
-  using StoredCacheMap = base::hash_map<int64_t, scoped_refptr<AppCache>>;
+  using StoredCacheMap = std::unordered_map<int64_t, scoped_refptr<AppCache>>;
   using StoredGroupMap = std::map<GURL, scoped_refptr<AppCacheGroup>>;
   using DoomedResponseIds = std::set<int64_t>;
   using StoredEvictionTimesMap =

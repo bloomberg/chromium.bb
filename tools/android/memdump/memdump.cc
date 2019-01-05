@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -123,7 +124,7 @@ bool PageIsUnevictable(const PageInfo& page_info) {
 }
 
 // Number of times a physical page is mapped in a process.
-typedef base::hash_map<uint64_t, int> PFNMap;
+typedef std::unordered_map<uint64_t, int> PFNMap;
 
 // Parses lines from /proc/<PID>/maps, e.g.:
 // 401e7000-401f5000 r-xp 00000000 103:02 158       /system/bin/linker

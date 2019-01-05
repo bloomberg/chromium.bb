@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -172,7 +173,7 @@ class DistillerImpl : public Distiller {
   // Maps page numbers of pages under distillation to the indices in |pages_|.
   // If a page is |started_pages_| that means it is still waiting for an action
   // (distillation or image fetch) to finish.
-  base::hash_map<int, size_t> started_pages_index_;
+  std::unordered_map<int, size_t> started_pages_index_;
 
   // The list of pages that are still waiting for distillation to start.
   // This is a map, to make distiller prefer distilling lower page numbers

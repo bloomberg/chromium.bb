@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -103,7 +104,7 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
   // to the rest of the tree for context, so we have to try to show the
   // relative indentation of child nodes in this update relative to their
   // parents.
-  base::hash_map<int32_t, int> id_to_indentation;
+  std::unordered_map<int32_t, int> id_to_indentation;
   for (size_t i = 0; i < nodes.size(); ++i) {
     int indent = id_to_indentation[nodes[i].id];
     result += std::string(2 * indent, ' ');

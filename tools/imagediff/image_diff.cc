@@ -15,6 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/command_line.h"
@@ -175,7 +176,7 @@ float PercentageDifferent(const Image& baseline, const Image& actual) {
   return 100.0f * pixels_different / total_pixels;
 }
 
-typedef base::hash_map<uint32_t, int32_t> RgbaToCountMap;
+typedef std::unordered_map<uint32_t, int32_t> RgbaToCountMap;
 
 float HistogramPercentageDifferent(const Image& baseline, const Image& actual) {
   // TODO(johnme): Consider using a joint histogram instead, as described in

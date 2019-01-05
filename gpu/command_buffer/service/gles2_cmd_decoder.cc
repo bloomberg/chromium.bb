@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <utility>
 
 #include "base/callback.h"
@@ -2707,7 +2708,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   // Used to validate multisample renderbuffers if needed
-  typedef base::hash_map<GLenum, GLuint> TextureMap;
+  typedef std::unordered_map<GLenum, GLuint> TextureMap;
   TextureMap validation_textures_;
   GLuint validation_fbo_multisample_;
   GLuint validation_fbo_;

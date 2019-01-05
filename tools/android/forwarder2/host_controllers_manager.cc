@@ -232,7 +232,7 @@ bool HostControllersManager::Adb(const std::string& adb_path,
 void HostControllersManager::RemoveAdbPortForDeviceIfNeeded(
     const std::string& adb_path,
     const std::string& device_serial) {
-  base::hash_map<std::string, int>::const_iterator it =
+  std::unordered_map<std::string, int>::const_iterator it =
       device_serial_to_adb_port_map_.find(device_serial);
   if (it == device_serial_to_adb_port_map_.end())
     return;
@@ -278,7 +278,7 @@ void HostControllersManager::RemoveAdbPortForDeviceIfNeeded(
 int HostControllersManager::GetAdbPortForDevice(
     const std::string adb_path,
     const std::string& device_serial) {
-  base::hash_map<std::string, int>::const_iterator it =
+  std::unordered_map<std::string, int>::const_iterator it =
       device_serial_to_adb_port_map_.find(device_serial);
   if (it != device_serial_to_adb_port_map_.end())
     return it->second;

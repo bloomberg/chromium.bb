@@ -9,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 
 #include "base/callback_list.h"
 #include "base/containers/id_map.h"
@@ -269,7 +270,7 @@ class MediaSessionImpl : public MediaSession,
     bool operator==(const PlayerIdentifier& player_identifier) const;
     bool operator<(const PlayerIdentifier&) const;
 
-    // Hash operator for base::hash_map<>.
+    // Hash operator for std::unordered_map<>.
     struct Hash {
       size_t operator()(const PlayerIdentifier& player_identifier) const;
     };

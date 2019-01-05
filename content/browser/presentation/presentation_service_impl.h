@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -267,7 +268,7 @@ class CONTENT_EXPORT PresentationServiceImpl
       pending_start_presentation_cb_;
 
   // For ReconnectPresentation requests.
-  base::hash_map<int, std::unique_ptr<NewPresentationCallbackWrapper>>
+  std::unordered_map<int, std::unique_ptr<NewPresentationCallbackWrapper>>
       pending_reconnect_presentation_cbs_;
 
   // RAII binding of |this| to PresentationService request.

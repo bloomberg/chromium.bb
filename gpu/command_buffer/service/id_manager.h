@@ -38,7 +38,7 @@ class GPU_GLES2_EXPORT IdManager {
   bool GetClientId(GLuint service_id, GLuint* client_id);
 
  private:
-  typedef base::hash_map<GLuint, GLuint> MapType;
+  typedef std::unordered_map<GLuint, GLuint> MapType;
   MapType id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IdManager);

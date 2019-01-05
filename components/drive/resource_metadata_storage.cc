@@ -8,6 +8,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -1124,7 +1125,7 @@ bool ResourceMetadataStorage::CheckValidity() {
   }
 
   // First scan. Remember relationships between IDs.
-  typedef base::hash_map<std::string, std::string> KeyToIdMapping;
+  typedef std::unordered_map<std::string, std::string> KeyToIdMapping;
   KeyToIdMapping local_id_to_resource_id_map;
   KeyToIdMapping child_key_to_local_id_map;
   std::set<std::string> resource_entries;

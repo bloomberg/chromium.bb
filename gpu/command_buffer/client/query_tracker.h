@@ -13,6 +13,7 @@
 #include <bitset>
 #include <list>
 #include <memory>
+#include <unordered_map>
 
 #include "base/atomicops.h"
 #include "base/containers/circular_deque.h"
@@ -225,7 +226,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
   }
 
  private:
-  typedef base::hash_map<GLuint, std::unique_ptr<Query>> QueryIdMap;
+  typedef std::unordered_map<GLuint, std::unique_ptr<Query>> QueryIdMap;
   typedef base::flat_map<GLenum, Query*> QueryTargetMap;
 
   QueryIdMap queries_;

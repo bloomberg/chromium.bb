@@ -16,6 +16,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -390,7 +391,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // string comparisons. Order is unimportant, and deletions are rare.
   // Confirmed on Android where this speeded Chrome startup by roughly 50ms
   // vs. std::map, and by roughly 180ms vs. std::set of Preference pointers.
-  typedef base::hash_map<std::string, Preference> PreferenceMap;
+  typedef std::unordered_map<std::string, Preference> PreferenceMap;
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;

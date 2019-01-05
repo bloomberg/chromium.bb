@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -73,7 +74,7 @@ using FuzzerFunction = std::unique_ptr<IPC::Message> (*)(IPC::Message*,
 
 // Used for mutating messages. Once populated, the map associates a message ID
 // with a FuzzerFunction used for mutation of that message type.
-using FuzzerFunctionMap = base::hash_map<uint32_t, FuzzerFunction>;
+using FuzzerFunctionMap = std::unordered_map<uint32_t, FuzzerFunction>;
 void PopulateFuzzerFunctionMap(FuzzerFunctionMap* map);
 
 // Used for generating new messages. Once populated, the vector contains

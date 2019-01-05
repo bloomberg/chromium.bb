@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -125,8 +126,7 @@ class GPU_GLES2_EXPORT ProgramCache {
   CacheProgramCallback cache_program_callback_;
 
  private:
-  typedef base::hash_map<std::string,
-                         LinkedProgramStatus> LinkStatusMap;
+  typedef std::unordered_map<std::string, LinkedProgramStatus> LinkStatusMap;
 
   // called to clear the backend cache
   virtual void ClearBackend() = 0;

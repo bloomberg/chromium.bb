@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -1251,7 +1252,7 @@ class GPU_GLES2_EXPORT TextureManager
   std::vector<FramebufferManager*> framebuffer_managers_;
 
   // Info for each texture in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<TextureRef> > TextureMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<TextureRef>> TextureMap;
   TextureMap textures_;
 
   GLsizei max_texture_size_;

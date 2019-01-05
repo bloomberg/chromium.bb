@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -1454,7 +1455,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   return AtkObjectToAXPlatformNodeAuraLinux(accessible);
 }
 
-using UniqueIdMap = base::hash_map<int32_t, AXPlatformNodeAuraLinux*>;
+using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNodeAuraLinux*>;
 // Map from each AXPlatformNode's unique id to its instance.
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;

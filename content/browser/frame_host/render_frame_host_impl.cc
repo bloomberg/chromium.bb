@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 #include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -224,7 +226,9 @@ bool g_allow_injecting_javascript = false;
 
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32_t, int32_t> RenderFrameHostID;
-typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
+typedef std::unordered_map<RenderFrameHostID,
+                           RenderFrameHostImpl*,
+                           base::IntPairHash<RenderFrameHostID>>
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -232,9 +236,9 @@ base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
 base::LazyInstance<RenderFrameHostImpl::CreateNetworkFactoryCallback>::Leaky
     g_create_network_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
 
-using TokenFrameMap = base::hash_map<base::UnguessableToken,
-                                     RenderFrameHostImpl*,
-                                     base::UnguessableTokenHash>;
+using TokenFrameMap = std::unordered_map<base::UnguessableToken,
+                                         RenderFrameHostImpl*,
+                                         base::UnguessableTokenHash>;
 base::LazyInstance<TokenFrameMap>::Leaky g_token_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -416,7 +417,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
   std::unique_ptr<ui::AXSerializableTree> tree_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
-  base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
+  std::unordered_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -16,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -149,7 +151,9 @@ bool g_check_for_pending_visual_properties_ack = true;
 // <process id, routing id>
 using RenderWidgetHostID = std::pair<int32_t, int32_t>;
 using RoutingIDWidgetMap =
-    base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>;
+    std::unordered_map<RenderWidgetHostID,
+                       RenderWidgetHostImpl*,
+                       base::IntPairHash<RenderWidgetHostID>>;
 base::LazyInstance<RoutingIDWidgetMap>::DestructorAtExit
     g_routing_id_widget_map = LAZY_INSTANCE_INITIALIZER;
 

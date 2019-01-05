@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -173,7 +174,7 @@ class PPAPI_SHARED_EXPORT VarTracker {
     // we know when we can stop tracking this object.
     int track_with_no_reference_count;
   };
-  typedef base::hash_map<int32_t, VarInfo> VarMap;
+  typedef std::unordered_map<int32_t, VarInfo> VarMap;
 
   // Specifies what should happen with the refcount when calling AddVarInternal.
   enum AddVarRefMode {

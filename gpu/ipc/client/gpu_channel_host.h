@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
@@ -205,7 +206,7 @@ class GPU_EXPORT GpuChannelHost
 
     // Threading notes: most fields are only accessed on the IO thread, except
     // for lost_ which is protected by |lock_|.
-    base::hash_map<int32_t, RouteInfo> routes_;
+    std::unordered_map<int32_t, RouteInfo> routes_;
     std::unique_ptr<IPC::ChannelMojo> channel_;
     base::flat_map<int, IPC::PendingSyncMsg*> pending_syncs_;
 

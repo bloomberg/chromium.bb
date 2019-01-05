@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <unordered_map>
 
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -1006,7 +1007,7 @@ class CopyTextureResourceManagerImpl
   ShaderVector vertex_shaders_;
   ShaderVector fragment_shaders_;
   typedef int ProgramMapKey;
-  typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
+  typedef std::unordered_map<ProgramMapKey, ProgramInfo> ProgramMap;
   ProgramMap programs_;
   GLuint vertex_array_object_id_;
   GLuint buffer_id_;

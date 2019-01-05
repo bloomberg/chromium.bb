@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TRANSFORM_FEEDBACK_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TRANSFORM_FEEDBACK_MANAGER_H_
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -138,8 +139,8 @@ class GPU_GLES2_EXPORT TransformFeedbackManager {
 
  private:
   // Info for each transform feedback in the system.
-  base::hash_map<GLuint,
-                 scoped_refptr<TransformFeedback> > transform_feedbacks_;
+  std::unordered_map<GLuint, scoped_refptr<TransformFeedback>>
+      transform_feedbacks_;
 
   GLuint max_transform_feedback_separate_attribs_;
 

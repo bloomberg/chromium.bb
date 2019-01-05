@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "cc/test/test_image_factory.h"
@@ -114,7 +115,7 @@ class InProcessContextFactory : public ContextFactory,
 
   viz::RendererSettings renderer_settings_;
   using PerCompositorDataMap =
-      base::hash_map<ui::Compositor*, std::unique_ptr<PerCompositorData>>;
+      std::unordered_map<ui::Compositor*, std::unique_ptr<PerCompositorData>>;
   PerCompositorDataMap per_compositor_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
