@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <memory>
+#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -74,7 +75,7 @@ class MockResourceConverter : public content::ResourceConverter {
 };
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
-typedef base::hash_map<int64_t, v8::Local<v8::Value> > VarHandleMap;
+typedef std::unordered_map<int64_t, v8::Local<v8::Value>> VarHandleMap;
 
 bool Equals(const PP_Var& var,
             v8::Local<v8::Value> val,

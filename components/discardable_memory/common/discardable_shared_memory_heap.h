@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -163,7 +164,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
   std::vector<std::unique_ptr<ScopedMemorySegment>> memory_segments_;
 
   // Mapping from first/last block of span to Span instance.
-  typedef base::hash_map<size_t, Span*> SpanMap;
+  typedef std::unordered_map<size_t, Span*> SpanMap;
   SpanMap spans_;
 
   // Array of linked-lists with free discardable memory regions. For i < 256,

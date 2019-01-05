@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -41,7 +42,7 @@ typedef std::pair<MultiBuffer*, MultiBufferBlockId> MultiBufferGlobalBlockId;
 
 }  // namespace media
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 
 template <>
 struct hash<media::MultiBufferGlobalBlockId> {
@@ -50,7 +51,7 @@ struct hash<media::MultiBufferGlobalBlockId> {
   }
 };
 
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
 
 namespace media {
 
@@ -210,7 +211,7 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
   // Block numbers can be calculated from byte positions as:
   // block_num = byte_pos >> block_size_shift
   typedef MultiBufferBlockId BlockId;
-  typedef base::hash_map<BlockId, scoped_refptr<DataBuffer>> DataMap;
+  typedef std::unordered_map<BlockId, scoped_refptr<DataBuffer>> DataMap;
 
   // Registers a reader at the given position.
   // If the cache does not already contain |pos|, it will activate

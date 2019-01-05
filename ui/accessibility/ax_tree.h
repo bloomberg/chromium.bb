@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/observer_list.h"
@@ -203,7 +204,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   base::ObserverList<AXTreeObserver> observers_;
   AXNode* root_ = nullptr;
-  base::hash_map<int32_t, AXNode*> id_map_;
+  std::unordered_map<int32_t, AXNode*> id_map_;
   std::string error_;
   AXTreeData data_;
 
@@ -218,7 +219,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Map from node ID to cached table info, if the given node is a table.
   // Invalidated every time the tree is updated.
-  mutable base::hash_map<int32_t, AXTableInfo*> table_info_map_;
+  mutable std::unordered_map<int32_t, AXTableInfo*> table_info_map_;
 
   // The next negative node ID to use for internal nodes.
   int32_t next_negative_internal_node_id_ = -1;

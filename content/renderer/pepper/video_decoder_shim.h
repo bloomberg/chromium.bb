@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -84,7 +85,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   // The current decoded frame size.
   gfx::Size texture_size_;
   // Map that takes the plugin's GL texture id to the renderer's GL texture id.
-  using TextureIdMap = base::hash_map<uint32_t, uint32_t>;
+  using TextureIdMap = std::unordered_map<uint32_t, uint32_t>;
   TextureIdMap texture_id_map_;
   // Available textures (these are plugin ids.)
   using TextureIdSet = base::hash_set<uint32_t>;

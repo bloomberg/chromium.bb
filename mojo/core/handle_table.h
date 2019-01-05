@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -74,7 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable
     bool busy = false;
   };
 
-  using HandleMap = base::hash_map<MojoHandle, Entry>;
+  using HandleMap = std::unordered_map<MojoHandle, Entry>;
 
   HandleMap handles_;
   base::Lock lock_;

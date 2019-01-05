@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -80,7 +81,7 @@ class AX_EXPORT AXTableInfo {
   std::vector<AXNode*> extra_mac_nodes;
 
   // Map from each cell's node ID to its index in unique_cell_ids.
-  base::hash_map<int32_t, int32_t> cell_id_to_index;
+  std::unordered_map<int32_t, int32_t> cell_id_to_index;
 
   // Map from each row's node ID to its row index.
   base::hash_map<int32_t, int32_t> row_id_to_index;

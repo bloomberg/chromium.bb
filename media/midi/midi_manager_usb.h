@@ -9,11 +9,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/hash.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -87,7 +89,10 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
   std::unique_ptr<UsbMidiInputStream> input_stream_;
 
   // A map from <endpoint_number, cable_number> to the index of input jacks.
-  base::hash_map<std::pair<int, int>, size_t> input_jack_dictionary_;
+  std::unordered_map<std::pair<int, int>,
+                     size_t,
+                     base::IntPairHash<std::pair<int, int>>>
+      input_jack_dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsb);
 };

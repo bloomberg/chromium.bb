@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -81,7 +82,7 @@ class InMemoryContentStore : public DistilledContentStore {
                          std::unique_ptr<DistilledArticleProto, CacheDeletor>>
 
       ContentMap;
-  typedef base::hash_map<std::string, std::string> UrlMap;
+  typedef std::unordered_map<std::string, std::string> UrlMap;
 
   ContentMap cache_;
   UrlMap url_to_id_;

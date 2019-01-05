@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -197,7 +198,7 @@ class PrefModelAssociator : public syncer::SyncableService {
   // from sync.
   using SyncedPrefObserverList =
       base::ObserverList<SyncedPrefObserver>::Unchecked;
-  base::hash_map<std::string, std::unique_ptr<SyncedPrefObserverList>>
+  std::unordered_map<std::string, std::unique_ptr<SyncedPrefObserverList>>
       synced_pref_observers_;
 
   const PrefModelAssociatorClient* client_;  // Weak.

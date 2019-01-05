@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -107,7 +108,7 @@ class CONTENT_EXPORT BrowsingInstance final
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.
-  typedef base::hash_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
+  typedef std::unordered_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
 
   // Common browser context to which all SiteInstances in this BrowsingInstance
   // must belong.

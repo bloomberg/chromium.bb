@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
@@ -56,23 +57,23 @@ struct HashedHandle {
 
 }  // namespace
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 template <>
 struct hash<HashedHandle> {
   size_t operator()(const HashedHandle& handle) const { return handle.hash(); }
 };
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
 
 namespace content {
 
 namespace {
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
-typedef base::hash_map<int64_t, v8::Local<v8::Value> > VarHandleMap;
+typedef std::unordered_map<int64_t, v8::Local<v8::Value>> VarHandleMap;
 typedef base::hash_set<int64_t> ParentVarSet;
 
 // Maps V8 value handles to the PP_Var they correspond to.
-typedef base::hash_map<HashedHandle, ScopedPPVar> HandleVarMap;
+typedef std::unordered_map<HashedHandle, ScopedPPVar> HandleVarMap;
 typedef base::hash_set<HashedHandle> ParentHandleSet;
 
 // Returns a V8 value which corresponds to a given PP_Var. If |var| is a

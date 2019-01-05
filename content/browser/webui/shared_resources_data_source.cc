@@ -44,7 +44,7 @@ struct IdrGzipped {
   int idr;
   bool gzipped;
 };
-using ResourcesMap = base::hash_map<std::string, IdrGzipped>;
+using ResourcesMap = std::unordered_map<std::string, IdrGzipped>;
 
 const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   // TODO(rkc): Once we have a separate source for apps, remove '*/apps/'

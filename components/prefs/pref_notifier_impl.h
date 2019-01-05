@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -58,7 +59,7 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
   // order they are added. These should only be accessed externally for unit
   // testing.
   typedef base::ObserverList<PrefObserver>::Unchecked PrefObserverList;
-  typedef base::hash_map<std::string, std::unique_ptr<PrefObserverList>>
+  typedef std::unordered_map<std::string, std::unique_ptr<PrefObserverList>>
       PrefObserverMap;
 
   typedef std::list<base::OnceCallback<void(bool)>> PrefInitObserverList;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/atomicops.h"
@@ -245,7 +246,7 @@ class GPU_GLES2_EXPORT QueryManager {
   unsigned query_count_;
 
   // Info for each query in the system.
-  using QueryMap = base::hash_map<GLuint, scoped_refptr<Query>>;
+  using QueryMap = std::unordered_map<GLuint, scoped_refptr<Query>>;
   QueryMap queries_;
 
   using GeneratedQueryIds = base::hash_set<GLuint>;

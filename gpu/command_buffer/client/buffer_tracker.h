@@ -105,7 +105,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
   void Free(Buffer* buffer);
 
  private:
-  typedef base::hash_map<GLuint, Buffer*> BufferMap;
+  typedef std::unordered_map<GLuint, Buffer*> BufferMap;
 
   MappedMemoryManager* mapped_memory_;
   BufferMap buffers_;

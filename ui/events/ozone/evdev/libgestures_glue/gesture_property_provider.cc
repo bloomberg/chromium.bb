@@ -614,7 +614,7 @@ struct GestureDevicePropertyData {
   // Unowned default properties (owned by the configuration file). Their values
   // will be applied when a property of the same name is created. These are
   // usually only a small portion of all properties in use.
-  base::hash_map<std::string, GesturesProp*> default_properties;
+  std::unordered_map<std::string, GesturesProp*> default_properties;
 };
 
 // Base class for device match criterias in conf files.

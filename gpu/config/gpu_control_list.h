@@ -9,6 +9,7 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -22,7 +23,7 @@ struct GPUInfo;
 
 class GPU_EXPORT GpuControlList {
  public:
-  typedef base::hash_map<int, std::string> FeatureMap;
+  typedef std::unordered_map<int, std::string> FeatureMap;
 
   enum OsType {
     kOsLinux,

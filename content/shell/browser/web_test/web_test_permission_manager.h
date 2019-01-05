@@ -85,9 +85,9 @@ class WebTestPermissionManager : public PermissionControllerDelegate {
 
   struct Subscription;
   using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
-  using PermissionsMap = base::hash_map<PermissionDescription,
-                                        blink::mojom::PermissionStatus,
-                                        PermissionDescription::Hash>;
+  using PermissionsMap = std::unordered_map<PermissionDescription,
+                                            blink::mojom::PermissionStatus,
+                                            PermissionDescription::Hash>;
 
   void OnPermissionChanged(const PermissionDescription& permission,
                            blink::mojom::PermissionStatus status);

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -183,7 +184,7 @@ class AXTreeSerializer {
   ClientTreeNode* client_root_ = nullptr;
 
   // A map from IDs to nodes in the client tree.
-  base::hash_map<int32_t, ClientTreeNode*> client_id_map_;
+  std::unordered_map<int32_t, ClientTreeNode*> client_id_map_;
 
   // The maximum number of nodes to serialize in a given call to
   // SerializeChanges, or 0 if there's no maximum.
@@ -347,7 +348,7 @@ template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
 ClientTreeNode*
 AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::ClientTreeNodeById(
     int32_t id) {
-  base::hash_map<int32_t, ClientTreeNode*>::iterator iter =
+  std::unordered_map<int32_t, ClientTreeNode*>::iterator iter =
       client_id_map_.find(id);
   if (iter != client_id_map_.end())
     return iter->second;
@@ -529,7 +530,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   // first in a separate pass so that nodes that are reparented
   // don't end up children of two different parents in the middle
   // of an update, which can lead to a double-free.
-  base::hash_map<int32_t, ClientTreeNode*> client_child_id_map;
+  std::unordered_map<int32_t, ClientTreeNode*> client_child_id_map;
   std::vector<ClientTreeNode*> old_children;
   old_children.swap(client_node->children);
   for (size_t i = 0; i < old_children.size(); ++i) {

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -52,7 +53,8 @@ class DeviceController {
   // Lets ensure DeviceListener instances are deleted on the thread they were
   // created on.
   const scoped_refptr<base::SingleThreadTaskRunner> construction_task_runner_;
-  base::hash_map<int /* port */, std::unique_ptr<DeviceListener>> listeners_;
+  std::unordered_map<int /* port */, std::unique_ptr<DeviceListener>>
+      listeners_;
 
   //WeakPtrFactory's documentation says:
   // Member variables should appear before the WeakPtrFactory, to ensure

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -937,7 +938,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, PingPongPipe) {
 DEFINE_TEST_CLIENT_WITH_PIPE(CommandDrivenClient,
                              MultiprocessMessagePipeTest,
                              h) {
-  base::hash_map<std::string, MojoHandle> named_pipes;
+  std::unordered_map<std::string, MojoHandle> named_pipes;
   for (;;) {
     MojoHandle p;
     auto parts = base::SplitString(ReadMessageWithOptionalHandle(h, &p), ":",

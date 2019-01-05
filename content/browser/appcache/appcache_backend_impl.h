@@ -56,7 +56,7 @@ class CONTENT_EXPORT AppCacheBackendImpl {
     return (it != hosts_.end()) ? (it->second.get()) : nullptr;
   }
 
-  using HostMap = base::hash_map<int, std::unique_ptr<AppCacheHost>>;
+  using HostMap = std::unordered_map<int, std::unique_ptr<AppCacheHost>>;
   const HostMap& hosts() { return hosts_; }
 
   // The AppCacheHost is precreated by the AppCacheNavigationHandleCore class

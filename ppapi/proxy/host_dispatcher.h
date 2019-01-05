@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -130,7 +131,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 
   // Maps interface name to whether that interface is supported. If an interface
   // name is not in the map, that implies that we haven't queried for it yet.
-  typedef base::hash_map<std::string, bool> PluginSupportedMap;
+  typedef std::unordered_map<std::string, bool> PluginSupportedMap;
   PluginSupportedMap plugin_supported_;
 
   // Guaranteed non-NULL.

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/at_exit.h"
 #include "base/containers/hash_tables.h"
@@ -44,7 +45,7 @@ class HostControllersManager {
   FRIEND_TEST_ALL_PREFIXES(HostControllersManagerTest, AdbArgumentSequence);
 
   using HostControllerMap =
-      base::hash_map<std::string, std::unique_ptr<HostController>>;
+      std::unordered_map<std::string, std::unique_ptr<HostController>>;
 
   static std::string MakeHostControllerMapKey(int adb_port, int device_port);
 
@@ -102,7 +103,7 @@ class HostControllersManager {
   virtual bool GetAppOutputAndError(const std::vector<std::string>& argv,
                                     std::string* output);
 
-  base::hash_map<std::string, int> device_serial_to_adb_port_map_;
+  std::unordered_map<std::string, int> device_serial_to_adb_port_map_;
   std::unique_ptr<HostControllerMap> controllers_;
   std::unique_ptr<base::AtExitManager>
       at_exit_manager_;  // Needed by base::Thread.

@@ -186,7 +186,7 @@ enum {
                             UMA_ACCESSIBILITYSERVICEINFO_MAX)
 
 using SearchKeyToPredicateMap =
-    base::hash_map<base::string16, AccessibilityMatchPredicate>;
+    std::unordered_map<base::string16, AccessibilityMatchPredicate>;
 base::LazyInstance<SearchKeyToPredicateMap>::Leaky
     g_search_key_to_predicate_map = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::string16>::Leaky g_all_search_keys =

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -242,14 +243,14 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     std::vector<UniformES3> uniforms_es3_;
 
-    base::hash_map<std::string, GLint> frag_data_locations_;
-    base::hash_map<std::string, GLint> frag_data_indices_;
+    std::unordered_map<std::string, GLint> frag_data_locations_;
+    std::unordered_map<std::string, GLint> frag_data_indices_;
   };
 
   Program* GetProgramInfo(
       GLES2Implementation* gl, GLuint program, ProgramInfoType type);
 
-  typedef base::hash_map<GLuint, Program> ProgramInfoMap;
+  typedef std::unordered_map<GLuint, Program> ProgramInfoMap;
 
   ProgramInfoMap program_infos_;
 

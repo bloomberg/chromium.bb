@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -362,8 +363,8 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     };
   };
 
-  using SourceMap = base::hash_map<int, uint32_t>;
-  using OutPortMap = base::hash_map<uint32_t, int>;
+  using SourceMap = std::unordered_map<int, uint32_t>;
+  using OutPortMap = std::unordered_map<uint32_t, int>;
   using ScopedSndSeqPtr = std::unique_ptr<snd_seq_t, SndSeqDeleter>;
   using ScopedSndMidiEventPtr =
       std::unique_ptr<snd_midi_event_t, SndMidiEventDeleter>;

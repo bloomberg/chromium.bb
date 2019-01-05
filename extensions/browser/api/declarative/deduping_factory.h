@@ -9,6 +9,7 @@
 
 #include <list>
 #include <string>
+#include <unordered_map>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -82,8 +83,8 @@ class DedupingFactory {
   // Cache of previous prototypes in most-recently-used order. Most recently
   // used objects are at the end.
   typedef std::list<scoped_refptr<const BaseClassT> > PrototypeList;
-  typedef base::hash_map<InstanceType, PrototypeList> ExistingPrototypes;
-  typedef base::hash_map<InstanceType, FactoryMethod> FactoryMethods;
+  typedef std::unordered_map<InstanceType, PrototypeList> ExistingPrototypes;
+  typedef std::unordered_map<InstanceType, FactoryMethod> FactoryMethods;
   typedef base::hash_set<InstanceType> ParameterizedTypes;
 
   const size_t max_number_prototypes_;

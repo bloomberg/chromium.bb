@@ -4,10 +4,12 @@
 
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -33,7 +35,9 @@ namespace {
 
 // The (process id, routing id) pair that identifies one RenderFrameProxy.
 typedef std::pair<int32_t, int32_t> RenderFrameProxyHostID;
-typedef base::hash_map<RenderFrameProxyHostID, RenderFrameProxyHost*>
+typedef std::unordered_map<RenderFrameProxyHostID,
+                           RenderFrameProxyHost*,
+                           base::IntPairHash<RenderFrameProxyHostID>>
     RoutingIDFrameProxyMap;
 base::LazyInstance<RoutingIDFrameProxyMap>::DestructorAtExit
     g_routing_id_frame_proxy_map = LAZY_INSTANCE_INITIALIZER;

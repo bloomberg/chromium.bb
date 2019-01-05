@@ -56,7 +56,7 @@ class GPU_GLES2_EXPORT VertexArrayManager {
   void StopTracking(VertexAttribManager* vertex_attrib_manager);
 
   // Info for each vertex array in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<VertexAttribManager> >
+  typedef std::unordered_map<GLuint, scoped_refptr<VertexAttribManager>>
       VertexAttribManagerMap;
   VertexAttribManagerMap client_vertex_attrib_managers_;
 
