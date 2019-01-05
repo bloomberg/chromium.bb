@@ -329,10 +329,6 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
   is_external_request_ = requestor_space > target_space;
 }
 
-void ResourceRequest::SetNavigationStartTime(TimeTicks navigation_start) {
-  navigation_start_ = navigation_start;
-}
-
 bool ResourceRequest::IsConditional() const {
   return (http_header_fields_.Contains(http_names::kIfMatch) ||
           http_header_fields_.Contains(http_names::kIfModifiedSince) ||

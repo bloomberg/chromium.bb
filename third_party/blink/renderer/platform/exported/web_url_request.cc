@@ -393,11 +393,6 @@ network::mojom::CorsPreflightPolicy WebURLRequest::GetCorsPreflightPolicy()
   return resource_request_->CorsPreflightPolicy();
 }
 
-void WebURLRequest::SetNavigationStartTime(
-    base::TimeTicks navigation_start_seconds) {
-  resource_request_->SetNavigationStartTime(navigation_start_seconds);
-}
-
 base::Optional<WebString> WebURLRequest::GetSuggestedFilename() const {
   if (!resource_request_->GetSuggestedFilename().has_value())
     return base::Optional<WebString>();

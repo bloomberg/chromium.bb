@@ -291,8 +291,6 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT network::mojom::CorsPreflightPolicy
   GetCorsPreflightPolicy() const;
 
-  BLINK_PLATFORM_EXPORT void SetNavigationStartTime(base::TimeTicks);
-
   // If this request was created from an anchor with a download attribute, this
   // is the value provided there.
   BLINK_PLATFORM_EXPORT base::Optional<WebString> GetSuggestedFilename() const;

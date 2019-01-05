@@ -932,8 +932,7 @@ bool FrameFetchContext::IsLoadComplete() const {
   return document_ && document_->LoadEventFinished();
 }
 
-bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
-    ResourceTimingInfo* info) {
+bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation() {
   if (IsDetached())
     return false;
 

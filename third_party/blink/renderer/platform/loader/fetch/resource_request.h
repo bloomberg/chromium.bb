@@ -362,9 +362,6 @@ class PLATFORM_EXPORT ResourceRequest final {
     return suggested_filename_;
   }
 
-  void SetNavigationStartTime(TimeTicks);
-  TimeTicks NavigationStartTime() const { return navigation_start_; }
-
   void SetIsAdResource() { is_ad_resource_ = true; }
   bool IsAdResource() const { return is_ad_resource_; }
 
@@ -491,8 +488,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   mutable CacheControlHeader cache_control_header_cache_;
 
   static base::TimeDelta default_timeout_interval_;
-
-  TimeTicks navigation_start_;
 
   bool is_ad_resource_ = false;
   WebContentSecurityPolicyList initiator_csp_;

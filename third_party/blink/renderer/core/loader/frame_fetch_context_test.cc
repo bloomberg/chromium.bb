@@ -1392,12 +1392,8 @@ TEST_F(FrameFetchContextTest, IsLoadCompleteWhenDetached_2) {
 }
 
 TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
-  scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3), false);
-
   dummy_page_holder = nullptr;
-
-  fetch_context->UpdateTimingInfoForIFrameNavigation(info.get());
+  fetch_context->UpdateTimingInfoForIFrameNavigation();
   // Should not crash.
 }
 
