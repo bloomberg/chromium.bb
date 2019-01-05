@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_network.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_page.h"
-#include "third_party/blink/renderer/core/testing/sim/sim_web_frame_client.h"
-#include "third_party/blink/renderer/core/testing/sim/sim_web_view_client.h"
 
 namespace blink {
 
@@ -38,27 +36,21 @@ class SimTest : public testing::Test {
   Document& GetDocument();
   WebViewImpl& WebView();
   WebLocalFrameImpl& MainFrame();
-  const SimWebViewClient& WebViewClient() const;
+  frame_test_helpers::TestWebViewClient& WebViewClient();
+  frame_test_helpers::TestWebWidgetClient& WebWidgetClient();
+  frame_test_helpers::TestWebFrameClient& WebFrameClient();
   SimCompositor& Compositor();
 
-  Vector<String>& ConsoleMessages() { return console_messages_; }
-
-  void SetEffectiveConnectionTypeForTesting(WebEffectiveConnectionType);
+  Vector<String>& ConsoleMessages();
 
  private:
-  friend class SimWebFrameClient;
-
-  void AddConsoleMessage(const String&);
-
   SimNetwork network_;
   SimCompositor compositor_;
-  SimWebFrameClient web_frame_client_;
-  SimWebWidgetClient web_widget_client_;
-  SimWebViewClient web_view_client_;
+  frame_test_helpers::TestWebFrameClient web_frame_client_;
+  frame_test_helpers::TestWebWidgetClient web_widget_client_;
+  frame_test_helpers::TestWebViewClient web_view_client_;
   SimPage page_;
   frame_test_helpers::WebViewHelper web_view_helper_;
-
-  Vector<String> console_messages_;
 };
 
 }  // namespace blink

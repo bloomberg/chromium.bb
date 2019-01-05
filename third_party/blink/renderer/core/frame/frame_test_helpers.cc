@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -369,12 +371,15 @@ void WebViewHelper::LoadAhem() {
 }
 
 void WebViewHelper::Reset() {
+  if (test_web_view_client_)
+    test_web_view_client_->DestroyChildViews();
   if (web_view_) {
     DCHECK(!TestWebFrameClient::IsLoading());
     // This closes the WebView also.
     web_view_->MainFrameWidget()->Close();
     web_view_ = nullptr;
   }
+  test_web_view_client_ = nullptr;
 }
 
 WebLocalFrameImpl* WebViewHelper::LocalMainFrame() const {
@@ -416,7 +421,8 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
 int TestWebFrameClient::loads_in_progress_ = 0;
 
 TestWebFrameClient::TestWebFrameClient()
-    : interface_provider_(new service_manager::InterfaceProvider()) {}
+    : interface_provider_(new service_manager::InterfaceProvider()),
+      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
@@ -470,8 +476,25 @@ void TestWebFrameClient::BeginNavigation(
                            nullptr /* extra_data */);
 }
 
-void TestWebFrameClient::DidCreateDocumentLoader(
-    WebDocumentLoader* document_loader) {
+WebEffectiveConnectionType TestWebFrameClient::GetEffectiveConnectionType() {
+  return effective_connection_type_;
+}
+
+void TestWebFrameClient::SetEffectiveConnectionTypeForTesting(
+    WebEffectiveConnectionType effective_connection_type) {
+  effective_connection_type_ = effective_connection_type;
+}
+
+void TestWebFrameClient::DidAddMessageToConsole(
+    const WebConsoleMessage& message,
+    const WebString& source_name,
+    unsigned source_line,
+    const WebString& stack_trace) {
+  console_messages_.push_back(message.text);
+}
+
+WebPlugin* TestWebFrameClient::CreatePlugin(const WebPluginParams& params) {
+  return new FakeWebPlugin(params);
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;
@@ -525,6 +548,21 @@ TestWebWidgetClient::TestWebWidgetClient() {
   layer_tree_view_ = layer_tree_view_factory_.Initialize();
 }
 
+void TestWebWidgetClient::DidMeaningfulLayout(
+    WebMeaningfulLayout meaningful_layout) {
+  switch (meaningful_layout) {
+    case WebMeaningfulLayout::kVisuallyNonEmpty:
+      visually_non_empty_layout_count_++;
+      break;
+    case WebMeaningfulLayout::kFinishedParsing:
+      finished_parsing_layout_count_++;
+      break;
+    case WebMeaningfulLayout::kFinishedLoading:
+      finished_loading_layout_count_++;
+      break;
+  }
+}
+
 TestWebViewClient::TestWebViewClient(TestWebWidgetClient* widget_client,
                                      content::LayerTreeViewDelegate* delegate) {
   // NOTE: The WebWidgetClient* could possibly be |this|, so do not call any
@@ -532,6 +570,24 @@ TestWebViewClient::TestWebViewClient(TestWebWidgetClient* widget_client,
   test_web_widget_client_ =
       CreateDefaultClientIfNeeded(widget_client, owned_test_web_widget_client_);
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
+}
+
+void TestWebViewClient::DestroyChildViews() {
+  child_web_views_.clear();
+}
+
+WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
+                                       const WebURLRequest&,
+                                       const WebWindowFeatures&,
+                                       const WebString& name,
+                                       WebNavigationPolicy,
+                                       bool,
+                                       WebSandboxFlags,
+                                       const SessionStorageNamespaceId&) {
+  auto webview_helper = std::make_unique<WebViewHelper>();
+  WebView* result = webview_helper->InitializeWithOpener(opener);
+  child_web_views_.push_back(std::move(webview_helper));
+  return result;
 }
 
 }  // namespace frame_test_helpers

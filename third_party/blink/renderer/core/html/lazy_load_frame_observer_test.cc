@@ -98,7 +98,7 @@ class LazyLoadFramesParamsTest
         scoped_restrict_lazy_frame_loading_to_data_saver_for_test_(false) {}
 
   void SetUp() override {
-    SetEffectiveConnectionTypeForTesting(
+    WebFrameClient().SetEffectiveConnectionTypeForTesting(
         std::get<WebEffectiveConnectionType>(GetParam()));
 
     SimTest::SetUp();
@@ -1106,7 +1106,7 @@ class LazyLoadFramesTest : public SimTest {
   static constexpr int kLoadingDistanceThresholdPx = 1000;
 
   void SetUp() override {
-    SetEffectiveConnectionTypeForTesting(
+    WebFrameClient().SetEffectiveConnectionTypeForTesting(
         WebEffectiveConnectionType::kTypeUnknown);
 
     SimTest::SetUp();
