@@ -63,6 +63,24 @@ const FindShortcutManager = (() => {
  */
 const FindShortcutBehavior = {
   /**
+   * @type {boolean}
+   * @protected
+   */
+  findShortcutListenOnAttach: true,
+
+  attached() {
+    if (this.findShortcutListenOnAttach) {
+      this.becomeActiveFindShortcutListener();
+    }
+  },
+
+  detached() {
+    if (this.findShortcutListenOnAttach) {
+      this.removeSelfAsFindShortcutListener();
+    }
+  },
+
+  /**
    * If handled, return true.
    * @param {boolean} modalContextOpen
    * @return {boolean}
