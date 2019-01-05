@@ -199,6 +199,10 @@ class COMPONENT_EXPORT(URL) Origin {
     return !IsSameOriginWith(other);
   }
 
+  // This method returns true for any |url| which if navigated to could result
+  // in an origin compatible with |this|.
+  bool CanBeDerivedFrom(const GURL& url) const;
+
   // Get the scheme, host, and port from which this origin derives. For
   // a tuple Origin, this gives the same values as calling scheme(), host()
   // and port(). For an opaque Origin that was created by calling

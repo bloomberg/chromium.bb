@@ -155,6 +155,78 @@ bool Origin::IsSameOriginWith(const Origin& other) const {
   return std::tie(tuple_, nonce_) == std::tie(other.tuple_, other.nonce_);
 }
 
+bool Origin::CanBeDerivedFrom(const GURL& url) const {
+  DCHECK(url.is_valid());
+
+  // For "no access" schemes, blink's SecurityOrigin will always create an
+  // opaque unique one. However, about: scheme is also registered as such but
+  // does not behave this way, therefore exclude it from this check.
+  if (base::ContainsValue(url::GetNoAccessSchemes(), url.scheme()) &&
+      !url.SchemeIs(kAboutScheme)) {
+    // If |this| is not opaque, definitely return false as the expectation
+    // is for opaque origin.
+    if (!opaque())
+      return false;
+
+    // And if it is unique opaque origin, it definitely is fine. But if there
+    // is a precursor stored, we should fall through to compare the tuples.
+    if (tuple_.IsInvalid())
+      return true;
+  }
+
+  SchemeHostPort url_tuple;
+
+  // Optimization for the common, success case: Scheme/Host/Port match on the
+  // precursor, and the URL is standard. Opaqueness does not matter as a tuple
+  // origin can always create an opaque tuple origin.
+  if (url.IsStandard()) {
+    // Note: if extra copies of the scheme and host are undesirable, this check
+    // can be implemented using StringPiece comparisons, but it has to account
+    // explicitly checks on port numbers.
+    if (url.SchemeIsFileSystem()) {
+      url_tuple = SchemeHostPort(*url.inner_url());
+    } else {
+      url_tuple = SchemeHostPort(url);
+    }
+    return url_tuple == tuple_;
+
+    // Blob URLs still contain an inner origin, however it is not accessible
+    // through inner_url(), therefore it requires specific case to handle it.
+  } else if (url.SchemeIsBlob()) {
+    // If |this| doesn't contain any precursor information, it is an unique
+    // opaque origin. It is valid case, as any browser-initiated navigation
+    // to about:blank or data: URL will result in a document with such
+    // origin and it is valid for it to create blob: URLs.
+    if (tuple_.IsInvalid())
+      return true;
+
+    url_tuple = SchemeHostPort(GURL(url.GetContent()));
+    return url_tuple == tuple_;
+  }
+
+  // At this point, the URL has non-standard scheme.
+  DCHECK(!url.IsStandard());
+
+  // All about: URLs (about:blank, about:srcdoc) inherit their origin from
+  // the context which navigated them, which means that they can be in any
+  // type of origin.
+  if (url.SchemeIs(kAboutScheme))
+    return true;
+
+  // All data: URLs commit in opaque origins, therefore |this| must be opaque
+  // if |url| has data: scheme.
+  if (url.SchemeIs(kDataScheme))
+    return opaque();
+
+  // If |this| does not have valid precursor tuple, it is unique opaque origin,
+  // which is what we expect non-standard schemes to get.
+  if (tuple_.IsInvalid())
+    return true;
+
+  // However, when there is precursor present, the schemes must match.
+  return url.scheme() == tuple_.scheme();
+}
+
 bool Origin::DomainIs(base::StringPiece canonical_domain) const {
   return !opaque() && url::DomainIs(tuple_.host(), canonical_domain);
 }

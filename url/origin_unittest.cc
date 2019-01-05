@@ -669,4 +669,166 @@ TEST_F(OriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   Shutdown();
 }
 
+TEST_F(OriginTest, CanBeDerivedFrom) {
+  Origin opaque_unique_origin = Origin();
+
+  Origin regular_origin = Origin::Create(GURL("https://a.com/"));
+  Origin opaque_precursor_origin = regular_origin.DeriveNewOpaqueOrigin();
+
+  Origin file_origin = Origin::Create(GURL("file:///foo/bar"));
+  Origin file_opaque_precursor_origin = file_origin.DeriveNewOpaqueOrigin();
+  Origin file_host_origin = Origin::Create(GURL("file://a.com/foo/bar"));
+  Origin file_host_opaque_precursor_origin =
+      file_host_origin.DeriveNewOpaqueOrigin();
+
+  Origin non_standard_scheme_origin =
+      Origin::Create(GURL("non-standard-scheme:foo"));
+  Origin non_standard_opaque_precursor_origin =
+      non_standard_scheme_origin.DeriveNewOpaqueOrigin();
+
+  // Also, add new standard scheme that is local to the test.
+  AddStandardScheme("new-standard", SchemeType::SCHEME_WITH_HOST);
+  Origin new_standard_origin = Origin::Create(GURL("new-standard://host/"));
+  Origin new_standard_opaque_precursor_origin =
+      new_standard_origin.DeriveNewOpaqueOrigin();
+
+  // No access schemes always get unique opaque origins.
+  Origin no_access_origin =
+      Origin::Create(GURL("standard-but-noaccess://b.com"));
+  Origin no_access_opaque_precursor_origin =
+      no_access_origin.DeriveNewOpaqueOrigin();
+
+  Origin local_non_standard_origin =
+      Origin::Create(GURL("local-but-nonstandard://a.com"));
+  Origin local_non_standard_opaque_precursor_origin =
+      local_non_standard_origin.DeriveNewOpaqueOrigin();
+
+  // Call origin.CanBeDerivedFrom(url) for each of the following test cases
+  // and ensure that it returns |expected_value|
+  const struct {
+    const char* url;
+    Origin* origin;
+    bool expected_value;
+  } kTestCases[] = {
+      {"https://a.com", &regular_origin, true},
+      // Web URL can commit in an opaque origin with precursor information.
+      // Example: iframe sandbox navigated to a.com.
+      {"https://a.com", &opaque_precursor_origin, true},
+      // URL that comes from the web can never commit in an opaque unique
+      // origin. It must have precursor information.
+      {"https://a.com", &opaque_unique_origin, false},
+
+      // Cross-origin URLs should never work.
+      {"https://b.com", &regular_origin, false},
+      {"https://b.com", &opaque_precursor_origin, false},
+
+      // data: URL can never commit in a regular, non-opaque origin.
+      {"data:text/html,foo", &regular_origin, false},
+      // This is the default case: data: URLs commit in opaque origin carrying
+      // precursor information for the origin that created them.
+      {"data:text/html,foo", &opaque_precursor_origin, true},
+      // Browser-initiated navigations can result in data: URL committing in
+      // opaque unique origin.
+      {"data:text/html,foo", &opaque_unique_origin, true},
+
+      // about:blank can commit in regular origin (default case for iframes).
+      {"about:blank", &regular_origin, true},
+      // This can happen if data: URL that originated at a.com creates an
+      // about:blank iframe.
+      {"about:blank", &opaque_precursor_origin, true},
+      // Browser-initiated navigations can result in about:blank URL committing
+      // in opaque unique origin.
+      {"about:blank", &opaque_unique_origin, true},
+
+      // Default behavior of srcdoc is to inherit the origin of the parent
+      // document.
+      {"about:srcdoc", &regular_origin, true},
+      // This happens for sandboxed srcdoc iframe.
+      {"about:srcdoc", &opaque_precursor_origin, true},
+      // This can happen with browser-initiated navigation to about:blank or
+      // data: URL, which in turn add srcdoc iframe.
+      {"about:srcdoc", &opaque_unique_origin, true},
+
+      // Just like srcdoc, blob: URLs can be created in all the cases.
+      {"blob:https://a.com/foo", &regular_origin, true},
+      {"blob:https://a.com/foo", &opaque_precursor_origin, true},
+      {"blob:https://a.com/foo", &opaque_unique_origin, true},
+
+      {"filesystem:https://a.com/foo", &regular_origin, true},
+      {"filesystem:https://a.com/foo", &opaque_precursor_origin, true},
+      // Unlike blob: URLs, filesystem: ones cannot be created in an unique
+      // opaque origin.
+      {"filesystem:https://a.com/foo", &opaque_unique_origin, false},
+
+      // file: URLs cannot result in regular web origins, regardless of
+      // opaqueness.
+      {"file:///etc/passwd", &regular_origin, false},
+      {"file:///etc/passwd", &opaque_precursor_origin, false},
+      // However, they can result in regular file: origin and an opaque one
+      // containing another file: origin as precursor.
+      {"file:///etc/passwd", &file_origin, true},
+      {"file:///etc/passwd", &file_opaque_precursor_origin, true},
+      // It should not be possible to get an opaque unique origin for file:
+      // as it is a standard scheme and will always result in a tuple origin
+      // or will always be derived by other origin.
+      // Note: file:// URLs should become unique opaque origins at some point.
+      {"file:///etc/passwd", &opaque_unique_origin, false},
+
+      // The same set as above, but including a host.
+      {"file://a.com/etc/passwd", &regular_origin, false},
+      {"file://a.com/etc/passwd", &opaque_precursor_origin, false},
+      {"file://a.com/etc/passwd", &file_host_origin, true},
+      {"file://a.com/etc/passwd", &file_host_opaque_precursor_origin, true},
+      {"file://a.com/etc/passwd", &opaque_unique_origin, false},
+
+      // Locally registered standard scheme should behave the same way
+      // as built-in standard schemes.
+      {"new-standard://host/foo", &new_standard_origin, true},
+      {"new-standard://host/foo", &new_standard_opaque_precursor_origin, true},
+      {"new-standard://host/foo", &opaque_unique_origin, false},
+      {"new-standard://host2/foo", &new_standard_origin, false},
+      {"new-standard://host2/foo", &new_standard_opaque_precursor_origin,
+       false},
+
+      // A non-standard scheme should never commit in an standard origin or
+      // opaque origin with standard precursor information.
+      {"non-standard-scheme://a.com/foo", &regular_origin, false},
+      {"non-standard-scheme://a.com/foo", &opaque_precursor_origin, false},
+      // However, it should be fine to commit in unique opaque origins or in its
+      // own origin.
+      // Note: since non-standard scheme URLs don't parse out anything
+      // but the scheme, using a random different hostname here would work.
+      {"non-standard-scheme://b.com/foo2", &opaque_unique_origin, true},
+      {"non-standard-scheme://b.com/foo3", &non_standard_scheme_origin, true},
+      {"non-standard-scheme://b.com/foo4",
+       &non_standard_opaque_precursor_origin, true},
+
+      // No access scheme can only commit in opaque origin.
+      {"standard-but-noaccess://a.com/foo", &regular_origin, false},
+      {"standard-but-noaccess://a.com/foo", &opaque_precursor_origin, false},
+      {"standard-but-noaccess://a.com/foo", &opaque_unique_origin, true},
+      {"standard-but-noaccess://a.com/foo", &no_access_origin, false},
+      {"standard-but-noaccess://a.com/foo", &no_access_opaque_precursor_origin,
+       false},
+      {"standard-but-noaccess://b.com/foo", &no_access_origin, false},
+      {"standard-but-noaccess://b.com/foo", &no_access_opaque_precursor_origin,
+       true},
+
+      // Local schemes can be non-standard, verify they also work as expected.
+      {"local-but-nonstandard://a.com", &regular_origin, false},
+      {"local-but-nonstandard://a.com", &opaque_precursor_origin, false},
+      {"local-but-nonstandard://a.com", &opaque_unique_origin, true},
+      {"local-but-nonstandard://a.com", &local_non_standard_origin, true},
+      {"local-but-nonstandard://a.com",
+       &local_non_standard_opaque_precursor_origin, true},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message() << "(origin, url): (" << *test_case.origin
+                                    << ", " << test_case.url << ")");
+    EXPECT_EQ(test_case.expected_value,
+              test_case.origin->CanBeDerivedFrom(GURL(test_case.url)));
+  }
+}
+
 }  // namespace url
