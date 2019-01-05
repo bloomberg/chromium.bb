@@ -2019,7 +2019,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   layer_transform.Translate(1.0, 1.0);
 
   root->test_properties()->transform = layer_transform;
-  root->SetPosition(gfx::PointF(2.5f, 0.f));
   root->SetBounds(gfx::Size(10, 10));
   root->test_properties()->transform_origin = gfx::Point3F(0.25f, 0.f, 0.f);
   render_surface1->test_properties()->transform = layer_transform;
@@ -2546,23 +2545,6 @@ TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForPerspectiveUnprojection) {
   EXPECT_EQ(expected_visible_layer_rect, drawing_layer->visible_layer_rect());
   EXPECT_EQ(expected_drawable_content_rect,
             drawing_layer->drawable_content_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest,
-       VisibleRectsForPositionedRootLayerClippedByViewport) {
-  LayerImpl* root = root_layer_for_testing();
-
-  root->SetPosition(gfx::PointF(60, 70));
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            GetRenderSurface(root)->DrawableContentRect());
-  // In target space, not clipped.
-  EXPECT_EQ(gfx::Rect(60, 70, 100, 100), root->drawable_content_rect());
-  // In layer space, clipped.
-  EXPECT_EQ(gfx::Rect(40, 30), root->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {

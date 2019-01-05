@@ -288,17 +288,22 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
 TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
   // This layer is positioned, and hit testing should correctly know where the
   // layer is located.
-  LayerImpl* root = root_layer();
-  root->SetPosition(gfx::PointF(50.f, 50.f));
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
+  {
+    std::unique_ptr<LayerImpl> test_layer =
+        LayerImpl::Create(host_impl().active_tree(), 12345);
+    test_layer->SetPosition(gfx::PointF(50.f, 50.f));
+    test_layer->SetBounds(gfx::Size(100, 100));
+    test_layer->SetDrawsContent(true);
+    root_layer()->test_properties()->AddChild(std::move(test_layer));
+  }
 
-  host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
+  LayerImpl* test_layer = root_layer()->test_properties()->children[0];
+  host_impl().active_tree()->SetDeviceViewportSize(test_layer->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(test_layer)->num_contributors());
 
   // Hit testing for a point outside the layer should return a null pointer.
   gfx::PointF test_point(49.f, 49.f);
@@ -318,13 +323,13 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(test_layer->id(), result_layer->id());
 
   test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(test_layer->id(), result_layer->id());
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
@@ -1352,18 +1357,23 @@ TEST_F(LayerTreeImplTest,
 
   // This layer is positioned, and hit testing should correctly know where the
   // layer is located.
-  LayerImpl* root = root_layer();
-  root->SetPosition(gfx::PointF(50.f, 50.f));
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetTouchActionRegion(touch_action_region);
+  {
+    std::unique_ptr<LayerImpl> test_layer =
+        LayerImpl::Create(host_impl().active_tree(), 12345);
+    test_layer->SetPosition(gfx::PointF(50.f, 50.f));
+    test_layer->SetBounds(gfx::Size(100, 100));
+    test_layer->SetDrawsContent(true);
+    test_layer->SetTouchActionRegion(touch_action_region);
+    root_layer()->test_properties()->AddChild(std::move(test_layer));
+  }
 
-  host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
+  LayerImpl* test_layer = root_layer()->test_properties()->children[0];
+  host_impl().active_tree()->SetDeviceViewportSize(test_layer->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(test_layer)->num_contributors());
 
   // Hit checking for a point outside the layer should return a null pointer.
   gfx::PointF test_point(49.f, 49.f);
@@ -1389,20 +1399,20 @@ TEST_F(LayerTreeImplTest,
   EXPECT_FALSE(result_layer);
 
   // Hit checking for a point inside the touch event handler region should
-  // return the root layer.
+  // return the test layer.
   test_point = gfx::PointF(61.f, 61.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(test_layer->id(), result_layer->id());
 
   test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(test_layer->id(), result_layer->id());
 }
 
 TEST_F(LayerTreeImplTest,
