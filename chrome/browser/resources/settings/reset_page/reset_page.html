@@ -24,14 +24,12 @@
     <style include="settings-shared"></style>
     <settings-animated-pages id="reset-pages" section="reset">
       <div route-path="default">
-        <div class="settings-box first" id="resetProfile"
-            on-click="onShowResetProfileDialog_" actionable>
-          <div id="resetProfileTrigger" class="start">$i18n{resetTrigger}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="resetProfileArrow" aria-label="$i18n{resetTrigger}"
-                aria-describedby="resetProfileTrigger"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            icon-class="subpage-arrow"
+            id="resetProfile"
+            label="$i18n{resetTrigger}"
+            on-click="onShowResetProfileDialog_">
+        </cr-link-row>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
           preserve state across show/hide operations. -->
         <cr-lazy-render id="resetProfileDialog">
@@ -42,46 +40,36 @@
           </template>
         </cr-lazy-render>
 <if expr="chromeos">
-        <div class="settings-box two-line" id="powerwash" actionable
-            on-click="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
-          <div class="start">
-            $i18n{powerwashTitle}
-            <div class="secondary" id="powerwashSecondary">
-              $i18n{powerwashDescription}
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="powerwashArrow" aria-label="$i18n{powerwashTitle}"
-                aria-describedby="powerwashSecondary"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            class="hr"
+            hidden="[[!allowPowerwash_]]"
+            icon-class="subpage-arrow"
+            id="powerwash"
+            label="$i18n{powerwashTitle}"
+            on-click="onShowPowerwashDialog_"
+            sub-label="$i18n{powerwashDescription}">
+        </cr-link-row>
         <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>
           <settings-powerwash-dialog on-close="onPowerwashDialogClose_">
           </settings-powerwash-dialog>
         </template>
 </if>
 <if expr="_google_chrome and is_win">
-        <div class="settings-box" id="chromeCleanupSubpageTrigger"
-            on-click="onChromeCleanupTap_" actionable>
-          <div class="start">$i18n{resetCleanupComputerTrigger}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="chromeCleanupArrow"
-                aria-label="$i18n{resetCleanupComputerTrigger}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            class="hr"
+            icon-class="subpage-arrow"
+            id="chromeCleanupSubpageTrigger"
+            label="$i18n{resetCleanupComputerTrigger}"
+            on-click="onChromeCleanupTap_">
+        </cr-link-row>
         <template is="dom-if" if="[[showIncompatibleApplications_]]" restamp>
-          <div class="settings-box"
+          <cr-link-row
+              class="hr"
+              icon-class="subpage-arrow"
               id="incompatibleApplicationsSubpageTrigger"
-              on-click="onIncompatibleApplicationsTap_" actionable>
-            <div class="start">
-              $i18n{incompatibleApplicationsResetCardTitle}
-            </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button
-                  aria-label="$i18n{incompatibleApplicationsResetCardTitle}"
-                  aria-describedby="incompatibleApplicationsSecondary"></button>
-            </paper-icon-button-light>
-          </div>
+              label="$i18n{incompatibleApplicationsResetCardTitle}"
+              on-click="onIncompatibleApplicationsTap_">
+          </cr-link-row>
         </template>
 </if>
       </div>
