@@ -1043,14 +1043,6 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
           ? resource->GetResourceRequest().NavigationStartTime()
           : CurrentTimeTicks();
 
-  // This buffer is created and populated for providing transferSize
-  // and redirect timing opt-in information.
-  if (is_main_resource) {
-    DCHECK(!navigation_timing_info_);
-    navigation_timing_info_ = ResourceTimingInfo::Create(
-        fetch_initiator, start_time, is_main_resource);
-  }
-
   scoped_refptr<ResourceTimingInfo> info =
       ResourceTimingInfo::Create(fetch_initiator, start_time, is_main_resource);
 
@@ -1074,11 +1066,6 @@ void ResourceFetcher::RecordResourceTimingOnRedirect(
   ResourceTimingInfoMap::iterator it = resource_timing_info_map_.find(resource);
   if (it != resource_timing_info_map_.end()) {
     it->value->AddRedirect(redirect_response, cross_origin);
-  }
-
-  if (resource->GetType() == ResourceType::kMainResource) {
-    DCHECK(navigation_timing_info_);
-    navigation_timing_info_->AddRedirect(redirect_response, cross_origin);
   }
 }
 
@@ -1570,10 +1557,6 @@ ArchiveResource* ResourceFetcher::CreateArchive(
   return archive_->MainResource();
 }
 
-ResourceTimingInfo* ResourceFetcher::GetNavigationTimingInfo() {
-  return navigation_timing_info_.get();
-}
-
 void ResourceFetcher::HandleLoadCompletion(Resource* resource) {
   Context().DidLoadResource(resource);
 
@@ -1607,14 +1590,6 @@ void ResourceFetcher::HandleLoaderFinish(
   const int64_t encoded_data_length =
       resource->GetResponse().EncodedDataLength();
 
-  if (resource->GetType() == ResourceType::kMainResource) {
-    DCHECK(navigation_timing_info_);
-    if (resource->GetResponse().IsHTTP()) {
-      PopulateTimingInfo(navigation_timing_info_.get(), resource);
-      navigation_timing_info_->AddFinalTransferSize(
-          encoded_data_length == -1 ? 0 : encoded_data_length);
-    }
-  }
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().IsHTTP() &&

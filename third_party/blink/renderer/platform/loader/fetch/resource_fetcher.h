@@ -166,9 +166,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void ReloadLoFiImages();
 
-  // Calling this method before main document resource is fetched is invalid.
-  ResourceTimingInfo* GetNavigationTimingInfo();
-
   // Returns whether the given resource is contained as a preloaded resource.
   bool ContainsAsPreload(Resource*) const;
 
@@ -309,8 +306,6 @@ class PLATFORM_EXPORT ResourceFetcher
   using ResourceTimingInfoMap =
       HeapHashMap<Member<Resource>, scoped_refptr<ResourceTimingInfo>>;
   ResourceTimingInfoMap resource_timing_info_map_;
-
-  scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
 
   Vector<scoped_refptr<ResourceTimingInfo>> scheduled_resource_timing_reports_;
 
