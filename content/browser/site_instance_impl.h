@@ -244,10 +244,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   //
   // base::nullopt is returned if |site_url| cannot be used as a
   // |request_initiator_site_lock| (e.g. in case of site_url =
-  // chrome-guest://... OR if |site_url| doesn't require a dedicated process).
-  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(
-      BrowserContext* browser_context,
-      GURL site_url);
+  // chrome-guest://...).
+  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(GURL site_url);
 
  private:
   friend class BrowsingInstance;

@@ -2540,8 +2540,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   GURL process_lock =
       ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
   if (process_lock.is_valid()) {
-    request_initiator_site_lock = SiteInstanceImpl::GetRequestInitiatorSiteLock(
-        GetBrowserContext(), process_lock);
+    request_initiator_site_lock =
+        SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
   }
 
   CreateURLLoaderFactory(request_initiator_site_lock,

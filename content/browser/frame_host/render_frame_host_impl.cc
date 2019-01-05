@@ -418,8 +418,19 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
   // of falling back to site URL for about:blank and about:srcdoc.
   if (target_url.SchemeIs(url::kAboutScheme)) {
+    // |site_instance|'s site URL cannot be used as
+    // |request_initiator_site_lock| unless the site requires a dedicated
+    // process.  Otherwise b.com may share a process associated with a.com, in
+    // a SiteInstance with |site_url| set to "http://a.com" (and/or
+    // "http://nonisolated.invalid" in the future) and in that scenario
+    // |request_initiator| for requests from b.com should NOT be locked to
+    // a.com.
+    if (!SiteInstanceImpl::ShouldLockToOrigin(
+            site_instance->GetBrowserContext(), site_instance->GetSiteURL()))
+      return base::nullopt;
+
     return SiteInstanceImpl::GetRequestInitiatorSiteLock(
-        site_instance->GetBrowserContext(), site_instance->GetSiteURL());
+        site_instance->GetSiteURL());
   }
 
   // In cases not covered above, URLLoaderFactory should be associated with the
