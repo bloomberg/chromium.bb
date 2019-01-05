@@ -148,8 +148,9 @@ cr.define('gpu', function() {
     isSandboxedForTesting: function() {
       for (i = 0; i < this.gpuInfo_.basicInfo.length; ++i) {
         var info = this.gpuInfo_.basicInfo[i];
-        if (info.description == 'Sandboxed')
+        if (info.description == 'Sandboxed') {
           return info.value;
+        }
       }
       return false;
     }

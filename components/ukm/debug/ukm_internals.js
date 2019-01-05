@@ -88,8 +88,9 @@ function as64Bit(num) {
  * @param {!NodeList<!Element>} collection Collection of Elements.
  */
 function setDisplayStyle(collection, display_value) {
-  for (const el of collection)
+  for (const el of collection) {
     el.style.display = display_value;
+  }
 }
 
 /**
@@ -113,8 +114,9 @@ function removeChildren(parent) {
 function createUrlCard(sourcesForUrl, url, sourcesDiv, displayState) {
   const sourceDiv = createElementWithClassName('div', 'url_card');
   sourcesDiv.appendChild(sourceDiv);
-  if (!sourcesForUrl || sourcesForUrl.length === 0)
+  if (!sourcesForUrl || sourcesForUrl.length === 0) {
     return;
+  }
   for (const source of sourcesForUrl) {
     // This div allows hiding of the metrics per URL.
     const sourceContainer = /** @type {!Element} */ (createElementWithClassName(
@@ -171,10 +173,11 @@ function createSourceCard(source, sourceDiv, displayState) {
   if (displayState) {
     metricElement.style.display = displayState;
   } else {
-    if ($('toggle_expand').textContent === 'Collapse')
+    if ($('toggle_expand').textContent === 'Collapse') {
       metricElement.style.display = 'block';
-    else
+    } else {
       metricElement.style.display = 'none';
+    }
   }
 }
 
@@ -262,8 +265,9 @@ function addClearButton() {
     // Note it won't be able to clear if UKM logs got cut during this call.
     cr.sendWithPromise('requestUkmData').then((/** @type {UkmData} */ data) => {
       updateUkmCache(data);
-      for (const s of CachedSources.values())
+      for (const s of CachedSources.values()) {
         ClearedSources.set(as64Bit(s.id), s.entries.length);
+      }
     });
     $('toggle_expand').textContent = 'Expand';
     updateUkmData();
@@ -308,8 +312,9 @@ function updateUkmCache(data) {
     const key = as64Bit(source.id);
     if (!CachedSources.has(key)) {
       const mergedSource = {id: source.id, entries: source.entries};
-      if (source.url)
+      if (source.url) {
         mergedSource.url = source.url;
+      }
       CachedSources.set(key, mergedSource);
     } else {
       // Merge distinct entries from the source.
@@ -422,12 +427,14 @@ function onLoad() {
   $('thread_ids').addEventListener('click', updateUkmData);
   $('include_cache').addEventListener('click', updateUkmData);
   $('metrics_select').addEventListener('keyup', e => {
-    if (e.key === 'Enter')
+    if (e.key === 'Enter') {
       updateUkmData();
+    }
   });
   $('url_select').addEventListener('keyup', e => {
-    if (e.key === 'Enter')
+    if (e.key === 'Enter') {
       updateUkmData();
+    }
   });
 }
 

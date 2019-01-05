@@ -43,15 +43,18 @@ SyncInternalsWebUITest.prototype = {
    */
   hasInDetails: function(isValid, key, value) {
     var details = chrome.sync.aboutInfo.details;
-    if (!details)
+    if (!details) {
       return false;
+    }
     for (var i = 0; i < details.length; ++i) {
-      if (!details[i].data)
+      if (!details[i].data) {
         continue;
+      }
       for (var j = 0; j < details[i].data.length; ++j) {
         var obj = details[i].data[j];
-        if (obj.stat_name == key)
+        if (obj.stat_name == key) {
           return obj.is_valid == isValid && obj.stat_value == value;
+        }
       }
     }
     return false;
@@ -334,11 +337,15 @@ TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
   $('sync-results-list').dataModel = new cr.ui.ArrayDataModel([
     {
       value: 'value 0',
-      toString: function() { return 'node 0'; },
+      toString: function() {
+        return 'node 0';
+      },
     },
     {
       value: 'value 1',
-      toString: function() { return 'node 1'; },
+      toString: function() {
+        return 'node 1';
+      },
     }
   ]);
 
