@@ -514,11 +514,6 @@ void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   }
 }
 
-bool QuicSpdySession::ShouldBufferIncomingStream(QuicStreamId id) const {
-  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
-  return !QuicUtils::IsBidirectionalStreamId(id);
-}
-
 void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,
                                           QuicStreamId promised_stream_id,
                                           size_t frame_len,
