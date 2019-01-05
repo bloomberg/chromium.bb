@@ -11,6 +11,8 @@
 
 #include "chrome/elevation_service/service_main.h"
 
+#include <type_traits>
+
 #include <atlsecurity.h>
 #include <sddl.h>
 #include <wrl/module.h>
@@ -85,13 +87,13 @@ HRESULT ServiceMain::RegisterClassObject() {
 
   // The pointer in this array is unowned. Do not release it.
   IClassFactory* class_factories[] = {class_factory.Get()};
-  static_assert(base::size(decltype(cookies_){}) ==
-                base::size(class_factories),
-                "Arrays cookies_ and class_factories must be the same size.");
+  static_assert(
+      std::extent<decltype(cookies_)>() == base::size(class_factories),
+      "Arrays cookies_ and class_factories must be the same size.");
 
   IID class_ids[] = {install_static::GetElevatorClsid()};
   DCHECK_EQ(base::size(cookies_), base::size(class_ids));
-  static_assert(base::size(decltype(cookies_){}) == base::size(class_ids),
+  static_assert(std::extent<decltype(cookies_)>() == base::size(class_ids),
                 "Arrays cookies_ and class_ids must be the same size.");
 
   hr = module.RegisterCOMObject(nullptr, class_ids, class_factories, cookies_,

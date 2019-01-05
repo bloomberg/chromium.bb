@@ -8,6 +8,7 @@
 #include <memory>
 #include <random>
 #include <set>
+#include <type_traits>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -130,7 +131,7 @@ TEST_F(ModuleBlacklistCacheUtilTest, WriteEmptyCache) {
       0x9F, 0x1F, 0xDB, 0xEE, 0x7F, 0x58, 0x74, 0xCB,
   };
 
-  for (size_t i = 0; i < arraysize(base::MD5Digest::a); ++i)
+  for (size_t i = 0; i < std::extent<decltype(base::MD5Digest::a)>(); ++i)
     EXPECT_EQ(expected.a[i], md5_digest.a[i]);
 }
 
@@ -175,7 +176,7 @@ TEST_F(ModuleBlacklistCacheUtilTest, WriteAndRead) {
                       read_blacklisted_modules.size() *
                           sizeof(third_party_dlls::PackedListModule)));
 
-  for (size_t i = 0; i < arraysize(base::MD5Digest::a); ++i)
+  for (size_t i = 0; i < std::extent<decltype(base::MD5Digest::a)>(); ++i)
     EXPECT_EQ(md5_digest.a[i], read_md5_digest.a[i]);
 }
 

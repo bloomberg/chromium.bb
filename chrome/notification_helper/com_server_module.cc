@@ -11,9 +11,12 @@
 
 #include "chrome/notification_helper/com_server_module.h"
 
+#include <type_traits>
+
 #include <wrl/module.h>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/notification_helper/notification_activator.h"
 #include "chrome/notification_helper/trace_util.h"
@@ -99,15 +102,15 @@ HRESULT ComServerModule::RegisterClassObjects() {
 
   // All pointers in this array are unowned. Do not release them.
   IClassFactory* class_factories[] = {class_factory.Get()};
-  static_assert(arraysize(cookies_) == arraysize(class_factories),
+  static_assert(std::extent<decltype(cookies_)>() == std::size(class_factories),
                 "Arrays cookies_ and class_factories must be the same size.");
 
   IID class_ids[] = {install_static::GetToastActivatorClsid()};
-  static_assert(arraysize(cookies_) == arraysize(class_ids),
+  static_assert(std::extent<decltype(cookies_)>() == std::size(class_ids),
                 "Arrays cookies_ and class_ids must be the same size.");
 
   hr = module.RegisterCOMObject(nullptr, class_ids, class_factories, cookies_,
-                                arraysize(cookies_));
+                                std::extent<decltype(cookies_)>());
   if (FAILED(hr)) {
     LogComServerModuleHistogram(ComServerModuleStatus::REGISTRATION_FAILED);
     Trace(L"%hs(NotificationActivator registration failed; hr: 0x%08X)\n",
@@ -119,8 +122,8 @@ HRESULT ComServerModule::RegisterClassObjects() {
 
 HRESULT ComServerModule::UnregisterClassObjects() {
   auto& module = mswr::Module<mswr::OutOfProcDisableCaching>::GetModule();
-  HRESULT hr =
-      module.UnregisterCOMObject(nullptr, cookies_, arraysize(cookies_));
+  HRESULT hr = module.UnregisterCOMObject(nullptr, cookies_,
+                                          std::extent<decltype(cookies_)>());
   if (FAILED(hr)) {
     LogComServerModuleHistogram(ComServerModuleStatus::UNREGISTRATION_FAILED);
     Trace(L"%hs(NotificationActivator unregistration failed; hr: 0x%08X)\n",
