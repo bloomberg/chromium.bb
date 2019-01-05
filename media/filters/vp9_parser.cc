@@ -653,11 +653,10 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
     frame_info = frames_.front();
     frames_.pop_front();
     if (frame_decrypt_config) {
-      if (frame_info.decrypt_config) {
+      if (frame_info.decrypt_config)
         *frame_decrypt_config = frame_info.decrypt_config->Clone();
-      } else {
+      else
         *frame_decrypt_config = nullptr;
-      }
     }
 
     if (ParseUncompressedHeader(frame_info, fhdr, &result))
