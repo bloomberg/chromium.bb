@@ -60,7 +60,7 @@ class DifferenceEstimator::Base {
 
  private:
   Region region_;
-  base::hash_set<size_t> hashes_;
+  std::unordered_set<size_t> hashes_;
 
   friend class DifferenceEstimator;
   DISALLOW_COPY_AND_ASSIGN(Base);

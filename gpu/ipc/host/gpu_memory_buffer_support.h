@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_HOST_GPU_MEMORY_BUFFER_SUPPORT_H_
 #define GPU_IPC_HOST_GPU_MEMORY_BUFFER_SUPPORT_H_
 
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -17,11 +18,11 @@ namespace gpu {
 using GpuMemoryBufferConfigurationKey =
     std::pair<gfx::BufferFormat, gfx::BufferUsage>;
 using GpuMemoryBufferConfigurationSet =
-    base::hash_set<GpuMemoryBufferConfigurationKey>;
+    std::unordered_set<GpuMemoryBufferConfigurationKey>;
 
 }  // namespace gpu
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 
 template <>
 struct hash<gpu::GpuMemoryBufferConfigurationKey> {
@@ -31,7 +32,7 @@ struct hash<gpu::GpuMemoryBufferConfigurationKey> {
   }
 };
 
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
 
 namespace gpu {
 

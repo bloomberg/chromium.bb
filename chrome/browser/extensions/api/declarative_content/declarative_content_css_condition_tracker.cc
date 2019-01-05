@@ -243,7 +243,7 @@ bool DeclarativeContentCssConditionTracker::EvaluatePredicate(
       static_cast<const DeclarativeContentCssPredicate*>(predicate);
   auto loc = per_web_contents_tracker_.find(tab);
   DCHECK(loc != per_web_contents_tracker_.end());
-  const base::hash_set<std::string>& matching_css_selectors =
+  const std::unordered_set<std::string>& matching_css_selectors =
       loc->second->matching_css_selectors();
   for (const std::string& predicate_css_selector :
            typed_predicate->css_selectors()) {

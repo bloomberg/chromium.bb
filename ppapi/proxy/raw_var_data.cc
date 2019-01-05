@@ -88,7 +88,7 @@ std::unique_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
   std::unique_ptr<RawVarDataGraph> graph(new RawVarDataGraph);
   // Map of |var.value.as_id| to a RawVarData index in RawVarDataGraph.
   std::unordered_map<int64_t, size_t> visited_map;
-  base::hash_set<int64_t> parent_ids;
+  std::unordered_set<int64_t> parent_ids;
 
   base::stack<StackEntry> stack;
   stack.push(StackEntry(var, GetOrCreateRawVarData(var, &visited_map,

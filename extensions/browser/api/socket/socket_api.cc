@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/socket/socket_api.h"
 
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -98,7 +99,7 @@ void SocketAsyncApiFunction::ReplaceSocket(int api_resource_id,
   manager_->Replace(extension_->id(), api_resource_id, socket);
 }
 
-base::hash_set<int>* SocketAsyncApiFunction::GetSocketIds() {
+std::unordered_set<int>* SocketAsyncApiFunction::GetSocketIds() {
   return manager_->GetResourceIds(extension_->id());
 }
 

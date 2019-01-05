@@ -113,7 +113,7 @@ class MimeUtil {
  private:
   friend struct base::LazyInstanceTraitsBase<MimeUtil>;
 
-  using MimeTypes = base::hash_set<std::string>;
+  using MimeTypes = std::unordered_set<std::string>;
 
   MimeUtil();
 

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -497,7 +498,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   // If we've hit the maximum number of serialized nodes, pretend
   // this node has no children but keep going so that we get
   // consistent results.
-  base::hash_set<int32_t> new_child_ids;
+  std::unordered_set<int32_t> new_child_ids;
   std::vector<AXSourceNode> children;
   if (max_node_count_ == 0 || out_update->nodes.size() < max_node_count_) {
     tree_->GetChildren(node, &children);

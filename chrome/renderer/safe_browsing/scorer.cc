@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -89,11 +90,11 @@ int Scorer::model_version() const {
   return model_.version();
 }
 
-const base::hash_set<std::string>& Scorer::page_terms() const {
+const std::unordered_set<std::string>& Scorer::page_terms() const {
   return page_terms_;
 }
 
-const base::hash_set<uint32_t>& Scorer::page_words() const {
+const std::unordered_set<uint32_t>& Scorer::page_words() const {
   return page_words_;
 }
 

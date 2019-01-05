@@ -33,6 +33,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_MANIFEST_PARSER_H_
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -47,7 +48,7 @@ struct CONTENT_EXPORT AppCacheManifest {
   AppCacheManifest();
   ~AppCacheManifest();
 
-  base::hash_set<std::string> explicit_urls;
+  std::unordered_set<std::string> explicit_urls;
   std::vector<AppCacheNamespace> intercept_namespaces;
   std::vector<AppCacheNamespace> fallback_namespaces;
   std::vector<AppCacheNamespace> online_whitelist_namespaces;

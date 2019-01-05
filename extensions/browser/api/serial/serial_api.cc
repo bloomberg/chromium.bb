@@ -5,6 +5,7 @@
 #include "extensions/browser/api/serial/serial_api.h"
 
 #include <algorithm>
+#include <unordered_set>
 #include <vector>
 
 #include "base/task/post_task.h"
@@ -384,7 +385,7 @@ bool SerialGetConnectionsFunction::Prepare() {
 
 void SerialGetConnectionsFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const base::hash_set<int>* connection_ids =
+  const std::unordered_set<int>* connection_ids =
       manager_->GetResourceIds(extension_->id());
   if (connection_ids) {
     for (auto it = connection_ids->cbegin(); it != connection_ids->cend();

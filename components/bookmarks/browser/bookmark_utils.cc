@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -274,7 +275,7 @@ void MakeTitleUnique(const BookmarkModel* model,
                      const BookmarkNode* parent,
                      const GURL& url,
                      base::string16* title) {
-  base::hash_set<base::string16> titles;
+  std::unordered_set<base::string16> titles;
   base::string16 original_title_lower = base::i18n::ToLower(*title);
   for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* node = parent->GetChild(i);

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -456,7 +457,7 @@ bool SocketsTcpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsTcpGetSocketsFunction::Work() {
   std::vector<sockets_tcp::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (int socket_id : *resource_ids) {
       ResumableTCPSocket* socket = GetTcpSocket(socket_id);

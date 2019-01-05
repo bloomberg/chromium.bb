@@ -10,6 +10,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -85,7 +86,7 @@ class DedupingFactory {
   typedef std::list<scoped_refptr<const BaseClassT> > PrototypeList;
   typedef std::unordered_map<InstanceType, PrototypeList> ExistingPrototypes;
   typedef std::unordered_map<InstanceType, FactoryMethod> FactoryMethods;
-  typedef base::hash_set<InstanceType> ParameterizedTypes;
+  typedef std::unordered_set<InstanceType> ParameterizedTypes;
 
   const size_t max_number_prototypes_;
   ExistingPrototypes prototypes_;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_set>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -68,7 +69,7 @@ class IconHelper : public content::WebContentsObserver {
   Listener* listener_;
 
   typedef uint32_t MissingFaviconURLHash;
-  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
+  std::unordered_set<MissingFaviconURLHash> missing_favicon_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(IconHelper);
 };

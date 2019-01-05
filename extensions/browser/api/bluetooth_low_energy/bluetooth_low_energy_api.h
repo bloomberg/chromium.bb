@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -488,7 +489,7 @@ class BluetoothLowEnergyAdvertisementFunction
   int AddAdvertisement(BluetoothApiAdvertisement* advertisement);
   BluetoothApiAdvertisement* GetAdvertisement(int advertisement_id);
   void RemoveAdvertisement(int advertisement_id);
-  const base::hash_set<int>* GetAdvertisementIds();
+  const std::unordered_set<int>* GetAdvertisementIds();
 
   // ExtensionFunction override.
   ResponseAction Run() override;

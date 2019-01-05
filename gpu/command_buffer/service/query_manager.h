@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/atomicops.h"
@@ -249,7 +250,7 @@ class GPU_GLES2_EXPORT QueryManager {
   using QueryMap = std::unordered_map<GLuint, scoped_refptr<Query>>;
   QueryMap queries_;
 
-  using GeneratedQueryIds = base::hash_set<GLuint>;
+  using GeneratedQueryIds = std::unordered_set<GLuint>;
   GeneratedQueryIds generated_query_ids_;
 
   // A map of targets -> Query for current active queries.

@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -182,7 +183,7 @@ class DistillerImpl : public Distiller {
 
   // Set to keep track of which urls are already seen by the distiller. Used to
   // prevent distiller from distilling the same url twice.
-  base::hash_set<std::string> seen_urls_;
+  std::unordered_set<std::string> seen_urls_;
 
   size_t max_pages_in_article_;
 

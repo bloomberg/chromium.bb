@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -99,7 +100,7 @@ class DeclarativeContentCssConditionTracker
 
     void OnWebContentsNavigation(content::NavigationHandle* navigation_handle);
 
-    const base::hash_set<std::string>& matching_css_selectors() const {
+    const std::unordered_set<std::string>& matching_css_selectors() const {
       return matching_css_selectors_;
     }
 
@@ -114,7 +115,7 @@ class DeclarativeContentCssConditionTracker
     const WebContentsDestroyedCallback web_contents_destroyed_;
 
     // We use a hash_set for maximally efficient lookup.
-    base::hash_set<std::string> matching_css_selectors_;
+    std::unordered_set<std::string> matching_css_selectors_;
 
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };

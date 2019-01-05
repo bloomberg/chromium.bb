@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
@@ -196,14 +197,15 @@ bool CompareDescendingImportantInfo(
   return a.second.engagement_score > b.second.engagement_score;
 }
 
-base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
+std::unordered_set<std::string> GetBlacklistedImportantDomains(
+    Profile* profile) {
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
                              content_settings::ResourceIdentifier(),
                              &content_settings_list);
-  base::hash_set<std::string> ignoring_domains;
+  std::unordered_set<std::string> ignoring_domains;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid() ||
@@ -378,7 +380,7 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
 
   PopulateInfoMapWithBookmarks(profile, engagement_map, &important_info);
 
-  base::hash_set<std::string> blacklisted_domains =
+  std::unordered_set<std::string> blacklisted_domains =
       GetBlacklistedImportantDomains(profile);
 
   std::vector<std::pair<std::string, ImportantDomainInfo>> items(

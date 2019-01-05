@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -180,7 +181,7 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
   contents->file_trackers = std::move(reachable_trackers);
 
   // List all |file_id| referred by a tracker.
-  base::hash_set<std::string> referred_file_ids;
+  std::unordered_set<std::string> referred_file_ids;
   for (size_t i = 0; i < contents->file_trackers.size(); ++i)
     referred_file_ids.insert(contents->file_trackers[i]->file_id());
 

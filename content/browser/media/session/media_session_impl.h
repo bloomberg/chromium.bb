@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/callback_list.h"
 #include "base/containers/id_map.h"
@@ -278,7 +279,8 @@ class MediaSessionImpl : public MediaSession,
     MediaSessionPlayerObserver* observer;
     int player_id;
   };
-  using PlayersMap = base::hash_set<PlayerIdentifier, PlayerIdentifier::Hash>;
+  using PlayersMap =
+      std::unordered_set<PlayerIdentifier, PlayerIdentifier::Hash>;
   using StateChangedCallback = base::Callback<void(State)>;
 
   CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);

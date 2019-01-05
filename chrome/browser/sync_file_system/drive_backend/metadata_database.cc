@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 
 #include <algorithm>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -336,7 +337,7 @@ void RemoveAllDescendantTrackers(int64_t root_tracker_id,
   }
 
   // Remove trackers in the reversed order.
-  base::hash_set<std::string> affected_file_ids;
+  std::unordered_set<std::string> affected_file_ids;
   for (auto itr = to_be_removed.rbegin(); itr != to_be_removed.rend(); ++itr) {
     FileTracker tracker;
     index->GetFileTracker(*itr, &tracker);
@@ -989,8 +990,8 @@ SyncStatusCode MetadataDatabase::PopulateFolderByChildList(
     return SYNC_STATUS_FAILED;
   }
 
-  base::hash_set<std::string> children(child_file_ids.begin(),
-                                       child_file_ids.end());
+  std::unordered_set<std::string> children(child_file_ids.begin(),
+                                           child_file_ids.end());
 
   std::vector<int64_t> known_children =
       index_->GetFileTrackerIDsByParent(folder_tracker->tracker_id());
