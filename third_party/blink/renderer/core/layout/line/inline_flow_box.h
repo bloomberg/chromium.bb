@@ -286,21 +286,23 @@ class InlineFlowBox : public InlineBox {
   // the right in vertical-rl.
   LayoutRect LayoutOverflowRect(LayoutUnit line_top,
                                 LayoutUnit line_bottom) const {
-    return layout_overflow_
-               ? layout_overflow_->LayoutOverflowRect()
+    return LayoutOverflowIsSet()
+               ? overflow_->layout_overflow->LayoutOverflowRect()
                : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
   LayoutUnit LogicalTopLayoutOverflow(LayoutUnit line_top) const {
-    if (layout_overflow_) {
-      return IsHorizontal() ? layout_overflow_->LayoutOverflowRect().Y()
-                            : layout_overflow_->LayoutOverflowRect().X();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().Y()
+                 : overflow_->layout_overflow->LayoutOverflowRect().X();
     }
     return line_top;
   }
   LayoutUnit LogicalBottomLayoutOverflow(LayoutUnit line_bottom) const {
-    if (layout_overflow_) {
-      return IsHorizontal() ? layout_overflow_->LayoutOverflowRect().MaxY()
-                            : layout_overflow_->LayoutOverflowRect().MaxX();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().MaxY()
+                 : overflow_->layout_overflow->LayoutOverflowRect().MaxX();
     }
     return line_bottom;
   }
@@ -312,50 +314,55 @@ class InlineFlowBox : public InlineBox {
     return result;
   }
   LayoutUnit LogicalRightLayoutOverflow() const {
-    if (layout_overflow_) {
-      return IsHorizontal() ? layout_overflow_->LayoutOverflowRect().MaxX()
-                            : layout_overflow_->LayoutOverflowRect().MaxY();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().MaxX()
+                 : overflow_->layout_overflow->LayoutOverflowRect().MaxY();
     }
     return LogicalRight();
   }
   LayoutUnit LogicalLeftLayoutOverflow() const {
-    if (layout_overflow_) {
-      return IsHorizontal() ? layout_overflow_->LayoutOverflowRect().X()
-                            : layout_overflow_->LayoutOverflowRect().Y();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().X()
+                 : overflow_->layout_overflow->LayoutOverflowRect().Y();
     }
     return LogicalLeft();
   }
 
   LayoutRect VisualOverflowRect(LayoutUnit line_top,
                                 LayoutUnit line_bottom) const {
-    return visual_overflow_
-               ? visual_overflow_->VisualOverflowRect()
+    return VisualOverflowIsSet()
+               ? overflow_->visual_overflow->VisualOverflowRect()
                : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
   LayoutUnit LogicalLeftVisualOverflow() const {
-    return visual_overflow_
-               ? (IsHorizontal() ? visual_overflow_->VisualOverflowRect().X()
-                                 : visual_overflow_->VisualOverflowRect().Y())
+    return VisualOverflowIsSet()
+               ? (IsHorizontal()
+                      ? overflow_->visual_overflow->VisualOverflowRect().X()
+                      : overflow_->visual_overflow->VisualOverflowRect().Y())
                : LogicalLeft();
   }
   LayoutUnit LogicalRightVisualOverflow() const {
-    return visual_overflow_
+    return VisualOverflowIsSet()
                ? (IsHorizontal()
-                      ? visual_overflow_->VisualOverflowRect().MaxX()
-                      : visual_overflow_->VisualOverflowRect().MaxY())
+                      ? overflow_->visual_overflow->VisualOverflowRect().MaxX()
+                      : overflow_->visual_overflow->VisualOverflowRect().MaxY())
                : static_cast<LayoutUnit>(LogicalRight().Ceil());
   }
   LayoutUnit LogicalTopVisualOverflow(LayoutUnit line_top) const {
-    if (visual_overflow_) {
-      return IsHorizontal() ? visual_overflow_->VisualOverflowRect().Y()
-                            : visual_overflow_->VisualOverflowRect().X();
+    if (VisualOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->visual_overflow->VisualOverflowRect().Y()
+                 : overflow_->visual_overflow->VisualOverflowRect().X();
     }
     return line_top;
   }
   LayoutUnit LogicalBottomVisualOverflow(LayoutUnit line_bottom) const {
-    if (visual_overflow_) {
-      return IsHorizontal() ? visual_overflow_->VisualOverflowRect().MaxY()
-                            : visual_overflow_->VisualOverflowRect().MaxX();
+    if (VisualOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->visual_overflow->VisualOverflowRect().MaxY()
+                 : overflow_->visual_overflow->VisualOverflowRect().MaxX();
     }
     return line_bottom;
   }
@@ -410,6 +417,12 @@ class InlineFlowBox : public InlineBox {
                                           LayoutUnit current) const;
 
  private:
+  inline bool LayoutOverflowIsSet() const {
+    return overflow_ && overflow_->layout_overflow;
+  }
+  inline bool VisualOverflowIsSet() const {
+    return overflow_ && overflow_->visual_overflow;
+  }
   void PlaceBoxRangeInInlineDirection(InlineBox* first_child,
                                       InlineBox* last_child,
                                       LayoutUnit& logical_left,
@@ -454,8 +467,7 @@ class InlineFlowBox : public InlineBox {
       LayoutUnit line_bottom);
 
  protected:
-  std::unique_ptr<SimpleLayoutOverflowModel> layout_overflow_;
-  std::unique_ptr<SimpleVisualOverflowModel> visual_overflow_;
+  std::unique_ptr<SimpleOverflowModel> overflow_;
 
   bool IsInlineFlowBox() const final { return true; }
 

@@ -44,7 +44,7 @@
 namespace blink {
 
 struct SameSizeAsInlineFlowBox : public InlineBox {
-  void* pointers[6];
+  void* pointers[5];
   uint32_t bitfields : 23;
 };
 
@@ -301,10 +301,10 @@ void InlineFlowBox::Move(const LayoutSize& delta) {
   }
   // FIXME: Rounding error here since overflow was pixel snapped, but nobody
   // other than list markers passes non-integral values here.
-  if (layout_overflow_)
-    layout_overflow_->Move(delta.Width(), delta.Height());
-  if (visual_overflow_)
-    visual_overflow_->Move(delta.Width(), delta.Height());
+  if (LayoutOverflowIsSet())
+    overflow_->layout_overflow->Move(delta.Width(), delta.Height());
+  if (VisualOverflowIsSet())
+    overflow_->visual_overflow->Move(delta.Width(), delta.Height());
 }
 
 LineBoxList* InlineFlowBox::LineBoxes() const {
@@ -1210,14 +1210,11 @@ void InlineFlowBox::ComputeOverflow(
     GlyphOverflowAndFallbackFontsMap& text_box_data_map) {
   // If we know we have no overflow, we can just bail.
   if (KnownToHaveNoOverflow()) {
-    DCHECK(!layout_overflow_ && !visual_overflow_);
+    DCHECK(!LayoutOverflowIsSet() && !VisualOverflowIsSet());
     return;
   }
 
-  if (layout_overflow_)
-    layout_overflow_.reset();
-  if (visual_overflow_)
-    visual_overflow_.reset();
+  overflow_.reset();
 
   // Visual overflow just includes overflow for stuff we need to issues paint
   // invalidations for ourselves. Self-painting layers are ignored.
@@ -1291,10 +1288,13 @@ void InlineFlowBox::SetLayoutOverflow(const LayoutRect& rect,
   if (frame_box.Contains(rect) || rect.IsEmpty())
     return;
 
-  if (!layout_overflow_)
-    layout_overflow_ = std::make_unique<SimpleLayoutOverflowModel>(frame_box);
+  if (!LayoutOverflowIsSet()) {
+    if (!overflow_)
+      overflow_ = std::make_unique<SimpleOverflowModel>();
+    overflow_->layout_overflow.emplace(frame_box);
+  }
 
-  layout_overflow_->SetLayoutOverflow(rect);
+  overflow_->layout_overflow->SetLayoutOverflow(rect);
 }
 
 void InlineFlowBox::SetVisualOverflow(const LayoutRect& rect,
@@ -1303,10 +1303,13 @@ void InlineFlowBox::SetVisualOverflow(const LayoutRect& rect,
   if (frame_box.Contains(rect) || rect.IsEmpty())
     return;
 
-  if (!visual_overflow_)
-    visual_overflow_ = std::make_unique<SimpleVisualOverflowModel>(frame_box);
+  if (!VisualOverflowIsSet()) {
+    if (!overflow_)
+      overflow_ = std::make_unique<SimpleOverflowModel>();
+    overflow_->visual_overflow.emplace(frame_box);
+  }
 
-  visual_overflow_->SetVisualOverflow(rect);
+  overflow_->visual_overflow->SetVisualOverflow(rect);
 }
 
 void InlineFlowBox::SetVisualOverflowFromLogicalRect(

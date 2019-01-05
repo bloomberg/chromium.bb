@@ -126,6 +126,11 @@ class SimpleVisualOverflowModel {
   DISALLOW_COPY_AND_ASSIGN(SimpleVisualOverflowModel);
 };
 
+struct SimpleOverflowModel {
+  base::Optional<SimpleLayoutOverflowModel> layout_overflow;
+  base::Optional<SimpleVisualOverflowModel> visual_overflow;
+};
+
 // BoxModelOverflow tracks overflows of a LayoutBox. It separates visual
 // overflow into self visual overflow and contents visual overflow.
 //
@@ -176,7 +181,6 @@ class BoxLayoutOverflowModel {
  private:
   LayoutRect layout_overflow_;
   LayoutUnit layout_client_after_edge_;
-  bool has_subpixel_visual_effect_outsets_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BoxLayoutOverflowModel);
 };
@@ -228,6 +232,11 @@ class BoxVisualOverflowModel {
   bool has_subpixel_visual_effect_outsets_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BoxVisualOverflowModel);
+};
+
+struct BoxOverflowModel {
+  base::Optional<BoxLayoutOverflowModel> layout_overflow;
+  base::Optional<BoxVisualOverflowModel> visual_overflow;
 };
 
 }  // namespace blink
