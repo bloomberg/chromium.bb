@@ -1234,8 +1234,10 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest, NoNetwork) {
   // Skip this test when servicification of service workers (S13nServiceWorker)
   // is enabled because the browser process doesn't see the request or response
   // when the request is handled entirely within the service worker.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled() ||
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     return;
+  }
 
   SetUpServiceWorker();
 
@@ -1364,6 +1366,7 @@ class CrossSiteDocumentBlockingIsolatedOriginTest
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingIsolatedOriginTest,
                        BlockDocumentsFromIsolatedOrigin) {
   embedded_test_server()->StartAcceptingConnections();
+
   if (AreAllSitesIsolatedForTesting())
     return;
 
