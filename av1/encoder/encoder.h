@@ -767,6 +767,9 @@ typedef struct AV1_COMP {
   Metrics metrics;
 #endif
   int b_calculate_psnr;
+#if CONFIG_SPEED_STATS
+  unsigned int tx_search_count;
+#endif  // CONFIG_SPEED_STATS
 
   int droppable;
 

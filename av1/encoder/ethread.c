@@ -517,6 +517,9 @@ static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
       av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
       accumulate_rd_opt(&cpi->td, thread_data->td);
       cpi->td.mb.txb_split_count += thread_data->td->mb.txb_split_count;
+#if CONFIG_SPEED_STATS
+      cpi->td.mb.tx_search_count += thread_data->td->mb.tx_search_count;
+#endif  // CONFIG_SPEED_STATS
     }
   }
 }

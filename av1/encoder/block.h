@@ -263,6 +263,9 @@ struct macroblock {
   int *ex_search_count_ptr;
 
   unsigned int txb_split_count;
+#if CONFIG_SPEED_STATS
+  unsigned int tx_search_count;
+#endif  // CONFIG_SPEED_STATS
 
   // These are set to their default values at the beginning, and then adjusted
   // further in the encoding process.

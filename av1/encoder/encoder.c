@@ -2683,6 +2683,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   cpi->count = 0;
   cpi->bytes = 0;
+#if CONFIG_SPEED_STATS
+  cpi->tx_search_count = 0;
+#endif  // CONFIG_SPEED_STATS
 
   if (cpi->b_calculate_psnr) {
     cpi->total_sq_error = 0;
@@ -3113,6 +3116,11 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       fclose(f);
     }
 #endif  // CONFIG_INTERNAL_STATS
+#if CONFIG_SPEED_STATS
+    if (cpi->oxcf.pass != 1) {
+      fprintf(stdout, "tx_search_count = %d\n", cpi->tx_search_count);
+    }
+#endif  // CONFIG_SPEED_STATS
   }
 
   for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
@@ -6984,6 +6992,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     compute_internal_stats(cpi, (int)(*size));
   }
 #endif  // CONFIG_INTERNAL_STATS
+#if CONFIG_SPEED_STATS
+  if (cpi->oxcf.pass != 1) {
+    cpi->tx_search_count += cpi->td.mb.tx_search_count;
+    cpi->td.mb.tx_search_count = 0;
+  }
+#endif  // CONFIG_SPEED_STATS
 
   aom_clear_system_state();
 

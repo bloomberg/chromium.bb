@@ -6302,6 +6302,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->prev_mi = cm->allow_ref_frame_mvs ? cm->prev_mip : NULL;
 
   x->txb_split_count = 0;
+#if CONFIG_SPEED_STATS
+  x->tx_search_count = 0;
+#endif  // CONFIG_SPEED_STATS
 
   av1_zero(rdc->global_motion_used);
   av1_zero(cpi->gmparams_cost);

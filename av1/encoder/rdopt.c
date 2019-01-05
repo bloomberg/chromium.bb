@@ -5835,6 +5835,9 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
     return;
   }
+#if CONFIG_SPEED_STATS
+  ++x->tx_search_count;
+#endif  // CONFIG_SPEED_STATS
 
   // Precompute residual hashes and find existing or add new RD records to
   // store and reuse rate and distortion values to speed up TX size search.
