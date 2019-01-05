@@ -19,7 +19,7 @@ cr.define('onboarding_signin_view_test', function() {
       welcome.WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
 
       testEmailBrowserProxy = new TestNuxEmailProxy();
-      nux.NuxEmailProxyImpl.instance_ = testEmailBrowserProxy;
+      nux.EmailAppProxyImpl.instance_ = testEmailBrowserProxy;
 
       PolymerTest.clearBody();
       testElement = document.createElement('signin-view');

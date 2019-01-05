@@ -2,7 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../navigation_behavior.html">
-<link rel="import" href="email_chooser.html">
+<link rel="import" href="../shared/app_chooser.html">
+<link rel="import" href="email_app_proxy.html">
 
 <dom-module id="nux-email">
   <template>
@@ -32,8 +33,9 @@
     <div class="email-ask">
       <div class="email-logo" alt=""></div>
       <h1>$i18n{emailProviderTitle}</h1>
-      <email-chooser id="emailChooser" indicator-model="[[indicatorModel]]">
-      </email-chooser>
+      <app-chooser id="emailChooser" indicator-model="[[indicatorModel]]"
+          single-select>
+      </app-chooser>
     </div>
   </template>
   <script src="nux_email.js"></script>

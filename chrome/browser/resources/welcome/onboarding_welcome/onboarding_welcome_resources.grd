@@ -89,6 +89,12 @@
                  file="navigation_behavior.js"
                  type="chrome_html"
                  preprocess="true"/>
+      <structure name="IDR_NUX_SHARED_APP_CHOOSER_HTML"
+                 file="shared\app_chooser.html"
+                 type="chrome_html" />
+      <structure name="IDR_NUX_SHARED_APP_CHOOSER_JS"
+                 file="shared\app_chooser.js"
+                 type="chrome_html" />
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_JS"
                  file="shared\action_link_style.js"
                  type="chrome_html" />
@@ -172,17 +178,11 @@
                  preprocess="true"/>
 
        <!-- NUX Email-->
-      <structure name="IDR_NUX_EMAIL_CHOOSER_HTML"
-                 file="email\email_chooser.html"
+      <structure name="IDR_EMAIL_APP_PROXY_HTML"
+                 file="email\email_app_proxy.html"
                  type="chrome_html" />
-      <structure name="IDR_NUX_EMAIL_CHOOSER_JS"
-                 file="email\email_chooser.js"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_EMAIL_PROXY_HTML"
-                 file="email\nux_email_proxy.html"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_EMAIL_PROXY_JS"
-                 file="email\nux_email_proxy.js"
+      <structure name="IDR_EMAIL_APP_PROXY_JS"
+                 file="email\email_app_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_NUX_EMAIL_HTML"
                  file="email\nux_email.html"
@@ -192,23 +192,17 @@
                  type="chrome_html" />
 
        <!-- NUX Google apps-->
-      <structure name="IDR_NUX_GOOGLE_APPS_CHOOSER_HTML"
-                 file="google_apps\apps_chooser.html"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_GOOGLE_APPS_CHOOSER_JS"
-                 file="google_apps\apps_chooser.js"
-                 type="chrome_html" />
       <structure name="IDR_NUX_GOOGLE_APPS_HTML"
                  file="google_apps\nux_google_apps.html"
                  type="chrome_html" />
       <structure name="IDR_NUX_GOOGLE_APPS_JS"
                  file="google_apps\nux_google_apps.js"
                  type="chrome_html" />
-      <structure name="IDR_NUX_GOOGLE_APPS_PROXY_HTML"
-                 file="google_apps\nux_google_apps_proxy.html"
+      <structure name="IDR_GOOGLE_APP_PROXY_HTML"
+                 file="google_apps\google_app_proxy.html"
                  type="chrome_html" />
-      <structure name="IDR_NUX_GOOGLE_APPS_PROXY_JS"
-                 file="google_apps\nux_google_apps_proxy.js"
+      <structure name="IDR_GOOGLE_APP_PROXY_JS"
+                 file="google_apps\google_app_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_NUX_SET_AS_DEFAULT_HTML"
                  file="set_as_default\nux_set_as_default.html"

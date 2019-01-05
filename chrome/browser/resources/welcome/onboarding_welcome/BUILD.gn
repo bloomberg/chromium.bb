@@ -26,7 +26,7 @@ js_library("email_interstitial") {
   deps = [
     ":email_interstitial_proxy",
     ":welcome_browser_proxy",
-    "./email/:nux_email_proxy",
+    "./email/:email_app_proxy",
   ]
 }
 
@@ -57,7 +57,7 @@ js_library("signin_view") {
     ":navigation_behavior",
     ":signin_view_proxy",
     ":welcome_browser_proxy",
-    "./email/:nux_email_proxy",
+    "./email/:email_app_proxy",
   ]
 }
 

@@ -43,7 +43,7 @@ Polymer({
     this.emailInterstitialProxy_.recordNext();
     const providerId =
         (new URL(window.location.href)).searchParams.get('provider');
-    nux.NuxEmailProxyImpl.getInstance().getEmailList().then(list => {
+    nux.EmailAppProxyImpl.getInstance().getAppList().then(list => {
       for (let i = 0; i < list.length; i++) {
         if (list[i].id == providerId) {
           this.welcomeBrowserProxy_.goToURL(list[i].url);

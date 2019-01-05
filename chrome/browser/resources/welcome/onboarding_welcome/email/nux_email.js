@@ -12,6 +12,13 @@ Polymer({
     indicatorModel: Object,
   },
 
+  /** @override */
+  ready: function() {
+    this.$.emailChooser.appProxy = nux.EmailAppProxyImpl.getInstance();
+    this.$.emailChooser.metricsManager =
+        new nux.ModuleMetricsManager(nux.EmailMetricsProxyImpl.getInstance());
+  },
+
   onRouteEnter: function() {
     this.$.emailChooser.onRouteEnter();
   },

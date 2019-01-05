@@ -77,12 +77,12 @@ class TestEmailMetricsProxy extends TestBrowserProxy {
   }
 }
 
-/** @implements {nux.NuxEmailProxy} */
+/** @implements {nux.AppProxy} */
 class TestNuxEmailProxy extends TestBrowserProxy {
   constructor() {
     super([
       'cacheBookmarkIcon',
-      'getEmailList',
+      'getAppList',
       'getSavedProvider',
       'recordProviderSelected',
     ]);
@@ -100,8 +100,8 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  getEmailList() {
-    this.methodCalled('getEmailList');
+  getAppList() {
+    this.methodCalled('getAppList');
     return Promise.resolve(this.emailList_);
   }
 
@@ -110,7 +110,6 @@ class TestNuxEmailProxy extends TestBrowserProxy {
     this.methodCalled('cacheBookmarkIcon');
   }
 
-  /** @override */
   getSavedProvider() {
     this.methodCalled('getSavedProvider');
     return this.stubSavedProvider_;

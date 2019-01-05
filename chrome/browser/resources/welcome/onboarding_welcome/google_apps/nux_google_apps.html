@@ -2,7 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../navigation_behavior.html">
-<link rel="import" href="apps_chooser.html">
+<link rel="import" href="../shared/app_chooser.html">
+<link rel="import" href="google_app_proxy.html">
 
 <dom-module id="nux-google-apps">
   <template>
@@ -33,8 +34,8 @@
     <div class="apps-ask">
       <div class="chrome-logo" alt=""></div>
       <h1>$i18n{googleAppsDescription}</h1>
-      <apps-chooser id="appChooser" indicator-model="[[indicatorModel]]">
-      </apps-chooser>
+      <app-chooser id="appChooser" indicator-model="[[indicatorModel]]">
+      </app-chooser>
     </div>
   </template>
   <script src="nux_google_apps.js"></script>
