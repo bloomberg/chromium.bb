@@ -537,9 +537,12 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   if (is_root) {
     float page_scale_factor_for_root =
         is_page_scale_layer ? page_scale_factor_ : 1.f;
+    // SetRootTransformsAndScales will be incorrect if the root layer has
+    // non-zero position, so ensure it is zero.
+    DCHECK(layer->position().IsOrigin());
     transform_tree_.SetRootTransformsAndScales(
         transform_tree_.device_scale_factor(), page_scale_factor_for_root,
-        device_transform_, layer->position());
+        device_transform_);
   } else {
     node->source_offset = source_offset;
     node->update_post_local_transform(layer->position(),
@@ -1363,9 +1366,11 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
     clip_tree_.SetViewportClip(gfx::RectF(viewport));
     float page_scale_factor_for_root =
         page_scale_is_root_layer ? page_scale_factor_ : 1.f;
+    // SetRootTransformsAndScales will be incorrect if the root layer has
+    // non-zero position, so ensure it is zero.
+    DCHECK(root_layer_->position().IsOrigin());
     transform_tree_.SetRootTransformsAndScales(
-        device_scale_factor, page_scale_factor_for_root, device_transform_,
-        root_layer_->position());
+        device_scale_factor, page_scale_factor_for_root, device_transform_);
     return;
   }
 

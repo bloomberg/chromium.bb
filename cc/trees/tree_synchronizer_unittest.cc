@@ -380,8 +380,8 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
 
   // Pick some random properties to set. The values are not important, we're
   // just testing that at least some properties are making it through.
-  gfx::PointF root_position = gfx::PointF(2.3f, 7.4f);
-  layer_tree_root->SetPosition(root_position);
+  gfx::Size root_bounds = gfx::Size(10, 12);
+  layer_tree_root->SetBounds(root_bounds);
 
   gfx::Size second_child_bounds = gfx::Size(25, 53);
   layer_tree_root->children()[1]->SetBounds(second_child_bounds);
@@ -400,9 +400,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
 
   // Check that the property values we set on the Layer tree are reflected in
   // the LayerImpl tree.
-  gfx::PointF root_layer_impl_position = layer_impl_tree_root->position();
-  EXPECT_EQ(root_position.x(), root_layer_impl_position.x());
-  EXPECT_EQ(root_position.y(), root_layer_impl_position.y());
+  EXPECT_EQ(root_bounds, layer_impl_tree_root->bounds());
 
   gfx::Size second_layer_impl_child_bounds =
       layer_impl_tree_root->layer_tree_impl()

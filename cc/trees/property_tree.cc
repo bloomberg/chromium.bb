@@ -635,8 +635,7 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
 void TransformTree::SetRootTransformsAndScales(
     float device_scale_factor,
     float page_scale_factor_for_root,
-    const gfx::Transform& device_transform,
-    gfx::PointF root_position) {
+    const gfx::Transform& device_transform) {
   gfx::Vector2dF device_transform_scale_components =
       MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
 
@@ -645,17 +644,14 @@ void TransformTree::SetRootTransformsAndScales(
       std::max(device_transform_scale_components.x(),
                device_transform_scale_components.y());
 
-  // If DT is the device transform, DSF is the matrix scaled by (device scale
-  // factor * page scale factor for root), RP is the matrix translated by root's
-  // position,
-  // Let Screen Space Scale(SSS) = scale component of DT*DSF*RP,
-  // then the screen space transform of the root transform node is set to SSS
-  // and the post local transform of the contents root node is set to
-  // SSS^-1*DT*DSF*RP.
+  // Let DT be the device transform and DSF be the matrix scaled by (device
+  // scale factor * page scale factor for root). Let Screen Space Scale(SSS) =
+  // scale component of DT*DSF. The screen space transform of the root
+  // transform node is set to SSS and the post local transform of the contents
+  // root node is set to SSS^-1*DT*DSF.
   gfx::Transform transform = device_transform;
   transform.Scale(device_scale_factor * page_scale_factor_for_root,
                   device_scale_factor * page_scale_factor_for_root);
-  transform.Translate(root_position.x(), root_position.y());
   float fallback_value = device_scale_factor * page_scale_factor_for_root;
   gfx::Vector2dF screen_space_scale =
       MathUtil::ComputeTransform2dScaleComponents(transform, fallback_value);
