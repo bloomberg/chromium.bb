@@ -9,6 +9,7 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/files/file.h"
@@ -232,7 +233,7 @@ int64_t CalculateExpectedFileSize(
   return static_cast<int64_t>(sizeof(third_party_dlls::PackedListMetadata) +
                               packed_list_metadata.module_count *
                                   sizeof(third_party_dlls::PackedListModule) +
-                              arraysize(base::MD5Digest::a));
+                              std::extent<decltype(base::MD5Digest::a)>());
 }
 
 bool ModuleLess::operator()(
