@@ -45,13 +45,6 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
                                bool is_content_initiated) override {
-    // A provisional load notification is received when a frame navigation is
-    // sent to the browser. We don't want to log it again during commit.
-    if (delegate()->IsNavigationInitiatedByRenderer(
-            document_loader->GetRequest())) {
-      return;
-    }
-
     if (test_runner()->shouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());

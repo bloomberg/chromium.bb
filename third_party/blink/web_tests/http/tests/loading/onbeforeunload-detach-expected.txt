@@ -4,6 +4,7 @@ frame "iframe" - didReceiveTitle:
 frame "iframe" - didStartProvisionalLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
+frame "iframe" - didStartProvisionalLoadForFrame
 frame "iframe" - didCommitLoadForFrame
 CONSOLE MESSAGE: line 12: iframe: clicking
 CONSOLE MESSAGE: line 5: iframe: onbeforeunload
