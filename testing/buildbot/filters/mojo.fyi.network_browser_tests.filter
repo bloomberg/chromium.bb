@@ -1,31 +1,11 @@
-# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
-# feature X that is already not working), please add it beside the existing
-# failures. Otherwise please reach out to network-service-dev@.
-
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 
-# These tests use URLFetchers directly.
-# https://crbug.com/853798
--ProfileBrowserTest.SeparateMediaCache
-
 # https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 
-# https://crbug.com/773295
-# Remove this test when there are no more clients left that use URLFetcher.
--VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
-
-# Channel ID is not hooked up to the network service yet.
-# https://crbug.com/840412
--JavaScriptBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
--JavaScriptBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
--NativeBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
--NativeBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
-
-# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
-# feature X that is already not working), please add it beside the existing
-# failures. Otherwise please reach out to network-service-dev@.
+# DO NOT ADD ANY MORE ENTRIES! Network service is about to ship to stable.
+# Please reach out to network-service-dev@ if you have any questions.

@@ -66,6 +66,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -1096,6 +1097,9 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest, FromPopup) {
 // that can connect to it, with a TLS channel ID having been generated.
 IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
                        WebConnectableWithNonEmptyTlsChannelId) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Channel ID doesn't work with network service.
+
   std::string expected_tls_channel_id_value;
   bool expect_empty_id = true;
 
@@ -1366,6 +1370,9 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, LargeMessages) {
 // storage partitions.
 IN_PROC_BROWSER_TEST_P(MessagingApiTest,
                        DifferentStoragePartitionTLSChannelID) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Channel ID doesn't work with network service.
+
   // Create a platform app (which will have a different storage partition).
   TestExtensionDir platform_app_dir;
   platform_app_dir.WriteManifest(

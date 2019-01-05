@@ -719,6 +719,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
 // Verifies that, by default, there's a separate disk cache for media files.
 // TODO(crbug.com/789657): remove once there is no separate on-disk media cache.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SeparateMediaCache) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Network service doesn't use a separate media cache.
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Do a normal load using the media URLRequestContext, populating the cache.

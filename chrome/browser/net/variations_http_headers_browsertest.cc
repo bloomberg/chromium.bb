@@ -32,6 +32,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -241,6 +242,9 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 // https://crbug.com/773295
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromInternalRequest) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // URLFetcher doesn't work with network service.
+
   BlockingURLFetcherDelegate delegate;
 
   GURL url = GetGoogleRedirectUrl1();
