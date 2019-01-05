@@ -629,19 +629,7 @@ bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
 
 // static
 base::Optional<url::Origin> SiteInstanceImpl::GetRequestInitiatorSiteLock(
-    BrowserContext* browser_context,
     GURL site_url) {
-  DCHECK(browser_context);
-
-  // |site_url| cannot be used as |request_initiator_site_lock| unless the site
-  // requires a dedicated process.  Otherwise b.com may share a process
-  // associated with a.com, in a SiteInstance with |site_url| set to
-  // "http://a.com" (and/or "http://nonisolated.invalid" in the future) and in
-  // that scenario |request_initiator| for requests from b.com should NOT be
-  // locked to a.com
-  if (!ShouldLockToOrigin(browser_context, site_url))
-    return base::nullopt;
-
   // The following schemes are safe for sites that require a process lock:
   // - data: - locking |request_initiator| to an opaque origin
   // - http/https - requiring |request_initiator| to match |site_url| with
