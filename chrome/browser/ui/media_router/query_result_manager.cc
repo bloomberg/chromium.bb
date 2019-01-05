@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/media_router/query_result_manager.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
@@ -169,7 +170,7 @@ void QueryResultManager::SetSinksCompatibleWithSource(
     MediaCastMode cast_mode,
     const MediaSource& source,
     const std::vector<MediaSink>& new_sinks) {
-  base::hash_set<MediaSink::Id> new_sink_ids;
+  std::unordered_set<MediaSink::Id> new_sink_ids;
   for (const MediaSink& sink : new_sinks)
     new_sink_ids.insert(sink.id());
 

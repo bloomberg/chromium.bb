@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -661,7 +662,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // the node is added to |nodes_with_back_links|.
   void CollectOpenerFrameTrees(
       std::vector<FrameTree*>* opener_frame_trees,
-      base::hash_set<FrameTreeNode*>* nodes_with_back_links);
+      std::unordered_set<FrameTreeNode*>* nodes_with_back_links);
 
   // Create swapped out RenderViews and RenderFrameProxies in the given
   // SiteInstance for the current node's FrameTree.  Used as a helper function

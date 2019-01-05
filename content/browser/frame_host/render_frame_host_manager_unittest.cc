@@ -8,6 +8,7 @@
 
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -500,7 +501,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   void CollectOpenerFrameTrees(
       FrameTreeNode* node,
       std::vector<FrameTree*>* opener_frame_trees,
-      base::hash_set<FrameTreeNode*>* nodes_with_back_links) {
+      std::unordered_set<FrameTreeNode*>* nodes_with_back_links) {
     node->render_manager()->CollectOpenerFrameTrees(opener_frame_trees,
                                                     nodes_with_back_links);
   }
@@ -2325,7 +2326,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   root4->child_at(0)->SetOpener(root3);
 
   std::vector<FrameTree*> opener_frame_trees;
-  base::hash_set<FrameTreeNode*> nodes_with_back_links;
+  std::unordered_set<FrameTreeNode*> nodes_with_back_links;
 
   CollectOpenerFrameTrees(root1, &opener_frame_trees, &nodes_with_back_links);
 

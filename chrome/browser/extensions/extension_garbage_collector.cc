@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -221,8 +222,8 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     return;
   extension_prefs->SetNeedsStorageGarbageCollection(false);
 
-  std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
-      new base::hash_set<base::FilePath>());
+  std::unique_ptr<std::unordered_set<base::FilePath>> active_paths(
+      new std::unordered_set<base::FilePath>());
   std::unique_ptr<ExtensionSet> extensions =
       ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
   for (ExtensionSet::const_iterator iter = extensions->begin();

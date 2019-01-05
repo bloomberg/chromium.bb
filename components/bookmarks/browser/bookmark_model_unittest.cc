@@ -8,9 +8,11 @@
 #include <stdint.h>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -222,7 +224,7 @@ void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
 
 void VerifyNoDuplicateIDs(BookmarkModel* model) {
   ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
-  base::hash_set<int64_t> ids;
+  std::unordered_set<int64_t> ids;
   while (it.has_next())
     ASSERT_TRUE(ids.insert(it.Next()->id()).second);
 }

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
 
 #include <stdint.h>
+#include <unordered_set>
 #include <utility>
 
 #include "base/hash.h"
@@ -162,7 +163,7 @@ void BluetoothSocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
   manager_->Remove(extension_id(), api_resource_id);
 }
 
-base::hash_set<int>* BluetoothSocketAsyncApiFunction::GetSocketIds() {
+std::unordered_set<int>* BluetoothSocketAsyncApiFunction::GetSocketIds() {
   return manager_->GetResourceIds(extension_id());
 }
 
@@ -599,7 +600,7 @@ BluetoothSocketGetSocketsFunction::~BluetoothSocketGetSocketsFunction() {}
 
 ExtensionFunction::ResponseAction BluetoothSocketGetSocketsFunction::Run() {
   std::vector<bluetooth_socket::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids) {
     for (int socket_id : *resource_ids) {
       BluetoothApiSocket* socket = GetSocket(socket_id);

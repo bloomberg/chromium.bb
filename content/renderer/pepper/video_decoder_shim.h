@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -88,7 +89,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   using TextureIdMap = std::unordered_map<uint32_t, uint32_t>;
   TextureIdMap texture_id_map_;
   // Available textures (these are plugin ids.)
-  using TextureIdSet = base::hash_set<uint32_t>;
+  using TextureIdSet = std::unordered_set<uint32_t>;
   TextureIdSet available_textures_;
   // Track textures that are no longer needed (these are plugin ids.)
   TextureIdSet textures_to_dismiss_;

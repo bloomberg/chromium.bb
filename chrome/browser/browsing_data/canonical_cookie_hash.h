@@ -34,9 +34,10 @@ struct CanonicalCookieComparer {
   }
 };
 
-typedef base::hash_set<net::CanonicalCookie,
-                       CanonicalCookieHasher,
-                       CanonicalCookieComparer> CookieHashSet;
+typedef std::unordered_set<net::CanonicalCookie,
+                           CanonicalCookieHasher,
+                           CanonicalCookieComparer>
+    CookieHashSet;
 
 }  // namespace canonical_cookie
 

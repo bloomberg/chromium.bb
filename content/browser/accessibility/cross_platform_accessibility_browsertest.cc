@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -53,8 +54,8 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   }
 
   // Make sure each node in the tree has a unique id.
-  void RecursiveAssertUniqueIds(
-      const ui::AXNode* node, base::hash_set<int>* ids) {
+  void RecursiveAssertUniqueIds(const ui::AXNode* node,
+                                std::unordered_set<int>* ids) {
     ASSERT_TRUE(ids->find(node->id()) == ids->end());
     ids->insert(node->id());
     for (int i = 0; i < node->child_count(); i++)
@@ -271,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  base::hash_set<int> ids;
+  std::unordered_set<int> ids;
   RecursiveAssertUniqueIds(root, &ids);
 }
 
@@ -339,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  base::hash_set<int> ids;
+  std::unordered_set<int> ids;
   RecursiveAssertUniqueIds(root, &ids);
 }
 

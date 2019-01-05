@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/dom_distiller_model.h"
 
+#include <unordered_set>
 #include <utility>
 
 using syncer::SyncChange;
@@ -101,7 +102,7 @@ void DomDistillerModel::CalculateChangesForMerge(
     const SyncDataList& data,
     SyncChangeList* changes_to_apply,
     SyncChangeList* changes_missing) {
-  typedef base::hash_set<std::string> StringSet;
+  typedef std::unordered_set<std::string> StringSet;
   StringSet entries_to_change;
   for (auto it = data.begin(); it != data.end(); ++it) {
     std::string entry_id = GetEntryIdFromSyncData(*it);

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -389,7 +390,7 @@ void BrowserContext::AsyncObliterateStoragePartition(
 // static
 void BrowserContext::GarbageCollectStoragePartitions(
     BrowserContext* browser_context,
-    std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+    std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
     const base::Closure& done) {
   GetStoragePartitionMap(browser_context)
       ->GarbageCollect(std::move(active_paths), done);

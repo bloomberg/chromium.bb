@@ -137,7 +137,7 @@ WebcamResource* WebcamPrivateAPI::FindWebcamResource(
     const std::string& webcam_id) const {
   DCHECK(webcam_resource_manager_);
 
-  base::hash_set<int>* connection_ids =
+  std::unordered_set<int>* connection_ids =
       webcam_resource_manager_->GetResourceIds(extension_id);
   if (!connection_ids)
     return nullptr;
@@ -156,7 +156,7 @@ bool WebcamPrivateAPI::RemoveWebcamResource(const std::string& extension_id,
                                             const std::string& webcam_id) {
   DCHECK(webcam_resource_manager_);
 
-  base::hash_set<int>* connection_ids =
+  std::unordered_set<int>* connection_ids =
       webcam_resource_manager_->GetResourceIds(extension_id);
   if (!connection_ids)
     return false;

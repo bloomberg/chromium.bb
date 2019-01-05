@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -2433,7 +2434,7 @@ int RenderFrameHostManager::GetProxyCount() {
 
 void RenderFrameHostManager::CollectOpenerFrameTrees(
     std::vector<FrameTree*>* opener_frame_trees,
-    base::hash_set<FrameTreeNode*>* nodes_with_back_links) {
+    std::unordered_set<FrameTreeNode*>* nodes_with_back_links) {
   CHECK(opener_frame_trees);
   opener_frame_trees->push_back(frame_tree_node_->frame_tree());
 
@@ -2477,7 +2478,7 @@ void RenderFrameHostManager::CreateOpenerProxies(
     SiteInstance* instance,
     FrameTreeNode* skip_this_node) {
   std::vector<FrameTree*> opener_frame_trees;
-  base::hash_set<FrameTreeNode*> nodes_with_back_links;
+  std::unordered_set<FrameTreeNode*> nodes_with_back_links;
 
   CollectOpenerFrameTrees(&opener_frame_trees, &nodes_with_back_links);
 

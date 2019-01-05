@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -142,7 +143,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // ownership of the pointer.
   static void GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
-      std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+      std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
       const base::Closure& done);
 
   static StoragePartition* GetDefaultStoragePartition(

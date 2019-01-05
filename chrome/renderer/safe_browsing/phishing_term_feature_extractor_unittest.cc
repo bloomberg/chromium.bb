@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -40,7 +41,7 @@ namespace safe_browsing {
 class PhishingTermFeatureExtractorTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    base::hash_set<std::string> terms;
+    std::unordered_set<std::string> terms;
     terms.insert("one");
     terms.insert("one one");
     terms.insert("two");
@@ -58,7 +59,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
       term_hashes_.insert(crypto::SHA256HashString(*it));
     }
 
-    base::hash_set<std::string> words;
+    std::unordered_set<std::string> words;
     words.insert("one");
     words.insert("two");
     words.insert("multi");
@@ -138,8 +139,8 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
   std::unique_ptr<base::RunLoop> active_run_loop_;
   MockFeatureExtractorClock clock_;
   std::unique_ptr<PhishingTermFeatureExtractor> extractor_;
-  base::hash_set<std::string> term_hashes_;
-  base::hash_set<uint32_t> word_hashes_;
+  std::unordered_set<std::string> term_hashes_;
+  std::unordered_set<uint32_t> word_hashes_;
   bool success_;  // holds the success value from ExtractFeatures
 };
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -146,7 +147,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   bool initialized_;
   bool powered_;
   DiscoveryStatus discovery_status_;
-  base::hash_set<std::string> discovered_devices_;
+  std::unordered_set<std::string> discovered_devices_;
 
   std::vector<std::pair<base::Closure, DiscoverySessionErrorCallback>>
       on_start_discovery_callbacks_;

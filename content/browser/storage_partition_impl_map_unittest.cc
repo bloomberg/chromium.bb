@@ -4,6 +4,7 @@
 
 #include "content/browser/storage_partition_impl_map.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -71,8 +72,8 @@ TEST(StoragePartitionImplMapTest, GarbageCollect) {
   TestBrowserContext browser_context;
   StoragePartitionImplMap storage_partition_impl_map(&browser_context);
 
-  std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
-      new base::hash_set<base::FilePath>);
+  std::unique_ptr<std::unordered_set<base::FilePath>> active_paths(
+      new std::unordered_set<base::FilePath>);
 
   base::FilePath active_path = browser_context.GetPath().Append(
       StoragePartitionImplMap::GetStoragePartitionPath(

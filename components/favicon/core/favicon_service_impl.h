@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -159,7 +160,7 @@ class FaviconServiceImpl : public FaviconService {
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
 
-  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
+  std::unordered_set<MissingFaviconURLHash> missing_favicon_urls_;
   std::unique_ptr<FaviconClient> favicon_client_;
   history::HistoryService* history_service_;
 

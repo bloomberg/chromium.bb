@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMacEditCommandHelper {
   NSArray* GetEditSelectorNames();
 
  private:
-  base::hash_set<std::string> edit_command_set_;
+  std::unordered_set<std::string> edit_command_set_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacEditCommandHelper);
 };
 

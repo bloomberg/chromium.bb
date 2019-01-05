@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -58,7 +59,7 @@ class SocketResourceManagerInterface {
   virtual void Replace(const std::string& extension_id,
                        int api_resource_id,
                        Socket* socket) = 0;
-  virtual base::hash_set<int>* GetResourceIds(
+  virtual std::unordered_set<int>* GetResourceIds(
       const std::string& extension_id) = 0;
 };
 
@@ -98,7 +99,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
     manager_->Remove(extension_id, api_resource_id);
   }
 
-  base::hash_set<int>* GetResourceIds(
+  std::unordered_set<int>* GetResourceIds(
       const std::string& extension_id) override {
     return manager_->GetResourceIds(extension_id);
   }
@@ -125,7 +126,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   Socket* GetSocket(int api_resource_id);
   void ReplaceSocket(int api_resource_id, Socket* socket);
   void RemoveSocket(int api_resource_id);
-  base::hash_set<int>* GetSocketIds();
+  std::unordered_set<int>* GetSocketIds();
 
   // A no-op outside of Chrome OS.
   void OpenFirewallHole(const std::string& address,

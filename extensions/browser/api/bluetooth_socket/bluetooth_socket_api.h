@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -54,7 +55,7 @@ class BluetoothSocketAsyncApiFunction : public UIThreadExtensionFunction {
   int AddSocket(BluetoothApiSocket* socket);
   BluetoothApiSocket* GetSocket(int api_resource_id);
   void RemoveSocket(int api_resource_id);
-  base::hash_set<int>* GetSocketIds();
+  std::unordered_set<int>* GetSocketIds();
 
  private:
   ApiResourceManager<BluetoothApiSocket>* manager_;

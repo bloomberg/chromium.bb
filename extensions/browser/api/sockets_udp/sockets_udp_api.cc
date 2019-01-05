@@ -361,7 +361,7 @@ bool SocketsUdpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsUdpGetSocketsFunction::Work() {
   std::vector<sockets_udp::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (int socket_id : *resource_ids) {
       ResumableUDPSocket* socket = GetUdpSocket(socket_id);

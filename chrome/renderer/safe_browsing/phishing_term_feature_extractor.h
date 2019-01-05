@@ -22,6 +22,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
@@ -58,8 +59,8 @@ class PhishingTermFeatureExtractor {
   // |clock| is used for timing feature extractor operations, and may be mocked
   // for testing.  The caller keeps ownership of the clock.
   PhishingTermFeatureExtractor(
-      const base::hash_set<std::string>* page_term_hashes,
-      const base::hash_set<uint32_t>* page_word_hashes,
+      const std::unordered_set<std::string>* page_term_hashes,
+      const std::unordered_set<uint32_t>* page_word_hashes,
       size_t max_words_per_term,
       uint32_t murmurhash3_seed,
       size_t max_shingles_per_page,
@@ -127,14 +128,14 @@ class PhishingTermFeatureExtractor {
   void Clear();
 
   // All of the term hashes that we are looking for in the page.
-  const base::hash_set<std::string>* page_term_hashes_;
+  const std::unordered_set<std::string>* page_term_hashes_;
 
   // Murmur3 hashes of all the individual words in page_term_hashes_.  If
   // page_term_hashes_ included (hashed) "one" and "one two", page_word_hashes_
   // would contain (hashed) "one" and "two".  We do this so that we can have a
   // quick out in the common case that the current word we are processing
   // doesn't contain any part of one of our terms.
-  const base::hash_set<uint32_t>* page_word_hashes_;
+  const std::unordered_set<uint32_t>* page_word_hashes_;
 
   // The maximum number of words in an n-gram.
   const size_t max_words_per_term_;

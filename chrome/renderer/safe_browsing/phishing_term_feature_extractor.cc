@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -82,8 +83,8 @@ struct PhishingTermFeatureExtractor::ExtractionState {
 };
 
 PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
-    const base::hash_set<std::string>* page_term_hashes,
-    const base::hash_set<uint32_t>* page_word_hashes,
+    const std::unordered_set<std::string>* page_term_hashes,
+    const std::unordered_set<uint32_t>* page_word_hashes,
     size_t max_words_per_term,
     uint32_t murmurhash3_seed,
     size_t max_shingles_per_page,

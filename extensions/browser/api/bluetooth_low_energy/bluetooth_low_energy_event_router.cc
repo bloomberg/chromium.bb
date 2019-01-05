@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -1781,7 +1782,8 @@ BluetoothLowEnergyConnection* BluetoothLowEnergyEventRouter::FindConnection(
   ConnectionResourceManager* manager =
       GetConnectionResourceManager(browser_context_);
 
-  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* connection_ids =
+      manager->GetResourceIds(extension_id);
   if (!connection_ids)
     return NULL;
 
@@ -1805,7 +1807,8 @@ bool BluetoothLowEnergyEventRouter::RemoveConnection(
   ConnectionResourceManager* manager =
       GetConnectionResourceManager(browser_context_);
 
-  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* connection_ids =
+      manager->GetResourceIds(extension_id);
   if (!connection_ids)
     return false;
 
@@ -1830,7 +1833,7 @@ BluetoothLowEnergyEventRouter::FindNotifySession(
   NotifySessionResourceManager* manager =
       GetNotifySessionResourceManager(browser_context_);
 
-  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* ids = manager->GetResourceIds(extension_id);
   if (!ids)
     return NULL;
 
@@ -1854,7 +1857,7 @@ bool BluetoothLowEnergyEventRouter::RemoveNotifySession(
   NotifySessionResourceManager* manager =
       GetNotifySessionResourceManager(browser_context_);
 
-  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* ids = manager->GetResourceIds(extension_id);
   if (!ids)
     return false;
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/storage_partition_impl_map.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -271,8 +272,8 @@ void BlockingObliteratePath(
 
 // Ensures each path in |active_paths| is a direct child of storage_root.
 void NormalizeActivePaths(const base::FilePath& storage_root,
-                          base::hash_set<base::FilePath>* active_paths) {
-  base::hash_set<base::FilePath> normalized_active_paths;
+                          std::unordered_set<base::FilePath>* active_paths) {
+  std::unordered_set<base::FilePath> normalized_active_paths;
 
   for (auto iter = active_paths->begin(); iter != active_paths->end(); ++iter) {
     base::FilePath relative_path;
@@ -309,7 +310,7 @@ void NormalizeActivePaths(const base::FilePath& storage_root,
 void BlockingGarbageCollect(
     const base::FilePath& storage_root,
     const scoped_refptr<base::TaskRunner>& file_access_runner,
-    std::unique_ptr<base::hash_set<base::FilePath>> active_paths) {
+    std::unique_ptr<std::unordered_set<base::FilePath>> active_paths) {
   CHECK(storage_root.IsAbsolute());
 
   NormalizeActivePaths(storage_root, active_paths.get());
@@ -524,7 +525,7 @@ void StoragePartitionImplMap::AsyncObliterate(
 }
 
 void StoragePartitionImplMap::GarbageCollect(
-    std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+    std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
     const base::Closure& done) {
   // Include all paths for current StoragePartitions in the active_paths since
   // they cannot be deleted safely.
