@@ -255,9 +255,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     max_main_axis_extent =
         std::max(max_main_axis_extent, line->main_axis_extent);
   }
-  LayoutUnit intrinsic_block_content_size = cross_axis_offset;
-  if (is_column)
-    intrinsic_block_content_size = max_main_axis_extent;
+  LayoutUnit intrinsic_block_content_size =
+      is_column ? max_main_axis_extent
+                : cross_axis_offset - border_scrollbar_padding_.block_start;
   LayoutUnit intrinsic_block_size =
       intrinsic_block_content_size + border_scrollbar_padding_.BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
