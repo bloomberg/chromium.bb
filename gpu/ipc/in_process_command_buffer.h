@@ -114,7 +114,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int32_t shm_id) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(uint32_t size,
+                                             int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 
   // GpuControl implementation (called on client thread):

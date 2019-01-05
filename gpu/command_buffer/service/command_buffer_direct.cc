@@ -60,7 +60,7 @@ void CommandBufferDirect::SetGetBuffer(int32_t transfer_buffer_id) {
   service_.SetGetBuffer(transfer_buffer_id);
 }
 
-scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBuffer(size_t size,
+scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBuffer(uint32_t size,
                                                                 int32_t* id) {
   return service_.CreateTransferBuffer(size, id);
 }
@@ -97,7 +97,7 @@ void CommandBufferDirect::OnRescheduleAfterFinished() {
 void CommandBufferDirect::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
 
 scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBufferWithId(
-    size_t size,
+    uint32_t size,
     int32_t id) {
   return service_.CreateTransferBufferWithId(size, id);
 }

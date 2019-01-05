@@ -38,7 +38,8 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                                int32_t start,
                                                int32_t end) override;
   void SetGetBuffer(int32_t transfer_buffer_id) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(uint32_t size,
+                                             int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 
   // CommandBufferServiceBase implementation:
@@ -54,7 +55,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
   void ScheduleGrContextCleanup() override {}
 
-  scoped_refptr<Buffer> CreateTransferBufferWithId(size_t size, int32_t id);
+  scoped_refptr<Buffer> CreateTransferBufferWithId(uint32_t size, int32_t id);
 
   void SetGetOffsetForTest(int32_t get_offset) {
     service_.SetGetOffsetForTest(get_offset);

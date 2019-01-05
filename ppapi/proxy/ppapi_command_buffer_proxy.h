@@ -50,7 +50,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int32_t transfer_buffer_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                   int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 

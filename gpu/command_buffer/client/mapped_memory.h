@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
@@ -143,7 +144,8 @@ class GPU_EXPORT MappedMemoryManager {
   }
 
   void set_chunk_size_multiple(unsigned int multiple) {
-    DCHECK(multiple % FencedAllocator::kAllocAlignment == 0);
+    DCHECK(base::bits::IsPowerOfTwo(multiple));
+    DCHECK_GE(multiple, FencedAllocator::kAllocAlignment);
     chunk_size_multiple_ = multiple;
   }
 

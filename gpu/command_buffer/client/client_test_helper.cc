@@ -51,7 +51,7 @@ void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id,
 }
 
 scoped_refptr<gpu::Buffer>
-FakeCommandBufferServiceBase::CreateTransferBufferHelper(size_t size,
+FakeCommandBufferServiceBase::CreateTransferBufferHelper(uint32_t size,
                                                          int32_t* id) {
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
@@ -138,7 +138,7 @@ void MockClientCommandBuffer::SetGetBuffer(int transfer_buffer_id) {
 }
 
 scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(
-    size_t size,
+    uint32_t size,
     int32_t* id) {
   return CreateTransferBufferHelper(size, id);
 }
