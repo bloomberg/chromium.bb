@@ -301,7 +301,6 @@ void LayoutSVGText::UpdateLayout() {
 }
 
 void LayoutSVGText::RecalcVisualOverflow() {
-  // Add in overflow from children.
   LayoutObject::RecalcVisualOverflow();
   AddSelfVisualOverflow(LayoutRect(ObjectBoundingBox()));
   AddVisualEffectOverflow();
