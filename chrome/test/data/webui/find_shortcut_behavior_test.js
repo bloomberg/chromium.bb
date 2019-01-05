@@ -11,30 +11,9 @@ suite('find-shortcut', () => {
   /**
    * @type {PromiseResolver<!{modalContextOpen: boolean, self: HTMLElement}>}
    */
-  let waits;
-  /** @type {number} */
-  let nextWait;
-
-  /**
-   * Checks that the handleFindShortcut method is being called for all the
-   * |expectedSelves| element references in the order that they are passed in
-   * when a single find shortcut is invoked.
-   * @param {!Array<!HTMLElement>} expectedSelves
-   * @param {?boolean} expectedModalContextOpen
-   * @return {!Promise}
-   */
-  const checkMultiple = async (expectedSelves, expectedModalContextOpen) => {
-    waits = expectedSelves.map(() => new PromiseResolver());
-    nextWait = 0;
-    MockInteractions.pressAndReleaseKeyOn(
-        window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
-    await Promise.all(waits.map(wait => wait.promise)).then(argss => {
-      argss.forEach((args, index) => {
-        assertEquals(expectedSelves[index], args.self);
-        assertEquals(!!expectedModalContextOpen, args.modalContextOpen);
-      });
-    });
-  };
+  let wait;
+  /** @type {boolean} */
+  let resolved;
 
   /**
    * Checks that the handleFindShortcut method is being called for the
@@ -43,8 +22,15 @@ suite('find-shortcut', () => {
    * @param {?boolean} expectedModalContextOpen
    * @return {!Promise}
    */
-  const check = (expectedSelf, expectedModalContextOpen) =>
-      checkMultiple([expectedSelf], expectedModalContextOpen);
+  const check = async (expectedSelf, expectedModalContextOpen) => {
+    wait = new PromiseResolver();
+    resolved = false;
+    MockInteractions.pressAndReleaseKeyOn(
+        window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
+    const args = await wait.promise;
+    assertEquals(expectedSelf, args.self);
+    assertEquals(!!expectedModalContextOpen, args.modalContextOpen);
+  };
 
   /**
    * Registers for a keydown event to check whether the bubbled up event has
@@ -69,13 +55,17 @@ suite('find-shortcut', () => {
       behaviors: [FindShortcutBehavior],
 
       findShortcutListenOnAttach: false,
-      handledResponse: true,
+      hasFocus: false,
 
       handleFindShortcut(modalContextOpen) {
-        assert(nextWait < waits.length);
-        waits[nextWait++].resolve({modalContextOpen, self: this});
-        return this.handledResponse;
+        assert(!resolved);
+        wait.resolve({modalContextOpen, self: this});
+        return true;
       },
+
+      searchInputHasFocus() {
+        return this.hasFocus;
+      }
     });
 
     document.body.innerHTML = `
@@ -89,11 +79,16 @@ suite('find-shortcut', () => {
       behaviors: [FindShortcutBehavior],
 
       handledResponse: true,
+      hasFocus: false,
 
       handleFindShortcut(modalContextOpen) {
-        assert(nextWait < waits.length);
-        waits[nextWait++].resolve({modalContextOpen, self: this});
+        assert(!resolved);
+        wait.resolve({modalContextOpen, self: this});
         return this.handledResponse;
+      },
+
+      searchInputHasFocus() {
+        return this.hasFocus;
       },
     });
     PolymerTest.clearBody();
@@ -210,6 +205,32 @@ suite('find-shortcut', () => {
     const testElements =
         document.body.querySelectorAll('find-shortcut-element');
     assertEquals(2, FindShortcutManager.listeners.length);
+    await check(testElements[1]);
+  });
+
+  test('not handle by listener bubbles up', async () => {
+    const bubbledUp = listenOnceAndCheckDefaultPrevented(false);
+    document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
+    const testElement = document.body.querySelector('find-shortcut-element');
+    testElement.handledResponse = false;
+    await check(testElement);
+    await bubbledUp;
+  });
+
+  test('when element has focus, shortcut is handled by next', async () => {
+    document.body.innerHTML = `
+        <find-shortcut-element></find-shortcut-element>
+        <find-shortcut-element></find-shortcut-element>
+        <find-shortcut-element></find-shortcut-element>`;
+    const testElements =
+        Array.from(document.body.querySelectorAll('find-shortcut-element'));
+    testElements[0].hasFocus = true;
+    await check(testElements[2]);
+    testElements[0].hasFocus = false;
+    testElements[1].hasFocus = true;
+    await check(testElements[0]);
+    testElements[1].hasFocus = false;
+    testElements[2].hasFocus = true;
     await check(testElements[1]);
   });
 });

@@ -8,10 +8,11 @@
  * top of the stack will be notified that a find shortcut has been invoked.
  */
 
+
 const FindShortcutManager = (() => {
   /**
    * Stack of listeners. Only the top listener will handle the shortcut.
-   * @type {!Array<!HTMLElement>}
+   * @type {!Array}
    */
   const listeners = [];
 
@@ -27,16 +28,21 @@ const FindShortcutManager = (() => {
       new cr.ui.KeyboardShortcutList(cr.isMac ? 'meta|f' : 'ctrl|f');
 
   window.addEventListener('keydown', e => {
-    if (e.defaultPrevented || listeners.length == 0) {
+    if (e.defaultPrevented || listeners.length == 0 ||
+        !shortcut.matchesEvent(e)) {
       return;
     }
 
-    if (shortcut.matchesEvent(e)) {
-      const listener = /** @type {!{handleFindShortcut: function(boolean)}} */ (
-          listeners[listeners.length - 1]);
-      if (listener.handleFindShortcut(modalContextOpen)) {
-        e.preventDefault();
-      }
+    const focusIndex =
+        listeners.findIndex(listener => listener.searchInputHasFocus());
+    // If no listener has focus or the first (outer-most) listener has focus,
+    // try the last (inner-most) listener.
+    // If a listener has a search input with focus, the next listener that
+    // should be called is the right before it in |listeners| such that the
+    // goes from inner-most to outer-most.
+    const index = focusIndex <= 0 ? listeners.length - 1 : focusIndex - 1;
+    if (listeners[index].handleFindShortcut(modalContextOpen)) {
+      e.preventDefault();
     }
   });
 
@@ -80,16 +86,6 @@ const FindShortcutBehavior = {
     }
   },
 
-  /**
-   * If handled, return true.
-   * @param {boolean} modalContextOpen
-   * @return {boolean}
-   * @protected
-   */
-  handleFindShortcut(modalContextOpen) {
-    assertNotReached();
-  },
-
   becomeActiveFindShortcutListener() {
     const listeners = FindShortcutManager.listeners;
     assert(!listeners.includes(this), 'Already listening for find shortcuts.');
@@ -101,5 +97,23 @@ const FindShortcutBehavior = {
     const index = listeners.indexOf(this);
     assert(listeners.includes(this), 'Find shortcut listener not found.');
     listeners.splice(index, 1);
+  },
+
+  /**
+   * If handled, return true.
+   * @param {boolean} modalContextOpen
+   * @return {boolean}
+   * @protected
+   */
+  handleFindShortcut(modalContextOpen) {
+    assertNotReached();
+  },
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  searchInputHasFocus() {
+    assertNotReached();
   },
 };
