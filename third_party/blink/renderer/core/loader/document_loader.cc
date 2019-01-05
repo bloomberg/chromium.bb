@@ -104,13 +104,6 @@
 
 namespace blink {
 
-// The MHTML mime type should be same as the one we check in the browser
-// process's IsDownload (navigation_url_loader_network_service.cc).
-static bool IsArchiveMIMEType(const String& mime_type) {
-  return DeprecatedEqualIgnoringCase("multipart/related", mime_type) ||
-         DeprecatedEqualIgnoringCase("message/rfc822", mime_type);
-}
-
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
@@ -717,9 +710,11 @@ void DocumentLoader::ResponseReceived(
     }
   }
 
-  if (IsArchiveMIMEType(response_.MimeType()) &&
-      resource->GetDataBufferingPolicy() != kBufferData)
-    resource->SetDataBufferingPolicy(kBufferData);
+  // The MHTML mime type should be same as the one we check in the browser
+  // process's IsDownload (navigation_url_loader_network_service.cc).
+  loading_mhtml_archive_ =
+      DeprecatedEqualIgnoringCase("multipart/related", response_.MimeType()) ||
+      DeprecatedEqualIgnoringCase("message/rfc822", response_.MimeType());
 
   if (!ShouldContinueForResponse()) {
     probe::didReceiveResourceResponse(
@@ -819,7 +814,7 @@ void DocumentLoader::DataReceived(Resource* resource,
   DCHECK(!response_.IsNull());
   DCHECK(!frame_->GetPage()->Paused());
 
-  if (listing_ftp_directory_) {
+  if (listing_ftp_directory_ || loading_mhtml_archive_) {
     data_buffer_->Append(data, length);
     return;
   }
@@ -853,9 +848,6 @@ void DocumentLoader::ProcessDataBuffer() {
 void DocumentLoader::ProcessData(const char* data, size_t length) {
   application_cache_host_->MainResourceDataReceived(data, length);
   time_of_last_data_received_ = CurrentTimeTicks();
-
-  if (IsArchiveMIMEType(GetResponse().MimeType()))
-    return;
   CommitData(data, length);
 
   // If we are sending data to MediaDocument, we should stop here and cancel the
@@ -912,15 +904,15 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
 }
 
 bool DocumentLoader::MaybeCreateArchive() {
-  // Give the archive machinery a crack at this document. If the MIME type is
-  // not an archive type, it will return 0.
-  if (!IsArchiveMIMEType(response_.MimeType()))
+  // Give the archive machinery a crack at this document.
+  if (!loading_mhtml_archive_)
     return false;
 
-  DCHECK(GetResource());
-  ArchiveResource* main_resource = fetcher_->CreateArchive(GetResource());
+  ArchiveResource* main_resource = fetcher_->CreateArchive(Url(), data_buffer_);
   if (!main_resource)
     return false;
+
+  data_buffer_ = nullptr;
   // The origin is the MHTML file, we need to set the base URL to the document
   // encoded in the MHTML so relative URLs are resolved properly.
   CommitNavigation(main_resource->MimeType(), main_resource->Url());

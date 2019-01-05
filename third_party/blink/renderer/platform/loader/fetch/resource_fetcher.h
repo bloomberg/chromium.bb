@@ -132,7 +132,8 @@ class PLATFORM_EXPORT ResourceFetcher
   Vector<KURL> GetUrlsOfUnusedPreloads();
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
-  ArchiveResource* CreateArchive(Resource*);
+  ArchiveResource* CreateArchive(const KURL&,
+                                 scoped_refptr<const SharedBuffer>);
 
   void SetDefersLoading(bool);
   void StopFetching();
