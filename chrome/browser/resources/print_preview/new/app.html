@@ -86,10 +86,15 @@
     </style>
     <print-preview-state id="state" state="{{state}}"></print-preview-state>
     <print-preview-model id="model" settings="{{settings}}"
-        destination="{{destination_}}" document-info="{{documentInfo_}}"
+        destination="{{destination_}}" document-settings="[[documentSettings_]]"
+        margins="[[margins_]]" page-size="[[pageSize_]]"
         recent-destinations="{{recentDestinations_}}"
         on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
+    <print-preview-document-info id="documentInfo"
+        document-settings="{{documentSettings_}}" margins="{{margins_}}"
+        page-size="{{pageSize_}}">
+    </print-preview-document-info>
     <div id="sidebar" on-setting-valid-changed="onSettingValidChanged_">
       <print-preview-header destination="[[destination_]]" state="[[state]]"
           error-message="[[errorMessage_]]" settings="[[settings]]"
@@ -106,7 +111,7 @@
             user-info="{{userInfo_}}" available class="settings-section">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]"
+            page-count="[[documentSettings_.pageCount]]"
             disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.pages.available]]" class="settings-section">
         </print-preview-pages-settings>
@@ -154,7 +159,8 @@
               hidden$="[[!settings.dpi.available]]" class="settings-section">
           </print-preview-dpi-settings>
           <print-preview-scaling-settings settings="{{settings}}"
-              document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
+              fit-to-page-scaling="[[documentSettings_.fitToPageScaling]]"
+              disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.scaling.available]]"
               class="settings-section">
           </print-preview-scaling-settings>
@@ -184,9 +190,11 @@
     </div>
     <div id="preview-area-container">
       <print-preview-preview-area id="previewArea" settings="{{settings}}"
-          destination="[[destination_]]" document-info="{{documentInfo_}}"
-          state="[[state]]" measurement-system="[[measurementSystem_]]"
-          preview-state="{{previewState_}}">
+          destination="[[destination_]]"
+          document-modifiable="[[documentSettings_.isModifiable]]"
+          margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
+          measurement-system="[[measurementSystem_]]"
+          preview-state="{{previewState_}}" on-preview-start="onPreviewStart_">
       </print-preview-preview-area>
     </div>
   </template>

@@ -294,6 +294,15 @@ Polymer({
       notify: true,
     },
 
+    /** @type {!print_preview.DocumentSettings} */
+    documentSettings: Object,
+
+    /** @type {print_preview.Margins} */
+    margins: Object,
+
+    /** @type {!print_preview.Size} */
+    pageSize: Object,
+
     /** @type {!Array<!print_preview.RecentDestination>} */
     recentDestinations: {
       type: Array,
@@ -302,21 +311,15 @@ Polymer({
         return [];
       },
     },
-
-    /** @type {print_preview.DocumentInfo} */
-    documentInfo: {
-      type: Object,
-      notify: true,
-    },
   },
 
   observers: [
     'updateSettingsFromDestination_(destination.capabilities)',
-    'updateSettingsAvailabilityFromDocumentInfo_(' +
-        'documentInfo.isModifiable, documentInfo.hasCssMediaStyles,' +
-        'documentInfo.hasSelection)',
+    'updateSettingsAvailabilityFromDocumentSettings_(' +
+        'documentSettings.isModifiable, documentSettings.hasCssMediaStyles,' +
+        'documentSettings.hasSelection, documentSettings.isScalingDisabled)',
     'updateHeaderFooterAvailable_(' +
-        'documentInfo.margins, settings.margins.value, ' +
+        'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
     'updateRecentDestinations_(destination, destination.capabilities)',
     'stickySettingsChanged_(' +
@@ -394,23 +397,26 @@ Polymer({
     this.set(
         'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
 
-    if (this.documentInfo) {
-      this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+    if (this.documentSettings) {
+      this.updateSettingsAvailabilityFromDestinationAndDocumentSettings_();
     }
   },
 
   /** @private */
-  updateSettingsAvailabilityFromDestinationAndDocumentInfo_: function() {
+  updateSettingsAvailabilityFromDestinationAndDocumentSettings_: function() {
     const isSaveAsPDF = this.destination.id ==
         print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
-        (!this.documentInfo.isModifiable ||
-         this.documentInfo.hasCssMediaStyles);
+        (!this.documentSettings.isModifiable ||
+         this.documentSettings.hasCssMediaStyles);
     this.set('settings.fitToPage.unavailableValue', !isSaveAsPDF);
     this.set(
         'settings.fitToPage.available',
-        !knownSizeToSaveAsPdf && !this.documentInfo.isModifiable);
-    this.set('settings.scaling.available', !knownSizeToSaveAsPdf);
+        !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable &&
+            !this.documentSettings.isScalingDisabled);
+    this.set(
+        'settings.scaling.available',
+        !knownSizeToSaveAsPdf && !this.documentSettings.isScalingDisabled);
     const caps = (!!this.destination && !!this.destination.capabilities) ?
         this.destination.capabilities.printer :
         null;
@@ -428,29 +434,30 @@ Polymer({
   },
 
   /** @private */
-  updateSettingsAvailabilityFromDocumentInfo_: function() {
-    this.set('settings.margins.available', this.documentInfo.isModifiable);
+  updateSettingsAvailabilityFromDocumentSettings_: function() {
+    this.set('settings.margins.available', this.documentSettings.isModifiable);
     this.set(
-        'settings.customMargins.available', this.documentInfo.isModifiable);
+        'settings.customMargins.available', this.documentSettings.isModifiable);
     this.set(
-        'settings.cssBackground.available', this.documentInfo.isModifiable);
+        'settings.cssBackground.available', this.documentSettings.isModifiable);
     this.set(
         'settings.selectionOnly.available',
-        this.documentInfo.isModifiable && this.documentInfo.hasSelection);
+        this.documentSettings.isModifiable &&
+            this.documentSettings.hasSelection);
     this.set(
         'settings.headerFooter.available', this.isHeaderFooterAvailable_());
     this.set(
         'settings.rasterize.available',
-        !this.documentInfo.isModifiable && !cr.isWindows && !cr.isMac);
+        !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
 
     if (this.destination) {
-      this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+      this.updateSettingsAvailabilityFromDestinationAndDocumentSettings_();
     }
   },
 
   /** @private */
   updateHeaderFooterAvailable_: function() {
-    if (this.documentInfo === undefined) {
+    if (this.documentSettings === undefined) {
       return;
     }
 
@@ -464,7 +471,7 @@ Polymer({
    */
   isHeaderFooterAvailable_: function() {
     // Always unavailable for PDFs.
-    if (!this.documentInfo.isModifiable) {
+    if (!this.documentSettings.isModifiable) {
       return false;
     }
 
@@ -483,10 +490,10 @@ Polymer({
             this.getSettingValue('margins'));
     switch (marginsType) {
       case print_preview.ticket_items.MarginsTypeValue.DEFAULT:
-        available = !this.documentInfo.margins ||
-            this.documentInfo.margins.get(
+        available = !this.margins ||
+            this.margins.get(
                 print_preview.ticket_items.CustomMarginsOrientation.TOP) > 0 ||
-            this.documentInfo.margins.get(
+            this.margins.get(
                 print_preview.ticket_items.CustomMarginsOrientation.BOTTOM) > 0;
         break;
       case print_preview.ticket_items.MarginsTypeValue.NO_MARGINS:
@@ -510,8 +517,8 @@ Polymer({
    */
   isLayoutAvailable_: function(caps) {
     if (!caps || !caps.page_orientation || !caps.page_orientation.option ||
-        !this.documentInfo.isModifiable ||
-        this.documentInfo.hasCssMediaStyles) {
+        !this.documentSettings.isModifiable ||
+        this.documentSettings.hasCssMediaStyles) {
       return false;
     }
     let hasAutoOrPortraitOption = false;
@@ -806,7 +813,7 @@ Polymer({
       collate: this.getSettingValue('collate'),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
-      previewModifiable: this.documentInfo.isModifiable,
+      previewModifiable: this.documentSettings.isModifiable,
       printToPDF: destination.id ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
       printToGoogleDrive:
@@ -822,8 +829,8 @@ Polymer({
       dpiDefault: (dpi && 'is_default' in dpi) ? dpi.is_default : false,
       deviceName: destination.id,
       fitToPageEnabled: this.getSettingValue('fitToPage'),
-      pageWidth: this.documentInfo.pageSize.width,
-      pageHeight: this.documentInfo.pageSize.height,
+      pageWidth: this.pageSize.width,
+      pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,
     };
 

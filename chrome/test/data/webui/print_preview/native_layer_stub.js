@@ -101,9 +101,8 @@ cr.define('print_preview', function() {
     }
 
     /** @override */
-    getPreview(printTicket, pageCount) {
-      this.methodCalled(
-          'getPreview', {printTicket: printTicket, pageCount: pageCount});
+    getPreview(printTicket) {
+      this.methodCalled('getPreview', {printTicket: printTicket});
       const printTicketParsed = JSON.parse(printTicket);
       if (printTicketParsed.deviceName == this.badPrinterId_) {
         return Promise.reject('SETTINGS_INVALID');

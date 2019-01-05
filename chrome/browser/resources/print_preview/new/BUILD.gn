@@ -109,7 +109,6 @@ js_library("pages_settings") {
   deps = [
     ":input_behavior",
     ":settings_behavior",
-    "../data:document_info",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:load_time_data",
   ]
@@ -170,7 +169,6 @@ js_library("scaling_settings") {
   deps = [
     ":number_settings_section",
     ":settings_behavior",
-    "../data:document_info",
   ]
 }
 
@@ -248,7 +246,6 @@ js_library("preview_area") {
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
-    "../data:document_info",
     "../data:margins",
     "../data:printable_area",
     "../data:size",

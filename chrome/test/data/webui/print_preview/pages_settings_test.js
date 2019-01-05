@@ -21,9 +21,6 @@ cr.define('pages_settings_test', function() {
     /** @type {?PrintPreviewPagesSettingsElement} */
     let pagesSection = null;
 
-    /** @type {?print_preview.DocumentInfo} */
-    let documentInfo = null;
-
     /** @type {!Array<number>} */
     const oneToHundred = Array.from({length: 100}, (x, i) => i + 1);
 
@@ -32,9 +29,6 @@ cr.define('pages_settings_test', function() {
 
     /** @override */
     setup(function() {
-      documentInfo = new print_preview.DocumentInfo();
-      documentInfo.init(true, 'title', false);
-
       PolymerTest.clearBody();
       pagesSection = document.createElement('print-preview-pages-settings');
       pagesSection.settings = {
@@ -60,7 +54,6 @@ cr.define('pages_settings_test', function() {
           key: '',
         },
       };
-      pagesSection.documentInfo = documentInfo;
       pagesSection.disabled = false;
       document.body.appendChild(pagesSection);
     });
@@ -75,8 +68,7 @@ cr.define('pages_settings_test', function() {
      */
     function setupInput(inputString, pageCount) {
       // Set page count.
-      documentInfo.updatePageCount(pageCount);
-      pagesSection.notifyPath('documentInfo.pageCount');
+      pagesSection.pageCount = pageCount;
       Polymer.dom.flush();
       let input = null;
       return test_util.waitForRender(pagesSection)
@@ -299,7 +291,7 @@ cr.define('pages_settings_test', function() {
     // Tests that the radio buttons and custom input are appropriately
     // inside/outside the tab order.
     test(assert(TestNames.TabOrder), function() {
-      documentInfo.updatePageCount(3);
+      pagesSection.pageCount = 3;
 
       const radioGroup = pagesSection.$$('cr-radio-group');
       const customRadio = pagesSection.$.customRadioButton;

@@ -73,21 +73,20 @@ cr.define('settings_sections_tests', function() {
      * @param {boolean} hasSelection Whether the document has a selection.
      */
     function initDocumentInfo(isPdf, hasSelection) {
-      const info = new print_preview.DocumentInfo();
+      const info = page.$.documentInfo;
       info.init(!isPdf, 'title', hasSelection);
       if (isPdf) {
-        info.updateFitToPageScaling(98);
+        info.set('documentSettings.fitToPageScaling', 98);
       }
-      info.updatePageCount(3);
-      page.set('documentInfo_', info);
+      info.set('documentSettings.pageCount', 3);
+      info.margins = null;
       Polymer.dom.flush();
     }
 
     function addSelection() {
       // Add a selection.
-      let info = new print_preview.DocumentInfo();
-      info.init(page.documentInfo_.isModifiable, 'title', true);
-      page.set('documentInfo_', info);
+      page.$.documentInfo.init(
+          page.documentSettings_.isModifiable, 'title', true);
       Polymer.dom.flush();
     }
 
@@ -587,6 +586,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetPages), function() {
+      initDocumentInfo(false, false);
       const pagesElement = page.$$('print-preview-pages-settings');
       // This section is always visible.
       assertFalse(pagesElement.hidden);
@@ -932,7 +932,7 @@ cr.define('settings_sections_tests', function() {
             // to verify that the input matches them.
             if (scalingValid) {
               const scalingDisplay = fitToPage ?
-                  page.documentInfo_.fitToPageScaling.toString() :
+                  page.documentSettings_.fitToPageScaling.toString() :
                   scalingValue;
               assertEquals(scalingDisplay, scalingInput.value);
             }

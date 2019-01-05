@@ -26,8 +26,10 @@ Polymer({
   behaviors: [SettingsBehavior],
 
   properties: {
-    /** @type {Object} */
-    documentInfo: Object,
+    fitToPageScaling: {
+      type: Number,
+      observer: 'onFitToPageScalingSet_',
+    },
 
     /** @private {string} */
     currentValue_: {
@@ -53,7 +55,6 @@ Polymer({
 
   observers: [
     'onFitToPageSettingChange_(settings.fitToPage.value)',
-    'onFitToPageScalingSet_(documentInfo.fitToPageScaling)',
     'onScalingSettingChanged_(settings.scaling.value)',
     'onScalingValidChanged_(settings.scaling.valid)',
   ],
@@ -102,9 +103,7 @@ Polymer({
    * @private
    */
   getFitToPageScalingDisplayValue_: function() {
-    return this.documentInfo.fitToPageScaling > 0 ?
-        this.documentInfo.fitToPageScaling.toString() :
-        '';
+    return this.fitToPageScaling > 0 ? this.fitToPageScaling.toString() : '';
   },
 
   /** @private */
