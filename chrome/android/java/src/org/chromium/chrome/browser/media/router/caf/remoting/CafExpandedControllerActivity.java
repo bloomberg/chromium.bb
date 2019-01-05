@@ -71,7 +71,7 @@ public class CafExpandedControllerActivity
         public void seekTo(long pos) {
             if (!mSessionController.isConnected()) return;
 
-            mSessionController.getSession().getRemoteMediaClient().seek(pos);
+            mSessionController.safelySeek(pos);
         }
 
         @Override

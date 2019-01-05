@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.router.caf.remoting;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import com.google.android.gms.common.api.Result;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.FlingingController;
@@ -124,8 +125,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
             return;
         }
 
-        mSessionController.getRemoteMediaClient().seek(position).setResultCallback(
-                this ::onMediaCommandResult);
+        mSessionController.safelySeek(position).setResultCallback(this::onMediaCommandResult);
         mStreamPositionExtrapolator.onSeek(position);
     }
 
@@ -158,7 +158,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
         }
     }
 
-    private void onMediaCommandResult(RemoteMediaClient.MediaChannelResult result) {
+    private void onMediaCommandResult(Result result) {
         // When multiple API calls are made in quick succession, "Results have already been set"
         // IllegalStateExceptions might be thrown from GMS code. We prefer to catch the exception
         // and noop it, than to crash. This might lead to some API calls never getting their
