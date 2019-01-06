@@ -91,6 +91,7 @@ enum AddressingModel {
     AddressingModelLogical = 0,
     AddressingModelPhysical32 = 1,
     AddressingModelPhysical64 = 2,
+    AddressingModelPhysicalStorageBuffer64EXT = 5348,
     AddressingModelMax = 0x7fffffff,
 };
 
@@ -176,6 +177,7 @@ enum StorageClass {
     StorageClassHitAttributeNV = 5339,
     StorageClassIncomingRayPayloadNV = 5342,
     StorageClassShaderRecordBufferNV = 5343,
+    StorageClassPhysicalStorageBufferEXT = 5349,
     StorageClassMax = 0x7fffffff,
 };
 
@@ -436,6 +438,8 @@ enum Decoration {
     DecorationPerTaskNV = 5273,
     DecorationPerVertexNV = 5285,
     DecorationNonUniformEXT = 5300,
+    DecorationRestrictPointerEXT = 5355,
+    DecorationAliasedPointerEXT = 5356,
     DecorationHlslCounterBufferGOOGLE = 5634,
     DecorationHlslSemanticGOOGLE = 5635,
     DecorationMax = 0x7fffffff,
@@ -805,6 +809,7 @@ enum Capability {
     CapabilityRayTracingNV = 5340,
     CapabilityVulkanMemoryModelKHR = 5345,
     CapabilityVulkanMemoryModelDeviceScopeKHR = 5346,
+    CapabilityPhysicalStorageBufferAddressesEXT = 5347,
     CapabilityComputeDerivativeGroupLinearNV = 5350,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,

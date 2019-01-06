@@ -87,6 +87,7 @@ namespace Spv
             Logical = 0,
             Physical32 = 1,
             Physical64 = 2,
+            PhysicalStorageBuffer64EXT = 5348,
         }
 
         public enum MemoryModel
@@ -172,6 +173,7 @@ namespace Spv
             HitAttributeNV = 5339,
             IncomingRayPayloadNV = 5342,
             ShaderRecordBufferNV = 5343,
+            PhysicalStorageBufferEXT = 5349,
         }
 
         public enum Dim
@@ -434,6 +436,8 @@ namespace Spv
             PerTaskNV = 5273,
             PerVertexNV = 5285,
             NonUniformEXT = 5300,
+            RestrictPointerEXT = 5355,
+            AliasedPointerEXT = 5356,
             HlslCounterBufferGOOGLE = 5634,
             HlslSemanticGOOGLE = 5635,
         }
@@ -809,6 +813,7 @@ namespace Spv
             RayTracingNV = 5340,
             VulkanMemoryModelKHR = 5345,
             VulkanMemoryModelDeviceScopeKHR = 5346,
+            PhysicalStorageBufferAddressesEXT = 5347,
             ComputeDerivativeGroupLinearNV = 5350,
             SubgroupShuffleINTEL = 5568,
             SubgroupBufferBlockIOINTEL = 5569,
