@@ -1,9 +1,6 @@
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/769401
 
-# Uncategorized timeouts or test failures.
--RegisterProtocolHandlerBrowserTest.CustomHandler
-
 # https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 

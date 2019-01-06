@@ -223,6 +223,11 @@ class ProfileIOData {
     return data_reduction_proxy_io_data_.get();
   }
 
+  ProtocolHandlerRegistry::IOThreadDelegate*
+  protocol_handler_registry_io_thread_delegate() const {
+    return protocol_handler_registry_io_thread_delegate_.get();
+  }
+
   // Returns the predictor service for this Profile. Returns nullptr if there is
   // no Predictor, as is the case with OffTheRecord profiles.
   virtual chrome_browser_net::Predictor* GetPredictor();
@@ -522,6 +527,9 @@ class ProfileIOData {
 
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
+
+  mutable scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
+      protocol_handler_registry_io_thread_delegate_;
 
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;

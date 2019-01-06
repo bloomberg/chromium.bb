@@ -368,6 +368,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
 
+  protocol_handler_registry_io_thread_delegate_ =
+      protocol_handler_registry->io_thread_delegate();
+
   // The profile instance is only available here in the InitializeOnUIThread
   // method, so we create the url job factory here, then save it for
   // later delivery to the job factory in Init().

@@ -342,9 +342,16 @@ void ThrottlingURLLoader::Start(
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        CHECK_EQ(original_url.GetOrigin(), url_request->url.GetOrigin())
-            << "ThrottlingURLLoader doesn't support a throttle making a "
-            << "cross-origin redirect.";
+        // Only do this sanity check if the schemes are both http[s], as this
+        // generated-redirect functionality is also used by
+        // registerProtocolHandler to map non-web to web schemes and that is
+        // safe.
+        if (original_url.SchemeIsHTTPOrHTTPS() &&
+            url_request->url.SchemeIsHTTPOrHTTPS()) {
+          CHECK_EQ(original_url.GetOrigin(), url_request->url.GetOrigin())
+              << "ThrottlingURLLoader doesn't support a throttle making a "
+              << "cross-origin redirect.";
+        }
         throttle_will_start_redirect_url_ = url_request->url;
         // Restore the original URL so that all throttles see the same original
         // URL.
@@ -536,10 +543,17 @@ void ThrottlingURLLoader::OnReceiveRedirect(
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        CHECK_EQ(redirect_info_copy.new_url.GetOrigin(),
-                 redirect_info.new_url.GetOrigin())
-            << "ThrottlingURLLoader doesn't support a throttle making a "
-            << "cross-origin redirect.";
+        // Only do this sanity check if the schemes are both http[s], as this
+        // generated-redirect functionality is also used by
+        // registerProtocolHandler to map non-web to web schemes and that is
+        // safe.
+        if (redirect_info_copy.new_url.SchemeIsHTTPOrHTTPS() &&
+            redirect_info.new_url.SchemeIsHTTPOrHTTPS()) {
+          CHECK_EQ(redirect_info_copy.new_url.GetOrigin(),
+                   redirect_info.new_url.GetOrigin())
+              << "ThrottlingURLLoader doesn't support a throttle making a "
+              << "cross-origin redirect.";
+        }
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
       } else {
         CHECK_EQ(redirect_info_copy.new_url, redirect_info.new_url)
