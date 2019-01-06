@@ -167,8 +167,7 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
     function(rootNode) {
       var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
-          .expectCategoryFlushSpeech('After')
-          .expectQueuedSpeech('Image');
+          .expectCategoryFlushSpeech('After');
       mockFeedback.replay();
     });
 });
@@ -295,7 +294,9 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
     var live = new LiveRegions(ChromeVoxState.instance);
     var t1, t2;
     [t1, t2] = root.findAll({role: RoleType.STATIC_TEXT});
-    mockFeedback.call(function() {
+    mockFeedback.expectSpeech('hello there')
+        .clearPendingOutput()
+        .call(function() {
           live.onTreeChange({type: TreeChangeType.TEXT_CHANGED, target: t2});
           live.onTreeChange({type: TreeChangeType.SUBTREE_UPDATE_END, target: t2});
         })
@@ -310,5 +311,41 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
         .expectSpeech('hello')
         .expectSpeech('there');
     mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveStatusOff', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div><input aria-live="off" type="text"></input></div>
+    <script>
+      var input = document.querySelector('input');
+      var div = document.querySelector('div');
+      var clicks = 0;
+      div.addEventListener('click', () => {
+        clicks++;
+        if (clicks == 1) {
+          input.value = 'bb';
+          input.selectionStart = 2;
+          input.selectionEnd = 2;
+        } else if (clicks == 2) {
+          input.value = 'bba';
+          input.selectionStart = 3;
+          input.selectionEnd = 3;
+        }
+      });
+    </script>
+  */},
+  function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var clickInput = input.parent.doDefault.bind(input.parent);
+    mockFeedback.call(input.focus.bind(input))
+        .call(clickInput)
+        .expectSpeech('bb')
+        .clearPendingOutput()
+        .call(clickInput)
+        .expectNextSpeechUtteranceIsNot('bba')
+        .expectSpeech('a')
+        .replay();
   });
 });
