@@ -4,11 +4,29 @@
 Polymer({
   is: 'app-management-permission-view-header',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /** @type {App} */
     app: {
       type: Object,
     },
+  },
+
+  /**
+   * @private
+   */
+  onClickBackButton_: function() {
+    this.dispatch(app_management.actions.changePage(PageType.MAIN));
+  },
+
+  /**
+   * @private
+   */
+  onClickUninstallButton_: function() {
+    app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
   },
 
   /**

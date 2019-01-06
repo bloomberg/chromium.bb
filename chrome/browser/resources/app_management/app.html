@@ -32,8 +32,10 @@
     <template is="dom-if" if="[[pwaPermissionViewSelected_]]">
       <app-management-pwa-permission-view></app-management-pwa-permission-view>
     </template>
-    <app-management-chrome-app-permission-view>
-    </app-management-chrome-app-permission-view>
+    <template is="dom-if" if="[[chromeAppPermissionViewSelected_]]">
+      <app-management-chrome-app-permission-view>
+      </app-management-chrome-app-permission-view>
+    </template>
     <app-management-router></app-management-router>
   </template>
   <script src="chrome://apps/app.js"></script>

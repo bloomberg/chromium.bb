@@ -22,7 +22,7 @@ cr.define('app_management', function() {
               'ahfgeienlihckogmohjhadlkjgocpleb'),
           app_management.FakePageHandler.createApp(
               'aohghmighlieiainnegkcijnfilokake',
-              {type: apps.mojom.AppType.kArc}),
+              {type: apps.mojom.AppType.kExtension}),
           app_management.FakePageHandler.createApp(
               'blpcfgokakmgnkcojhhkbfbldkacnbeo'),
           app_management.FakePageHandler.createApp(
