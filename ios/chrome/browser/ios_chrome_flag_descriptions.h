@@ -295,6 +295,11 @@ extern const char kToolbarContainerDescription[];
 extern const char kPresentSadTabInViewControllerName[];
 extern const char kPresentSadTabInViewControllerDescription[];
 
+// Title and description for the flag to use |-drawViewHierarchy:| for taking
+// snapshots.
+extern const char kSnapshotDrawViewName[];
+extern const char kSnapshotDrawViewDescription[];
+
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
