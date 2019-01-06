@@ -91,14 +91,14 @@ cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
  * @private
  */
 cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
-  if (cca.models.FileSystem.externalDir && chrome.fileManagerPrivate) {
+  if (cca.App.useGalleryApp()) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
-    chrome.fileManagerPrivate.executeTask(
-        id, [picture.pictureEntry], (result) => {
-          if (result != 'opened' && result != 'message_sent') {
-            console.warn('Unable to open picture: ' + result);
-          }
-        });
+    const entry = picture.pictureEntry;
+    chrome.fileManagerPrivate.executeTask(id, [entry], (result) => {
+      if (result != 'opened' && result != 'message_sent') {
+        console.warn('Unable to open picture: ' + result);
+      }
+    });
   } else {
     cca.nav.open('browser', picture);
   }

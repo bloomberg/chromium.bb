@@ -82,16 +82,6 @@ cca.views.Browser.prototype = {
 };
 
 /**
- * Prepares the view.
- */
-cca.views.Browser.prototype.prepare = function() {
-  // Hide export-button if using external file system.
-  if (cca.models.FileSystem.externalDir) {
-    document.querySelector('#browser-export').hidden = true;
-  }
-};
-
-/**
  * @param {cca.models.Gallery.Picture} picture Picture to be selected.
  * @override
  */
