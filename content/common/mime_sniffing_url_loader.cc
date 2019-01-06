@@ -121,11 +121,11 @@ void MimeSniffingURLLoader::OnComplete(
       destination_url_loader_client_->OnComplete(status);
       return;
     case State::kSniffing:
-      // Defer calling OnComplete() since we defer calling
-      // OnStartLoadingResponseBody() until mime sniffing has been finished.
+    case State::kSending:
+      // Defer calling OnComplete() until mime sniffing has finished and all
+      // data is sent.
       complete_status_ = status;
       return;
-    case State::kSending:
     case State::kCompleted:
       destination_url_loader_client_->OnComplete(status);
       return;
@@ -231,7 +231,7 @@ void MimeSniffingURLLoader::CompleteSniffing() {
   DCHECK_EQ(State::kSniffing, state_);
   if (buffered_body_.empty()) {
     // The URLLoader ended before sending any data. There is not enough
-    // informations to determine the MIME type.
+    // information to determine the MIME type.
     response_head_.mime_type = kDefaultMimeType;
   }
 
@@ -255,12 +255,10 @@ void MimeSniffingURLLoader::CompleteSniffing() {
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::BindRepeating(&MimeSniffingURLLoader::OnBodyWritable,
                           base::Unretained(this)));
-  // Send deferred messages.
+
+  // Send deferred message.
   destination_url_loader_client_->OnStartLoadingResponseBody(
       std::move(body_to_send));
-  // Call OnComplete() if OnComplete() has already been called.
-  if (complete_status_.has_value())
-    destination_url_loader_client_->OnComplete(complete_status_.value());
 
   if (bytes_remaining_in_buffer_) {
     SendReceivedBodyToClient();
@@ -273,6 +271,11 @@ void MimeSniffingURLLoader::CompleteSniffing() {
 void MimeSniffingURLLoader::CompleteSending() {
   DCHECK_EQ(State::kSending, state_);
   state_ = State::kCompleted;
+  // Call client's OnComplete() if |this|'s OnComplete() has already been
+  // called.
+  if (complete_status_.has_value())
+    destination_url_loader_client_->OnComplete(complete_status_.value());
+
   body_consumer_watcher_.Cancel();
   body_producer_watcher_.Cancel();
   body_consumer_handle_.reset();

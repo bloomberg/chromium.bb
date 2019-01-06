@@ -41,10 +41,10 @@ class MimeSniffingThrottle;
 //            type. The received body is kept in this loader until the mime type
 //            is decided. When the mime type is decided or all body has been
 //            received, this loader will dispatch queued messages like
-//            OnStartLoadingResponseBody() and OnComplete() to the destination
+//            OnStartLoadingResponseBody() to the destination
 //            loader client, and then the state is changed to kSending.
-// kSending: Receives the body and send it to the destination loader client. All
-//           data has been read by this loader, the state goes to kCompleted.
+// kSending: Receives the body and sends it to the destination loader client.
+//           The state changes to kCompleted after all data is sent.
 // kCompleted: All data has been sent to the destination loader.
 // kAborted: Unexpected behavior happens. Watchers, pipes and the binding from
 //           the source loader to |this| are stopped. All incoming messages from
