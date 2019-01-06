@@ -37,21 +37,6 @@ Polymer({
   /**
    * @private
    */
-  onClickBackButton_: function() {
-    this.listExpanded_ = false;
-    this.dispatch(app_management.actions.changePage(PageType.MAIN));
-  },
-
-  /**
-   * @private
-   */
-  onClickUninstallButton_: function() {
-    app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
-  },
-
-  /**
-   * @private
-   */
   toggleListExpanded_: function() {
     this.listExpanded_ = !this.listExpanded_;
   },

@@ -19,6 +19,11 @@ Polymer({
      * @private {boolean}
      */
     pwaPermissionViewSelected_: Boolean,
+
+    /**
+     * @private {boolean}
+     */
+    chromeAppPermissionViewSelected_: Boolean,
   },
 
   /** @override */
@@ -27,8 +32,31 @@ Polymer({
       return state.currentPage.pageType == PageType.MAIN;
     });
 
-    this.watch('pwaPermissionViewSelected_', function(state) {
-      return state.currentPage.pageType == PageType.DETAIL;
+    this.watch('pwaPermissionViewSelected_', (state) => {
+      return this.appTypeSelected(state, apps.mojom.AppType.kWeb);
     });
+
+    this.watch('chromeAppPermissionViewSelected_', (state) => {
+      return this.appTypeSelected(state, apps.mojom.AppType.kExtension);
+    });
+
+    this.updateFromStore();
   },
+
+  /**
+   * Returns true if the current page is the detail page of an app of the
+   * given type.
+   * @param {AppManagementPageState} state
+   * @param {apps.mojom.AppType} type
+   * @return {boolean}
+   */
+  appTypeSelected: function(state, type) {
+    if (!state.currentPage.selectedAppId) {
+      return false;
+    }
+
+    const selectedApp = state.apps[state.currentPage.selectedAppId];
+    return state.currentPage.pageType == PageType.DETAIL &&
+      selectedApp.type == type;
+  }
 });

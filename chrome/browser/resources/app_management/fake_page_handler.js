@@ -25,7 +25,7 @@ cr.define('app_management', function() {
 
       const app = {
         id: id,
-        type: apps.mojom.AppType.kUnknown,
+        type: apps.mojom.AppType.kWeb,
         title: 'App Title',
         version: '5.1',
         size: '9.0MB',

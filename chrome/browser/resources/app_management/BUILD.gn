@@ -54,7 +54,9 @@ if (!is_android) {
       ":router",
       ":store",
       ":store_client",
+      ":types",
       ":util",
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js_externs",
     ]
   }
 
@@ -71,6 +73,7 @@ if (!is_android) {
       ":fake_page_handler",
       ":metadata_view",
       ":permission_view_header",
+      ":store_client",
     ]
   }
 
@@ -110,6 +113,10 @@ if (!is_android) {
   }
 
   js_library("permission_view_header") {
+    deps = [
+      ":browser_proxy",
+      ":store_client",
+    ]
   }
 
   js_library("permission_item") {
