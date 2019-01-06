@@ -24,4 +24,7 @@ extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 // Feature to allow user to search for a copied image.
 extern const base::Feature kSearchCopiedImage;
 
+// Feature to take snapshots using |-drawViewHierarchy:|.
+extern const base::Feature kSnapshotDrawView;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

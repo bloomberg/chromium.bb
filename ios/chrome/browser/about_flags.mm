@@ -496,6 +496,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOnlyNewPasswordFormParsingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kOnlyNewParser)},
+    {"snapshot-draw-view", flag_descriptions::kSnapshotDrawViewName,
+     flag_descriptions::kSnapshotDrawViewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSnapshotDrawView)},
 };
 
 // Add all switches from experimental flags to |command_line|.

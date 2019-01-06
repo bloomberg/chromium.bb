@@ -18,3 +18,6 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 
 const base::Feature kSearchCopiedImage{"SearchCopiedImage",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSnapshotDrawView{"SnapshotDrawView",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};

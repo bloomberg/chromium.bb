@@ -361,6 +361,10 @@ const char kPresentSadTabInViewControllerDescription[] =
     "When enabled, SadTab UI will be presented with UIViewController instead "
     "of using WebState::ShowTransientView";
 
+const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
+const char kSnapshotDrawViewDescription[] =
+    "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
+
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "

@@ -4,11 +4,6 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
 
-// TODO(crbug.com/636188): required to implement ViewHierarchyContainsWKWebView
-// for -drawViewHierarchyInRect:afterScreenUpdates:, remove once the workaround
-// is no longer needed.
-#import <WebKit/WebKit.h>
-
 #include <algorithm>
 
 #include "base/bind.h"
@@ -19,6 +14,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -29,19 +25,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Returns YES if |view| or any view it contains is a WKWebView.
-BOOL ViewHierarchyContainsWKWebView(UIView* view) {
-  if ([view isKindOfClass:[WKWebView class]])
-    return YES;
-  for (UIView* subview in view.subviews) {
-    if (ViewHierarchyContainsWKWebView(subview))
-      return YES;
-  }
-  return NO;
-}
-}  // namespace
 
 @interface SnapshotGenerator ()<CRWWebStateObserver>
 
@@ -225,14 +208,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   CGContext* context = UIGraphicsGetCurrentContext();
   DCHECK(context);
 
-  // TODO(crbug.com/636188): -drawViewHierarchyInRect:afterScreenUpdates: is
-  // buggy on iOS 8/9/10 (and state is unknown for iOS 11) causing GPU glitches,
-  // screen redraws during animations, broken pinch to dismiss on tablet, etc.
-  // For the moment, only use it for WKWebView with depends on it. Remove this
-  // check and always use -drawViewHierarchyInRect:afterScreenUpdates: once it
-  // is working correctly in all version of iOS supported.
-  BOOL useDrawViewHierarchy = ViewHierarchyContainsWKWebView(view);
-
+  BOOL useDrawViewHierarchy = base::FeatureList::IsEnabled(kSnapshotDrawView);
   BOOL snapshotSuccess = YES;
   CGContextSaveGState(context);
   CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
