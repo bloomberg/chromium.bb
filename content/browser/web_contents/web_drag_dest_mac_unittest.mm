@@ -66,24 +66,6 @@ TEST_F(WebDragDestTest, Init) {
   EXPECT_TRUE(drag_dest_);
 }
 
-// Test flipping of coordinates given a point in window coordinates.
-TEST_F(WebDragDestTest, Flip) {
-  NSPoint windowPoint = NSZeroPoint;
-  base::scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
-  NSPoint viewPoint =
-      [drag_dest_ flipWindowPointToView:windowPoint
-                                   view:[window contentView]];
-  NSPoint screenPoint =
-      [drag_dest_ flipWindowPointToScreen:windowPoint
-                                     view:[window contentView]];
-  EXPECT_EQ(0, viewPoint.x);
-  EXPECT_EQ(600, viewPoint.y);
-  EXPECT_EQ(0, screenPoint.x);
-  // We can't put a value on the screen size since everyone will have a
-  // different one.
-  EXPECT_NE(0, screenPoint.y);
-}
-
 TEST_F(WebDragDestTest, URL) {
   NSString* url = nil;
   NSString* title = nil;
