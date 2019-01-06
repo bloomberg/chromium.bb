@@ -109,32 +109,26 @@ cca.models.FileSystem.initExternalDir_ = function() {
  * should be called only once in the beginning of the app.
  * @param {function()} promptMigrate Callback to instantiate a promise that
        prompts users to migrate pictures if no acknowledgement yet.
- * @return {!Promise} Promise for the operation.
+ * @return {!Promise<boolean>} Promise for the external-fs result.
  */
 cca.models.FileSystem.initialize = function(promptMigrate) {
   var checkAcked = new Promise((resolve) => {
-    // ackMigratePictures 1: User acknowledges to migrate pictures to Downloads.
-    chrome.storage.local.get({ackMigratePictures: 0}, (values) => {
-      resolve(values.ackMigratePictures >= 1);
-    });
+    // ack 0: User has not yet acknowledged to migrate pictures.
+    // ack 1: User acknowledges to migrate pictures to Downloads.
+    chrome.storage.local.get({ackMigratePictures: 0},
+        (values) => resolve(values.ackMigratePictures >= 1));
   });
   var checkMigrated = new Promise((resolve) => {
     if (chrome.chromeosInfoPrivate) {
-      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'], (values) => {
-        resolve(values['cameraMediaConsolidated']);
-      });
+      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'],
+          (values) => resolve(values['cameraMediaConsolidated']));
     } else {
       resolve(false);
     }
   });
-  var ackMigrate = () => {
-    chrome.storage.local.set({ackMigratePictures: 1});
-  };
-  var doneMigrate = () => {
-    if (chrome.chromeosInfoPrivate) {
+  var ackMigrate = () => chrome.storage.local.set({ackMigratePictures: 1});
+  var doneMigrate = () => chrome.chromeosInfoPrivate &&
       chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
-    }
-  };
 
   return Promise.all([
     cca.models.FileSystem.initInternalDir_(),
@@ -147,36 +141,36 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
     if (migrated && !externalDir) {
       throw new Error('External file system should be available.');
     }
-
     // Check if acknowledge-prompt and migrate-pictures are needed.
     if (migrated || !cca.models.FileSystem.externalDir) {
       return [false, false];
-    } else {
-      return cca.models.FileSystem.hasInternalPictures_().then((result) => {
-        if (result) {
-          return [!acked, true];
-        } else {
-          // If the external file system is supported and there is already no
-          // picture in the internal file system, it implies done migration and
-          // then doesn't need acknowledge-prompt.
-          ackMigrate();
-          doneMigrate();
-          return [false, false];
-        }
-      });
     }
-  }).then(([promptNeeded, migrateNeeded]) => {
-    if (promptNeeded) {
-      return promptMigrate().then(() => {
-        ackMigrate();
-        return migrateNeeded;
-      });
-    }
-    return migrateNeeded;
-  }).then((migrateNeeded) => {
-    if (migrateNeeded) {
-      return cca.models.FileSystem.migratePictures().then(doneMigrate);
-    }
+    // Check if any internal picture other than thumbnail needs migration.
+    // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
+    var dir = cca.models.FileSystem.internalDir;
+    return cca.models.FileSystem.readDir_(dir).then((entries) => {
+      return entries.some(
+          (entry) => !cca.models.FileSystem.hasThumbnailPrefix_(entry));
+    }).then((migrateNeeded) => {
+      if (migrateNeeded) {
+        return [!acked, true];
+      }
+      // If the external file system is supported and there is already no
+      // picture in the internal file system, it implies done migration and
+      // then doesn't need acknowledge-prompt.
+      ackMigrate();
+      doneMigrate();
+      return [false, false];
+    });
+  }).then(([promptNeeded, migrateNeeded]) => { // Prompt to migrate if needed.
+    return !promptNeeded ? migrateNeeded : promptMigrate().then(() => {
+      ackMigrate();
+      return migrateNeeded;
+    });
+  }).then((migrateNeeded) => { // Migrate pictures if needed.
+    const external = cca.models.FileSystem.externalDir != null;
+    return !migrateNeeded ? external : cca.models.FileSystem.migratePictures()
+        .then(doneMigrate).then(() => external);
   });
 };
 
@@ -187,43 +181,20 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
  * @private
  */
 cca.models.FileSystem.readDir_ = function(dir) {
-  return new Promise((resolve, reject) => {
-    if (dir) {
-      var dirReader = dir.createReader();
-      var entries = [];
-      var readEntries = () => {
-        dirReader.readEntries((inEntries) => {
-          if (inEntries.length == 0) {
-            resolve(entries);
-            return;
-          }
-          entries = entries.concat(inEntries);
-          readEntries();
-        }, reject);
-      };
-      readEntries();
-    } else {
-      resolve([]);
-    }
-  });
-};
-
-/**
- * Checks if there is an image or video in the internal file system.
- * @return {!Promise<boolean>} Promise for the result.
- * @private
- */
-cca.models.FileSystem.hasInternalPictures_ = function() {
-  var dir = cca.models.FileSystem.internalDir;
-  return cca.models.FileSystem.readDir_(dir).then((entries) => {
-    for (var index = entries.length - 1; index >= 0; index--) {
-      // Check if there is any picture other than thumbnail in file entries.
-      // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
-      if (!cca.models.FileSystem.hasThumbnailPrefix_(entries[index])) {
-        return true;
-      }
-    }
-    return false;
+  return !dir ? Promise.resolve([]) : new Promise((resolve, reject) => {
+    var dirReader = dir.createReader();
+    var entries = [];
+    var readEntries = () => {
+      dirReader.readEntries((inEntries) => {
+        if (inEntries.length == 0) {
+          resolve(entries);
+          return;
+        }
+        entries = entries.concat(inEntries);
+        readEntries();
+      }, reject);
+    };
+    readEntries();
   });
 };
 
@@ -281,8 +252,7 @@ cca.models.FileSystem.generatePictureName_ = function(isVideo, time) {
   const pad = (n) => (n < 10 ? '0' : '') + n;
 
   // File name base will be formatted as IMG/VID_yyyyMMdd_HHmmss.
-  var prefix = isVideo ?
-      cca.models.FileSystem.VIDEO_PREFIX :
+  var prefix = isVideo ? cca.models.FileSystem.VIDEO_PREFIX :
       cca.models.FileSystem.IMAGE_PREFIX;
   var date = new Date(time);
   var result = prefix + date.getFullYear() + pad(date.getMonth() + 1) +
@@ -330,9 +300,7 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
   return cca.models.FileSystem.getFile(dir, name, true).then((entry) => {
     return new Promise((resolve, reject) => {
       entry.createWriter((fileWriter) => {
-        fileWriter.onwriteend = () => {
-          resolve(entry);
-        };
+        fileWriter.onwriteend = () => resolve(entry);
         fileWriter.onerror = reject;
         fileWriter.write(blob);
       }, reject);
@@ -520,9 +488,7 @@ cca.models.FileSystem.getEntries = function() {
 cca.models.FileSystem.pictureURL = function(entry) {
   return new Promise((resolve) => {
     if (cca.models.FileSystem.externalDir) {
-      entry.file((file) => {
-        resolve(URL.createObjectURL(file));
-      });
+      entry.file((file) => resolve(URL.createObjectURL(file)));
     } else {
       resolve(entry.toURL());
     }

@@ -671,7 +671,8 @@ body.grid._4x4 #preview-grid-vertical:before {
   margin: 0 8px;
 }
 
-#browser .buttons button[disabled] {
+#browser .buttons button[disabled],
+body.ext-fs #browser-export {
   display: none;
 }
 

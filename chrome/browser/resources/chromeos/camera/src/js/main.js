@@ -87,6 +87,15 @@ cca.App = function(aspectRatio) {
   this.setupToggles_();
 };
 
+/*
+ * Checks if it is applicable to use CrOS gallery app.
+ * @return {boolean} Whether applicable or not.
+ */
+cca.App.useGalleryApp = function() {
+  return chrome.fileManagerPrivate &&
+      document.body.classList.contains('ext-fs');
+};
+
 /**
  * Sets up i18n messages on elements by i18n attributes.
  * @private
@@ -172,11 +181,15 @@ cca.App.prototype.start = function() {
         throw new Error('no-migrate');
       }
     });
-  }).then(() => {
+  }).then((external) => {
+    document.body.classList.toggle('ext-fs', external);
     // Prepare the views/model and open camera-view.
     this.cameraView_.prepare();
-    this.browserView_.prepare();
-    this.model_.load([this.cameraView_.galleryButton, this.browserView_]);
+    this.model_.addObserver(this.cameraView_.galleryButton);
+    if (!cca.App.useGalleryApp()) {
+      this.model_.addObserver(this.browserView_);
+    }
+    this.model_.load();
     cca.nav.open('camera');
   }).catch((error) => {
     console.error(error);
@@ -200,14 +213,12 @@ cca.App.prototype.resizeByAspectRatio_ = function() {
 
   // Keep the width fixed and calculate the height by the aspect ratio.
   // TODO(yuli): Update min-width for resizing at portrait orientation.
-  var appWindow = chrome.app.window.current();
-  var inner = appWindow.innerBounds;
+  var inner = chrome.app.window.current().innerBounds;
   var innerW = inner.minWidth;
   var innerH = Math.round(innerW / this.aspectRatio_);
 
   // Limit window resizing capability by setting min-height. Don't limit
   // max-height here as it may disable maximize/fullscreen capabilities.
-  // TODO(yuli): Revise if there is an alternative fix.
   inner.minHeight = innerH;
 
   inner.width = innerW;
