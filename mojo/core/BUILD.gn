@@ -186,10 +186,7 @@ if (is_chromeos || is_linux || is_android || is_win) {
       "//mojo/public/c/system:headers",
     ]
     if (is_win) {
-      inputs = [
-        "mojo_core.def",
-      ]
-      ldflags = [ "/DEF:" + rebase_path("mojo_core.def", root_build_dir) ]
+      sources += [ "mojo_core.def" ]
     } else {
       configs += [ ":export_only_thunks_api" ]
     }
