@@ -80,7 +80,7 @@ jumbo_source_set("common") {
     deps += [ "//media" ]
   }
 
-  if (is_android) {
+  if (is_android || is_win) {
     sources += [
       "font_unique_name_lookup/font_table_matcher.cc",
       "font_unique_name_lookup/icu_fold_case_util.cc",
@@ -145,8 +145,9 @@ jumbo_source_set("common_unittests_sources") {
     # they are excluded as they require V8 environment but V8 snapshot is
     # not available in the current minimum test setting.
     sources += [ "messaging/string_message_codec_unittest.cc" ]
-  } else {
-    # is_android
+  }
+
+  if (is_android || is_win) {
     sources += [
       "font_unique_name_lookup/font_table_matcher_unittest.cc",
       "font_unique_name_lookup/icu_fold_case_util_unittest.cc",

@@ -2028,6 +2028,7 @@ jumbo_source_set("browser") {
       "__ATLHOST_H__",
     ]
     deps += [
+      "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
