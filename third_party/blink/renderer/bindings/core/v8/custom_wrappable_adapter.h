@@ -35,11 +35,17 @@ class CORE_EXPORT CustomWrappableAdapter : public CustomWrappable {
     return static_cast<T*>(LookupInternal(object, property));
   }
 
-  // Attaches a given |adapter| to |object|'s |property|.
+  // Attaches |this| adapter to |object|'s |property|.
   void Attach(ScriptState*,
               v8::Local<v8::Object> object,
-              const V8PrivateProperty::Symbol& property,
-              CustomWrappableAdapter* adapter);
+              const V8PrivateProperty::Symbol& property);
+
+  // Creates and sets up the JS wrapper object. May only be called once. Returns
+  // the wrapper object.
+  //
+  // This method can be used when the wrapper is needed to actually create the
+  // object that it should be attached to. Prefer |Attach| when possible.
+  v8::Local<v8::Object> CreateAndInitializeWrapper(ScriptState*);
 
   ~CustomWrappableAdapter() override = default;
 

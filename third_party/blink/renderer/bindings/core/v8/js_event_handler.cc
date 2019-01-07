@@ -38,7 +38,7 @@ void JSEventHandler::SetCompiledHandler(
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       script_state->GetContext());
   event_handler_ = V8EventHandlerNonNull::Create(listener);
-  Attach(script_state, listener, property, this);
+  Attach(script_state, listener, property);
 }
 
 // https://html.spec.whatwg.org/C/webappapis.html#the-event-handler-processing-algorithm

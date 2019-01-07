@@ -26,7 +26,7 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
                   v8::Local<v8::Object> listener,
                   const V8PrivateProperty::Symbol& property)
       : event_listener_(V8EventListener::Create(listener)) {
-    Attach(script_state, listener, property, this);
+    Attach(script_state, listener, property);
   }
 
   // blink::CustomWrappable overrides:
