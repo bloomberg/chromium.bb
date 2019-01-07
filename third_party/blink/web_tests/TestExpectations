@@ -5933,6 +5933,7 @@ crbug.com/908347 [ Mac ] media/autoplay/webaudio-audio-context-resume.html [ Fai
 # Sheriff 2018-11-29
 crbug.com/910139 custom-elements/form-submission-file.html [ Crash Pass ]
 crbug.com/905772 [ Linux ] inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure Pass ]
+crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure Pass ]
 
 #Sheriff 2018-12-04
 crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]

@@ -200,7 +200,6 @@ Bug(none) ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrol
 Bug(none) inspector-protocol/layers/paint-profiler.js [ Failure ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Timeout ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
-Bug(none) virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
