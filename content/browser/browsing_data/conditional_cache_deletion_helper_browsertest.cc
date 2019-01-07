@@ -184,17 +184,9 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 // Note: This test depends on the timing in cache backends and can be flaky
 // if those backends are slow.
 //
-// Flakily timing out on Mac 10.11 (crbug.com/646119) and flakily
-// failing on Linux/ChromeOS (crbug.com/624836)
-// --> Switched to tiny_timeout and enabled the test on all platforms to check
-//     if it will be more stable now.
-#if false
-#define MAYBE_TimeAndURL DISABLED_TimeAndURL
-#else
-#define MAYBE_TimeAndURL TimeAndURL
-#endif
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
-                       MAYBE_TimeAndURL) {
+// It previously flaked on Mac 10.11 (crbug.com/646119) and on Linux/ChromeOS
+// (crbug.com/624836) but it seems to be stable now.
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, TimeAndURL) {
   // https://crbug.com/911171: this test depends on the timing of the cache,
   // which changes if it's running out-of-process.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
