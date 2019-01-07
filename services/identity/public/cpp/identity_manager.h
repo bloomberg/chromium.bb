@@ -105,6 +105,14 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnRefreshTokenRemovedForAccount(
         const std::string& account_id) {}
 
+    // Called when the error state of the refresh token for |account_id| has
+    // changed. Note: It is always called after
+    // |OnRefreshTokenUpdatedForAccount| when the refresh token is updated. It
+    // is not called when the refresh token is removed.
+    virtual void OnErrorStateOfRefreshTokenUpdatedForAccount(
+        const AccountInfo& account_info,
+        const GoogleServiceAuthError& error) {}
+
     // Called after refresh tokens are loaded.
     // CAVEAT: On ChromeOS, this callback is not invoked during
     // startup in all cases. See https://crbug.com/749535, which
@@ -367,6 +375,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnRefreshTokensLoaded() override;
   void OnStartBatchChanges() override;
   void OnEndBatchChanges() override;
+  void OnAuthErrorChanged(const std::string& account_id,
+                          const GoogleServiceAuthError& auth_error) override;
 
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(

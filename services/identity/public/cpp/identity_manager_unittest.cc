@@ -226,6 +226,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       base::RepeatingCallback<void(const std::string&)> callback) {
     on_refresh_token_removed_callback_ = std::move(callback);
   }
+  void set_on_error_state_of_refresh_token_updated_callback(
+      base::OnceClosure callback) {
+    on_error_state_of_refresh_token_updated_callback_ = std::move(callback);
+  }
 
   void set_on_refresh_tokens_loaded_callback(base::OnceClosure callback) {
     on_refresh_tokens_loaded_callback_ = std::move(callback);
@@ -236,6 +240,14 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   }
   const std::string& account_from_refresh_token_removed_callback() {
     return account_from_refresh_token_removed_callback_;
+  }
+  const AccountInfo&
+  account_from_error_state_of_refresh_token_updated_callback() {
+    return account_from_error_state_of_refresh_token_updated_callback_;
+  }
+  const GoogleServiceAuthError&
+  error_from_error_state_of_refresh_token_updated_callback() const {
+    return error_from_error_state_of_refresh_token_updated_callback_;
   }
 
   void set_on_accounts_in_cookie_updated_callback(base::OnceClosure callback) {
@@ -300,6 +312,14 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     if (on_refresh_token_removed_callback_)
       on_refresh_token_removed_callback_.Run(account_id);
   }
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info,
+      const GoogleServiceAuthError& error) override {
+    account_from_error_state_of_refresh_token_updated_callback_ = account_info;
+    error_from_error_state_of_refresh_token_updated_callback_ = error;
+    if (on_error_state_of_refresh_token_updated_callback_)
+      std::move(on_error_state_of_refresh_token_updated_callback_).Run();
+  }
   void OnRefreshTokensLoaded() override {
     if (on_refresh_tokens_loaded_callback_)
       std::move(on_refresh_tokens_loaded_callback_).Run();
@@ -337,12 +357,16 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_refresh_token_updated_callback_;
   base::RepeatingCallback<void(const std::string&)>
       on_refresh_token_removed_callback_;
+  base::OnceClosure on_error_state_of_refresh_token_updated_callback_;
   base::OnceClosure on_refresh_tokens_loaded_callback_;
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   AccountInfo primary_account_from_set_callback_;
   AccountInfo primary_account_from_cleared_callback_;
   AccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
+  AccountInfo account_from_error_state_of_refresh_token_updated_callback_;
+  GoogleServiceAuthError
+      error_from_error_state_of_refresh_token_updated_callback_;
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
   std::string account_from_add_account_to_cookie_completed_callback_;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
@@ -1038,6 +1062,61 @@ TEST_F(
       primary_account_info.account_id));
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
+}
+
+TEST_F(IdentityManagerTest,
+       CallbackSentOnUpdateToErrorStateOfRefreshTokenForAccount) {
+  AccountInfo primary_account_info =
+      identity_manager()->GetPrimaryAccountInfo();
+  std::string primary_account_id = primary_account_info.account_id;
+  SetRefreshTokenForPrimaryAccount(identity_manager());
+
+  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
+  AccountInfo account_info2 =
+      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2);
+  std::string account_id2 = account_info2.account_id;
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
+
+  GoogleServiceAuthError account_deleted_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DELETED);
+  GoogleServiceAuthError account_disabled_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DISABLED);
+  GoogleServiceAuthError transient_error = GoogleServiceAuthError(
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
+
+  // Set a persistent error for |account_id2| and check that it's reflected.
+  token_service()->UpdateAuthErrorForTesting(account_id2,
+                                             account_deleted_error);
+  EXPECT_EQ(account_id2,
+            identity_manager_observer()
+                ->account_from_error_state_of_refresh_token_updated_callback()
+                .account_id);
+  EXPECT_EQ(account_deleted_error,
+            identity_manager_observer()
+                ->error_from_error_state_of_refresh_token_updated_callback());
+
+  // A transient error should not cause a callback.
+  token_service()->UpdateAuthErrorForTesting(primary_account_id,
+                                             transient_error);
+  EXPECT_EQ(account_id2,
+            identity_manager_observer()
+                ->account_from_error_state_of_refresh_token_updated_callback()
+                .account_id);
+  EXPECT_EQ(account_deleted_error,
+            identity_manager_observer()
+                ->error_from_error_state_of_refresh_token_updated_callback());
+
+  // Set a different persistent error for the primary account and check that
+  // it's reflected.
+  token_service()->UpdateAuthErrorForTesting(primary_account_id,
+                                             account_disabled_error);
+  EXPECT_EQ(primary_account_id,
+            identity_manager_observer()
+                ->account_from_error_state_of_refresh_token_updated_callback()
+                .account_id);
+  EXPECT_EQ(account_disabled_error,
+            identity_manager_observer()
+                ->error_from_error_state_of_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
