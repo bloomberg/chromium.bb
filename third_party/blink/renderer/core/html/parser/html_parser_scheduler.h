@@ -106,7 +106,6 @@ class HTMLParserScheduler final
 
   TaskHandle cancellable_continue_parse_task_handle_;
   bool is_paused_with_active_timer_;
-  const double parser_time_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLParserScheduler);
 };

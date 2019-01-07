@@ -25,8 +25,6 @@
 
 #include "third_party/blink/renderer/core/html/parser/html_parser_scheduler.h"
 
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -36,10 +34,6 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-const base::Feature kHTMLParsingYieldTime {
-  "HTMLParsingYieldTime", base::FEATURE_DISABLED_BY_DEFAULT
-};
 
 PumpSession::PumpSession(unsigned& nesting_level)
     : NestingLevelIncrementer(nesting_level) {}
@@ -61,18 +55,12 @@ void SpeculationsPumpSession::AddedElementTokens(size_t count) {
   processed_element_tokens_ += count;
 }
 
-const double kDefaultParserTimeLimit = 0.5;
-
 HTMLParserScheduler::HTMLParserScheduler(
     HTMLDocumentParser* parser,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : parser_(parser),
       loading_task_runner_(std::move(loading_task_runner)),
-      is_paused_with_active_timer_(false),
-      parser_time_limit_(
-          base::GetFieldTrialParamByFeatureAsDouble(kHTMLParsingYieldTime,
-                                                    "limit",
-                                                    kDefaultParserTimeLimit)) {}
+      is_paused_with_active_timer_(false) {}
 
 HTMLParserScheduler::~HTMLParserScheduler() = default;
 
@@ -120,7 +108,8 @@ inline bool HTMLParserScheduler::ShouldYield(
   if (ThreadScheduler::Current()->ShouldYieldForHighPriorityWork())
     return true;
 
-  if (session.ElapsedTime() > parser_time_limit_)
+  const double kParserTimeLimit = 0.5;
+  if (session.ElapsedTime() > kParserTimeLimit)
     return true;
 
   // Yield if a lot of DOM work has been done in this session and a script tag
