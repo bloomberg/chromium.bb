@@ -256,7 +256,7 @@ using web::NavigationManager;
 }
 
 - (void)webState:(web::WebState*)webState
-    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
+    didFinishNavigation:(web::NavigationContext*)navigation {
   [self updateToolbar];
 }
 
