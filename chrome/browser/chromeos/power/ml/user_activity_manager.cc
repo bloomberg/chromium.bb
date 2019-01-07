@@ -607,8 +607,6 @@ void UserActivityManager::ResetAfterLogging() {
 }
 
 void UserActivityManager::CancelDimDecisionRequest() {
-  // TODO(crbug.com/893425): Add a unit-test to verify UMA logging of
-  // cancellation time.
   LOG(WARNING) << "Cancelling pending Smart Dim decision request.";
   smart_dim_model_->CancelPreviousRequest();
   waiting_for_model_decision_ = false;

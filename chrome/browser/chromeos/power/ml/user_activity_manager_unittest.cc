@@ -955,6 +955,83 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   EXPECT_TRUE(events.empty());
 }
 
+// Tests the cancellation of a Smart Dim decision request, immediately after it
+// has been requested.
+TEST_F(UserActivityManagerTest, ScreenDimRequestCanceled) {
+  base::HistogramTester histogram_tester;
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactivity_score(60);
+  model_.set_decision_threshold(65);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  // Report user activity immediately after the idle event, so that
+  // the SmartDimModel doesn't get a chance to run.
+  ReportUserActivity(nullptr);
+  thread_bundle()->RunUntilIdle();
+  EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(hist_complete, 0);
+  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
+  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+
+  // Since the pending SmartDim decision request was canceled, we shouldn't
+  // have any UserActivityEvent generated.
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(0U, events.size());
+}
+
+// Tests the cancellation of a Smart Dim decision request, when two idle events
+// occur in quick succession. This verifies that only one request is serviced.
+TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
+  base::HistogramTester histogram_tester;
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactivity_score(60);
+  model_.set_decision_threshold(65);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(hist_complete, 1);
+  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
+  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction;
+  expected_prediction.set_decision_threshold(65);
+  expected_prediction.set_inactivity_score(60);
+  expected_prediction.set_model_applied(true);
+  expected_prediction.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
+  EqualModelPrediction(expected_prediction, events[0].model_prediction());
+}
+
 TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
   base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
