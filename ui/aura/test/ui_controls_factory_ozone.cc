@@ -16,6 +16,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
@@ -28,15 +29,6 @@
 namespace aura {
 namespace test {
 namespace {
-
-// Callback from Window Service with the result of posting an event. |result|
-// is true if event successfully processed and |closure| is an optional closure
-// to run when done (used in client code to wait for ack).
-void OnWindowServiceProcessedEvent(base::OnceClosure closure, bool result) {
-  DCHECK(result);
-  if (closure)
-    std::move(closure).Run();
-}
 
 class UIControlsOzone : public ui_controls::UIControlsAura,
                         display::DisplayObserver {
@@ -403,6 +395,21 @@ unsigned UIControlsOzone::button_down_mask_ = 0;
 
 ui_controls::UIControlsAura* CreateUIControlsAura(WindowTreeHost* host) {
   return new UIControlsOzone(host);
+}
+
+void OnWindowServiceProcessedEvent(base::OnceClosure closure, bool result) {
+  DCHECK(result);
+  if (closure) {
+    // There can be several mojo calls are queued in the window tree client,
+    // which may change the order of the operations unexpectedly. Do not call
+    // WaitForAllChangesToComplete() here, since some in-flight changes might
+    // not be resolved by just waiting (like window-dragging will not finish
+    // until it's cancelled or the mouse or touch is released).
+    // See also: https://crbug.com/916177
+    WindowTreeClientTestApi(EnvTestHelper().GetWindowTreeClient())
+        .FlushForTesting();
+    std::move(closure).Run();
+  }
 }
 
 }  // namespace test
