@@ -14,8 +14,8 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
 using buzz::NS_XML;
 using buzz::NS_XMLNS;

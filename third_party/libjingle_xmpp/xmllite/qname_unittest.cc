@@ -9,8 +9,9 @@
  */
 
 #include <string>
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
 using buzz::StaticQName;
 using buzz::QName;

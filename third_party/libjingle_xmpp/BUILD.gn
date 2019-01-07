@@ -54,9 +54,7 @@ rtc_static_library("rtc_xmllite") {
   public_deps = [
     "//third_party/expat",
   ]
-  all_dependent_configs = [
-    ":libjingle_xmpp_common_config",
-  ]
+  all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 }
 
 config("rtc_xmpp_warnings_config") {
@@ -139,10 +137,6 @@ rtc_test("libjingle_xmpp_unittests") {
     ":rtc_task_runner",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-
-    # TODO(kjellander): Refactor/remove this dependency. It is needed by
-    # third_party/webrtc_overrides/rtc_base/win32socketinit.cc.
-    "//net",
     "//testing/gtest",
   ]
 
