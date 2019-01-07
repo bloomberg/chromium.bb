@@ -35,6 +35,10 @@ cr.define('extensions', function() {
   const Manager = Polymer({
     is: 'extensions-manager',
 
+    behaviors: [
+      FindShortcutBehavior,
+    ],
+
     properties: {
       canLoadUnpacked: {
         type: Boolean,
@@ -582,6 +586,20 @@ cr.define('extensions', function() {
       this.showKioskDialog_ = false;
     },
     // </if>
+
+    // Override FindShortcutBehavior methods.
+    handleFindShortcut: function(modalContextOpen) {
+      if (modalContextOpen) {
+        return false;
+      }
+      this.$$('extensions-toolbar').focusOnSearchInput();
+      return true;
+    },
+
+    // Override FindShortcutBehavior methods.
+    searchInputHasFocus: function() {
+      return this.$$('extensions-toolbar').getSearchField().isSearchFocused();
+    },
   });
 
   return {Manager: Manager};
