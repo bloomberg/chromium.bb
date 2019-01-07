@@ -12563,7 +12563,9 @@
       'desc': '''
         If this policy is set to True, cloud management enrollment is mandatory and blocks Chrome launch process if failed.
 
-        If this policy is left unset or set to False, cloud management enrollment is optional and does not blocks Chrome launch process if failed.''',
+        If this policy is left unset or set to False, cloud management enrollment is optional and does not blocks Chrome launch process if failed.
+
+        This policy is used by machine scope cloud policy enrollment on desktop and can be set by Registry or GPO on Windows, plist on Mac and JSON policy file on Linux.''',
     },
     {
       'name': 'AutoplayAllowed',
