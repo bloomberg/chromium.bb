@@ -5,6 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 #define EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
@@ -26,8 +31,8 @@ class ViscaWebcam : public Webcam {
   // steps (in order): 1. Open the serial port; 2. Request address; 3. Clear the
   // command buffer. After these three steps completes, |open_callback| will be
   // called.
-  void Open(const std::string& path,
-            const std::string& extension_id,
+  void Open(const std::string& extension_id,
+            device::mojom::SerialPortPtrInfo port_ptr_info,
             const OpenCompleteCallback& open_callback);
 
  private:

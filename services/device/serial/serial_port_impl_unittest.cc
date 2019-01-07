@@ -36,7 +36,8 @@ class SerialPortImplTest : public DeviceServiceTestBase {
 // TODO(leonhsl): figure out how to add more robust tests.
 TEST_F(SerialPortImplTest, SimpleConnectTest) {
   mojom::SerialPortPtr serial_port;
-  port_manager_->GetPort("", mojo::MakeRequest(&serial_port));
+  port_manager_->GetPort(base::UnguessableToken::Create(),
+                         mojo::MakeRequest(&serial_port));
   serial_port.FlushForTesting();
 }
 

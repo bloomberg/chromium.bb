@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_LINUX_H_
 #define SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_LINUX_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "services/device/serial/serial_device_enumerator.h"

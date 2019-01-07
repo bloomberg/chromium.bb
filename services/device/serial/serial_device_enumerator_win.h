@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_WIN_H_
 #define SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_WIN_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "services/device/serial/serial_device_enumerator.h"
 
@@ -20,6 +22,9 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   std::vector<mojom::SerialPortInfoPtr> GetDevices() override;
 
  private:
+  std::vector<mojom::SerialPortInfoPtr> GetDevicesNew();
+  std::vector<mojom::SerialPortInfoPtr> GetDevicesOld();
+
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorWin);
 };
 

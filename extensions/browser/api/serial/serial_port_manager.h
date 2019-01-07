@@ -1,16 +1,20 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
-#define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
+#ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_PORT_MANAGER_H_
+#define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_PORT_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/threading/thread_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/serial.h"
+#include "services/device/public/mojom/serial.mojom.h"
 
 namespace content {
 class BrowserContext;
@@ -22,28 +26,32 @@ struct Event;
 class SerialConnection;
 
 namespace api {
-
 // Per-browser-context dispatcher for events on serial connections.
-class SerialEventDispatcher : public BrowserContextKeyedAPI {
+class SerialPortManager : public BrowserContextKeyedAPI {
  public:
-  explicit SerialEventDispatcher(content::BrowserContext* context);
-  ~SerialEventDispatcher() override;
+  static SerialPortManager* Get(content::BrowserContext* context);
+
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<SerialPortManager>* GetFactoryInstance();
+
+  explicit SerialPortManager(content::BrowserContext* context);
+  ~SerialPortManager() override;
+
+  void GetDevices(
+      device::mojom::SerialPortManager::GetDevicesCallback callback);
+
+  void GetPort(const std::string& path,
+               device::mojom::SerialPortRequest request);
 
   // Start receiving data and firing events for a connection.
   void PollConnection(const std::string& extension_id, int connection_id);
 
-  static SerialEventDispatcher* Get(content::BrowserContext* context);
-
-  // BrowserContextKeyedAPI implementation.
-  static BrowserContextKeyedAPIFactory<SerialEventDispatcher>*
-      GetFactoryInstance();
-
  private:
   typedef ApiResourceManager<SerialConnection>::ApiResourceData ConnectionData;
-  friend class BrowserContextKeyedAPIFactory<SerialEventDispatcher>;
+  friend class BrowserContextKeyedAPIFactory<SerialPortManager>;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() { return "SerialEventDispatcher"; }
+  static const char* service_name() { return "SerialPortManager"; }
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
@@ -72,13 +80,26 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
                             const std::string& extension_id,
                             std::unique_ptr<extensions::Event> event);
 
+  void EnsureConnection();
+  void OnGotDevicesToGetPort(
+      const std::string& path,
+      device::mojom::SerialPortRequest request,
+      std::vector<device::mojom::SerialPortInfoPtr> devices);
+  void OnPortManagerConnectionError();
+
+  device::mojom::SerialPortManagerPtr port_manager_;
   content::BrowserThread::ID thread_id_;
-  content::BrowserContext* const context_;
   scoped_refptr<ConnectionData> connections_;
+  content::BrowserContext* const context_;
+
+  THREAD_CHECKER(thread_checker_);
+  base::WeakPtrFactory<SerialPortManager> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SerialPortManager);
 };
 
 }  // namespace api
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
+#endif  // EXTENSIONS_BROWSER_API_SERIAL_SERIAL_PORT_MANAGER_H_

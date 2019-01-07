@@ -1,17 +1,21 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/serial/serial_event_dispatcher.h"
+#include "extensions/browser/api/serial/serial_port_manager.h"
 
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
@@ -32,44 +36,55 @@ bool ShouldPauseOnReceiveError(serial::ReceiveError error) {
 
 }  // namespace
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<SerialEventDispatcher>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SerialPortManager>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-BrowserContextKeyedAPIFactory<SerialEventDispatcher>*
-SerialEventDispatcher::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SerialPortManager>*
+SerialPortManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
-SerialEventDispatcher* SerialEventDispatcher::Get(
-    content::BrowserContext* context) {
-  return BrowserContextKeyedAPIFactory<SerialEventDispatcher>::Get(context);
+SerialPortManager* SerialPortManager::Get(content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<SerialPortManager>::Get(context);
 }
 
-SerialEventDispatcher::SerialEventDispatcher(content::BrowserContext* context)
-    : thread_id_(SerialConnection::kThreadId), context_(context) {
+SerialPortManager::SerialPortManager(content::BrowserContext* context)
+    : thread_id_(SerialConnection::kThreadId),
+      context_(context),
+      weak_factory_(this) {
   ApiResourceManager<SerialConnection>* manager =
       ApiResourceManager<SerialConnection>::Get(context_);
   DCHECK(manager) << "No serial connection manager.";
   connections_ = manager->data_;
 }
 
-SerialEventDispatcher::~SerialEventDispatcher() {
+SerialPortManager::~SerialPortManager() {}
+
+SerialPortManager::ReceiveParams::ReceiveParams() {}
+
+SerialPortManager::ReceiveParams::ReceiveParams(const ReceiveParams& other) =
+    default;
+
+SerialPortManager::ReceiveParams::~ReceiveParams() {}
+
+void SerialPortManager::GetDevices(
+    device::mojom::SerialPortManager::GetDevicesCallback callback) {
+  EnsureConnection();
+  port_manager_->GetDevices(std::move(callback));
 }
 
-SerialEventDispatcher::ReceiveParams::ReceiveParams() {
+void SerialPortManager::GetPort(const std::string& path,
+                                device::mojom::SerialPortRequest request) {
+  EnsureConnection();
+  port_manager_->GetDevices(
+      base::BindOnce(&SerialPortManager::OnGotDevicesToGetPort,
+                     weak_factory_.GetWeakPtr(), path, std::move(request)));
 }
 
-SerialEventDispatcher::ReceiveParams::ReceiveParams(
-    const ReceiveParams& other) = default;
-
-SerialEventDispatcher::ReceiveParams::~ReceiveParams() {
-}
-
-void SerialEventDispatcher::PollConnection(const std::string& extension_id,
-                                           int connection_id) {
+void SerialPortManager::PollConnection(const std::string& extension_id,
+                                       int connection_id) {
   DCHECK_CURRENTLY_ON(thread_id_);
 
   ReceiveParams params;
@@ -83,7 +98,7 @@ void SerialEventDispatcher::PollConnection(const std::string& extension_id,
 }
 
 // static
-void SerialEventDispatcher::StartReceive(const ReceiveParams& params) {
+void SerialPortManager::StartReceive(const ReceiveParams& params) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   SerialConnection* connection =
@@ -99,9 +114,9 @@ void SerialEventDispatcher::StartReceive(const ReceiveParams& params) {
 }
 
 // static
-void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
-                                            std::vector<uint8_t> data,
-                                            serial::ReceiveError error) {
+void SerialPortManager::ReceiveCallback(const ReceiveParams& params,
+                                        std::vector<uint8_t> data,
+                                        serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   // Note that an error (e.g. timeout) does not necessarily mean that no data
@@ -142,9 +157,8 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
 }
 
 // static
-void SerialEventDispatcher::PostEvent(
-    const ReceiveParams& params,
-    std::unique_ptr<extensions::Event> event) {
+void SerialPortManager::PostEvent(const ReceiveParams& params,
+                                  std::unique_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   base::PostTaskWithTraits(
@@ -154,7 +168,7 @@ void SerialEventDispatcher::PostEvent(
 }
 
 // static
-void SerialEventDispatcher::DispatchEvent(
+void SerialPortManager::DispatchEvent(
     void* browser_context_id,
     const std::string& extension_id,
     std::unique_ptr<extensions::Event> event) {
@@ -168,6 +182,41 @@ void SerialEventDispatcher::DispatchEvent(
   EventRouter* router = EventRouter::Get(context);
   if (router)
     router->DispatchEventToExtension(extension_id, std::move(event));
+}
+
+void SerialPortManager::EnsureConnection() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (port_manager_)
+    return;
+
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(device::mojom::kServiceName,
+                      mojo::MakeRequest(&port_manager_));
+  port_manager_.set_connection_error_handler(
+      base::BindOnce(&SerialPortManager::OnPortManagerConnectionError,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SerialPortManager::OnGotDevicesToGetPort(
+    const std::string& path,
+    device::mojom::SerialPortRequest request,
+    std::vector<device::mojom::SerialPortInfoPtr> devices) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  for (auto& device : devices) {
+    if (device->path == path) {
+      port_manager_->GetPort(device->token, std::move(request));
+      return;
+    }
+  }
+}
+
+void SerialPortManager::OnPortManagerConnectionError() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  port_manager_.reset();
 }
 
 }  // namespace api

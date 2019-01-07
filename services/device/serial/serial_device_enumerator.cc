@@ -4,10 +4,35 @@
 
 #include "services/device/serial/serial_device_enumerator.h"
 
+#include <utility>
+
+#include "base/unguessable_token.h"
+
 namespace device {
 
 SerialDeviceEnumerator::SerialDeviceEnumerator() = default;
 
 SerialDeviceEnumerator::~SerialDeviceEnumerator() = default;
+
+base::Optional<std::string> SerialDeviceEnumerator::GetPathFromToken(
+    const base::UnguessableToken& token) {
+  auto it = token_path_map_.find(token);
+  if (it == token_path_map_.end())
+    return base::nullopt;
+
+  return it->second;
+}
+
+const base::UnguessableToken& SerialDeviceEnumerator::GetTokenFromPath(
+    const std::string& path) {
+  for (const auto& pair : token_path_map_) {
+    if (pair.second == path)
+      return pair.first;
+  }
+  // A new serial path.
+  return token_path_map_
+      .insert(std::make_pair(base::UnguessableToken::Create(), path))
+      .first->first;
+}
 
 }  // namespace device

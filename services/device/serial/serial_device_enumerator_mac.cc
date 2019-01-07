@@ -10,8 +10,11 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -99,10 +102,46 @@ int Clamp(int value, int min, int max) {
   return std::min(std::max(value, min), max);
 }
 
+}  // namespace
+
+// static
+std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
+  return std::make_unique<SerialDeviceEnumeratorMac>();
+}
+
+SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
+
+SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
+
+std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
+  std::vector<mojom::SerialPortInfoPtr> devices = GetDevicesNew();
+  std::vector<mojom::SerialPortInfoPtr> old_devices = GetDevicesOld();
+
+  base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
+                           Clamp(devices.size() - old_devices.size(), -10, 10));
+
+  // Add devices found from both the new and old methods of enumeration. If a
+  // device is found using both the new and the old enumeration method, then we
+  // take the device from the new enumeration method because it's able to
+  // collect more information. We do this by inserting the new devices first,
+  // because insertions are ignored if the key already exists.
+  std::unordered_set<std::string> devices_seen;
+  for (const auto& device : devices) {
+    bool inserted = devices_seen.insert(device->path).second;
+    DCHECK(inserted);
+  }
+  for (auto& device : old_devices) {
+    if (devices_seen.insert(device->path).second)
+      devices.push_back(std::move(device));
+  }
+  return devices;
+}
+
 // Returns an array of devices as retrieved through the new method of
 // enumerating serial devices (IOKit).  This new method gives more information
 // about the devices than the old method.
-std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
+std::vector<mojom::SerialPortInfoPtr>
+SerialDeviceEnumeratorMac::GetDevicesNew() {
   std::vector<mojom::SerialPortInfoPtr> devices;
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
@@ -151,6 +190,7 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
     if (GetStringProperty(scoped_device.get(), CFSTR(kIODialinDeviceKey),
                           &dialinDevice)) {
       mojom::SerialPortInfoPtr dialin_info = callout_info.Clone();
+      dialin_info->token = GetTokenFromPath(dialinDevice);
       dialin_info->path = dialinDevice;
       devices.push_back(std::move(dialin_info));
     }
@@ -158,6 +198,7 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
     std::string calloutDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIOCalloutDeviceKey),
                           &calloutDevice)) {
+      callout_info->token = GetTokenFromPath(calloutDevice);
       callout_info->path = calloutDevice;
       devices.push_back(std::move(callout_info));
     }
@@ -169,7 +210,8 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
 // Returns an array of devices as retrieved through the old method of
 // enumerating serial devices (pattern matching in /dev/). This old method gives
 // less information about the devices than the new method.
-std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
+std::vector<mojom::SerialPortInfoPtr>
+SerialDeviceEnumeratorMac::GetDevicesOld() {
   const base::FilePath kDevRoot("/dev");
   const int kFilesAndSymLinks =
       base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS;
@@ -196,47 +238,14 @@ std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
     for (; i != valid_patterns.end(); ++i) {
       if (base::MatchPattern(next_device, *i)) {
         auto info = mojom::SerialPortInfo::New();
+
+        info->token = GetTokenFromPath(next_device);
         info->path = next_device;
         devices.push_back(std::move(info));
         break;
       }
     }
   } while (true);
-  return devices;
-}
-
-}  // namespace
-
-// static
-std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::make_unique<SerialDeviceEnumeratorMac>();
-}
-
-SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
-
-SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
-
-std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
-  std::vector<mojom::SerialPortInfoPtr> devices = GetDevicesNew();
-  std::vector<mojom::SerialPortInfoPtr> old_devices = GetDevicesOld();
-
-  base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
-                           Clamp(devices.size() - old_devices.size(), -10, 10));
-
-  // Add devices found from both the new and old methods of enumeration. If a
-  // device is found using both the new and the old enumeration method, then we
-  // take the device from the new enumeration method because it's able to
-  // collect more information. We do this by inserting the new devices first,
-  // because insertions are ignored if the key already exists.
-  std::unordered_set<std::string> devices_seen;
-  for (const auto& device : devices) {
-    bool inserted = devices_seen.insert(device->path).second;
-    DCHECK(inserted);
-  }
-  for (auto& device : old_devices) {
-    if (devices_seen.insert(device->path).second)
-      devices.push_back(std::move(device));
-  }
   return devices;
 }
 

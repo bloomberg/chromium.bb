@@ -10,8 +10,11 @@
 #include <setupapi.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
+#include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
@@ -87,75 +90,6 @@ int Clamp(int value, int min, int max) {
   return std::min(std::max(value, min), max);
 }
 
-// Returns an array of devices as retrieved through the new method of
-// enumerating serial devices (SetupDi).  This new method gives more information
-// about the devices than the old method.
-std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
-  std::vector<mojom::SerialPortInfoPtr> devices;
-
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  // Make a device interface query to find all serial devices.
-  HDEVINFO dev_info =
-      SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
-  if (dev_info == INVALID_HANDLE_VALUE)
-    return devices;
-
-  SP_DEVINFO_DATA dev_info_data;
-  dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
-  for (DWORD i = 0; SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
-    std::string friendly_name, com_port;
-    // SPDRP_FRIENDLYNAME looks like "USB_SERIAL_PORT (COM3)".
-    if (!GetProperty(dev_info, dev_info_data, SPDRP_FRIENDLYNAME,
-                     &friendly_name) ||
-        !GetCOMPort(friendly_name, &com_port))
-      // In Windows, the COM port is the path used to uniquely identify the
-      // serial device. If the COM can't be found, ignore the device.
-      continue;
-
-    auto info = mojom::SerialPortInfo::New();
-    info->path = com_port;
-
-    std::string display_name;
-    if (GetDisplayName(friendly_name, &display_name))
-      info->display_name = std::move(display_name);
-
-    std::string hardware_id;
-    // SPDRP_HARDWAREID looks like "FTDIBUS\COMPORT&VID_0403&PID_6001".
-    if (GetProperty(dev_info, dev_info_data, SPDRP_HARDWAREID, &hardware_id)) {
-      uint32_t vendor_id, product_id;
-      if (GetVendorID(hardware_id, &vendor_id)) {
-        info->has_vendor_id = true;
-        info->vendor_id = vendor_id;
-      }
-      if (GetProductID(hardware_id, &product_id)) {
-        info->has_product_id = true;
-        info->product_id = product_id;
-      }
-    }
-
-    devices.push_back(std::move(info));
-  }
-
-  SetupDiDestroyDeviceInfoList(dev_info);
-  return devices;
-}
-
-// Returns an array of devices as retrieved through the old method of
-// enumerating serial devices (searching the registry). This old method gives
-// less information about the devices than the new method.
-std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  base::win::RegistryValueIterator iter_key(
-      HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  std::vector<mojom::SerialPortInfoPtr> devices;
-  for (; iter_key.Valid(); ++iter_key) {
-    auto info = mojom::SerialPortInfo::New();
-    info->path = base::UTF16ToASCII(iter_key.Value());
-    devices.push_back(std::move(info));
-  }
-  return devices;
-}
-
 }  // namespace
 
 // static
@@ -187,6 +121,79 @@ std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
   for (auto& device : old_devices) {
     if (devices_seen.insert(device->path).second)
       devices.push_back(std::move(device));
+  }
+  return devices;
+}
+
+// Returns an array of devices as retrieved through the new method of
+// enumerating serial devices (SetupDi).  This new method gives more information
+// about the devices than the old method.
+std::vector<mojom::SerialPortInfoPtr>
+SerialDeviceEnumeratorWin::GetDevicesNew() {
+  std::vector<mojom::SerialPortInfoPtr> devices;
+
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  // Make a device interface query to find all serial devices.
+  HDEVINFO dev_info =
+      SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
+  if (dev_info == INVALID_HANDLE_VALUE)
+    return devices;
+
+  SP_DEVINFO_DATA dev_info_data;
+  dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
+  for (DWORD i = 0; SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
+    std::string friendly_name, com_port;
+    // SPDRP_FRIENDLYNAME looks like "USB_SERIAL_PORT (COM3)".
+    if (!GetProperty(dev_info, dev_info_data, SPDRP_FRIENDLYNAME,
+                     &friendly_name) ||
+        !GetCOMPort(friendly_name, &com_port))
+      // In Windows, the COM port is the path used to uniquely identify the
+      // serial device. If the COM can't be found, ignore the device.
+      continue;
+
+    auto info = mojom::SerialPortInfo::New();
+    info->token = GetTokenFromPath(com_port);
+    info->path = com_port;
+
+    std::string display_name;
+    if (GetDisplayName(friendly_name, &display_name))
+      info->display_name = std::move(display_name);
+
+    std::string hardware_id;
+    // SPDRP_HARDWAREID looks like "FTDIBUS\COMPORT&VID_0403&PID_6001".
+    if (GetProperty(dev_info, dev_info_data, SPDRP_HARDWAREID, &hardware_id)) {
+      uint32_t vendor_id, product_id;
+      if (GetVendorID(hardware_id, &vendor_id)) {
+        info->has_vendor_id = true;
+        info->vendor_id = vendor_id;
+      }
+      if (GetProductID(hardware_id, &product_id)) {
+        info->has_product_id = true;
+        info->product_id = product_id;
+      }
+    }
+
+    devices.push_back(std::move(info));
+  }
+
+  SetupDiDestroyDeviceInfoList(dev_info);
+  return devices;
+}
+
+// Returns an array of devices as retrieved through the old method of
+// enumerating serial devices (searching the registry). This old method gives
+// less information about the devices than the new method.
+std::vector<mojom::SerialPortInfoPtr>
+SerialDeviceEnumeratorWin::GetDevicesOld() {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::win::RegistryValueIterator iter_key(
+      HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
+  std::vector<mojom::SerialPortInfoPtr> devices;
+  for (; iter_key.Valid(); ++iter_key) {
+    auto info = mojom::SerialPortInfo::New();
+    info->path = base::UTF16ToASCII(iter_key.Value());
+    info->token = GetTokenFromPath(info->path);
+    devices.push_back(std::move(info));
   }
   return devices;
 }

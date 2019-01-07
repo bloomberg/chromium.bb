@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
@@ -30,13 +31,13 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
  public:
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create(
+      const std::string& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
 
   typedef base::OnceCallback<void(bool success)> OpenCompleteCallback;
 
   // Initiates an asynchronous Open of the device.
-  virtual void Open(const std::string& port,
-                    const mojom::SerialConnectionOptions& options,
+  virtual void Open(const mojom::SerialConnectionOptions& options,
                     OpenCompleteCallback callback);
 
 #if defined(OS_CHROMEOS)
@@ -111,6 +112,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
  protected:
   explicit SerialIoHandler(
+      const std::string& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   virtual ~SerialIoHandler();
 
@@ -209,8 +211,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   void MergeConnectionOptions(const mojom::SerialConnectionOptions& options);
 
   // Continues an Open operation on the FILE thread.
-  void StartOpen(const std::string& port,
-                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  void StartOpen(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Finalizes an Open operation (continued from StartOpen) on the IO thread.
   void FinishOpen(base::File file);
@@ -238,10 +239,10 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Callback to handle the completion of a pending Open() request.
   OpenCompleteCallback open_complete_;
 
+  const std::string port_;
+
   // On Chrome OS, PermissionBrokerClient should be called on the UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
-
-  std::string port_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandler);
 };

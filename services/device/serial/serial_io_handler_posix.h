@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
@@ -47,6 +48,7 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   friend class SerialIoHandlerPosixTest;
 
   SerialIoHandlerPosix(
+      const std::string& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerPosix() override;
 

@@ -23,8 +23,9 @@
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
+    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : ui_thread_task_runner_(ui_thread_task_runner) {
+    : port_(port), ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
   options_.data_bits = mojom::SerialDataBits::EIGHT;
   options_.parity_bit = mojom::SerialParityBit::NO_PARITY;
@@ -38,15 +39,14 @@ SerialIoHandler::~SerialIoHandler() {
   Close();
 }
 
-void SerialIoHandler::Open(const std::string& port,
-                           const mojom::SerialConnectionOptions& options,
+void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
                            OpenCompleteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!open_complete_);
+  DCHECK(!port_.empty());
   open_complete_ = std::move(callback);
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
-  port_ = port;
 
 #if defined(OS_CHROMEOS)
   chromeos::PermissionBrokerClient* client =
@@ -58,7 +58,7 @@ void SerialIoHandler::Open(const std::string& port,
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&chromeos::PermissionBrokerClient::OpenPath,
-                     base::Unretained(client), port,
+                     base::Unretained(client), port_,
                      base::BindRepeating(&SerialIoHandler::OnPathOpened, this,
                                          task_runner),
                      base::BindRepeating(&SerialIoHandler::OnPathOpenError,
@@ -67,7 +67,7 @@ void SerialIoHandler::Open(const std::string& port,
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&SerialIoHandler::StartOpen, this, port,
+      base::BindOnce(&SerialIoHandler::StartOpen, this,
                      base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_CHROMEOS)
 }
@@ -124,15 +124,15 @@ void SerialIoHandler::MergeConnectionOptions(
 }
 
 void SerialIoHandler::StartOpen(
-    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   DCHECK(open_complete_);
   DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialIoHandler to
   // validate the supplied path against the set of valid port names, and
   // it is a reasonable assumption that serial port names are ASCII.
-  DCHECK(base::IsStringASCII(port));
-  base::FilePath path(base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port)));
+  DCHECK(base::IsStringASCII(port_));
+  base::FilePath path(
+      base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_WRITE |
               base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |

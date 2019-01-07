@@ -4,7 +4,10 @@
 
 module device.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
 struct SerialPortInfo {
+  mojo_base.mojom.UnguessableToken token;
   string path;
   uint16 vendor_id;
   bool has_vendor_id = false;
@@ -87,7 +90,7 @@ struct SerialPortControlSignals {
 // Discovers and enumerates serial devices available to the host.
 interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
-  GetPort(string path, SerialPort& port_request);
+  GetPort(mojo_base.mojom.UnguessableToken token, SerialPort& port_request);
 };
 
 // Performs asynchronous I/O on serial devices.
