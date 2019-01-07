@@ -9,7 +9,10 @@
 #include "ash/autoclick/autoclick_ring_handler.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/autoclick_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -18,6 +21,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -38,6 +42,16 @@ bool IsModifierKey(const ui::KeyboardCode key_code) {
 
 base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
+}
+
+bool AutoclickTrayContainsPoint(const gfx::Point& point) {
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    AutoclickTray* autoclick_tray =
+        Shelf::ForWindow(window)->GetStatusAreaWidget()->autoclick_tray();
+    if (autoclick_tray && autoclick_tray->ContainsPointInScreen(point))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -156,11 +170,6 @@ void AutoclickController::UpdateAutoclickRingWidget(
 }
 
 void AutoclickController::DoAutoclickAction() {
-  // Set the in-progress event type locally so that if the event type is updated
-  // in the middle of this event being executed it doesn't change execution.
-  mojom::AutoclickEventType in_progress_event_type = event_type_;
-  RecordUserAction(in_progress_event_type);
-
   aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
@@ -168,6 +177,21 @@ void AutoclickController::DoAutoclickAction() {
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
+
+  // Set the in-progress event type locally so that if the event type is updated
+  // in the middle of this event being executed it doesn't change execution.
+  mojom::AutoclickEventType in_progress_event_type = event_type_;
+
+  // But if the thing that would be acted upon is the tray button, do a left
+  // click instead of whatever other action type we would have done. This
+  // ensures that no matter the autoclick setting, users can always change to
+  // another autoclick setting.
+  if (event_type_ != mojom::AutoclickEventType::kLeftClick &&
+      !DragInProgress() && AutoclickTrayContainsPoint(anchor_location_)) {
+    // TODO: Check if the keyboard is up too, so we know if it's blocked.
+    in_progress_event_type = mojom::AutoclickEventType::kLeftClick;
+  }
+  RecordUserAction(in_progress_event_type);
 
   bool drag_start =
       in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&
@@ -233,6 +257,18 @@ void AutoclickController::DoAutoclickAction() {
 }
 
 void AutoclickController::StartAutoclickGesture() {
+  if (event_type_ == mojom::AutoclickEventType::kNoAction) {
+    // If we are set to "no action" and the gesture wouldn't occur over
+    // the autoclick tray, cancel and return early rather than starting the
+    // gesture.
+    if (!AutoclickTrayContainsPoint(gesture_anchor_location_)) {
+      CancelAutoclickAction();
+      return;
+    }
+    // Otherwise, go ahead and start the gesture. When it competes, if the
+    // cursor is still over the tray, it will be changed to a left-click just
+    // this once.
+  }
   // The anchor is always the point in the screen where the timer starts.
   anchor_location_ = gesture_anchor_location_;
   autoclick_ring_handler_->StartGesture(
@@ -329,8 +365,6 @@ void AutoclickController::RecordUserAction(
 
 void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
-  if (event_type_ == mojom::AutoclickEventType::kNoAction)
-    return;
   gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||

@@ -179,6 +179,11 @@ void AutoclickTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
+void AutoclickTray::ClickedOutsideBubble() {
+  CloseBubble();
+  SetIsActive(false);
+}
+
 void AutoclickTray::OnAccessibilityStatusChanged() {
   CheckStatusAndUpdateIcon();
 }
@@ -186,6 +191,13 @@ void AutoclickTray::OnAccessibilityStatusChanged() {
 void AutoclickTray::OnSessionStateChanged(session_manager::SessionState state) {
   UpdateIconsForSession();
   CheckStatusAndUpdateIcon();
+}
+
+bool AutoclickTray::ContainsPointInScreen(const gfx::Point& point) {
+  if (GetBoundsInScreen().Contains(point))
+    return true;
+
+  return bubble_ && bubble_->bubble_view()->GetBoundsInScreen().Contains(point);
 }
 
 void AutoclickTray::OnSettingsPressed() {
