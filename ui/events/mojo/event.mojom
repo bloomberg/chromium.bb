@@ -60,6 +60,9 @@ struct LocationData {
 // TODO(crbug.com/767087): Expand GestureEvent and GestureEventDetails support.
 struct GestureData {
   LocationData location;
+  GestureDeviceType device_type;
+  // The scale of pinch update events.
+  float scale;
 };
 
 // Data to support scroll events.

@@ -48,10 +48,15 @@ bool ReadGestureData(ui::mojom::EventDataView* event,
   if (!event->ReadGestureData<ui::mojom::GestureDataPtr>(&gesture_data))
     return false;
 
+  ui::GestureEventDetails details(ConvertTo<ui::EventType>(event->action()));
+  details.set_device_type(gesture_data->device_type);
+  if (details.type() == ui::ET_GESTURE_PINCH_UPDATE)
+    details.set_scale(gesture_data->scale);
+
   *out = std::make_unique<ui::GestureEvent>(
       gesture_data->location->relative_location.x(),
       gesture_data->location->relative_location.y(), event->flags(), time_stamp,
-      ui::GestureEventDetails(ConvertTo<ui::EventType>(event->action())));
+      details);
   return true;
 }
 
@@ -119,6 +124,12 @@ ui::mojom::EventType TypeConverter<ui::mojom::EventType,
       return ui::mojom::EventType::GESTURE_TAP;
     case ui::ET_GESTURE_SWIPE:
       return ui::mojom::EventType::GESTURE_SWIPE;
+    case ui::ET_GESTURE_PINCH_BEGIN:
+      return ui::mojom::EventType::GESTURE_PINCH_BEGIN;
+    case ui::ET_GESTURE_PINCH_END:
+      return ui::mojom::EventType::GESTURE_PINCH_END;
+    case ui::ET_GESTURE_PINCH_UPDATE:
+      return ui::mojom::EventType::GESTURE_PINCH_UPDATE;
     case ui::ET_SCROLL:
       return ui::mojom::EventType::SCROLL;
     case ui::ET_SCROLL_FLING_START:
@@ -173,6 +184,12 @@ ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
       return ui::ET_GESTURE_TAP;
     case ui::mojom::EventType::GESTURE_SWIPE:
       return ui::ET_GESTURE_SWIPE;
+    case ui::mojom::EventType::GESTURE_PINCH_BEGIN:
+      return ui::ET_GESTURE_PINCH_BEGIN;
+    case ui::mojom::EventType::GESTURE_PINCH_END:
+      return ui::ET_GESTURE_PINCH_END;
+    case ui::mojom::EventType::GESTURE_PINCH_UPDATE:
+      return ui::ET_GESTURE_PINCH_UPDATE;
     case ui::mojom::EventType::SCROLL:
       return ui::ET_SCROLL;
     case ui::mojom::EventType::SCROLL_FLING_START:
@@ -281,8 +298,13 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::gesture_data(
   if (!event->IsGestureEvent())
     return nullptr;
 
+  const ui::GestureEvent* gesture_event = event->AsGestureEvent();
   ui::mojom::GestureDataPtr gesture_data(ui::mojom::GestureData::New());
-  gesture_data->location = CreateLocationData(event->AsLocatedEvent());
+  gesture_data->location = CreateLocationData(gesture_event);
+  gesture_data->device_type = gesture_event->details().device_type();
+  gesture_data->scale = (event->type() == ui::ET_GESTURE_PINCH_UPDATE)
+                            ? gesture_event->details().scale()
+                            : 1.f;
   return gesture_data;
 }
 
@@ -362,6 +384,9 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     }
     case ui::mojom::EventType::GESTURE_TAP:
     case ui::mojom::EventType::GESTURE_SWIPE:
+    case ui::mojom::EventType::GESTURE_PINCH_BEGIN:
+    case ui::mojom::EventType::GESTURE_PINCH_END:
+    case ui::mojom::EventType::GESTURE_PINCH_UPDATE:
       if (!ReadGestureData(&event, time_stamp, out))
         return false;
       break;

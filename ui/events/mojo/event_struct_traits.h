@@ -197,6 +197,39 @@ struct EnumTraits<ui::mojom::ScrollEventPhase, ui::ScrollEventPhase> {
   }
 };
 
+template <>
+struct EnumTraits<ui::mojom::GestureDeviceType, ui::GestureDeviceType> {
+  static ui::mojom::GestureDeviceType ToMojom(ui::GestureDeviceType input) {
+    switch (input) {
+      case ui::GestureDeviceType::DEVICE_UNKNOWN:
+        return ui::mojom::GestureDeviceType::DEVICE_UNKNOWN;
+      case ui::GestureDeviceType::DEVICE_TOUCHPAD:
+        return ui::mojom::GestureDeviceType::DEVICE_TOUCHPAD;
+      case ui::GestureDeviceType::DEVICE_TOUCHSCREEN:
+        return ui::mojom::GestureDeviceType::DEVICE_TOUCHSCREEN;
+    }
+    NOTREACHED();
+    return ui::mojom::GestureDeviceType::DEVICE_UNKNOWN;
+  }
+
+  static bool FromMojom(ui::mojom::GestureDeviceType input,
+                        ui::GestureDeviceType* out) {
+    switch (input) {
+      case ui::mojom::GestureDeviceType::DEVICE_UNKNOWN:
+        *out = ui::GestureDeviceType::DEVICE_UNKNOWN;
+        return true;
+      case ui::mojom::GestureDeviceType::DEVICE_TOUCHPAD:
+        *out = ui::GestureDeviceType::DEVICE_TOUCHPAD;
+        return true;
+      case ui::mojom::GestureDeviceType::DEVICE_TOUCHSCREEN:
+        *out = ui::GestureDeviceType::DEVICE_TOUCHSCREEN;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
