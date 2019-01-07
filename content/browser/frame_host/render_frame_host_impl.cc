@@ -2381,6 +2381,8 @@ void RenderFrameHostImpl::SwapOut(
 
   if (web_ui())
     web_ui()->RenderFrameHostSwappingOut();
+
+  web_bluetooth_services_.clear();
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(
