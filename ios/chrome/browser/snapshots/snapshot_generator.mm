@@ -206,38 +206,16 @@
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
   UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
-  DCHECK(context);
-
-  BOOL useDrawViewHierarchy = base::FeatureList::IsEnabled(kSnapshotDrawView);
   BOOL snapshotSuccess = YES;
   CGContextSaveGState(context);
   CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
-  if (useDrawViewHierarchy) {
+  if (base::FeatureList::IsEnabled(kSnapshotDrawView)) {
     snapshotSuccess =
         [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
   } else {
     [[view layer] renderInContext:context];
   }
-  if ([overlays count]) {
-    for (SnapshotOverlay* overlay in overlays) {
-      // Render the overlay view at the desired offset. It is achieved
-      // by shifting origin of context because view frame is ignored when
-      // drawing to context.
-      CGContextSaveGState(context);
-      CGContextTranslateCTM(context, 0, overlay.yOffset);
-      // |drawViewHierarchyInRect:| has undefined behavior when the view is not
-      // in the visible view hierarchy. In practice, when this method is called
-      // on a view that is part of view controller containment, an
-      // UIViewControllerHierarchyInconsistency exception will be thrown.
-      if (useDrawViewHierarchy && overlay.view.window) {
-        [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                           afterScreenUpdates:YES];
-      } else {
-        [[overlay.view layer] renderInContext:context];
-      }
-      CGContextRestoreGState(context);
-    }
-  }
+  [self drawOverlays:overlays context:context];
   UIImage* image = nil;
   if (snapshotSuccess)
     image = UIGraphicsGetImageFromCurrentImageContext();
@@ -264,27 +242,9 @@
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
   UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
-  DCHECK(context);
   CGContextSaveGState(context);
   [image.ToUIImage() drawAtPoint:CGPointZero];
-  for (SnapshotOverlay* overlay in overlays) {
-    // Render the overlay view at the desired offset. It is achieved
-    // by shifting origin of context because view frame is ignored when
-    // drawing to context.
-    CGContextSaveGState(context);
-    CGContextTranslateCTM(context, 0, overlay.yOffset - frame.origin.y);
-    // |drawViewHierarchyInRect:| has undefined behavior when the view is not in
-    // the visible view hierarchy. In practice, when this method is called on a
-    // view that is part of view controller containment, an
-    // UIViewControllerHierarchyInconsistency exception will be thrown.
-    if (overlay.view.window) {
-      [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                         afterScreenUpdates:YES];
-    } else {
-      [[overlay.view layer] renderInContext:context];
-    }
-    CGContextRestoreGState(context);
-  }
+  [self drawOverlays:overlays context:context];
   UIImage* snapshotWithOverlays = UIGraphicsGetImageFromCurrentImageContext();
   CGContextRestoreGState(context);
   UIGraphicsEndImageContext();
@@ -298,6 +258,30 @@
   } else {
     // Remove any stale snapshot since the snapshot failed.
     [self.snapshotCache removeImageWithSessionID:self.sessionID];
+  }
+}
+
+// Draws |overlays| onto |context|.
+- (void)drawOverlays:(NSArray<SnapshotOverlay*>*)overlays
+             context:(CGContext*)context {
+  for (SnapshotOverlay* overlay in overlays) {
+    // Render the overlay view at the desired offset. It is achieved
+    // by shifting origin of context because view frame is ignored when
+    // drawing to context.
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, 0, overlay.yOffset);
+    // |drawViewHierarchyInRect:| has undefined behavior when the view is not
+    // in the visible view hierarchy. In practice, when this method is called
+    // on a view that is part of view controller containment, an
+    // UIViewControllerHierarchyInconsistency exception will be thrown.
+    if (base::FeatureList::IsEnabled(kSnapshotDrawView) &&
+        overlay.view.window) {
+      [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                         afterScreenUpdates:YES];
+    } else {
+      [[overlay.view layer] renderInContext:context];
+    }
+    CGContextRestoreGState(context);
   }
 }
 
