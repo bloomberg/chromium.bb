@@ -18,6 +18,8 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -125,6 +127,8 @@ bool AutoclickTray::PerformAction(const ui::Event& event) {
   } else {
     ShowBubble(true /* show by click */);
     SetIsActive(true);
+    base::RecordAction(
+        base::UserMetricsAction("Accessibility.Autoclick.TrayMenu.Open"));
   }
   return true;
 }
@@ -201,20 +205,22 @@ bool AutoclickTray::ContainsPointInScreen(const gfx::Point& point) {
 }
 
 void AutoclickTray::OnSettingsPressed() {
-  // TODO(katie): Record a user action metic.
   CloseBubble();
   SetIsActive(false);
   // TODO(katie): Try to jump to autoclick's specific settings.
   Shell::Get()->system_tray_model()->client_ptr()->ShowAccessibilitySettings();
+  base::RecordAction(
+      base::UserMetricsAction("Accessibility.Autoclick.TrayMenu.Settings"));
 }
 
 void AutoclickTray::OnEventTypePressed(mojom::AutoclickEventType type) {
   // When the user selects an autoclick event type option, close the bubble
   // view and update the autoclick controller's state.
-  // TODO(katie): Record a user action metric.
   CloseBubble();
   SetIsActive(false);
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(type);
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosAutoclick.TrayMenu.ChangeAction",
+                            type);
 }
 
 void AutoclickTray::UpdateIconsForSession() {
