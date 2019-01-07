@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
@@ -191,6 +192,16 @@ class HeapCompact::MovableObjectFixups final {
     DCHECK(relocatable_pages_.Contains(from_page));
 #endif
 
+    // TODO(keishi): Code to determine if crash is related to interior fixups.
+    // Remove when finished. crbug.com/918064
+    enum DebugSlotType {
+      kNormalSlot,
+      kInteriorSlotPreMove,
+      kInteriorSlotPostMove,
+    };
+    DebugSlotType slot_type = kNormalSlot;
+    base::debug::Alias(&slot_type);
+
     // If the object is referenced by a slot that is contained on a compacted
     // area itself, check whether it can be updated already.
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
@@ -200,10 +211,12 @@ class HeapCompact::MovableObjectFixups final {
           reinterpret_cast<MovableReference*>(interior->value);
       if (!slot_location) {
         interior_fixups_.Set(slot, to);
+        slot_type = kInteriorSlotPreMove;
       } else {
         LOG_HEAP_COMPACTION()
             << "Redirected slot: " << slot << " => " << slot_location;
         slot = slot_location;
+        slot_type = kInteriorSlotPostMove;
       }
     }
 
