@@ -3678,6 +3678,24 @@
             ]
         }
     ],
+    "PreviewsSlowPageTriggering": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "SlowPageTriggeringFor3G_20181204",
+                    "params": {
+                        "session_max_ect_trigger": "3G"
+                    },
+                    "enable_features": [
+                        "PreviewsSlowPageTriggering"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrioritizedSimpleCacheTasks": [
         {
             "platforms": [
