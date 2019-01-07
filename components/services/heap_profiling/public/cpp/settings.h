@@ -62,8 +62,6 @@ uint32_t GetSamplingRateForStartup();
 bool IsBackgroundHeapProfilingEnabled();
 bool ShouldKeepSmallAllocations();
 
-extern const char kOOPHeapProfilingFeatureSamplingV2[];
-
 // Exposed for testing.
 extern const base::Feature kOOPHeapProfilingFeature;
 extern const char kOOPHeapProfilingFeatureMode[];
