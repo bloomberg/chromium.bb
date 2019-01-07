@@ -229,6 +229,11 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     base::TimeTicks* next_run_time) {
   if (!main_thread_only().task_execution_allowed)
     return false;
+  // Keep this in-sync with
+  // third_party/catapult/tracing/tracing/extras/chrome/event_finder_utils.html
+  // TODO(alexclarke): Rename this event to whatever we end up calling this
+  // after the DoWork / DoDelayed work merge.
+  TRACE_EVENT0("sequence_manager", "ThreadControllerImpl::RunTask");
 
   DCHECK(main_thread_only().task_source);
   bool task_ran = false;
