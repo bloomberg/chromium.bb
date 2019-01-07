@@ -461,7 +461,8 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   // Lose all other contexts.
   if (!synthetic_loss &&
       (gl::GLContext::LosesAllContextsOnContextLost() ||
-       raster_decoder_context_state_->use_virtualized_gl_contexts))
+       (raster_decoder_context_state_ &&
+        raster_decoder_context_state_->use_virtualized_gl_contexts)))
     LoseAllContexts();
 }
 
