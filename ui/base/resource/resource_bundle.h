@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -324,7 +325,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   struct FontKey;
 
-  using IdToStringMap = base::hash_map<int, base::string16>;
+  using IdToStringMap = std::unordered_map<int, base::string16>;
 
   // Ctor/dtor are private, since we're a singleton.
   explicit ResourceBundle(Delegate* delegate);
