@@ -11,10 +11,9 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 struct AccountInfo;
-class GaiaCookieManagerService;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -23,8 +22,8 @@ class Time;
 }  // namespace base
 
 namespace identity {
-class IdentityManager;
-}
+struct AccountsInCookieJarInfo;
+}  // namespace identity
 
 namespace signin_metrics {
 enum class AccountRelation;
@@ -36,15 +35,14 @@ enum class ReportingType;
 // is to watch for changes in relation between Chrome and content area accounts
 // and emit metrics about their relation.
 class AccountInvestigator : public KeyedService,
-                            public GaiaCookieManagerService::Observer {
+                            public identity::IdentityManager::Observer {
  public:
   // The targeted interval to perform periodic reporting. If chrome is not
   // active at the end of an interval, reporting will be done as soon as
   // possible.
   static const base::TimeDelta kPeriodicReportingInterval;
 
-  AccountInvestigator(GaiaCookieManagerService* cookie_service,
-                      PrefService* pref_service,
+  AccountInvestigator(PrefService* pref_service,
                       identity::IdentityManager* identity_manager);
   ~AccountInvestigator() override;
 
@@ -56,14 +54,24 @@ class AccountInvestigator : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // GaiaCookieManagerService::Observer:
+  // identity::IdentityManager::Observer:
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
+
+  // Internal implementation of OnAccountsInCookieUpdated. It is public given
+  // that it is called directly by unittests.
+  //
+  // TODO(https://crbug.com/919482): Remove this method when AccountInvestigator
+  // switches the whole logic from ListedAccount to AccountInfo, and
+  // OnAccountsInCookieUpdated can be called directly.
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& signed_in_accounts,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error) override;
+      const GoogleServiceAuthError& error);
 
  private:
   friend class AccountInvestigatorTest;
@@ -114,7 +122,6 @@ class AccountInvestigator : public KeyedService,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
       signin_metrics::ReportingType type);
 
-  GaiaCookieManagerService* cookie_service_;
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;
 
