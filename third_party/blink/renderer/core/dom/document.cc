@@ -7710,7 +7710,7 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
 
 void Document::CountPotentialFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
-  int index = static_cast<size_t>(feature);
+  size_t index = static_cast<size_t>(feature);
   if (potentially_violated_features_.QuickGet(index))
     return;
   potentially_violated_features_.QuickSet(index);
