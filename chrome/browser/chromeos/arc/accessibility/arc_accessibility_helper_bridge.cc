@@ -253,9 +253,11 @@ void ArcAccessibilityHelperBridge::OnConnectionClosed() {
 
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
-  // TODO(yawano): Handle AccessibilityFilterType::OFF.
   arc::mojom::AccessibilityFilterType filter_type =
       GetFilterTypeForProfile(profile_);
+
+  if (filter_type == arc::mojom::AccessibilityFilterType::OFF)
+    return;
 
   if (filter_type == arc::mojom::AccessibilityFilterType::ALL ||
       filter_type ==
@@ -354,7 +356,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
 
   CHECK_EQ(1U, event_data.get()->node_data.size());
   DispatchFocusChange(event_data.get()->node_data[0].get(), profile_);
-}  // namespace arc
+}
 
 void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
     const std::string& notification_key,
