@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
+#include <array>
 #include <atomic>
-#include <bitset>
 
 #include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
@@ -63,6 +63,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
+  using SlotTy = uint8_t;
+  static_assert(std::numeric_limits<SlotTy>::max() >=
+                    AllocatorState::kGpaMaxPages - 1,
+                "SlotTy can hold all possible slot values");
+
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
   GuardedPageAllocator();
@@ -81,13 +86,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   void MarkPageReadWrite(void*);
   void MarkPageInaccessible(void*);
 
-  // Reserves and returns a slot randomly selected from the free slots in
-  // free_pages_. Returns SIZE_MAX if no slots available.
+  // Reserves and returns a slot. Returns SIZE_MAX if no slots available.
   size_t ReserveSlot() LOCKS_EXCLUDED(lock_);
-
-  // Finds a random free slot. Should only be called if free slots are known
-  // to exist.
-  size_t GetRandomFreeSlot() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Marks the specified slot as unreserved.
   void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
@@ -112,17 +112,20 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
 
-  // Allocator lock that protects free_pages_/num_alloced_pages_.
+  // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  // Maps each bit to one page.
-  // true: Free.  false: Reserved.
-  std::bitset<AllocatorState::kGpaMaxPages> free_pages_ GUARDED_BY(lock_);
+  // Ring buffer used to store free slots.
+  std::array<SlotTy, AllocatorState::kGpaMaxPages> free_slot_ring_buffer_
+      GUARDED_BY(lock_);
+  // Stores the start and end indices into the ring buffer.
+  SlotTy free_slot_start_idx_ GUARDED_BY(lock_) = 0;
+  SlotTy free_slot_end_idx_ GUARDED_BY(lock_) = 0;
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
   // Max number of pages to allocate at once.
-  size_t max_alloced_pages_;
+  size_t max_alloced_pages_ = 0;
 
   // StackTrace objects for every slot in AllocatorState::data_. We avoid
   // statically allocating the StackTrace objects because they are large and
