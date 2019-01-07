@@ -21,6 +21,7 @@
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -110,7 +111,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       webpageURL =
           [NSURL URLWithString:base::SysUTF8ToNSString(kChromeUINewTabURL)];
       AppStartupParameters* startupParams = [[AppStartupParameters alloc]
-          initWithExternalURL:GURL(kChromeUINewTabURL)];
+          initWithExternalURL:GURL(kChromeUINewTabURL)
+                  completeURL:GURL(kChromeUINewTabURL)];
       BOOL startupParamsSet = spotlight::SetStartupParametersForSpotlightAction(
           itemID, startupParams);
       if (!startupParamsSet) {
@@ -139,7 +141,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                  isEqualToString:@"SearchInChromeIntent"]) {
     base::RecordAction(UserMetricsAction("IOSLaunchedBySearchInChromeIntent"));
     AppStartupParameters* startupParams = [[AppStartupParameters alloc]
-        initWithExternalURL:GURL(kChromeUINewTabURL)];
+        initWithExternalURL:GURL(kChromeUINewTabURL)
+                completeURL:GURL(kChromeUINewTabURL)];
     [startupParams setPostOpeningAction:FOCUS_OMNIBOX];
     [startupInformation setStartupParameters:startupParams];
     return YES;
@@ -174,6 +177,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
             : ApplicationMode::NORMAL;
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                              withURL:webpageGURL
+                                          virtualURL:GURL::EmptyGURL()
                                       dismissOmnibox:YES
                                           transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
@@ -189,7 +193,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 
   if (![startupInformation startupParameters]) {
     AppStartupParameters* startupParams =
-        [[AppStartupParameters alloc] initWithExternalURL:webpageGURL];
+        [[AppStartupParameters alloc] initWithExternalURL:webpageGURL
+                                              completeURL:webpageGURL];
     [startupInformation setStartupParameters:startupParams];
   }
   return YES;
@@ -258,10 +263,24 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         [[startupInformation startupParameters] launchInIncognito]
             ? ApplicationMode::INCOGNITO
             : ApplicationMode::NORMAL;
+    GURL URL;
+    GURL virtualURL;
+    if (base::FeatureList::IsEnabled(
+            experimental_flags::kExternalFilesLoadedInWebState)) {
+      // External URL will be loaded by WebState, which expects |completeURL|.
+      // Omnibox however suppose to display |externalURL|, which is used as
+      // virtual URL.
+      URL = startupInformation.startupParameters.completeURL;
+      virtualURL = startupInformation.startupParameters.externalURL;
+    } else {
+      // |externalURL| is rewritten to chrome:// URL, which is expected by
+      // ExternalFileController. ExternalFileController will be used to load
+      // file:// URL. TODO(crbug.com/913602): Remove this code.
+      URL = startupInformation.startupParameters.externalURL;
+    }
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
-                                             withURL:[[startupInformation
-                                                         startupParameters]
-                                                         externalURL]
+                                             withURL:URL
+                                          virtualURL:virtualURL
                                       dismissOmnibox:[[startupInformation
                                                          startupParameters]
                                                          postOpeningAction] !=
@@ -282,7 +301,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     return NO;
 
   AppStartupParameters* startupParams = [[AppStartupParameters alloc]
-      initWithExternalURL:GURL(kChromeUINewTabURL)];
+      initWithExternalURL:GURL(kChromeUINewTabURL)
+              completeURL:GURL(kChromeUINewTabURL)];
 
   if ([shortcutItem.type isEqualToString:kShortcutNewTab]) {
     base::RecordAction(UserMetricsAction("ApplicationShortcut.NewTabPressed"));

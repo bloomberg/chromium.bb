@@ -20,9 +20,11 @@ class GURL;
 
 // Dismisses any modal view, excluding the omnibox if |dismissOmnibox| is NO,
 // then opens either a normal or incognito tab with |url|. After opening |url|,
-// run completion |handler| if it is not nil.
+// run completion |handler| if it is not nil. After Tab is opened the virtual
+// URL is set to the pending navigation item.
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
+                                   virtualURL:(const GURL&)virtualURL
                                dismissOmnibox:(BOOL)dismissOmnibox
                                    transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion;

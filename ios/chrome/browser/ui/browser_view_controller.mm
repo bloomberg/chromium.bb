@@ -3594,13 +3594,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
               staticNativeController];
     nativeController = staticNativeController;
   } else if (url_host == kChromeUIExternalFileHost) {
-    // Return an instance of the |ExternalFileController| only if the file is
-    // still in the sandbox.
-    NSString* filePath = [ExternalFileController pathForExternalFileURL:url];
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-      nativeController =
-          [[ExternalFileController alloc] initWithURL:url
-                                         browserState:_browserState];
+    if (!base::FeatureList::IsEnabled(
+            experimental_flags::kExternalFilesLoadedInWebState)) {
+      // Return an instance of the |ExternalFileController| only if the file is
+      // still in the sandbox.
+      NSString* filePath = [ExternalFileController pathForExternalFileURL:url];
+      if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        nativeController =
+            [[ExternalFileController alloc] initWithURL:url
+                                           browserState:_browserState];
+      }
     }
   } else if (url_host == kChromeUICrashHost) {
     // There is no native controller for kChromeUICrashHost, it is instead

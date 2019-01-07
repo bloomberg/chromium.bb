@@ -32,7 +32,8 @@ enum MobileSessionCallerApp {
 
 @interface ChromeAppStartupParameters : AppStartupParameters
 
-- (instancetype)initWithExternalURL:(const GURL&)externalURL NS_UNAVAILABLE;
+- (instancetype)initWithExternalURL:(const GURL&)externalURL
+                        completeURL:(const GURL&)completeURL NS_UNAVAILABLE;
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
                   declaredSourceApp:(NSString*)declaredSourceApp
