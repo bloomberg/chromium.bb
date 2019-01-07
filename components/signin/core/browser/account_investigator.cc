@@ -17,7 +17,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -36,18 +36,32 @@ bool AreSame(const AccountInfo& info, const ListedAccount& account) {
   return info.account_id == account.id;
 }
 
+// TODO(https://crbug.com/919482): Switch the whole logic within this file from
+// ListedAccount to AccountInfo, so no conversions are needed.
+std::vector<ListedAccount> AccountInfosToListedAccounts(
+    const std::vector<AccountInfo>& account_infos) {
+  std::vector<gaia::ListedAccount> listed_accounts;
+
+  for (const auto& account_info : account_infos) {
+    ListedAccount listed_account;
+    listed_account.id = account_info.account_id;
+    listed_account.gaia_id = account_info.gaia;
+    listed_account.email = account_info.email;
+    listed_accounts.push_back(listed_account);
+  }
+
+  return listed_accounts;
+}
+
 }  // namespace
 
 const TimeDelta AccountInvestigator::kPeriodicReportingInterval =
     TimeDelta::FromDays(1);
 
 AccountInvestigator::AccountInvestigator(
-    GaiaCookieManagerService* cookie_service,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager)
-    : cookie_service_(cookie_service),
-      pref_service_(pref_service),
-      identity_manager_(identity_manager) {}
+    : pref_service_(pref_service), identity_manager_(identity_manager) {}
 
 AccountInvestigator::~AccountInvestigator() {}
 
@@ -59,7 +73,7 @@ void AccountInvestigator::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void AccountInvestigator::Initialize() {
-  cookie_service_->AddObserver(this);
+  identity_manager_->AddObserver(this);
   previously_authenticated_ = identity_manager_->HasPrimaryAccount();
 
   Time previous = Time::FromDoubleT(
@@ -72,7 +86,7 @@ void AccountInvestigator::Initialize() {
 }
 
 void AccountInvestigator::Shutdown() {
-  cookie_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   timer_.Stop();
 }
 
@@ -82,6 +96,17 @@ void AccountInvestigator::OnAddAccountToCookieCompleted(
   // This hook isn't particularly useful for us. Most cookie jar changes fly by
   // without invoking this method, and some sign ins cause this method can get
   // called serveral times.
+}
+
+void AccountInvestigator::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  std::vector<ListedAccount> signed_in_accounts = AccountInfosToListedAccounts(
+      accounts_in_cookie_jar_info.signed_in_accounts);
+  std::vector<ListedAccount> signed_out_accounts = AccountInfosToListedAccounts(
+      accounts_in_cookie_jar_info.signed_out_accounts);
+
+  OnGaiaAccountsInCookieUpdated(signed_in_accounts, signed_out_accounts, error);
 }
 
 void AccountInvestigator::OnGaiaAccountsInCookieUpdated(
@@ -199,9 +224,15 @@ AccountRelation AccountInvestigator::DiscernRelation(
 }
 
 void AccountInvestigator::TryPeriodicReport() {
-  std::vector<ListedAccount> signed_in_accounts, signed_out_accounts;
-  if (cookie_service_->ListAccounts(&signed_in_accounts,
-                                    &signed_out_accounts)) {
+  auto accounts_in_cookie_jar_info =
+      identity_manager_->GetAccountsInCookieJar();
+  if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+    std::vector<ListedAccount> signed_in_accounts =
+        AccountInfosToListedAccounts(
+            accounts_in_cookie_jar_info.signed_in_accounts);
+    std::vector<ListedAccount> signed_out_accounts =
+        AccountInfosToListedAccounts(
+            accounts_in_cookie_jar_info.signed_out_accounts);
     DoPeriodicReport(signed_in_accounts, signed_out_accounts);
   } else {
     periodic_pending_ = true;

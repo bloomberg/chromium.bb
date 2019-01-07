@@ -51,9 +51,7 @@ class AccountInvestigatorTest : public testing::Test {
                            &token_service_,
                            &signin_manager_,
                            &gaia_cookie_manager_service_),
-        investigator_(&gaia_cookie_manager_service_,
-                      &prefs_,
-                      identity_test_env_.identity_manager()) {
+        investigator_(&prefs_, identity_test_env_.identity_manager()) {
     AccountTrackerService::RegisterPrefs(prefs_.registry());
     AccountInvestigator::RegisterPrefs(prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
