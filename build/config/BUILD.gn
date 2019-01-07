@@ -15,8 +15,8 @@ import("//build/config/features.gni")
 # .gn config, but those arguments are only used on macOS. Including
 # mac_sdk_overrides.gni insures that this doesn't trigger an unused argument
 # warning.
-import("//build/config/mac/mac_sdk_overrides.gni")
 import("//build/config/ios/ios_sdk_overrides.gni")
+import("//build/config/mac/mac_sdk_overrides.gni")
 
 import("//build/config/pch.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -221,7 +221,6 @@ config("default_libs") {
       "odbc32.lib",
       "odbccp32.lib",
       "oleaut32.lib",
-      "psapi.lib",
       "shell32.lib",
       "shlwapi.lib",
       "user32.lib",
