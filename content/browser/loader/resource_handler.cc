@@ -45,8 +45,8 @@ void ResourceHandler::Resume() {
 }
 
 void ResourceHandler::ResumeForRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
   ReleaseController()->ResumeForRedirect(removed_headers, modified_headers);
 }
 

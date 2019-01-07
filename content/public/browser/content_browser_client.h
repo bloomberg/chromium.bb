@@ -552,11 +552,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to return additional headers that should be sent when
   // fetching |url| as well as add extra load flags.
-  virtual void NavigationRequestStarted(
-      int frame_tree_node_id,
-      const GURL& url,
-      std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
-      int* extra_load_flags) {}
+  virtual void NavigationRequestStarted(int frame_tree_node_id,
+                                        const GURL& url,
+                                        net::HttpRequestHeaders* extra_headers,
+                                        int* extra_load_flags) {}
 
   // Allow the embedder to modify headers for a redirect. If non-nullopt,
   // |*modified_headers| is applied to the request headers after updating them
@@ -564,7 +563,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void NavigationRequestRedirected(
       int frame_tree_node_id,
       const GURL& url,
-      base::Optional<net::HttpRequestHeaders>* modified_headers) {}
+      net::HttpRequestHeaders* modified_headers) {}
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.

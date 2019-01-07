@@ -106,9 +106,8 @@ base::WeakPtr<AppCacheURLLoaderJob> AppCacheURLLoaderJob::GetDerivedWeakPtr() {
 }
 
 void AppCacheURLLoaderJob::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& modified_headers,
+    const net::HttpRequestHeaders& removed_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }

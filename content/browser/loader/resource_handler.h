@@ -159,9 +159,8 @@ class CONTENT_EXPORT ResourceHandler {
   // These call the corresponding methods on the ResourceController previously
   // passed to HoldController and then destroy it.
   void Resume();
-  void ResumeForRedirect(
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers);
+  void ResumeForRedirect(const std::vector<std::string>& removed_headers,
+                         const net::HttpRequestHeaders& modified_headers);
   void Cancel();
   void CancelWithError(int error_code);
 

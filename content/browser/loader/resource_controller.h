@@ -35,8 +35,8 @@ class CONTENT_EXPORT ResourceController {
   // redirected. |removed_headers| and |modified_headers| are
   // applied to the request header after updating them for the redirect.
   virtual void ResumeForRedirect(
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers) = 0;
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) = 0;
 };
 
 }  // namespace content

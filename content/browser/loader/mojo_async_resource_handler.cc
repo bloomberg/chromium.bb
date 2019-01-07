@@ -385,8 +385,8 @@ void MojoAsyncResourceHandler::OnReadCompleted(
 }
 
 void MojoAsyncResourceHandler::FollowRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   if (new_url) {
     ReportBadMessage(

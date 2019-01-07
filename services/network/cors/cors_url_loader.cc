@@ -100,9 +100,8 @@ void CorsURLLoader::Start() {
 }
 
 void CorsURLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -125,12 +124,9 @@ void CorsURLLoader::FollowRedirect(
     return;
   }
 
-  if (to_be_removed_request_headers) {
-    for (const auto& name : *to_be_removed_request_headers)
-      request_.headers.RemoveHeader(name);
-  }
-  if (modified_request_headers)
-    request_.headers.MergeFrom(*modified_request_headers);
+  for (const auto& name : removed_headers)
+    request_.headers.RemoveHeader(name);
+  request_.headers.MergeFrom(modified_headers);
 
   request_.url = redirect_info_.new_url;
   request_.method = redirect_info_.new_method;
@@ -160,8 +156,7 @@ void CorsURLLoader::FollowRedirect(
     response_tainting_ = CalculateResponseTainting(
         request_.url, request_.fetch_request_mode, request_.request_initiator,
         fetch_cors_flag_, tainted_, origin_access_list_);
-    network_loader_->FollowRedirect(to_be_removed_request_headers,
-                                    modified_request_headers, new_url);
+    network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
     return;
   }
   DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);

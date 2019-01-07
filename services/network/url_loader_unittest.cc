@@ -443,7 +443,7 @@ class URLLoaderTest : public testing::Test {
 
     if (expect_redirect_) {
       client_.RunUntilRedirectReceived();
-      loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+      loader->FollowRedirect({}, {}, base::nullopt);
     }
 
     if (body) {
@@ -1720,7 +1720,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect(base::nullopt, redirect_headers, base::nullopt);
+  loader->FollowRedirect({}, redirect_headers, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -1761,9 +1761,8 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
   EXPECT_EQ("Value2", request_headers1.find("Header2")->second);
 
   // Remove Header1.
-  std::vector<std::string> to_be_removed_request_headers = {"Header1"};
-  loader->FollowRedirect(to_be_removed_request_headers, base::nullopt,
-                         base::nullopt);
+  std::vector<std::string> removed_headers = {"Header1"};
+  loader->FollowRedirect(removed_headers, {}, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -1803,11 +1802,10 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
   EXPECT_EQ("Value2", request_headers1.find("Header2")->second);
 
   // Remove Header1 and add it back using a different value.
-  std::vector<std::string> to_be_removed_request_headers = {"Header1"};
-  net::HttpRequestHeaders redirect_headers;
-  redirect_headers.SetHeader("Header1", "NewValue1");
-  loader->FollowRedirect(to_be_removed_request_headers, redirect_headers,
-                         base::nullopt);
+  std::vector<std::string> removed_headers = {"Header1"};
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader("Header1", "NewValue1");
+  loader->FollowRedirect(removed_headers, modified_headers, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -2705,9 +2703,8 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
 
   client()->RunUntilRedirectReceived();
 
-  url_loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
-  EXPECT_DCHECK_DEATH(
-      url_loader->FollowRedirect(base::nullopt, base::nullopt, base::nullopt));
+  url_loader->FollowRedirect({}, {}, base::nullopt);
+  EXPECT_DCHECK_DEATH(url_loader->FollowRedirect({}, {}, base::nullopt));
 
   client()->RunUntilComplete();
   delete_run_loop.Run();

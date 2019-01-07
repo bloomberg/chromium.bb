@@ -163,7 +163,7 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
 void AddAdditionalRequestHeaders(
     net::HttpRequestHeaders* headers,
-    std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers,
+    net::HttpRequestHeaders embedder_additional_headers,
     const GURL& url,
     FrameMsg_Navigate_Type::Value navigation_type,
     BrowserContext* browser_context,
@@ -189,8 +189,7 @@ void AddAdditionalRequestHeaders(
   }
 
   // Attach additional request headers specified by embedder.
-  if (embedder_additional_headers)
-    headers->MergeFrom(*(embedder_additional_headers.get()));
+  headers->MergeFrom(std::move(embedder_additional_headers));
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
@@ -518,12 +517,12 @@ NavigationRequest::NavigationRequest(
         frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
   }
 
-  std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers;
-  int additional_load_flags = 0;
   net::HttpRequestHeaders headers;
   // Only add specific headers when creating a NavigationRequest before the
   // network request is made, not at commit time.
   if (!is_for_commit) {
+    int additional_load_flags = 0;
+    net::HttpRequestHeaders embedder_additional_headers;
     GetContentClient()->browser()->NavigationRequestStarted(
         frame_tree_node->frame_tree_node_id(), common_params_.url,
         &embedder_additional_headers, &additional_load_flags);
@@ -1554,12 +1553,13 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  base::Optional<net::HttpRequestHeaders> embedder_additional_headers;
+  net::HttpRequestHeaders embedder_additional_headers;
+  std::vector<std::string> embedder_removed_headers;
   GetContentClient()->browser()->NavigationRequestRedirected(
       frame_tree_node_->frame_tree_node_id(), common_params_.url,
       &embedder_additional_headers);
 
-  loader_->FollowRedirect(base::nullopt,
+  loader_->FollowRedirect(std::move(embedder_removed_headers),
                           std::move(embedder_additional_headers));
 }
 

@@ -35,11 +35,9 @@ class RedirectLoader : public network::mojom::URLLoader {
     NotifyRedirect(std::move(url));
   };
 
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
 
   void ProceedWithResponse() override { DCHECK(false); }
   void SetPriority(net::RequestPriority priority,
@@ -126,9 +124,8 @@ class TestNetworkInterceptor::Impl {
 };
 
 void RedirectLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers /* unused */,
+    const net::HttpRequestHeaders& modified_headers /* unused */,
     const base::Optional<GURL>& new_url) {
   response_ = interceptor_impl_->FindResponse(method_, url_.spec());
   CHECK(response_) << "No content for " << url_.spec();

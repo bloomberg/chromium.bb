@@ -200,15 +200,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void UpdateRendererPreferencesForWorker(
       content::BrowserContext* browser_context,
       content::RendererPreferences* out_prefs) override;
-  void NavigationRequestStarted(
-      int frame_tree_node_id,
-      const GURL& url,
-      std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
-      int* extra_load_flags) override;
+  void NavigationRequestStarted(int frame_tree_node_id,
+                                const GURL& url,
+                                net::HttpRequestHeaders* extra_headers,
+                                int* extra_load_flags) override;
   void NavigationRequestRedirected(
       int frame_tree_node_id,
       const GURL& url,
-      base::Optional<net::HttpRequestHeaders>* modified_headers) override;
+      net::HttpRequestHeaders* modified_headers) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;

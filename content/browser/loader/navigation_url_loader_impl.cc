@@ -1039,9 +1039,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     return factory;
   }
 
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -1097,16 +1096,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header on when redirecting to the origins in the OriginList of
       // SignedHTTPExchangeAcceptHeader field trial, and need to remove it when
       // redirecting to out of the OriginList.
-      if (!url_loader_modified_headers_)
-        url_loader_modified_headers_ = net::HttpRequestHeaders();
       std::string accept_value = network::kFrameAcceptHeader;
       if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
               url::Origin::Create(resource_request_->url))) {
         DCHECK(!accept_value.empty());
         accept_value.append(kAcceptHeaderSignedExchangeSuffix);
       }
-      url_loader_modified_headers_->SetHeader(network::kAcceptHeader,
-                                              accept_value);
+      url_loader_modified_headers_.SetHeader(network::kAcceptHeader,
+                                             accept_value);
       resource_request_->headers.SetHeader(network::kAcceptHeader,
                                            accept_value);
     }
@@ -1492,8 +1489,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Caches the modified request headers provided by clients during redirect,
   // will be consumed by next |url_loader_->FollowRedirect()|.
-  base::Optional<std::vector<std::string>> url_loader_removed_headers_;
-  base::Optional<net::HttpRequestHeaders> url_loader_modified_headers_;
+  std::vector<std::string> url_loader_removed_headers_;
+  net::HttpRequestHeaders url_loader_modified_headers_;
 
   BlobHandles blob_handles_;
   std::vector<GURL> url_chain_;
@@ -1762,8 +1759,8 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 }
 
 void NavigationURLLoaderImpl::FollowRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,

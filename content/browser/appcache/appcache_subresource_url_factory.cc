@@ -127,17 +127,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   // network::mojom::URLLoader implementation
   // Called by the remote client in the renderer.
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override {
-    DCHECK(!modified_request_headers.has_value())
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {
+    DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
         << "Redirect with modified headers was not supported yet. "
            "crbug.com/845683";
     if (!handler_) {
-      network_loader_->FollowRedirect(base::nullopt, base::nullopt,
-                                      base::nullopt);
+      network_loader_->FollowRedirect({} /* removed_headers */,
+                                      {} /* modified_headers */,
+                                      base::nullopt /* new_url */);
       return;
     }
     DCHECK(network_loader_);
@@ -156,8 +155,9 @@ class SubresourceLoader : public network::mojom::URLLoader,
     if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
     } else {
-      network_loader_->FollowRedirect(base::nullopt, base::nullopt,
-                                      base::nullopt);
+      network_loader_->FollowRedirect({} /* removed_headers */,
+                                      {} /* modified_headers */,
+                                      base::nullopt /* new_url */);
     }
   }
 

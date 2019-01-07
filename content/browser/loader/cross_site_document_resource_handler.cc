@@ -169,10 +169,9 @@ class CrossSiteDocumentResourceHandler::Controller : public ResourceController {
   }
 
   void ResumeForRedirect(
-      const base::Optional<std::vector<std::string>>& removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers)
-      override {
-    DCHECK(!modified_request_headers && !removed_request_headers)
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) override {
+    DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
         << "Redirect with removed or modified headers is not supported yet. "
            "See https://crbug.com/845683";
     Resume();

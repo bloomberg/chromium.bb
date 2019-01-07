@@ -229,7 +229,7 @@ TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
 
   // In the same event loop iteration, follow the redirect (allowing the
   // response to go through) and destroy the loader.
-  loader->FollowRedirect(base::nullopt, base::nullopt);
+  loader->FollowRedirect({}, {});
   loader.reset();
 
   // Verify the URLRequestTestJob no longer has anything paused and that no

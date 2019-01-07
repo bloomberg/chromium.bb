@@ -1604,12 +1604,12 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
     return;
   }
 
-  std::vector<std::string> to_be_removed_headers;
+  std::vector<std::string> removed_headers;
   for (auto callback : on_redirect_callback_) {
     if (callback) {
       base::WeakPtr<SimpleURLLoaderImpl> weak_this =
           weak_ptr_factory_.GetWeakPtr();
-      callback.Run(redirect_info, response_head, &to_be_removed_headers);
+      callback.Run(redirect_info, response_head, &removed_headers);
       // If deleted by the callback, bail now.
       if (!weak_this)
         return;
@@ -1617,12 +1617,8 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
   }
 
   final_url_ = redirect_info.new_url;
-  if (to_be_removed_headers.empty()) {
-    url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
-  } else {
-    url_loader_->FollowRedirect(to_be_removed_headers, base::nullopt,
-                                base::nullopt);
-  }
+  url_loader_->FollowRedirect(removed_headers, {} /* modified_headers */,
+                              {} /* new_url */);
 }
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(
