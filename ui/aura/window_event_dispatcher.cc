@@ -34,6 +34,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/platform/platform_event_source.h"
 
 typedef ui::EventDispatchDetails DispatchDetails;
 
@@ -866,6 +867,11 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
 }
 
 void WindowEventDispatcher::PostSynthesizeMouseMove() {
+  // No one should care where the real mouse is when this flag is on. So there
+  // is no need to send a synthetic mouse move here.
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
+    return;
+
   if (synthesize_mouse_move_ || in_shutdown_)
     return;
   synthesize_mouse_move_ = true;

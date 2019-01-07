@@ -36,6 +36,16 @@ class EVENTS_EXPORT PlatformEventSource {
   // Returns the thread-local singleton.
   static PlatformEventSource* GetInstance();
 
+  // Returns true when platform events should not be sent to the rest of the
+  // pipeline. Mainly when Chrome is run in a test environment and it doesn't
+  // expect any events from the platform and all events are synthesized by the
+  // test environment.
+  static bool ShouldIgnoreNativePlatformEvents();
+
+  // Sets whether to ignore platform events and drop them or to forward them to
+  // the rest of the input pipeline.
+  static void SetIgnoreNativePlatformEvents(bool ignore_events);
+
   // Adds a dispatcher to the dispatcher list. If a dispatcher is added during
   // dispatching an event, then the newly added dispatcher also receives that
   // event.
@@ -105,6 +115,8 @@ class EVENTS_EXPORT PlatformEventSource {
   // Used to keep track of whether the current override-dispatcher has been
   // reset and a previous override-dispatcher has been restored.
   bool overridden_dispatcher_restored_;
+
+  static bool ignore_native_platform_events_;
 
   PlatformEventObserverList observers_;
 
