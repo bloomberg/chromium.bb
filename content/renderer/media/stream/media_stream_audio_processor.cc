@@ -806,11 +806,13 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
   if (typing_detector_) {
-    webrtc::VoiceDetection* vad = ap->voice_detection();
-    DCHECK(vad->is_enabled());
-    bool detected = typing_detector_->Process(key_pressed,
-                                              vad->stream_has_voice());
-    base::subtle::Release_Store(&typing_detected_, detected);
+    // Ignore remote tracks to avoid unnecessary stats computation.
+    auto voice_detected =
+        ap->GetStatistics(false /* has_remote_tracks */).voice_detected;
+    DCHECK(voice_detected.has_value());
+    bool typing_detected =
+        typing_detector_->Process(key_pressed, *voice_detected);
+    base::subtle::Release_Store(&typing_detected_, typing_detected);
   }
 
   main_thread_runner_->PostTask(

@@ -158,8 +158,10 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(config.echo_canceller.enabled);
 #if defined(OS_ANDROID)
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
+    EXPECT_FALSE(config.voice_detection.enabled);
 #else
     EXPECT_FALSE(config.echo_canceller.mobile_mode);
+    EXPECT_TRUE(config.voice_detection.enabled);
 #endif
     EXPECT_TRUE(config.high_pass_filter.enabled);
 
@@ -170,13 +172,9 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #if defined(OS_ANDROID)
     EXPECT_TRUE(audio_processing->gain_control()->mode() ==
         webrtc::GainControl::kFixedDigital);
-    EXPECT_FALSE(audio_processing->voice_detection()->is_enabled());
 #else
     EXPECT_TRUE(audio_processing->gain_control()->mode() ==
         webrtc::GainControl::kAdaptiveAnalog);
-    EXPECT_TRUE(audio_processing->voice_detection()->is_enabled());
-    EXPECT_TRUE(audio_processing->voice_detection()->likelihood() ==
-        webrtc::VoiceDetection::kVeryLowLikelihood);
 #endif
   }
 
