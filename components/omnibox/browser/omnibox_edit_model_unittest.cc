@@ -173,19 +173,19 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
   {
     base::string16 result = base::ASCIIToUTF16("foobar");
     GURL url;
-    bool write_url;
+    bool write_url = false;
     model()->AdjustTextForCopy(0, &result, &url, &write_url);
 
     EXPECT_EQ(base::ASCIIToUTF16("foobar"), result);
-    EXPECT_EQ(GURL(), url);
-    EXPECT_FALSE(write_url);
+    EXPECT_EQ(GURL("https://www.example.com/"), url);
+    EXPECT_TRUE(write_url);
   }
 
   // Verify we copy the query verbatim even if the user has refined the query.
   {
     base::string16 result = base::ASCIIToUTF16("something else");
     GURL url;
-    bool write_url;
+    bool write_url = false;
     model()->AdjustTextForCopy(0, &result, &url, &write_url);
 
     EXPECT_EQ(base::ASCIIToUTF16("something else"), result);
