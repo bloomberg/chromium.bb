@@ -45,6 +45,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 #if defined(USE_AURA)
@@ -746,6 +747,7 @@ class SitePerProcessHitTestBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
     if (std::get<0>(GetParam()) == 1) {
       feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
     } else if (std::get<0>(GetParam()) == 2) {
@@ -3306,7 +3308,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
 }  // namespace
 
-#if defined(USE_AURA)
+#if defined(OS_WIN)
 // https://crbug.com/882458
 #define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
   DISABLED_CursorUpdateReceivedFromCrossSiteIframe
