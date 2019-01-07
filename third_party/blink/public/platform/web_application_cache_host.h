@@ -100,8 +100,6 @@ class WebApplicationCacheHost {
 
   // Called as the main resource is retrieved.
   virtual void DidReceiveResponseForMainResource(const WebURLResponse&) {}
-  virtual void DidReceiveDataForMainResource(const char* data, size_t len) {}
-  virtual void DidFinishLoadingMainResource(bool success) {}
 
   // Called on behalf of the scriptable interface.
   virtual Status GetStatus() { return kUncached; }

@@ -179,22 +179,6 @@ void ApplicationCacheHost::DidReceiveResponseForMainResource(
   }
 }
 
-void ApplicationCacheHost::MainResourceDataReceived(const char* data,
-                                                    size_t length) {
-  if (host_)
-    host_->DidReceiveDataForMainResource(data, length);
-}
-
-void ApplicationCacheHost::FailedLoadingMainResource() {
-  if (host_)
-    host_->DidFinishLoadingMainResource(false);
-}
-
-void ApplicationCacheHost::FinishedLoadingMainResource() {
-  if (host_)
-    host_->DidFinishLoadingMainResource(true);
-}
-
 void ApplicationCacheHost::SetApplicationCache(
     ApplicationCache* dom_application_cache) {
   DCHECK(!dom_application_cache_ || !dom_application_cache);

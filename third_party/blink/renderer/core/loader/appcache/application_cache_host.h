@@ -136,8 +136,6 @@ class CORE_EXPORT ApplicationCacheHost final
 
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);
-  void FinishedLoadingMainResource();
-  void FailedLoadingMainResource();
 
   Status GetStatus() const;
   bool Update();
