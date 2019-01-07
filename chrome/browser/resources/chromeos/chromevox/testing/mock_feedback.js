@@ -459,7 +459,8 @@ MockFeedback.matchAndConsume_ = function(text, props, pending) {
       candidateText = candidateText.toString();
 
     if (text === candidateText ||
-        (text instanceof RegExp && text.test(candidateText))) {
+        (text instanceof RegExp && text.test(candidateText)) ||
+        (typeof (text) == 'function' && text(candidate))) {
       var matched = true;
       for (prop in props) {
         if (candidate[prop] !== props[prop]) {
