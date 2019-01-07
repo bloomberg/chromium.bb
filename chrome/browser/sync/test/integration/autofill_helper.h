@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
 class AutofillEntry;
@@ -135,6 +136,16 @@ class AutofillProfileChecker : public StatusChangeChecker,
  private:
   const int profile_a_;
   const int profile_b_;
+};
+
+class PersonalDataLoadedObserverMock
+    : public autofill::PersonalDataManagerObserver {
+ public:
+  PersonalDataLoadedObserverMock();
+  ~PersonalDataLoadedObserverMock() override;
+
+  MOCK_METHOD0(OnPersonalDataChanged, void());
+  MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_AUTOFILL_HELPER_H_

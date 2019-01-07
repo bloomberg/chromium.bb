@@ -37,6 +37,8 @@ class AutofillWebDataServiceObserverOnUISequence {
   // Sync.
   virtual void AutofillMultipleChanged() {}
 
+  virtual void AutofillProfileChanged(const AutofillProfileChange& change) {}
+
   // Called on UI sequence when sync has started for |model_type|.
   virtual void SyncStarted(syncer::ModelType /* model_type */) {}
 

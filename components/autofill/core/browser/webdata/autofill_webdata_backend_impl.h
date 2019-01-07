@@ -55,6 +55,10 @@ class AutofillWebDataBackendImpl
       const base::Closure& on_changed_callback,
       const base::Callback<void(syncer::ModelType)>& on_sync_started_callback);
 
+  void SetAutofillProfileChangedCallback(
+      base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
+          change_cb);
+
   // AutofillWebDataBackend implementation.
   void AddObserver(
       AutofillWebDataServiceObserverOnDBSequence* observer) override;
@@ -229,6 +233,9 @@ class AutofillWebDataBackendImpl
 
   base::Closure on_changed_callback_;
   base::Callback<void(syncer::ModelType)> on_sync_started_callback_;
+
+  base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
+      on_autofill_profile_changed_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataBackendImpl);
 };

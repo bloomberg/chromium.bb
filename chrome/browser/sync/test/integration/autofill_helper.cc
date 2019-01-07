@@ -160,6 +160,10 @@ bool ProfilesMatchImpl(
 
 namespace autofill_helper {
 
+ACTION_P(QuitMessageLoop, loop) {
+  loop->Quit();
+}
+
 AutofillProfile CreateAutofillProfile(ProfileType type) {
   AutofillProfile profile;
   switch (type) {
@@ -269,7 +273,20 @@ bool KeysMatch(int profile_a, int profile_b) {
 }
 
 void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
-  GetPersonalDataManager(profile)->SetProfiles(autofill_profiles);
+  PersonalDataLoadedObserverMock personal_data_observer;
+  PersonalDataManager* pdm = GetPersonalDataManager(profile);
+  base::RunLoop run_loop;
+
+  pdm->AddObserver(&personal_data_observer);
+  EXPECT_CALL(personal_data_observer, OnPersonalDataFinishedProfileTasks())
+      .WillOnce(QuitMessageLoop(&run_loop));
+  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
+      .Times(testing::AnyNumber());
+
+  pdm->SetProfiles(autofill_profiles);
+
+  run_loop.Run();
+  pdm->RemoveObserver(&personal_data_observer);
 }
 
 void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
@@ -310,8 +327,16 @@ void UpdateProfile(int profile,
 }
 
 std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
+  PersonalDataLoadedObserverMock personal_data_observer;
+  base::RunLoop run_loop;
+
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
+  pdm->AddObserver(&personal_data_observer);
+
   pdm->Refresh();
+  EXPECT_CALL(personal_data_observer, OnPersonalDataFinishedProfileTasks())
+      .WillOnce(QuitMessageLoop(&run_loop));
+  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged()).Times(1);
 
   // PersonalDataManager::GetProfiles() simply returns the current values that
   // have been last reported to the UI sequence. PersonalDataManager::Refresh()
@@ -328,6 +353,8 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // cancel outstanding queries, this is only instigated on the UI sequence,
   // which we are about to block, which means we are safe.
   WaitForCurrentTasksToComplete(GetWebDataService(profile)->GetDBTaskRunner());
+  run_loop.Run();
+  pdm->RemoveObserver(&personal_data_observer);
 
   return pdm->GetProfiles();
 }
@@ -377,15 +404,37 @@ AutofillProfileChecker::~AutofillProfileChecker() {
 }
 
 bool AutofillProfileChecker::Wait() {
-  autofill_helper::GetPersonalDataManager(profile_a_)->Refresh();
-  autofill_helper::GetPersonalDataManager(profile_b_)->Refresh();
+  PersonalDataLoadedObserverMock personal_data_observer;
+  base::RunLoop run_loop_a;
+  base::RunLoop run_loop_b;
+  auto* pdm_a = autofill_helper::GetPersonalDataManager(profile_a_);
+  auto* pdm_b = autofill_helper::GetPersonalDataManager(profile_b_);
+  pdm_a->AddObserver(&personal_data_observer);
+  pdm_b->AddObserver(&personal_data_observer);
+
+  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
+      .Times(testing::AnyNumber());
+
+  EXPECT_CALL(personal_data_observer, OnPersonalDataFinishedProfileTasks())
+      .WillRepeatedly(autofill_helper::QuitMessageLoop(&run_loop_a));
+  pdm_a->Refresh();
   // Similar to GetAllAutoFillProfiles() we need to make sure we are not reading
   // before any locally instigated async writes. This is run exactly one time
   // before the first IsExitConditionSatisfied() is called.
   WaitForCurrentTasksToComplete(
       GetWebDataService(profile_a_)->GetDBTaskRunner());
+  run_loop_a.Run();
+
+  EXPECT_CALL(personal_data_observer, OnPersonalDataFinishedProfileTasks())
+      .WillRepeatedly(autofill_helper::QuitMessageLoop(&run_loop_b));
+  pdm_b->Refresh();
   WaitForCurrentTasksToComplete(
       GetWebDataService(profile_b_)->GetDBTaskRunner());
+  run_loop_b.Run();
+
+  pdm_a->RemoveObserver(&personal_data_observer);
+  pdm_b->RemoveObserver(&personal_data_observer);
+
   return StatusChangeChecker::Wait();
 }
 
@@ -405,3 +454,6 @@ std::string AutofillProfileChecker::GetDebugMessage() const {
 void AutofillProfileChecker::OnPersonalDataChanged() {
   CheckExitCondition();
 }
+
+PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
+PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
