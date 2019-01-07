@@ -6011,3 +6011,6 @@ crbug.com/918905 [ Mac Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 
 # Sheriff 2019-01-04
 crbug.com/919096 [ Linux ] virtual/display-lock/display-lock/lock-before-append/measure-updated-layout.html [ Timeout Pass ]
+
+# Sheriff 2019-01-07
+crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
