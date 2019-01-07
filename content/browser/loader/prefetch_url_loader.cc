@@ -78,15 +78,14 @@ PrefetchURLLoader::PrefetchURLLoader(
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
 void PrefetchURLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
-  DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
-                                  "supported yet. crbug.com/845683";
+  DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
+      << "Redirect with modified headers was not supported yet. "
+         "crbug.com/845683";
+  DCHECK(!new_url) << "Redirect with modified URL was not "
+                      "supported yet. crbug.com/845683";
   DCHECK(new_url_for_redirect_.is_valid());
   if (signed_exchange_prefetch_handler_) {
     // Rebind |client_binding_| and |loader_|.
@@ -95,12 +94,12 @@ void PrefetchURLLoader::FollowRedirect(
     return;
   }
 
+  net::HttpRequestHeaders modified_request_headers_for_accept;
   if (signed_exchange_utils::NeedToCheckRedirectedURLForAcceptHeader()) {
     // Currently we send the SignedExchange accept header only for the limited
     // origins when SignedHTTPExchangeOriginTrial feature is enabled without
     // SignedHTTPExchange feature. So need to update the accept header by
     // checking the new URL when redirected.
-    net::HttpRequestHeaders modified_request_headers_for_accept;
     if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
             url::Origin::Create(new_url_for_redirect_))) {
       modified_request_headers_for_accept.SetHeader(
@@ -110,12 +109,10 @@ void PrefetchURLLoader::FollowRedirect(
       modified_request_headers_for_accept.SetHeader(
           network::kAcceptHeader, network::kDefaultAcceptHeader);
     }
-    loader_->FollowRedirect(base::nullopt, modified_request_headers_for_accept,
-                            base::nullopt);
-    return;
   }
 
-  loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  loader_->FollowRedirect(std::vector<std::string>() /* removed_headers */,
+                          modified_request_headers_for_accept, base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {

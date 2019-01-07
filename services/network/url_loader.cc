@@ -556,10 +556,9 @@ URLLoader::~URLLoader() {
 // static
 const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 
-void URLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers,
-    const base::Optional<GURL>& new_url) {
+void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
+                               const net::HttpRequestHeaders& modified_headers,
+                               const base::Optional<GURL>& new_url) {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
     // |this| may have been deleted.

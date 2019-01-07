@@ -225,7 +225,9 @@ void ResourceDownloader::OnResponseStarted(
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
-  url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  url_loader_->FollowRedirect(std::vector<std::string>() /* removed_headers */,
+                              net::HttpRequestHeaders() /* modified_headers */,
+                              base::nullopt);
 }
 
 void ResourceDownloader::OnResponseCompleted() {

@@ -47,13 +47,11 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
     return create_loader_and_start_called_;
   }
 
-  const base::Optional<std::vector<std::string>>& headers_removed_on_redirect()
-      const {
+  const std::vector<std::string>& headers_removed_on_redirect() const {
     return headers_removed_on_redirect_;
   }
 
-  const base::Optional<net::HttpRequestHeaders>& headers_modified_on_redirect()
-      const {
+  const net::HttpRequestHeaders& headers_modified_on_redirect() const {
     return headers_modified_on_redirect_;
   }
 
@@ -117,13 +115,11 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   // network::mojom::URLLoader implementation.
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override {
-    headers_removed_on_redirect_ = to_be_removed_request_headers;
-    headers_modified_on_redirect_ = modified_request_headers;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {
+    headers_removed_on_redirect_ = removed_headers;
+    headers_modified_on_redirect_ = modified_headers;
   }
 
   void ProceedWithResponse() override {}
@@ -140,8 +136,8 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   size_t create_loader_and_start_called_ = 0;
-  base::Optional<std::vector<std::string>> headers_removed_on_redirect_;
-  base::Optional<net::HttpRequestHeaders> headers_modified_on_redirect_;
+  std::vector<std::string> headers_removed_on_redirect_;
+  net::HttpRequestHeaders headers_modified_on_redirect_;
   size_t pause_reading_body_from_net_called_ = 0;
   size_t resume_reading_body_from_net_called_ = 0;
 
@@ -293,17 +289,15 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
       will_start_request_callback_.Run(delegate_, defer);
   }
 
-  void WillRedirectRequest(
-      net::RedirectInfo* redirect_info,
-      const network::ResourceResponseHead& response_head,
-      bool* defer,
-      std::vector<std::string>* to_be_removed_request_headers,
-      net::HttpRequestHeaders* modified_request_headers) override {
+  void WillRedirectRequest(net::RedirectInfo* redirect_info,
+                           const network::ResourceResponseHead& response_head,
+                           bool* defer,
+                           std::vector<std::string>* removed_headers,
+                           net::HttpRequestHeaders* modified_headers) override {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_) {
-      will_redirect_request_callback_.Run(delegate_, defer,
-                                          to_be_removed_request_headers,
-                                          modified_request_headers);
+      will_redirect_request_callback_.Run(delegate_, defer, removed_headers,
+                                          modified_headers);
     }
   }
 
@@ -581,22 +575,23 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
     net::HttpRequestHeaders modified_headers;
     modified_headers.SetHeader("X-Test-Header-3", "Client Value");
     modified_headers.SetHeader("X-Test-Header-4", "Bar");
-    loader_->FollowRedirect(base::nullopt, modified_headers);
+    loader_->FollowRedirect({} /* removed_headers */,
+                            std::move(modified_headers));
   }));
 
   CreateLoaderAndStart();
   factory_.NotifyClientOnReceiveRedirect();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(factory_.headers_removed_on_redirect().has_value());
-  EXPECT_THAT(*factory_.headers_removed_on_redirect(),
+  ASSERT_FALSE(factory_.headers_removed_on_redirect().empty());
+  EXPECT_THAT(factory_.headers_removed_on_redirect(),
               testing::ElementsAre("X-Test-Header-1"));
-  ASSERT_TRUE(factory_.headers_modified_on_redirect().has_value());
+  ASSERT_FALSE(factory_.headers_modified_on_redirect().IsEmpty());
   EXPECT_EQ(
       "X-Test-Header-2: Foo\r\n"
       "X-Test-Header-3: Client Value\r\n"
       "X-Test-Header-4: Bar\r\n\r\n",
-      factory_.headers_modified_on_redirect()->ToString());
+      factory_.headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
@@ -622,22 +617,22 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
         modified_headers->SetHeader("X-Test-Header-4", "Throttle2");
       }));
 
-  client_.set_on_received_redirect_callback(base::BindLambdaForTesting(
-      [&]() { loader_->FollowRedirect(base::nullopt, base::nullopt); }));
+  client_.set_on_received_redirect_callback(
+      base::BindLambdaForTesting([&]() { loader_->FollowRedirect({}, {}); }));
 
   CreateLoaderAndStart();
   factory_.NotifyClientOnReceiveRedirect();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(factory_.headers_removed_on_redirect().has_value());
-  EXPECT_THAT(*factory_.headers_removed_on_redirect(),
+  ASSERT_FALSE(factory_.headers_removed_on_redirect().empty());
+  EXPECT_THAT(factory_.headers_removed_on_redirect(),
               testing::ElementsAre("X-Test-Header-0", "X-Test-Header-1",
                                    "X-Test-Header-2"));
-  ASSERT_TRUE(factory_.headers_modified_on_redirect().has_value());
+  ASSERT_FALSE(factory_.headers_modified_on_redirect().IsEmpty());
   EXPECT_EQ(
       "X-Test-Header-3: Foo\r\n"
       "X-Test-Header-4: Throttle2\r\n\r\n",
-      factory_.headers_modified_on_redirect()->ToString());
+      factory_.headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeResponse) {

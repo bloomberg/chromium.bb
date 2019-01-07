@@ -215,9 +215,9 @@ ClientHints::ClientHints(content::BrowserContext* context)
 
 ClientHints::~ClientHints() = default;
 
-std::unique_ptr<net::HttpRequestHeaders>
-ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
-    const GURL& url) const {
+void ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
+    const GURL& url,
+    net::HttpRequestHeaders* additional_headers) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
             net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
@@ -226,26 +226,25 @@ ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
 
   // Get the client hint headers.
   if (!url.is_valid())
-    return nullptr;
+    return;
 
   if (!url.SchemeIsHTTPOrHTTPS())
-    return nullptr;
+    return;
 
   if (url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url))
-    return nullptr;
+    return;
 
   DCHECK(url.SchemeIs(url::kHttpsScheme) ||
          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
 
   Profile* profile = Profile::FromBrowserContext(context_);
   if (!profile)
-    return nullptr;
+    return;
 
   // Check if |url| is allowed to run JavaScript. If not, client hints are not
   // attached to the requests that initiate on the browser side.
-  if (!IsJavaScriptAllowed(profile, url)) {
-    return nullptr;
-  }
+  if (!IsJavaScriptAllowed(profile, url))
+    return;
 
   ContentSettingsForOneType client_hints_host_settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
@@ -256,9 +255,6 @@ ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
 
   GetAllowedClientHintsFromSource(
       url /* resource url */, client_hints_host_settings, &web_client_hints);
-
-  std::unique_ptr<net::HttpRequestHeaders> additional_headers(
-      std::make_unique<net::HttpRequestHeaders>());
 
   // Currently, only "device-memory" client hint request header is added from
   // the browser process.
@@ -384,7 +380,6 @@ ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
   // headers stay attached to the redirected request. Consider removing/adding
   // the client hints headers if the request is redirected with a change in
   // scheme or a change in the origin.
-  return additional_headers;
 }
 
 }  // namespace client_hints

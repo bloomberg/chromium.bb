@@ -37,14 +37,12 @@ PolicyHeaderService::~PolicyHeaderService() {
 
 void PolicyHeaderService::AddPolicyHeaders(
     const GURL& url,
-    std::unique_ptr<net::HttpRequestHeaders>* extra_headers) const {
-  DCHECK(extra_headers);
-  if (!policy_header_.empty() &&
-      url.spec().compare(0, server_url_.size(), server_url_) == 0) {
-    if (!extra_headers->get())
-      (*extra_headers) = std::make_unique<net::HttpRequestHeaders>();
-    (*extra_headers)->SetHeader(kChromePolicyHeader, policy_header_);
-  }
+    net::HttpRequestHeaders* extra_headers) const {
+  if (policy_header_.empty())
+    return;
+  if (url.spec().compare(0, server_url_.size(), server_url_) != 0)
+    return;
+  extra_headers->SetHeader(kChromePolicyHeader, policy_header_);
 }
 
 std::string PolicyHeaderService::CreateHeaderValue() {

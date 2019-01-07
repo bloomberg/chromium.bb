@@ -15,35 +15,13 @@ namespace content {
 
 namespace {
 
-// Merges |removed_headers_B| into |removed_headers_A|. Handles the cases where
-// any of them are base::nullopt.
-void MergeRemovedHeaders(
-    base::Optional<std::vector<std::string>>* removed_headers_A,
-    const base::Optional<std::vector<std::string>>& removed_headers_B) {
-  if (!removed_headers_B || removed_headers_B->empty())
-    return;
-  if (!*removed_headers_A) {
-    *removed_headers_A = removed_headers_B;
-    return;
+// Merges |removed_headers_B| into |removed_headers_A|.
+void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
+                         const std::vector<std::string>& removed_headers_B) {
+  for (auto& header : removed_headers_B) {
+    if (!base::ContainsValue(*removed_headers_A, header))
+      removed_headers_A->emplace_back(std::move(header));
   }
-  for (auto& header : *removed_headers_B) {
-    if (!base::ContainsValue(**removed_headers_A, header))
-      (**removed_headers_A).emplace_back(std::move(header));
-  }
-}
-
-// Merges |modified_headers_B| into |modified_headers_A|. Handles the cases
-// where any of them are base::nullopt.
-void MergeModifiedHeaders(
-    base::Optional<net::HttpRequestHeaders>* modified_headers_A,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers_B) {
-  if (!modified_headers_B || modified_headers_B->IsEmpty())
-    return;
-  if (!*modified_headers_A) {
-    *modified_headers_A = modified_headers_B;
-    return;
-  }
-  (**modified_headers_A).MergeFrom(*modified_headers_B);
 }
 
 }  // namespace
@@ -233,10 +211,10 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 }
 
 void ThrottlingURLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
   MergeRemovedHeaders(&removed_headers_, removed_headers);
-  MergeModifiedHeaders(&modified_headers_, modified_headers);
+  modified_headers_.MergeFrom(modified_headers);
 
   if (!throttle_will_start_redirect_url_.is_empty()) {
     throttle_will_start_redirect_url_ = GURL();
@@ -253,8 +231,8 @@ void ThrottlingURLLoader::FollowRedirect(
     throttle_will_redirect_redirect_url_ = GURL();
   }
 
-  removed_headers_.reset();
-  modified_headers_.reset();
+  removed_headers_.clear();
+  modified_headers_.Clear();
 }
 
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
@@ -262,16 +240,12 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   client_binding_.Close();
   CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
-  if (removed_headers_) {
-    for (const std::string& key : *removed_headers_)
-      start_info_->url_request.headers.RemoveHeader(key);
-    removed_headers_.reset();
-  }
+  for (const std::string& header : removed_headers_)
+    start_info_->url_request.headers.RemoveHeader(header);
+  start_info_->url_request.headers.MergeFrom(modified_headers_);
 
-  if (modified_headers_) {
-    start_info_->url_request.headers.MergeFrom(*modified_headers_);
-    modified_headers_.reset();
-  }
+  removed_headers_.clear();
+  modified_headers_.Clear();
 
   StartNow();
 }
@@ -567,7 +541,7 @@ void ThrottlingURLLoader::OnReceiveRedirect(
         return;
 
       MergeRemovedHeaders(&removed_headers_, removed_headers);
-      MergeModifiedHeaders(&modified_headers_, modified_headers);
+      modified_headers_.MergeFrom(modified_headers);
     }
 
     if (deferred) {

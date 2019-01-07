@@ -33,11 +33,10 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
                       CloudPolicyStore* user_policy_store);
   ~PolicyHeaderService() override;
 
-  // Update |*extra_headers| (allocate if necessary) with the policy header if
-  // |url| matches |server_url_|. Otherwise |extra_headers| remains unchanged.
-  void AddPolicyHeaders(
-      const GURL& url,
-      std::unique_ptr<net::HttpRequestHeaders>* extra_headers) const;
+  // Update |*extra_headers| with the policy header if
+  // |url| matches |server_url_|. Otherwise |*extra_headers| remains unchanged.
+  void AddPolicyHeaders(const GURL& url,
+                        net::HttpRequestHeaders* extra_headers) const;
 
   // Overridden CloudPolicyStore::Observer methods:
   void OnStoreLoaded(CloudPolicyStore* store) override;

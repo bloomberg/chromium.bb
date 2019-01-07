@@ -101,10 +101,9 @@ class ProxyingURLLoaderFactory::InProgressRequest
   }
 
   // network::mojom::URLLoader:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>& to_be_removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
 
   void ProceedWithResponse() override { target_loader_->ProceedWithResponse(); }
 
@@ -190,15 +189,15 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
   ProxyRequestAdapter(InProgressRequest* in_progress_request,
                       const net::HttpRequestHeaders& original_headers,
                       net::HttpRequestHeaders* modified_headers,
-                      std::vector<std::string>* headers_to_remove)
+                      std::vector<std::string>* removed_headers)
       : ChromeRequestAdapter(nullptr),
         in_progress_request_(in_progress_request),
         original_headers_(original_headers),
         modified_headers_(modified_headers),
-        headers_to_remove_(headers_to_remove) {
+        removed_headers_(removed_headers) {
     DCHECK(in_progress_request_);
     DCHECK(modified_headers_);
-    DCHECK(headers_to_remove_);
+    DCHECK(removed_headers_);
   }
 
   ~ProxyRequestAdapter() override = default;
@@ -233,12 +232,12 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
   bool HasHeader(const std::string& name) override {
     return (original_headers_.HasHeader(name) ||
             modified_headers_->HasHeader(name)) &&
-           !base::ContainsValue(*headers_to_remove_, name);
+           !base::ContainsValue(*removed_headers_, name);
   }
 
   void RemoveRequestHeaderByName(const std::string& name) override {
-    if (!base::ContainsValue(*headers_to_remove_, name))
-      headers_to_remove_->push_back(name);
+    if (!base::ContainsValue(*removed_headers_, name))
+      removed_headers_->push_back(name);
   }
 
   void SetExtraHeaderByName(const std::string& name,
@@ -246,16 +245,16 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
     modified_headers_->SetHeader(name, value);
 
     auto it =
-        std::find(headers_to_remove_->begin(), headers_to_remove_->end(), name);
-    if (it != headers_to_remove_->end())
-      headers_to_remove_->erase(it);
+        std::find(removed_headers_->begin(), removed_headers_->end(), name);
+    if (it != removed_headers_->end())
+      removed_headers_->erase(it);
   }
 
  private:
   InProgressRequest* const in_progress_request_;
   const net::HttpRequestHeaders& original_headers_;
-  net::HttpRequestHeaders* const modified_headers_;
-  std::vector<std::string>* const headers_to_remove_;
+  net::HttpRequestHeaders* modified_headers_;
+  std::vector<std::string>* removed_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyRequestAdapter);
 };
@@ -325,12 +324,12 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
   client_binding_.Bind(mojo::MakeRequest(&proxy_client));
 
   net::HttpRequestHeaders modified_headers;
-  std::vector<std::string> headers_to_remove;
+  std::vector<std::string> removed_headers;
   ProxyRequestAdapter adapter(this, request.headers, &modified_headers,
-                              &headers_to_remove);
+                              &removed_headers);
   factory_->delegate_->ProcessRequest(&adapter, GURL() /* redirect_url */);
 
-  if (modified_headers.IsEmpty() && headers_to_remove.empty()) {
+  if (modified_headers.IsEmpty() && removed_headers.empty()) {
     factory_->target_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&target_loader_), routing_id, request_id, options,
         request, std::move(proxy_client), traffic_annotation);
@@ -341,7 +340,7 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
   } else {
     network::ResourceRequest request_copy = request;
     request_copy.headers.MergeFrom(modified_headers);
-    for (const std::string& name : headers_to_remove)
+    for (const std::string& name : removed_headers)
       request_copy.headers.RemoveHeader(name);
 
     factory_->target_factory_->CreateLoaderAndStart(
@@ -359,31 +358,21 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
 }
 
 void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
-    const base::Optional<std::vector<std::string>>& opt_headers_to_remove,
-    const base::Optional<net::HttpRequestHeaders>& opt_modified_headers,
+    const std::vector<std::string>& removed_headers_ext,
+    const net::HttpRequestHeaders& modified_headers_ext,
     const base::Optional<GURL>& opt_new_url) {
-  std::vector<std::string> headers_to_remove;
-  if (opt_headers_to_remove)
-    headers_to_remove = *opt_headers_to_remove;
-
-  net::HttpRequestHeaders modified_headers;
-  if (opt_modified_headers)
-    modified_headers.CopyFrom(*opt_modified_headers);
-
+  std::vector<std::string> removed_headers = removed_headers_ext;
+  net::HttpRequestHeaders modified_headers = modified_headers_ext;
   ProxyRequestAdapter adapter(this, headers_, &modified_headers,
-                              &headers_to_remove);
+                              &removed_headers);
   factory_->delegate_->ProcessRequest(&adapter, redirect_info_.new_url);
 
   headers_.MergeFrom(modified_headers);
-  for (const std::string& name : headers_to_remove)
+  for (const std::string& name : removed_headers)
     headers_.RemoveHeader(name);
 
-  target_loader_->FollowRedirect(
-      headers_to_remove.empty() ? base::nullopt
-                                : base::make_optional(headers_to_remove),
-      modified_headers.IsEmpty() ? base::nullopt
-                                 : base::make_optional(modified_headers),
-      opt_new_url);
+  target_loader_->FollowRedirect(removed_headers, modified_headers,
+                                 opt_new_url);
 
   request_url_ = redirect_info_.new_url;
   referrer_origin_ = GURL(redirect_info_.new_referrer).GetOrigin();

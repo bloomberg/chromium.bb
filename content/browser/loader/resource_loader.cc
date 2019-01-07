@@ -157,13 +157,13 @@ class ResourceLoader::Controller : public ResourceController {
   void Resume() override {
     MarkAsUsed();
     resource_loader_->Resume(true /* called_from_resource_controller */,
-                             base::nullopt, base::nullopt);
+                             {} /* removed_headers */,
+                             {} /* modified_headers */);
   }
 
   void ResumeForRedirect(
-      const base::Optional<std::vector<std::string>>& removed_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_headers)
-      override {
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) override {
     MarkAsUsed();
     resource_loader_->Resume(true /* called_from_resource_controller */,
                              removed_headers, modified_headers);
@@ -224,7 +224,8 @@ class ResourceLoader::ScopedDeferral {
     // anything. Go ahead and resume the request now.
     if (old_deferred_stage == DEFERRED_NONE)
       resource_loader_->Resume(false /* called_from_resource_controller */,
-                               base::nullopt, base::nullopt);
+                               {} /* removed_headers */,
+                               {} /* modified_headers */);
   }
 
  private:
@@ -530,13 +531,13 @@ void ResourceLoader::CancelCertificateSelection() {
   request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void ResourceLoader::Resume(
-    bool called_from_resource_controller,
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+void ResourceLoader::Resume(bool called_from_resource_controller,
+                            const std::vector<std::string>& removed_headers,
+                            const net::HttpRequestHeaders& modified_headers) {
   DeferredStage stage = deferred_stage_;
   deferred_stage_ = DEFERRED_NONE;
-  DCHECK((!modified_headers && !removed_headers) || stage == DEFERRED_REDIRECT)
+  DCHECK((removed_headers.empty() && modified_headers.IsEmpty()) ||
+         stage == DEFERRED_REDIRECT)
       << "Modifying or removing headers can only be used with redirects";
   switch (stage) {
     case DEFERRED_NONE:
@@ -683,17 +684,14 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
 }
 
 void ResourceLoader::FollowDeferredRedirectInternal(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
   DCHECK(!deferred_redirect_url_.is_empty());
   GURL redirect_url = deferred_redirect_url_;
   deferred_redirect_url_ = GURL();
   if (delegate_->HandleExternalProtocol(this, redirect_url)) {
     // Chrome doesn't make use of the request's headers to handle external
     // protocol. Modifying headers here would be useless.
-    DCHECK(!modified_headers && !removed_headers)
-        << "Modifying or removing headers after a redirect to an external "
-           "protocol is not supported yet. See https://crbug.com/845683.";
     Cancel();
   } else {
     request_->FollowDeferredRedirect(removed_headers, modified_headers);
