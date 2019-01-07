@@ -12,6 +12,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task/task_scheduler/scheduler_lock_impl.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 namespace internal {
@@ -55,7 +56,7 @@ namespace internal {
 //     Creates a condition variable using this as a lock.
 
 #if DCHECK_IS_ON()
-class SchedulerLock : public SchedulerLockImpl {
+class LOCKABLE SchedulerLock : public SchedulerLockImpl {
  public:
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock* predecessor)
@@ -64,7 +65,7 @@ class SchedulerLock : public SchedulerLockImpl {
       : SchedulerLockImpl(universal_predecessor) {}
 };
 #else   // DCHECK_IS_ON()
-class SchedulerLock : public Lock {
+class LOCKABLE SchedulerLock : public Lock {
  public:
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock*) {}
@@ -78,13 +79,14 @@ class SchedulerLock : public Lock {
 #endif  // DCHECK_IS_ON()
 
 // Provides the same functionality as base::AutoLock for SchedulerLock.
-class AutoSchedulerLock {
+class SCOPED_LOCKABLE AutoSchedulerLock {
  public:
-  explicit AutoSchedulerLock(SchedulerLock& lock) : lock_(lock) {
+  explicit AutoSchedulerLock(SchedulerLock& lock) EXCLUSIVE_LOCK_FUNCTION(lock)
+      : lock_(lock) {
     lock_.Acquire();
   }
 
-  ~AutoSchedulerLock() {
+  ~AutoSchedulerLock() UNLOCK_FUNCTION() {
     lock_.AssertAcquired();
     lock_.Release();
   }
@@ -93,6 +95,44 @@ class AutoSchedulerLock {
   SchedulerLock& lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoSchedulerLock);
+};
+
+// Informs the clang thread safety analysis that an aliased lock is acquired.
+// Because the clang thread safety analysis doesn't understand aliased locks
+// [1], this code wouldn't compile without AnnotateAcquiredLockAlias:
+//
+// class Example {
+//  public:
+//    SchedulerLock lock_;
+//    int value = 0 GUARDED_BY(lock_);
+// };
+//
+// Example example;
+// SchedulerLock* acquired = &example.lock_;
+// AutoSchedulerLock auto_lock(*acquired);
+// AnnotateAcquiredLockAlias annotate(*acquired, example.lock_);
+// example.value = 42;  // Doesn't compile without |annotate|.
+//
+// [1] https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#no-alias-analysis
+class SCOPED_LOCKABLE AnnotateAcquiredLockAlias {
+ public:
+  // |acquired_lock| is an acquired lock. |lock_alias| is an alias of
+  // |acquired_lock|.
+  AnnotateAcquiredLockAlias(const SchedulerLock& acquired_lock,
+                            const SchedulerLock& lock_alias)
+      EXCLUSIVE_LOCK_FUNCTION(lock_alias)
+      : acquired_lock_(acquired_lock) {
+    DCHECK_EQ(&acquired_lock, &lock_alias);
+    acquired_lock_.AssertAcquired();
+  }
+  ~AnnotateAcquiredLockAlias() UNLOCK_FUNCTION() {
+    acquired_lock_.AssertAcquired();
+  }
+
+ private:
+  const SchedulerLock& acquired_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnnotateAcquiredLockAlias);
 };
 
 }  // namespace internal
