@@ -115,9 +115,9 @@ bool MediaSessionImpl::PlayerIdentifier::operator<(
 
 size_t MediaSessionImpl::PlayerIdentifier::Hash::operator()(
     const PlayerIdentifier& player_identifier) const {
-  size_t hash = BASE_HASH_NAMESPACE::hash<MediaSessionPlayerObserver*>()(
-      player_identifier.observer);
-  hash += BASE_HASH_NAMESPACE::hash<int>()(player_identifier.player_id);
+  size_t hash =
+      std::hash<MediaSessionPlayerObserver*>()(player_identifier.observer);
+  hash += std::hash<int>()(player_identifier.player_id);
   return hash;
 }
 

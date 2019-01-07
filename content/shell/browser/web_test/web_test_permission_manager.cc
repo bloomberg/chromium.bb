@@ -43,11 +43,9 @@ bool WebTestPermissionManager::PermissionDescription::operator!=(
 
 size_t WebTestPermissionManager::PermissionDescription::Hash::operator()(
     const PermissionDescription& description) const {
-  size_t hash =
-      BASE_HASH_NAMESPACE::hash<int>()(static_cast<int>(description.type));
-  hash += BASE_HASH_NAMESPACE::hash<std::string>()(
-      description.embedding_origin.spec());
-  hash += BASE_HASH_NAMESPACE::hash<std::string>()(description.origin.spec());
+  size_t hash = std::hash<int>()(static_cast<int>(description.type));
+  hash += std::hash<std::string>()(description.embedding_origin.spec());
+  hash += std::hash<std::string>()(description.origin.spec());
   return hash;
 }
 
