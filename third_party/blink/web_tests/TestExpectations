@@ -6017,3 +6017,4 @@ crbug.com/918905 [ Mac Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
 crbug.com/919504 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Timeout Pass ]
 crbug.com/919559 [ Win ] virtual/outofblink-cors/http/tests/fetch/window/thorough/redirect-loop.html [ Timeout Pass ]
+crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
