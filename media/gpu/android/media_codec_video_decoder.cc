@@ -164,6 +164,9 @@ void MediaCodecVideoDecoder::Destroy() {
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "MediaCodecVideoDecoder::Destroy");
 
+  // Cancel pending callbacks.
+  weak_factory_.InvalidateWeakPtrs();
+
   if (media_crypto_context_) {
     // Cancel previously registered callback (if any).
     media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
