@@ -110,11 +110,6 @@ ChromiumHttpConnection::ChromiumHttpConnection(
   DCHECK(delegate_);
   DCHECK(network_task_runner_);
 
-  // URLFetcher does not ignore client cert requests by default.
-  // We do not have such certificates.
-  // TODO(igorc): Talk to Cast platform to see if we can do better.
-  URLFetcher::SetIgnoreCertificateRequests(true);
-
   // Add a reference, so |this| cannot go away until Close() is called.
   AddRef();
 }
