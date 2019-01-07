@@ -54,6 +54,12 @@ SerialPortManagerImpl::SerialPortManagerImpl(
 
 SerialPortManagerImpl::~SerialPortManagerImpl() = default;
 
+void SerialPortManagerImpl::SetSerialEnumeratorForTesting(
+    std::unique_ptr<SerialDeviceEnumerator> fake_enumerator) {
+  DCHECK(fake_enumerator);
+  enumerator_ = std::move(fake_enumerator);
+}
+
 void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
   DCHECK(enumerator_);
   std::move(callback).Run(enumerator_->GetDevices());

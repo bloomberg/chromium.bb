@@ -207,7 +207,10 @@ source_set("tests") {
       sources += [ "serial/serial_io_handler_posix_unittest.cc" ]
     }
 
-    deps += [ "//services/device/serial" ]
+    deps += [
+      "//services/device/serial",
+      "//services/device/serial:test_support",
+    ]
   }
 
   if (is_win) {
