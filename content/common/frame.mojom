@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/frame_messages.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/public/common/resource_type.mojom";
@@ -261,9 +262,6 @@ struct CreateNewWindowReply {
 // An opaque handle that keeps alive the associated render process even after
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
-
-[Native]
-struct DidCommitProvisionalLoadParams;
 
 // Implemented by the frame server (i.e. the browser process). For messages that
 // must be associated with the IPC channel.
