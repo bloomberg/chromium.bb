@@ -40,6 +40,7 @@
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
 
 using extensions::Extension;
@@ -634,4 +635,57 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
   menu->Init();
 
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
+}
+
+// Test FormatUrlForClipboard behavior
+// -------------------------------------------
+
+struct FormatUrlForClipboardTestData {
+  const char* const input;
+  const char* const output;
+  const char* const name;
+};
+
+class FormatUrlForClipboardTest
+    : public testing::TestWithParam<FormatUrlForClipboardTestData> {
+ public:
+  static base::string16 FormatUrl(const GURL& url) {
+    return RenderViewContextMenu::FormatURLForClipboard(url);
+  }
+};
+
+const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
+    {"http://www.foo.com/", "http://www.foo.com/", "HttpNoEscapes"},
+    {"http://www.foo.com/%61%62%63", "http://www.foo.com/abc",
+     "HttpSafeUnescapes"},
+    {"https://www.foo.com/abc%20def", "https://www.foo.com/abc%20def",
+     "HttpsEscapedSpecialCharacters"},
+    {"https://www.foo.com/%CE%B1%CE%B2%CE%B3",
+     "https://www.foo.com/%CE%B1%CE%B2%CE%B3", "HttpsEscapedUnicodeCharacters"},
+    {"file:///etc/%CE%B1%CE%B2%CE%B3", "file:///etc/%CE%B1%CE%B2%CE%B3",
+     "FileEscapedUnicodeCharacters"},
+    {"file://stuff.host.co/my%2Bshare/foo.txt",
+     "file://stuff.host.co/my%2Bshare/foo.txt", "FileEscapedSpecialCharacters"},
+    {"file://stuff.host.co/my%2Dshare/foo.txt",
+     "file://stuff.host.co/my-share/foo.txt", "FileSafeUnescapes"},
+    {"mailto:me@foo.com", "me@foo.com", "MailToNoEscapes"},
+    {"mailto:me@%66%6F%6F.com", "me@foo.com", "MailToSafeEscapes"},
+    {"mailto:me%2Bsorting-tag@foo.com", "me+sorting-tag@foo.com",
+     "MailToEscapedSpecialCharacters"},
+    {"mailto:%CE%B1%CE%B2%CE%B3@foo.gr", "αβγ@foo.gr",
+     "MailToEscapedUnicodeCharacters"},
+};
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    FormatUrlForClipboardTest,
+    testing::ValuesIn(kFormatUrlForClipboardTestData),
+    [](const testing::TestParamInfo<FormatUrlForClipboardTestData>&
+           param_info) { return param_info.param.name; });
+
+TEST_P(FormatUrlForClipboardTest, FormatUrlForClipboard) {
+  auto param = GetParam();
+  GURL url(param.input);
+  const base::string16 result = FormatUrl(url);
+  DCHECK_EQ(base::UTF8ToUTF16(param.output), result);
 }

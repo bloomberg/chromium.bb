@@ -458,23 +458,6 @@ content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
   return web_contents;
 }
 
-void WriteURLToClipboard(const GURL& url) {
-  if (url.is_empty() || !url.is_valid())
-    return;
-
-  // Unescaping path and query is not a good idea because other applications
-  // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
-  base::string16 text =
-      url.SchemeIs(url::kMailToScheme)
-          ? base::ASCIIToUTF16(url.path())
-          : url_formatter::FormatUrl(
-                url, url_formatter::kFormatUrlOmitNothing,
-                net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
-
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  scw.WriteText(text);
-}
-
 bool g_custom_id_ranges_initialized = false;
 
 #if !defined(OS_CHROMEOS)
@@ -744,6 +727,34 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
                                         /*is_action_menu=*/false);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+base::string16 RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
+  DCHECK(!url.is_empty());
+  DCHECK(url.is_valid());
+
+  url_formatter::FormatUrlTypes format_types;
+  net::UnescapeRule::Type unescape_rules;
+  if (url.SchemeIs(url::kMailToScheme)) {
+    format_types = url_formatter::kFormatUrlOmitMailToScheme;
+    unescape_rules =
+        net::UnescapeRule::PATH_SEPARATORS |
+        net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
+  } else {
+    format_types = url_formatter::kFormatUrlOmitNothing;
+    unescape_rules = net::UnescapeRule::NONE;
+  }
+
+  return url_formatter::FormatUrl(url, format_types, unescape_rules, nullptr,
+                                  nullptr, nullptr);
+}
+
+void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
+  if (url.is_empty() || !url.is_valid())
+    return;
+
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  scw.WriteText(FormatURLForClipboard(url));
+}
 
 void RenderViewContextMenu::InitMenu() {
   RenderViewContextMenuBase::InitMenu();
@@ -2712,10 +2723,6 @@ void RenderViewContextMenu::ExecPictureInPicture() {
       gfx::Point(params_.x, params_.y),
       WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
                            !picture_in_picture_active));
-}
-
-void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
-  ::WriteURLToClipboard(url);
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(

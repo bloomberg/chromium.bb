@@ -108,6 +108,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
  private:
   friend class RenderViewContextMenuTest;
   friend class TestRenderViewContextMenu;
+  friend class FormatUrlForClipboardTest;
 
   static bool IsDevToolsURL(const GURL& url);
   static bool IsInternalResourcesURL(const GURL& url);
@@ -119,6 +120,15 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static bool MenuItemMatchesParams(const content::ContextMenuParams& params,
                                     const extensions::MenuItem* item);
 #endif
+
+  // Formats a URL to be written to the clipboard and returns the formatted
+  // string. Used by WriteURLToClipboard(), but kept in a separate function so
+  // the formatting behavior can be tested without having to initialize the
+  // clipboard. |url| must be valid and non-empty.
+  static base::string16 FormatURLForClipboard(const GURL& url);
+
+  // Writes the specified text/url to the system clipboard.
+  static void WriteURLToClipboard(const GURL& url);
 
   // RenderViewContextMenuBase:
   void InitMenu() override;
@@ -209,9 +219,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecLanguageSettings(int event_flags);
   void ExecProtocolHandlerSettings(int event_flags);
   void ExecPictureInPicture();
-
-  // Writes the specified text/url to the system clipboard
-  void WriteURLToClipboard(const GURL& url);
 
   void MediaPlayerActionAt(const gfx::Point& location,
                            const blink::WebMediaPlayerAction& action);

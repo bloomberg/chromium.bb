@@ -1210,6 +1210,10 @@ TEST(UrlFormatterTest, FormatUrl) {
        kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,
        L"/Users/homedirname/folder/file.pdf/", 0},
 #endif
+      // -------- omit mailto: --------
+      { "omit mailto", "mailto:foo@bar.com",
+      kFormatUrlOmitMailToScheme, net::UnescapeRule::NORMAL,
+      L"foo@bar.com", 0 },
 
       // -------- omit trailing slash on bare hostname --------
       {"omit slash when it's the entire path", "http://www.google.com/",
