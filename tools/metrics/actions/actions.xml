@@ -17143,6 +17143,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromGoogleServicesSettings">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when the sign-in promo in the Google services settings is shown.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromManageCardsBubble">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
@@ -17545,8 +17553,17 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as the warning dialog is no longer used.</obsolete>
   <owner>zmin@chromium.org</owner>
   <description>
-    Record when a user signs in again from the force sign in auth error warning
-    modal dialog.
+    Recorded when a user signs in again from the force sign in auth error
+    warning modal dialog.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromGoogleServicesSettings">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when a user taps in the sign-in promo in the Google services
+    settings.
   </description>
 </action>
 
@@ -17554,7 +17571,7 @@ should be able to be added at any place in this file.
   <owner>rogerta@chromium.org</owner>
   <owner>tienmai@chromium.org</owner>
   <description>
-    Record when a user signs in using a Windows machine's logon screen.
+    Recorded when a user signs in using a Windows machine's logon screen.
   </description>
 </action>
 
