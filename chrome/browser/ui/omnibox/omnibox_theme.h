@@ -59,6 +59,6 @@ SkColor GetOmniboxSecurityChipColor(
     OmniboxTint tint,
     security_state::SecurityLevel security_level);
 
-float GetOmniboxStateAlpha(OmniboxPartState state);
+float GetOmniboxStateOpacity(OmniboxPartState state);
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_

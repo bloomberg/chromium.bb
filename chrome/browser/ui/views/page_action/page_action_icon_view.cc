@@ -51,7 +51,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       active_(false),
       suppress_mouse_released_action_(false) {
   set_ink_drop_visible_opacity(
-      GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
+      GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -193,7 +193,7 @@ PageActionIconView::CreateInkDropHighlight() const {
           gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
           size());
   highlight->set_visible_opacity(
-      GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
+      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
   return highlight;
 }
 
