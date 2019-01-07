@@ -483,6 +483,7 @@ mojom("mojo_bindings") {
     "child_control.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
+    "frame_messages.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
     "host_zoom.mojom",
