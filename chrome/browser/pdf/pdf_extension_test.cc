@@ -360,6 +360,23 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         base::FilePath(ChromeContentClient::kPDFPluginPath),
         browser()->profile()->GetPath());
   }
+
+  // Installs the specified service worker and tests navigating to a PDF in its
+  // scope.
+  void RunServiceWorkerTest(const std::string& worker_path) {
+    // Install the service worker.
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(
+                       "/service_worker/create_service_worker.html"));
+    EXPECT_EQ("DONE",
+              EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                     "register('" + worker_path + "', '/pdf');"));
+
+    // Navigate to a PDF in the service worker's scope. It should load.
+    RunTestsInFile("basic_test.js", "test.pdf");
+    // Ensure it loaded in a PPAPI process.
+    EXPECT_EQ(1, CountPDFProcesses());
+  }
 };
 
 class PDFExtensionLoadTest : public PDFExtensionTest,
@@ -1986,4 +2003,25 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(guest_contents, script, &inner));
   EXPECT_EQ(inner, outer);
+}
+
+// Service worker tests are regression tests for
+// https://crbug.com/916514.
+
+// Test navigating to a PDF in the scope of a service worker with no fetch event
+// handler.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerNoFetchHandler) {
+  RunServiceWorkerTest("empty.js");
+}
+
+// Test navigating to a PDF when a service worker intercepts the request and
+// then falls back to network by not calling FetchEvent.respondWith().
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerNetworkFallback) {
+  RunServiceWorkerTest("network_fallback_worker.js");
+}
+
+// Test navigating to a PDF when a service worker intercepts the request and
+// provides a response.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
+  RunServiceWorkerTest("respond_with_fetch_worker.js");
 }

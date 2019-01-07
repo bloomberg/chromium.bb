@@ -70,8 +70,7 @@ void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(
   if (render_frame) {
     auto info = std::make_unique<ChildURLLoaderFactoryBundleInfo>();
     info->appcache_factory_info() = url_loader_factory.PassInterface();
-    render_frame->GetLoaderFactoryBundle()->Update(std::move(info),
-                                                   base::nullopt);
+    render_frame->GetLoaderFactoryBundle()->Update(std::move(info));
   }
 }
 

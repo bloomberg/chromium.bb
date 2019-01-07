@@ -168,7 +168,7 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle() = default;
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
     std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info) {
-  Update(std::move(info), base::nullopt);
+  Update(std::move(info));
 }
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
@@ -245,9 +245,7 @@ ChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
 }
 
 void ChildURLLoaderFactoryBundle::Update(
-    std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
-    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-        subresource_overrides) {
+    std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info) {
   if (info->direct_network_factory_info()) {
     direct_network_factory_.Bind(
         std::move(info->direct_network_factory_info()));
@@ -257,12 +255,12 @@ void ChildURLLoaderFactoryBundle::Update(
         std::move(info->prefetch_loader_factory_info()));
   }
   URLLoaderFactoryBundle::Update(std::move(info));
+}
 
-  if (subresource_overrides) {
-    for (auto& element : *subresource_overrides) {
-      subresource_overrides_[element->url] = std::move(element);
-    }
-  }
+void ChildURLLoaderFactoryBundle::UpdateSubresourceOverrides(
+    std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides) {
+  for (auto& element : *subresource_overrides)
+    subresource_overrides_[element->url] = std::move(element);
 }
 
 void ChildURLLoaderFactoryBundle::SetPrefetchLoaderFactory(
