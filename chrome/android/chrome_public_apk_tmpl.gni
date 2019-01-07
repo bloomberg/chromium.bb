@@ -32,7 +32,7 @@ declare_args() {
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
   "enable_vr=$enable_vr",
-  "include_arcore_manifest_flag=$enable_arcore",
+  "include_arcore_manifest_flag=$package_arcore",
 ]
 
 if (android_64bit_browser) {
@@ -376,19 +376,17 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       deps += [ "//chrome/browser/android/vr:java" ]
     }
 
-    if (invoker.target_type == "android_apk" || !modularize_ar) {
-      if (enable_arcore) {
-        deps += [ "//third_party/arcore-android-sdk:libdynamite_client_java" ]
-      }
-      if (package_arcore) {
-        # We store this as a separate .so in the APK and only load as needed.
-        if (android_64bit_target_cpu && build_apk_secondary_abi) {
-          secondary_abi_loadable_modules = [ "//third_party/arcore-android-sdk/libraries/android_arm/libarcore_sdk_c_minimal.so" ]
-        } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-          loadable_modules = [ "//third_party/arcore-android-sdk/libraries/android_arm64/libarcore_sdk_c_minimal.so" ]
-        } else {
-          loadable_modules = [ "//third_party/arcore-android-sdk/libraries/android_arm/libarcore_sdk_c_minimal.so" ]
-        }
+    if ((invoker.target_type == "android_apk" || !modularize_ar) &&
+        package_arcore) {
+      deps += [ "//third_party/android_deps:com_google_ar_core_java" ]
+
+      # We store this as a separate .so in the APK and only load as needed.
+      if (android_64bit_target_cpu && build_apk_secondary_abi) {
+        secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
+        loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      } else {
+        loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
       }
     }
   }

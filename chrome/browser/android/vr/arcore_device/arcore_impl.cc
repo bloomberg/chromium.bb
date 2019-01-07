@@ -62,13 +62,6 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
-  // We just use the default config.
-  status = ArSession_checkSupported(session.get(), arcore_config.get());
-  if (status != AR_SUCCESS) {
-    DLOG(ERROR) << "ArSession_checkSupported failed: " << status;
-    return false;
-  }
-
   status = ArSession_configure(session.get(), arcore_config.get());
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_configure failed: " << status;
