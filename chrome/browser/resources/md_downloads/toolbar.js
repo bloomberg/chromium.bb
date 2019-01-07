@@ -43,8 +43,12 @@ cr.define('downloads', function() {
       return this.$.toolbar.getSearchField().getValue();
     },
 
-    onFindCommand: function() {
+    focusOnSearchInput: function() {
       this.$.toolbar.getSearchField().showAndFocus();
+    },
+
+    isSearchFocused: function() {
+      return this.$.toolbar.getSearchField().isSearchFocused();
     },
 
     /** @private */

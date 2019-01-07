@@ -8,7 +8,6 @@
  * top of the stack will be notified that a find shortcut has been invoked.
  */
 
-
 const FindShortcutManager = (() => {
   /**
    * Stack of listeners. Only the top listener will handle the shortcut.
@@ -74,46 +73,42 @@ const FindShortcutBehavior = {
    */
   findShortcutListenOnAttach: true,
 
-  attached() {
+  attached: function() {
     if (this.findShortcutListenOnAttach) {
       this.becomeActiveFindShortcutListener();
     }
   },
 
-  detached() {
+  detached: function() {
     if (this.findShortcutListenOnAttach) {
       this.removeSelfAsFindShortcutListener();
     }
   },
 
-  becomeActiveFindShortcutListener() {
+  becomeActiveFindShortcutListener: function() {
     const listeners = FindShortcutManager.listeners;
     assert(!listeners.includes(this), 'Already listening for find shortcuts.');
     listeners.push(this);
-  },
-
-  removeSelfAsFindShortcutListener() {
-    const listeners = FindShortcutManager.listeners;
-    const index = listeners.indexOf(this);
-    assert(listeners.includes(this), 'Find shortcut listener not found.');
-    listeners.splice(index, 1);
   },
 
   /**
    * If handled, return true.
    * @param {boolean} modalContextOpen
    * @return {boolean}
-   * @protected
    */
-  handleFindShortcut(modalContextOpen) {
+  handleFindShortcut: function(modalContextOpen) {
     assertNotReached();
   },
 
-  /**
-   * @return {boolean}
-   * @protected
-   */
-  searchInputHasFocus() {
+  removeSelfAsFindShortcutListener: function() {
+    const listeners = FindShortcutManager.listeners;
+    const index = listeners.indexOf(this);
+    assert(listeners.includes(this), 'Find shortcut listener not found.');
+    listeners.splice(index, 1);
+  },
+
+  /** @return {boolean} */
+  searchInputHasFocus: function() {
     assertNotReached();
   },
 };
