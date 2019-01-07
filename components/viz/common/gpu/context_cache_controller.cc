@@ -44,7 +44,10 @@ ContextCacheController::ContextCacheController(
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-ContextCacheController::~ContextCacheController() = default;
+ContextCacheController::~ContextCacheController() {
+  if (held_visibility_)
+    ClientBecameNotVisible(std::move(held_visibility_));
+}
 
 void ContextCacheController::SetGrContext(GrContext* gr_context) {
   gr_context_ = gr_context;
@@ -88,6 +91,16 @@ void ContextCacheController::ClientBecameNotVisible(
     context_support_->SetAggressivelyFreeResources(true);
     context_support_->FlushPendingWork();
   }
+}
+
+void ContextCacheController::ClientBecameNotVisibleDuringShutdown(
+    std::unique_ptr<ScopedVisibility> scoped_visibility) {
+  // We only need to hold on to one visibility token, so free any others that
+  // come in.
+  if (!held_visibility_)
+    held_visibility_ = std::move(scoped_visibility);
+  else
+    ClientBecameNotVisible(std::move(scoped_visibility));
 }
 
 std::unique_ptr<ContextCacheController::ScopedBusy>

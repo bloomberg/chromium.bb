@@ -349,7 +349,8 @@ GLRenderer::~GLRenderer() {
   if (context_visibility_) {
     auto* context_provider = output_surface_->context_provider();
     auto* cache_controller = context_provider->CacheController();
-    cache_controller->ClientBecameNotVisible(std::move(context_visibility_));
+    cache_controller->ClientBecameNotVisibleDuringShutdown(
+        std::move(context_visibility_));
   }
 }
 
