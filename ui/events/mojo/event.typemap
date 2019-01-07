@@ -25,4 +25,5 @@ type_mappings = [
   "ui.mojom.EventMomentumPhase=ui::EventMomentumPhase",
   "ui.mojom.PointerDetails=ui::PointerDetails",
   "ui.mojom.ScrollEventPhase=ui::ScrollEventPhase",
+  "ui.mojom.GestureDeviceType=ui::GestureDeviceType",
 ]

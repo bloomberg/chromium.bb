@@ -219,6 +219,14 @@ TEST(StructTraitsTest, KeyEventPropertiesSerialized) {
 }
 
 TEST(StructTraitsTest, GestureEvent) {
+  GestureEventDetails pinch_begin_details(ET_GESTURE_PINCH_BEGIN);
+  pinch_begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  GestureEventDetails pinch_end_details(ET_GESTURE_PINCH_END);
+  pinch_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  GestureEventDetails pinch_update_details(ET_GESTURE_PINCH_UPDATE);
+  pinch_update_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  pinch_update_details.set_scale(1.23f);
+
   const GestureEvent kTestData[] = {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
@@ -226,6 +234,15 @@ TEST(StructTraitsTest, GestureEvent) {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
        GestureEventDetails(ET_GESTURE_TAP)},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_begin_details},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_end_details},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_update_details},
   };
 
   for (size_t i = 0; i < base::size(kTestData); i++) {
