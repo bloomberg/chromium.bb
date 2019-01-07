@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_path.h"
@@ -105,14 +104,15 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 
 // static
 std::unique_ptr<CrosDBusService> CrosDBusService::Create(
+    dbus::Bus* system_bus,
     const std::string& service_name,
     const dbus::ObjectPath& object_path,
     ServiceProviderList service_providers) {
-  if (DBusThreadManager::Get()->IsUsingFakes())
+  if (!system_bus)
     return std::make_unique<CrosDBusServiceStubImpl>();
 
-  return CreateRealImpl(DBusThreadManager::Get()->GetSystemBus(), service_name,
-                        object_path, std::move(service_providers));
+  return CreateRealImpl(system_bus, service_name, object_path,
+                        std::move(service_providers));
 }
 
 // static

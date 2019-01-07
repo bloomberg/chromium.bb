@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
@@ -25,7 +24,7 @@ namespace chromeos {
 // CrosDBusService is used to run a D-Bus service inside Chrome for Chrome OS.
 // It exports D-Bus methods through service provider classes that implement
 // CrosDBusService::ServiceProviderInterface.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDBusService {
+class CrosDBusService {
  public:
   // CrosDBusService consists of service providers that implement this
   // interface.
@@ -43,9 +42,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDBusService {
       std::vector<std::unique_ptr<ServiceProviderInterface>>;
 
   // Creates, starts, and returns a new instance owning |service_name| and
-  // exporting |service_providers|'s methods on |object_path|. Static so a stub
-  // implementation can be used when not running on a device.
+  // exporting |service_providers|'s methods on |object_path|. If not null,
+  // |system_bus| is used for the service, otherwise a fake/stub implementation
+  // is used.
   static std::unique_ptr<CrosDBusService> Create(
+      dbus::Bus* system_bus,
       const std::string& service_name,
       const dbus::ObjectPath& object_path,
       ServiceProviderList service_providers);

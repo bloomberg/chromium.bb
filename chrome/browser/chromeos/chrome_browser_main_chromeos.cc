@@ -287,53 +287,61 @@ class DBusServices {
           DBusThreadManager::Get()->GetPowerManagerClient());
     }
 
+    dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
+                                ? nullptr
+                                : DBusThreadManager::Get()->GetSystemBus();
+
     proxy_resolution_service_ = CrosDBusService::Create(
-        kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
+        system_bus, kNetworkProxyServiceName,
+        dbus::ObjectPath(kNetworkProxyServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ProxyResolutionServiceProvider>()));
 
-    kiosk_info_service_ = CrosDBusService::Create(
-        kKioskAppServiceName, dbus::ObjectPath(kKioskAppServicePath),
-        CrosDBusService::CreateServiceProviderList(
-            std::make_unique<KioskInfoService>()));
+    kiosk_info_service_ =
+        CrosDBusService::Create(system_bus, kKioskAppServiceName,
+                                dbus::ObjectPath(kKioskAppServicePath),
+                                CrosDBusService::CreateServiceProviderList(
+                                    std::make_unique<KioskInfoService>()));
 
     metrics_event_service_ = CrosDBusService::Create(
-        kMetricsEventServiceName, dbus::ObjectPath(kMetricsEventServicePath),
+        system_bus, kMetricsEventServiceName,
+        dbus::ObjectPath(kMetricsEventServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<MetricsEventServiceProvider>()));
 
     screen_lock_service_ = CrosDBusService::Create(
-        kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
+        system_bus, kScreenLockServiceName,
+        dbus::ObjectPath(kScreenLockServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ScreenLockServiceProvider>()));
 
     virtual_file_request_service_ = CrosDBusService::Create(
-        kVirtualFileRequestServiceName,
+        system_bus, kVirtualFileRequestServiceName,
         dbus::ObjectPath(kVirtualFileRequestServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VirtualFileRequestServiceProvider>()));
 
     component_updater_service_ = CrosDBusService::Create(
-        kComponentUpdaterServiceName,
+        system_bus, kComponentUpdaterServiceName,
         dbus::ObjectPath(kComponentUpdaterServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ComponentUpdaterServiceProvider>(
                 g_browser_process->platform_part()->cros_component_manager())));
 
     chrome_features_service_ = CrosDBusService::Create(
-        kChromeFeaturesServiceName,
+        system_bus, kChromeFeaturesServiceName,
         dbus::ObjectPath(kChromeFeaturesServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ChromeFeaturesServiceProvider>()));
 
     vm_applications_service_ = CrosDBusService::Create(
-        vm_tools::apps::kVmApplicationsServiceName,
+        system_bus, vm_tools::apps::kVmApplicationsServiceName,
         dbus::ObjectPath(vm_tools::apps::kVmApplicationsServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmApplicationsServiceProvider>()));
 
     drive_file_stream_service_ = CrosDBusService::Create(
-        drivefs::kDriveFileStreamServiceName,
+        system_bus, drivefs::kDriveFileStreamServiceName,
         dbus::ObjectPath(drivefs::kDriveFileStreamServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<DriveFileStreamServiceProvider>()));
