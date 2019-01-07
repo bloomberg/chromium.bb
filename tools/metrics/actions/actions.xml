@@ -12132,6 +12132,15 @@ should be able to be added at any place in this file.
   <description>User shared to the device's bookmarks.</description>
 </action>
 
+<action name="MobileShareMenuCancel">
+  <owner>gambard@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <description>
+    The user cancelled the share action menu (i.e. closed it without taking any
+    action).
+  </description>
+</action>
+
 <action name="MobileShareMenuFindInPage">
   <owner>gambard@chromium.org</owner>
   <description>

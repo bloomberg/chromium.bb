@@ -88,7 +88,6 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {GOOGLE_GOOGLEPLUS, @"com.google.GooglePlus.", false},
     {GOOGLE_HANGOUTS, @"com.google.hangouts.", false},
     {GOOGLE_INBOX, @"com.google.inbox.", false},
-    {GOOGLE_UNKNOWN, @"com.google.", false},
     {READ_LATER, @"com.google.chrome.readingListActivity", true},
     {REQUEST_DESKTOP_MOBILE_SITE,
      @"com.google.chrome.requestDesktopOrMobileSiteActivity", true},
@@ -104,7 +103,11 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {THIRD_PARTY_PINTEREST, @"pinterest.", false},
     {THIRD_PARTY_POCKET, @"com.ideashower.ReadItLaterPro.", false},
     {THIRD_PARTY_READABILITY, @"com.readability.ReadabilityMobile.", false},
-    {THIRD_PARTY_INSTAPAPER, @"com.marcoarment.instapaperpro.", false}};
+    {THIRD_PARTY_INSTAPAPER, @"com.marcoarment.instapaperpro.", false},
+    // Put Google Unknown at the end to make sure it doesn't prevent anything
+    // else from being recorded.
+    {GOOGLE_UNKNOWN, @"com.google.", false},
+};
 
 ActivityType TypeFromString(NSString* activityString) {
   DCHECK(activityString);
