@@ -47683,6 +47683,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="Force signin warning"/>
   <int value="24" label="Save card bubble"/>
   <int value="25" label="Manage cards bubble"/>
+  <int value="27" label="Sync and Google services settings"/>
 </enum>
 
 <enum name="SigninAccountEquality">
