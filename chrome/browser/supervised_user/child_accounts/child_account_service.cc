@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -32,10 +32,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -112,12 +112,10 @@ void ChildAccountService::Init() {
 
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-  if (signin->IsAuthenticated()) {
-    OnAccountUpdated(
-        AccountTrackerServiceFactory::GetForProfile(profile_)->GetAccountInfo(
-            signin->GetAuthenticatedAccountId()));
-  }
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  if (identity_manager->HasPrimaryAccount())
+    OnAccountUpdated(identity_manager->GetPrimaryAccountInfo());
 }
 
 bool ChildAccountService::IsChildAccountStatusKnown() {
@@ -266,8 +264,8 @@ void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
     return;
   }
 
-  std::string auth_account_id = SigninManagerFactory::GetForProfile(profile_)
-      ->GetAuthenticatedAccountId();
+  std::string auth_account_id =
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId();
   if (info.account_id != auth_account_id)
     return;
 
@@ -323,8 +321,7 @@ void ChildAccountService::OnGaiaAccountsInCookieUpdated(
 void ChildAccountService::StartFetchingFamilyInfo() {
   family_fetcher_.reset(new FamilyInfoFetcher(
       this,
-      SigninManagerFactory::GetForProfile(profile_)
-          ->GetAuthenticatedAccountId(),
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess()));
