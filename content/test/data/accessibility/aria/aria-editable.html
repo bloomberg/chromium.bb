@@ -9,11 +9,5 @@
 -->
 <!-- TODO(accessibility) Put aria-goog-editable on a standards track so that it
   becomes aria-editable -->
-<div contenteditable>
-  <p>Editable paragraph</p>
-  <p aria-goog-editable="false">Non-editable paragraph</p>
-</div>
-
-<div aria-goog-editable="true">
-  Fake-editable
-</div>
+<div contenteditable><span role="paragraph">Editable text/</span><span role="paragraph" aria-goog-editable="false">Non-editable text</span></div>
+<div aria-goog-editable="true">Fake-editable</div>
