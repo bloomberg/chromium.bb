@@ -204,6 +204,10 @@ class RasterImplementation::PaintOpSerializer {
       return 0;
     size_t size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
     if (!size) {
+      // The entries serialized for |op| above will not be transferred since the
+      // op will be re-serialized once the buffer is remapped.
+      ri_->paint_cache_->AbortPendingEntries();
+
       SendSerializedData();
       buffer_ = static_cast<char*>(ri_->MapRasterCHROMIUM(kBlockAlloc));
       if (!buffer_) {
@@ -215,6 +219,7 @@ class RasterImplementation::PaintOpSerializer {
     }
     DCHECK_LE(size, free_bytes_);
 
+    ri_->paint_cache_->FinalizePendingEntries();
     written_bytes_ += size;
     free_bytes_ -= size;
     return size;

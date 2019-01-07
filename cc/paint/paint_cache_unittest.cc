@@ -49,9 +49,12 @@ TEST_P(PaintCacheTest, ClientPurgeForBudgeting) {
   client_cache.Put(GetType(), 1u, kDefaultBudget - 100);
   client_cache.Put(GetType(), 2u, kDefaultBudget);
   client_cache.Put(GetType(), 3u, kDefaultBudget);
+  EXPECT_EQ(client_cache.bytes_used(), 3 * kDefaultBudget - 100);
+  client_cache.FinalizePendingEntries();
 
   ClientPaintCache::PurgedData purged_data;
   client_cache.Purge(&purged_data);
+  EXPECT_EQ(client_cache.bytes_used(), kDefaultBudget);
   const auto& ids = purged_data[static_cast<uint32_t>(GetType())];
   ASSERT_EQ(ids.size(), 2u);
   EXPECT_EQ(ids[0], 1u);
@@ -65,8 +68,25 @@ TEST_P(PaintCacheTest, ClientPurgeForBudgeting) {
 TEST_P(PaintCacheTest, ClientPurgeAll) {
   ClientPaintCache client_cache(kDefaultBudget);
   client_cache.Put(GetType(), 1u, 1u);
+  EXPECT_EQ(client_cache.bytes_used(), 1u);
+  client_cache.FinalizePendingEntries();
+
   EXPECT_TRUE(client_cache.PurgeAll());
+  EXPECT_EQ(client_cache.bytes_used(), 0u);
   EXPECT_FALSE(client_cache.PurgeAll());
+}
+
+TEST_P(PaintCacheTest, CommitPendingEntries) {
+  ClientPaintCache client_cache(kDefaultBudget);
+
+  client_cache.Put(GetType(), 1u, 1u);
+  EXPECT_TRUE(client_cache.Get(GetType(), 1u));
+  client_cache.AbortPendingEntries();
+  EXPECT_FALSE(client_cache.Get(GetType(), 1u));
+
+  client_cache.Put(GetType(), 1u, 1u);
+  client_cache.FinalizePendingEntries();
+  EXPECT_TRUE(client_cache.Get(GetType(), 1u));
 }
 
 TEST_P(PaintCacheTest, ServiceBasic) {

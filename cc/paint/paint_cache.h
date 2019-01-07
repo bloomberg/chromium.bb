@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/containers/mru_cache.h"
+#include "base/containers/stack_container.h"
 #include "cc/paint/paint_export.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -52,16 +53,35 @@ class CC_PAINT_EXPORT ClientPaintCache {
   using PurgedData = PaintCacheIds[PaintCacheDataTypeCount];
   void Purge(PurgedData* purged_data);
 
+  // Finalize the state of pending entries, which were sent to the service-side
+  // cache.
+  void FinalizePendingEntries();
+
+  // Notifies that the pending entries were not sent to the service-side cache
+  // and should be discarded.
+  void AbortPendingEntries();
+
   // Notifies that all entries should be purged from the ServicePaintCache.
   // Returns true if any entries were evicted from this call.
   bool PurgeAll();
 
+  size_t bytes_used() const { return bytes_used_; }
+
  private:
-  using CacheMap =
-      base::MRUCache<std::pair<PaintCacheDataType, PaintCacheId>, size_t>;
+  using CacheKey = std::pair<PaintCacheDataType, PaintCacheId>;
+  using CacheMap = base::MRUCache<CacheKey, size_t>;
+
+  template <typename Iterator>
+  void EraseFromMap(Iterator it);
+
   CacheMap cache_map_;
   const size_t max_budget_;
   size_t bytes_used_ = 0u;
+
+  // List of entries added to the map but not committed since we might fail to
+  // send them to the service-side cache. This is necessary to ensure we
+  // maintain an accurate mirror of the service-side state.
+  base::StackVector<CacheKey, 1> pending_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientPaintCache);
 };
