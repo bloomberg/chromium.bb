@@ -11,16 +11,17 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/backoff_entry.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class Clock;
 class RepeatingTimer;
 class SequencedTaskRunner;
+class TimeDelta;
 }  // namespace base
 
 namespace identity {
@@ -40,10 +41,9 @@ class UserCloudPolicyManagerChromeOS;
 class UserCloudPolicyTokenForwarder : public KeyedService,
                                       public CloudPolicyService::Observer {
  public:
-  // Delay to token fetch retry attempt in case token fetch failed or returned
-  // invalid data.
-  static constexpr base::TimeDelta kFetchTokenRetryDelay =
-      base::TimeDelta::FromMinutes(5);
+  // Backoff policy for token fetch retry attempts in case token fetch failed or
+  // returned invalid data.
+  static const net::BackoffEntry::Policy kFetchTokenRetryBackoffPolicy;
 
   // The factory of this PKS depends on the factories of these two arguments,
   // so this object will be Shutdown() first and these pointers can be used
@@ -90,6 +90,9 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   // Timer that measures time to the next OAuth token refresh. Not initialized
   // if token refresh is not scheduled.
   std::unique_ptr<base::RepeatingTimer> refresh_oauth_token_timer_;
+
+  // Backoff for fetch token retry attempts.
+  std::unique_ptr<net::BackoffEntry> retry_backoff_;
 
   // Points to the base::DefaultClock by default.
   const base::Clock* clock_;

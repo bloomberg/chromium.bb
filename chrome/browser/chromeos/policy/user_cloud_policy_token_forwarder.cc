@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -20,7 +21,16 @@
 namespace policy {
 
 // static
-constexpr base::TimeDelta UserCloudPolicyTokenForwarder::kFetchTokenRetryDelay;
+const net::BackoffEntry::Policy
+    UserCloudPolicyTokenForwarder::kFetchTokenRetryBackoffPolicy = {
+        0,               // Number of initial errors to ignore.
+        2 * 60 * 1000,   // Initial request delay in ms.
+        2.0,             // Factor by which the waiting time will be multiplied.
+        0.1,             // Fuzzing percentage.
+        60 * 60 * 1000,  // Maximum request delay in ms.
+        -1,              // Never discard the entry.
+        true,  // Don't use initial delay unless last request was an error.
+};
 
 UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     UserCloudPolicyManagerChromeOS* manager,
@@ -28,6 +38,8 @@ UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     : manager_(manager),
       identity_manager_(identity_manager),
       refresh_oauth_token_timer_(std::make_unique<base::RepeatingTimer>()),
+      retry_backoff_(
+          std::make_unique<net::BackoffEntry>(&kFetchTokenRetryBackoffPolicy)),
       clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {
   // Start by waiting for the CloudPolicyService to be initialized, so that
@@ -75,6 +87,8 @@ void UserCloudPolicyTokenForwarder::OverrideTimeForTesting(
   refresh_oauth_token_timer_ =
       std::make_unique<base::RepeatingTimer>(tick_clock);
   refresh_oauth_token_timer_->SetTaskRunner(task_runner);
+  retry_backoff_ = std::make_unique<net::BackoffEntry>(
+      &kFetchTokenRetryBackoffPolicy, tick_clock);
 }
 
 void UserCloudPolicyTokenForwarder::StartRequest() {
@@ -129,10 +143,11 @@ void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(
   access_token_fetcher_.reset();
   // Retry after delay, if token request fails or the new token is expired.
   const base::Time now = clock_->Now();
+  bool is_token_valid = oauth_token_ && oauth_token_->expiration_time > now;
+  retry_backoff_->InformOfRequest(is_token_valid);
   base::TimeDelta time_to_next_refresh =
-      (oauth_token_ && oauth_token_->expiration_time >= now)
-          ? oauth_token_->expiration_time - now
-          : UserCloudPolicyTokenForwarder::kFetchTokenRetryDelay;
+      is_token_valid ? oauth_token_->expiration_time - now
+                     : retry_backoff_->GetTimeUntilRelease();
   VLOG(1) << "Next OAuth token refresh for DMServer auth in: "
           << time_to_next_refresh;
   refresh_oauth_token_timer_->Start(
