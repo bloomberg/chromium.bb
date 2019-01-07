@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -305,7 +304,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
-                Log.e(TAG, "SKYM onPreDraw()");
                 long timeToFirstDrawMs =
                         TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - constructedTimeNs);
                 RecordHistogram.recordTimesHistogram(
