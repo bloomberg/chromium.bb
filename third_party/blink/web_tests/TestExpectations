@@ -5992,6 +5992,8 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.worker.html [ P
 crbug.com/v8/8319 external/wpt/wasm/jsapi/global/value-get-set.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/global/value-get-set.any.worker.html [ Pass Failure ]
 
+crbug.com/919272 external/wpt/resource-timing/resource-timing.html [ Skip ]
+
 # ssauleau 2018-12-20
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/get-set.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/get-set.any.worker.html [ Pass Failure ]
