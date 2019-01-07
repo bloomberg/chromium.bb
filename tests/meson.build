@@ -167,7 +167,11 @@ tests_weston = [
 ]
 
 if get_option('xwayland')
-	tests_weston += [ [ 'xwayland', [], dependency('x11') ] ]
+	d = dependency('x11', required: false)
+	if not d.found()
+		error('Xwayland tests require libX11 which was not found. Or, you can use \'-Dxwayland=false\'.')
+	endif
+	tests_weston += [ [ 'xwayland', [], d ] ]
 endif
 
 tests_weston_plugin = [
