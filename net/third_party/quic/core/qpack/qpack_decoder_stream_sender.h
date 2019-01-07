@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include "net/third_party/quic/core/qpack/qpack_instruction_encoder.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
@@ -39,9 +40,9 @@ class QUIC_EXPORT_PRIVATE QpackDecoderStreamSender {
   // 5.3.1 Table State Synchronize
   void SendTableStateSynchronize(uint64_t insert_count);
   // 5.3.2 Header Acknowledgement
-  void SendHeaderAcknowledgement(uint64_t stream_id);
+  void SendHeaderAcknowledgement(QuicStreamId stream_id);
   // 5.3.3 Stream Cancellation
-  void SendStreamCancellation(uint64_t stream_id);
+  void SendStreamCancellation(QuicStreamId stream_id);
 
  private:
   Delegate* const delegate_;

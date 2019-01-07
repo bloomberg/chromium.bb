@@ -335,3 +335,12 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_variable_length_connection_ids_server,
           false)
+// If true, QuicPacketCreator::SetTransmissionType will set the transmission
+// type of the next successfully added frame.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_set_transmission_type_for_next_frame,
+          false)
+// If true, always send connection close/reset for IETF connections.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_always_reset_ietf_connections,
+          true)

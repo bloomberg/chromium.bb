@@ -21,8 +21,8 @@ class MockDelegate : public QpackDecoderStreamReceiver::Delegate {
   ~MockDelegate() override = default;
 
   MOCK_METHOD1(OnTableStateSynchronize, void(uint64_t insert_count));
-  MOCK_METHOD1(OnHeaderAcknowledgement, void(uint64_t stream_id));
-  MOCK_METHOD1(OnStreamCancellation, void(uint64_t stream_id));
+  MOCK_METHOD1(OnHeaderAcknowledgement, void(QuicStreamId stream_id));
+  MOCK_METHOD1(OnStreamCancellation, void(QuicStreamId stream_id));
   MOCK_METHOD1(OnErrorDetected, void(QuicStringPiece error_message));
 };
 

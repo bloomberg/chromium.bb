@@ -23,7 +23,7 @@ bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
 }
 
 QuicAckFrame::QuicAckFrame()
-    : largest_acked(0),
+    : largest_acked(kInvalidPacketNumber),
       ack_delay_time(QuicTime::Delta::Infinite()),
       ecn_counters_populated(false),
       ect_0_count(0),
@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
 }
 
 void QuicAckFrame::Clear() {
-  largest_acked = 0;
+  largest_acked = kInvalidPacketNumber;
   ack_delay_time = QuicTime::Delta::Infinite();
   received_packet_times.clear();
   packets.Clear();

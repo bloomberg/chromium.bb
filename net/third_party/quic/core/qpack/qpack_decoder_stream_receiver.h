@@ -8,12 +8,14 @@
 #include <cstdint>
 
 #include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
-// This class decodes data received on the decoder stream.
+// This class decodes data received on the decoder stream,
+// and passes it along to its Delegate.
 class QUIC_EXPORT_PRIVATE QpackDecoderStreamReceiver
     : public QpackInstructionDecoder::Delegate {
  public:
@@ -26,9 +28,9 @@ class QUIC_EXPORT_PRIVATE QpackDecoderStreamReceiver
     // 5.3.1 Table State Synchronize
     virtual void OnTableStateSynchronize(uint64_t insert_count) = 0;
     // 5.3.2 Header Acknowledgement
-    virtual void OnHeaderAcknowledgement(uint64_t stream_id) = 0;
+    virtual void OnHeaderAcknowledgement(QuicStreamId stream_id) = 0;
     // 5.3.3 Stream Cancellation
-    virtual void OnStreamCancellation(uint64_t stream_id) = 0;
+    virtual void OnStreamCancellation(QuicStreamId stream_id) = 0;
     // Decoding error
     virtual void OnErrorDetected(QuicStringPiece error_message) = 0;
   };

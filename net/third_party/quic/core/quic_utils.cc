@@ -295,6 +295,19 @@ bool QuicUtils::IsAckable(SentPacketState state) {
 }
 
 // static
+bool QuicUtils::IsRetransmittableFrame(QuicFrameType type) {
+  switch (type) {
+    case ACK_FRAME:
+    case PADDING_FRAME:
+    case STOP_WAITING_FRAME:
+    case MTU_DISCOVERY_FRAME:
+      return false;
+    default:
+      return true;
+  }
+}
+
+// static
 SentPacketState QuicUtils::RetransmissionTypeToPacketState(
     TransmissionType retransmission_type) {
   switch (retransmission_type) {

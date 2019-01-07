@@ -249,6 +249,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   QuicPacketCreator packet_creator_;
   QuicFrames queued_control_frames_;
 
+  // Transmission type of the next serialized packet.
+  TransmissionType next_transmission_type_;
+
   // True if packet flusher is currently attached.
   bool flusher_attached_;
 

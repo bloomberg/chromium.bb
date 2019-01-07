@@ -12,149 +12,124 @@
 
 namespace quic {
 
-QpackDecoder::ProgressiveDecoder::ProgressiveDecoder(
-    QuicStreamId stream_id,
-    QpackHeaderTable* header_table,
-    QpackDecoder::HeadersHandlerInterface* handler)
-    : stream_id_(stream_id),
-      prefix_decoder_(
-          QuicMakeUnique<QpackInstructionDecoder>(QpackPrefixLanguage(), this)),
-      instruction_decoder_(QpackRequestStreamLanguage(), this),
-      header_table_(header_table),
-      handler_(handler),
-      largest_reference_(0),
-      base_index_(0),
-      prefix_decoded_(false),
-      decoding_(true),
-      error_detected_(false) {}
+QpackDecoder::QpackDecoder(
+    EncoderStreamErrorDelegate* encoder_stream_error_delegate,
+    QpackDecoderStreamSender::Delegate* decoder_stream_sender_delegate)
+    : encoder_stream_error_delegate_(encoder_stream_error_delegate),
+      encoder_stream_receiver_(this),
+      decoder_stream_sender_(decoder_stream_sender_delegate) {
+  DCHECK(encoder_stream_error_delegate_);
+  DCHECK(decoder_stream_sender_delegate);
+}
 
-void QpackDecoder::ProgressiveDecoder::Decode(QuicStringPiece data) {
-  DCHECK(decoding_);
+QpackDecoder::~QpackDecoder() {}
 
-  if (data.empty() || error_detected_) {
-    return;
-  }
+void QpackDecoder::SetMaximumDynamicTableCapacity(
+    uint64_t maximum_dynamic_table_capacity) {
+  header_table_.SetMaximumDynamicTableCapacity(maximum_dynamic_table_capacity);
+}
 
-  // Decode prefix byte by byte until the first (and only) instruction is
-  // decoded.
-  while (!prefix_decoded_) {
-    prefix_decoder_->Decode(data.substr(0, 1));
-    data = data.substr(1, QuicStringPiece::npos);
-    if (data.empty()) {
+void QpackDecoder::OnStreamReset(QuicStreamId stream_id) {
+  decoder_stream_sender_.SendStreamCancellation(stream_id);
+}
+
+void QpackDecoder::DecodeEncoderStreamData(QuicStringPiece data) {
+  encoder_stream_receiver_.Decode(data);
+}
+
+void QpackDecoder::OnInsertWithNameReference(bool is_static,
+                                             uint64_t name_index,
+                                             QuicStringPiece value) {
+  if (is_static) {
+    auto entry = header_table_.LookupEntry(/* is_static = */ true, name_index);
+    if (!entry) {
+      encoder_stream_error_delegate_->OnError("Invalid static table entry.");
       return;
     }
-  }
 
-  instruction_decoder_.Decode(data);
-}
-
-void QpackDecoder::ProgressiveDecoder::EndHeaderBlock() {
-  DCHECK(decoding_);
-  decoding_ = false;
-
-  if (error_detected_) {
-    return;
-  }
-
-  if (!instruction_decoder_.AtInstructionBoundary()) {
-    OnError("Incomplete header block.");
-    return;
-  }
-
-  if (!prefix_decoded_) {
-    OnError("Incomplete header data prefix.");
-    return;
-  }
-
-  handler_->OnDecodingCompleted();
-}
-
-bool QpackDecoder::ProgressiveDecoder::OnInstructionDecoded(
-    const QpackInstruction* instruction) {
-  if (instruction == QpackPrefixInstruction()) {
-    DCHECK(!prefix_decoded_);
-
-    largest_reference_ = instruction_decoder_.varint();
-    base_index_ = instruction_decoder_.varint2();
-    prefix_decoded_ = true;
-
-    return true;
-  }
-
-  if (instruction == QpackIndexedHeaderFieldInstruction()) {
-    if (!instruction_decoder_.s_bit()) {
-      // TODO(bnc): Implement.
-      OnError("Indexed Header Field with dynamic entry not implemented.");
-      return false;
-    }
-
-    auto entry = header_table_->LookupEntry(/* is_static = */ true,
-                                            instruction_decoder_.varint());
+    entry = header_table_.InsertEntry(entry->name(), value);
     if (!entry) {
-      OnError("Invalid static table index.");
-      return false;
+      encoder_stream_error_delegate_->OnError(
+          "Error inserting entry with name reference.");
     }
-
-    handler_->OnHeaderDecoded(entry->name(), entry->value());
-    return true;
+    return;
   }
 
-  if (instruction == QpackIndexedHeaderFieldPostBaseInstruction()) {
-    // TODO(bnc): Implement.
-    OnError("Indexed Header Field With Post-Base Index not implemented.");
+  uint64_t real_index;
+  if (!EncoderStreamRelativeIndexToRealIndex(name_index, &real_index)) {
+    encoder_stream_error_delegate_->OnError("Invalid relative index.");
+    return;
+  }
+
+  const QpackEntry* entry =
+      header_table_.LookupEntry(/* is_static = */ false, real_index);
+  if (!entry) {
+    encoder_stream_error_delegate_->OnError("Dynamic table entry not found.");
+    return;
+  }
+  entry = header_table_.InsertEntry(entry->name(), value);
+  if (!entry) {
+    encoder_stream_error_delegate_->OnError(
+        "Error inserting entry with name reference.");
+  }
+}
+
+void QpackDecoder::OnInsertWithoutNameReference(QuicStringPiece name,
+                                                QuicStringPiece value) {
+  const QpackEntry* entry = header_table_.InsertEntry(name, value);
+  if (!entry) {
+    encoder_stream_error_delegate_->OnError("Error inserting literal entry.");
+  }
+}
+
+void QpackDecoder::OnDuplicate(uint64_t index) {
+  uint64_t real_index;
+  if (!EncoderStreamRelativeIndexToRealIndex(index, &real_index)) {
+    encoder_stream_error_delegate_->OnError("Invalid relative index.");
+    return;
+  }
+
+  const QpackEntry* entry =
+      header_table_.LookupEntry(/* is_static = */ false, real_index);
+  if (!entry) {
+    encoder_stream_error_delegate_->OnError("Dynamic table entry not found.");
+    return;
+  }
+  entry = header_table_.InsertEntry(entry->name(), entry->value());
+  if (!entry) {
+    encoder_stream_error_delegate_->OnError("Error inserting duplicate entry.");
+  }
+}
+
+void QpackDecoder::OnDynamicTableSizeUpdate(uint64_t max_size) {
+  if (!header_table_.UpdateTableSize(max_size)) {
+    encoder_stream_error_delegate_->OnError(
+        "Error updating dynamic table size.");
+  }
+}
+
+void QpackDecoder::OnErrorDetected(QuicStringPiece error_message) {
+  encoder_stream_error_delegate_->OnError(error_message);
+}
+
+bool QpackDecoder::EncoderStreamRelativeIndexToRealIndex(
+    uint64_t relative_index,
+    uint64_t* real_index) const {
+  if (relative_index == std::numeric_limits<uint64_t>::max() ||
+      relative_index + 1 > std::numeric_limits<uint64_t>::max() -
+                               header_table_.inserted_entry_count()) {
     return false;
   }
 
-  if (instruction == QpackLiteralHeaderFieldNameReferenceInstruction()) {
-    if (!instruction_decoder_.s_bit()) {
-      // TODO(bnc): Implement.
-      OnError(
-          "Literal Header Field With Name Reference with dynamic entry not "
-          "implemented.");
-      return false;
-    }
-
-    auto entry = header_table_->LookupEntry(/* is_static = */ true,
-                                            instruction_decoder_.varint());
-    if (!entry) {
-      OnError(
-          "Invalid static table index in Literal Header Field With Name "
-          "Reference instruction.");
-      return false;
-    }
-
-    handler_->OnHeaderDecoded(entry->name(), instruction_decoder_.value());
-    return true;
-  }
-
-  if (instruction == QpackLiteralHeaderFieldPostBaseInstruction()) {
-    // TODO(bnc): Implement.
-    OnError(
-        "Literal Header Field With Post-Base Name Reference not "
-        "implemented.");
-    return false;
-  }
-
-  DCHECK_EQ(instruction, QpackLiteralHeaderFieldInstruction());
-
-  handler_->OnHeaderDecoded(instruction_decoder_.name(),
-                            instruction_decoder_.value());
-
+  *real_index = header_table_.inserted_entry_count() - relative_index - 1;
   return true;
 }
 
-void QpackDecoder::ProgressiveDecoder::OnError(QuicStringPiece error_message) {
-  DCHECK(!error_detected_);
-
-  error_detected_ = true;
-  handler_->OnDecodingErrorDetected(error_message);
-}
-
-std::unique_ptr<QpackDecoder::ProgressiveDecoder>
-QpackDecoder::DecodeHeaderBlock(
+std::unique_ptr<QpackProgressiveDecoder> QpackDecoder::DecodeHeaderBlock(
     QuicStreamId stream_id,
-    QpackDecoder::HeadersHandlerInterface* handler) {
-  return QuicMakeUnique<ProgressiveDecoder>(stream_id, &header_table_, handler);
+    QpackProgressiveDecoder::HeadersHandlerInterface* handler) {
+  return QuicMakeUnique<QpackProgressiveDecoder>(
+      stream_id, &header_table_, &decoder_stream_sender_, handler);
 }
 
 }  // namespace quic

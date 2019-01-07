@@ -4,15 +4,22 @@
 
 #include "net/third_party/quic/core/qpack/qpack_encoder_test_utils.h"
 
-#include "net/third_party/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 
 namespace quic {
 namespace test {
 
-QuicString QpackEncode(const FragmentSizeGenerator& fragment_size_generator,
-                       const spdy::SpdyHeaderBlock* header_list) {
-  QpackEncoder encoder;
+void NoopDecoderStreamErrorDelegate::OnError(QuicStringPiece error_message) {}
+
+void NoopEncoderStreamSenderDelegate::Write(QuicStringPiece data) {}
+
+QuicString QpackEncode(
+    QpackEncoder::DecoderStreamErrorDelegate* decoder_stream_error_delegate,
+    QpackEncoderStreamSender::Delegate* encoder_stream_sender_delegate,
+    const FragmentSizeGenerator& fragment_size_generator,
+    const spdy::SpdyHeaderBlock* header_list) {
+  QpackEncoder encoder(decoder_stream_error_delegate,
+                       encoder_stream_sender_delegate);
   auto progressive_encoder =
       encoder.EncodeHeaderList(/* stream_id = */ 1, header_list);
 

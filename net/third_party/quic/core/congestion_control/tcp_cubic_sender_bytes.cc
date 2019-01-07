@@ -38,9 +38,9 @@ TcpCubicSenderBytes::TcpCubicSenderBytes(
       stats_(stats),
       reno_(reno),
       num_connections_(kDefaultNumConnections),
-      largest_sent_packet_number_(0),
-      largest_acked_packet_number_(0),
-      largest_sent_at_last_cutback_(0),
+      largest_sent_packet_number_(kInvalidPacketNumber),
+      largest_acked_packet_number_(kInvalidPacketNumber),
+      largest_sent_at_last_cutback_(kInvalidPacketNumber),
       min4_mode_(false),
       last_cutback_exited_slowstart_(false),
       slow_start_large_reduction_(false),
@@ -241,7 +241,7 @@ bool TcpCubicSenderBytes::IsCwndLimited(QuicByteCount bytes_in_flight) const {
 
 bool TcpCubicSenderBytes::InRecovery() const {
   return largest_acked_packet_number_ <= largest_sent_at_last_cutback_ &&
-         largest_acked_packet_number_ != 0;
+         largest_acked_packet_number_ != kInvalidPacketNumber;
 }
 
 bool TcpCubicSenderBytes::ShouldSendProbingPacket() const {
@@ -249,7 +249,7 @@ bool TcpCubicSenderBytes::ShouldSendProbingPacket() const {
 }
 
 void TcpCubicSenderBytes::OnRetransmissionTimeout(bool packets_retransmitted) {
-  largest_sent_at_last_cutback_ = 0;
+  largest_sent_at_last_cutback_ = kInvalidPacketNumber;
   if (!packets_retransmitted) {
     return;
   }
@@ -414,9 +414,9 @@ void TcpCubicSenderBytes::HandleRetransmissionTimeout() {
 void TcpCubicSenderBytes::OnConnectionMigration() {
   hybrid_slow_start_.Restart();
   prr_ = PrrSender();
-  largest_sent_packet_number_ = 0;
-  largest_acked_packet_number_ = 0;
-  largest_sent_at_last_cutback_ = 0;
+  largest_sent_packet_number_ = kInvalidPacketNumber;
+  largest_acked_packet_number_ = kInvalidPacketNumber;
+  largest_sent_at_last_cutback_ = kInvalidPacketNumber;
   last_cutback_exited_slowstart_ = false;
   cubic_.ResetCubicState();
   num_acked_packets_ = 0;

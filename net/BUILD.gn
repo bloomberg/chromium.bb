@@ -1331,6 +1331,10 @@ component("net") {
       "third_party/quic/core/qpack/qpack_instruction_decoder.h",
       "third_party/quic/core/qpack/qpack_instruction_encoder.cc",
       "third_party/quic/core/qpack/qpack_instruction_encoder.h",
+      "third_party/quic/core/qpack/qpack_progressive_decoder.cc",
+      "third_party/quic/core/qpack/qpack_progressive_decoder.h",
+      "third_party/quic/core/qpack/qpack_progressive_encoder.cc",
+      "third_party/quic/core/qpack/qpack_progressive_encoder.h",
       "third_party/quic/core/qpack/qpack_static_table.cc",
       "third_party/quic/core/qpack/qpack_static_table.h",
       "third_party/quic/core/quic_ack_listener_interface.cc",
@@ -1452,6 +1456,7 @@ component("net") {
       "third_party/quic/platform/api/quic_export.h",
       "third_party/quic/platform/api/quic_exported_stats.h",
       "third_party/quic/platform/api/quic_fallthrough.h",
+      "third_party/quic/platform/api/quic_file_utils.cc",
       "third_party/quic/platform/api/quic_file_utils.h",
       "third_party/quic/platform/api/quic_flag_utils.h",
       "third_party/quic/platform/api/quic_flags.h",
@@ -3149,6 +3154,8 @@ source_set("quic_test_tools") {
     "quic/mock_encrypter.h",
     "quic/test_task_runner.cc",
     "quic/test_task_runner.h",
+    "third_party/quic/core/qpack/offline/qpack_offline_decoder.cc",
+    "third_party/quic/core/qpack/offline/qpack_offline_decoder.h",
     "third_party/quic/core/qpack/qpack_decoder_test_utils.cc",
     "third_party/quic/core/qpack/qpack_decoder_test_utils.h",
     "third_party/quic/core/qpack/qpack_encoder_test_utils.cc",
@@ -3432,6 +3439,21 @@ if (!is_ios) {
       "//third_party/protobuf:protobuf_lite",
     ]
   }
+
+  executable("qpack_offline_decoder") {
+    testonly = true
+    sources = [
+      "third_party/quic/core/qpack/offline/qpack_offline_decoder_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":quic_test_tools",
+      ":simple_quic_tools",
+      "//base",
+      "//testing/gmock",
+    ]
+  }
+
   executable("crypto_message_printer") {
     sources = [
       "tools/quic/crypto_message_printer_bin.cc",
@@ -5104,6 +5126,7 @@ test("net_unittests") {
     "third_party/quic/core/qpack/qpack_header_table_test.cc",
     "third_party/quic/core/qpack/qpack_instruction_decoder_test.cc",
     "third_party/quic/core/qpack/qpack_instruction_encoder_test.cc",
+    "third_party/quic/core/qpack/qpack_progressive_decoder_test.cc",
     "third_party/quic/core/qpack/qpack_round_trip_test.cc",
     "third_party/quic/core/qpack/qpack_static_table_test.cc",
     "third_party/quic/core/quic_alarm_test.cc",
@@ -6338,6 +6361,7 @@ fuzzer_test("net_qpack_decoder_fuzzer") {
   deps = [
     ":net_fuzzer_test_support",
     ":quic_test_tools",
+    ":test_support",
     "//base",
     "//net",
   ]
@@ -6376,6 +6400,7 @@ fuzzer_test("net_qpack_round_trip_fuzzer") {
   deps = [
     ":net_fuzzer_test_support",
     ":quic_test_tools",
+    ":test_support",
     "//base",
     "//net",
   ]

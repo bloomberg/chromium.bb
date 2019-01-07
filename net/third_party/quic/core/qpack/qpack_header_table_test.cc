@@ -15,7 +15,7 @@ namespace quic {
 namespace test {
 namespace {
 
-const size_t kMaximumDynamicTableCapacityForTesting = 1024 * 1024;
+const uint64_t kMaximumDynamicTableCapacityForTesting = 1024 * 1024;
 
 class QpackHeaderTableTest : public QuicTest {
  protected:
@@ -26,7 +26,7 @@ class QpackHeaderTableTest : public QuicTest {
   ~QpackHeaderTableTest() override = default;
 
   void ExpectEntryAtIndex(bool is_static,
-                          size_t index,
+                          uint64_t index,
                           QuicStringPiece expected_name,
                           QuicStringPiece expected_value) const {
     const auto* entry = table_.LookupEntry(is_static, index);
@@ -35,7 +35,7 @@ class QpackHeaderTableTest : public QuicTest {
     EXPECT_EQ(expected_value, entry->value());
   }
 
-  void ExpectNoEntryAtIndex(bool is_static, size_t index) const {
+  void ExpectNoEntryAtIndex(bool is_static, uint64_t index) const {
     EXPECT_FALSE(table_.LookupEntry(is_static, index));
   }
 
@@ -43,11 +43,11 @@ class QpackHeaderTableTest : public QuicTest {
                    QuicStringPiece value,
                    QpackHeaderTable::MatchType expected_match_type,
                    bool expected_is_static,
-                   size_t expected_index) const {
+                   uint64_t expected_index) const {
     // Initialize outparams to a value different from the expected to ensure
     // that FindHeaderField() sets them.
     bool is_static = !expected_is_static;
-    size_t index = expected_index + 1;
+    uint64_t index = expected_index + 1;
 
     QpackHeaderTable::MatchType matchtype =
         table_.FindHeaderField(name, value, &is_static, &index);
@@ -59,7 +59,7 @@ class QpackHeaderTableTest : public QuicTest {
 
   void ExpectNoMatch(QuicStringPiece name, QuicStringPiece value) const {
     bool is_static = false;
-    size_t index = 0;
+    uint64_t index = 0;
 
     QpackHeaderTable::MatchType matchtype =
         table_.FindHeaderField(name, value, &is_static, &index);
@@ -76,13 +76,15 @@ class QpackHeaderTableTest : public QuicTest {
     EXPECT_FALSE(table_.InsertEntry(name, value));
   }
 
-  bool UpdateTableSize(size_t max_size) {
+  bool UpdateTableSize(uint64_t max_size) {
     return table_.UpdateTableSize(max_size);
   }
 
-  size_t max_entries() const { return table_.max_entries(); }
-  size_t inserted_entry_count() const { return table_.inserted_entry_count(); }
-  size_t dropped_entry_count() const { return table_.dropped_entry_count(); }
+  uint64_t max_entries() const { return table_.max_entries(); }
+  uint64_t inserted_entry_count() const {
+    return table_.inserted_entry_count();
+  }
+  uint64_t dropped_entry_count() const { return table_.dropped_entry_count(); }
 
  private:
   QpackHeaderTable table_;

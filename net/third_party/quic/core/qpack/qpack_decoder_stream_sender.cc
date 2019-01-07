@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/core/qpack/qpack_decoder_stream_sender.h"
 
+#include <cstddef>
 #include <limits>
 
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
@@ -31,7 +32,8 @@ void QpackDecoderStreamSender::SendTableStateSynchronize(
   delegate_->Write(output);
 }
 
-void QpackDecoderStreamSender::SendHeaderAcknowledgement(uint64_t stream_id) {
+void QpackDecoderStreamSender::SendHeaderAcknowledgement(
+    QuicStreamId stream_id) {
   instruction_encoder_.set_varint(stream_id);
 
   instruction_encoder_.Encode(HeaderAcknowledgementInstruction());
@@ -44,7 +46,7 @@ void QpackDecoderStreamSender::SendHeaderAcknowledgement(uint64_t stream_id) {
   delegate_->Write(output);
 }
 
-void QpackDecoderStreamSender::SendStreamCancellation(uint64_t stream_id) {
+void QpackDecoderStreamSender::SendStreamCancellation(QuicStreamId stream_id) {
   instruction_encoder_.set_varint(stream_id);
 
   instruction_encoder_.Encode(StreamCancellationInstruction());

@@ -584,6 +584,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
 
 TEST_F(QuicPacketGeneratorTest, ConsumeDataFastPath) {
   delegate_.SetCanWriteAnything();
+  generator_.SetCanSetTransmissionType(true);
+  generator_.SetTransmissionType(LOSS_RETRANSMISSION);
 
   // Create a 10000 byte IOVector.
   CreateData(10000);
@@ -603,6 +605,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFastPath) {
   EXPECT_FALSE(packets_.empty());
   SerializedPacket packet = packets_.back();
   EXPECT_TRUE(!packet.retransmittable_frames.empty());
+  EXPECT_EQ(LOSS_RETRANSMISSION, packet.transmission_type);
   EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
   const QuicStreamFrame& stream_frame =
       packet.retransmittable_frames.front().stream_frame;
@@ -809,6 +812,52 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   }
   contents2.num_stream_frames = 1;
   CheckPacketContains(contents2, 1);
+}
+
+// Regression test of b/120493795.
+TEST_F(QuicPacketGeneratorTest, PacketTransmissionType) {
+  delegate_.SetCanWriteAnything();
+  generator_.SetCanSetTransmissionType(true);
+
+  // The first ConsumeData will fill the packet without flush.
+  generator_.SetTransmissionType(LOSS_RETRANSMISSION);
+
+  size_t data_len = 1324;
+  CreateData(data_len);
+  QuicStreamId stream1_id =
+      QuicUtils::GetHeadersStreamId(framer_.transport_version());
+  QuicConsumedData consumed =
+      generator_.ConsumeData(stream1_id, &iov_, 1u, iov_.iov_len, 0, NO_FIN);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  ASSERT_EQ(0u, creator_->BytesFree())
+      << "Test setup failed: Please increase data_len to "
+      << data_len + creator_->BytesFree() << " bytes.";
+
+  // The second ConsumeData can not be added to the packet and will flush.
+  generator_.SetTransmissionType(NOT_RETRANSMISSION);
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+
+  QuicStreamId stream2_id = stream1_id + 4;
+
+  consumed =
+      generator_.ConsumeData(stream2_id, &iov_, 1u, iov_.iov_len, 0, NO_FIN);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+
+  // Ensure the packet is successfully created.
+  ASSERT_EQ(1u, packets_.size());
+  ASSERT_TRUE(packets_[0].encrypted_buffer);
+  ASSERT_EQ(1u, packets_[0].retransmittable_frames.size());
+  EXPECT_EQ(stream1_id,
+            packets_[0].retransmittable_frames[0].stream_frame.stream_id);
+  if (GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)) {
+    // Since the second frame was not added, the packet's transmission type
+    // should be the first frame's type.
+    EXPECT_EQ(packets_[0].transmission_type, LOSS_RETRANSMISSION);
+  } else {
+    EXPECT_EQ(packets_[0].transmission_type, NOT_RETRANSMISSION);
+  }
 }
 
 TEST_F(QuicPacketGeneratorTest, TestConnectionIdLength) {

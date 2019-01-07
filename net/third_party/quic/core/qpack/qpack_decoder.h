@@ -5,105 +5,96 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_DECODER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_DECODER_H_
 
+#include <cstdint>
 #include <memory>
 
+#include "net/third_party/quic/core/qpack/qpack_decoder_stream_sender.h"
+#include "net/third_party/quic/core/qpack/qpack_encoder_stream_receiver.h"
 #include "net/third_party/quic/core/qpack/qpack_header_table.h"
-#include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
+#include "net/third_party/quic/core/qpack/qpack_progressive_decoder.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
-#include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
 // QPACK decoder class.  Exactly one instance should exist per QUIC connection.
-// This class vends a new ProgressiveDecoder instance for each new header list
-// to be encoded.
-// TODO(bnc): This class will manage the decoding context, send data on the
-// decoder stream, and receive data on the encoder stream.
-class QUIC_EXPORT_PRIVATE QpackDecoder {
+// This class vends a new QpackProgressiveDecoder instance for each new header
+// list to be encoded.
+class QUIC_EXPORT_PRIVATE QpackDecoder
+    : public QpackEncoderStreamReceiver::Delegate {
  public:
-  // Interface for receiving decoded header block from the decoder.
-  class QUIC_EXPORT_PRIVATE HeadersHandlerInterface {
+  // Interface for receiving notification that an error has occurred on the
+  // encoder stream.  This MUST be treated as a connection error of type
+  // HTTP_QPACK_ENCODER_STREAM_ERROR.
+  class QUIC_EXPORT_PRIVATE EncoderStreamErrorDelegate {
    public:
-    virtual ~HeadersHandlerInterface() {}
+    virtual ~EncoderStreamErrorDelegate() {}
 
-    // Called when a new header name-value pair is decoded.  Multiple values for
-    // a given name will be emitted as multiple calls to OnHeader.
-    virtual void OnHeaderDecoded(QuicStringPiece name,
-                                 QuicStringPiece value) = 0;
-
-    // Called when the header block is completely decoded.
-    // Indicates the total number of bytes in this block.
-    // The decoder will not access the handler after this call.
-    // Note that this method might not be called synchronously when the header
-    // block is received on the wire, in case decoding is blocked on receiving
-    // entries on the encoder stream.  TODO(bnc): Implement blocked decoding.
-    virtual void OnDecodingCompleted() = 0;
-
-    // Called when a decoding error has occurred.  No other methods will be
-    // called afterwards.
-    virtual void OnDecodingErrorDetected(QuicStringPiece error_message) = 0;
+    virtual void OnError(QuicStringPiece error_message) = 0;
   };
 
-  // Class to decode a single header block.
-  class QUIC_EXPORT_PRIVATE ProgressiveDecoder
-      : public QpackInstructionDecoder::Delegate {
-   public:
-    ProgressiveDecoder() = delete;
-    ProgressiveDecoder(QuicStreamId stream_id,
-                       QpackHeaderTable* header_table,
-                       HeadersHandlerInterface* handler);
-    ProgressiveDecoder(const ProgressiveDecoder&) = delete;
-    ProgressiveDecoder& operator=(const ProgressiveDecoder&) = delete;
-    ~ProgressiveDecoder() override = default;
+  QpackDecoder(
+      EncoderStreamErrorDelegate* encoder_stream_error_delegate,
+      QpackDecoderStreamSender::Delegate* decoder_stream_sender_delegate);
+  ~QpackDecoder() override;
 
-    // Provide a data fragment to decode.
-    void Decode(QuicStringPiece data);
+  // Set maximum capacity of dynamic table.
+  // This method must only be called at most once.
+  void SetMaximumDynamicTableCapacity(uint64_t maximum_dynamic_table_capacity);
 
-    // Signal that the entire header block has been received and passed in
-    // through Decode().  No methods must be called afterwards.
-    void EndHeaderBlock();
+  // Signal to the peer's encoder that a stream is reset.  This lets the peer's
+  // encoder know that no more header blocks will be processed on this stream,
+  // therefore references to dynamic table entries shall not prevent their
+  // eviction.
+  // This method should be called regardless of whether a header block is being
+  // decoded on that stream, because a header block might be in flight from the
+  // peer.
+  // This method should be called every time a request or push stream is reset
+  // for any reason: for example, client cancels request, or a decoding error
+  // occurs and HeadersHandlerInterface::OnDecodingErrorDetected() is called.
+  // This method should also be called if the stream is reset by the peer,
+  // because the peer's encoder can only evict entries referenced by header
+  // blocks once it receives acknowledgement from this endpoint that the stream
+  // is reset.
+  // However, this method should not be called if the stream is closed normally
+  // using the FIN bit.
+  void OnStreamReset(QuicStreamId stream_id);
 
-    // QpackInstructionDecoder::Delegate implementation.
-    bool OnInstructionDecoded(const QpackInstruction* instruction) override;
-    void OnError(QuicStringPiece error_message) override;
-
-    // TODO(zhongyi): remove this method once internal change lands:
-    QuicStreamId stream_id() const { return stream_id_; }
-
-   private:
-    const QuicStreamId stream_id_;
-
-    // |prefix_decoder_| only decodes a handful of bytes then it can be
-    // destroyed to conserve memory.  |instruction_decoder_|, on the other hand,
-    // is used until the entire header block is decoded.
-    std::unique_ptr<QpackInstructionDecoder> prefix_decoder_;
-    QpackInstructionDecoder instruction_decoder_;
-
-    const QpackHeaderTable* const header_table_;
-    HeadersHandlerInterface* handler_;
-    size_t largest_reference_;
-    size_t base_index_;
-
-    // False until prefix is fully read and decoded.
-    bool prefix_decoded_;
-
-    // True until EndHeaderBlock() is called.
-    bool decoding_;
-
-    // True if a decoding error has been detected.
-    bool error_detected_;
-  };
-
-  // Factory method to create a ProgressiveDecoder for decoding a header block.
-  // |handler| must remain valid until the returned ProgressiveDecoder instance
-  // is destroyed or the decoder calls |handler->OnHeaderBlockEnd()|.
-  std::unique_ptr<ProgressiveDecoder> DecodeHeaderBlock(
+  // Factory method to create a QpackProgressiveDecoder for decoding a header
+  // block.  |handler| must remain valid until the returned
+  // QpackProgressiveDecoder instance is destroyed or the decoder calls
+  // |handler->OnHeaderBlockEnd()|.
+  std::unique_ptr<QpackProgressiveDecoder> DecodeHeaderBlock(
       QuicStreamId stream_id,
-      HeadersHandlerInterface* handler);
+      QpackProgressiveDecoder::HeadersHandlerInterface* handler);
+
+  // Decode data received on the encoder stream.
+  void DecodeEncoderStreamData(QuicStringPiece data);
+
+  // QpackEncoderStreamReceiver::Delegate implementation
+  void OnInsertWithNameReference(bool is_static,
+                                 uint64_t name_index,
+                                 QuicStringPiece value) override;
+  void OnInsertWithoutNameReference(QuicStringPiece name,
+                                    QuicStringPiece value) override;
+  void OnDuplicate(uint64_t index) override;
+  void OnDynamicTableSizeUpdate(uint64_t max_size) override;
+  void OnErrorDetected(QuicStringPiece error_message) override;
 
  private:
+  // The encoder stream uses relative index (but different from the kind of
+  // relative index used on a request stream).
+  // The spec describes how to convert these into absolute index (one based).
+  // QpackHeaderTable uses real index (zero based, one less than the absolute
+  // index).  This method converts relative index to real index.  It returns
+  // true on success, or false if conversion fails due to overflow/underflow.
+  bool EncoderStreamRelativeIndexToRealIndex(uint64_t relative_index,
+                                             uint64_t* real_index) const;
+
+  EncoderStreamErrorDelegate* const encoder_stream_error_delegate_;
+  QpackEncoderStreamReceiver encoder_stream_receiver_;
+  QpackDecoderStreamSender decoder_stream_sender_;
   QpackHeaderTable header_table_;
 };
 

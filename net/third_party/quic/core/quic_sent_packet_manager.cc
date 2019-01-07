@@ -452,7 +452,7 @@ void QuicSentPacketManager::HandleRetransmission(
   } else {
     // Clear the recorded first packet sent after loss when version or
     // encryption changes.
-    transmission_info->retransmission = 0;
+    transmission_info->retransmission = kInvalidPacketNumber;
   }
 }
 
@@ -479,7 +479,7 @@ void QuicSentPacketManager::RecordSpuriousRetransmissions(
     return;
   }
   QuicPacketNumber retransmission = info.retransmission;
-  while (retransmission != 0) {
+  while (retransmission != kInvalidPacketNumber) {
     const QuicTransmissionInfo& retransmit_info =
         unacked_packets_.GetTransmissionInfo(retransmission);
     retransmission = retransmit_info.retransmission;
@@ -529,7 +529,7 @@ QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
     return packet_number;
   }
   QuicPacketNumber retransmission = transmission_info.retransmission;
-  while (retransmission != 0) {
+  while (retransmission != kInvalidPacketNumber) {
     packet_number = retransmission;
     retransmission =
         unacked_packets_.GetTransmissionInfo(retransmission).retransmission;
@@ -612,7 +612,7 @@ bool QuicSentPacketManager::OnPacketSent(
   QUIC_BUG_IF(serialized_packet->encrypted_length == 0)
       << "Cannot send empty packets.";
 
-  if (original_packet_number != 0) {
+  if (original_packet_number != kInvalidPacketNumber) {
     pending_retransmissions_.erase(original_packet_number);
   }
 
@@ -758,7 +758,7 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
     }
     // Abandon non-retransmittable data that's in flight to ensure it doesn't
     // fill up the congestion window.
-    bool has_retransmissions = it->retransmission != 0;
+    bool has_retransmissions = it->retransmission != kInvalidPacketNumber;
     if (session_decides_what_to_write()) {
       has_retransmissions = it->state != OUTSTANDING;
     }
@@ -1125,7 +1125,7 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
     QUIC_DVLOG(1) << ENDPOINT << "Got an ack for packet "
                   << acked_packet.packet_number;
     last_ack_frame_.packets.Add(acked_packet.packet_number);
-    if (info->largest_acked > 0) {
+    if (info->largest_acked > kInvalidPacketNumber) {
       largest_packet_peer_knows_is_acked_ =
           std::max(largest_packet_peer_knows_is_acked_, info->largest_acked);
     }

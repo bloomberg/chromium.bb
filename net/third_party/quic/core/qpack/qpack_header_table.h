@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_HEADER_TABLE_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_HEADER_TABLE_H_
 
-#include <cstddef>
+#include <cstdint>
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -41,7 +41,7 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // and the dynamic table.  The returned pointer is valid until the entry is
   // evicted, even if other entries are inserted into the dynamic table.
   // Returns nullptr if entry does not exist.
-  const QpackEntry* LookupEntry(bool is_static, size_t index) const;
+  const QpackEntry* LookupEntry(bool is_static, uint64_t index) const;
 
   // Returns the absolute index of an entry with matching name and value if such
   // exists, otherwise one with matching name is such exists.  |index| is zero
@@ -49,7 +49,7 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   MatchType FindHeaderField(QuicStringPiece name,
                             QuicStringPiece value,
                             bool* is_static,
-                            size_t* index) const;
+                            uint64_t* index) const;
 
   // Insert (name, value) into the dynamic table.  May evict entries.  Returns a
   // pointer to the inserted owned entry on success.  Returns nullptr if entry
@@ -58,7 +58,7 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
 
   // Change dynamic table capacity to |max_size|.  Returns true on success.
   // Returns false is |max_size| exceeds maximum dynamic table capacity.
-  bool UpdateTableSize(size_t max_size);
+  bool UpdateTableSize(uint64_t max_size);
 
   // Set |maximum_dynamic_table_capacity_|.  The initial value is zero.  The
   // final value is determined by the decoder and is sent to the encoder as
@@ -66,24 +66,24 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // value can be set upon connection establishment, whereas in the encoding
   // context it can be set when the SETTINGS frame is received.
   // This method must only be called at most once.
-  void SetMaximumDynamicTableCapacity(size_t maximum_dynamic_table_capacity);
+  void SetMaximumDynamicTableCapacity(uint64_t maximum_dynamic_table_capacity);
 
   // Used by request streams to decode Largest Reference.
-  size_t max_entries() const { return max_entries_; }
+  uint64_t max_entries() const { return max_entries_; }
 
   // The number of entries inserted to the dynamic table (including ones that
   // were dropped since).  Used for relative indexing on the encoder stream.
-  size_t inserted_entry_count() const {
+  uint64_t inserted_entry_count() const {
     return dynamic_entries_.size() + dropped_entry_count_;
   }
 
   // The number of entries dropped from the dynamic table.
-  size_t dropped_entry_count() const { return dropped_entry_count_; }
+  uint64_t dropped_entry_count() const { return dropped_entry_count_; }
 
  private:
   // Evict entries from the dynamic table until table size is less than or equal
-  // to |new_table_size|.
-  void EvictDownTo(size_t new_table_size);
+  // to current value of |dynamic_table_capacity_|.
+  void EvictDownToCurrentCapacity();
 
   // Static Table
 
@@ -117,7 +117,7 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   NameToEntryMap dynamic_name_index_;
 
   // Size of the dynamic table.  This is the sum of the size of its entries.
-  size_t dynamic_table_size_;
+  uint64_t dynamic_table_size_;
 
   // Dynamic Table Capacity is the maximum allowed value of
   // |dynamic_table_size_|.  Entries are evicted if necessary before inserting a
@@ -125,18 +125,18 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // Initial value is |maximum_dynamic_table_capacity_|.  Capacity can be
   // changed by the encoder, as long as it does not exceed
   // |maximum_dynamic_table_capacity_|.
-  size_t dynamic_table_capacity_;
+  uint64_t dynamic_table_capacity_;
 
   // Maximum allowed value of |dynamic_table_capacity|.  The initial value is
   // zero.  Can be changed by SetMaximumDynamicTableCapacity().
-  size_t maximum_dynamic_table_capacity_;
+  uint64_t maximum_dynamic_table_capacity_;
 
   // MaxEntries, see Section 3.2.2.  Calculated based on
   // |maximum_dynamic_table_capacity_|.
-  size_t max_entries_;
+  uint64_t max_entries_;
 
   // The number of entries dropped from the dynamic table.
-  size_t dropped_entry_count_;
+  uint64_t dropped_entry_count_;
 };
 
 }  // namespace quic

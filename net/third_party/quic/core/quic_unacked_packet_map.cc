@@ -78,7 +78,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
   unacked_packets_.push_back(info);
   // Swap the retransmittable frames to avoid allocations.
   // TODO(ianswett): Could use emplace_back when Chromium can.
-  if (old_packet_number == 0) {
+  if (old_packet_number == kInvalidPacketNumber) {
     if (has_crypto_handshake) {
       ++pending_crypto_packet_count_;
       last_crypto_packet_sent_time_ = sent_time;
@@ -180,12 +180,12 @@ void QuicUnackedPacketMap::RemoveRetransmittability(
     QuicTransmissionInfo* info) {
   if (session_decides_what_to_write_) {
     DeleteFrames(&info->retransmittable_frames);
-    info->retransmission = 0;
+    info->retransmission = kInvalidPacketNumber;
     return;
   }
-  while (info->retransmission != 0) {
+  while (info->retransmission != kInvalidPacketNumber) {
     const QuicPacketNumber retransmission = info->retransmission;
-    info->retransmission = 0;
+    info->retransmission = kInvalidPacketNumber;
     info = &unacked_packets_[retransmission - least_unacked_];
   }
 

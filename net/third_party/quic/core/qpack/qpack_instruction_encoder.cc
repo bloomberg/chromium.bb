@@ -116,7 +116,7 @@ size_t QpackInstructionEncoder::DoVarintStart(size_t max_encoded_bytes,
          field_->type == QpackInstructionFieldType::kValue);
   DCHECK(!varint_encoder_.IsEncodingInProgress());
 
-  size_t integer_to_encode;
+  uint64_t integer_to_encode;
   switch (field_->type) {
     case QpackInstructionFieldType::kVarint:
       integer_to_encode = varint_;

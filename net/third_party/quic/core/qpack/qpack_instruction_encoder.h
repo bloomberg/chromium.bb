@@ -6,6 +6,7 @@
 #define NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_INSTRUCTION_ENCODER_H_
 
 #include <cstddef>
+#include <cstdint>
 
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quic/platform/api/quic_export.h"

@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
@@ -21,6 +22,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
       packet_creator_(connection_id, framer, random_generator, delegate),
+      next_transmission_type_(NOT_RETRANSMISSION),
       flusher_attached_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
@@ -93,7 +95,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     QuicFrame frame;
     if (!packet_creator_.ConsumeData(id, write_length, total_bytes_consumed,
                                      offset + total_bytes_consumed, fin,
-                                     has_handshake, &frame)) {
+                                     has_handshake, next_transmission_type_,
+                                     &frame)) {
       // The creator is always flushed if there's not enough room for a new
       // stream frame before ConsumeData, so ConsumeData should always succeed.
       QUIC_BUG << "Failed to ConsumeData, stream:" << id;
@@ -153,7 +156,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeDataFastPath(
     size_t bytes_consumed = 0;
     packet_creator_.CreateAndSerializeStreamFrame(
         id, write_length, total_bytes_consumed, offset + total_bytes_consumed,
-        fin, &bytes_consumed);
+        fin, next_transmission_type_, &bytes_consumed);
     total_bytes_consumed += bytes_consumed;
   }
 
@@ -177,7 +180,8 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(QuicByteCount target_mtu) {
 
   // Send the probe packet with the new length.
   SetMaxPacketLength(target_mtu);
-  const bool success = packet_creator_.AddPaddedSavedFrame(frame);
+  const bool success =
+      packet_creator_.AddPaddedSavedFrame(frame, next_transmission_type_);
   packet_creator_.Flush();
   // The only reason AddFrame can fail is that the packet is too full to fit in
   // a ping.  This is not possible for any sane MTU.
@@ -262,16 +266,16 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
   QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
                                      "generator tries to write control frames.";
   if (should_send_ack_) {
-    should_send_ack_ =
-        !packet_creator_.AddSavedFrame(delegate_->GetUpdatedAckFrame());
+    should_send_ack_ = !packet_creator_.AddSavedFrame(
+        delegate_->GetUpdatedAckFrame(), next_transmission_type_);
     return !should_send_ack_;
   }
 
   if (should_send_stop_waiting_) {
     delegate_->PopulateStopWaitingFrame(&pending_stop_waiting_frame_);
     // If we can't this add the frame now, then we still need to do so later.
-    should_send_stop_waiting_ =
-        !packet_creator_.AddSavedFrame(QuicFrame(&pending_stop_waiting_frame_));
+    should_send_stop_waiting_ = !packet_creator_.AddSavedFrame(
+        QuicFrame(&pending_stop_waiting_frame_), next_transmission_type_);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_stop_waiting_;
@@ -279,7 +283,9 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   QUIC_BUG_IF(queued_control_frames_.empty())
       << "AddNextPendingFrame called with no queued control frames.";
-  if (!packet_creator_.AddSavedFrame(queued_control_frames_.back())) {
+
+  if (!packet_creator_.AddSavedFrame(queued_control_frames_.back(),
+                                     next_transmission_type_)) {
     // Packet was full.
     return false;
   }
@@ -393,6 +399,9 @@ bool QuicPacketGenerator::HasPendingStreamFramesOfStream(
 
 void QuicPacketGenerator::SetTransmissionType(TransmissionType type) {
   packet_creator_.SetTransmissionType(type);
+  if (packet_creator_.ShouldSetTransmissionTypeForNextFrame()) {
+    next_transmission_type_ = type;
+  }
 }
 
 void QuicPacketGenerator::SetLongHeaderType(QuicLongHeaderType type) {
@@ -416,7 +425,8 @@ MessageStatus QuicPacketGenerator::AddMessageFrame(QuicMessageId message_id,
     packet_creator_.Flush();
   }
   QuicMessageFrame* frame = new QuicMessageFrame(message_id, message);
-  const bool success = packet_creator_.AddSavedFrame(QuicFrame(frame));
+  const bool success =
+      packet_creator_.AddSavedFrame(QuicFrame(frame), next_transmission_type_);
   if (!success) {
     QUIC_BUG << "Failed to send message " << message_id;
     delete frame;
