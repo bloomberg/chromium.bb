@@ -485,13 +485,6 @@ String ClipOpName(SkClipOp op) {
   };
 }
 
-String SaveLayerFlagsToString(SkCanvas::SaveLayerFlags flags) {
-  String flags_string = "";
-  if (flags & SkCanvas::kPreserveLCDText_SaveLayerFlag)
-    flags_string.append("kPreserveLCDText_SaveLayerFlag ");
-  return flags_string;
-}
-
 }  // namespace
 
 class AutoLogger
@@ -777,7 +770,7 @@ SkCanvas::SaveLayerStrategy LoggingCanvas::getSaveLayerStrategy(
     params->SetObject("bounds", ObjectForSkRect(*rec.fBounds));
   if (rec.fPaint)
     params->SetObject("paint", ObjectForSkPaint(*rec.fPaint));
-  params->SetString("saveFlags", SaveLayerFlagsToString(rec.fSaveLayerFlags));
+  params->SetInteger("saveFlags", static_cast<int>(rec.fSaveLayerFlags));
   return this->SkCanvas::getSaveLayerStrategy(rec);
 }
 
