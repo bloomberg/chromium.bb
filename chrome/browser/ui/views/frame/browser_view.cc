@@ -613,11 +613,7 @@ bool BrowserView::IsTabStripVisible() const {
 }
 
 bool BrowserView::IsIncognito() const {
-  // TODO(pbos): This is confusing or incorrect as IsIncognito() returns true
-  // for Guest sessions. We should probably rename this function and audit
-  // callers to make sure that's actually what was intended, or make this return
-  // false for Guest sessions.
-  return browser_->profile()->IsOffTheRecord();
+  return browser_->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
 }
 
 bool BrowserView::IsGuestSession() const {
