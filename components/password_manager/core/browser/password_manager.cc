@@ -653,7 +653,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 
   ProvisionallySavePassword(password_form, driver);
 
-  if (IsReadyForAutomaticSaving())
+  if (IsAutomaticSavePromptAvailable())
     OnLoginSuccessful();
 }
 
@@ -957,7 +957,7 @@ void PasswordManager::ProvisionallySaveManager(
   provisional_save_manager_.swap(manager);
 }
 
-bool PasswordManager::IsReadyForAutomaticSaving() {
+bool PasswordManager::IsAutomaticSavePromptAvailable() {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -1008,7 +1008,7 @@ void PasswordManager::OnPasswordFormsRendered(
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
   }
 
-  if (!IsReadyForAutomaticSaving())
+  if (!IsAutomaticSavePromptAvailable())
     return;
 
   PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
