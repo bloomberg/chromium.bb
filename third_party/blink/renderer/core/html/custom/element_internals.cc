@@ -56,7 +56,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
         "The target element is not a form-associated custom element.");
     return;
   }
-  if (!entry_source || entry_source->size() == 0u) {
+  if (!entry_source) {
     value_ = value;
     entry_source_ = nullptr;
     return;
@@ -220,7 +220,7 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
   if (Target().IsDisabledFormControl())
     return;
   const AtomicString& name = Target().FastGetAttribute(html_names::kNameAttr);
-  if (!entry_source_ || entry_source_->size() == 0u) {
+  if (!entry_source_) {
     if (name.IsNull())
       return;
     if (value_.IsFile())
