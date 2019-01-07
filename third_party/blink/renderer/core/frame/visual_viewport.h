@@ -301,6 +301,10 @@ class CORE_EXPORT VisualViewport final
   const ScrollableArea* GetScrollableAreaForTesting(
       const GraphicsLayer*) const override;
 
+  int ScrollbarThickness() const;
+  IntSize ScrollbarSize(ScrollbarOrientation) const;
+  IntPoint ScrollbarOffset(ScrollbarOrientation) const;
+
   void SetupScrollbar(ScrollbarOrientation);
 
   void NotifyRootFrameViewport() const;
