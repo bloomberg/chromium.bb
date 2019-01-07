@@ -276,8 +276,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     subresource_loader_factories_->Update(
         render_thread->blink_platform_impl()
             ->CreateDefaultURLLoaderFactoryBundle()
-            ->PassInterface(),
-        base::nullopt /* subresource_overrides */);
+            ->PassInterface());
   }
 
   if (factory_bundle) {
@@ -296,8 +295,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
     subresource_loader_factories_->Update(
         std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-            std::move(factory_bundle)),
-        base::nullopt /* subresource_overrides */);
+            std::move(factory_bundle)));
   }
 
   impl_->StartWorkerContext(
