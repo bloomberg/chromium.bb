@@ -32,8 +32,8 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/install_attributes.h"
 #include "components/arc/arc_features.h"
@@ -360,8 +360,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const base::FilePath external_data_dir =
       profile_dir.Append(kPolicy).Append(kPolicyExternalDataDir);
   base::FilePath policy_key_dir;
-  CHECK(
-      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
+  CHECK(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
+                               &policy_key_dir));
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(

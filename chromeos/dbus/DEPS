@@ -15,11 +15,3 @@ include_rules = [
   "+third_party/cros_system_api",
   "+url",
 ]
-
-specific_include_rules = {
-  "fake_.*": [
-    # TODO(stevenjb): Remove use of chromeos_paths in fake impls.
-    # https://crbug.com/863439.
-    "+chromeos/constants",
-  ],
-}

@@ -20,7 +20,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/util/tpm_util.h"
@@ -81,7 +81,7 @@ void InstallAttributes::Initialize() {
   g_install_attributes =
       new InstallAttributes(DBusThreadManager::Get()->GetCryptohomeClient());
   base::FilePath install_attrs_file;
-  CHECK(base::PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
+  CHECK(base::PathService::Get(dbus_paths::FILE_INSTALL_ATTRIBUTES,
                                &install_attrs_file));
   g_install_attributes->Init(install_attrs_file);
 }

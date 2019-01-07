@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 
 namespace chromeos {
 
@@ -19,15 +20,6 @@ const base::FilePath::CharType kDefaultAppOrderFileName[] =
 #else
     FILE_PATH_LITERAL("/usr/share/chromium/default_app_order.json");
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-const base::FilePath::CharType kDefaultUserPolicyKeysDir[] =
-    FILE_PATH_LITERAL("/run/user_policy");
-
-const base::FilePath::CharType kOwnerKeyFileName[] =
-    FILE_PATH_LITERAL("/var/lib/whitelist/owner.key");
-
-const base::FilePath::CharType kInstallAttributesFileName[] =
-    FILE_PATH_LITERAL("/run/lockbox/install_attributes.pb");
 
 const base::FilePath::CharType kMachineHardwareInfoFileName[] =
     FILE_PATH_LITERAL("/tmp/machine-info");
@@ -69,15 +61,6 @@ bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case FILE_DEFAULT_APP_ORDER:
       *result = base::FilePath(kDefaultAppOrderFileName);
-      break;
-    case DIR_USER_POLICY_KEYS:
-      *result = base::FilePath(kDefaultUserPolicyKeysDir);
-      break;
-    case FILE_OWNER_KEY:
-      *result = base::FilePath(kOwnerKeyFileName);
-      break;
-    case FILE_INSTALL_ATTRIBUTES:
-      *result = base::FilePath(kInstallAttributesFileName);
       break;
     case FILE_MACHINE_INFO:
       *result = base::FilePath(kMachineHardwareInfoFileName);
@@ -124,24 +107,18 @@ bool PathProvider(int key, base::FilePath* result) {
 }  // namespace
 
 void RegisterPathProvider() {
+  dbus_paths::RegisterPathProvider();
   base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
+  dbus_paths::RegisterStubPathOverrides(stubs_dir);
   CHECK(!base::SysInfo::IsRunningOnChromeOS());
   // Override these paths on the desktop, so that enrollment and cloud policy
   // work and can be tested.
   base::FilePath parent = base::MakeAbsoluteFilePath(stubs_dir);
-  base::PathService::Override(DIR_USER_POLICY_KEYS,
-                              parent.AppendASCII("stub_user_policy"));
   const bool is_absolute = true;
   const bool create = false;
-  base::PathService::OverrideAndCreateIfNeeded(
-      FILE_OWNER_KEY, parent.AppendASCII("stub_owner.key"), is_absolute,
-      create);
-  base::PathService::OverrideAndCreateIfNeeded(
-      FILE_INSTALL_ATTRIBUTES, parent.AppendASCII("stub_install_attributes.pb"),
-      is_absolute, create);
   base::PathService::OverrideAndCreateIfNeeded(
       FILE_MACHINE_INFO, parent.AppendASCII("stub_machine-info"), is_absolute,
       create);

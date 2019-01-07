@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -51,7 +51,7 @@ class InstallAttributesTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
-        FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
+        dbus_paths::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
     DBusThreadManager::Initialize();
     install_attributes_ = std::make_unique<InstallAttributes>(
         DBusThreadManager::Get()->GetCryptohomeClient());
