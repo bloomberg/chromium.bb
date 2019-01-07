@@ -81,6 +81,10 @@ NavigationThrottle::WillProcessResponse() {
 }
 
 void NavigationThrottle::Resume() {
+  if (!resume_callback_.is_null()) {
+    resume_callback_.Run();
+    return;
+  }
   static_cast<NavigationHandleImpl*>(navigation_handle_)->Resume(this);
 }
 

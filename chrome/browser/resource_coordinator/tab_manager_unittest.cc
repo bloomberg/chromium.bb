@@ -49,6 +49,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/network_change_notifier.h"
@@ -56,7 +57,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using content::NavigationHandle;
+using content::MockNavigationHandle;
 using content::NavigationThrottle;
 using content::WebContents;
 using content::WebContentsTester;
@@ -164,14 +165,23 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
   void ResetState() {
+    // Simulate the DidFinishNavigation notification coming from the
+    // NavigationHandles.
+    if (nav_handle1_)
+      tab_manager_->OnDidFinishNavigation(nav_handle1_.get());
+    if (nav_handle2_)
+      tab_manager_->OnDidFinishNavigation(nav_handle2_.get());
+    if (nav_handle3_)
+      tab_manager_->OnDidFinishNavigation(nav_handle3_.get());
+
     // NavigationHandles and NavigationThrottles must be deleted before the
     // associated WebContents.
-    nav_handle1_.reset();
-    nav_handle2_.reset();
-    nav_handle3_.reset();
     throttle1_.reset();
     throttle2_.reset();
     throttle3_.reset();
+    nav_handle1_.reset();
+    nav_handle2_.reset();
+    nav_handle3_.reset();
 
     // WebContents must be deleted before
     // ChromeTestHarnessWithLocalDB::TearDown() deletes the
@@ -283,12 +293,12 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
  protected:
-  std::unique_ptr<NavigationHandle> CreateTabAndNavigation(
+  std::unique_ptr<MockNavigationHandle> CreateTabAndNavigation(
       const char* url,
       content::WebContents* web_contents) {
     TabUIHelper::CreateForWebContents(web_contents);
-    return content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(url), web_contents->GetMainFrame());
+    return std::make_unique<MockNavigationHandle>(GURL(url),
+                                                  web_contents->GetMainFrame());
   }
 
   TabManager* tab_manager_ = nullptr;
@@ -299,9 +309,9 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle1_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle2_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle3_;
-  std::unique_ptr<NavigationHandle> nav_handle1_;
-  std::unique_ptr<NavigationHandle> nav_handle2_;
-  std::unique_ptr<NavigationHandle> nav_handle3_;
+  std::unique_ptr<MockNavigationHandle> nav_handle1_;
+  std::unique_ptr<MockNavigationHandle> nav_handle2_;
+  std::unique_ptr<MockNavigationHandle> nav_handle3_;
   std::unique_ptr<WebContents> contents1_;
   std::unique_ptr<WebContents> contents2_;
   std::unique_ptr<WebContents> contents3_;

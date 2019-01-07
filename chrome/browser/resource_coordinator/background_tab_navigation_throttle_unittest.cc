@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "url/gurl.h"
 
@@ -106,10 +106,9 @@ TEST_P(BackgroundTabNavigationThrottleTest, Instantiate) {
     rfh = content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
 
   DCHECK(rfh);
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(url_, rfh);
+  content::MockNavigationHandle handle(url_, rfh);
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle =
-      BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(handle.get());
+      BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(&handle);
 
   const bool expect_instantiation =
       expected_instantiation_result_ == EXPECT_INSTANTIATION;

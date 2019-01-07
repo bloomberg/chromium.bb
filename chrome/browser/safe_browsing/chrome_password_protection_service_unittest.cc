@@ -40,6 +40,7 @@
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/test_event_router.h"
 #include "net/http/http_util.h"
@@ -69,7 +70,6 @@ const char kPhishingURL[] = "http://phishing.com/";
 const char kPasswordReuseURL[] = "http://login.example.com/";
 const char kTestEmail[] = "foo@example.com";
 const char kTestGmail[] = "foo@gmail.com";
-const char kBasicResponseHeaders[] = "HTTP/1.1 200 OK";
 const char kRedirectURL[] = "http://redirect.com";
 
 BrowserContextKeyedServiceFactory::TestingFactory
@@ -271,16 +271,6 @@ class ChromePasswordProtectionServiceTest
     InitializeRequest(trigger_type, reused_password_type);
     request_->set_is_modal_warning_showing(is_warning_showing);
     service_->pending_requests_.insert(request_);
-  }
-
-  content::NavigationThrottle::ThrottleCheckResult SimulateWillStart(
-      content::NavigationHandle* test_handle) {
-    std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
-        service_->MaybeCreateNavigationThrottle(test_handle);
-    if (throttle)
-      test_handle->RegisterThrottleForTesting(std::move(throttle));
-
-    return test_handle->CallWillStartRequestForTesting();
   }
 
   int GetSizeofUnhandledSyncPasswordReuses() {
@@ -867,11 +857,10 @@ TEST_F(ChromePasswordProtectionServiceTest,
                  PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
                  /*is_warning_showing=*/false);
   GURL redirect_url(kRedirectURL);
-  std::unique_ptr<content::NavigationHandle> test_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
-                                                                  main_rfh());
-  EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            SimulateWillStart(test_handle.get()));
+  content::MockNavigationHandle test_handle(redirect_url, main_rfh());
+  std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+      service_->MaybeCreateNavigationThrottle(&test_handle);
+  EXPECT_EQ(nullptr, throttle);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -885,29 +874,26 @@ TEST_F(ChromePasswordProtectionServiceTest,
                  /*is_warning_showing=*/false);
 
   GURL redirect_url(kRedirectURL);
-  std::unique_ptr<content::NavigationHandle> test_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
-                                                                  main_rfh());
+  bool was_navigation_resumed = false;
+  content::MockNavigationHandle test_handle(redirect_url, main_rfh());
+  std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+      service_->MaybeCreateNavigationThrottle(&test_handle);
+  ASSERT_NE(nullptr, throttle);
+  throttle->set_resume_callback_for_testing(
+      base::BindLambdaForTesting([&]() { was_navigation_resumed = true; }));
+
   // Verify navigation get deferred.
-  EXPECT_EQ(content::NavigationThrottle::DEFER,
-            SimulateWillStart(test_handle.get()));
-  EXPECT_FALSE(test_handle->HasCommitted());
+  EXPECT_EQ(content::NavigationThrottle::DEFER, throttle->WillStartRequest());
   base::RunLoop().RunUntilIdle();
 
   // Simulate receiving a SAFE verdict.
   SimulateRequestFinished(LoginReputationClientResponse::SAFE);
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(true, was_navigation_resumed);
 
   // Verify that navigation can be resumed.
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            test_handle->CallWillProcessResponseForTesting(
-                main_rfh(),
-                net::HttpUtil::AssembleRawHeaders(
-                    kBasicResponseHeaders, strlen(kBasicResponseHeaders)),
-                false, net::ProxyServer::Direct()));
-  test_handle->CallDidCommitNavigationForTesting(redirect_url);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(test_handle->HasCommitted());
+            throttle->WillProcessResponse());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -926,13 +912,12 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::RunLoop().RunUntilIdle();
 
   GURL redirect_url(kRedirectURL);
-  std::unique_ptr<content::NavigationHandle> test_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
-                                                                  main_rfh());
+  content::MockNavigationHandle test_handle(redirect_url, main_rfh());
+  std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+      service_->MaybeCreateNavigationThrottle(&test_handle);
+
   // Verify that navigation gets canceled.
-  EXPECT_EQ(content::NavigationThrottle::CANCEL,
-            SimulateWillStart(test_handle.get()));
-  EXPECT_FALSE(test_handle->HasCommitted());
+  EXPECT_EQ(content::NavigationThrottle::CANCEL, throttle->WillStartRequest());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -946,17 +931,17 @@ TEST_F(ChromePasswordProtectionServiceTest,
                  /*is_warning_showing=*/false);
 
   GURL redirect_url(kRedirectURL);
-  std::unique_ptr<content::NavigationHandle> test_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
-                                                                  main_rfh());
+  content::MockNavigationHandle test_handle(redirect_url, main_rfh());
+  std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+      service_->MaybeCreateNavigationThrottle(&test_handle);
+
   // Verify navigation get deferred.
-  EXPECT_EQ(content::NavigationThrottle::DEFER,
-            SimulateWillStart(test_handle.get()));
+  EXPECT_EQ(content::NavigationThrottle::DEFER, throttle->WillStartRequest());
 
   EXPECT_EQ(1u, GetNumberOfNavigationThrottles());
 
-  // Simulate the deletion of NavigationHandle.
-  test_handle.reset();
+  // Simulate the deletion of the PasswordProtectionNavigationThrottle.
+  throttle.reset();
   base::RunLoop().RunUntilIdle();
 
   // Expect no navigation throttle kept by |request_|.

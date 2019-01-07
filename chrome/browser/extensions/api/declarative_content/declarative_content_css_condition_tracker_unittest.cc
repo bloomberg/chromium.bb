@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/extension_messages.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -301,10 +302,10 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
 
   // Check that an in-page navigation has no effect on the matching selectors.
   {
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), tab->GetMainFrame(), true, net::OK, true);
-    tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+    content::MockNavigationHandle test_handle;
+    test_handle.set_has_committed(true);
+    test_handle.set_is_same_document(true);
+    tracker_.OnWebContentsNavigation(tab.get(), &test_handle);
     EXPECT_TRUE(tracker_.EvaluatePredicate(predicate.get(), tab.get()));
     EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
   }
@@ -312,10 +313,9 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
   // Check that a non in-page navigation clears the matching selectors and
   // requests condition evaluation.
   {
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), tab->GetMainFrame(), true);
-    tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+    content::MockNavigationHandle test_handle;
+    test_handle.set_has_committed(true);
+    tracker_.OnWebContentsNavigation(tab.get(), &test_handle);
     EXPECT_FALSE(tracker_.EvaluatePredicate(predicate.get(), tab.get()));
     EXPECT_EQ(++expected_evaluation_requests, delegate_.evaluation_requests());
   }

@@ -11,6 +11,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -72,19 +73,18 @@ class ExtensionNavigationThrottleUnitTest
       content::RenderFrameHost* host,
       const GURL& extension_url,
       NavigationThrottle::ThrottleAction expected_will_start_result) {
+    content::MockNavigationHandle test_handle(extension_url, host);
+    test_handle.set_starting_site_instance(host->GetSiteInstance());
+    auto throttle = std::make_unique<ExtensionNavigationThrottle>(&test_handle);
+
     // First subtest: direct navigation to |extension_url|.
-    std::unique_ptr<content::NavigationHandle> handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            extension_url, host);
-    EXPECT_EQ(expected_will_start_result,
-              handle->CallWillStartRequestForTesting())
+    EXPECT_EQ(expected_will_start_result, throttle->WillStartRequest().action())
         << extension_url;
 
-    // Reset the handle for a second subtest: server redirect to
+    // Second subtest: server redirect to
     // |extension_url|.
     GURL http_url("https://example.com");
-    handle = content::NavigationHandle::CreateNavigationHandleForTesting(
-        http_url, host);
+    test_handle.set_url(http_url);
 
     // TODO(nick): https://crbug.com/695421 Once PlzNavigate is enabled 100%, it
     // should be possible to support return values other than PROCEED and CANCEL
@@ -94,13 +94,11 @@ class ExtensionNavigationThrottleUnitTest
             ? NavigationThrottle::PROCEED
             : NavigationThrottle::CANCEL;
     EXPECT_EQ(NavigationThrottle::PROCEED,
-              handle->CallWillStartRequestForTesting())
+              throttle->WillStartRequest().action())
         << http_url;
+    test_handle.set_url(extension_url);
     EXPECT_EQ(expected_will_redirect_result,
-              handle->CallWillRedirectRequestForTesting(
-                  extension_url,
-                  /*new_method_is_post=*/false, http_url,
-                  /*new_is_external_protocol=*/false))
+              throttle->WillRedirectRequest().action())
         << extension_url;
   }
 

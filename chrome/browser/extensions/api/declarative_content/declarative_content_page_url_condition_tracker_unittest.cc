@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -252,10 +251,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   // evaluation request.
   LoadURL(tab.get(), GURL("http://test1/"));
   delegate_.evaluation_requests().clear();
-  std::unique_ptr<content::NavigationHandle> navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), tab->GetMainFrame(), true);
-  tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+  tracker_.OnWebContentsNavigation(tab.get(), nullptr);
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tab.get()));
 
@@ -263,7 +259,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   // URL results in an evaluation request.
   LoadURL(tab.get(), GURL("http://test1/a"));
   delegate_.evaluation_requests().clear();
-  tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+  tracker_.OnWebContentsNavigation(tab.get(), nullptr);
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tab.get()));
 
@@ -271,7 +267,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   // URL results in an evaluation request.
   delegate_.evaluation_requests().clear();
   LoadURL(tab.get(), GURL("http://test2/"));
-  tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+  tracker_.OnWebContentsNavigation(tab.get(), nullptr);
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tab.get()));
 
@@ -279,7 +275,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   // non-matching URL results in an evaluation request.
   delegate_.evaluation_requests().clear();
   LoadURL(tab.get(), GURL("http://test2/a"));
-  tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
+  tracker_.OnWebContentsNavigation(tab.get(), nullptr);
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tab.get()));
 

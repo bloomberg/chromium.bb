@@ -17,7 +17,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,10 +46,9 @@ class TestLocalCardMigrationBubbleControllerImpl
 
   void SimulateNavigation() {
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(GURL(), rfh,
-                                                                    true);
-    // Destructor calls DidFinishNavigation.
+    content::MockNavigationHandle navigation_handle(GURL(), rfh);
+    navigation_handle.set_has_committed(true);
+    DidFinishNavigation(&navigation_handle);
   }
 
  protected:

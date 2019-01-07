@@ -14,7 +14,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "net/test/cert_test_util.h"
@@ -70,8 +70,11 @@ class SecurityInterstitialTabHelperTest
   std::unique_ptr<content::NavigationHandle> CreateHandle(
       bool committed,
       bool is_same_document) {
-    return content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(), main_rfh(), committed, net::OK, is_same_document);
+    std::unique_ptr<content::MockNavigationHandle> handle =
+        std::make_unique<content::MockNavigationHandle>(GURL(), main_rfh());
+    handle->set_has_committed(committed);
+    handle->set_is_same_document(is_same_document);
+    return handle;
   }
 
   // The lifetime of the blocking page is managed by the
@@ -170,6 +173,13 @@ TEST_F(SecurityInterstitialTabHelperTest, MultipleBlockingPages) {
   EXPECT_TRUE(blocking_page1_destroyed);
   EXPECT_FALSE(blocking_page2_destroyed);
   EXPECT_TRUE(blocking_page3_destroyed);
+
+  // Test that a subsequent committed navigation releases the last blocking
+  // page.
+  std::unique_ptr<content::NavigationHandle> committed_handle4 =
+      CreateHandle(true, false);
+  helper->DidFinishNavigation(committed_handle4.get());
+  EXPECT_TRUE(blocking_page2_destroyed);
 }
 
 // Tests that the helper properly handles a navigation that finishes without

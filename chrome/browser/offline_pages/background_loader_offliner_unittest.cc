@@ -27,8 +27,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/mhtml_extra_parts.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -596,12 +596,13 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
                                       progress_callback()));
   // Create handle with net error code.
   // Called after calling LoadAndSave so we have web_contents to work with.
-  std::unique_ptr<content::NavigationHandle> handle(
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
-          net::Error::ERR_NAME_NOT_RESOLVED));
-  // NavigationHandle destruction will trigger DidFinishNavigation code.
-  handle.reset();
+  content::MockNavigationHandle handle(
+      kHttpUrl, offliner()->web_contents()->GetMainFrame());
+  handle.set_has_committed(true);
+  handle.set_is_error_page(true);
+  handle.set_net_error_code(net::Error::ERR_NAME_NOT_RESOLVED);
+  offliner()->DidFinishNavigation(&handle);
+
   histograms().ExpectBucketCount(
       "OfflinePages.Background.LoadingErrorStatusCode.async_loading",
       -105,  // ERR_NAME_NOT_RESOLVED
@@ -623,14 +624,13 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
 
   // Create handle with net error code.
   // Called after calling LoadAndSave so we have web_contents to work with.
-  std::unique_ptr<content::NavigationHandle> handle(
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
-          net::Error::ERR_INTERNET_DISCONNECTED));
-  // Call DidFinishNavigation with handle that contains error.
-  offliner()->DidFinishNavigation(handle.get());
-  // NavigationHandle is always destroyed after finishing navigation.
-  handle.reset();
+  content::MockNavigationHandle handle(
+      kHttpUrl, offliner()->web_contents()->GetMainFrame());
+  handle.set_has_committed(true);
+  handle.set_is_error_page(true);
+  handle.set_net_error_code(net::Error::ERR_INTERNET_DISCONNECTED);
+  offliner()->DidFinishNavigation(&handle);
+
   CompleteLoading();
   PumpLoop();
 
@@ -647,12 +647,10 @@ TEST_F(BackgroundLoaderOfflinerTest, DoesNotCrashWithNullResponseHeaders) {
                                       progress_callback()));
 
   // Called after calling LoadAndSave so we have web_contents to work with.
-  std::unique_ptr<content::NavigationHandle> handle(
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
-          net::Error::OK));
-  // Call DidFinishNavigation with handle.
-  offliner()->DidFinishNavigation(handle.get());
+  content::MockNavigationHandle handle(
+      kHttpUrl, offliner()->web_contents()->GetMainFrame());
+  handle.set_has_committed(true);
+  offliner()->DidFinishNavigation(&handle);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
@@ -663,22 +661,20 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
                                       progress_callback()));
 
   // Called after calling LoadAndSave so we have web_contents to work with.
-  std::unique_ptr<content::NavigationHandle> handle(
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
-          net::Error::OK));
+  content::MockNavigationHandle handle(
+      kHttpUrl, offliner()->web_contents()->GetMainFrame());
+  handle.set_has_committed(true);
   // Set up PreviewsUserData on the handle.
   PreviewsUITabHelper::CreateForWebContents(offliner()->web_contents());
   PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
-      ->CreatePreviewsUserDataForNavigationHandle(handle.get(), 1u)
+      ->CreatePreviewsUserDataForNavigationHandle(&handle, 1u)
       ->set_committed_previews_state(
           content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-  offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
-                                                            header);
+  handle.set_response_headers(header.get());
   // Call DidFinishNavigation with handle.
-  offliner()->DidFinishNavigation(handle.get());
+  offliner()->DidFinishNavigation(&handle);
 
   histograms().ExpectBucketCount(
       "OfflinePages.Background.OffliningPreviewStatus.async_loading",
@@ -694,21 +690,20 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
                                       progress_callback()));
 
   // Called after calling LoadAndSave so we have web_contents to work with.
-  std::unique_ptr<content::NavigationHandle> handle(
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
-          net::Error::OK));
+  content::MockNavigationHandle handle(
+      kHttpUrl, offliner()->web_contents()->GetMainFrame());
+  handle.set_has_committed(true);
   // Set up PreviewsUserData on the handle.
   PreviewsUITabHelper::CreateForWebContents(offliner()->web_contents());
   PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
-      ->CreatePreviewsUserDataForNavigationHandle(handle.get(), 1u)
+      ->CreatePreviewsUserDataForNavigationHandle(&handle, 1u)
       ->set_committed_previews_state(content::PreviewsTypes::CLIENT_LOFI_ON);
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-  offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
-                                                            header);
+  handle.set_response_headers(header.get());
+
   // Call DidFinishNavigation with handle.
-  offliner()->DidFinishNavigation(handle.get());
+  offliner()->DidFinishNavigation(&handle);
 
   histograms().ExpectBucketCount(
       "OfflinePages.Background.OffliningPreviewStatus.async_loading",

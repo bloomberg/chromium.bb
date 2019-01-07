@@ -24,8 +24,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/web_contents_tester.h"
 #include "media/base/media_switches.h"
@@ -269,10 +269,11 @@ class MediaEngagementContentsObserverTest
   }
 
   void Navigate(GURL url) {
-    std::unique_ptr<content::NavigationHandle> test_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(url), main_rfh(), true /** committed */);
-    contents_observer_->DidFinishNavigation(test_handle.get());
+    content::MockNavigationHandle test_handle(GURL(url), main_rfh());
+    contents_observer_->ReadyToCommitNavigation(&test_handle);
+
+    test_handle.set_has_committed(true);
+    contents_observer_->DidFinishNavigation(&test_handle);
   }
 
   scoped_refptr<MediaEngagementSession> GetOrCreateSession(

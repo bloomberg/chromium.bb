@@ -4,11 +4,11 @@
 
 #include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 
 namespace dom_distiller {
@@ -34,10 +34,10 @@ class WebContentsMainFrameObserverTest
         content::RenderFrameHostTester::For(rfh);
     if (!main_frame)
       rfh = rfh_tester->AppendChild("subframe");
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), rfh, true, net::OK, same_document);
-    // Destructor calls DidFinishNavigation.
+    content::MockNavigationHandle navigation_handle(GURL(), rfh);
+    navigation_handle.set_has_committed(true);
+    navigation_handle.set_is_same_document(same_document);
+    main_frame_observer_->DidFinishNavigation(&navigation_handle);
   }
 
  protected:
