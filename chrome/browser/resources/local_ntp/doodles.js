@@ -61,6 +61,20 @@ doodles.LOGO_TYPE = {
 
 
 /**
+ * Subset of gws.plugins.doodle.SharingLightbox.LogType in
+ * googledata/html/templates/gws/head/xjs/plugins/doodle/sharing_lightbox.js.
+ * @enum {number}
+ * @const
+ */
+doodles.SHARE_TYPE = {
+  FACEBOOK: 2,
+  TWITTER: 3,
+  EMAIL: 5,
+  LINK_COPY: 6,
+};
+
+
+/**
  * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
  * @type {number}
  */
@@ -262,6 +276,29 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
           doodles.onDdllogResponse();
         }
       });
+};
+
+
+/**
+ * TODO(896461): Add more click tracking parameters.
+ * Logs a doodle sharing event.
+ * Uses the ct param provided in metadata.onClickUrl to track the doodle.
+ *
+ * @param {string} platform Social media platform the doodle will be shared to.
+ */
+doodles.logDoodleShare = function(platform) {
+  if (doodles.targetDoodle.metadata.onClickUrl) {
+    const onClickUrl = new URL(doodles.targetDoodle.metadata.onClickUrl);
+    const ct = onClickUrl.searchParams.get('ct');
+    if (ct && ct != '') {
+      const url = new URL('/gen_204', configData.googleBaseUrl);
+      url.searchParams.append('atyp', 'i');
+      url.searchParams.append('ct', 'doodle');
+      url.searchParams.append('cad', 'sh,' + platform + ',ct:' + ct);
+      url.searchParams.append('ntp', 1);
+      navigator.sendBeacon(url.toString());
+    }
+  }
 };
 
 
@@ -619,6 +656,7 @@ doodles.updateShareDialog = function() {
         '&href=' + encodeURIComponent(shortLink) +
         '&hashtag=' + encodeURIComponent('#GoogleDoodle');
     window.open(url);
+    doodles.logDoodleShare(doodles.SHARE_TYPE.FACEBOOK);
   };
   facebookButton.title = configData.translatedStrings.shareFacebook;
 
@@ -626,6 +664,7 @@ doodles.updateShareDialog = function() {
     var url = 'https://twitter.com/intent/tweet' +
         '?text=' + encodeURIComponent(title + '\n' + shortLink);
     window.open(url);
+    doodles.logDoodleShare(doodles.SHARE_TYPE.TWITTER);
   };
   twitterButton.title = configData.translatedStrings.shareTwitter;
 
@@ -633,6 +672,7 @@ doodles.updateShareDialog = function() {
     var url = 'mailto:?subject=' + encodeURIComponent(title) +
         '&body=' + encodeURIComponent(shortLink);
     document.location.href = url;
+    doodles.logDoodleShare(doodles.SHARE_TYPE.EMAIL);
   };
   mailButton.title = configData.translatedStrings.shareMail;
 
@@ -645,6 +685,7 @@ doodles.updateShareDialog = function() {
   copyButton.onclick = function() {
     linkText.select();
     document.execCommand('copy');
+    doodles.logDoodleShare(doodles.SHARE_TYPE.LINK_COPY);
   };
   copyButton.title = configData.translatedStrings.copyLink;
 };
