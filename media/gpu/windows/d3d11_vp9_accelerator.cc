@@ -131,6 +131,7 @@ void D3D11VP9Accelerator::CopyFrameParams(
   COPY_PARAM(frame_parallel_decoding_mode);
   COPY_PARAM(intra_only);
   COPY_PARAM(frame_context_idx);
+  COPY_PARAM(reset_frame_context);
   COPY_PARAM(allow_high_precision_mv);
   COPY_PARAM(refresh_frame_context);
   COPY_PARAM(frame_parallel_decoding_mode);
@@ -143,8 +144,8 @@ void D3D11VP9Accelerator::CopyFrameParams(
 
   pic_params->CurrPic.Index7Bits = pic->level();
   pic_params->frame_type = !pic->frame_hdr->IsKeyframe();
-  pic_params->subsampling_x = pic->frame_hdr->subsampling_x == 1;
-  pic_params->subsampling_y = pic->frame_hdr->subsampling_y == 1;
+  pic_params->subsampling_x = pic->frame_hdr->subsampling_x;
+  pic_params->subsampling_y = pic->frame_hdr->subsampling_y;
 
   SET_PARAM(width, frame_width);
   SET_PARAM(height, frame_height);
@@ -266,7 +267,8 @@ void D3D11VP9Accelerator::CopyHeaderSizeAndID(
   pic_params->first_partition_size =
       static_cast<USHORT>(pic->frame_hdr->header_size_in_bytes);
 
-  pic_params->StatusReportFeedbackNumber = status_feedback_++;
+  // StatusReportFeedbackNumber "should not be equal to 0".
+  pic_params->StatusReportFeedbackNumber = ++status_feedback_;
 }
 
 bool D3D11VP9Accelerator::SubmitDecoderBuffer(
