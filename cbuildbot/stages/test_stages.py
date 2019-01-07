@@ -86,6 +86,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'hw_tests'
+  stage_name = "HWTest"
   category = constants.TEST_INFRA_STAGE
 
   PERF_RESULTS_EXTENSION = 'results'
@@ -295,6 +296,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
+  stage_name = "SkylabHWTest"
   category = constants.TEST_INFRA_STAGE
 
   def _SetBranchedSuiteConfig(self, suite_config):
