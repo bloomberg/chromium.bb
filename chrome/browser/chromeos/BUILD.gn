@@ -31,6 +31,7 @@ source_set("chromeos") {
     "//chromeos:cicerone_proto",
     "//chromeos:concierge_proto",
     "//chromeos:power_manager_proto",
+    "//chromeos:runtime_probe_proto",
     "//chromeos:seneschal_proto",
     "//chromeos:vm_applications_apps_proto",
     "//chromeos/strings",

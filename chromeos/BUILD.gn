@@ -49,6 +49,7 @@ component("chromeos") {
     ":metrics_event_proto",
     ":oobe_config_proto",
     ":power_manager_proto",
+    ":runtime_probe_proto",
     ":seneschal_proto",
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
@@ -559,6 +560,18 @@ proto_library("oobe_config_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/oobe_config"
+}
+
+proto_library("runtime_probe_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/runtime_probe/runtime_probe.proto",
+  ]
+
+  # chromeos side uses full runtime, so we don't specify lite runtime in proto
+  # file, instead we specify lite runtime here.
+  cc_generator_options = "lite=true:"
+
+  proto_out_dir = "chromeos/dbus/runtime_probe"
 }
 
 proto_library("seneschal_proto") {
