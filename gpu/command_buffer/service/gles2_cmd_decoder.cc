@@ -11317,11 +11317,11 @@ void GLES2DecoderImpl::DoMultiDrawBeginCHROMIUM(GLsizei drawcount) {
 }
 
 void GLES2DecoderImpl::DoMultiDrawEndCHROMIUM() {
-  bool success;
-  MultiDrawManager::ResultData result = multi_draw_manager_->End(&success);
-  if (!success) {
+  MultiDrawManager::ResultData result;
+  if (!multi_draw_manager_->End(&result)) {
     MarkContextLost(error::kGuilty);
     group_->LoseContexts(error::kInnocent);
+    return;
   }
   switch (result.draw_function) {
     case MultiDrawManager::DrawFunction::DrawArrays:

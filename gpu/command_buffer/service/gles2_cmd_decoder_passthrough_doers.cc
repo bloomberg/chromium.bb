@@ -2175,9 +2175,8 @@ error::Error GLES2DecoderPassthroughImpl::DoMultiDrawBeginCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoMultiDrawEndCHROMIUM() {
-  bool success;
-  MultiDrawManager::ResultData result = multi_draw_manager_->End(&success);
-  if (!success) {
+  MultiDrawManager::ResultData result;
+  if (!multi_draw_manager_->End(&result)) {
     return error::kInvalidArguments;
   }
   switch (result.draw_function) {
