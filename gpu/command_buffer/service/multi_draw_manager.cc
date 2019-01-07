@@ -62,10 +62,15 @@ bool MultiDrawManager::Begin(GLsizei drawcount) {
   return true;
 }
 
-MultiDrawManager::ResultData MultiDrawManager::End(bool* success) {
-  *success = current_draw_offset_ == result_.drawcount;
-  DCHECK(*success);
-  return std::move(result_);
+bool MultiDrawManager::End(ResultData* result) {
+  DCHECK(result);
+
+  if (result_.draw_function == DrawFunction::None ||
+      current_draw_offset_ != result_.drawcount) {
+    return false;
+  }
+  *result = std::move(result_);
+  return true;
 }
 
 bool MultiDrawManager::MultiDrawArrays(GLenum mode,

@@ -52,7 +52,7 @@ class GPU_GLES2_EXPORT MultiDrawManager {
   MultiDrawManager(IndexStorageType index_type);
 
   bool Begin(GLsizei drawcount);
-  ResultData End(bool* success);
+  bool End(ResultData* result);
   bool MultiDrawArrays(GLenum mode,
                        const GLint* firsts,
                        const GLsizei* counts,
