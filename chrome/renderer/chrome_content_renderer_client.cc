@@ -353,9 +353,6 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   for (const char* origin : kPredefinedAllowedCompositorOrigins)
     allowed_compositor_origins_.insert(origin);
 #endif
-
-  heap_profiling::SetGCHeapAllocationHookFunctions(
-      &blink::WebHeap::SetAllocationHook, &blink::WebHeap::SetFreeHook);
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() = default;
