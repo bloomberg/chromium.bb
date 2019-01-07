@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 
 #include <memory>
 
@@ -34,22 +34,20 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
@@ -63,6 +61,8 @@
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -78,14 +78,14 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSettingsCollectionViewId = @"kSettingsCollectionViewId";
+NSString* const kSettingsTableViewId = @"kSettingsTableViewId";
 NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 NSString* const kSettingsSignInCellId = @"kSettingsSignInCellId";
 NSString* const kSettingsAccountCellId = @"kSettingsAccountCellId";
 NSString* const kSettingsSearchEngineCellId = @"Search Engine";
 NSString* const kSettingsVoiceSearchCellId = @"Voice Search Settings";
 
-@interface SettingsCollectionViewController (NotificationBridgeDelegate)
+@interface SettingsTableViewController (NotificationBridgeDelegate)
 // Notifies this controller that the sign in state has changed.
 - (void)onSignInStateChanged;
 @end
@@ -150,7 +150,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 class IdentityObserverBridge : public identity::IdentityManager::Observer {
  public:
   IdentityObserverBridge(ios::ChromeBrowserState* browserState,
-                         SettingsCollectionViewController* owner);
+                         SettingsTableViewController* owner);
   ~IdentityObserverBridge() override {}
 
   // IdentityManager::Observer implementation:
@@ -159,13 +159,13 @@ class IdentityObserverBridge : public identity::IdentityManager::Observer {
       const AccountInfo& previous_primary_account_info) override;
 
  private:
-  __weak SettingsCollectionViewController* owner_;
+  __weak SettingsTableViewController* owner_;
   ScopedObserver<identity::IdentityManager, IdentityObserverBridge> observer_;
 };
 
 IdentityObserverBridge::IdentityObserverBridge(
     ios::ChromeBrowserState* browserState,
-    SettingsCollectionViewController* owner)
+    SettingsTableViewController* owner)
     : owner_(owner), observer_(this) {
   DCHECK(owner_);
   identity::IdentityManager* identity_manager =
@@ -187,9 +187,9 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 }  // namespace
 
-#pragma mark - SettingsCollectionViewController
+#pragma mark - SettingsTableViewController
 
-@interface SettingsCollectionViewController ()<
+@interface SettingsTableViewController () <
     BooleanObserver,
     ChromeIdentityServiceObserver,
     GoogleServicesSettingsCoordinatorDelegate,
@@ -211,9 +211,9 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   // PrefBackedBoolean for ArticlesForYou switch.
   PrefBackedBoolean* _articlesEnabled;
   // The item related to the switch for the show suggestions setting.
-  LegacySettingsSwitchItem* _showMemoryDebugToolsItem;
+  SettingsSwitchItem* _showMemoryDebugToolsItem;
   // The item related to the switch for the show suggestions setting.
-  LegacySettingsSwitchItem* _articlesForYouItem;
+  SettingsSwitchItem* _articlesForYouItem;
 
   // Mediator to configure the sign-in promo cell. Also used to received
   // identity update notifications.
@@ -238,11 +238,11 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   PrefChangeRegistrar _prefChangeRegistrar;
 
   // Updatable Items.
-  LegacySettingsDetailItem* _voiceSearchDetailItem;
-  LegacySettingsDetailItem* _defaultSearchEngineItem;
-  LegacySettingsDetailItem* _passwordsDetailItem;
-  LegacySettingsDetailItem* _autoFillProfileDetailItem;
-  LegacySettingsDetailItem* _autoFillCreditCardDetailItem;
+  SettingsDetailItem* _voiceSearchDetailItem;
+  SettingsDetailItem* _defaultSearchEngineItem;
+  SettingsDetailItem* _passwordsDetailItem;
+  SettingsDetailItem* _autoFillProfileDetailItem;
+  SettingsDetailItem* _autoFillCreditCardDetailItem;
 
   // YES if the user used at least once the sign-in promo view buttons.
   BOOL _signinStarted;
@@ -263,7 +263,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 @end
 
-@implementation SettingsCollectionViewController
+@implementation SettingsTableViewController
 @synthesize settingsMainPageDispatcher = _settingsMainPageDispatcher;
 @synthesize dispatcher = _dispatcher;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
@@ -273,13 +273,11 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(!browserState->IsOffTheRecord());
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleDefault];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);
-    self.collectionViewAccessibilityIdentifier = kSettingsCollectionViewId;
     _notificationBridge.reset(new IdentityObserverBridge(_browserState, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
@@ -347,11 +345,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self.tableView.accessibilityIdentifier = kSettingsTableViewId;
+
   // Change the separator inset from the settings default because this
-  // collectionview shows leading icons.
-  const CGFloat kSettingsSeparatorLeadingInset = 56;
-  self.styler.separatorInset =
-      UIEdgeInsetsMake(0, kSettingsSeparatorLeadingInset, 0, 0);
+  // TableView shows leading icons.
+  self.tableView.separatorInset =
+      UIEdgeInsetsMake(0, kTableViewSeparatorInsetWithIcon, 0, 0);
 
   self.navigationItem.largeTitleDisplayMode =
       UINavigationItemLargeTitleDisplayModeAlways;
@@ -365,12 +364,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   [self updateSearchCell];
 }
 
-#pragma mark SettingsRootCollectionViewController
+#pragma mark SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
 
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel<TableViewItem*>* model = self.tableViewModel;
 
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
@@ -471,12 +470,20 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 #pragma mark - Model Items
 
-- (CollectionViewItem*)signInTextItem {
+- (TableViewItem*)signInTextItem {
   if (_signinPromoViewMediator) {
-    SigninPromoItem* signinPromoItem =
-        [[SigninPromoItem alloc] initWithType:ItemTypeSigninPromo];
+    TableViewSigninPromoItem* signinPromoItem =
+        [[TableViewSigninPromoItem alloc] initWithType:ItemTypeSigninPromo];
+    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+      signinPromoItem.text =
+          l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SETTINGS_WITH_UNITY);
+    } else {
+      signinPromoItem.text =
+          l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SETTINGS);
+    }
     signinPromoItem.configurator =
         [_signinPromoViewMediator createConfigurator];
+    signinPromoItem.delegate = _signinPromoViewMediator;
     [_signinPromoViewMediator signinPromoViewVisible];
     return signinPromoItem;
   }
@@ -487,18 +494,16 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
         signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     _hasRecordedSigninImpression = YES;
   }
-  LegacyAccountSignInItem* signInTextItem =
-      [[LegacyAccountSignInItem alloc] initWithType:ItemTypeSignInButton];
+  AccountSignInItem* signInTextItem =
+      [[AccountSignInItem alloc] initWithType:ItemTypeSignInButton];
   signInTextItem.accessibilityIdentifier = kSettingsSignInCellId;
-  UIImage* image = CircularImageFromImage(ios::GetChromeBrowserProvider()
-                                              ->GetSigninResourcesProvider()
-                                              ->GetDefaultAvatar(),
-                                          kAccountProfilePhotoDimension);
-  signInTextItem.image = image;
+  signInTextItem.detailText =
+      l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE);
+
   return signInTextItem;
 }
 
-- (CollectionViewItem*)googleServicesCellItem {
+- (TableViewItem*)googleServicesCellItem {
   // TODO(crbug.com/805214): This branded icon image needs to come from
   // BrandedImageProvider.
   return [self detailItemWithType:ItemGoogleServices
@@ -508,18 +513,17 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                     iconImageName:kSyncAndGoogleServicesImageName];
 }
 
-- (CollectionViewItem*)accountCellItem {
-  CollectionViewAccountItem* identityAccountItem =
-      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
-  identityAccountItem.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)accountCellItem {
+  TableViewAccountItem* identityAccountItem =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   identityAccountItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
+      UITableViewCellAccessoryDisclosureIndicator;
   identityAccountItem.accessibilityIdentifier = kSettingsAccountCellId;
   [self updateIdentityAccountItem:identityAccountItem];
   return identityAccountItem;
 }
 
-- (CollectionViewItem*)searchEngineDetailItem {
+- (TableViewItem*)searchEngineDetailItem {
   NSString* defaultSearchEngineName =
       base::SysUTF16ToNSString(GetDefaultSearchEngineName(
           ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
@@ -535,7 +539,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _defaultSearchEngineItem;
 }
 
-- (CollectionViewItem*)passwordsDetailItem {
+- (TableViewItem*)passwordsDetailItem {
   BOOL passwordsEnabled = _browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
   NSString* passwordsDetail = passwordsEnabled
@@ -550,7 +554,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _passwordsDetailItem;
 }
 
-- (CollectionViewItem*)AutoFillCreditCardDetailItem {
+- (TableViewItem*)AutoFillCreditCardDetailItem {
   BOOL autofillCreditCardEnabled =
       autofill::prefs::IsCreditCardAutofillEnabled(_browserState->GetPrefs());
   NSString* detailText = autofillCreditCardEnabled
@@ -565,7 +569,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _autoFillCreditCardDetailItem;
 }
 
-- (CollectionViewItem*)autoFillProfileDetailItem {
+- (TableViewItem*)autoFillProfileDetailItem {
   BOOL autofillProfileEnabled =
       autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
   NSString* detailText = autofillProfileEnabled
@@ -581,7 +585,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _autoFillProfileDetailItem;
 }
 
-- (CollectionViewItem*)voiceSearchDetailItem {
+- (TableViewItem*)voiceSearchDetailItem {
   voice::SpeechInputLocaleConfig* localeConfig =
       voice::SpeechInputLocaleConfig::GetInstance();
   voice::SpeechInputLocale locale =
@@ -599,7 +603,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _voiceSearchDetailItem;
 }
 
-- (CollectionViewItem*)privacyDetailItem {
+- (TableViewItem*)privacyDetailItem {
   return
       [self detailItemWithType:ItemTypePrivacy
                           text:l10n_util::GetNSString(
@@ -608,7 +612,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                  iconImageName:kSettingsPrivacyImageName];
 }
 
-- (CollectionViewItem*)contentSettingsDetailItem {
+- (TableViewItem*)contentSettingsDetailItem {
   return [self
       detailItemWithType:ItemTypeContentSettings
                     text:l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE)
@@ -616,7 +620,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
            iconImageName:kSettingsContentSettingsImageName];
 }
 
-- (CollectionViewItem*)bandwidthManagementDetailItem {
+- (TableViewItem*)bandwidthManagementDetailItem {
   return [self detailItemWithType:ItemTypeBandwidth
                              text:l10n_util::GetNSString(
                                       IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)
@@ -624,15 +628,15 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                     iconImageName:kSettingsBandwidthImageName];
 }
 
-- (CollectionViewItem*)aboutChromeDetailItem {
+- (TableViewItem*)aboutChromeDetailItem {
   return [self detailItemWithType:ItemTypeAboutChrome
                              text:l10n_util::GetNSString(IDS_IOS_PRODUCT_NAME)
                        detailText:nil
                     iconImageName:kSettingsAboutChromeImageName];
 }
 
-- (LegacySettingsSwitchItem*)showMemoryDebugSwitchItem {
-  LegacySettingsSwitchItem* showMemoryDebugSwitchItem =
+- (SettingsSwitchItem*)showMemoryDebugSwitchItem {
+  SettingsSwitchItem* showMemoryDebugSwitchItem =
       [self switchItemWithType:ItemTypeMemoryDebugging
                          title:@"Show memory debug tools"
                  iconImageName:kSettingsDebugImageName
@@ -642,8 +646,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return showMemoryDebugSwitchItem;
 }
 
-- (LegacySettingsSwitchItem*)articlesForYouSwitchItem {
-  LegacySettingsSwitchItem* articlesForYouSwitchItem =
+- (SettingsSwitchItem*)articlesForYouSwitchItem {
+  SettingsSwitchItem* articlesForYouSwitchItem =
       [self switchItemWithType:ItemTypeArticlesForYou
                          title:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
@@ -655,21 +659,21 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 }
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 
-- (LegacySettingsSwitchItem*)viewSourceSwitchItem {
+- (SettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
                             title:@"View source menu"
                     iconImageName:kSettingsDebugImageName
                   withDefaultsKey:kDevViewSourceKey];
 }
 
-- (LegacySettingsDetailItem*)collectionViewCatalogDetailItem {
+- (SettingsDetailItem*)collectionViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeCollectionCellCatalog
                              text:@"Collection Cell Catalog"
                        detailText:nil
                     iconImageName:kSettingsDebugImageName];
 }
 
-- (LegacySettingsDetailItem*)tableViewCatalogDetailItem {
+- (SettingsDetailItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
                        detailText:nil
@@ -690,27 +694,27 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 #pragma mark Item Constructors
 
-- (LegacySettingsDetailItem*)detailItemWithType:(NSInteger)type
-                                           text:(NSString*)text
-                                     detailText:(NSString*)detailText
-                                  iconImageName:(NSString*)iconImageName {
-  LegacySettingsDetailItem* detailItem =
-      [[LegacySettingsDetailItem alloc] initWithType:type];
+- (SettingsDetailItem*)detailItemWithType:(NSInteger)type
+                                     text:(NSString*)text
+                               detailText:(NSString*)detailText
+                            iconImageName:(NSString*)iconImageName {
+  SettingsDetailItem* detailItem =
+      [[SettingsDetailItem alloc] initWithType:type];
   detailItem.text = text;
   detailItem.detailText = detailText;
-  detailItem.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  detailItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   detailItem.iconImageName = iconImageName;
   detailItem.accessibilityTraits |= UIAccessibilityTraitButton;
 
   return detailItem;
 }
 
-- (LegacySettingsSwitchItem*)switchItemWithType:(NSInteger)type
-                                          title:(NSString*)title
-                                  iconImageName:(NSString*)iconImageName
-                                withDefaultsKey:(NSString*)key {
-  LegacySettingsSwitchItem* switchItem =
-      [[LegacySettingsSwitchItem alloc] initWithType:type];
+- (SettingsSwitchItem*)switchItemWithType:(NSInteger)type
+                                    title:(NSString*)title
+                            iconImageName:(NSString*)iconImageName
+                          withDefaultsKey:(NSString*)key {
+  SettingsSwitchItem* switchItem =
+      [[SettingsSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.iconImageName = iconImageName;
   if (key) {
@@ -721,18 +725,17 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return switchItem;
 }
 
-#pragma mark - UICollectionViewDataSource
+#pragma mark - UITableViewDataSource
 
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
-  if ([cell isKindOfClass:[LegacySettingsDetailCell class]]) {
-    LegacySettingsDetailCell* detailCell =
-        base::mac::ObjCCastStrict<LegacySettingsDetailCell>(cell);
+  if ([cell isKindOfClass:[SettingsDetailCell class]]) {
+    SettingsDetailCell* detailCell =
+        base::mac::ObjCCastStrict<SettingsDetailCell>(cell);
     if (itemType == ItemTypePasswords) {
       scoped_refptr<password_manager::PasswordStore> passwordStore =
           IOSChromePasswordStoreFactory::GetForBrowserState(
@@ -744,45 +747,37 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
         LOG(ERROR) << "Save passwords cell was disabled as the password store"
                       " cannot be created.";
         [detailCell setUserInteractionEnabled:NO];
-        detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-        detailCell.detailTextLabel.textColor =
-            [[MDCPalette greyPalette] tint400];
+        detailCell.textLabel.textColor =
+            UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
         return cell;
       }
     }
 
     [detailCell setUserInteractionEnabled:YES];
-    detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+    detailCell.textLabel.textColor = UIColor.blackColor;
   }
 
   switch (itemType) {
     case ItemTypeMemoryDebugging: {
-      LegacySettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(memorySwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
     case ItemTypeArticlesForYou: {
-      LegacySettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(articlesForYouSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
-    case ItemTypeSigninPromo: {
-      SigninPromoCell* signinPromoCell =
-          base::mac::ObjCCast<SigninPromoCell>(cell);
-      signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
-      break;
-    }
     case ItemTypeViewSource: {
 #if CHROMIUM_BUILD && !defined(NDEBUG)
-      LegacySettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(viewSourceSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
@@ -798,21 +793,18 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return cell;
 }
 
-#pragma mark UICollectionViewDelegate
+#pragma mark UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-
-  id object = [self.collectionViewModel itemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  id object = [self.tableViewModel itemAtIndexPath:indexPath];
   if ([object respondsToSelector:@selector(isEnabled)] &&
       ![object performSelector:@selector(isEnabled)]) {
     // Don't perform any action if the cell isn't enabled.
     return;
   }
 
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
   UIViewController<SettingsRootViewControlling>* controller;
 
@@ -892,53 +884,16 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   }
 }
 
-#pragma mark MDCCollectionViewStylingDelegate
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-
-  if (item.type == ItemTypeSigninPromo) {
-    return [MDCCollectionViewCell
-        cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                           forItem:item];
-  }
-
-  if (item.type == ItemTypeAccount) {
-    return MDCCellDefaultTwoLineHeight;
-  }
-
-  if (item.type == ItemTypeSignInButton) {
-    return MDCCellDefaultThreeLineHeight;
-  }
-
-  return MDCCellDefaultOneLineHeight;
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  switch (type) {
-    case ItemTypeMemoryDebugging:
-    case ItemTypeSigninPromo:
-    case ItemTypeViewSource:
-      return YES;
-    default:
-      return NO;
-  }
-}
-
 #pragma mark Switch Actions
 
 - (void)memorySwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeMemoryDebugging
-                                   sectionIdentifier:SectionIdentifierDebug];
+      [self.tableViewModel indexPathForItemType:ItemTypeMemoryDebugging
+                              sectionIdentifier:SectionIdentifierDebug];
 
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
@@ -947,12 +902,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 - (void)articlesForYouSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeArticlesForYou
-                                   sectionIdentifier:SectionIdentifierAdvanced];
+      [self.tableViewModel indexPathForItemType:ItemTypeArticlesForYou
+                              sectionIdentifier:SectionIdentifierAdvanced];
 
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
@@ -962,12 +917,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 - (void)viewSourceSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeViewSource
-                                   sectionIdentifier:SectionIdentifierDebug];
+      [self.tableViewModel indexPathForItemType:ItemTypeViewSource
+                              sectionIdentifier:SectionIdentifierDebug];
 
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
@@ -1012,8 +967,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 }
 
 // Updates the identity cell.
-- (void)updateIdentityAccountItem:
-    (CollectionViewAccountItem*)identityAccountItem {
+- (void)updateIdentityAccountItem:(TableViewAccountItem*)identityAccountItem {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
   _identity = authService->GetAuthenticatedIdentity();
@@ -1050,16 +1004,16 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 }
 
 - (void)reloadAccountCell {
-  if (![self.collectionViewModel hasItemForItemType:ItemTypeAccount
-                                  sectionIdentifier:SectionIdentifierAccount]) {
+  if (![self.tableViewModel hasItemForItemType:ItemTypeAccount
+                             sectionIdentifier:SectionIdentifierAccount]) {
     return;
   }
   NSIndexPath* accountCellIndexPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeAccount
-                                   sectionIdentifier:SectionIdentifierAccount];
-  CollectionViewAccountItem* identityAccountItem =
-      base::mac::ObjCCast<CollectionViewAccountItem>(
-          [self.collectionViewModel itemAtIndexPath:accountCellIndexPath]);
+      [self.tableViewModel indexPathForItemType:ItemTypeAccount
+                              sectionIdentifier:SectionIdentifierAccount];
+  TableViewAccountItem* identityAccountItem =
+      base::mac::ObjCCast<TableViewAccountItem>(
+          [self.tableViewModel itemAtIndexPath:accountCellIndexPath]);
   if (identityAccountItem) {
     [self updateIdentityAccountItem:identityAccountItem];
     [self reconfigureCellsForItems:@[ identityAccountItem ]];
@@ -1084,7 +1038,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                   dispatcher:self.dispatcher];
   }
 
-  __weak SettingsCollectionViewController* weakSelf = self;
+  __weak SettingsTableViewController* weakSelf = self;
   [self.signinInteractionCoordinator
             signInWithIdentity:identity
                    accessPoint:signin_metrics::AccessPoint::
@@ -1116,13 +1070,13 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 #pragma mark NotificationBridgeDelegate
 
 - (void)onSignInStateChanged {
-  // While the sign-in interaction coordinator is presenting UI, the collection
-  // view should not be updated. Otherwise, it would lead to have an UI glitch
-  // either while the sign in UI is appearing or while it is disappearing. The
-  // collection view will be reloaded once the animation is finished.
-  // See: -[SettingsCollectionViewController didFinishSignin:].
+  // While the sign-in interaction coordinator is presenting UI, the TableView
+  // should not be updated. Otherwise, it would lead to have an UI glitch either
+  // while the sign in UI is appearing or while it is disappearing. The
+  // TableView will be reloaded once the animation is finished.
+  // See: -[SettingsTableViewController didFinishSignin:].
   if (!self.signinInteractionCoordinator.isActive) {
-    // Sign in state changes are rare. Just reload the entire collection when
+    // Sign in state changes are rare. Just reload the entire table when
     // this happens.
     [self reloadData];
   }
@@ -1260,21 +1214,21 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
   DCHECK(!self.signinInteractionCoordinator.isActive);
-  if (![self.collectionViewModel hasItemForItemType:ItemTypeSigninPromo
-                                  sectionIdentifier:SectionIdentifierSignIn]) {
+  if (![self.tableViewModel hasItemForItemType:ItemTypeSigninPromo
+                             sectionIdentifier:SectionIdentifierSignIn]) {
     return;
   }
   NSIndexPath* signinPromoCellIndexPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeSigninPromo
-                                   sectionIdentifier:SectionIdentifierSignIn];
+      [self.tableViewModel indexPathForItemType:ItemTypeSigninPromo
+                              sectionIdentifier:SectionIdentifierSignIn];
   DCHECK(signinPromoCellIndexPath.item != NSNotFound);
-  SigninPromoItem* signinPromoItem = base::mac::ObjCCast<SigninPromoItem>(
-      [self.collectionViewModel itemAtIndexPath:signinPromoCellIndexPath]);
+  TableViewSigninPromoItem* signinPromoItem =
+      base::mac::ObjCCast<TableViewSigninPromoItem>(
+          [self.tableViewModel itemAtIndexPath:signinPromoCellIndexPath]);
   if (signinPromoItem) {
     signinPromoItem.configurator = configurator;
+    signinPromoItem.delegate = _signinPromoViewMediator;
     [self reconfigureCellsForItems:@[ signinPromoItem ]];
-    if (identityChanged)
-      [self.collectionViewLayout invalidateLayout];
   }
 }
 

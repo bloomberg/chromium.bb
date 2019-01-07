@@ -115,9 +115,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeImageDetailTextItem,
 };
 
-// Image fixed horizontal size.
-const CGFloat kHorizontalImageFixedSize = 40;
-
 // Credit Card icon size.
 const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
@@ -368,8 +365,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountItemCheckMark]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
-  [model addItem:[self accountSignInItem]
-      toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self coldStateSigninPromoItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self warmStateSigninPromoItem]
@@ -529,17 +524,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"eiusmod tempor incididunt ut labore et dolore magna aliqua.";
   accountItemCheckMark.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
   return accountItemCheckMark;
-}
-
-- (CollectionViewItem*)accountSignInItem {
-  LegacyAccountSignInItem* accountSignInItem =
-      [[LegacyAccountSignInItem alloc] initWithType:ItemTypeAccountSignIn];
-  accountSignInItem.image =
-      CircularImageFromImage(ios::GetChromeBrowserProvider()
-                                 ->GetSigninResourcesProvider()
-                                 ->GetDefaultAvatar(),
-                             kHorizontalImageFixedSize);
-  return accountSignInItem;
 }
 
 - (CollectionViewItem*)coldStateSigninPromoItem {
