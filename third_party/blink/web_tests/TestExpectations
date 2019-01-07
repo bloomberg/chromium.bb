@@ -6016,3 +6016,4 @@ crbug.com/919096 [ Linux ] virtual/display-lock/display-lock/lock-before-append/
 
 # Sheriff 2019-01-07
 crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
+crbug.com/919504 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Timeout Pass ]
