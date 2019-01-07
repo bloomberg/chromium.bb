@@ -77,6 +77,7 @@ class WebLocalFrame : public WebFrame {
       WebView*,
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
+      mojo::ScopedMessagePipeHandle,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
       WebSandboxFlags = WebSandboxFlags::kNone);
@@ -101,6 +102,7 @@ class WebLocalFrame : public WebFrame {
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
+      mojo::ScopedMessagePipeHandle,
       WebRemoteFrame*,
       WebSandboxFlags,
       ParsedFeaturePolicy);
@@ -110,7 +112,8 @@ class WebLocalFrame : public WebFrame {
   // it's no longer needed.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           WebLocalFrameClient*,
-                                          blink::InterfaceRegistry*) = 0;
+                                          blink::InterfaceRegistry*,
+                                          mojo::ScopedMessagePipeHandle) = 0;
 
   // Returns the WebFrame associated with the current V8 context. This
   // function can return 0 if the context is associated with a Document that

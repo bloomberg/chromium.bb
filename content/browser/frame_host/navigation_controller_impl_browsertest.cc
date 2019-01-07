@@ -6848,8 +6848,8 @@ class HistoryNavigationBeforeCommitInjector
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     if (!render_frame_host->GetParent() && params->url == url_) {
       did_trigger_history_navigation_ = true;
       web_contents()->GetController().GoBack();

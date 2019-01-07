@@ -280,6 +280,14 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
 
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   interface_provider_request_ = mojo::MakeRequest(&stub_interface_provider);
+
+  blink::mojom::DocumentInterfaceBrokerPtr
+      stub_document_interface_broker_content;
+  document_interface_broker_content_request_ =
+      mojo::MakeRequest(&stub_document_interface_broker_content);
+  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
+  document_interface_broker_blink_request_ =
+      mojo::MakeRequest(&stub_document_interface_broker_blink);
 }
 
 NavigationSimulator::~NavigationSimulator() {}
@@ -532,11 +540,16 @@ void NavigationSimulator::Commit() {
       navigation_url_, params.item_sequence_number,
       params.document_sequence_number);
 
-  if (same_document_)
+  if (same_document_) {
     interface_provider_request_ = nullptr;
+    document_interface_broker_content_request_ = nullptr;
+    document_interface_broker_blink_request_ = nullptr;
+  }
 
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, std::move(interface_provider_request_), same_document_);
+      &params, std::move(interface_provider_request_),
+      std::move(document_interface_broker_content_request_),
+      std::move(document_interface_broker_blink_request_), same_document_);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -670,6 +683,8 @@ void NavigationSimulator::CommitErrorPage() {
 
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
       &params, std::move(interface_provider_request_),
+      std::move(document_interface_broker_content_request_),
+      std::move(document_interface_broker_blink_request_),
       false /* was_same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
@@ -713,8 +728,16 @@ void NavigationSimulator::CommitSameDocument() {
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
 
   interface_provider_request_ = nullptr;
+  document_interface_broker_content_request_ = nullptr;
+  document_interface_broker_blink_request_ = nullptr;
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, nullptr /* interface_provider_request */, true);
+      &params,
+      // interface_provider_request
+      nullptr,
+      // document_interface_broker_content_handle
+      nullptr,
+      // document_interface_broker_blink_handle
+      nullptr, true);
 
   // Same-document commits should never hit network-related stages of committing
   // a navigation.

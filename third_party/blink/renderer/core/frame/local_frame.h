@@ -107,6 +107,12 @@ class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
 
+namespace mojom {
+namespace blink {
+class DocumentInterfaceBroker;
+}  // namespace blink
+}  // namespace mojom
+
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 class CORE_EXPORT LocalFrame final : public Frame,
@@ -296,6 +302,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
   service_manager::InterfaceProvider& GetInterfaceProvider();
+  mojom::blink::DocumentInterfaceBroker& GetDocumentInterfaceBroker();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
   // Returns an AssociatedInterfaceProvider the frame can use to request

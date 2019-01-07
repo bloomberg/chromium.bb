@@ -988,11 +988,19 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
+  blink::mojom::DocumentInterfaceBrokerPtr
+      stub_document_interface_broker_content;
+  mojo::MakeRequest(&stub_document_interface_broker_content);
+  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
+  mojo::MakeRequest(&stub_document_interface_broker_blink);
+
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = view()->GetRoutingID();
   widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
-      routing_id, std::move(stub_interface_provider), kProxyRoutingId,
+      routing_id, std::move(stub_interface_provider),
+      std::move(stub_document_interface_broker_content),
+      std::move(stub_document_interface_broker_blink), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
       widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
@@ -1053,11 +1061,19 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
+  blink::mojom::DocumentInterfaceBrokerPtr
+      stub_document_interface_broker_content;
+  mojo::MakeRequest(&stub_document_interface_broker_content);
+  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
+  mojo::MakeRequest(&stub_document_interface_broker_blink);
+
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
   widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
-      routing_id, std::move(stub_interface_provider), kProxyRoutingId,
+      routing_id, std::move(stub_interface_provider),
+      std::move(stub_document_interface_broker_content),
+      std::move(stub_document_interface_broker_blink), kProxyRoutingId,
       MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
       widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);

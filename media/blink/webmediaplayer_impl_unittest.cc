@@ -46,6 +46,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -92,6 +93,12 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
   return CONTAINS_STRING(arg, "Effective playback rate changed from " +
                                   std::string(old_rate_string) + " to " +
                                   std::string(new_rate_string));
+}
+
+// returns a valid handle that can be passed to WebLocalFrame constructor
+mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
+  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
+  return mojo::MakeRequest(&info).PassMessagePipe();
 }
 
 #if defined(OS_ANDROID)
@@ -350,11 +357,12 @@ class WebMediaPlayerImplTest : public testing::Test {
                                          /*is_hidden=*/false,
                                          /*compositing_enabled=*/false,
                                          nullptr)),
-        web_local_frame_(
-            blink::WebLocalFrame::CreateMainFrame(web_view_,
-                                                  &web_frame_client_,
-                                                  nullptr,
-                                                  nullptr)),
+        web_local_frame_(blink::WebLocalFrame::CreateMainFrame(
+            web_view_,
+            &web_frame_client_,
+            nullptr,
+            CreateStubDocumentInterfaceBrokerHandle(),
+            nullptr)),
         context_provider_(viz::TestContextProvider::Create()),
         audio_parameters_(TestAudioParameters::Normal()) {
     media_thread_.StartAndWaitForTesting();

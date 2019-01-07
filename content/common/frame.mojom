@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
@@ -18,6 +19,7 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/frame/document_interface_broker.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
@@ -243,9 +245,7 @@ struct CreateNewWindowReply {
   // The ID of the widget for the main frame.
   int32 main_frame_widget_route_id;
 
-  // The InterfaceProvider through which the main RenderFrame can access
-  // services exposed by its RenderFrameHost.
-  service_manager.mojom.InterfaceProvider main_frame_interface_provider;
+  DocumentScopedInterfaceBundle main_frame_interface_bundle;
 
   // Duplicated from CreateNewWindowParams because legacy code.
   string cloned_session_storage_namespace_id;
@@ -262,6 +262,12 @@ struct CreateNewWindowReply {
 // An opaque handle that keeps alive the associated render process even after
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
+
+struct DidCommitProvisionalLoadInterfaceParams {
+  service_manager.mojom.InterfaceProvider& interface_provider_request;
+  blink.mojom.DocumentInterfaceBroker& document_interface_broker_content_request;
+  blink.mojom.DocumentInterfaceBroker& document_interface_broker_blink_request;
+};
 
 // Implemented by the frame server (i.e. the browser process). For messages that
 // must be associated with the IPC channel.
@@ -283,22 +289,24 @@ interface FrameHost {
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);
 
   // Sent by the renderer when a navigation commits in the frame.
-  //
-  // If |interface_provider_request| is non-empty, the FrameHost implementation
-  // must unbind the old InterfaceProvider connection, and drop any interface
-  // requests pending on it. Then it should bind |interface_provider_request|
-  // and start servicing GetInterface messages coming in on this new connection
+
+  // If |interface_params| is non-empty, the FrameHost implementation
+  // must unbind the old InterfaceProvider and DocumentInterfaceBroker
+  // connections, and drop any interface requests pending on them.
+  // Then it should bind the appropriate requests and start servicing
+  // GetInterface messages coming in on these new connections
   // in a security context that is appropriate for the committed navigation.
   //
-  // The FrameHost implementation must enforce that |interface_provider_request|
+  // The FrameHost implementation must enforce that |interface_params|
   // is set for cross-document navigations. This prevents origin confusion by
   // ensuring that interface requests racing with navigation commit will be
   // either ignored, or serviced correctly in the security context of the
   // document they originated from (based on which InterfaceProvider connection
-  // the GetInterface messages arrive on).
+  // the GetInterface messages arrive on or DocumentInterfaceBroker
+  // connection the Get<interface> messages arrive on).
   DidCommitProvisionalLoad(
       DidCommitProvisionalLoadParams params,
-      service_manager.mojom.InterfaceProvider&? interface_provider_request);
+      DidCommitProvisionalLoadInterfaceParams? interface_params);
 
   // Sent by the renderer to indicate that a same document navigation
   // committed in the renderer process.

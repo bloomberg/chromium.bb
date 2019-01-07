@@ -38,12 +38,12 @@ class DidCommitProvisionalLoadInterceptor::FrameAgent
   FrameHost* GetForwardingInterface() override { return impl_; }
   void DidCommitProvisionalLoad(
       std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-      ::service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request) override {
-    if (interceptor_->WillDispatchDidCommitProvisionalLoad(
-            rfhi_, params.get(), &interface_provider_request)) {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
+      override {
+    if (interceptor_->WillDispatchDidCommitProvisionalLoad(rfhi_, params.get(),
+                                                           interface_params)) {
       GetForwardingInterface()->DidCommitProvisionalLoad(
-          std::move(params), std::move(interface_provider_request));
+          std::move(params), std::move(interface_params));
     }
   }
 

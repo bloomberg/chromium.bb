@@ -1236,9 +1236,11 @@ RenderFrameImpl* RenderFrameImpl::Create(
     RenderViewImpl* render_view,
     int32_t routing_id,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
     const base::UnguessableToken& devtools_frame_token) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   CreateParams params(render_view, routing_id, std::move(interface_provider),
+                      std::move(document_interface_broker_content),
                       devtools_frame_token);
 
   if (g_create_render_frame_impl)
@@ -1265,6 +1267,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     RenderViewImpl* render_view,
     int32_t routing_id,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
     int32_t widget_routing_id,
     bool hidden,
     const ScreenInfo& screen_info,
@@ -1278,11 +1282,12 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   RenderFrameImpl* render_frame = RenderFrameImpl::Create(
       render_view, routing_id, std::move(interface_provider),
-      devtools_frame_token);
+      std::move(document_interface_broker_content), devtools_frame_token);
   render_frame->InitializeBlameContext(nullptr);
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       render_view->webview(), render_frame,
-      render_frame->blink_interface_registry_.get(), opener,
+      render_frame->blink_interface_registry_.get(),
+      document_interface_broker_blink.PassInterface().PassHandle(), opener,
       // This conversion is a little sad, as this often comes from a
       // WebString...
       WebString::FromUTF8(replicated_state.name),
@@ -1318,6 +1323,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 void RenderFrameImpl::CreateFrame(
     int routing_id,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
     int proxy_routing_id,
     int opener_routing_id,
     int parent_routing_id,
@@ -1359,7 +1366,7 @@ void RenderFrameImpl::CreateFrame(
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame = RenderFrameImpl::Create(
         parent_proxy->render_view(), routing_id, std::move(interface_provider),
-        devtools_frame_token);
+        std::move(document_interface_broker_content), devtools_frame_token);
     render_frame->InitializeBlameContext(FromRoutingID(parent_routing_id));
     render_frame->unique_name_helper_.set_propagated_name(
         replicated_state.unique_name);
@@ -1367,6 +1374,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.scope, WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy.sandbox_flags, render_frame,
         render_frame->blink_interface_registry_.get(),
+        document_interface_broker_blink.PassInterface().PassHandle(),
         previous_sibling_web_frame,
         replicated_state.frame_policy.container_policy,
         ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
@@ -1395,14 +1403,15 @@ void RenderFrameImpl::CreateFrame(
     const bool proxy_is_main_frame = !proxy->web_frame()->Parent();
 
     render_view = proxy->render_view();
-    render_frame = RenderFrameImpl::Create(render_view, routing_id,
-                                           std::move(interface_provider),
-                                           devtools_frame_token);
+    render_frame = RenderFrameImpl::Create(
+        render_view, routing_id, std::move(interface_provider),
+        std::move(document_interface_broker_content), devtools_frame_token);
     render_frame->InitializeBlameContext(nullptr);
     render_frame->proxy_routing_id_ = proxy_routing_id;
     proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
+        document_interface_broker_blink.PassInterface().PassHandle(),
         proxy->web_frame(), replicated_state.frame_policy.sandbox_flags,
         replicated_state.frame_policy.container_policy);
     // The new |web_frame| is a main frame iff the proxy's frame was.
@@ -1630,10 +1639,13 @@ RenderFrameImpl::CreateParams::CreateParams(
     RenderViewImpl* render_view,
     int32_t routing_id,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
+    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
     const base::UnguessableToken& devtools_frame_token)
     : render_view(render_view),
       routing_id(routing_id),
       interface_provider(std::move(interface_provider)),
+      document_interface_broker_content(
+          std::move(document_interface_broker_content)),
       devtools_frame_token(devtools_frame_token) {}
 RenderFrameImpl::CreateParams::~CreateParams() = default;
 RenderFrameImpl::CreateParams::CreateParams(CreateParams&&) = default;
@@ -1690,6 +1702,12 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
   remote_interfaces_.Bind(std::move(params.interface_provider));
   blink_interface_registry_.reset(new BlinkInterfaceRegistryImpl(
       registry_.GetWeakPtr(), associated_interfaces_.GetWeakPtr()));
+
+  // The DocumentInterfaceBroker to access Mojo services exposed by the RFHI
+  // must be provided at construction time. See: https://crbug.com/718652/.
+  CHECK(params.document_interface_broker_content.is_bound());
+  document_interface_broker_ =
+      std::move(params.document_interface_broker_content);
 
   // Must call after binding our own remote interfaces.
   media_factory_.SetupMojo();
@@ -2997,6 +3015,12 @@ service_manager::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
   return &remote_interfaces_;
 }
 
+blink::mojom::DocumentInterfaceBroker*
+RenderFrameImpl::GetDocumentInterfaceBroker() {
+  DCHECK(document_interface_broker_.is_bound());
+  return document_interface_broker_.get();
+}
+
 blink::AssociatedInterfaceRegistry*
 RenderFrameImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
@@ -3882,9 +3906,9 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
-  mojo::MessagePipeHandle child_interface_provider_handle;
   base::UnguessableToken devtools_frame_token;
   FrameHostMsg_CreateChildFrame_Params params;
+  FrameHostMsg_CreateChildFrame_Params_Reply params_reply;
   params.parent_routing_id = routing_id_;
   params.scope = scope;
   params.frame_name = name.Utf8();
@@ -3913,8 +3937,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
           frame_owner_properties);
   params.frame_owner_element_type = frame_owner_element_type;
   Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id,
-                                         &child_interface_provider_handle,
-                                         &devtools_frame_token));
+                                         &params_reply, &devtools_frame_token));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if the synchronous IPC message above has failed.  This can
@@ -3923,11 +3946,31 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   if (child_routing_id == MSG_ROUTING_NONE)
     return nullptr;
 
-  CHECK(child_interface_provider_handle.is_valid());
+  DCHECK(params_reply.new_interface_provider.is_valid());
   service_manager::mojom::InterfaceProviderPtr child_interface_provider;
   child_interface_provider.Bind(
       service_manager::mojom::InterfaceProviderPtrInfo(
-          mojo::ScopedMessagePipeHandle(child_interface_provider_handle), 0u),
+          mojo::ScopedMessagePipeHandle(params_reply.new_interface_provider),
+          0u),
+      GetTaskRunner(blink::TaskType::kInternalIPC));
+
+  DCHECK(params_reply.document_interface_broker_content_handle.is_valid());
+  DCHECK(params_reply.document_interface_broker_blink_handle.is_valid());
+
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content;
+  document_interface_broker_content.Bind(
+      blink::mojom::DocumentInterfaceBrokerPtrInfo(
+          mojo::ScopedMessagePipeHandle(
+              params_reply.document_interface_broker_content_handle),
+          blink::mojom::DocumentInterfaceBroker::Version_),
+      GetTaskRunner(blink::TaskType::kInternalIPC));
+
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink;
+  document_interface_broker_blink.Bind(
+      blink::mojom::DocumentInterfaceBrokerPtrInfo(
+          mojo::ScopedMessagePipeHandle(
+              params_reply.document_interface_broker_blink_handle),
+          blink::mojom::DocumentInterfaceBroker::Version_),
       GetTaskRunner(blink::TaskType::kInternalIPC));
 
   // This method is always called by local frames, never remote frames.
@@ -3941,7 +3984,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_, child_routing_id, std::move(child_interface_provider),
-      devtools_frame_token);
+      std::move(document_interface_broker_content), devtools_frame_token);
   child_render_frame->unique_name_helper_.set_propagated_name(
       params.frame_unique_name);
   if (params.is_created_by_script)
@@ -3949,7 +3992,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   child_render_frame->InitializeBlameContext(this);
   blink::WebLocalFrame* web_frame = parent->CreateLocalChild(
       scope, child_render_frame,
-      child_render_frame->blink_interface_registry_.get());
+      child_render_frame->blink_interface_registry_.get(),
+      document_interface_broker_blink.PassInterface().PassHandle());
 
   child_render_frame->in_frame_tree_ = true;
   child_render_frame->Initialize();
@@ -4255,7 +4299,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 void RenderFrameImpl::DidCommitProvisionalLoad(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
-    blink::WebGlobalObjectReusePolicy global_object_reuse_policy) {
+    blink::WebGlobalObjectReusePolicy global_object_reuse_policy,
+    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
@@ -4341,8 +4386,16 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   service_manager::mojom::InterfaceProviderRequest
       remote_interface_provider_request;
-  if (global_object_reuse_policy !=
-      blink::WebGlobalObjectReusePolicy::kUseExisting) {
+  blink::mojom::DocumentInterfaceBrokerRequest
+      document_interface_broker_request;
+
+  // TODO(crbug.com/718652): check whether
+  // |document_interface_broker_blink_handle| is valid instead and remove the
+  // |global_object_reuse_policy| parameter.
+  bool reuse_existing_interfaces =
+      (global_object_reuse_policy ==
+       blink::WebGlobalObjectReusePolicy::kUseExisting);
+  if (!reuse_existing_interfaces) {
     // If we're navigating to a new document, bind |remote_interfaces_| to a new
     // message pipe. The request end of the new InterfaceProvider interface will
     // be sent over as part of DidCommitProvisionalLoad. After the RFHI receives
@@ -4358,6 +4411,21 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     // InterfaceProvider interface request is bound by the RenderFrameHostImpl.
     remote_interfaces_.Close();
     remote_interfaces_.Bind(std::move(interfaces_provider));
+
+    // If we're navigating to a new document, bind |document_interface_broker_|
+    // to a new message pipe. The request end of the new DocumentInterfaceBroker
+    // interface will be sent over as part of DidCommitProvisionalLoad. After
+    // the RFHI receives the commit confirmation, it will immediately close the
+    // old message pipe to avoid Get<interface> calls racing with navigation
+    // commit, and bind the request end of the message pipe created here. Must
+    // initialize |document_interface_broker_| with a new working pipe *before*
+    // observers receive DidCommitProvisionalLoad, so they can already request
+    // remote interfaces. The interface requests will be serviced once the
+    // DocumentInterfaceBroker interface request is bound by the
+    // RenderFrameHostImpl.
+    document_interface_broker_.reset();
+    document_interface_broker_request =
+        mojo::MakeRequest(&document_interface_broker_);
 
     // AudioOutputIPCFactory may be null in tests.
     if (auto* factory = AudioOutputIPCFactory::get()) {
@@ -4390,9 +4458,16 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
                                                     frame_, true /* loading */);
-  DidCommitNavigationInternal(item, commit_type,
-                              false /* was_within_same_document */, transition,
-                              std::move(remote_interface_provider_request));
+
+  DidCommitNavigationInternal(
+      item, commit_type, false /* was_within_same_document */, transition,
+      reuse_existing_interfaces
+          ? nullptr
+          : mojom::DidCommitProvisionalLoadInterfaceParams::New(
+                std::move(remote_interface_provider_request),
+                std::move(document_interface_broker_request),
+                blink::mojom::DocumentInterfaceBrokerRequest(
+                    std::move(document_interface_broker_blink_handle))));
 
   // Record time between receiving the message to commit the navigation until it
   // has committed. Only successful cross-document navigation handled by the
@@ -4654,8 +4729,10 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
                                                     frame_, true /* loading */);
   DidCommitNavigationInternal(item, commit_type,
-                              true /* was_within_same_document */, transition,
-                              nullptr /* remote_interface_provider_request */);
+                              // was_within_same_document
+                              true, transition,
+                              // interface_params
+                              nullptr);
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
@@ -5784,10 +5861,8 @@ void RenderFrameImpl::DidCommitNavigationInternal(
     blink::WebHistoryCommitType commit_type,
     bool was_within_same_document,
     ui::PageTransition transition,
-    service_manager::mojom::InterfaceProviderRequest
-        remote_interface_provider_request) {
-  DCHECK(!(was_within_same_document &&
-           remote_interface_provider_request.is_pending()));
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
+  DCHECK(!(was_within_same_document && interface_params));
   UpdateStateForCommit(item, commit_type, transition);
 
   // This invocation must precede any calls to allowScripts(), allowImages(), or
@@ -5800,7 +5875,7 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   } else {
     GetFrameHost()->DidCommitProvisionalLoad(
         MakeDidCommitProvisionalLoadParams(commit_type, transition),
-        std::move(remote_interface_provider_request));
+        std::move(interface_params));
   }
 }
 

@@ -348,9 +348,20 @@ void RenderViewTest::SetUp() {
   view_params->main_frame_widget_routing_id =
       render_thread_->GetNextRoutingID();
   view_params->main_frame_routing_id = render_thread_->GetNextRoutingID();
+  view_params->main_frame_interface_bundle =
+      mojom::DocumentScopedInterfaceBundle::New();
   render_thread_->PassInitialInterfaceProviderRequestForFrame(
       view_params->main_frame_routing_id,
-      mojo::MakeRequest(&view_params->main_frame_interface_provider));
+      mojo::MakeRequest(
+          &view_params->main_frame_interface_bundle->interface_provider));
+
+  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
+  mojo::MakeRequest(&info);
+  view_params->main_frame_interface_bundle->document_interface_broker_content =
+      std::move(info);
+  mojo::MakeRequest(&info);
+  view_params->main_frame_interface_bundle->document_interface_broker_blink =
+      std::move(info);
   view_params->session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
   view_params->replicated_frame_state = FrameReplicationState();

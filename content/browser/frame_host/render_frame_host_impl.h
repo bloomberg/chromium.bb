@@ -68,6 +68,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
@@ -169,6 +170,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
+      public blink::mojom::DocumentInterfaceBroker,
       public CSPContext,
       public ui::AXActionHandler {
  public:
@@ -341,9 +343,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // interface that the RenderFrameHost corresponding to the child frame should
   // bind to expose services to the renderer process. The caller takes care of
   // sending down the client end of the pipe to the child RenderFrame to use.
+  // |document_interface_broker_content_handle| and
+  // |document_interface_broker_blink_handle| are the pipe handles bound by
+  // to request ends of DocumentInterfaceProviderInterface in content and blink
+  // parts of the child frame. RenderFrameHost should bind these handles to
+  // expose services to the renderer process. The caller takes care of sending
+  // down the client end of the pipe to the child RenderFrame to use.
   void OnCreateChildFrame(int new_routing_id,
                           service_manager::mojom::InterfaceProviderRequest
                               interface_provider_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_content_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_blink_request,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
@@ -764,12 +776,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const base::UnguessableToken& GetOverlayRoutingToken();
 
   // Binds the request end of the InterfaceProvider interface through which
-  // services provided by this RenderFrameHost are exposed to the correponding
+  // services provided by this RenderFrameHost are exposed to the corresponding
   // RenderFrame. The caller is responsible for plumbing the client end to the
   // the renderer process.
   void BindInterfaceProviderRequest(
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
+
+  // Binds content and blink request ends of the DocumentInterfaceProvider
+  // interface through which services provided by this RenderFrameHost are
+  // exposed to the corresponding RenderFrame. The caller is responsible for
+  // plumbing the client ends to the the renderer process.
+  void BindDocumentInterfaceBrokerRequest(
+      blink::mojom::DocumentInterfaceBrokerRequest content_request,
+      blink::mojom::DocumentInterfaceBrokerRequest blink_request);
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::AssociatedBinding<mojom::FrameHost>& frame_host_binding_for_testing() {
@@ -807,8 +827,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void DidCommitProvisionalLoadForTesting(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
@@ -1074,8 +1093,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request) override;
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
+      override;
   void DidCommitSameDocumentNavigation(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
@@ -1244,6 +1263,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  // blink::mojom::DocumentInterfaceBroker:
+  void GetFrameHostTestInterface(
+      blink::mojom::FrameHostTestInterfaceRequest request) override;
 
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
@@ -1803,6 +1826,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // interfaces.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       document_scoped_interface_provider_binding_;
+
+  // Bindings for the DocumentInterfaceBroker through which this
+  // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
+  // active document in the corresponding RenderFrame. Because of the type
+  // difference between content and blink, two separate pipes are used.
+  mojo::Binding<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content_binding_;
+  mojo::Binding<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink_binding_;
 
   // Logs interface requests that arrive after the frame has already committed a
   // non-same-document navigation, and has already unbound

@@ -67,6 +67,9 @@ class TestRenderFrame : public RenderFrameImpl {
   service_manager::mojom::InterfaceProviderRequest
   TakeLastInterfaceProviderRequest();
 
+  blink::mojom::DocumentInterfaceBrokerRequest
+  TakeLastDocumentInterfaceBrokerRequest();
+
  private:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 

@@ -1288,6 +1288,12 @@ service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
   return *Client()->GetInterfaceProvider();
 }
 
+mojom::blink::DocumentInterfaceBroker&
+LocalFrame::GetDocumentInterfaceBroker() {
+  DCHECK(Client());
+  return *Client()->GetDocumentInterfaceBroker();
+}
+
 AssociatedInterfaceProvider*
 LocalFrame::GetRemoteNavigationAssociatedInterfaces() {
   DCHECK(Client());

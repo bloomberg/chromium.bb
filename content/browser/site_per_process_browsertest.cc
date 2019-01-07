@@ -6007,7 +6007,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
-    mojo::MakeRequest(&params->interface_provider);
+    params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
+    mojo::MakeRequest(&params->interface_bundle->interface_provider);
+    mojo::MakeRequest(
+        &params->interface_bundle->document_interface_broker_content);
+    mojo::MakeRequest(
+        &params->interface_bundle->document_interface_broker_blink);
     params->proxy_routing_id = proxy_routing_id;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id =
@@ -6073,7 +6078,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   {
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
-    mojo::MakeRequest(&params->interface_provider);
+    params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
+    mojo::MakeRequest(&params->interface_bundle->interface_provider);
+    mojo::MakeRequest(
+        &params->interface_bundle->document_interface_broker_content);
+    mojo::MakeRequest(
+        &params->interface_bundle->document_interface_broker_blink);
     params->proxy_routing_id = IPC::mojom::kRoutingIdNone;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id = parent_routing_id;
@@ -11565,8 +11575,8 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     // The DidCommitProvisionalLoad message is dispatched once this method
     // returns, so to defer committing the the navigation to |deferred_url_|,
     // run a nested message loop until the subsequent other commit message is
@@ -12633,8 +12643,8 @@ class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         render_frame_host->GetRenderViewHost());
     EXPECT_TRUE(rvh->is_active());
@@ -14761,9 +14771,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NE(another_url.host(), policy->GetOriginLock(process_id).host());
   // Simulate a commit IPC.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
+  blink::mojom::DocumentInterfaceBrokerPtrInfo
+      document_interface_broker_content;
+  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
   static_cast<mojom::FrameHost*>(root->current_frame_host())
-      ->DidCommitProvisionalLoad(std::move(params),
-                                 mojo::MakeRequest(&interface_provider));
+      ->DidCommitProvisionalLoad(
+          std::move(params),
+          mojom::DidCommitProvisionalLoadInterfaceParams::New(
+              mojo::MakeRequest(&interface_provider),
+              mojo::MakeRequest(&document_interface_broker_content),
+              mojo::MakeRequest(&document_interface_broker_blink)));
 
   // When the IPC message is received and validation fails, the process is
   // terminated. However, the notification for that should be processed in a

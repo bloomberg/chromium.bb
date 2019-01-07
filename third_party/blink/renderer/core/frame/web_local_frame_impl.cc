@@ -1633,30 +1633,36 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
     WebSandboxFlags sandbox_flags) {
   return WebLocalFrameImpl::CreateMainFrame(
-      web_view, client, interface_registry, opener, name, sandbox_flags);
+      web_view, client, interface_registry,
+      std::move(document_interface_broker_handle), opener, name, sandbox_flags);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebRemoteFrame* old_web_frame,
     WebSandboxFlags flags,
     ParsedFeaturePolicy container_policy) {
   return WebLocalFrameImpl::CreateProvisional(
-      client, interface_registry, old_web_frame, flags, container_policy);
+      client, interface_registry, std::move(document_interface_broker_handle),
+      old_web_frame, flags, container_policy);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::Create(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry);
+      scope, client, interface_registry,
+      std::move(document_interface_broker_handle));
   frame->SetOpener(opener);
   return frame;
 }
@@ -1665,11 +1671,13 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
     WebSandboxFlags sandbox_flags) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      WebTreeScopeType::kDocument, client, interface_registry);
+      WebTreeScopeType::kDocument, client, interface_registry,
+      std::move(document_interface_broker_handle));
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1683,12 +1691,14 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebRemoteFrame* old_web_frame,
     WebSandboxFlags flags,
     ParsedFeaturePolicy container_policy) {
   DCHECK(client);
   WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      old_web_frame, client, interface_registry);
+      old_web_frame, client, interface_registry,
+      std::move(document_interface_broker_handle));
   Frame* old_frame = ToWebRemoteFrameImpl(old_web_frame)->GetFrame();
   web_frame->SetParent(old_web_frame->Parent());
   web_frame->SetOpener(old_web_frame->Opener());
@@ -1727,9 +1737,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry) {
+    blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry);
+      scope, client, interface_registry,
+      std::move(document_interface_broker_handle));
   AppendChild(frame);
   return frame;
 }
@@ -1737,10 +1749,13 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
 WebLocalFrameImpl::WebLocalFrameImpl(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry)
+    blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
     : WebNavigationControl(scope),
       client_(client),
-      local_frame_client_(LocalFrameClientImpl::Create(this)),
+      local_frame_client_(LocalFrameClientImpl::Create(
+          this,
+          std::move(document_interface_broker_handle))),
       autofill_client_(nullptr),
       find_in_page_(FindInPage::Create(*this, interface_registry)),
       interface_registry_(interface_registry),
@@ -1755,12 +1770,14 @@ WebLocalFrameImpl::WebLocalFrameImpl(
 WebLocalFrameImpl::WebLocalFrameImpl(
     WebRemoteFrame* old_web_frame,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry)
+    blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
     : WebLocalFrameImpl(old_web_frame->InShadowTree()
                             ? WebTreeScopeType::kShadow
                             : WebTreeScopeType::kDocument,
                         client,
-                        interface_registry) {}
+                        interface_registry,
+                        std::move(document_interface_broker_handle)) {}
 
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.

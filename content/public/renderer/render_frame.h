@@ -20,6 +20,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -163,6 +164,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
+
+  // Returns the DocumentInterfaceBroker that this process can use to bind
+  // interfaces exposed to it by the application running in this frame.
+  virtual blink::mojom::DocumentInterfaceBroker*
+  GetDocumentInterfaceBroker() = 0;
 
   // Returns the AssociatedInterfaceRegistry this frame can use to expose
   // frame-specific Channel-associated interfaces to the remote RenderFrameHost.

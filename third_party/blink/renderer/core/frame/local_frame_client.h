@@ -77,6 +77,10 @@ class InterfaceProvider;
 namespace blink {
 namespace mojom {
 enum class WebFeature : int32_t;
+
+namespace blink {
+class DocumentInterfaceBroker;
+}  // namespace blink
 }  // namespace mojom
 
 class AssociatedInterfaceProvider;
@@ -378,6 +382,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
   virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
+
+  virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
     return nullptr;
   }
 

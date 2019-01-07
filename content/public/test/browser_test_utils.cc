@@ -556,8 +556,8 @@ class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     if (params->url == target_url_) {
       params->url = new_url_;
       params->origin = new_origin_;

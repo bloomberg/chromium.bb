@@ -110,6 +110,8 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(
       GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
+      CreateStubDocumentInterfaceBrokerRequest(),
+      CreateStubDocumentInterfaceBrokerRequest(),
       blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
@@ -337,16 +339,37 @@ void TestRenderFrameHost::SendNavigateWithParams(
     bool was_within_same_document) {
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request;
-  if (!was_within_same_document)
+
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content;
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink;
+  blink::mojom::DocumentInterfaceBrokerRequest
+      document_interface_broker_content_request;
+  blink::mojom::DocumentInterfaceBrokerRequest
+      document_interface_broker_blink_request;
+
+  if (!was_within_same_document) {
     interface_provider_request = mojo::MakeRequest(&interface_provider);
 
+    document_interface_broker_content_request =
+        mojo::MakeRequest(&document_interface_broker_content);
+    document_interface_broker_blink_request =
+        mojo::MakeRequest(&document_interface_broker_blink);
+  }
+
   SendNavigateWithParamsAndInterfaceProvider(
-      params, std::move(interface_provider_request), was_within_same_document);
+      params, std::move(interface_provider_request),
+      std::move(document_interface_broker_content_request),
+      std::move(document_interface_broker_blink_request),
+      was_within_same_document);
 }
 
 void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     service_manager::mojom::InterfaceProviderRequest request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_content_request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_blink_request,
     bool was_within_same_document) {
   if (GetNavigationHandle()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
@@ -363,7 +386,10 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
   } else {
     DidCommitProvisionalLoad(
         std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params),
-        std::move(request));
+        mojom::DidCommitProvisionalLoadInterfaceParams::New(
+            std::move(request),
+            std::move(document_interface_broker_content_request),
+            std::move(document_interface_broker_blink_request)));
   }
   last_commit_was_error_page_ = params->url_is_unreachable;
 }
@@ -584,6 +610,14 @@ service_manager::mojom::InterfaceProviderRequest
 TestRenderFrameHost::CreateStubInterfaceProviderRequest() {
   ::service_manager::mojom::InterfaceProviderPtr dead_interface_provider_proxy;
   return mojo::MakeRequest(&dead_interface_provider_proxy);
+}
+
+// static
+blink::mojom::DocumentInterfaceBrokerRequest
+TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest() {
+  ::blink::mojom::DocumentInterfaceBrokerPtrInfo
+      dead_document_interface_broker_proxy;
+  return mojo::MakeRequest(&dead_document_interface_broker_proxy);
 }
 
 }  // namespace content

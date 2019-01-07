@@ -345,8 +345,15 @@ bool RenderViewHostImpl::CreateRenderView(
   params->main_frame_routing_id = main_frame_routing_id_;
   params->main_frame_widget_routing_id = render_widget_host_->GetRoutingID();
   if (main_rfh) {
-    main_rfh->BindInterfaceProviderRequest(
-        mojo::MakeRequest(&params->main_frame_interface_provider));
+    params->main_frame_interface_bundle =
+        mojom::DocumentScopedInterfaceBundle::New();
+    main_rfh->BindInterfaceProviderRequest(mojo::MakeRequest(
+        &params->main_frame_interface_bundle->interface_provider));
+    main_rfh->BindDocumentInterfaceBrokerRequest(
+        mojo::MakeRequest(&params->main_frame_interface_bundle
+                               ->document_interface_broker_content),
+        mojo::MakeRequest(&params->main_frame_interface_bundle
+                               ->document_interface_broker_blink));
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
     params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }

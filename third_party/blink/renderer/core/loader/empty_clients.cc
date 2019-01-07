@@ -123,6 +123,12 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
                                               std::move(navigation_params));
 }
 
+mojom::blink::DocumentInterfaceBroker*
+EmptyLocalFrameClient::GetDocumentInterfaceBroker() {
+  mojo::MakeRequest(&document_interface_broker_);
+  return document_interface_broker_.get();
+}
+
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
                                                HTMLFrameOwnerElement*) {
   return nullptr;
