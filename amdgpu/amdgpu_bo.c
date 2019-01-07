@@ -618,6 +618,40 @@ out:
 	return r;
 }
 
+drm_public int amdgpu_bo_list_create_raw(amdgpu_device_handle dev,
+					 uint32_t number_of_buffers,
+					 struct drm_amdgpu_bo_list_entry *buffers,
+					 uint32_t *result)
+{
+	union drm_amdgpu_bo_list args;
+	int r;
+
+	memset(&args, 0, sizeof(args));
+	args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
+	args.in.bo_number = number_of_buffers;
+	args.in.bo_info_size = sizeof(struct drm_amdgpu_bo_list_entry);
+	args.in.bo_info_ptr = (uint64_t)(uintptr_t)buffers;
+
+	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
+				&args, sizeof(args));
+	if (!r)
+		*result = args.out.list_handle;
+	return r;
+}
+
+drm_public int amdgpu_bo_list_destroy_raw(amdgpu_device_handle dev,
+					  uint32_t bo_list)
+{
+	union drm_amdgpu_bo_list args;
+
+	memset(&args, 0, sizeof(args));
+	args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
+	args.in.list_handle = bo_list;
+
+	return drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
+				   &args, sizeof(args));
+}
+
 drm_public int amdgpu_bo_list_create(amdgpu_device_handle dev,
 				     uint32_t number_of_resources,
 				     amdgpu_bo_handle *resources,
