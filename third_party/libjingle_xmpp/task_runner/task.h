@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASK_H__
-#define WEBRTC_BASE_TASK_H__
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASK_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASK_H_
 
 #include <stdint.h>
 
@@ -172,4 +172,4 @@ class Task : public TaskParent {
 
 }  // namespace rtc
 
-#endif  // WEBRTC_BASE_TASK_H__
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASK_H_
