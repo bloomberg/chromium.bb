@@ -222,7 +222,7 @@ void TestWindowTreeClient::OnWindowFocused(Id focused_window_id) {
 }
 
 void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
-                                                 ui::CursorData cursor) {
+                                                 ui::Cursor cursor) {
   tracker_.OnWindowCursorChanged(window_id, cursor);
 }
 

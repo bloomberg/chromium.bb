@@ -9,10 +9,10 @@ import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
-import "services/ws/public/mojom/cursor/cursor.mojom";
 import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
+import "ui/base/mojo/cursor.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
@@ -294,7 +294,7 @@ interface WindowTree {
   SetCanFocus(uint64 window_id, bool can_focus);
 
   // Sets the cursor when the pointer is inside |window_id|.
-  SetCursor(uint32 change_id, uint64 window_id, CursorData cursor);
+  SetCursor(uint32 change_id, uint64 window_id, ui.mojom.Cursor cursor);
 
   // Set text input state for the given window.
   SetWindowTextInputState(uint64 window_id, ui.mojom.TextInputState state);
@@ -567,7 +567,7 @@ interface WindowTreeClient {
   // initiate the change.
   OnWindowFocused(uint64 focused_window_id);
 
-  OnWindowCursorChanged(uint64 window_id, CursorData cursor);
+  OnWindowCursorChanged(uint64 window_id, ui.mojom.Cursor cursor);
 
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this

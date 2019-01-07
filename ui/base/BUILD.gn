@@ -152,8 +152,6 @@ jumbo_component("base") {
     "cursor/cursor.cc",
     "cursor/cursor.h",
     "cursor/cursor_android.cc",
-    "cursor/cursor_data.cc",
-    "cursor/cursor_data.h",
     "cursor/cursor_loader.h",
     "cursor/cursor_type.h",
     "cursor/cursor_win.cc",
@@ -497,11 +495,6 @@ jumbo_component("base") {
   if (use_aura) {
     deps += [ "//ui/events" ]
     sources += [ "window_tracker_template.h" ]
-  } else {
-    sources -= [
-      "cursor/cursor.cc",
-      "cursor/cursor.h",
-    ]
   }
 
   if (!use_aura || !is_linux) {
@@ -982,7 +975,10 @@ test("ui_base_unittests") {
   if (is_ios) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   } else {
-    deps += [ "//ui/base/accelerators/mojo:unittests" ]
+    deps += [
+      "//ui/base/accelerators/mojo:unittests",
+      "//ui/base/mojo:unittests",
+    ]
   }
 
   if (is_win) {

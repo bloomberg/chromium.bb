@@ -167,18 +167,9 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
     // We ignore this entirely, as cursor are set on the client.
   }
 
-  void SetCursor(gfx::NativeCursor cursor,
+  void SetCursor(ui::Cursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
-    ui::CursorData mojo_cursor;
-    if (cursor.native_type() == ui::CursorType::kCustom) {
-      mojo_cursor =
-          ui::CursorData(cursor.GetHotspot(), {cursor.GetBitmap()},
-                         cursor.device_scale_factor(), base::TimeDelta());
-    } else {
-      mojo_cursor = ui::CursorData(cursor.native_type());
-    }
-
-    aura::WindowPortMus::Get(window_)->SetCursor(mojo_cursor);
+    aura::WindowPortMus::Get(window_)->SetCursor(cursor);
     delegate->CommitCursor(cursor);
   }
 
@@ -190,7 +181,7 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
       aura::WindowPortMus::Get(window_)->SetCursor(
-          ui::CursorData(ui::CursorType::kNone));
+          ui::Cursor(ui::CursorType::kNone));
     }
   }
 

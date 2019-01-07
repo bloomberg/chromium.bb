@@ -345,7 +345,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                          mojom::OrderDirection direction);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
   bool SetFocusImpl(const ClientWindowId& window_id);
-  bool SetCursorImpl(const ClientWindowId& window_id, ui::CursorData cursor);
+  bool SetCursorImpl(const ClientWindowId& window_id, ui::Cursor cursor);
   bool StackAboveImpl(const ClientWindowId& above_window_id,
                       const ClientWindowId& below_window_id);
   bool StackAtTopImpl(const ClientWindowId& window_id);
@@ -448,7 +448,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetCursor(uint32_t change_id,
                  Id transport_window_id,
-                 ui::CursorData cursor) override;
+                 ui::Cursor cursor) override;
   void SetWindowTextInputState(Id window_id,
                                ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(Id window_id,

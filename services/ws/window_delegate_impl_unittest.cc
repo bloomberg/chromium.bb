@@ -10,7 +10,7 @@
 #include "services/ws/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
-#include "ui/base/cursor/cursor_data.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -28,9 +28,9 @@ TEST(WindowDeleteImplTest, GetCursorTopLevel) {
   top_level->GetCursor(gfx::Point());
 
   // Set a cursor and ensure we get it back.
-  const ui::CursorData help_cursor(ui::CursorType::kHelp);
+  const ui::Cursor help_cursor(ui::CursorType::kHelp);
   setup.window_tree_test_helper()->SetCursor(top_level, help_cursor);
-  EXPECT_EQ(help_cursor.cursor_type(),
+  EXPECT_EQ(help_cursor.native_type(),
             top_level->GetCursor(gfx::Point()).native_type());
 }
 
@@ -52,10 +52,10 @@ TEST(WindowDeleteImplTest, GetCursorForEmbedding) {
 
   // Set a cursor on the embedded window from the embedded client and ensure we
   // get it back.
-  const ui::CursorData help_cursor(ui::CursorType::kHelp);
+  const ui::Cursor help_cursor(ui::CursorType::kHelp);
   embedding_helper->window_tree_test_helper->SetCursor(embed_window,
                                                        help_cursor);
-  EXPECT_EQ(help_cursor.cursor_type(),
+  EXPECT_EQ(help_cursor.native_type(),
             embed_window->GetCursor(gfx::Point()).native_type());
 }
 
@@ -69,7 +69,7 @@ TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
   delegate->set_window(top_level);
 
   // Set a cursor on |top_level|.
-  const ui::CursorData help_cursor(ui::CursorType::kHelp);
+  const ui::Cursor help_cursor(ui::CursorType::kHelp);
   setup.window_tree_test_helper()->SetCursor(top_level, help_cursor);
 
   // Create an embedding.
@@ -82,10 +82,10 @@ TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
   // Set a cursor on the embedding. Because the embedding was created with
   // kEmbedFlagEmbedderInterceptsEvents the cursor should come from the parent
   // (|top_level|).
-  const ui::CursorData ibeam_cursor(ui::CursorType::kIBeam);
+  const ui::Cursor ibeam_cursor(ui::CursorType::kIBeam);
   embedding_helper->window_tree_test_helper->SetCursor(embed_window,
                                                        ibeam_cursor);
-  EXPECT_EQ(help_cursor.cursor_type(),
+  EXPECT_EQ(help_cursor.native_type(),
             embed_window->GetCursor(gfx::Point()).native_type());
 }
 

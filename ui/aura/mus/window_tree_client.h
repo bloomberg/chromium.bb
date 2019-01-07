@@ -135,8 +135,8 @@ class AURA_EXPORT WindowTreeClient
   void SetEventTargetingPolicy(WindowMus* window,
                                ws::mojom::EventTargetingPolicy policy);
   void SetCursor(WindowMus* window,
-                 const ui::CursorData& old_cursor,
-                 const ui::CursorData& new_cursor);
+                 const ui::Cursor& old_cursor,
+                 const ui::Cursor& new_cursor);
   void SetWindowTextInputState(WindowMus* window,
                                ui::mojom::TextInputStatePtr state);
   void SetImeVisibility(WindowMus* window,
@@ -431,7 +431,7 @@ class AURA_EXPORT WindowTreeClient
                           bool matches_event_observer) override;
   void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
-  void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
+  void OnWindowCursorChanged(ws::Id window_id, ui::Cursor cursor) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
                            mime_data) override;
   void OnDragEnter(ws::Id window_id,

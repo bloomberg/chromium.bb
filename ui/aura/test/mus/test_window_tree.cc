@@ -335,7 +335,7 @@ void TestWindowTree::SetEventTargetingPolicy(
 
 void TestWindowTree::SetCursor(uint32_t change_id,
                                ws::Id transport_window_id,
-                               ui::CursorData cursor_data) {
+                               ui::Cursor cursor) {
   OnChangeReceived(change_id);
 }
 

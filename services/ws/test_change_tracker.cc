@@ -531,11 +531,11 @@ void TestChangeTracker::OnWindowFocused(Id window_id) {
 }
 
 void TestChangeTracker::OnWindowCursorChanged(Id window_id,
-                                              const ui::CursorData& cursor) {
+                                              const ui::Cursor& cursor) {
   Change change;
   change.type = CHANGE_TYPE_CURSOR_CHANGED;
   change.window_id = window_id;
-  change.cursor_type = cursor.cursor_type();
+  change.cursor_type = cursor.native_type();
   AddChange(change);
 }
 

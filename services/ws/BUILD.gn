@@ -94,6 +94,10 @@ component("lib") {
     "//services/ws/public/cpp/host",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
 }
 

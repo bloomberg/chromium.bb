@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
-#include "services/ws/public/mojom/cursor/cursor.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/base/mojo/cursor.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -88,7 +88,7 @@ class AURA_EXPORT WindowMus {
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
   virtual void SetOpacityFromServer(float opacity) = 0;
-  virtual void SetCursorFromServer(const ui::CursorData& cursor) = 0;
+  virtual void SetCursorFromServer(const ui::Cursor& cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetFrameSinkIdFromServer(

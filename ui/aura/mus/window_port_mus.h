@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "services/ws/public/mojom/cursor/cursor.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
@@ -25,6 +24,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_port.h"
+#include "ui/base/mojo/cursor.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
@@ -78,8 +78,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetTextInputState(ui::mojom::TextInputStatePtr state);
   void SetImeVisibility(bool visible, ui::mojom::TextInputStatePtr state);
 
-  const ui::CursorData& cursor() const { return cursor_; }
-  void SetCursor(const ui::CursorData& cursor);
+  const ui::Cursor& cursor() const { return cursor_; }
+  void SetCursor(const ui::Cursor& cursor);
 
   // Sets the EventTargetingPolicy, default is TARGET_AND_DESCENDANTS.
   void SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy);
@@ -256,7 +256,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
-  void SetCursorFromServer(const ui::CursorData& cursor) override;
+  void SetCursorFromServer(const ui::Cursor& cursor) override;
   void SetPropertyFromServer(
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
@@ -340,7 +340,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   gfx::Size last_surface_size_in_pixels_;
 
-  ui::CursorData cursor_;
+  ui::Cursor cursor_;
 
   // Set if this class calls SetEmbedFrameSinkId() on the associated window.
   viz::FrameSinkId embed_frame_sink_id_;

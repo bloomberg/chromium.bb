@@ -330,7 +330,7 @@ void RendererWindowTreeClient::OnObservedInputEvent(
 void RendererWindowTreeClient::OnWindowFocused(ws::Id focused_window_id) {}
 
 void RendererWindowTreeClient::OnWindowCursorChanged(ws::Id window_id,
-                                                     ui::CursorData cursor) {}
+                                                     ui::Cursor cursor) {}
 
 void RendererWindowTreeClient::OnDragDropStart(
     const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {}

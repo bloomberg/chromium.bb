@@ -4,6 +4,8 @@
 
 #include "ui/base/cursor/cursor.h"
 
+#include "base/logging.h"
+
 namespace ui {
 
 Cursor::Cursor()
@@ -37,6 +39,15 @@ void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
     RefCustomCursor();
 }
 
+#if !defined(USE_AURA)
+void Cursor::RefCustomCursor() {
+  NOTIMPLEMENTED();
+}
+void Cursor::UnrefCustomCursor() {
+  NOTIMPLEMENTED();
+}
+#endif
+
 SkBitmap Cursor::GetBitmap() const {
   if (native_type_ == CursorType::kCustom)
     return custom_bitmap_;
@@ -55,6 +66,14 @@ gfx::Point Cursor::GetHotspot() const {
 #else
   return gfx::Point();
 #endif
+}
+
+bool Cursor::IsSameAs(const Cursor& rhs) const {
+  return native_type_ == rhs.native_type_ &&
+         custom_hotspot_ == rhs.custom_hotspot_ &&
+         device_scale_factor_ == rhs.device_scale_factor_ &&
+         custom_bitmap_.getGenerationID() ==
+             rhs.custom_bitmap_.getGenerationID();
 }
 
 void Cursor::Assign(const Cursor& cursor) {

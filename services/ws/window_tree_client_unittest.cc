@@ -249,7 +249,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     return WaitForChangeCompleted(change_id);
   }
 
-  bool SetCursor(Id window_id, const ui::CursorData& cursor) {
+  bool SetCursor(Id window_id, const ui::Cursor& cursor) {
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->SetCursor(change_id, window_id, cursor);
     return WaitForChangeCompleted(change_id);
@@ -391,7 +391,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   }
   // TODO(sky): add testing coverage.
   void OnWindowFocused(Id focused_window_id) override {}
-  void OnWindowCursorChanged(Id window_id, ui::CursorData cursor) override {
+  void OnWindowCursorChanged(Id window_id, ui::Cursor cursor) override {
     tracker_.OnWindowCursorChanged(window_id, cursor);
   }
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
@@ -1526,8 +1526,8 @@ TEST_F(WindowTreeClientTest, DISABLED_SetCursor) {
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   changes2()->clear();
 
-  ASSERT_TRUE(wt_client1()->SetCursor(window_1_1,
-                                      ui::CursorData(ui::CursorType::kIBeam)));
+  ASSERT_TRUE(
+      wt_client1()->SetCursor(window_1_1, ui::Cursor(ui::CursorType::kIBeam)));
   wt_client2_->WaitForChangeCount(1u);
 
   EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_type=4",

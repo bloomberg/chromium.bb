@@ -234,8 +234,8 @@ void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
 }
 
 void WindowTreeClient::SetCursor(WindowMus* window,
-                                 const ui::CursorData& old_cursor,
-                                 const ui::CursorData& new_cursor) {
+                                 const ui::Cursor& old_cursor,
+                                 const ui::Cursor& new_cursor) {
   DCHECK(tree_);
 
   const uint32_t change_id = ScheduleInFlightChange(
@@ -1368,7 +1368,7 @@ void WindowTreeClient::OnWindowFocused(ws::Id focused_window_id) {
 }
 
 void WindowTreeClient::OnWindowCursorChanged(ws::Id window_id,
-                                             ui::CursorData cursor) {
+                                             ui::Cursor cursor) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
