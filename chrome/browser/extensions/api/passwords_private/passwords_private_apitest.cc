@@ -128,14 +128,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
   }
 
   void RequestShowPassword(int id,
+                           PlaintextPasswordCallback callback,
                            content::WebContents* web_contents) override {
     // Return a mocked password value.
-    std::string plaintext_password(kPlaintextPassword);
-    PasswordsPrivateEventRouter* router =
-        PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
-    if (router) {
-      router->OnPlaintextPasswordFetched(id, plaintext_password);
-    }
+    std::move(callback).Run(base::ASCIIToUTF16(kPlaintextPassword));
   }
 
   void SetProfile(Profile* profile) { profile_ = profile; }

@@ -66,11 +66,6 @@ Profile* PasswordUIViewAndroid::GetProfile() {
   return ProfileManager::GetLastUsedProfile();
 }
 
-void PasswordUIViewAndroid::ShowPassword(const std::string& sort_key,
-                                         const base::string16& password_value) {
-  NOTIMPLEMENTED();
-}
-
 void PasswordUIViewAndroid::SetPasswordList(
     const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
   JNIEnv* env = base::android::AttachCurrentThread();

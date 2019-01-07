@@ -61,13 +61,10 @@ var availableTests = [
   },
 
   function requestPlaintextPassword() {
-    var callback = function() {
+    chrome.passwordsPrivate.requestPlaintextPassword(0, password => {
       // Ensure that the callback is invoked.
       chrome.test.succeed();
-    };
-
-    chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(callback);
-    chrome.passwordsPrivate.requestPlaintextPassword(0);
+    });
   },
 
   function getSavedPasswordList() {

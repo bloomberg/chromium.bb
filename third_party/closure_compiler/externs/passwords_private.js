@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,14 +56,6 @@ chrome.passwordsPrivate.PasswordUiEntry;
 
 /**
  * @typedef {{
- *   id: number,
- *   plaintextPassword: string
- * }}
- */
-chrome.passwordsPrivate.PlaintextPasswordEventParameters;
-
-/**
- * @typedef {{
  *   urls: !chrome.passwordsPrivate.UrlCollection,
  *   id: number
  * }}
@@ -106,12 +98,12 @@ chrome.passwordsPrivate.undoRemoveSavedPasswordOrException = function() {};
 /**
  * Returns the plaintext password corresponding to |id|. Note that on some
  * operating systems, this call may result in an OS-level reauthentication. Once
- * the password has been fetched, it will be returned via the
- * onPlaintextPasswordRetrieved event. TODO(hcarmona): Investigate using a
- * callback for consistency.
+ * the password has been fetched, it will be returned via |callback|.
  * @param {number} id The id for the password entry being being retrieved.
+ * @param {function((string|undefined)):void} callback The callback that gets
+ *     invoked with the retrieved password.
  */
-chrome.passwordsPrivate.requestPlaintextPassword = function(id) {};
+chrome.passwordsPrivate.requestPlaintextPassword = function(id, callback) {};
 
 /**
  * Returns the list of saved passwords.
@@ -171,13 +163,6 @@ chrome.passwordsPrivate.onSavedPasswordsListChanged;
  * @type {!ChromeEvent}
  */
 chrome.passwordsPrivate.onPasswordExceptionsListChanged;
-
-/**
- * Fired when a plaintext password has been fetched in response to a call to
- * chrome.passwordsPrivate.requestPlaintextPassword().
- * @type {!ChromeEvent}
- */
-chrome.passwordsPrivate.onPlaintextPasswordRetrieved;
 
 /**
  * Fired when the status of the export has changed.

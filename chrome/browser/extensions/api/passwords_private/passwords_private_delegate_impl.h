@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
@@ -51,7 +52,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RemoveSavedPassword(int id) override;
   void RemovePasswordException(int id) override;
   void UndoRemoveSavedPasswordOrException() override;
-  void RequestShowPassword(int id, content::WebContents* web_contents) override;
+  void RequestShowPassword(int id,
+                           PlaintextPasswordCallback callback,
+                           content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
   void ExportPasswords(base::OnceCallback<void(const std::string&)> accepted,
                        content::WebContents* web_contents) override;
@@ -61,17 +64,12 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
-  void ShowPassword(const std::string& sort_key,
-                    const base::string16& plaintext_password) override;
   void SetPasswordList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
       override;
   void SetPasswordExceptionList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&
           password_exception_list) override;
-#if !defined(OS_ANDROID)
-  gfx::NativeWindow GetNativeWindow() const override;
-#endif
 
   // Callback for when the password list has been written to the destination.
   void OnPasswordsExportProgress(password_manager::ExportProgressStatus status,
@@ -98,7 +96,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RemoveSavedPasswordInternal(int id);
   void RemovePasswordExceptionInternal(int id);
   void UndoRemoveSavedPasswordOrExceptionInternal();
-  void RequestShowPasswordInternal(int id, content::WebContents* web_contents);
 
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.

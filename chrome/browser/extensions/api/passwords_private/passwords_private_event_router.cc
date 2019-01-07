@@ -69,23 +69,6 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
-void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
-    int id,
-    const std::string& plaintext_password) {
-  api::passwords_private::PlaintextPasswordEventParameters params;
-  params.id = id;
-  params.plaintext_password = plaintext_password;
-
-  auto event_value = std::make_unique<base::ListValue>();
-  event_value->Append(params.ToValue());
-
-  auto extension_event = std::make_unique<Event>(
-      events::PASSWORDS_PRIVATE_ON_PLAINTEXT_PASSWORD_RETRIEVED,
-      api::passwords_private::OnPlaintextPasswordRetrieved::kEventName,
-      std::move(event_value));
-  event_router_->BroadcastEvent(std::move(extension_event));
-}
-
 void PasswordsPrivateEventRouter::OnPasswordsExportProgress(
     api::passwords_private::ExportProgressStatus status,
     const std::string& folder_name) {

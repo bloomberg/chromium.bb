@@ -18,9 +18,3 @@ Profile* MockPasswordUIView::GetProfile() {
 PasswordManagerPresenter* MockPasswordUIView::GetPasswordManagerPresenter() {
   return &password_manager_presenter_;
 }
-
-#if !defined(OS_ANDROID)
-gfx::NativeWindow MockPasswordUIView::GetNativeWindow() const {
-  return nullptr;
-}
-#endif
