@@ -1841,6 +1841,7 @@ if (enable_usage_stats) {
     "java/src/org/chromium/chrome/browser/usage_stats/SuspensionTracker.java",
     "java/src/org/chromium/chrome/browser/usage_stats/TokenGenerator.java",
     "java/src/org/chromium/chrome/browser/usage_stats/TokenTracker.java",
+    "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
     "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsService.java",
     "java/src/org/chromium/chrome/browser/usage_stats/WebsiteEvent.java",
   ]

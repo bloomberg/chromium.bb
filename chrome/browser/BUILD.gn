@@ -32,6 +32,8 @@ import("//ui/base/ui_features.gni")
 # produces a conflict for the "grit" template so we have to only include one.
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import(
+      "//chrome/android/java/src/org/chromium/chrome/browser/usage_stats/features.gni")
 } else {
   import("//tools/grit/grit_rule.gni")
 }
@@ -2590,6 +2592,15 @@ jumbo_split_static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
     }
+
+    if (enable_usage_stats) {
+      sources += [
+        "android/usage_stats/usage_stats_bridge.cc",
+        "android/usage_stats/usage_stats_bridge.h",
+        "android/usage_stats/usage_stats_database.cc",
+        "android/usage_stats/usage_stats_database.h",
+      ]
+    }
   } else {  # !is_android
     sources += [
       "accessibility/invert_bubble_prefs.cc",
@@ -4909,6 +4920,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/tabmodel/TabModelObserverJniBridge.java",
       "../android/java/src/org/chromium/chrome/browser/toolbar/LocationBarModel.java",
       "../android/java/src/org/chromium/chrome/browser/translate/TranslateBridge.java",
+      "../android/java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
       "../android/java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
       "../android/java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
       "../android/java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
