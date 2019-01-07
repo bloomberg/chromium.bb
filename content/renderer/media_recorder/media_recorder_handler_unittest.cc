@@ -177,8 +177,13 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_3));
   const WebString example_good_codecs_4(WebString::FromASCII("H264"));
+#if BUILDFLAG(RTC_USE_H264)
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_4));
+#else
+  EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
+      mime_type_video, example_good_codecs_4));
+#endif
 
   const WebString example_unsupported_codecs_1(WebString::FromASCII("daala"));
   EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
