@@ -500,8 +500,10 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   if (use_viz_hit_test_) {
     viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
                                                root_view->GetRootFrameSinkId());
-    if (!query)
-      return {root_view, false, base::nullopt, false, false};
+    if (!query) {
+      *transformed_point = point;
+      return {root_view, false, *transformed_point, false, false};
+    }
     // |point_in_screen| is in the coordinate space of of the screen, but the
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.

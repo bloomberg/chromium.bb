@@ -16,10 +16,12 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
+#include "components/viz/test/host_frame_sink_manager_test_api.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -4310,6 +4312,58 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 }
 
 #endif  // defined(USE_AURA)
+
+// Test that we can still perform a touchpad pinch gesture in the absence of viz
+// hit test data without crashing.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       TouchpadPinchWhenMissingHitTestDataDoesNotCrash) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* contents = web_contents();
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  // Even though we're sending the events to the root, we need an OOPIF so
+  // that hit testing doesn't short circuit.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  // Clobber the real hit test data once it comes in.
+  WaitForHitTestDataOrChildSurfaceReady(root->current_frame_host());
+  ASSERT_TRUE(GetHostFrameSinkManager());
+  viz::HostFrameSinkManager::DisplayHitTestQueryMap empty_hit_test_map;
+  viz::HostFrameSinkManagerTestApi(GetHostFrameSinkManager())
+      .SetDisplayHitTestQuery(std::move(empty_hit_test_map));
+
+  const gfx::PointF point_in_root(1, 1);
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCHPAD_INPUT;
+  params.scale_factor = 1.2f;
+  params.anchor = point_in_root;
+
+  auto pinch_gesture = std::make_unique<SyntheticTouchpadPinchGesture>(params);
+  RenderWidgetHostImpl* render_widget_host =
+      root->current_frame_host()->GetRenderWidgetHost();
+
+  base::RunLoop run_loop;
+  render_widget_host->QueueSyntheticGesture(
+      std::move(pinch_gesture),
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, SyntheticGesture::Result result) {
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
 
 // Tests that performing a touchpad double-tap zoom over an OOPIF offers the
 // synthetic wheel event to the child.
