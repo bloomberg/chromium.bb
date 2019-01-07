@@ -278,6 +278,13 @@ void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
   return identity::RemoveRefreshTokenForAccount(identity_manager(), account_id);
 }
 
+void IdentityTestEnvironment::UpdatePersistentErrorOfRefreshTokenForAccount(
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  return identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager(), account_id, auth_error);
+}
+
 void IdentityTestEnvironment::SetCookieAccounts(
     const std::vector<CookieParams>& cookie_accounts) {
   identity::SetCookieAccounts(gaia_cookie_manager_service_, identity_manager(),
