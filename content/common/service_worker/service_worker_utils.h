@@ -88,6 +88,9 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
   DeserializeFetchRequestFromString(const std::string& serialized);
 
+  CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
+      network::mojom::FetchResponseSource source);
+
  private:
   static bool IsPathRestrictionSatisfiedInternal(
       const GURL& scope,

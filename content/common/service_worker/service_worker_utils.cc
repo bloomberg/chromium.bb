@@ -280,6 +280,24 @@ ServiceWorkerUtils::DeserializeFetchRequestFromString(
   return request_ptr;
 }
 
+// static
+const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
+    network::mojom::FetchResponseSource source) {
+  // Don't change these returned strings. They are used for recording UMAs.
+  switch (source) {
+    case network::mojom::FetchResponseSource::kUnspecified:
+      return ".Unspecified";
+    case network::mojom::FetchResponseSource::kNetwork:
+      return ".Network";
+    case network::mojom::FetchResponseSource::kHttpCache:
+      return ".HttpCache";
+    case network::mojom::FetchResponseSource::kCacheStorage:
+      return ".CacheStorage";
+  }
+  NOTREACHED();
+  return ".Unknown";
+}
+
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
   if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
     return false;

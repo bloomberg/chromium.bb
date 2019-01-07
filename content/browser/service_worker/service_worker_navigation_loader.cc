@@ -7,8 +7,10 @@
 #include <sstream>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -409,6 +411,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
   response_head_.load_timing.receive_headers_start = base::TimeTicks::Now();
   response_head_.load_timing.receive_headers_end =
       response_head_.load_timing.receive_headers_start;
+  response_source_ = response->response_source;
 
   // Make the navigated page inherit the SSLInfo from its controller service
   // worker's script. This affects the HTTPS padlock, etc, shown by the
@@ -598,6 +601,13 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.MainFrame.MainResource."
         "ResponseReceivedToCompleted2",
+        completion_time_ - response_head_.load_timing.receive_headers_end);
+    // Same as above, breakdown by response source.
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"ServiceWorker.LoadTiming.MainFrame.MainResource."
+                      "ResponseReceivedToCompleted2",
+                      ServiceWorkerUtils::FetchResponseSourceToSuffix(
+                          response_source_)}),
         completion_time_ - response_head_.load_timing.receive_headers_end);
   } else {
     // Renderer -> Browser IPC delay (network fallback case).
