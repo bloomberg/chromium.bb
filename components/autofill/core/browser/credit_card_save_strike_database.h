@@ -17,7 +17,7 @@ namespace autofill {
 class CreditCardSaveStrikeDatabase : public StrikeDatabaseIntegratorBase {
  public:
   CreditCardSaveStrikeDatabase(StrikeDatabase* strike_database);
-  ~CreditCardSaveStrikeDatabase();
+  ~CreditCardSaveStrikeDatabase() override;
 
   std::string GetProjectPrefix() override;
   int GetMaxStrikesLimit() override;

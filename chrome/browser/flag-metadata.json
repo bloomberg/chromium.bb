@@ -889,6 +889,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-save-credit-card-uses-strike-system-v2",
+    "owners": [ "annelim@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
     "owners": [ "dlkumar@google.com" ],
     "expiry_milestone": 76

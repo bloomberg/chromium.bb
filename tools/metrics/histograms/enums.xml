@@ -30181,6 +30181,8 @@ from previous Chrome versions.
   <int value="-2063014275" label="enable-web-bluetooth"/>
   <int value="-2062872298" label="market-url-for-testing"/>
   <int value="-2062373123" label="WebPaymentsModifiers:enabled"/>
+  <int value="-2061363134"
+      label="AutofillSaveCreditCardUsesStrikeSystemV2:disabled"/>
   <int value="-2059771509" label="NTPTilesLowerResolutionFavicons:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
@@ -31227,6 +31229,8 @@ from previous Chrome versions.
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-271790049" label="ArcUsbHost:enabled"/>
   <int value="-270626757" label="log-net-log"/>
+  <int value="-268549184"
+      label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-260355779" label="UnfilteredBluetoothDevices:enabled"/>

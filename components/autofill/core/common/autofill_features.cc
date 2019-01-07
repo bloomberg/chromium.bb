@@ -198,6 +198,12 @@ const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{
     "AutofillSaveCreditCardUsesStrikeSystem",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether offering to save cards will consider data from the Autofill
+// strike database (new version).
+const base::Feature kAutofillSaveCreditCardUsesStrikeSystemV2{
+    "AutofillSaveCreditCardUsesStrikeSystemV2",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether experiment ids should be sent through
 // Google Payments RPCs or not.
 const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{

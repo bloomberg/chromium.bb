@@ -272,6 +272,9 @@ extern const char kEnableAutofillSaveCardImprovedUserConsentDescription[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
 
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name[];
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description[];
+
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 

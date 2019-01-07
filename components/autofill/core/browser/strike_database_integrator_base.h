@@ -16,7 +16,7 @@ namespace autofill {
 class StrikeDatabaseIntegratorBase {
  public:
   StrikeDatabaseIntegratorBase(StrikeDatabase* strike_database);
-  ~StrikeDatabaseIntegratorBase();
+  virtual ~StrikeDatabaseIntegratorBase();
 
   // Returns whether or not strike count for |id| has reached the strike limit
   // set by GetMaxStrikesLimit().
