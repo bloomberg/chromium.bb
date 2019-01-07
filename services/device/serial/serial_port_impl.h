@@ -5,6 +5,9 @@
 #ifndef SERVICES_DEVICE_SERIAL_SERIAL_PORT_IMPL_H_
 #define SERVICES_DEVICE_SERIAL_SERIAL_PORT_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -28,9 +31,8 @@ class SerialPortImpl : public mojom::SerialPort {
       mojom::SerialPortRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  explicit SerialPortImpl(
-      const std::string& path,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  SerialPortImpl(const std::string& path,
+                 scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
 
  private:
@@ -51,7 +53,6 @@ class SerialPortImpl : public mojom::SerialPort {
   void SetBreak(SetBreakCallback callback) override;
   void ClearBreak(ClearBreakCallback callback) override;
 
-  std::string path_;
   scoped_refptr<SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);

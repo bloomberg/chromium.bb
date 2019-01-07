@@ -7,6 +7,9 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 
+#include <algorithm>
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
@@ -114,8 +117,9 @@ namespace device {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
+    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
-  return new SerialIoHandlerPosix(ui_thread_task_runner);
+  return new SerialIoHandlerPosix(port, std::move(ui_thread_task_runner));
 }
 
 void SerialIoHandlerPosix::ReadImpl() {
@@ -291,8 +295,9 @@ bool SerialIoHandlerPosix::PostOpen() {
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(
+    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : SerialIoHandler(ui_thread_task_runner) {}
+    : SerialIoHandler(port, std::move(ui_thread_task_runner)) {}
 
 SerialIoHandlerPosix::~SerialIoHandlerPosix() = default;
 

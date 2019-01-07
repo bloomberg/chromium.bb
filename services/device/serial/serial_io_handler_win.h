@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_WIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -38,6 +39,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
   friend class SerialIoHandler;
 
   explicit SerialIoHandlerWin(
+      const std::string& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerWin() override;
 

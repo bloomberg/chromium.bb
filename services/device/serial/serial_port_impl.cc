@@ -4,6 +4,9 @@
 
 #include "services/device/serial/serial_port_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -25,14 +28,13 @@ void SerialPortImpl::Create(
 SerialPortImpl::SerialPortImpl(
     const std::string& path,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : path_(path),
-      io_handler_(device::SerialIoHandler::Create(ui_task_runner)) {}
+    : io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)) {}
 
 SerialPortImpl::~SerialPortImpl() = default;
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           OpenCallback callback) {
-  io_handler_->Open(path_, *options, std::move(callback));
+  io_handler_->Open(*options, std::move(callback));
 }
 
 void SerialPortImpl::Read(uint32_t bytes, ReadCallback callback) {

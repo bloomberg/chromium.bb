@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <utility>
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -16,10 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -167,18 +165,9 @@ ViscaWebcam::ViscaWebcam() : pan_(0), tilt_(0), weak_ptr_factory_(this) {}
 ViscaWebcam::~ViscaWebcam() {
 }
 
-void ViscaWebcam::Open(const std::string& path,
-                       const std::string& extension_id,
+void ViscaWebcam::Open(const std::string& extension_id,
+                       device::mojom::SerialPortPtrInfo port_ptr_info,
                        const OpenCompleteCallback& open_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device::mojom::SerialPortManagerPtr port_manager;
-  device::mojom::SerialPortPtrInfo port_ptr_info;
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&port_manager));
-  port_manager->GetPort(path, mojo::MakeRequest(&port_ptr_info));
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::Bind(&ViscaWebcam::OpenOnIOThread, weak_ptr_factory_.GetWeakPtr(),

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
 #define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

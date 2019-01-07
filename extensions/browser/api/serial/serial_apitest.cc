@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/serial/serial_api.h"
@@ -52,7 +54,7 @@ namespace {
 
 class FakeSerialPort : public device::mojom::SerialPort {
  public:
-  FakeSerialPort(const std::string& path) : path_(path) {
+  explicit FakeSerialPort(const std::string& path) : path_(path) {
     options_.bitrate = 9600;
     options_.data_bits = device::mojom::SerialDataBits::EIGHT;
     options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
@@ -169,27 +171,36 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
 class FakeSerialPortManager : public device::mojom::SerialPortManager {
  public:
-  FakeSerialPortManager() = default;
+  FakeSerialPortManager() {
+    token_path_map_ = {
+        {base::UnguessableToken::Create(), "/dev/fakeserialmojo"},
+        {base::UnguessableToken::Create(), "\\\\COM800\\"}};
+  }
+
   ~FakeSerialPortManager() override = default;
 
  private:
   // device::mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override {
     std::vector<device::mojom::SerialPortInfoPtr> devices;
-    auto device0 = device::mojom::SerialPortInfo::New();
-    device0->path = "/dev/fakeserialmojo";
-    auto device1 = device::mojom::SerialPortInfo::New();
-    device1->path = "\\\\COM800\\";
-    devices.push_back(std::move(device0));
-    devices.push_back(std::move(device1));
+    for (const auto& pair : token_path_map_) {
+      auto device = device::mojom::SerialPortInfo::New();
+      device->token = pair.first;
+      device->path = pair.second;
+      devices.push_back(std::move(device));
+    }
     std::move(callback).Run(std::move(devices));
   }
 
-  void GetPort(const std::string& path,
+  void GetPort(const base::UnguessableToken& token,
                device::mojom::SerialPortRequest request) override {
-    mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(path),
+    auto it = token_path_map_.find(token);
+    DCHECK(it != token_path_map_.end());
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(it->second),
                             std::move(request));
   }
+
+  std::map<base::UnguessableToken, std::string> token_path_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };

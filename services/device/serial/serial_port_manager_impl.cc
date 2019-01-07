@@ -4,6 +4,9 @@
 
 #include "services/device/serial/serial_port_manager_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -45,7 +48,7 @@ void SerialPortManagerImpl::Create(
 SerialPortManagerImpl::SerialPortManagerImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : enumerator_(device::SerialDeviceEnumerator::Create()),
+    : enumerator_(SerialDeviceEnumerator::Create()),
       io_task_runner_(std::move(io_task_runner)),
       ui_task_runner_(std::move(ui_task_runner)) {}
 
@@ -56,11 +59,15 @@ void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
   std::move(callback).Run(enumerator_->GetDevices());
 }
 
-void SerialPortManagerImpl::GetPort(const std::string& path,
+void SerialPortManagerImpl::GetPort(const base::UnguessableToken& token,
                                     mojom::SerialPortRequest request) {
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SerialPortImpl::Create, path,
-                                std::move(request), ui_task_runner_));
+  DCHECK(enumerator_);
+  base::Optional<std::string> path = enumerator_->GetPathFromToken(token);
+  if (path) {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&SerialPortImpl::Create, *path,
+                                  std::move(request), ui_task_runner_));
+  }
 }
 
 }  // namespace device

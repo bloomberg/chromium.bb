@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
 #define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
@@ -18,7 +20,7 @@ class SerialConnection;
 
 namespace api {
 
-class SerialEventDispatcher;
+class SerialPortManager;
 
 class SerialAsyncApiFunction : public AsyncApiFunction {
  public:
@@ -52,8 +54,6 @@ class SerialGetDevicesFunction : public UIThreadExtensionFunction {
  private:
   void OnGotDevices(std::vector<device::mojom::SerialPortInfoPtr> devices);
 
-  device::mojom::SerialPortManagerPtr port_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(SerialGetDevicesFunction);
 };
 
@@ -78,8 +78,8 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
 
   std::unique_ptr<serial::Connect::Params> params_;
 
-  // SerialEventDispatcher is owned by a BrowserContext.
-  SerialEventDispatcher* serial_event_dispatcher_;
+  // SerialPortManager is owned by a BrowserContext.
+  SerialPortManager* serial_port_manager_;
 
   // This connection is created within SerialConnectFunction.
   // From there its ownership is transferred to the
@@ -140,7 +140,7 @@ class SerialSetPausedFunction : public SerialAsyncApiFunction {
 
  private:
   std::unique_ptr<serial::SetPaused::Params> params_;
-  SerialEventDispatcher* serial_event_dispatcher_;
+  SerialPortManager* serial_port_manager_;
 };
 
 class SerialGetInfoFunction : public SerialAsyncApiFunction {

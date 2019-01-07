@@ -9,6 +9,8 @@
 #include <setupapi.h>
 #include <windows.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
@@ -152,8 +154,9 @@ bool GetCOMPort(const std::string friendly_name, std::string* com_port) {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
+    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
-  return new SerialIoHandlerWin(ui_thread_task_runner);
+  return new SerialIoHandlerWin(port, std::move(ui_thread_task_runner));
 }
 
 class SerialIoHandlerWin::UiThreadHelper final
@@ -357,8 +360,9 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
 }
 
 SerialIoHandlerWin::SerialIoHandlerWin(
+    const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : SerialIoHandler(ui_thread_task_runner),
+    : SerialIoHandler(port, std::move(ui_thread_task_runner)),
       event_mask_(0),
       is_comm_pending_(false),
       helper_(nullptr),

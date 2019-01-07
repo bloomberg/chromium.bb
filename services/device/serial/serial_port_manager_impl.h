@@ -13,6 +13,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class UnguessableToken;
 }
 
 namespace device {
@@ -36,7 +37,7 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
  private:
   // mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override;
-  void GetPort(const std::string& path,
+  void GetPort(const base::UnguessableToken& token,
                mojom::SerialPortRequest request) override;
 
   std::unique_ptr<SerialDeviceEnumerator> enumerator_;

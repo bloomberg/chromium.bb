@@ -7,7 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ptr_util.h"
@@ -35,7 +37,7 @@ namespace api {
 class BluetoothSocketApiFunction;
 class BluetoothSocketEventDispatcher;
 class SerialConnectFunction;
-class SerialEventDispatcher;
+class SerialPortManager;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
@@ -179,7 +181,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   friend class api::BluetoothSocketApiFunction;
   friend class api::BluetoothSocketEventDispatcher;
   friend class api::SerialConnectFunction;
-  friend class api::SerialEventDispatcher;
+  friend class api::SerialPortManager;
   friend class api::TCPServerSocketEventDispatcher;
   friend class api::TCPSocketEventDispatcher;
   friend class api::UDPSocketEventDispatcher;
