@@ -4614,17 +4614,17 @@ void Document::SetActiveElement(Element* new_active_element) {
   active_element_ = new_active_element;
 }
 
-void Document::RemoveFocusedElementOfSubtree(Node* node,
+void Document::RemoveFocusedElementOfSubtree(Node& node,
                                              bool among_children_only) {
   if (!focused_element_)
     return;
 
   // We can't be focused if we're not in the document.
-  if (!node->isConnected())
+  if (!node.isConnected())
     return;
   bool contains =
-      node->IsShadowIncludingInclusiveAncestorOf(focused_element_.Get());
-  if (contains && (focused_element_ != node || !among_children_only))
+      node.IsShadowIncludingInclusiveAncestorOf(focused_element_.Get());
+  if (contains && (focused_element_ != &node || !among_children_only))
     ClearFocusedElement();
 }
 

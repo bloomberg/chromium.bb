@@ -784,7 +784,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Element* HoverElement() const { return hover_element_.Get(); }
 
-  void RemoveFocusedElementOfSubtree(Node*, bool among_children_only = false);
+  void RemoveFocusedElementOfSubtree(Node&, bool among_children_only = false);
   void HoveredElementDetached(Element&);
   void ActiveChainNodeDetached(Element&);
 
