@@ -113,7 +113,7 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedScriptURL::Create(KURL(script_url));
+  return TrustedScriptURL::Create(script_url);
 }
 
 TrustedURL* TrustedTypePolicy::CreateURL(v8::Isolate* isolate,
@@ -132,7 +132,7 @@ TrustedURL* TrustedTypePolicy::CreateURL(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedURL::Create(KURL(url));
+  return TrustedURL::Create(url);
 }
 
 String TrustedTypePolicy::name() const {

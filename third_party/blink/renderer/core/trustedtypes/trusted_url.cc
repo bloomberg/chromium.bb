@@ -4,14 +4,12 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
 namespace blink {
 
-TrustedURL::TrustedURL(const KURL& url) : url_(url) {}
+TrustedURL::TrustedURL(const String& url) : url_(url) {}
 
 String TrustedURL::toString() const {
-  return url_.GetString();
+  return url_;
 }
 
 }  // namespace blink
