@@ -92,7 +92,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
   ASSERT_TRUE(CheckAllProfilesHaveSameTypedURLs());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
+// crbug.com/919612
+#if defined(THREAD_SANITIZER)
+#define MAYBE_DeleteNonTyped DISABLED_DeleteNonTyped
+#else
+#define MAYBE_DeleteNonTyped DeleteNonTyped
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, MAYBE_DeleteNonTyped) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
