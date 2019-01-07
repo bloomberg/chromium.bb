@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_CONSTANTS_H_
-#define WEBRTC_LIBJINGLE_XMPP_CONSTANTS_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_CONSTANTS_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_CONSTANTS_H_
 
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
@@ -546,4 +546,4 @@ extern const char AUTH_MECHANISM_PLAIN[];
 
 }  // namespace buzz
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_CONSTANTS_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_CONSTANTS_H_

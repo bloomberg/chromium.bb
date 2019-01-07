@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPCLIENTSETTINGS_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPCLIENTSETTINGS_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPCLIENTSETTINGS_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPCLIENTSETTINGS_H_
 
 #include "third_party/webrtc/p2p/base/port.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
@@ -102,4 +102,4 @@ class XmppClientSettings : public XmppUserSettings {
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_XMPPCLIENT_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPCLIENT_H_

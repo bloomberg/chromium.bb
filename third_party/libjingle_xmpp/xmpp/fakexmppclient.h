@@ -10,8 +10,8 @@
 
 // A fake XmppClient for use in unit tests.
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_FAKEXMPPCLIENT_H_
-#define WEBRTC_LIBJINGLE_XMPP_FAKEXMPPCLIENT_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_FAKEXMPPCLIENT_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_FAKEXMPPCLIENT_H_
 
 #include <algorithm>
 #include <string>
@@ -104,4 +104,4 @@ class FakeXmppClient : public XmppTaskParentInterface,
 
 }  // namespace buzz
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_FAKEXMPPCLIENT_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_FAKEXMPPCLIENT_H_

@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_SASLHANDLER_H_
-#define WEBRTC_LIBJINGLE_XMPP_SASLHANDLER_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLHANDLER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLHANDLER_H_
 
 #include <string>
 #include <vector>
@@ -39,4 +39,4 @@ public:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_SASLHANDLER_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLHANDLER_H_
