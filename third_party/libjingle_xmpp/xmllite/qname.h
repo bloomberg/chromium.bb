@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
-#define WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_
 
 #include <string>
 
@@ -80,4 +80,4 @@ inline bool StaticQName::operator!=(const QName& other) const {
 
 }  // namespace buzz
 
-#endif  // WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_

@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef _xmlbuilder_h_
-#define _xmlbuilder_h_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLBUILDER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLBUILDER_H_
 
 #include <memory>
 #include <string>
@@ -58,4 +58,4 @@ private:
 
 }
 
-#endif
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLBUILDER_H_
