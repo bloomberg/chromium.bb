@@ -46,7 +46,7 @@ class ChromeBrowserState;
 // dismissed. Defaults to YES.
 @property(nonatomic, assign) BOOL shouldCommitSyncChangesOnDismissal;
 
-// Creates a new SettingsCollectionViewController and the chrome around it.
+// Creates a new SettingsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil nor Off-the-Record. |delegate| may be nil.
 + (SettingsNavigationController*)

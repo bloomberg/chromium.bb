@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/passwords_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
@@ -62,10 +62,9 @@ newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                                  delegate:
                                      (id<SettingsNavigationControllerDelegate>)
                                          delegate {
-  SettingsCollectionViewController* controller =
-      [[SettingsCollectionViewController alloc]
-          initWithBrowserState:browserState
-                    dispatcher:[delegate dispatcherForSettings]];
+  SettingsTableViewController* controller = [[SettingsTableViewController alloc]
+      initWithBrowserState:browserState
+                dispatcher:[delegate dispatcherForSettings]];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
                     browserState:browserState
