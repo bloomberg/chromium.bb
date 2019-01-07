@@ -48,22 +48,6 @@ mojom("mutable_network_traffic_annotation_interface") {
   ]
 }
 
-# UDP socket interface relies on mojo.common.mojom.ReadOnlyBuffer, which is
-# mapped to base::span<const uint8_t>. ReadOnlyBufffer doesn't yet work with
-# lazy serialization, so this needs to be in a separate target that doesn't have
-# support_lazy_serialization = true.
-mojom("udp_socket_interface") {
-  sources = [
-    "udp_socket.mojom",
-  ]
-
-  public_deps = [
-    ":mojom_ip_address",
-    ":mutable_network_traffic_annotation_interface",
-    "//mojo/public/mojom/base:read_only_buffer",
-  ]
-}
-
 # This target is split from "mojom" target as the lazy serialization may
 # cause problems. See https://crbug.com/822732.
 mojom("websocket_mojom") {
@@ -85,11 +69,6 @@ mojom("websocket_mojom") {
 }
 
 mojom("mojom") {
-  # URLLoader & URLLoaderFactory are used in-process in the browser when
-  # navigation uses URLLoader (NavigationMojoResponse) and in the renderer
-  # when Service Worker uses direct communication (S13nServiceWorker).
-  support_lazy_serialization = true
-
   sources = [
     "cookie_manager.mojom",
     "cors.mojom",
@@ -118,6 +97,7 @@ mojom("mojom") {
     "ssl_config.mojom",
     "tcp_socket.mojom",
     "tls_socket.mojom",
+    "udp_socket.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
   ]
@@ -126,7 +106,6 @@ mojom("mojom") {
     ":data_pipe_interfaces",
     ":mojom_ip_address",
     ":mutable_network_traffic_annotation_interface",
-    ":udp_socket_interface",
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
