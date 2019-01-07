@@ -20,12 +20,12 @@ class OmniboxElement extends HTMLElement {
 
   /**
    * Get an element that's known to exist within this OmniboxElement.
-   * Searches local shadow root for element by id.
-   * @param {string} id
+   * Searches local shadow root for element by query.
+   * @param {string} query
    * @return {!Element}
    */
-  $$(id) {
-    return OmniboxElement.getById_(id, this.shadowRoot);
+  $$(query) {
+    return OmniboxElement.getByQuery_(query, this.shadowRoot);
   }
 
   /**
@@ -34,21 +34,21 @@ class OmniboxElement extends HTMLElement {
    * @return {!Element}
    */
   static getTemplate(templateId) {
-    return OmniboxElement.getById_(templateId).content.cloneNode(true);
+    return OmniboxElement.getByQuery_('#' + templateId).content.cloneNode(true);
   }
 
   /**
-   * Get an element that's known to exist by its ID. We use this instead of just
-   * calling getElementById because this lets us satisfy the JSCompiler type
+   * Get an element that's known to exist by query. We use this instead of just
+   * calling querySelector because this lets us satisfy the JSCompiler type
    * system.
    * @private
-   * @param {string} id
+   * @param {string} query
    * @param {!Node=} context
    * @return {!Element}
    */
-  static getById_(id, context) {
+  static getByQuery_(query, context) {
     return assertInstanceof(
-        (context || document).getElementById(id), Element,
-        `Missing required element: ${id}`);
+        (context || document).querySelector(query), Element,
+        `Missing required element: ${query}`);
   }
 }

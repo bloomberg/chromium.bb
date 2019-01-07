@@ -28,10 +28,10 @@ class OmniboxInput extends OmniboxElement {
     super('omnibox-input-template');
 
     const displayInputs = OmniboxInput.defaultDisplayInputs;
-    this.$$('show-incomplete-results').checked =
+    this.$$('#show-incomplete-results').checked =
         displayInputs.showIncompleteResults;
-    this.$$('show-details').checked = displayInputs.showDetails;
-    this.$$('show-all-providers').checked = displayInputs.showAllProviders;
+    this.$$('#show-details').checked = displayInputs.showDetails;
+    this.$$('#show-all-providers').checked = displayInputs.showAllProviders;
   }
 
   /** @override */
@@ -41,55 +41,56 @@ class OmniboxInput extends OmniboxElement {
 
   /** @private */
   setupElementListeners_() {
-    ['input-text',
-     'reset-autocomplete-controller',
-     'lock-cursor-position',
-     'zero-suggest',
-     'prevent-inline-autocomplete',
-     'prefer-keyword',
-     'current-url',
-     'page-classification',
+    ['#input-text',
+     '#reset-autocomplete-controller',
+     '#lock-cursor-position',
+     '#zero-suggest',
+     '#prevent-inline-autocomplete',
+     '#prefer-keyword',
+     '#current-url',
+     '#page-classification',
     ]
         .forEach(
-            id => this.$$(id).addEventListener(
+            query => this.$$(query).addEventListener(
                 'input', this.onQueryInputsChanged_.bind(this)));
 
-    ['show-incomplete-results',
-     'show-details',
-     'show-all-providers',
+    ['#show-incomplete-results',
+     '#show-details',
+     '#show-all-providers',
     ]
         .forEach(
-            id => this.$$(id).addEventListener(
+            query => this.$$(query).addEventListener(
                 'input', this.onDisplayInputsChanged_.bind(this)));
 
-    this.$$('copy-text')
+    this.$$('#copy-text')
         .addEventListener('click', () => this.onCopyOutput_('text'));
-    this.$$('copy-json')
+    this.$$('#copy-json')
         .addEventListener('click', () => this.onCopyOutput_('json'));
 
-    this.$$('filter-text')
+    this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));
   }
 
   /** @private */
   onQueryInputsChanged_() {
-    const zeroSuggest = this.$$('zero-suggest').checked;
-    this.$$('current-url').disabled = zeroSuggest;
+    const zeroSuggest = this.$$('#zero-suggest').checked;
+    this.$$('#current-url').disabled = zeroSuggest;
     if (zeroSuggest) {
-      this.$$('current-url').value = this.$$('input-text').value;
+      this.$$('#current-url').value = this.$$('#input-text').value;
     }
 
     /** @type {!QueryInputs} */
     const queryInputs = {
-      inputText: this.$$('input-text').value,
+      inputText: this.$$('#input-text').value,
       resetAutocompleteController:
-          this.$$('reset-autocomplete-controller').checked,
+          this.$$('#reset-autocomplete-controller').checked,
       cursorPosition: this.cursorPosition_,
       zeroSuggest: zeroSuggest,
-      preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
-      preferKeyword: this.$$('prefer-keyword').checked,
-      currentUrl: this.$$('current-url').value,
-      pageClassification: this.$$('page-classification').value,
+      preventInlineAutocomplete:
+          this.$$('#prevent-inline-autocomplete').checked,
+      preferKeyword: this.$$('#prefer-keyword').checked,
+      currentUrl: this.$$('#current-url').value,
+      pageClassification: this.$$('#page-classification').value,
     };
     this.dispatchEvent(
         new CustomEvent('query-inputs-changed', {detail: queryInputs}));
@@ -99,9 +100,9 @@ class OmniboxInput extends OmniboxElement {
   onDisplayInputsChanged_() {
     /** @type {!DisplayInputs} */
     const displayInputs = {
-      showIncompleteResults: this.$$('show-incomplete-results').checked,
-      showDetails: this.$$('show-details').checked,
-      showAllProviders: this.$$('show-all-providers').checked,
+      showIncompleteResults: this.$$('#show-incomplete-results').checked,
+      showDetails: this.$$('#show-details').checked,
+      showAllProviders: this.$$('#show-all-providers').checked,
     };
     this.dispatchEvent(
         new CustomEvent('display-inputs-changed', {detail: displayInputs}));
@@ -110,7 +111,7 @@ class OmniboxInput extends OmniboxElement {
   /** @private */
   onFilterInputsChanged_() {
     this.dispatchEvent(new CustomEvent(
-        'filter-input-changed', {detail: this.$$('filter-text').value}));
+        'filter-input-changed', {detail: this.$$('#filter-text').value}));
   }
 
   /** @private @param {string} format Either 'text' or 'json'. */
@@ -120,9 +121,9 @@ class OmniboxInput extends OmniboxElement {
 
   /** @private @return {number} */
   get cursorPosition_() {
-    return this.$$('lock-cursor-position').checked ?
-        this.$$('input-text').value.length :
-        this.$$('input-text').selectionEnd;
+    return this.$$('#lock-cursor-position').checked ?
+        this.$$('#input-text').value.length :
+        this.$$('#input-text').selectionEnd;
   }
 
   /** @return {DisplayInputs} */
