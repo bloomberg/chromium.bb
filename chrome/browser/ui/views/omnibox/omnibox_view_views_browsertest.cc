@@ -171,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DoNotNavigateOnDrop) {
       browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
+// Flaky: https://crbug.com/915591.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DISABLED_SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
