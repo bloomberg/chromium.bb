@@ -3013,19 +3013,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return nil;
 }
 
-// Returns a vertical infobar offset relative to the tab content.
+// Returns a vertical infobar offset relative to the tab content. It is an error
+// to call this method on a tab that does not have an infobar overlay.
 - (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
-  if (tab != self.tabModel.currentTab || !self.infobarContainerCoordinator) {
-    // There is no UI representation for non-current tabs or there is
-    // no _infobarContainerCoordinator instantiated yet.
-    // Return offset outside of tab.
-    return CGRectGetMaxY(self.view.frame);
-  } else {
-    // The infobars on iPhone are displayed at the bottom of a tab.
-    CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
-    return CGRectGetMaxY(visibleFrame) -
-           CGRectGetHeight([self.infobarContainerCoordinator view].frame);
-  }
+  DCHECK_EQ(tab, self.tabModel.currentTab);
+  DCHECK([self.infobarContainerCoordinator
+      isInfobarPresentingForWebState:tab.webState]);
+  CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
+  return CGRectGetMaxY(visibleFrame) -
+         CGRectGetHeight([self.infobarContainerCoordinator view].frame);
 }
 
 // Returns a vertical download manager offset relative to the tab content.
