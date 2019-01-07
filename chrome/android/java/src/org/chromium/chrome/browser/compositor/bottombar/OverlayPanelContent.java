@@ -95,6 +95,9 @@ public class OverlayPanelContent {
     // java layer. Otherwise, the instance could be garbage-collected unexpectedly.
     private InterceptNavigationDelegate mInterceptNavigationDelegate;
 
+    /** Set to {@code True} if opened for an incognito tab. */
+    private boolean mIsIncognito;
+
     /** The desired size of the {@link ContentView} associated with this panel content. */
     private int mContentViewWidth;
     private int mContentViewHeight;
@@ -160,15 +163,17 @@ public class OverlayPanelContent {
      *                        for this parameter, the default one will be used.
      * @param progressObserver An observer for progress related events.
      * @param activity The ChromeActivity that contains this object.
+     * @param isIncognito {@True} if opened for an incognito tab
      * @param barHeight The height of the bar at the top of the OverlayPanel in dp.
      */
     public OverlayPanelContent(OverlayContentDelegate contentDelegate,
             OverlayContentProgressObserver progressObserver, ChromeActivity activity,
-            float barHeight) {
+            boolean isIncognito, float barHeight) {
         mNativeOverlayPanelContentPtr = nativeInit();
         mContentDelegate = contentDelegate;
         mProgressObserver = progressObserver;
         mActivity = activity;
+        mIsIncognito = isIncognito;
         mBarHeightPx = (int) (barHeight * mActivity.getResources().getDisplayMetrics().density);
 
         mWebContentsDelegate = new WebContentsDelegateAndroid() {
@@ -296,7 +301,7 @@ public class OverlayPanelContent {
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        mWebContents = WebContentsFactory.createWebContents(false, true);
+        mWebContents = WebContentsFactory.createWebContents(mIsIncognito, true);
 
         ContentView cv = ContentView.createContentView(mActivity, mWebContents);
         if (mContentViewWidth != 0 || mContentViewHeight != 0) {

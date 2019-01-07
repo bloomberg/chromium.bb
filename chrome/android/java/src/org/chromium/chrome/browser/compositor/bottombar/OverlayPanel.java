@@ -444,7 +444,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(new OverlayContentDelegate(),
-                new OverlayContentProgressObserver(), mActivity, getBarHeight());
+                new OverlayContentProgressObserver(), mActivity, /* isIncognito= */ false,
+                getBarHeight());
     }
 
     /**

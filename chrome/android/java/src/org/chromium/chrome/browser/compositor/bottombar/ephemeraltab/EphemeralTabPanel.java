@@ -39,6 +39,9 @@ public class EphemeralTabPanel extends OverlayPanel {
     /** Remembers whether the panel was opened beyond the peeking state. */
     private boolean mWasPanelOpened;
 
+    /** True if the Tab from which the panel is opened is in incognito mode. */
+    private boolean mIsIncognito;
+
     /**
      * Checks if this feature (a.k.a. "Sneak peek") for html and image is supported.
      * @return {@code true} if the feature is enabled.
@@ -76,7 +79,7 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(new OverlayContentDelegate(), new PanelProgressObserver(),
-                mActivity, getBarHeight());
+                mActivity, mIsIncognito, getBarHeight());
     }
 
     @Override
@@ -169,8 +172,10 @@ public class EphemeralTabPanel extends OverlayPanel {
      * Request opening the ephemeral tab panel when triggered from context menu.
      * @param url URL of the content to open in the panel
      * @param text Link text which will appear on the tab bar.
+     * @param isIncognito {@link True} if the panel is opened from an incognito tab.
      */
-    public void requestOpenPanel(String url, String text) {
+    public void requestOpenPanel(String url, String text, boolean isIncognito) {
+        mIsIncognito = isIncognito;
         loadUrlInPanel(url);
         WebContents panelWebContents = getWebContents();
         if (panelWebContents != null) panelWebContents.onShow();

@@ -223,7 +223,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onOpenInEphemeralTab(String url, String title) {
-        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title);
+        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title, mTab.isIncognito());
     }
 
     @Override
