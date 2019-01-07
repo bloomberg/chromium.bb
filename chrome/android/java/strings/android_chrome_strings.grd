@@ -4007,7 +4007,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Assistant Triggered Checkout
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Fast Checkout.">
-        By continuing, you agree that Chrome will send data from Chrome Autofill, the site’s URL and its content to Google to provide this service.\n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill.  <ph name="BEGIN_LINK">&lt;link&gt;</ph>Read more<ph name="END_LINK">&lt;/link&gt;</ph>
+        By continuing, you agree that Chrome will send data from Chrome Autofill, the site’s URL and its content to Google to provide this service.\n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill.  <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout
