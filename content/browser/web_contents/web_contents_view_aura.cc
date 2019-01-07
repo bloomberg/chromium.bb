@@ -1133,8 +1133,7 @@ bool WebContentsViewAura::HasHitTestMask() const {
   return false;
 }
 
-void WebContentsViewAura::GetHitTestMask(gfx::Path* mask) const {
-}
+void WebContentsViewAura::GetHitTestMask(SkPath* mask) const {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, ui::EventHandler implementation:

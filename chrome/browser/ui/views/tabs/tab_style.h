@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 class Canvas;
 }
 
+class SkPath;
 class Tab;
 
 // Holds all of the logic for rendering tabs, including preferred sizes, paths,
@@ -80,7 +80,7 @@ class TabStyle {
   // If |force_active| is true, applies an active appearance on the tab (usually
   // involving painting an optional stroke) even if the tab is not the active
   // tab.
-  virtual gfx::Path GetPath(
+  virtual SkPath GetPath(
       PathType path_type,
       float scale,
       bool force_active = false,
@@ -93,7 +93,7 @@ class TabStyle {
   virtual int GetStrokeThickness(bool should_paint_as_active = false) const = 0;
 
   // Paint the tab.
-  virtual void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const = 0;
+  virtual void PaintTab(gfx::Canvas* canvas, const SkPath& clip) const = 0;
 
   // Returns the insets to use for laying out tab contents.
   virtual gfx::Insets GetContentsInsets() const = 0;

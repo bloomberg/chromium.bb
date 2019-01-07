@@ -162,7 +162,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
-  void GetWidgetHitTestMask(gfx::Path* mask) const override;
+  void GetWidgetHitTestMask(SkPath* mask) const override;
   base::string16 GetAccessibleWindowTitle() const override;
 
   // Overridden from views::BubbleDialogDelegateView.

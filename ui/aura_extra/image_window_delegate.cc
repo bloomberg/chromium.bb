@@ -96,7 +96,6 @@ bool ImageWindowDelegate::HasHitTestMask() const {
   return false;
 }
 
-void ImageWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
-}
+void ImageWindowDelegate::GetHitTestMask(SkPath* mask) const {}
 
 }  // namespace aura_extra

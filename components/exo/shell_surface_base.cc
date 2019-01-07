@@ -29,6 +29,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -46,7 +47,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -177,7 +177,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
     if (visible())
       return ash::NonClientFrameViewAsh::GetWindowMask(size, window_mask);
   }
@@ -751,7 +751,7 @@ bool ShellSurfaceBase::WidgetHasHitTestMask() const {
   return true;
 }
 
-void ShellSurfaceBase::GetWidgetHitTestMask(gfx::Path* mask) const {
+void ShellSurfaceBase::GetWidgetHitTestMask(SkPath* mask) const {
   GetHitTestMask(mask);
 
   gfx::Point origin = host_window()->bounds().origin();

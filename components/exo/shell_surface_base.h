@@ -160,7 +160,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
-  void GetWidgetHitTestMask(gfx::Path* mask) const override;
+  void GetWidgetHitTestMask(SkPath* mask) const override;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;

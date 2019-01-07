@@ -4,13 +4,14 @@
 
 #include "ui/views/window/window_shape.h"
 
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/path.h"
 
 namespace views {
 
-void GetDefaultWindowMask(const gfx::Size& size, float scale,
-                          gfx::Path* window_mask) {
+void GetDefaultWindowMask(const gfx::Size& size,
+                          float scale,
+                          SkPath* window_mask) {
   const SkScalar sk_scale = SkFloatToScalar(scale);
   const SkScalar width = SkIntToScalar(size.width()) / sk_scale;
   const SkScalar height = SkIntToScalar(size.height()) / sk_scale;

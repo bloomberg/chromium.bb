@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowDelegateImpl
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowTargetVisibilityChanged(bool visible) override;
   bool HasHitTestMask() const override;
-  void GetHitTestMask(gfx::Path* mask) const override;
+  void GetHitTestMask(SkPath* mask) const override;
 
  private:
   ~WindowDelegateImpl() override;

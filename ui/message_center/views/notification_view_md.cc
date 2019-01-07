@@ -584,7 +584,7 @@ void NotificationViewMD::Layout() {
 
     // Use vertically larger clip path, so that actions row's top coners will
     // not be rounded.
-    gfx::Path path;
+    SkPath path;
     gfx::Rect bounds = actions_row_->GetLocalBounds();
     bounds.set_y(bounds.y() - bounds.height());
     bounds.set_height(bounds.height() * 2);

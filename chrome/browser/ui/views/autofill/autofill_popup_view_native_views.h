@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/path.h"
 
 #include <memory>
 #include <vector>

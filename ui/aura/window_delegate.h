@@ -13,8 +13,9 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
+class SkPath;
+
 namespace gfx {
-class Path;
 class Point;
 class Rect;
 class Size;
@@ -101,7 +102,7 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
 
   // Called from Window::HitTest to retrieve hit test mask when HasHitTestMask
   // above returns true.
-  virtual void GetHitTestMask(gfx::Path* mask) const = 0;
+  virtual void GetHitTestMask(SkPath* mask) const = 0;
 
   // Returns whether the window wants to receive and handle double tap gesture
   // events. Defaults to false.

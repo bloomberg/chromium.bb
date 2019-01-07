@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/common/password_form.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -45,7 +45,7 @@ class CircularImageView : public views::ImageView {
 void CircularImageView::OnPaint(gfx::Canvas* canvas) {
   // Display the avatar picture as a circle.
   gfx::Rect bounds(GetImageBounds());
-  gfx::Path circular_mask;
+  SkPath circular_mask;
   circular_mask.addCircle(
       SkIntToScalar(bounds.x() + bounds.right()) / 2,
       SkIntToScalar(bounds.y() + bounds.bottom()) / 2,

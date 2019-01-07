@@ -10,10 +10,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
+class SkPath;
 class Tab;
 
 namespace gfx {
-class Path;
 class Point;
 class Rect;
 }
@@ -116,7 +116,7 @@ class TabController {
   // is set to the path which should be clipped out of the current tab's region
   // (for hit testing or painting), if any.  |clip| is only non-empty when
   // stacking tabs; if it is empty, no clipping is needed.
-  virtual bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) = 0;
+  virtual bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) = 0;
 
   // Returns the thickness of the stroke around the active tab in DIP.  Returns
   // 0 if there is no stroke.

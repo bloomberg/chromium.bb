@@ -10,8 +10,9 @@
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/views_export.h"
 
+class SkPath;
+
 namespace gfx {
-class Path;
 class Rect;
 }
 
@@ -29,7 +30,7 @@ class VIEWS_EXPORT MaskedTargeterDelegate : public ViewTargeterDelegate {
   // Sets the hit-test mask for the view which implements this interface,
   // in that view's local coordinate space. Returns whether a valid mask
   // has been set in |mask|.
-  virtual bool GetHitTestMask(gfx::Path* mask) const = 0;
+  virtual bool GetHitTestMask(SkPath* mask) const = 0;
 
   // ViewTargeterDelegate:
   bool DoesIntersectRect(const View* target,

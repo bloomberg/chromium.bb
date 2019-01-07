@@ -13,8 +13,8 @@
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 
@@ -77,7 +77,7 @@ TEST(CreateHRGNFromSkPathTest, RoundCornerTest) {
       { 16, 49, 34, 50 },
   };
 
-  Path path;
+  SkPath path;
   SkRRect rrect;
   rrect.setRectXY(SkRect::MakeWH(50, 50), 20, 20);
   path.addRRect(rrect);
@@ -96,7 +96,7 @@ TEST(CreateHRGNFromSkPathTest, NonContiguousPath) {
       { 100, 100, 150, 150},
   };
 
-  Path path;
+  SkPath path;
   for (const SkIRect& rect : rects) {
     path.addRect(SkRect::Make(rect));
   }
@@ -109,7 +109,7 @@ TEST(CreateHRGNFromSkPathTest, NonContiguousPath) {
 
 // Check that empty region is returned for empty path.
 TEST(CreateHRGNFromSkPathTest, EmptyPath) {
-  Path path;
+  SkPath path;
   base::win::ScopedRegion empty_region(::CreateRectRgn(0, 0, 0, 0));
   base::win::ScopedRegion region(CreateHRGNFromSkPath(path));
   EXPECT_TRUE(::EqualRgn(empty_region.get(), region.get()));

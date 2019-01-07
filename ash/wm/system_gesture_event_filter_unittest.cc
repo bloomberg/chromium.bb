@@ -72,7 +72,7 @@ class MaxSizeNCFV : public views::NonClientFrameView {
   // hittests for regions that are partially obscured by the ClientView, e.g.
   // HTSYSMENU.
   int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override {}
   void UpdateWindowIcon() override {}
   void UpdateWindowTitle() override {}

@@ -6,7 +6,6 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 namespace views {

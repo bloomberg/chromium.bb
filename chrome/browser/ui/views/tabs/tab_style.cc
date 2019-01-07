@@ -75,14 +75,14 @@ class GM2TabStyle : public TabStyle {
 
  protected:
   // TabStyle:
-  gfx::Path GetPath(
+  SkPath GetPath(
       PathType path_type,
       float scale,
       bool force_active = false,
       RenderUnits render_units = RenderUnits::kPixels) const override;
   gfx::Insets GetContentsInsets() const override;
   int GetStrokeThickness(bool should_paint_as_active = false) const override;
-  void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const override;
+  void PaintTab(gfx::Canvas* canvas, const SkPath& clip) const override;
 
  private:
   // Gets the bounds for the leading and trailing separators for a tab.
@@ -98,12 +98,12 @@ class GM2TabStyle : public TabStyle {
 
   // Painting helper functions:
   void PaintInactiveTabBackground(gfx::Canvas* canvas,
-                                  const gfx::Path& clip) const;
+                                  const SkPath& clip) const;
   void PaintTabBackground(gfx::Canvas* canvas,
                           bool active,
                           int fill_id,
                           int y_inset,
-                          const gfx::Path* clip) const;
+                          const SkPath* clip) const;
   void PaintTabBackgroundFill(gfx::Canvas* canvas,
                               bool active,
                               bool paint_hover_effect,
@@ -196,10 +196,10 @@ bool BackgroundCache::UpdateCacheKey(float scale,
 
 GM2TabStyle::GM2TabStyle(const Tab* tab) : tab_(tab) {}
 
-gfx::Path GM2TabStyle::GetPath(PathType path_type,
-                               float scale,
-                               bool force_active,
-                               RenderUnits render_units) const {
+SkPath GM2TabStyle::GetPath(PathType path_type,
+                            float scale,
+                            bool force_active,
+                            RenderUnits render_units) const {
   const int stroke_thickness = GetStrokeThickness(force_active);
 
   // We'll do the entire path calculation in aligned pixels.
@@ -275,7 +275,7 @@ gfx::Path GM2TabStyle::GetPath(PathType path_type,
   // may have made to the location of the tab!
   const float corner_gap = (right - tab_right) - bottom_radius;
 
-  gfx::Path path;
+  SkPath path;
 
   if (path_type == PathType::kInteriorClip) {
     // Clip path is a simple rectangle.
@@ -392,7 +392,7 @@ int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
              : 0;
 }
 
-void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const {
+void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {
   int active_tab_fill_id = 0;
   int active_tab_y_inset = 0;
   if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
@@ -534,7 +534,7 @@ bool GM2TabStyle::ShouldExtendHitTest() const {
 }
 
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas,
-                                             const gfx::Path& clip) const {
+                                             const SkPath& clip) const {
   bool has_custom_image;
   int fill_id = tab_->controller()->GetBackgroundResourceId(&has_custom_image);
   if (!has_custom_image)
@@ -548,7 +548,7 @@ void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
                                      bool active,
                                      int fill_id,
                                      int y_inset,
-                                     const gfx::Path* clip) const {
+                                     const SkPath* clip) const {
   // |y_inset| is only set when |fill_id| is being used.
   DCHECK(!y_inset || fill_id);
 
@@ -630,7 +630,7 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
                                          SkColor inactive_color,
                                          int fill_id,
                                          int y_inset) const {
-  const gfx::Path fill_path =
+  const SkPath fill_path =
       GetPath(PathType::kFill, canvas->image_scale(), active);
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
@@ -672,7 +672,7 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
 void GM2TabStyle::PaintBackgroundStroke(gfx::Canvas* canvas,
                                         bool active,
                                         SkColor stroke_color) const {
-  gfx::Path outer_path =
+  SkPath outer_path =
       GetPath(TabStyle::PathType::kBorder, canvas->image_scale(), active);
   gfx::ScopedCanvas scoped_canvas(canvas);
   float scale = canvas->UndoDeviceScaleFactor();

@@ -167,7 +167,7 @@ class RoundedCornerImageView : public views::ImageView {
 };
 
 void RoundedCornerImageView::OnPaint(gfx::Canvas* canvas) {
-  gfx::Path mask;
+  SkPath mask;
   mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()),
                     kEntityImageCornerRadius, kEntityImageCornerRadius);
   canvas->ClipPath(mask, true);

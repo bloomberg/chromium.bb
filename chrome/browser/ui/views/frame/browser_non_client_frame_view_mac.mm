@@ -240,8 +240,7 @@ int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
 }
 
 void BrowserNonClientFrameViewMac::GetWindowMask(const gfx::Size& size,
-                                                 gfx::Path* window_mask) {
-}
+                                                 SkPath* window_mask) {}
 
 void BrowserNonClientFrameViewMac::UpdateWindowIcon() {
 }

@@ -30,7 +30,6 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "url/url_canon.h"
 
@@ -150,7 +149,7 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
 
     // Calculate the circular mask that will be used to display the avatar
     // image.
-    gfx::Path circular_mask;
+    SkPath circular_mask;
     circular_mask.addCircle(SkIntToScalar(canvas_size_.width() / 2),
                             SkIntToScalar(canvas_size_.height() / 2),
                             SkIntToScalar(canvas_size_.width() / 2));

@@ -233,7 +233,7 @@ class ShelfButton::AppStatusIndicatorView
       end = start;
       end.Offset(0, stroke_length);
     }
-    gfx::Path path;
+    SkPath path;
     path.moveTo(start.x() * dsf, start.y() * dsf);
     path.lineTo(end.x() * dsf, end.y() * dsf);
     canvas->DrawPath(path, flags);

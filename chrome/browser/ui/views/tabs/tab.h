@@ -78,7 +78,7 @@ class Tab : public gfx::AnimationDelegate,
                               ui::MenuSourceType source_type) override;
 
   // views::MaskedTargeterDelegate:
-  bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(SkPath* mask) const override;
 
   // views::View:
   void Layout() override;

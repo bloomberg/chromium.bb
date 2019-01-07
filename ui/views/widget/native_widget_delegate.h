@@ -9,8 +9,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
+class SkPath;
+
 namespace gfx {
-class Path;
 class Point;
 class Size;
 }
@@ -133,7 +134,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool HasHitTestMask() const = 0;
 
   // Provides the hit-test mask if HasHitTestMask above returns true.
-  virtual void GetHitTestMask(gfx::Path* mask) const = 0;
+  virtual void GetHitTestMask(SkPath* mask) const = 0;
 
   virtual Widget* AsWidget() = 0;
   virtual const Widget* AsWidget() const = 0;

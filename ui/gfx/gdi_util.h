@@ -10,7 +10,6 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 

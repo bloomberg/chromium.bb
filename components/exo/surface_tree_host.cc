@@ -14,6 +14,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -25,7 +26,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace exo {
@@ -154,7 +154,7 @@ bool SurfaceTreeHost::HasHitTestRegion() const {
   return root_surface_ && root_surface_->HasHitTestRegion();
 }
 
-void SurfaceTreeHost::GetHitTestMask(gfx::Path* mask) const {
+void SurfaceTreeHost::GetHitTestMask(SkPath* mask) const {
   if (root_surface_)
     root_surface_->GetHitTestMask(mask);
 }

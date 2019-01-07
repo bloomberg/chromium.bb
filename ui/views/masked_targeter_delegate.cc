@@ -4,7 +4,7 @@
 
 #include "ui/views/masked_targeter_delegate.h"
 
-#include "ui/gfx/path.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 
@@ -18,7 +18,7 @@ bool MaskedTargeterDelegate::DoesIntersectRect(const View* target,
     return false;
 
   // Early return if |mask| is not a valid hit test mask.
-  gfx::Path mask;
+  SkPath mask;
   if (!GetHitTestMask(&mask))
     return false;
 

@@ -55,7 +55,7 @@ int NativeFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void NativeFrameView::GetWindowMask(const gfx::Size& size,
-                                    gfx::Path* window_mask) {
+                                    SkPath* window_mask) {
   // Nothing to do, we use the default window mask.
 }
 

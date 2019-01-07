@@ -11,8 +11,9 @@
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/path.h"
 #include "ui/views/views_export.h"
+
+class SkPath;
 
 namespace views {
 

@@ -83,7 +83,7 @@ class NewTabButton : public views::ImageButton,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::MaskedTargeterDelegate:
-  bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(SkPath* mask) const override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -101,9 +101,9 @@ class NewTabButton : public views::ImageButton,
 
   // Returns the path for the given |origin| and |scale|.  If |extend_to_top| is
   // true, the path is extended vertically to y = 0.
-  gfx::Path GetBorderPath(const gfx::Point& origin,
-                          float scale,
-                          bool extend_to_top) const;
+  SkPath GetBorderPath(const gfx::Point& origin,
+                       float scale,
+                       bool extend_to_top) const;
 
   void UpdateInkDropBaseColor();
 

@@ -7,8 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/stl_util.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/path.h"
 
 namespace {
 

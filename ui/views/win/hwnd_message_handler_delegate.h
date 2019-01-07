@@ -10,9 +10,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
+class SkPath;
+
 namespace gfx {
 class Insets;
-class Path;
 class Point;
 class Rect;
 class Size;
@@ -82,7 +83,7 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool WillProcessWorkAreaChange() const = 0;
 
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* mask) = 0;
+  virtual void GetWindowMask(const gfx::Size& size, SkPath* mask) = 0;
 
   // Returns true if the delegate modifies |insets| to define a custom client
   // area for the window, false if the default client area should be used. If
