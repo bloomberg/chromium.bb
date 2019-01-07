@@ -409,8 +409,25 @@ void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {
   Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
 
-RenderViewHost* RenderViewHostImpl::GetRenderViewHost() {
-  return this;
+bool RenderViewHostImpl::IsMainFrameActive() {
+  return is_active();
+}
+
+bool RenderViewHostImpl::IsNeverVisible() {
+  return GetDelegate()->IsNeverVisible();
+}
+
+WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {
+  return GetWebkitPreferences();
+}
+
+FrameTreeNode* RenderViewHostImpl::GetFocusedFrame() {
+  return GetDelegate()->GetFrameTree()->GetFocusedFrame();
+}
+
+void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
+                                         const ContextMenuParams& params) {
+  GetDelegate()->GetDelegateView()->ShowContextMenu(render_frame_host, params);
 }
 
 WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_OWNER_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_OWNER_DELEGATE_H_
 
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace blink {
@@ -16,8 +17,11 @@ class Rect;
 }
 
 namespace content {
+struct ContextMenuParams;
+class FrameTreeNode;
 struct NativeWebKeyboardEvent;
-class RenderViewHost;
+class RenderFrameHost;
+struct WebPreferences;
 
 //
 // RenderWidgetHostOwnerDelegate
@@ -73,12 +77,23 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // the renderer's background is forced to be opaque.
   virtual void SetBackgroundOpaque(bool opaque) = 0;
 
-  // Returns the RenderViewHost, which holds the frame tree for this
-  // RenderWidgetHost.
-  // TODO(danakj): This should not exist, instead any use of RenderViewHost
-  // should go through specific methods in this delegate interface.
-  // DO NOT ADD NEW CALLS TO THIS METHOD.
-  virtual RenderViewHost* GetRenderViewHost() = 0;
+  // Returns true if the main frame is active, false if it is swapped out.
+  virtual bool IsMainFrameActive() = 0;
+
+  // Returns true if the page, including any widgets, will never be visible.
+  virtual bool IsNeverVisible() = 0;
+
+  // Returns the WebkitPreferences for the page. The preferences are shared
+  // between all widgets for the page.
+  virtual WebPreferences GetWebkitPreferencesForWidget() = 0;
+
+  // Returns the focused frame.
+  virtual FrameTreeNode* GetFocusedFrame() = 0;
+
+  // Shows a context menu that is built using the context information
+  // provided in |params|.
+  virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
+                               const ContextMenuParams& params) = 0;
 
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}

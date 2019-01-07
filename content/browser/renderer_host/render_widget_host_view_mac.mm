@@ -212,16 +212,16 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         GetFrameSinkId(), this);
   }
 
-  RenderViewHost* rvh = host()->GetRenderViewHost();
   bool needs_begin_frames = true;
 
-  if (rvh) {
+  RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
+  if (owner_delegate) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
     // first to rebaseline some unreliable web tests.
     // NOTE: This will not be run for child frame widgets, which do not have
     // an owner delegate and won't get a RenderViewHost here.
-    ignore_result(rvh->GetWebkitPreferences());
-    needs_begin_frames = !rvh->GetDelegate()->IsNeverVisible();
+    ignore_result(owner_delegate->GetWebkitPreferencesForWidget());
+    needs_begin_frames = !owner_delegate->IsNeverVisible();
   }
 
   cursor_manager_.reset(new CursorManager(this));
@@ -997,7 +997,7 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
 }
 
 WebContents* RenderWidgetHostViewMac::GetWebContents() {
-  return WebContents::FromRenderViewHost(host()->GetRenderViewHost());
+  return WebContents::FromRenderViewHost(RenderViewHost::From(host()));
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
@@ -1456,18 +1456,17 @@ void RenderWidgetHostViewMac::SetAccessibilityWindow(NSWindow* window) {
   remote_window_accessible_.reset();
 }
 
-bool RenderWidgetHostViewMac::SyncIsRenderViewHost(bool* is_render_view) {
-  // TODO(danakj): This should return true/false if there is an owner delegate
-  // instead of checking if it is a RenderViewHost.
-  *is_render_view = host()->GetRenderViewHost() != nullptr;
+bool RenderWidgetHostViewMac::SyncIsWidgetForMainFrame(
+    bool* is_for_main_frame) {
+  *is_for_main_frame = !!host()->owner_delegate();
   return true;
 }
 
-void RenderWidgetHostViewMac::SyncIsRenderViewHost(
-    SyncIsRenderViewHostCallback callback) {
-  bool is_render_view;
-  SyncIsRenderViewHost(&is_render_view);
-  std::move(callback).Run(is_render_view);
+void RenderWidgetHostViewMac::SyncIsWidgetForMainFrame(
+    SyncIsWidgetForMainFrameCallback callback) {
+  bool is_for_main_frame;
+  SyncIsWidgetForMainFrame(&is_for_main_frame);
+  std::move(callback).Run(is_for_main_frame);
 }
 
 void RenderWidgetHostViewMac::RequestShutdown() {

@@ -393,13 +393,13 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       new TouchSelectionControllerClientAura(this));
   CreateSelectionController();
 
-  RenderViewHost* rvh = host()->GetRenderViewHost();
-  if (rvh) {
+  RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
+  if (owner_delegate) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
     // first to rebaseline some unreliable web tests.
     // NOTE: This will not be run for child frame widgets, which do not have
     // an owner delegate and won't get a RenderViewHost here.
-    ignore_result(rvh->GetWebkitPreferences());
+    ignore_result(owner_delegate->GetWebkitPreferencesForWidget());
   }
 }
 
@@ -602,15 +602,13 @@ void RenderWidgetHostViewAura::OnBeginFrame(base::TimeTicks frame_time) {
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() const {
-  RenderViewHost* rvh = host()->GetRenderViewHost();
+  RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   // TODO(crbug.com/689777): Child local roots do not work here?
-  if (!rvh)
+  if (!owner_delegate)
     return nullptr;
-  FrameTreeNode* focused_frame =
-      rvh->GetDelegate()->GetFrameTree()->GetFocusedFrame();
+  FrameTreeNode* focused_frame = owner_delegate->GetFocusedFrame();
   if (!focused_frame)
     return nullptr;
-
   return focused_frame->current_frame_host();
 }
 
@@ -1668,9 +1666,12 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
 bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
-  RenderViewHost* rvh = host()->GetRenderViewHost();
+  RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   // TODO(crbug.com/916715): Child local roots do not work here?
-  return rvh && rvh->GetWebkitPreferences().double_tap_to_zoom_enabled;
+  if (!owner_delegate)
+    return false;
+  return owner_delegate->GetWebkitPreferencesForWidget()
+      .double_tap_to_zoom_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2201,18 +2202,9 @@ void RenderWidgetHostViewAura::ShowContextMenu(
   // NOTE: This only works for main frame widgets then, as child frame widgets
   // don't have an owner delegate and won't get access to the RenderViewHost
   // here.
-  RenderViewHost* rvh = host()->GetRenderViewHost();
-  if (!rvh)
-    return;
-
-  RenderViewHostDelegate* delegate = rvh->GetDelegate();
-  if (!delegate)
-    return;
-
-  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
-  if (!delegate_view)
-    return;
-  delegate_view->ShowContextMenu(GetFocusedFrame(), params);
+  RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
+  if (owner_delegate)
+    owner_delegate->ShowContextMenu(GetFocusedFrame(), params);
 }
 
 void RenderWidgetHostViewAura::NotifyRendererOfCursorVisibilityState(

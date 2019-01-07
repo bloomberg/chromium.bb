@@ -174,10 +174,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
-  // Gets the RenderViewHost from the owner delegate if this RenderWidgetHost
-  // is for a main frame (and thus has an owner delegate).
-  RenderViewHost* GetRenderViewHost();
-
   void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
   // Returns the viz::FrameSinkId that this object uses to put things on screen.

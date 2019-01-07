@@ -323,8 +323,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SmartMagnify(const blink::WebGestureEvent& smart_magnify_event) override;
 
   // mojom::RenderWidgetHostNSViewClient implementation.
-  void SyncIsRenderViewHost(SyncIsRenderViewHostCallback callback) override;
-  bool SyncIsRenderViewHost(bool* is_render_view) override;
+  void SyncIsWidgetForMainFrame(
+      SyncIsWidgetForMainFrameCallback callback) override;
+  bool SyncIsWidgetForMainFrame(bool* is_for_main_frame) override;
   void RequestShutdown() override;
   void OnFirstResponderChanged(bool is_first_responder) override;
   void OnWindowIsKeyChanged(bool is_key) override;
