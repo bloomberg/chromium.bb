@@ -50,19 +50,13 @@ int HandlerMainAdaptor(int argc, char* argv[]) {
 MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
-  std::vector<base::CommandLine::StringType> argv(cmd_line->argv());
-  for (auto I = argv.begin(); I != argv.end(); ++I) {
-    if (I->find(L"test-child-process") != std::string::npos) {
-      argv.erase(I);
-      break;
-    }
+  std::vector<wchar_t*> argv;
+  for (auto& arg : cmd_line->argv()) {
+    if (arg.find(L"test-child-process") == std::string::npos)
+      argv.push_back(const_cast<wchar_t*>(arg.c_str()));
   }
 
-  wchar_t* wargv[argv.size()];
-  for (size_t i = 0; i < argv.size(); i++)
-    wargv[i] = const_cast<wchar_t*>(argv[i].c_str());
-
-  crashpad::ToolSupport::Wmain(argv.size(), wargv, HandlerMainAdaptor);
+  crashpad::ToolSupport::Wmain(argv.size(), argv.data(), HandlerMainAdaptor);
 
   return 0;
 }
