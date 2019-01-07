@@ -146,10 +146,12 @@ class MultiBrowserSharedState(story_module.SharedState):
     """
     if self._browsers_created:
       return
+    self.platform.FlushDnsCache()
     for browser_type in self._browsers:
       possible_browser, browser_options = self._possible_browsers[browser_type]
       possible_browser.SetUpEnvironment(browser_options)
-      self._browsers[browser_type] = possible_browser.Create()
+      possible_browser.FlushOsPageCaches()
+      self._browsers[browser_type] = possible_browser.Create(clear_caches=False)
     self._browsers_created = True
 
   def _CloseAllBrowsers(self):
