@@ -196,7 +196,12 @@ void BookmarkRemoteUpdatesHandler::Process(
       // encryption. Therefore, we can go ahead and process the next update.
       continue;
     } else if (!tracked_entity) {
-      ProcessCreate(*update);
+      bool success = ProcessCreate(*update);
+      if (!success) {
+        // If no new node has been tracked, we shouldn't worry about changes to
+        // the encryption.
+        continue;
+      }
     } else {
       // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only
       // care about their children.
@@ -330,14 +335,14 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
   return ordered_updates;
 }
 
-void BookmarkRemoteUpdatesHandler::ProcessCreate(
+bool BookmarkRemoteUpdatesHandler::ProcessCreate(
     const syncer::UpdateResponseData& update) {
   const syncer::EntityData& update_entity = update.entity.value();
   DCHECK(!update_entity.is_deleted());
   if (!update_entity.server_defined_unique_tag.empty()) {
     DLOG(ERROR)
         << "Permanent nodes should have been merged during intial sync.";
-    return;
+    return false;
   }
 
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
@@ -349,7 +354,7 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Could not find parent of node being added."
                 << " Node title: " << update_entity.specifics.bookmark().title()
                 << ", parent id = " << update_entity.parent_id;
-    return;
+    return false;
   }
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
@@ -362,12 +367,13 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Failed to create bookmark node with title "
                 << update_entity.specifics.bookmark().title() << " and url "
                 << update_entity.specifics.bookmark().url();
-    return;
+    return false;
   }
   bookmark_tracker_->Add(update_entity.id, bookmark_node,
                          update.response_version, update_entity.creation_time,
                          update_entity.unique_position,
                          update_entity.specifics);
+  return true;
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessUpdate(
