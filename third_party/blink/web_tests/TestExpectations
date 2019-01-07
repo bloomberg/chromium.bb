@@ -6011,9 +6011,6 @@ crbug.com/917970 [ Mac10.13 Retina ] virtual/mouseevent_fractional/fast/events/p
 # Sheriff 2019-01-03
 crbug.com/918905 [ Mac Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]
 
-# Sheriff 2019-01-04
-crbug.com/919096 [ Linux ] virtual/display-lock/display-lock/lock-before-append/measure-updated-layout.html [ Timeout Pass ]
-
 # Sheriff 2019-01-07
 crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
 crbug.com/919504 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Timeout Pass ]

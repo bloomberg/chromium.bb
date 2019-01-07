@@ -86,7 +86,9 @@ async_test((t) => {
     });
   }
 
-  runTest();
+  window.onload = function() {
+    requestAnimationFrame(() => requestAnimationFrame(runTest));
+  };
 }, "Measure Forced Layout");
 </script>
 
