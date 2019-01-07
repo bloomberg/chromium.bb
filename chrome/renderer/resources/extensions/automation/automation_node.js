@@ -1248,7 +1248,10 @@ utils.defineProperty(AutomationRootNodeImpl, 'getOrCreate', function(treeID) {
 
 utils.defineProperty(
     AutomationRootNodeImpl, 'getNodeFromTree', function(treeId, nodeId) {
-  var impl = privates(AutomationRootNodeImpl.get(treeId)).impl;
+  var tree = AutomationRootNodeImpl.get(treeId);
+  if (!tree)
+    return;
+  var impl = privates(tree).impl;
   if (impl)
     return impl.get(nodeId);
 });
