@@ -1595,11 +1595,16 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'daisy',
       'kevin',
-      'kevin64',
-      'lakitu',
       'oak',
       'tael',
       'tatl',
+  ])
+
+  # Move the following builders to active_builders once they are consistently
+  # green.
+  unstable_builders = frozenset([
+      'kevin64', # TODO(manojgupta): Re-enable after crbug.com/878565 resolved.
+      'lakitu',  # TODO: Re-enable after crbug.com/919630 resolved.
   ])
 
   external_board_configs = CreateBoardConfigs(
@@ -1634,6 +1639,15 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           config_lib.CONFIG_TYPE_FULL,
           active_builders,
           manifest_version=True,
+      )
+  )
+
+  master_config.AddSlaves(
+      site_config.ApplyForBoards(
+          config_lib.CONFIG_TYPE_FULL,
+          unstable_builders,
+          manifest_version=True,
+          important=False,
       )
   )
 
