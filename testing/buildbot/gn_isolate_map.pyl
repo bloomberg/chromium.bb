@@ -2613,6 +2613,7 @@
     "args": [
       "vr_common_perftests",
       "--non-telemetry=1",
+      "--gtest-benchmark-name=xr.vr.common_perftests",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
