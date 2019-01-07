@@ -38,7 +38,7 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
                  const V8PrivateProperty::Symbol& property,
                  HandlerType type)
       : event_handler_(V8EventHandlerNonNull::Create(listener)), type_(type) {
-    Attach(script_state, listener, property, this);
+    Attach(script_state, listener, property);
   }
 
   explicit JSEventHandler(HandlerType type) : type_(type) {}
