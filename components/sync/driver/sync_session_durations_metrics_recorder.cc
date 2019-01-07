@@ -76,15 +76,19 @@ void SyncSessionDurationsMetricsRecorder::OnSessionEnded(
     return;
   }
 
-  base::TimeDelta inactivity_at_session_end =
-      total_session_timer_->Elapsed() - session_length;
-  LogSigninDuration(SubtractInactiveTime(signin_session_timer_->Elapsed(),
-                                         inactivity_at_session_end));
-  LogSyncAndAccountDuration(SubtractInactiveTime(
-      sync_account_session_timer_->Elapsed(), inactivity_at_session_end));
+  base::TimeDelta total_session_time = total_session_timer_->Elapsed();
+  base::TimeDelta signin_session_time = signin_session_timer_->Elapsed();
+  base::TimeDelta sync_account_session_time_ =
+      sync_account_session_timer_->Elapsed();
   total_session_timer_.reset();
   signin_session_timer_.reset();
   sync_account_session_timer_.reset();
+
+  base::TimeDelta total_inactivity_time = total_session_time - session_length;
+  LogSigninDuration(
+      SubtractInactiveTime(signin_session_time, total_inactivity_time));
+  LogSyncAndAccountDuration(
+      SubtractInactiveTime(sync_account_session_time_, total_inactivity_time));
 }
 
 void SyncSessionDurationsMetricsRecorder::OnAccountsInCookieUpdated(
