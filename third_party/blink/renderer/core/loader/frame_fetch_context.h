@@ -139,7 +139,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool IsMainFrame() const override;
   bool DefersLoading() const override;
   bool IsLoadComplete() const override;
-  bool UpdateTimingInfoForIFrameNavigation();
 
   void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,

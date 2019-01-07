@@ -1391,12 +1391,6 @@ TEST_F(FrameFetchContextTest, IsLoadCompleteWhenDetached_2) {
   EXPECT_TRUE(fetch_context->IsLoadComplete());
 }
 
-TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
-  dummy_page_holder = nullptr;
-  fetch_context->UpdateTimingInfoForIFrameNavigation();
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::Create(KURL("https://www.example.com"));

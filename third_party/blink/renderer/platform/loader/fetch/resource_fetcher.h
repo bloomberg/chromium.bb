@@ -140,7 +140,9 @@ class PLATFORM_EXPORT ResourceFetcher
 
   bool ShouldDeferImageLoad(const KURL&) const;
 
-  void RecordResourceTimingOnRedirect(Resource*, const ResourceResponse&, bool);
+  void RecordResourceTimingOnRedirect(Resource*,
+                                      const ResourceResponse&,
+                                      const KURL& new_url);
 
   enum LoaderFinishType { kDidFinishLoading, kDidFinishFirstPartInMultipart };
   void HandleLoaderFinish(Resource*,

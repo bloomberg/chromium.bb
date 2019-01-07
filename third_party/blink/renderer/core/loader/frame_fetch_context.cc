@@ -868,15 +868,8 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   if (!frame)
     return;
 
-  if (info.IsMainResource()) {
-    DCHECK(frame->Owner());
-    // Main resource timing information is reported through the owner to be
-    // passed to the parent frame, if appropriate.
-    frame->Owner()->AddResourceTiming(info);
-    frame->SetShouldSendResourceTimingInfoToParent(false);
-    return;
-  }
-
+  // Timing for main resource is handled in DocumentLoader.
+  DCHECK(!info.IsMainResource());
   // All other resources are reported to the corresponding Document.
   DOMWindowPerformance::performance(*document_->domWindow())
       ->GenerateAndAddResourceTiming(info);
@@ -930,28 +923,6 @@ bool FrameFetchContext::IsLoadComplete() const {
     return true;
 
   return document_ && document_->LoadEventFinished();
-}
-
-bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation() {
-  if (IsDetached())
-    return false;
-
-  // <iframe>s should report the initial navigation requested by the parent
-  // document, but not subsequent navigations.
-  if (!GetFrame()->Owner())
-    return false;
-  // Note that this can be racy since this information is forwarded over IPC
-  // when crossing process boundaries.
-  if (!GetFrame()->should_send_resource_timing_info_to_parent())
-    return false;
-  // Do not report iframe navigation that restored from history, since its
-  // location may have been changed after initial navigation,
-  if (MasterDocumentLoader()->LoadType() == WebFrameLoadType::kBackForward) {
-    // ...and do not report subsequent navigations in the iframe too.
-    GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
-    return false;
-  }
-  return true;
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {

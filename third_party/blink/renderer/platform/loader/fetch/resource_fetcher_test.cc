@@ -229,10 +229,10 @@ TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
                                          true /* is_main_resource */);
   info->AddFinalTransferSize(5);
   EXPECT_EQ(info->TransferSize(), 5);
-  ResourceResponse redirect_response(BlankURL());
+  ResourceResponse redirect_response(KURL("https://example.com"));
   redirect_response.SetHTTPStatusCode(200);
   redirect_response.SetEncodedDataLength(7);
-  info->AddRedirect(redirect_response, false);
+  info->AddRedirect(redirect_response, KURL("https://example.com/redirect"));
   EXPECT_EQ(info->TransferSize(), 12);
 }
 

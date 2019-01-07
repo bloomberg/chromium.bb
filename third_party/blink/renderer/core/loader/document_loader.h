@@ -339,6 +339,7 @@ class CORE_EXPORT DocumentLoader
   bool IsRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
   bool ShouldContinueForResponse() const;
+  bool ShouldReportTimingInfoToParent();
 
   // Processes the data stored in the data_buffer_, used to avoid appending data
   // to the parser in a nested message loop.
