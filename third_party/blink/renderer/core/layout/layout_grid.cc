@@ -649,13 +649,15 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   // Add gutters as if there where only 1 auto repeat track. Gaps between auto
   // repeat tracks will be added later when computing the repetitions.
   LayoutUnit gap_size = GridGap(direction, available_size);
-  tracks_size += gap_size * track_sizes.size();
+  tracks_size +=
+      gap_size * (track_sizes.size() + auto_repeat_track_list_length - 1);
 
   LayoutUnit free_space = available_size.value() - tracks_size;
   if (free_space <= 0)
     return auto_repeat_track_list_length;
 
-  LayoutUnit auto_repeat_size_with_gap = auto_repeat_tracks_size + gap_size;
+  LayoutUnit auto_repeat_size_with_gap =
+      auto_repeat_tracks_size + gap_size * auto_repeat_track_list_length;
 
   size_t repetitions = 1 + (free_space / auto_repeat_size_with_gap).ToInt();
   free_space -= auto_repeat_size_with_gap * (repetitions - 1);
