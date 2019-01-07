@@ -305,6 +305,11 @@ void PersonalDataManager::Init(
   if (!database_helper_->GetLocalDatabase()) {
     return;
   }
+
+  database_helper_->GetLocalDatabase()->SetAutofillProfileChangedCallback(
+      base::BindRepeating(&PersonalDataManager::OnAutofillProfileChanged,
+                          weak_factory_.GetWeakPtr()));
+
   LoadProfiles();
   LoadCreditCards();
   LoadPaymentsCustomerData();
@@ -629,14 +634,13 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
     profile->RecordAndLogUse();
 
     if (profile->record_type() == AutofillProfile::LOCAL_PROFILE) {
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);
+      UpdateProfileInDB(*profile);
     } else if (profile->record_type() == AutofillProfile::SERVER_PROFILE) {
       // TODO(crbug.com/864519): Update this once addresses support account
       // storage, and also use the server database.
       database_helper_->GetLocalDatabase()->UpdateServerAddressMetadata(
           *profile);
     }
-
     Refresh();
   }
 }
@@ -648,37 +652,14 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (is_off_the_record_)
     return;
 
-  if (profile.IsEmpty(app_locale_))
-    return;
-
-  // Don't add an existing profile.
-  if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
-    return;
-
   if (!database_helper_->GetLocalDatabase())
     return;
 
-  // Don't add a duplicate.
-  if (FindByContents(web_profiles_, profile))
-    return;
-
-  // Add the new profile to the web database.
-  database_helper_->GetLocalDatabase()->AddAutofillProfile(profile);
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
+  AddProfileToDB(profile);
 }
 
 void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   if (is_off_the_record_)
-    return;
-
-  AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
-  if (!existing_profile)
-    return;
-
-  // Don't overwrite the origin for a profile that is already stored.
-  if (existing_profile->EqualsSansOrigin(profile))
     return;
 
   if (profile.IsEmpty(app_locale_)) {
@@ -689,11 +670,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   if (!database_helper_->GetLocalDatabase())
     return;
 
-  // Make the update.
-  database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
+  UpdateProfileInDB(profile);
 }
 
 AutofillProfile* PersonalDataManager::GetProfileByGUID(
@@ -927,9 +904,9 @@ void PersonalDataManager::SetSyncServiceForTest(
 }
 
 void PersonalDataManager::
-    RemoveAutofillProfileByGUIDAndBlankCreditCardReferecne(
+    RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
         const std::string& guid) {
-  database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
+  RemoveProfileFromDB(guid);
 
   // Reset the billing_address_id of any card that refered to this profile.
   for (CreditCard* credit_card : GetCreditCards()) {
@@ -952,23 +929,17 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (is_off_the_record_)
     return;
 
-  bool is_credit_card = FindByGUID<CreditCard>(local_credit_cards_, guid);
-  bool is_profile =
-      !is_credit_card && FindByGUID<AutofillProfile>(web_profiles_, guid);
-  if (!is_credit_card && !is_profile)
-    return;
-
   if (!database_helper_->GetLocalDatabase())
     return;
 
+  bool is_credit_card = FindByGUID<CreditCard>(local_credit_cards_, guid);
   if (is_credit_card) {
     database_helper_->GetLocalDatabase()->RemoveCreditCard(guid);
+    // Refresh our local cache and send notifications to observers.
+    Refresh();
   } else {
-    RemoveAutofillProfileByGUIDAndBlankCreditCardReferecne(guid);
+    RemoveAutofillProfileByGUIDAndBlankCreditCardReference(guid);
   }
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
 }
 
 CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
@@ -1011,9 +982,9 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
 
 void PersonalDataManager::UpdateProfilesServerValidityMapsIfNeeded(
     const std::vector<AutofillProfile*>& profiles) {
-  if (!profiles_server_validities_need_update)
+  if (!profiles_server_validities_need_update_)
     return;
-  profiles_server_validities_need_update = false;
+  profiles_server_validities_need_update_ = false;
   for (auto* profile : profiles) {
     profile->UpdateServerValidityMap(GetProfileValidityByGUID(profile->guid()));
   }
@@ -1092,7 +1063,6 @@ void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
   LoadPaymentsCustomerData();
-  profiles_server_validities_need_update = true;
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1363,20 +1333,13 @@ void PersonalDataManager::SetPrefService(PrefService* pref_service) {
 }
 
 void PersonalDataManager::ClearProfileNonSettingsOrigins() {
-  bool has_updated = false;
-
   for (AutofillProfile* profile : GetProfiles()) {
     if (profile->origin() != kSettingsOrigin && !profile->origin().empty()) {
       profile->set_origin(std::string());
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);
-      has_updated = true;
+      UpdateProfileInDB(*profile);
     }
   }
 
-  // Refresh the local cache and send notifications to observers if a changed
-  // was made.
-  if (has_updated)
-    Refresh();
 }
 
 void PersonalDataManager::ClearCreditCardNonSettingsOrigins() {
@@ -1404,7 +1367,6 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
   if (pref_service_->GetBoolean(prefs::kAutofillJapanCityFieldMigrated))
     return;
 
-  bool has_updated = false;
   base::string16 japan_country_code = base::ASCIIToUTF16("JP");
   base::string16 line_separator = base::ASCIIToUTF16("\n");
   for (AutofillProfile* profile : GetProfiles()) {
@@ -1420,15 +1382,9 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
       profile->SetRawInfo(ADDRESS_HOME_CITY, base::string16());
 
       // Make the update.
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);
-      has_updated = true;
+      UpdateProfileInDB(*profile);
     }
   }
-
-  // Refresh the local cache and send notifications to observers if a change was
-  // made.
-  if (has_updated)
-    Refresh();
 
   // Set the pref so that this migration is never run again.
   pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
@@ -1452,7 +1408,7 @@ const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
     const std::string& guid) {
   static const ProfileValidityMap& empty_validity_map = ProfileValidityMap();
   if (!synced_profile_validity_) {
-    profiles_server_validities_need_update = true;
+    profiles_server_validities_need_update_ = true;
     synced_profile_validity_ = std::make_unique<UserProfileValidityMap>();
     if (!synced_profile_validity_->ParseFromString(
             ::autofill::prefs::GetAllProfilesValidityMapsEncodedString(
@@ -1605,31 +1561,25 @@ void PersonalDataManager::DedupeCreditCardToSuggest(
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   if (is_off_the_record_)
     return;
-
-  // Remove empty profiles from input.
-  base::EraseIf(*profiles, IsEmptyFunctor<AutofillProfile>(app_locale_));
-
   if (!database_helper_->GetLocalDatabase())
     return;
 
+  ClearOnGoingProfileChanges();
+
   // Any profiles that are not in the new profile list should be removed from
-  // the web database.
+  // the web database
   for (const auto& it : web_profiles_) {
     if (!FindByGUID<AutofillProfile>(*profiles, it->guid()))
-      database_helper_->GetLocalDatabase()->RemoveAutofillProfile(it->guid());
+      RemoveProfileFromDB(it->guid());
   }
 
-  // Update the web database with the existing profiles.
+  // Update the web database with the new and existing profiles.
   for (const AutofillProfile& it : *profiles) {
-    if (FindByGUID<AutofillProfile>(web_profiles_, it.guid()))
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(it);
-  }
-
-  // Add the new profiles to the web database.  Don't add a duplicate.
-  for (const AutofillProfile& it : *profiles) {
-    if (!FindByGUID<AutofillProfile>(web_profiles_, it.guid()) &&
-        !FindByContents(web_profiles_, it))
-      database_helper_->GetLocalDatabase()->AddAutofillProfile(it);
+    if (FindByGUID<AutofillProfile>(web_profiles_, it.guid())) {
+      UpdateProfileInDB(it);
+    } else {
+      AddProfileToDB(it);
+    }
   }
 
   // Copy in the new profiles.
@@ -1637,9 +1587,6 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   for (const AutofillProfile& it : *profiles) {
     web_profiles_.push_back(std::make_unique<AutofillProfile>(it));
   }
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
 }
 
 void PersonalDataManager::SetCreditCards(
@@ -1775,8 +1722,13 @@ std::string PersonalDataManager::SaveImportedProfile(
 }
 
 void PersonalDataManager::NotifyPersonalDataChanged() {
-  for (PersonalDataManagerObserver& observer : observers_)
+  bool profile_changes_are_on_going = ProfileChangesAreOnGoing();
+  for (PersonalDataManagerObserver& observer : observers_) {
     observer.OnPersonalDataChanged();
+    if (!profile_changes_are_on_going) {
+      observer.OnPersonalDataFinishedProfileTasks();
+    }
+  }
 
   // If new data was synced, try to convert new server profiles and update
   // server cards.
@@ -1992,6 +1944,53 @@ void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
       /*opted_in=*/true);
 }
 
+void PersonalDataManager::OnAutofillProfileChanged(
+    const AutofillProfileDeepChange& change) {
+  const auto& guid = change.key();
+  const auto& change_type = change.type();
+  const auto& profile = change.profile();
+
+  DCHECK(guid == profile.guid());
+
+  // Happens only in tests.
+  if (!ProfileChangesAreOnGoing(guid)) {
+    DVLOG(1) << "Received an unexpected response from database.";
+    return;
+  }
+
+  const auto* existing_profile = GetProfileByGUID(guid);
+  const bool profile_exists = (existing_profile != nullptr);
+  switch (change_type) {
+    case AutofillProfileChange::ADD:
+      profiles_server_validities_need_update_ = true;
+      if (!profile_exists && !FindByContents(web_profiles_, profile)) {
+        web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
+      }
+      break;
+    case AutofillProfileChange::UPDATE:
+      profiles_server_validities_need_update_ = true;
+      if (profile_exists && !existing_profile->EqualsSansOrigin(profile)) {
+        web_profiles_.erase(
+            FindElementByGUID<AutofillProfile>(web_profiles_, guid));
+        web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
+      }
+      break;
+    case AutofillProfileChange::REMOVE:
+      if (profile_exists) {
+        web_profiles_.erase(
+            FindElementByGUID<AutofillProfile>(web_profiles_, guid));
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  ongoing_profile_changes_[guid].pop();
+
+  NotifyPersonalDataChanged();
+  HandleNextProfileChange(guid);
+}
+
 void PersonalDataManager::LogServerCardLinkClicked() const {
   AutofillMetrics::LogServerCardLinkClicked(GetSyncSigninState());
 }
@@ -2132,11 +2131,10 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
   for (const auto& profile : web_profiles_) {
     // If the profile was set to be deleted, remove it from the database.
     if (profiles_to_delete.count(profile.get())) {
-      database_helper_->GetLocalDatabase()->RemoveAutofillProfile(
-          profile->guid());
+      RemoveProfileFromDB(profile->guid());
     } else {
       // Otherwise, update the profile in the database.
-      database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);
+      UpdateProfileInDB(*profile);
     }
   }
 
@@ -2145,10 +2143,6 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
   // Set the pref to the current major version.
   pref_service_->SetInteger(prefs::kAutofillLastVersionDeduped,
                             current_major_version);
-
-  // Refresh the local cache and send notifications to observers.
-  Refresh();
-
   return true;
 }
 
@@ -2278,6 +2272,7 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
             *credit_card);
     }
   }
+  Refresh();
 }
 
 void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
@@ -2318,7 +2313,6 @@ void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
     // TODO(crbug.com/915229): Remove once the investigation is over.
     if (has_converted_addresses)
       DLOG(WARNING) << this << " conversion of addresses done";
-    Refresh();
   }
 }
 
@@ -2523,7 +2517,7 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
   size_t num_deleted_addresses = guids_to_delete.size();
 
   for (auto const guid : guids_to_delete) {
-    RemoveAutofillProfileByGUIDAndBlankCreditCardReferecne(guid);
+    RemoveAutofillProfileByGUIDAndBlankCreditCardReference(guid);
   }
 
   if (num_deleted_addresses > 0) {
@@ -2570,7 +2564,111 @@ void PersonalDataManager::ApplyCardFixesAndCleanups() {
 
 void PersonalDataManager::ResetProfileValidity() {
   synced_profile_validity_.reset();
-  profiles_server_validities_need_update = true;
+  profiles_server_validities_need_update_ = true;
+}
+
+void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile) {
+  // Add the new profile to the web database.
+  if (profile.IsEmpty(app_locale_)) {
+    NotifyPersonalDataChanged();
+    return;
+  }
+
+  if (!ProfileChangesAreOnGoing(profile.guid())) {
+    // Don't add an existing/empty profile.
+    if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()) ||
+        FindByContents(web_profiles_, profile)) {
+      NotifyPersonalDataChanged();
+      return;
+    }
+    database_helper_->GetLocalDatabase()->AddAutofillProfile(profile);
+  }
+
+  ongoing_profile_changes_[profile.guid()].push(
+      AutofillProfileDeepChange(AutofillProfileChange::ADD, profile));
+}
+
+void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile) {
+  // Update the profile in the web database.
+  if (!ProfileChangesAreOnGoing(profile.guid())) {
+    database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
+  }
+  ongoing_profile_changes_[profile.guid()].push(
+      AutofillProfileDeepChange(AutofillProfileChange::UPDATE, profile));
+}
+
+void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
+  bool profile_exists = FindByGUID<AutofillProfile>(web_profiles_, guid);
+  if (!profile_exists && !ProfileChangesAreOnGoing(guid)) {
+    NotifyPersonalDataChanged();
+    return;
+  }
+
+  if (!ProfileChangesAreOnGoing(guid))
+    database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
+  ongoing_profile_changes_[guid].push(
+      AutofillProfileDeepChange(AutofillProfileChange::REMOVE, guid));
+}
+
+void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
+  if (!ProfileChangesAreOnGoing(guid))
+    return;
+
+  const auto& change_type = ongoing_profile_changes_[guid].front().type();
+  const auto* existing_profile = GetProfileByGUID(guid);
+  const bool profile_exists = (existing_profile != nullptr);
+  const auto& profile = ongoing_profile_changes_[guid].front().profile();
+
+  DCHECK(guid == profile.guid());
+
+  if (change_type == AutofillProfileChange::REMOVE) {
+    if (!profile_exists) {
+      ongoing_profile_changes_[guid].pop();
+      NotifyPersonalDataChanged();
+      HandleNextProfileChange(guid);
+      return;
+    }
+    database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
+    return;
+  }
+
+  if (change_type == AutofillProfileChange::ADD) {
+    if (profile_exists || FindByContents(web_profiles_, profile)) {
+      ongoing_profile_changes_[guid].pop();
+      NotifyPersonalDataChanged();
+      HandleNextProfileChange(guid);
+      return;
+    }
+    database_helper_->GetLocalDatabase()->AddAutofillProfile(profile);
+    return;
+  }
+
+  if (!profile_exists || existing_profile->EqualsSansOrigin(profile)) {
+    ongoing_profile_changes_[guid].pop();
+    NotifyPersonalDataChanged();
+    HandleNextProfileChange(guid);
+    return;
+  }
+  database_helper_->GetLocalDatabase()->UpdateAutofillProfile(profile);
+}
+
+bool PersonalDataManager::ProfileChangesAreOnGoing(const std::string& guid) {
+  return ongoing_profile_changes_.find(guid) !=
+             ongoing_profile_changes_.end() &&
+         !ongoing_profile_changes_[guid].empty();
+}
+
+bool PersonalDataManager::ProfileChangesAreOnGoing() {
+  for (auto task : ongoing_profile_changes_) {
+    if (ProfileChangesAreOnGoing(task.first)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void PersonalDataManager::ClearOnGoingProfileChanges() {
+  ongoing_profile_changes_.clear();
 }
 
 }  // namespace autofill

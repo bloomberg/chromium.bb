@@ -107,6 +107,11 @@ void AutofillWebDataService::AddAutofillProfile(
            autofill_backend_, profile));
 }
 
+void AutofillWebDataService::SetAutofillProfileChangedCallback(
+    base::RepeatingCallback<void(const AutofillProfileDeepChange&)> change_cb) {
+  autofill_backend_->SetAutofillProfileChangedCallback(std::move(change_cb));
+}
+
 void AutofillWebDataService::UpdateAutofillProfile(
     const AutofillProfile& profile) {
   wdbs_->ScheduleDBTask(FROM_HERE,

@@ -142,7 +142,7 @@ class AutofillTest : public InProcessBrowserTest {
   // The function returns after the PersonalDataManager is updated.
   void FillFormAndSubmit(const std::string& filename, const FormMap& data) {
     FillFormAndSubmitWithHandler(filename, data, kDocumentClickHandlerSubmitJS,
-                                 true, true);
+                                 true);
   }
 
   // Helper where the actual submit JS code can be specified, as well as whether
@@ -150,16 +150,13 @@ class AutofillTest : public InProcessBrowserTest {
   void FillFormAndSubmitWithHandler(const std::string& filename,
                                     const FormMap& data,
                                     const std::string& submit_js,
-                                    bool simulate_click,
-                                    bool expect_personal_data_change) {
+                                    bool simulate_click) {
     GURL url = embedded_test_server()->GetURL("/autofill/" + filename);
     NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 
-    std::unique_ptr<WindowedPersonalDataManagerObserver> observer;
-    if (expect_personal_data_change)
-      observer.reset(new WindowedPersonalDataManagerObserver(browser()));
+    WindowedPersonalDataManagerObserver observer(browser());
 
     std::string js = GetJSToFillForm(data) + submit_js;
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
@@ -170,11 +167,7 @@ class AutofillTest : public InProcessBrowserTest {
           browser()->tab_strip_model()->GetActiveWebContents(), 0,
           blink::WebMouseEvent::Button::kLeft);
     }
-    // We may not always be expecting changes in Personal data.
-    if (observer.get())
-      observer->Wait();
-    else
-      base::RunLoop().RunUntilIdle();
+    observer.Wait();
   }
 
   // Aggregate profiles from forms into Autofill preferences. Returns the number
@@ -255,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
 
   std::string submit("document.forms[0].submit();");
   FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
-                               false, true);
+                               false);
 
   ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
 }
@@ -276,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesAggregatedWithSubmitHandler) {
       "document.forms[0].addEventListener('submit', preventFunction);"
       "document.querySelector('input[type=submit]').click();");
   FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
-                               false, false);
+                               false);
 
   // The AutofillManager will update the user's profile.
   EXPECT_EQ(1u, personal_data_manager()->GetProfiles().size());

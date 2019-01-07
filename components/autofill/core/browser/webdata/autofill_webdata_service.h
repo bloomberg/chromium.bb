@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/sync/base/model_type.h"
@@ -82,6 +83,10 @@ class AutofillWebDataService : public AutofillWebData,
       WebDataServiceConsumer* consumer) override;
   void UpdateAutofillEntries(
       const std::vector<AutofillEntry>& autofill_entries) override;
+
+  void SetAutofillProfileChangedCallback(
+      base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
+          change_cb);
 
   // Credit cards.
   void AddCreditCard(const CreditCard& credit_card) override;

@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/webdata/common/web_database_backend.h"
@@ -51,6 +52,11 @@ void AutofillWebDataBackendImpl::RemoveObserver(
 
 AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
   DCHECK(!user_data_);  // Forgot to call ResetUserData?
+}
+
+void AutofillWebDataBackendImpl::SetAutofillProfileChangedCallback(
+    base::RepeatingCallback<void(const AutofillProfileDeepChange&)> change_cb) {
+  on_autofill_profile_changed_cb_ = std::move(change_cb);
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
@@ -202,6 +208,13 @@ WebDatabase::State AutofillWebDataBackendImpl::AddAutofillProfile(
   for (auto& db_observer : db_observer_list_)
     db_observer.AutofillProfileChanged(change);
 
+  if (!on_autofill_profile_changed_cb_.is_null()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(on_autofill_profile_changed_cb_,
+                                  AutofillProfileDeepChange(
+                                      AutofillProfileChange::ADD, profile)));
+  }
+
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -227,6 +240,13 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
   for (auto& db_observer : db_observer_list_)
     db_observer.AutofillProfileChanged(change);
 
+  if (!on_autofill_profile_changed_cb_.is_null()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(on_autofill_profile_changed_cb_,
+                                  AutofillProfileDeepChange(
+                                      AutofillProfileChange::UPDATE, profile)));
+  }
+
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -249,6 +269,13 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
   AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, nullptr);
   for (auto& db_observer : db_observer_list_)
     db_observer.AutofillProfileChanged(change);
+
+  if (!on_autofill_profile_changed_cb_.is_null()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(on_autofill_profile_changed_cb_,
+                                  AutofillProfileDeepChange(
+                                      AutofillProfileChange::REMOVE, guid)));
+  }
 
   return WebDatabase::COMMIT_NEEDED;
 }

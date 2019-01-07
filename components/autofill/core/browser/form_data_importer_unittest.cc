@@ -75,6 +75,7 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
   ~PersonalDataLoadedObserverMock() override {}
 
   MOCK_METHOD0(OnPersonalDataChanged, void());
+  MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
 };
 
 template <typename T>
@@ -128,10 +129,7 @@ class FormDataImporterTestBase {
     personal_data_manager_->AddObserver(&personal_data_observer_);
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
 
-    base::RunLoop run_loop;
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .WillOnce(QuitMessageLoop(&run_loop));
-    run_loop.Run();
+    WaitForOnPersonalDataChanged();
   }
 
   void EnableWalletCardImport() {
@@ -196,11 +194,7 @@ class FormDataImporterTestBase {
     personal_data_manager_->OnAcceptedLocalCreditCardSave(
         *imported_credit_card);
 
-    base::RunLoop run_loop;
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .WillOnce(QuitMessageLoop(&run_loop));
-    run_loop.Run();
-
+    WaitForOnPersonalDataChanged();
     CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
     test::SetCreditCardInfo(&expected, exp_name, exp_cc_num, exp_cc_month,
                             exp_cc_year, "");
@@ -212,8 +206,10 @@ class FormDataImporterTestBase {
 
   void WaitForOnPersonalDataChanged() {
     base::RunLoop run_loop;
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
         .WillOnce(QuitMessageLoop(&run_loop));
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+        .Times(testing::AnyNumber());
     run_loop.Run();
   }
 

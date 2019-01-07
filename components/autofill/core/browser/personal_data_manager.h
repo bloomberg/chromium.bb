@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_data_creator.h"
+#include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -395,6 +396,9 @@ class PersonalDataManager : public KeyedService,
   // Records the sync transport consent if the user is in sync transport mode.
   virtual void OnUserAcceptedUpstreamOffer();
 
+  // Triggered when a profile is added/updated/removed on db.
+  void OnAutofillProfileChanged(const AutofillProfileDeepChange& change);
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -498,15 +502,9 @@ class PersonalDataManager : public KeyedService,
                               std::vector<AutofillProfile>* profiles);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
-  // database by adding, updating and removing profiles.
-  // The relationship between this and Refresh is subtle.
-  // A call to |SetProfiles| could include out-of-date data that may conflict
-  // if we didn't refresh-to-latest before an Autofill window was opened for
-  // editing. |SetProfiles| is implemented to make a "best effort" to apply the
-  // changes, but in extremely rare edge cases it is possible not all of the
-  // updates in |profiles| make it to the DB.  This is why SetProfiles will
-  // invoke Refresh after finishing, to ensure we get into a
-  // consistent state.  See Refresh for details.
+  // database by adding, updating and removing profiles. |web_profiles_| need to
+  // be updated at the end of the function, since some tasks cannot tolerate
+  // database delays.
   virtual void SetProfiles(std::vector<AutofillProfile>* profiles);
 
   // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
@@ -618,7 +616,7 @@ class PersonalDataManager : public KeyedService,
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
 
   // |profile_valditiies_need_update| whenever the profile validities are out of
-  bool profiles_server_validities_need_update = true;
+  bool profiles_server_validities_need_update_ = true;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
@@ -716,7 +714,7 @@ class PersonalDataManager : public KeyedService,
   // card's billing address if that address is used by any credit cards.
   // The method does not refresh, this allows multiple removal with one
   // refreshing in the end.
-  void RemoveAutofillProfileByGUIDAndBlankCreditCardReferecne(
+  void RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
       const std::string& guid);
 
   // Returns true if an address can be deleted in a major version upgrade.
@@ -734,6 +732,22 @@ class PersonalDataManager : public KeyedService,
 
   // Resets |synced_profile_validity_|.
   void ResetProfileValidity();
+
+  // Add/Update/Remove profiles on DB.
+  void AddProfileToDB(const AutofillProfile& profile);
+  void UpdateProfileInDB(const AutofillProfile& profile);
+  void RemoveProfileFromDB(const std::string& guid);
+
+  // Look at the next profile change for profile with guid = |guid|, and handle
+  // it.
+  void HandleNextProfileChange(const std::string& guid);
+  // returns true if there is any profile change that's still on going.
+  bool ProfileChangesAreOnGoing();
+  // returns true if there is any ongoing change for profile with guid = |guid|
+  // that's still on going.
+  bool ProfileChangesAreOnGoing(const std::string& guid);
+  // Clear |ongoing_profile_changes_|.
+  void ClearOnGoingProfileChanges();
 
   const std::string app_locale_;
 
@@ -760,6 +774,10 @@ class PersonalDataManager : public KeyedService,
   // observing changes in pref_services. We need to set the
   // |profile_validities_need_update| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
+
+  // A timely ordered list of on going changes for each profile.
+  std::unordered_map<std::string, std::queue<AutofillProfileDeepChange>>
+      ongoing_profile_changes_;
 
   // The client side profile validator.
   AutofillProfileValidator* client_profile_validator_ = nullptr;

@@ -225,16 +225,13 @@ IN_PROC_BROWSER_TEST_P(
 
   // Add the same (but non-verified) profile on the other client, afterwards.
   AddProfile(0, profile0);
-  // This call avoids the standard de-duping mechanisms in PDM so there will be
-  // two profiles at client 0 for a while. In this sense, this test is not very
-  // realistic as this should not happen in reality. The test checks that
-  // autofill_profile sync is robust enough to handle this situation.
-  EXPECT_EQ(2U, GetAllAutoFillProfiles(0).size());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
-  // The profiles should de-duplicate via sync on the other client, the verified
-  // one should win.
+  // The profiles should de-duplicate via sync on both other client, the
+  // verified one should win.
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 }

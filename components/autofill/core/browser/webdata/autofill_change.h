@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
 namespace autofill {
 
-class AutofillProfile;
 class CreditCard;
 
 // For classic Autofill form fields, the KeyType is AutofillKey.
@@ -87,6 +87,25 @@ class AutofillDataModelChange : public GenericAutofillChange<std::string> {
 
 typedef AutofillDataModelChange<AutofillProfile> AutofillProfileChange;
 typedef AutofillDataModelChange<CreditCard> CreditCardChange;
+
+class AutofillProfileDeepChange : public AutofillProfileChange {
+ public:
+  AutofillProfileDeepChange(Type type, const AutofillProfile& profile)
+      : AutofillProfileChange(type, profile.guid(), &profile),
+        profile_(profile) {}
+
+  AutofillProfileDeepChange(Type type, const std::string& guid)
+      : AutofillProfileChange(type, guid, nullptr), profile_(guid, "") {
+    DCHECK(type == GenericAutofillChange::REMOVE);
+  }
+
+  ~AutofillProfileDeepChange() override {}
+
+  AutofillProfile profile() const { return profile_; }
+
+ private:
+  AutofillProfile profile_;
+};
 
 }  // namespace autofill
 
