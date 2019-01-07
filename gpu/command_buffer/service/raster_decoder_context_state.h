@@ -85,6 +85,7 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   GrContext* gr_context = nullptr;
   const bool use_vulkan_gr_context = false;
   size_t glyph_cache_max_texture_bytes = 0u;
+  std::vector<uint8_t> scratch_deserialization_buffer_;
 
   // |need_context_state_reset| is set whenever Skia may have altered the
   // driver's GL state. It signals the need to restore driver GL state to

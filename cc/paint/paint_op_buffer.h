@@ -181,13 +181,16 @@ class CC_PAINT_EXPORT PaintOp {
   struct CC_PAINT_EXPORT DeserializeOptions {
     DeserializeOptions(TransferCacheDeserializeHelper* transfer_cache,
                        ServicePaintCache* paint_cache,
-                       SkStrikeClient* strike_client);
+                       SkStrikeClient* strike_client,
+                       std::vector<uint8_t>* scratch_buffer);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
     ServicePaintCache* paint_cache = nullptr;
     SkStrikeClient* strike_client = nullptr;
     uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
     // Do a DumpWithoutCrashing when serialization fails.
     bool crash_dump_on_failure = false;
+    // Used to memcpy Skia flattenables into to avoid TOCTOU issues.
+    std::vector<uint8_t>* scratch_buffer = nullptr;
   };
 
   // Indicates how PaintImages are serialized.

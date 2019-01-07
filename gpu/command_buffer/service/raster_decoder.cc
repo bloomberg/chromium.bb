@@ -2289,8 +2289,9 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   SkCanvas* canvas = raster_canvas_.get();
   cc::PlaybackParams playback_params(nullptr, SkMatrix::I());
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
-  cc::PaintOp::DeserializeOptions options(&impl, paint_cache_.get(),
-                                          font_manager_->strike_client());
+  cc::PaintOp::DeserializeOptions options(
+      &impl, paint_cache_.get(), font_manager_->strike_client(),
+      &raster_decoder_context_state_->scratch_deserialization_buffer_);
   options.crash_dump_on_failure = true;
 
   size_t paint_buffer_size = raster_shm_size;
