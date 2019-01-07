@@ -380,7 +380,7 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_in_accounts,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
   void OnAddAccountToCookieCompleted(

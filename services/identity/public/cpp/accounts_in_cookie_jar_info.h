@@ -17,12 +17,17 @@ struct AccountsInCookieJarInfo {
   // updated.
   bool accounts_are_fresh;
 
-  // The current list of accounts from the cookie jar.
-  std::vector<AccountInfo> accounts;
+  // The current list of signed in accounts from the cookie jar.
+  std::vector<AccountInfo> signed_in_accounts;
+
+  // The current list of signed out accounts from the cookie jar.
+  std::vector<AccountInfo> signed_out_accounts;
 
   AccountsInCookieJarInfo();
-  AccountsInCookieJarInfo(bool accounts_are_fresh_param,
-                          const std::vector<AccountInfo>& accounts_param);
+  AccountsInCookieJarInfo(
+      bool accounts_are_fresh_param,
+      const std::vector<AccountInfo>& signed_in_accounts_param,
+      const std::vector<AccountInfo>& signed_out_accounts_param);
   AccountsInCookieJarInfo(const AccountsInCookieJarInfo& other);
   ~AccountsInCookieJarInfo();
 };

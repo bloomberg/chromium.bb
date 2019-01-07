@@ -95,7 +95,7 @@ void SyncSessionDurationsMetricsRecorder::OnAccountsInCookieUpdated(
     const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   DVLOG(1) << "Cookie state change. accounts: "
-           << accounts_in_cookie_jar_info.accounts.size()
+           << accounts_in_cookie_jar_info.signed_in_accounts.size()
            << " fresh: " << accounts_in_cookie_jar_info.accounts_are_fresh
            << " err: " << error.ToString();
 
@@ -107,7 +107,7 @@ void SyncSessionDurationsMetricsRecorder::OnAccountsInCookieUpdated(
   }
 
   DCHECK(accounts_in_cookie_jar_info.accounts_are_fresh);
-  if (accounts_in_cookie_jar_info.accounts.empty()) {
+  if (accounts_in_cookie_jar_info.signed_in_accounts.empty()) {
     // No signed in account.
     if (signin_status_ == FeatureState::ON && signin_session_timer_) {
       LogSigninDuration(signin_session_timer_->Elapsed());
