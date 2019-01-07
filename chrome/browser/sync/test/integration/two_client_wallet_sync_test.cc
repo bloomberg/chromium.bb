@@ -564,9 +564,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
 }
 
-// Disabled due to flakiness: https://crbug.com/917498.
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
+                       ServerAddressConvertsToSameLocalAddress) {
   InitWithDefaultFeatures();
 
   GetFakeServer()->SetWalletData(
@@ -584,13 +583,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_TRUE(server_addresses[0]->has_converted());
 
   // Make sure they have the same local profile.
-  std::vector<AutofillProfile*> local_addresses = GetLocalProfiles(0);
-  EXPECT_EQ(1u, local_addresses.size());
-  const std::string& guid = local_addresses[0]->guid();
+  std::vector<AutofillProfile*> local_addresses_0 = GetLocalProfiles(0);
+  EXPECT_EQ(1u, local_addresses_0.size());
 
-  local_addresses = GetLocalProfiles(1);
-  EXPECT_EQ(1u, local_addresses.size());
-  EXPECT_EQ(guid, local_addresses[0]->guid());
+  std::vector<AutofillProfile*> local_addresses_1 = GetLocalProfiles(1);
+  EXPECT_EQ(1u, local_addresses_1.size());
+  EXPECT_TRUE(
+      local_addresses_0[0]->EqualsForSyncPurposes(*local_addresses_1[0]));
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
