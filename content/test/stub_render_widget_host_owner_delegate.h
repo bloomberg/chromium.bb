@@ -25,7 +25,12 @@ class StubRenderWidgetHostOwnerDelegate : public RenderWidgetHostOwnerDelegate {
   bool ShouldContributePriorityToProcess() override;
   void RequestSetBounds(const gfx::Rect& bounds) override {}
   void SetBackgroundOpaque(bool opaque) override {}
-  RenderViewHost* GetRenderViewHost() override;
+  bool IsMainFrameActive() override;
+  bool IsNeverVisible() override;
+  WebPreferences GetWebkitPreferencesForWidget() override;
+  FrameTreeNode* GetFocusedFrame() override;
+  void ShowContextMenu(RenderFrameHost* render_frame_host,
+                       const ContextMenuParams& params) override {}
 };
 
 }  // namespace content

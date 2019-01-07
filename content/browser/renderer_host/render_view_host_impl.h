@@ -237,7 +237,12 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool ShouldContributePriorityToProcess() override;
   void RequestSetBounds(const gfx::Rect& bounds) override;
   void SetBackgroundOpaque(bool opaque) override;
-  RenderViewHost* GetRenderViewHost() override;
+  bool IsMainFrameActive() override;
+  bool IsNeverVisible() override;
+  WebPreferences GetWebkitPreferencesForWidget() override;
+  FrameTreeNode* GetFocusedFrame() override;
+  void ShowContextMenu(RenderFrameHost* render_frame_host,
+                       const ContextMenuParams& params) override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

@@ -535,15 +535,15 @@ RenderWidgetHost::GetRenderWidgetHosts() {
   auto hosts = std::make_unique<RenderWidgetHostIteratorImpl>();
   for (auto& it : g_routing_id_widget_map.Get()) {
     RenderWidgetHostImpl* widget = it.second;
-    RenderViewHost* rvh = widget->GetRenderViewHost();
+    RenderWidgetHostOwnerDelegate* owner_delegate = widget->owner_delegate();
     // If the widget is not for a main frame, add to |hosts|.
-    if (!rvh) {
+    if (!owner_delegate) {
       hosts->Add(widget);
       continue;
     }
 
-    // If the widget is for a main frame, add only if active.
-    if (static_cast<RenderViewHostImpl*>(rvh)->is_active())
+    // If the widget is for a main frame, only add if it's not swapped out.
+    if (owner_delegate->IsMainFrameActive())
       hosts->Add(widget);
   }
 
@@ -564,10 +564,6 @@ RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return static_cast<RenderWidgetHostImpl*>(rwh);
-}
-
-RenderViewHost* RenderWidgetHostImpl::GetRenderViewHost() {
-  return owner_delegate_ ? owner_delegate_->GetRenderViewHost() : nullptr;
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {

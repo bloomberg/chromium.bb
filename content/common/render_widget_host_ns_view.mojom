@@ -99,11 +99,10 @@ interface RenderWidgetHostNSViewBridge {
 // de-serializing and re-serializing all events).
 // https://crbug.com/821651
 interface RenderWidgetHostNSViewClient {
-  // Synchronously query if there exists a RenderViewHost for the corresponding
-  // RenderWidgetHostView's RenderWidgetHost, and return the result as
-  // |is_render_view|.
+  // Synchronously query if the RenderWidgetHostView is for a main frame, and
+  // return the result as |is_for_main_frame|.
   [Sync]
-  SyncIsRenderViewHost() => (bool is_render_view);
+  SyncIsWidgetForMainFrame() => (bool is_for_main_frame);
 
   // Request that the RenderWidgetHost be shut down (e.g, when a date/time
   // picker window is closed).

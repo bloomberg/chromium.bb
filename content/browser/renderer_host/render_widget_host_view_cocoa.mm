@@ -1350,8 +1350,8 @@ void ExtractUnderlines(NSAttributedString* string,
       return valid;
   }
 
-  bool is_render_view = false;
-  client_->SyncIsRenderViewHost(&is_render_view);
+  bool is_for_main_frame = false;
+  client_->SyncIsWidgetForMainFrame(&is_for_main_frame);
 
   bool is_speaking = false;
   client_->SyncIsSpeaking(&is_speaking);
@@ -1359,10 +1359,10 @@ void ExtractUnderlines(NSAttributedString* string,
   SEL action = [item action];
 
   if (action == @selector(stopSpeaking:))
-    return is_render_view && is_speaking;
+    return is_for_main_frame && is_speaking;
 
   if (action == @selector(startSpeaking:))
-    return is_render_view;
+    return is_for_main_frame;
 
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
@@ -1371,7 +1371,7 @@ void ExtractUnderlines(NSAttributedString* string,
       action == @selector(cut:) || action == @selector(copy:) ||
       action == @selector(copyToFindPboard:) || action == @selector(paste:) ||
       action == @selector(pasteAndMatchStyle:)) {
-    return is_render_view;
+    return is_for_main_frame;
   }
 
   return editCommandHelper_->IsMenuItemEnabled(action, self);

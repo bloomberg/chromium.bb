@@ -4,6 +4,8 @@
 
 #include "content/test/stub_render_widget_host_owner_delegate.h"
 
+#include "content/public/common/web_preferences.h"
+
 namespace content {
 
 bool StubRenderWidgetHostOwnerDelegate::MayRenderWidgetForwardKeyboardEvent(
@@ -15,9 +17,20 @@ bool StubRenderWidgetHostOwnerDelegate::ShouldContributePriorityToProcess() {
   return false;
 }
 
-RenderViewHost* StubRenderWidgetHostOwnerDelegate::GetRenderViewHost() {
-  // TODO(danakj): This could make a StubRenderViewHost and return that if
-  // needed.
+bool StubRenderWidgetHostOwnerDelegate::IsMainFrameActive() {
+  return true;
+}
+
+bool StubRenderWidgetHostOwnerDelegate::IsNeverVisible() {
+  return false;
+}
+
+WebPreferences
+StubRenderWidgetHostOwnerDelegate::GetWebkitPreferencesForWidget() {
+  return {};
+}
+
+FrameTreeNode* StubRenderWidgetHostOwnerDelegate::GetFocusedFrame() {
   return nullptr;
 }
 
