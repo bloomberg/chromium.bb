@@ -386,6 +386,15 @@ unsigned long long PerformanceTiming::LargestTextPaint() const {
       paint_timing_detector->GetTextPaintTimingDetector().LargestTextPaint());
 }
 
+uint64_t PerformanceTiming::LargestTextPaintSize() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return paint_timing_detector->GetTextPaintTimingDetector()
+      .LargestTextPaintSize();
+}
+
 unsigned long long PerformanceTiming::LastTextPaint() const {
   PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
   if (!paint_timing_detector)
@@ -393,6 +402,15 @@ unsigned long long PerformanceTiming::LastTextPaint() const {
 
   return MonotonicTimeToIntegerMilliseconds(
       paint_timing_detector->GetTextPaintTimingDetector().LastTextPaint());
+}
+
+uint64_t PerformanceTiming::LastTextPaintSize() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return paint_timing_detector->GetTextPaintTimingDetector()
+      .LastTextPaintSize();
 }
 
 unsigned long long PerformanceTiming::PageInteractive() const {
