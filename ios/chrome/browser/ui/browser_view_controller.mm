@@ -4732,17 +4732,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // if needed. Not triggering it can create problem if the previous frame
     // wasn't the right one, for example in https://crbug.com/852106.
     [[self viewForTab:tab] layoutIfNeeded];
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      newPage = [self viewForTab:tab];
-      newPage.userInteractionEnabled = NO;
-    } else {
-      UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
-      // TODO(crbug.com/917929): Refactor to remove usage of UpdateSnapshot().
-      pageScreenshot.image =
-          SnapshotTabHelper::FromWebState(tab.webState)->UpdateSnapshot();
-      newPage = pageScreenshot;
-    }
+    newPage = [self viewForTab:tab];
+    newPage.userInteractionEnabled = NO;
   }
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
