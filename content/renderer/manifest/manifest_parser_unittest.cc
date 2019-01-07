@@ -1726,9 +1726,245 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "}",
         manifest_url, document_url);
     EXPECT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->params.files.size(), 1u);
-    EXPECT_EQ(manifest.share_target->params.files[0].accept.size(), 0u);
+    EXPECT_EQ(manifest.share_target->params.files.size(), 0u);
     EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Accept sequence contains non-string elements.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": [{"
+        "        \"name\": \"name\","
+        "        \"accept\": [\"image/png\", 42]"
+        "      }]"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(1u, files.size());
+    EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
+
+    const std::vector<base::string16>& accept = files.at(0).accept;
+    EXPECT_EQ(1u, accept.size());
+    EXPECT_TRUE(base::EqualsASCII(accept.at(0), "image/png"));
+
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("'accept' entry ignored, expected to be of type string.",
+              errors()[0]);
+  }
+
+  // Accept is just a single string.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": [{"
+        "        \"name\": \"name\","
+        "        \"accept\": \"image/png\""
+        "      }]"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(1u, files.size());
+    EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
+
+    const std::vector<base::string16>& accept = files.at(0).accept;
+    EXPECT_EQ(1u, accept.size());
+    EXPECT_TRUE(base::EqualsASCII(accept.at(0), "image/png"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Accept is neither a string nor an array of strings.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": [{"
+        "        \"name\": \"name\","
+        "        \"accept\": true"
+        "      }]"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(0u, files.size());
+
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'accept' ignored, type array or string expected.",
+              errors()[0]);
+  }
+
+  // Files is just a single ShareTargetFile (not an array).
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": {"
+        "        \"name\": \"name\","
+        "        \"accept\": \"image/png\""
+        "      }"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    EXPECT_TRUE(manifest.share_target.has_value());
+
+    const blink::Manifest::ShareTargetParams& params =
+        manifest.share_target->params;
+    EXPECT_EQ(1u, params.files.size());
+    EXPECT_TRUE(base::EqualsASCII(params.files.at(0).name, "name"));
+
+    const std::vector<base::string16>& accept = params.files.at(0).accept;
+    EXPECT_EQ(1u, accept.size());
+    EXPECT_TRUE(base::EqualsASCII(accept.at(0), "image/png"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Files is neither array nor ShareTargetFile.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": 3"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(0u, files.size());
+
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'files' ignored, type array or ShareTargetFile expected.",
+        errors()[0]);
+  }
+
+  // Files contains a non-dictionary entry.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": ["
+        "        {"
+        "          \"name\": \"name\","
+        "          \"accept\": \"image/png\""
+        "        },"
+        "        3"
+        "      ]"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(1u, files.size());
+    EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
+
+    const std::vector<base::string16>& accept = files.at(0).accept;
+    EXPECT_EQ(1u, accept.size());
+    EXPECT_TRUE(base::EqualsASCII(accept.at(0), "image/png"));
+
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("files must be a sequence of non-empty file entries.",
+              errors()[0]);
+  }
+
+  // Files contains empty file.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{"
+        "  \"share_target\": {"
+        "    \"action\": \"https://foo.com/#\","
+        "    \"method\": \"POST\","
+        "    \"enctype\": \"multipart/form-data\","
+        "    \"params\": {"
+        "      \"title\": \"mytitle\","
+        "      \"files\": ["
+        "        {"
+        "          \"name\": \"name\","
+        "          \"accept\": \"image/png\""
+        "        },"
+        "        {}"
+        "      ]"
+        "    }"
+        "  }"
+        "}",
+        manifest_url, document_url);
+    const base::Optional<blink::Manifest::ShareTarget> share_target =
+        manifest.share_target;
+    EXPECT_TRUE(share_target.has_value());
+
+    const std::vector<blink::Manifest::ShareTargetFile>& files =
+        share_target->params.files;
+    EXPECT_EQ(1u, files.size());
+    EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
+
+    const std::vector<base::string16>& accept = files.at(0).accept;
+    EXPECT_EQ(1u, accept.size());
+    EXPECT_TRUE(base::EqualsASCII(accept.at(0), "image/png"));
+
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'name' missing.", errors()[0]);
   }
 }
 

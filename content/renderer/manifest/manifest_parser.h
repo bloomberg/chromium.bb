@@ -161,8 +161,9 @@ class CONTENT_EXPORT ManifestParser {
   base::string16 ParseShareTargetFileName(const base::DictionaryValue& file);
 
   // Parses the accept field of a share target file, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // Returns the parsed string if any, an empty string if the parsing failed.
+  // https://wicg.github.io/web-share-target/level-2/#sharetargetfiles-and-its-members
+  // Returns the vector of parsed strings if any, an empty vector if the parsing
+  // failed or no accept instances were provided.
   std::vector<base::string16> ParseShareTargetFileAccept(
       const base::DictionaryValue& file);
 
@@ -171,6 +172,12 @@ class CONTENT_EXPORT ManifestParser {
   // Returns a parsed vector of share target files.
   std::vector<blink::Manifest::ShareTargetFile> ParseShareTargetFiles(
       const base::DictionaryValue& share_target_params);
+
+  // Parses a single ShareTargetFile (see above comment) and appends it to
+  // the given |files| vector.
+  void ParseShareTargetFile(
+      const base::DictionaryValue& file_dictionary,
+      std::vector<blink::Manifest::ShareTargetFile>* files);
 
   // Parses the method field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
@@ -185,7 +192,7 @@ class CONTENT_EXPORT ManifestParser {
       const base::DictionaryValue& share_target_dict);
 
   // Parses the 'params' field of a Share Target, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // https://wicg.github.io/web-share-target/level-2/#sharetargetparams-and-its-members
   // Returns a parsed Manifest::ShareTargetParams, not all fields need to be
   // populated.
   blink::Manifest::ShareTargetParams ParseShareTargetParams(
