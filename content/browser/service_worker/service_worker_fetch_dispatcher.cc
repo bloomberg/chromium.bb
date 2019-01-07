@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -301,6 +302,23 @@ const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
       "policies (or a combination of both) limits the scope of these requests."
 )");
 
+// A copy of RenderFrameHostImpl's GrantFileAccess since there's not a great
+// central place to put this.
+//
+// Abuse is prevented, because the files listed in ResourceRequestBody are
+// validated earlier by navigation or ResourceDispatcherHost machinery before
+// ServiceWorkerFetchDispatcher is used to send the request to a service worker.
+void GrantFileAccessToProcess(int process_id,
+                              const std::vector<base::FilePath>& file_paths) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(process_id, file))
+      policy->GrantReadFile(process_id, file);
+  }
+}
+
 }  // namespace
 
 // ResponseCallback is owned by the callback that is passed to
@@ -505,6 +523,12 @@ void ServiceWorkerFetchDispatcher::DidStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
+
+  // Grant the service worker's process access to files in the request body.
+  if (request_->request_body) {
+    GrantFileAccessToProcess(version_->embedded_worker()->process_id(),
+                             request_->request_body->GetReferencedFiles());
+  }
 
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
