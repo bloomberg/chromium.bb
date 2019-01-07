@@ -596,6 +596,13 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
+  if (gpu_channel_manager_->is_exiting_for_lost_context()) {
+    LOG(ERROR) << "ContextResult::kTransientFailure: trying to create command "
+                  "buffer during process shutdown.";
+    *result = gpu::ContextResult::kTransientFailure;
+    return;
+  }
+
   int32_t stream_id = init_params.stream_id;
   int32_t share_group_id = init_params.share_group_id;
   CommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
