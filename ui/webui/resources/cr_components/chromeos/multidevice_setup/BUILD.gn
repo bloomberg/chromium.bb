@@ -14,7 +14,6 @@ js_type_check("closure_compile") {
     ":multidevice_setup",
     ":multidevice_setup_browser_proxy",
     ":multidevice_setup_delegate",
-    ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
     ":ui_page_container_behavior",
@@ -59,7 +58,6 @@ js_library("multidevice_setup") {
     ":mojo_api",
     ":multidevice_setup_delegate",
     ":password_page",
-    ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
     "//ui/webui/resources/js:cr",
@@ -103,12 +101,6 @@ js_library("password_page") {
   ]
   externs_list = [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
-}
-
-js_library("setup_failed_page") {
-  deps = [
-    ":ui_page_container_behavior",
-  ]
 }
 
 js_library("setup_succeeded_page") {
