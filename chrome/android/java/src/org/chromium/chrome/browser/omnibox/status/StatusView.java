@@ -116,8 +116,13 @@ public class StatusView extends LinearLayout {
             mAnimatingStatusIconShow = false;
 
             mAnimatingStatusIconHide = true;
+            // Do not animate phase-out when animations are disabled.
+            // While this looks nice in some cases (navigating to insecure sites),
+            // it has a side-effect of briefly showing padlock (phase-out) when navigating
+            // back and forth between secure and insecure sites, which seems like a glitch.
+            // See bug: crbug.com/919449
             mIconView.animate()
-                    .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
+                    .setDuration(mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0)
                     .alpha(0.0f)
                     .withEndAction(() -> {
                         mIconView.setVisibility(View.GONE);
