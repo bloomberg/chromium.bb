@@ -627,6 +627,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
           av1_extract_interp_filter(mbmi->interp_filters, dir);
       aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
                        SWITCHABLE_FILTERS);
+      ++cpi->interp_filter_selected[0][filter];
       if (cm->seq_params.enable_dual_filter == 0) return;
     }
   }
