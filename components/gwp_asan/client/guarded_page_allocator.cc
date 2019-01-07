@@ -4,6 +4,8 @@
 
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
+#include <iterator>
+
 #include "base/bits.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
@@ -39,8 +41,10 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
     // Obtain this lock exclusively to satisfy the thread-safety annotations,
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
-    for (size_t i = 0; i < state_.total_pages; i++)
-      free_pages_.set(i, true);
+    for (size_t i = 0; i < total_pages; i++)
+      free_slot_ring_buffer_[i] = static_cast<SlotTy>(i);
+    base::RandomShuffle(free_slot_ring_buffer_.begin(),
+                        std::next(free_slot_ring_buffer_.begin(), total_pages));
   }
 
   AllocateStackTraces();
@@ -129,46 +133,25 @@ size_t GuardedPageAllocator::ReserveSlot() {
   if (state_.double_free_detected)
     return SIZE_MAX;
 
-  size_t slot = GetRandomFreeSlot();
+  SlotTy slot = free_slot_ring_buffer_[free_slot_start_idx_];
+  free_slot_start_idx_ = (free_slot_start_idx_ + 1) % state_.total_pages;
   DCHECK_LT(slot, state_.total_pages);
-  DCHECK(free_pages_.test(slot));
-  free_pages_.set(slot, false);
   num_alloced_pages_++;
+  DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
+            free_slot_start_idx_);
   return slot;
-}
-
-// Finds a random free slot in O(num_alloced_pages_) time by scanning left or
-// right for a free slot from a random point.
-size_t GuardedPageAllocator::GetRandomFreeSlot() {
-  size_t rand = base::RandGenerator(state_.total_pages * 2);
-  bool scan_right = rand & 1;
-  size_t cur_idx = rand / 2;
-  for (size_t i = 0; i < state_.total_pages; i++) {
-    if (scan_right) {
-      if (free_pages_.test(cur_idx))
-        return cur_idx;
-    } else {
-      size_t idx = (state_.total_pages - 1) - cur_idx;
-      if (free_pages_.test(idx))
-        return idx;
-    }
-
-    if (++cur_idx >= state_.total_pages)
-      cur_idx = 0;
-  }
-
-  // This function is only ever called when free slots are available.
-  CHECK(false) << "Failed to find a slot!";
-  __builtin_unreachable();
 }
 
 void GuardedPageAllocator::FreeSlot(size_t slot) {
   DCHECK_LT(slot, state_.total_pages);
 
   base::AutoLock lock(lock_);
-  DCHECK(!free_pages_.test(slot));
-  free_pages_.set(slot, true);
+  DCHECK_GT(num_alloced_pages_, 0U);
   num_alloced_pages_--;
+  free_slot_ring_buffer_[free_slot_end_idx_] = static_cast<SlotTy>(slot);
+  free_slot_end_idx_ = (free_slot_end_idx_ + 1) % state_.total_pages;
+  DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
+            free_slot_start_idx_);
 }
 
 void GuardedPageAllocator::AllocateStackTraces() {
