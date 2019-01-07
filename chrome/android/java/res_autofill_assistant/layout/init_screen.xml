@@ -70,30 +70,44 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:textAppearance="@style/BlackTitle2"
+                android:gravity="center_horizontal"
                 android:text="@string/autofill_assistant_onboarding_title" />
 
             <!-- Subtitle (e.g., 'Google Assistant saves you time...')-->
-            <Space android:layout_width="0dp" android:layout_height="10dp"/>
+            <Space android:layout_width="0dp" android:layout_height="16dp"/>
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:textAppearance="@style/BlackBodyDefault"
+                android:textAppearance="@style/BlackBody"
                 android:paddingStart="35dp"
                 android:paddingEnd="35dp"
+                android:gravity="center_horizontal"
                 android:text="@string/autofill_assistant_init_message" />
 
+            <!-- Separator -->
+            <Space android:layout_width="0dp" android:layout_height="24dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:weightSum="1.0">
+                <View style="@style/HorizontalDivider"
+                      android:layout_width="0dp"
+                      android:layout_height="2dp"
+                      android:layout_weight="0.33"/>
+            </LinearLayout>
+            <Space android:layout_width="0dp" android:layout_height="24dp"/>
+
             <!-- Terms and Conditions message and link -->
-            <Space android:layout_width="0dp" android:layout_height="25dp"/>
             <LinearLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:paddingTop="9dp"
                 android:paddingBottom="9dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/autofill_assistant_checkbox_bg" >
+                android:layout_marginEnd="16dp">
 
                 <TextView
                     android:id="@+id/google_terms_message"
@@ -101,7 +115,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="0dp"
                     android:layout_gravity="center"
-                    android:textAppearance="@style/BlackBodyDefault"
+                    android:textAppearance="@style/BlackCaption"
                     android:text="@string/autofill_assistant_google_terms_description" />
             </LinearLayout>
 
@@ -128,7 +142,7 @@
                     android:paddingEnd="24dp"
                     android:paddingTop="9dp"
                     android:paddingBottom="9dp"
-                    android:text="@string/no_thanks"
+                    android:text="@string/cancel"
                     style="@style/TextButton" />
 
                 <Space
