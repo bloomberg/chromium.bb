@@ -303,6 +303,9 @@ TEST_F(WKNavigationUtilTest, URLNeedsUserAgentType) {
   // Not a placeholder or normal URL.
   EXPECT_TRUE(URLNeedsUserAgentType(GURL("about:blank?for=")));
   EXPECT_TRUE(URLNeedsUserAgentType(GURL("http://www.0.com")));
+
+  // file:// URL.
+  EXPECT_FALSE(URLNeedsUserAgentType(GURL("file://foo.pdf")));
 }
 
 }  // namespace wk_navigation_util
