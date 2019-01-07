@@ -29,7 +29,7 @@ class ASH_EXPORT AutoclickTray : public TrayBackgroundView,
   // TrayBackgroundView:
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
-  void ClickedOutsideBubble() override {}
+  void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
   void CloseBubble() override;
   void ShowBubble(bool show_by_click) override;
@@ -46,6 +46,10 @@ class ASH_EXPORT AutoclickTray : public TrayBackgroundView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
+  // Whether the tray button or the bubble, if the bubble exists, contain
+  // the given screen point.
+  bool ContainsPointInScreen(const gfx::Point& point);
+
   // Called when the user wants to open the autoclick section of the chrome
   // settings. Used when the bubble menu's settings button is tapped.
   void OnSettingsPressed();
@@ -56,6 +60,7 @@ class ASH_EXPORT AutoclickTray : public TrayBackgroundView,
 
  private:
   friend class AutoclickTrayTest;
+  friend class AutoclickTest;
 
   // Updates the icons color depending on if the user is logged-in or not.
   void UpdateIconsForSession();
