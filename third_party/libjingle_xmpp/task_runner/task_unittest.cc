@@ -20,11 +20,11 @@
 #include "third_party/webrtc/rtc_base/win32.h"
 #endif  // WEBRTC_WIN
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/webrtc/rtc_base/arraysize.h"
 #include "third_party/webrtc/rtc_base/constructormagic.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"

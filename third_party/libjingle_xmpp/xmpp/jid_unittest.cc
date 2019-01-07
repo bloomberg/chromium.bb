@@ -9,7 +9,7 @@
  */
 
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using buzz::Jid;
 

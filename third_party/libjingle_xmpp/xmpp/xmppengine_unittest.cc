@@ -13,13 +13,13 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
 using buzz::Jid;
 using buzz::QName;
