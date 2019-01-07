@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/navigation_simulator.h"
@@ -32,6 +33,17 @@ void OnMediaDrmStorageInit(base::UnguessableToken* out_origin_id,
   DCHECK(out_origin_id);
   DCHECK(origin_id);
   *out_origin_id = origin_id;
+}
+
+void CreateOriginId(
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  std::move(callback).Run(base::UnguessableToken::Create());
+}
+
+void CreateOriginIdAsync(
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&CreateOriginId, std::move(callback)));
 }
 
 }  // namespace
@@ -60,7 +72,8 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
   using SessionData = media::MediaDrmStorage::SessionData;
 
   std::unique_ptr<media::MediaDrmStorage> CreateMediaDrmStorage(
-      content::RenderFrameHost* rfh) {
+      content::RenderFrameHost* rfh,
+      MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb) {
     media::mojom::MediaDrmStoragePtr media_drm_storage_ptr;
     auto request = mojo::MakeRequest(&media_drm_storage_ptr);
 
@@ -68,7 +81,8 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
         std::move(media_drm_storage_ptr));
 
     // The created object will be destroyed on connection error.
-    new MediaDrmStorageImpl(rfh, pref_service_.get(), std::move(request));
+    new MediaDrmStorageImpl(rfh, pref_service_.get(),
+                            std::move(get_origin_id_cb), std::move(request));
 
     return std::move(media_drm_storage);
   }
@@ -79,7 +93,8 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
     DCHECK(origin_id);
 
     std::unique_ptr<media::MediaDrmStorage> media_drm_storage =
-        CreateMediaDrmStorage(SimulateNavigation(origin));
+        CreateMediaDrmStorage(SimulateNavigation(origin),
+                              base::BindRepeating(&CreateOriginId));
 
     media_drm_storage->Initialize(
         base::BindOnce(OnMediaDrmStorageInit, origin_id));
@@ -199,8 +214,27 @@ TEST_F(MediaDrmStorageImplTest, Initialize_OriginIdNotChanged) {
 TEST_F(MediaDrmStorageImplTest, Initialize_Concurrent) {
   content::RenderFrameHost* rfh = SimulateNavigation(GURL(kTestOrigin2));
 
-  std::unique_ptr<media::MediaDrmStorage> storage1 = CreateMediaDrmStorage(rfh);
-  std::unique_ptr<media::MediaDrmStorage> storage2 = CreateMediaDrmStorage(rfh);
+  std::unique_ptr<media::MediaDrmStorage> storage1 =
+      CreateMediaDrmStorage(rfh, base::BindRepeating(&CreateOriginId));
+  std::unique_ptr<media::MediaDrmStorage> storage2 =
+      CreateMediaDrmStorage(rfh, base::BindRepeating(&CreateOriginId));
+
+  base::UnguessableToken origin_id_1;
+  storage1->Initialize(base::BindOnce(OnMediaDrmStorageInit, &origin_id_1));
+  base::UnguessableToken origin_id_2;
+  storage2->Initialize(base::BindOnce(OnMediaDrmStorageInit, &origin_id_2));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(origin_id_1, origin_id_2);
+}
+
+TEST_F(MediaDrmStorageImplTest, Initialize_Concurrent_Async) {
+  content::RenderFrameHost* rfh = SimulateNavigation(GURL(kTestOrigin2));
+
+  std::unique_ptr<media::MediaDrmStorage> storage1 =
+      CreateMediaDrmStorage(rfh, base::BindRepeating(&CreateOriginIdAsync));
+  std::unique_ptr<media::MediaDrmStorage> storage2 =
+      CreateMediaDrmStorage(rfh, base::BindRepeating(&CreateOriginIdAsync));
 
   base::UnguessableToken origin_id_1;
   storage1->Initialize(base::BindOnce(OnMediaDrmStorageInit, &origin_id_1));

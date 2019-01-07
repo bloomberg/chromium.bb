@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -15,6 +16,17 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+namespace {
+
+void CreateOriginId(
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
+  // origin ID.
+  std::move(callback).Run(base::UnguessableToken::Create());
+}
+
+}  // namespace
 
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                            media::mojom::MediaDrmStorageRequest request) {
@@ -43,5 +55,6 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   // The object will be deleted on connection error, or when the frame navigates
   // away. See FrameServiceBase for details.
   new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
+                               base::BindRepeating(&CreateOriginId),
                                std::move(request));
 }
