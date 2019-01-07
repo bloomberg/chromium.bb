@@ -33,6 +33,7 @@
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
+#include "chromeos/dbus/fake_runtime_probe_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
@@ -41,6 +42,7 @@
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/oobe_configuration_client.h"
+#include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
@@ -130,6 +132,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     oobe_configuration_client_.reset(new FakeOobeConfigurationClient);
 
   if (use_real_clients)
+    runtime_probe_client_ = RuntimeProbeClient::Create();
+  else
+    runtime_probe_client_ = std::make_unique<FakeRuntimeProbeClient>();
+
+  if (use_real_clients)
     seneschal_client_ = SeneschalClient::Create();
   else
     seneschal_client_ = std::make_unique<FakeSeneschalClient>();
@@ -166,6 +173,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   lorgnette_manager_client_->Init(system_bus);
   media_analytics_client_->Init(system_bus);
   oobe_configuration_client_->Init(system_bus);
+  runtime_probe_client_->Init(system_bus);
   seneschal_client_->Init(system_bus);
   smb_provider_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
