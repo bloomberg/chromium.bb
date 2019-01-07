@@ -120,6 +120,12 @@ class MODULES_EXPORT RTCQuicTransport final
   void Close(CloseReason reason);
 
   bool IsClosed() const { return state_ == RTCQuicTransportState::kClosed; }
+  // The transport is no longer usable once it has reached the "failed" or
+  // "closed" state.
+  bool IsDisposed() const {
+    return (state_ == RTCQuicTransportState::kClosed ||
+            state_ == RTCQuicTransportState::kFailed);
+  }
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
   Member<RTCIceTransport> transport_;

@@ -249,6 +249,13 @@ void RTCQuicTransport::OnIceTransportStarted() {
 
 void RTCQuicTransport::stop() {
   if (IsClosed()) {
+    // The transport could have already been closed due to the context being
+    // destroyed, the RTCIceTransport closing or a remote/local stop().
+    return;
+  }
+  if (IsDisposed()) {
+    // This occurs in the "failed" state.
+    state_ = RTCQuicTransportState::kClosed;
     return;
   }
   Close(CloseReason::kLocalStopped);
@@ -310,7 +317,7 @@ void RTCQuicTransport::OnIceTransportClosed(
 }
 
 void RTCQuicTransport::Close(CloseReason reason) {
-  DCHECK(!IsClosed());
+  DCHECK(!IsDisposed());
 
   // Disconnect from the RTCIceTransport, allowing a new RTCQuicTransport to
   // connect to it.
@@ -348,7 +355,7 @@ void RTCQuicTransport::Close(CloseReason reason) {
   }
 
   DCHECK(!proxy_);
-  DCHECK(IsClosed());
+  DCHECK(IsDisposed());
 }
 
 bool RTCQuicTransport::RaiseExceptionIfClosed(
