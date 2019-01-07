@@ -167,8 +167,9 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 	struct drv_import_fd_data drv_data;
 	struct gbm_import_fd_data *fd_data = buffer;
 	struct gbm_import_fd_planar_data *fd_planar_data = buffer;
+	struct gbm_import_fd_modifier_data *fd_modifier_data = buffer;
 	uint32_t gbm_format;
-	size_t num_planes, i;
+	size_t num_planes, i, num_fds;
 
 	memset(&drv_data, 0, sizeof(drv_data));
 	drv_data.use_flags = gbm_convert_usage(usage);
@@ -180,6 +181,29 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 		drv_data.format = fd_data->format;
 		drv_data.fds[0] = fd_data->fd;
 		drv_data.strides[0] = fd_data->stride;
+		break;
+	case GBM_BO_IMPORT_FD_MODIFIER:
+		gbm_format = fd_modifier_data->format;
+		drv_data.width = fd_modifier_data->width;
+		drv_data.height = fd_modifier_data->height;
+		drv_data.format = fd_modifier_data->format;
+		num_planes = drv_num_planes_from_format(drv_data.format);
+		num_fds = fd_modifier_data->num_fds;
+
+		assert(num_fds > 0 && num_fds <= num_planes);
+		for (i = 0; i < num_planes; i++) {
+			if (num_fds != num_planes)
+				drv_data.fds[i] = fd_modifier_data->fds[0];
+			else
+				drv_data.fds[i] = fd_modifier_data->fds[i];
+			drv_data.offsets[i] = fd_modifier_data->offsets[i];
+			drv_data.strides[i] = fd_modifier_data->strides[i];
+			drv_data.format_modifiers[i] = fd_modifier_data->modifier;
+		}
+
+		for (i = num_planes; i < GBM_MAX_PLANES; i++)
+			drv_data.fds[i] = -1;
+
 		break;
 	case GBM_BO_IMPORT_FD_PLANAR:
 		gbm_format = fd_planar_data->format;
