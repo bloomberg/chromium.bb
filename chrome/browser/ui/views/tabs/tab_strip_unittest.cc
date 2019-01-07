@@ -24,7 +24,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/ax_event_observer.h"

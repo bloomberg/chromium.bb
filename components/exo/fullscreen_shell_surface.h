@@ -69,7 +69,7 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
   bool WidgetHasHitTestMask() const override;
-  void GetWidgetHitTestMask(gfx::Path* mask) const override;
+  void GetWidgetHitTestMask(SkPath* mask) const override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

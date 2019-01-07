@@ -80,7 +80,7 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override {}
   void OnWindowTargetVisibilityChanged(bool visible) override {}
   bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(gfx::Path* mask) const override {}
+  void GetHitTestMask(SkPath* mask) const override {}
 
   // Sets the cursor image for the |display|'s scale factor.
   void SetCursorImage(const gfx::Size& size, const gfx::ImageSkia& image) {

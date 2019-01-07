@@ -342,7 +342,7 @@ int NonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
 }
 
 void NonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
-                                          gfx::Path* window_mask) {
+                                          SkPath* window_mask) {
   // No window masks in Aura.
 }
 

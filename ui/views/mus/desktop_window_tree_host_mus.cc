@@ -95,7 +95,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     return outset_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
     // The window manager provides the shape; do nothing.
   }
   void ResetWindowControls() override {

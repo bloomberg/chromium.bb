@@ -265,7 +265,7 @@ bool ChromeNativeAppWindowViews::WidgetHasHitTestMask() const {
   return shape_ != NULL;
 }
 
-void ChromeNativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
+void ChromeNativeAppWindowViews::GetWidgetHitTestMask(SkPath* mask) const {
   shape_->getBoundaryPath(mask);
 }
 

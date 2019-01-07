@@ -52,7 +52,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int NonClientHitTest(const gfx::Point& point) override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override;
   void SizeConstraintsChanged() override {}
 

@@ -9,6 +9,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/draggable_region.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/path.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/grid_layout.h"
@@ -224,7 +224,7 @@ int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void AppWindowFrameView::GetWindowMask(const gfx::Size& size,
-                                       gfx::Path* window_mask) {
+                                       SkPath* window_mask) {
   // We got nothing to say about no window mask.
 }
 
@@ -309,7 +309,7 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   flags.setAntiAlias(false);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(CurrentFrameColor());
-  gfx::Path path;
+  SkPath path;
   path.moveTo(0, 0);
   path.lineTo(width(), 0);
   path.lineTo(width(), kCaptionHeight);

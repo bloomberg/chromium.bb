@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/path.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"

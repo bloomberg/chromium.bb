@@ -178,7 +178,7 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Add a clip path so that arrow will only be shown within the circular
   // highlight area.
-  gfx::Path arrow_mask_path;
+  SkPath arrow_mask_path;
   arrow_mask_path.addCircle(circle_center.x(), circle_center.y(),
                             kCircleRadius);
   canvas->ClipPath(arrow_mask_path, true);
@@ -195,7 +195,7 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   arrow_flags.setStrokeJoin(cc::PaintFlags::Join::kRound_Join);
   arrow_flags.setStyle(cc::PaintFlags::kStroke_Style);
 
-  gfx::Path arrow_path;
+  SkPath arrow_path;
   arrow_path.moveTo(arrow_points[0].x(), arrow_points[0].y());
   for (size_t i = 1; i < kPointCount; ++i)
     arrow_path.lineTo(arrow_points[i].x(), arrow_points[i].y());

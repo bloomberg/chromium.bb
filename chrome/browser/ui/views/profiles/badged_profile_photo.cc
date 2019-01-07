@@ -41,7 +41,7 @@ class CustomImageView : public views::ImageView {
 
 void CustomImageView::OnPaint(gfx::Canvas* canvas) {
   // Remove the part of the ImageView that contains the badge.
-  gfx::Path mask;
+  SkPath mask;
   mask.addCircle(
       GetMirroredXInView(kBadgedProfilePhotoWidth - kBadgeIconSize / 2),
       kBadgedProfilePhotoHeight - kBadgeIconSize / 2,

@@ -913,7 +913,7 @@ bool NativeWidgetAura::HasHitTestMask() const {
   return delegate_->HasHitTestMask();
 }
 
-void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+void NativeWidgetAura::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
   delegate_->GetHitTestMask(mask);
 }

@@ -7,12 +7,12 @@
 #include "chrome/browser/ui/views/ime/ime_window_view.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/path.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -102,7 +102,7 @@ int ImeWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void ImeWindowFrameView::GetWindowMask(const gfx::Size& size,
-                                       gfx::Path* window_mask) {
+                                       SkPath* window_mask) {
   int width = size.width();
   int height = size.height();
 

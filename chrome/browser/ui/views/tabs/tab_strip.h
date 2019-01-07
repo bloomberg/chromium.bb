@@ -273,7 +273,7 @@ class TabStrip : public views::AccessiblePaneView,
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   void UpdateHoverCard(Tab* tab, bool should_show) override;
-  bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override;
+  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;

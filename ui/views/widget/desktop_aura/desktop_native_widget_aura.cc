@@ -1075,7 +1075,7 @@ bool DesktopNativeWidgetAura::HasHitTestMask() const {
   return native_widget_delegate_->HasHitTestMask();
 }
 
-void DesktopNativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+void DesktopNativeWidgetAura::GetHitTestMask(SkPath* mask) const {
   native_widget_delegate_->GetHitTestMask(mask);
 }
 

@@ -27,7 +27,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/corewm/tooltip_win.h"
 #include "ui/views/views_switches.h"
@@ -718,7 +717,7 @@ int DesktopWindowTreeHostWin::GetNonClientComponent(
 }
 
 void DesktopWindowTreeHostWin::GetWindowMask(const gfx::Size& size,
-                                             gfx::Path* path) {
+                                             SkPath* path) {
   if (GetWidget()->non_client_view()) {
     GetWidget()->non_client_view()->GetWindowMask(size, path);
   } else if (!window_enlargement_.IsZero()) {

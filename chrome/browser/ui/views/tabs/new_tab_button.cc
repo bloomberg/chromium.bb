@@ -226,14 +226,13 @@ void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   GetInkDrop()->HostSizeChanged(ink_drop_size);
 }
 
-bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
+bool NewTabButton::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 
   const float scale = GetWidget()->GetCompositor()->device_scale_factor();
   // TODO(pkasting): Fitts' Law horizontally when appropriate.
-  gfx::Path border =
-      GetBorderPath(GetContentsBounds().origin(), scale,
-                    tab_strip_->controller()->IsFrameCondensed());
+  SkPath border = GetBorderPath(GetContentsBounds().origin(), scale,
+                                tab_strip_->controller()->IsFrameCondensed());
   mask->addPath(border, SkMatrix::MakeScale(1 / scale));
   return true;
 }
@@ -327,14 +326,14 @@ SkColor NewTabButton::GetButtonFillColor() const {
              : SK_ColorTRANSPARENT;
 }
 
-gfx::Path NewTabButton::GetBorderPath(const gfx::Point& origin,
-                                      float scale,
-                                      bool extend_to_top) const {
+SkPath NewTabButton::GetBorderPath(const gfx::Point& origin,
+                                   float scale,
+                                   bool extend_to_top) const {
   gfx::PointF scaled_origin(origin);
   scaled_origin.Scale(scale);
   const float radius = GetCornerRadius() * scale;
 
-  gfx::Path path;
+  SkPath path;
   if (extend_to_top) {
     path.moveTo(scaled_origin.x(), 0);
     const float diameter = radius * 2;

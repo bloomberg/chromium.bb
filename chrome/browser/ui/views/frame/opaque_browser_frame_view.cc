@@ -27,6 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,7 +40,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -299,7 +299,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
-                                           gfx::Path* window_mask) {
+                                           SkPath* window_mask) {
   DCHECK(window_mask);
 
   if (IsFrameCondensed())

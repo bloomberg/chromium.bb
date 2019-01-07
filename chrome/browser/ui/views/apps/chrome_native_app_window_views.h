@@ -47,7 +47,7 @@ class ChromeNativeAppWindowViews
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
-  void GetWidgetHitTestMask(gfx::Path* mask) const override;
+  void GetWidgetHitTestMask(SkPath* mask) const override;
 
   // views::View implementation.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;

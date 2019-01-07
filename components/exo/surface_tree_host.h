@@ -18,10 +18,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace gfx {
-class Path;
-}  // namespace gfx
-
 namespace exo {
 class LayerTreeFrameSinkHolder;
 
@@ -42,7 +38,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Sets |mask| to the path that delineates the hit test region of the hosted
   // surface tree.
-  void GetHitTestMask(gfx::Path* mask) const;
+  void GetHitTestMask(SkPath* mask) const;
 
   // Call this to indicate that the previous CompositorFrame is processed and
   // the surface is being scheduled for a draw.

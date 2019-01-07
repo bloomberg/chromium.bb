@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
@@ -37,7 +38,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/path.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -51,7 +51,6 @@ using ui::OSExchangeData;
 namespace gfx {
 class Canvas;
 class Insets;
-class Path;
 class Transform;
 }  // namespace gfx
 
@@ -463,7 +462,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Transform GetTransform() const;
 
   // Clipping is done relative to the view's local bounds.
-  void set_clip_path(const gfx::Path& path) { clip_path_ = path; }
+  void set_clip_path(const SkPath& path) { clip_path_ = path; }
 
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
@@ -1779,7 +1778,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Painting will be clipped to this path. TODO(estade): this doesn't work for
   // layers.
-  gfx::Path clip_path_;
+  SkPath clip_path_;
 
   // Layout --------------------------------------------------------------------
 

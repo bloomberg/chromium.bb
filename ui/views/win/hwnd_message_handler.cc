@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/base/ime/input_method.h"
@@ -47,7 +48,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/rendering_window_manager.h"
@@ -1424,7 +1424,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
     OffsetRect(&work_rect, -window_rect.left, -window_rect.top);
     new_region.reset(CreateRectRgnIndirect(&work_rect));
   } else {
-    gfx::Path window_mask;
+    SkPath window_mask;
     delegate_->GetWindowMask(gfx::Size(window_rect.right - window_rect.left,
                                        window_rect.bottom - window_rect.top),
                              &window_mask);

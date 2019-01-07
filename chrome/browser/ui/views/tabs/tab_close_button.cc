@@ -159,14 +159,14 @@ views::View* TabCloseButton::TargetForRect(views::View* root,
   return contents_bounds.Intersects(rect) ? this : parent();
 }
 
-bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
+bool TabCloseButton::GetHitTestMask(SkPath* mask) const {
   // We need to define this so hit-testing won't include the border region.
   mask->addRect(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
   return true;
 }
 
 void TabCloseButton::DrawHighlight(gfx::Canvas* canvas, ButtonState state) {
-  gfx::Path path;
+  SkPath path;
   gfx::Point center = GetContentsBounds().CenterPoint();
   path.setFillType(SkPath::kEvenOdd_FillType);
   path.addCircle(center.x(), center.y(), GetWidth() / 2);

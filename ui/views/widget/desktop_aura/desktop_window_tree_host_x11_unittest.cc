@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
@@ -21,7 +22,6 @@
 #include "ui/events/test/platform_event_source_test_api.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_test_base.h"
@@ -85,7 +85,7 @@ class ShapedNonClientFrameView : public NonClientFrameView {
       return HTBOTTOM;
     return HTNOWHERE;
   }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
     int right = size.width();
     int bottom = size.height();
 

@@ -39,7 +39,6 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -801,7 +800,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
       clip_recorder.ClipRect(gfx::Rect(paint_info.paint_recording_size()) +
                              paint_info.offset_from_parent());
     } else {
-      gfx::Path clip_path_in_parent = clip_path_;
+      SkPath clip_path_in_parent = clip_path_;
 
       // Transform |clip_path_| from local space to parent recording space.
       gfx::Transform to_parent_recording_space;

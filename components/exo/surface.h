@@ -25,14 +25,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
 
+class SkPath;
+
 namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
-
-namespace gfx {
-class Path;
 }
 
 namespace viz {
@@ -194,7 +192,7 @@ class Surface final : public ui::PropertyHandler {
   bool HitTest(const gfx::Point& point) const;
 
   // Sets |mask| to the path that delineates the hit test region of the surface.
-  void GetHitTestMask(gfx::Path* mask) const;
+  void GetHitTestMask(SkPath* mask) const;
 
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);

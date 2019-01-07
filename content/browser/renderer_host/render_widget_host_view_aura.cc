@@ -1662,8 +1662,7 @@ bool RenderWidgetHostViewAura::HasHitTestMask() const {
   return false;
 }
 
-void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
-}
+void RenderWidgetHostViewAura::GetHitTestMask(SkPath* mask) const {}
 
 bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();

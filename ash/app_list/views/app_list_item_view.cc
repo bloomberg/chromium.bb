@@ -92,7 +92,7 @@ class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
 
   void Draw(gfx::Canvas* canvas) override {
     // Draw the unclipped icon on the center of the canvas with a circular mask.
-    gfx::Path circular_mask;
+    SkPath circular_mask;
     circular_mask.addCircle(SkFloatToScalar(size_.width() / 2),
                             SkFloatToScalar(size_.height() / 2),
                             SkIntToScalar(size_.width() / 2));

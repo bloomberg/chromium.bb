@@ -27,6 +27,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
@@ -42,7 +43,6 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
@@ -147,7 +147,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
     surface_->OnWindowOcclusionChanged();
   }
   bool HasHitTestMask() const override { return true; }
-  void GetHitTestMask(gfx::Path* mask) const override {
+  void GetHitTestMask(SkPath* mask) const override {
     surface_->GetHitTestMask(mask);
   }
   void OnKeyEvent(ui::KeyEvent* event) override {
@@ -683,7 +683,7 @@ bool Surface::HitTest(const gfx::Point& point) const {
   return hit_test_region_.Contains(point);
 }
 
-void Surface::GetHitTestMask(gfx::Path* mask) const {
+void Surface::GetHitTestMask(SkPath* mask) const {
   hit_test_region_.GetBoundaryPath(mask);
 }
 

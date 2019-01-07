@@ -45,7 +45,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -1877,7 +1876,7 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
   window_shape_.reset();
 
   if (!IsMaximized() && !IsFullscreen()) {
-    gfx::Path window_mask;
+    SkPath window_mask;
     Widget* widget = native_widget_delegate_->AsWidget();
     if (widget->non_client_view()) {
       // Some frame views define a custom (non-rectangular) window mask. If

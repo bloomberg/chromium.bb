@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"

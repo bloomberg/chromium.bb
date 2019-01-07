@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_button.h"

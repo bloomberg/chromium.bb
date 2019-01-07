@@ -167,7 +167,7 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnWindowOcclusionChanged(aura::Window::OcclusionState occlusion_state,
                                 const SkRegion&) override;
   bool HasHitTestMask() const override;
-  void GetHitTestMask(gfx::Path* mask) const override;
+  void GetHitTestMask(SkPath* mask) const override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

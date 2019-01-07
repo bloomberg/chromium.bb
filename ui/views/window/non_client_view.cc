@@ -34,7 +34,7 @@ static const int kClientViewIndex = 1;
 // NonClientFrameView, default implementations:
 
 bool NonClientFrameView::GetClientMask(const gfx::Size& size,
-                                       gfx::Path* mask) const {
+                                       SkPath* mask) const {
   return false;
 }
 
@@ -102,8 +102,7 @@ int NonClientView::NonClientHitTest(const gfx::Point& point) {
   return frame_view_->NonClientHitTest(point);
 }
 
-void NonClientView::GetWindowMask(const gfx::Size& size,
-                                  gfx::Path* window_mask) {
+void NonClientView::GetWindowMask(const gfx::Size& size, SkPath* window_mask) {
   frame_view_->GetWindowMask(size, window_mask);
 }
 
@@ -172,7 +171,7 @@ void NonClientView::Layout() {
     client_view_->Layout();
   }
 
-  gfx::Path client_clip;
+  SkPath client_clip;
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
     client_view_->set_clip_path(client_clip);
 

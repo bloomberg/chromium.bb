@@ -368,7 +368,7 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
   gfx::Rect onscreen_bounds(
       GetPageBoundsForState(ash::AppListState::kStateSearchResults));
   onscreen_bounds -= bounds().OffsetFromOrigin();
-  gfx::Path path;
+  SkPath path;
   path.addRect(gfx::RectToSkRect(onscreen_bounds));
   set_clip_path(path);
 }

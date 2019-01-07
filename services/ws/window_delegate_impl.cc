@@ -90,7 +90,7 @@ bool WindowDelegateImpl::HasHitTestMask() const {
   return false;
 }
 
-void WindowDelegateImpl::GetHitTestMask(gfx::Path* mask) const {}
+void WindowDelegateImpl::GetHitTestMask(SkPath* mask) const {}
 
 WindowDelegateImpl::~WindowDelegateImpl() = default;
 

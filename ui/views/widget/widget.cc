@@ -1325,7 +1325,7 @@ bool Widget::HasHitTestMask() const {
   return widget_delegate_->WidgetHasHitTestMask();
 }
 
-void Widget::GetHitTestMask(gfx::Path* mask) const {
+void Widget::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
   widget_delegate_->GetWidgetHitTestMask(mask);
 }
