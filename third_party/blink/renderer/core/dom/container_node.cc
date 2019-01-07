@@ -673,7 +673,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
 
   Node* child = old_child;
 
-  GetDocument().RemoveFocusedElementOfSubtree(child);
+  GetDocument().RemoveFocusedElementOfSubtree(*child);
 
   // Events fired when blurring currently focused node might have moved this
   // child into a different parent.
@@ -793,7 +793,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     // children will be removed.
     // This must be later than willRemoveChildren, which might change focus
     // state of a child.
-    GetDocument().RemoveFocusedElementOfSubtree(this, true);
+    GetDocument().RemoveFocusedElementOfSubtree(*this, true);
 
     // Removing a node from a selection can cause widget updates.
     GetDocument().NodeChildrenWillBeRemoved(*this);
