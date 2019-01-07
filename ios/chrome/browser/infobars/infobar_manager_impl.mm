@@ -11,9 +11,9 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
-#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
@@ -25,12 +25,12 @@ namespace {
 
 infobars::InfoBarDelegate::NavigationDetails CreateNavigationDetails(
     web::NavigationItem* navigation_item,
-    bool is_in_page) {
+    bool is_same_document) {
   infobars::InfoBarDelegate::NavigationDetails navigation_details;
   navigation_details.entry_id = navigation_item->GetUniqueID();
   const ui::PageTransition transition = navigation_item->GetTransitionType();
   navigation_details.is_navigation_to_different_page =
-      ui::PageTransitionIsMainFrame(transition) && !is_in_page;
+      ui::PageTransitionIsMainFrame(transition) && !is_same_document;
   // Default to false, since iOS callbacks do not specify if navigation was a
   // repace state navigation .
   navigation_details.did_replace_entry = false;
@@ -71,13 +71,13 @@ std::unique_ptr<infobars::InfoBar> InfoBarManagerImpl::CreateConfirmInfoBar(
   return ::CreateConfirmInfoBar(std::move(delegate));
 }
 
-void InfoBarManagerImpl::NavigationItemCommitted(
+void InfoBarManagerImpl::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
+    web::NavigationContext* navigation_context) {
   DCHECK_EQ(web_state_, web_state);
   OnNavigation(CreateNavigationDetails(
       web_state->GetNavigationManager()->GetLastCommittedItem(),
-      load_details.is_in_page));
+      navigation_context->IsSameDocument()));
 }
 
 void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {

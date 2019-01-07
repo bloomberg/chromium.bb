@@ -17,7 +17,6 @@ class InfoBar;
 }
 
 namespace web {
-struct LoadCommittedDetails;
 class WebState;
 }
 
@@ -40,9 +39,8 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
       std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
 
   // web::WebStateObserver implementation.
-  void NavigationItemCommitted(
-      web::WebState* web_state,
-      const web::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // Opens a URL according to the specified |disposition|.
