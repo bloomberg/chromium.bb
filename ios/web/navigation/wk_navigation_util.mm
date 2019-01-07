@@ -78,6 +78,7 @@ bool IsWKInternalUrl(const GURL& url) {
 
 bool URLNeedsUserAgentType(const GURL& url) {
   return !web::GetWebClient()->IsAppSpecificURL(url) &&
+         !(url.SchemeIs(url::kFileScheme) && !IsRestoreSessionUrl(url)) &&
          !(url.SchemeIs(url::kAboutScheme) && !IsPlaceholderUrl(url));
 }
 
