@@ -7,19 +7,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 SigninErrorControllerFactory::SigninErrorControllerFactory()
     : BrowserContextKeyedServiceFactory(
           "SigninErrorController",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 SigninErrorControllerFactory::~SigninErrorControllerFactory() {}
@@ -48,6 +44,5 @@ KeyedService* SigninErrorControllerFactory::BuildServiceInstanceFor(
           : SigninErrorController::AccountMode::PRIMARY_ACCOUNT;
 #endif
   return new SigninErrorController(
-      account_mode, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile));
+      account_mode, IdentityManagerFactory::GetForProfile(profile));
 }

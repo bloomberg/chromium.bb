@@ -6,22 +6,15 @@
 
 #include "components/signin/core/browser/signin_metrics.h"
 
-SigninErrorController::SigninErrorController(AccountMode mode,
-                                             OAuth2TokenService* token_service,
-                                             SigninManagerBase* signin_manager)
+SigninErrorController::SigninErrorController(
+    AccountMode mode,
+    identity::IdentityManager* identity_manager)
     : account_mode_(mode),
-      token_service_(token_service),
-      signin_manager_(signin_manager),
-      scoped_token_service_observer_(this),
-      scoped_signin_manager_observer_(this),
+      identity_manager_(identity_manager),
+      scoped_identity_manager_observer_(this),
       auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
-  DCHECK(token_service_);
-  scoped_token_service_observer_.Add(token_service_);
-
-  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT) {
-    DCHECK(signin_manager_);
-    scoped_signin_manager_observer_.Add(signin_manager_);
-  }
+  DCHECK(identity_manager_);
+  scoped_identity_manager_observer_.Add(identity_manager_);
 
   Update();
 }
@@ -29,10 +22,7 @@ SigninErrorController::SigninErrorController(AccountMode mode,
 SigninErrorController::~SigninErrorController() = default;
 
 void SigninErrorController::Shutdown() {
-  scoped_token_service_observer_.RemoveAll();
-
-  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT)
-    scoped_signin_manager_observer_.RemoveAll();
+  scoped_identity_manager_observer_.RemoveAll();
 }
 
 void SigninErrorController::Update() {
@@ -44,18 +34,23 @@ void SigninErrorController::Update() {
   // actionable error state and some provider exposes a similar error and
   // account id, use that error. Otherwise, just take the first actionable
   // error we find.
-  for (const std::string& account_id : token_service_->GetAccounts()) {
+  for (const AccountInfo& account_info :
+       identity_manager_->GetAccountsWithRefreshTokens()) {
+    std::string account_id = account_info.account_id;
+
     // In PRIMARY_ACCOUNT mode, ignore all secondary accounts.
     if (account_mode_ == AccountMode::PRIMARY_ACCOUNT &&
-        (account_id != signin_manager_->GetAuthenticatedAccountId())) {
+        (account_id != identity_manager_->GetPrimaryAccountId())) {
       continue;
     }
 
-    if (!token_service_->RefreshTokenHasError(account_id))
+    if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+            account_id))
       continue;
 
-    GoogleServiceAuthError error = token_service_->GetAuthError(account_id);
-    // TokenService only reports persistent errors.
+    GoogleServiceAuthError error =
+        identity_manager_->GetErrorStateOfRefreshTokenForAccount(account_id);
+    // IdentityManager only reports persistent errors.
     DCHECK(error.IsPersistentError());
 
     // Prioritize this error if it matches the previous |auth_error_|.
@@ -102,23 +97,30 @@ void SigninErrorController::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void SigninErrorController::OnEndBatchChanges() {
+void SigninErrorController::OnEndBatchOfRefreshTokenStateChanges() {
   Update();
 }
 
-void SigninErrorController::OnAuthErrorChanged(
-    const std::string& account_id,
-    const GoogleServiceAuthError& auth_error) {
+void SigninErrorController::OnErrorStateOfRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    const GoogleServiceAuthError& error) {
   Update();
 }
 
-void SigninErrorController::GoogleSigninSucceeded(
-    const AccountInfo& account_info) {
-  DCHECK(account_mode_ == AccountMode::PRIMARY_ACCOUNT);
+void SigninErrorController::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
+  // Ignore updates to the primary account if not in PRIMARY_ACCOUNT mode.
+  if (account_mode_ != AccountMode::PRIMARY_ACCOUNT)
+    return;
+
   Update();
 }
 
-void SigninErrorController::GoogleSignedOut(const AccountInfo& account_info) {
-  DCHECK(account_mode_ == AccountMode::PRIMARY_ACCOUNT);
+void SigninErrorController::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
+  // Ignore updates to the primary account if not in PRIMARY_ACCOUNT mode.
+  if (account_mode_ != AccountMode::PRIMARY_ACCOUNT)
+    return;
+
   Update();
 }
