@@ -423,7 +423,14 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
           encoded_data_length == -1 ? 0 : encoded_data_length);
       if (response.HttpStatusCode() < 400 && report_timing_info_to_parent_) {
         navigation_timing_info_->SetLoadFinishTime(resource->LoadFinishTime());
-        fetcher_->Context().AddResourceTiming(*navigation_timing_info_);
+        if (state_ >= kCommitted) {
+          // Note that we currently lose timing info for empty documents,
+          // which will be fixed with synchronous commit.
+          // Main resource timing information is reported through the owner
+          // to be passed to the parent frame, if appropriate.
+          frame_->Owner()->AddResourceTiming(*navigation_timing_info_);
+        }
+        frame_->SetShouldSendResourceTimingInfoToParent(false);
       }
     }
     FinishedLoading(resource->LoadFinishTime());
@@ -527,10 +534,7 @@ bool DocumentLoader::RedirectReceived(
   DCHECK(!redirect_response.IsNull());
   request_ = request;
   const KURL& request_url = request_.Url();
-
-  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
-      redirect_response.CurrentRequestUrl(), request_url);
-  navigation_timing_info_->AddRedirect(redirect_response, cross_origin);
+  navigation_timing_info_->AddRedirect(redirect_response, request_url);
 
   // If the redirecting url is not allowed to display content from the target
   // origin, then block the redirect.
@@ -586,6 +590,26 @@ bool DocumentLoader::ShouldContinueForResponse() const {
 
   if (!CanShowMIMEType(response_.MimeType(), frame_))
     return false;
+  return true;
+}
+
+bool DocumentLoader::ShouldReportTimingInfoToParent() {
+  DCHECK(frame_);
+  // <iframe>s should report the initial navigation requested by the parent
+  // document, but not subsequent navigations.
+  if (!frame_->Owner())
+    return false;
+  // Note that this can be racy since this information is forwarded over IPC
+  // when crossing process boundaries.
+  if (!frame_->should_send_resource_timing_info_to_parent())
+    return false;
+  // Do not report iframe navigation that restored from history, since its
+  // location may have been changed after initial navigation,
+  if (load_type_ == WebFrameLoadType::kBackForward) {
+    // ...and do not report subsequent navigations in the iframe too.
+    frame_->SetShouldSendResourceTimingInfoToParent(false);
+    return false;
+  }
   return true;
 }
 
@@ -983,8 +1007,7 @@ void DocumentLoader::StartLoading() {
         fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
         true /* is_main_resource */);
     navigation_timing_info_->SetInitialURL(request_.Url());
-    report_timing_info_to_parent_ = To<FrameFetchContext>(fetcher_->Context())
-                                        .UpdateTimingInfoForIFrameNavigation();
+    report_timing_info_to_parent_ = ShouldReportTimingInfoToParent();
 
     ResourceLoaderOptions options;
     options.data_buffering_policy = kDoNotBufferData;

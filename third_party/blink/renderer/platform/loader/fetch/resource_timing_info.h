@@ -78,7 +78,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
   const ResourceResponse& FinalResponse() const { return final_response_; }
 
   void AddRedirect(const ResourceResponse& redirect_response,
-                   bool cross_origin);
+                   const KURL& new_url);
   const Vector<ResourceResponse>& RedirectChain() const {
     return redirect_chain_;
   }
@@ -87,12 +87,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
     transfer_size_ += encoded_data_length;
   }
   long long TransferSize() const { return transfer_size_; }
-
-  void ClearLoadTimings() {
-    final_response_.SetResourceLoadTiming(nullptr);
-    for (ResourceResponse& redirect : redirect_chain_)
-      redirect.SetResourceLoadTiming(nullptr);
-  }
 
   // The timestamps in PerformanceResourceTiming are measured relative from the
   // time origin. In most cases these timestamps must be positive value, so we

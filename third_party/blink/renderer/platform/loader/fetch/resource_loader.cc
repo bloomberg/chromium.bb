@@ -659,10 +659,8 @@ bool ResourceLoader::WillFollowRedirect(
     }
   }
 
-  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
-      redirect_response.CurrentRequestUrl(), new_url);
   fetcher_->RecordResourceTimingOnRedirect(resource_.Get(), redirect_response,
-                                           cross_origin);
+                                           new_url);
 
   base::Optional<ResourceResponse> redirect_response_with_type;
   if (ShouldCheckCorsInResourceLoader()) {

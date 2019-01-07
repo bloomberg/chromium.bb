@@ -316,12 +316,6 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
                   resource_request.Priority());
 }
 
-static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
-  KURL initial_url = resource->GetResourceRequest().Url();
-  info->SetInitialURL(initial_url);
-  info->SetFinalResponse(resource->GetResponse());
-}
-
 mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
     ResourceType type,
     IsImageSet is_image_set,
@@ -455,8 +449,10 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         params.Options().initiator_info.name, CurrentTimeTicks(),
         resource->GetType() == ResourceType::kMainResource);
-    PopulateTimingInfo(info.get(), resource);
-    info->ClearLoadTimings();
+    info->SetInitialURL(resource->GetResourceRequest().Url());
+    ResourceResponse final_response = resource->GetResponse();
+    final_response.SetResourceLoadTiming(nullptr);
+    info->SetFinalResponse(final_response);
     info->SetLoadFinishTime(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
@@ -1053,11 +1049,10 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
 void ResourceFetcher::RecordResourceTimingOnRedirect(
     Resource* resource,
     const ResourceResponse& redirect_response,
-    bool cross_origin) {
+    const KURL& new_url) {
   ResourceTimingInfoMap::iterator it = resource_timing_info_map_.find(resource);
-  if (it != resource_timing_info_map_.end()) {
-    it->value->AddRedirect(redirect_response, cross_origin);
-  }
+  if (it != resource_timing_info_map_.end())
+    it->value->AddRedirect(redirect_response, new_url);
 }
 
 static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
@@ -1585,7 +1580,8 @@ void ResourceFetcher::HandleLoaderFinish(
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().IsHTTP() &&
         resource->GetResponse().HttpStatusCode() < 400) {
-      PopulateTimingInfo(info.get(), resource);
+      info->SetInitialURL(resource->GetResourceRequest().Url());
+      info->SetFinalResponse(resource->GetResponse());
       info->SetLoadFinishTime(finish_time);
       // encodedDataLength == -1 means "not available".
       // TODO(ricea): Find cases where it is not available but the
