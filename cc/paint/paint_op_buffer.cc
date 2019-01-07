@@ -355,10 +355,14 @@ PaintOp::SerializeOptions& PaintOp::SerializeOptions::operator=(
 PaintOp::DeserializeOptions::DeserializeOptions(
     TransferCacheDeserializeHelper* transfer_cache,
     ServicePaintCache* paint_cache,
-    SkStrikeClient* strike_client)
+    SkStrikeClient* strike_client,
+    std::vector<uint8_t>* scratch_buffer)
     : transfer_cache(transfer_cache),
       paint_cache(paint_cache),
-      strike_client(strike_client) {}
+      strike_client(strike_client),
+      scratch_buffer(scratch_buffer) {
+  DCHECK(scratch_buffer);
+}
 
 size_t AnnotateOp::Serialize(const PaintOp* base_op,
                              void* memory,

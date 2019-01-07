@@ -122,6 +122,16 @@ void PaintOpReader::ReadSimple(T* val) {
   remaining_bytes_ -= size;
 }
 
+uint8_t* PaintOpReader::CopyScratchSpace(size_t bytes) {
+  DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory_)));
+
+  if (options_.scratch_buffer->size() < bytes)
+    options_.scratch_buffer->resize(bytes);
+  memcpy(options_.scratch_buffer->data(), const_cast<const char*>(memory_),
+         bytes);
+  return options_.scratch_buffer->data();
+}
+
 template <typename T>
 void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
   size_t bytes = 0;
@@ -133,13 +143,9 @@ void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
   if (bytes == 0)
     return;
 
-  // This is assumed safe from TOCTOU violations as the flattenable
-  // deserializing function uses an SkReadBuffer which reads each piece of
-  // memory once much like PaintOpReader does.
-  DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory_)));
+  auto* scratch = CopyScratchSpace(bytes);
   val->reset(static_cast<T*>(
-      SkFlattenable::Deserialize(T::GetFlattenableType(),
-                                 const_cast<const char*>(memory_), bytes)
+      SkFlattenable::Deserialize(T::GetFlattenableType(), scratch, bytes)
           .release()));
   if (!val)
     SetInvalid();
@@ -214,8 +220,8 @@ void PaintOpReader::Read(SkPath* path) {
     return;
 
   if (path_bytes != 0u) {
-    size_t bytes_read =
-        path->readFromMemory(const_cast<const char*>(memory_), path_bytes);
+    auto* scratch = CopyScratchSpace(path_bytes);
+    size_t bytes_read = path->readFromMemory(scratch, path_bytes);
     if (bytes_read == 0u) {
       SetInvalid();
       return;
@@ -386,13 +392,8 @@ void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
   if (!valid_ || size == 0)
     return;
 
-  // To avoid TOCTOU issues, make a copy of this prior to turning it
-  // into an SkColorSpace.  SkColorSpace::Deserialize reads header
-  // fields multiple times, so is not safe to pass memory_ to directly.
-  std::unique_ptr<char[]> data(new char[size]);
-  memcpy(data.get(), const_cast<const char*>(memory_), size);
-
-  *color_space = SkColorSpace::Deserialize(data.get(), size);
+  auto* scratch = CopyScratchSpace(size);
+  *color_space = SkColorSpace::Deserialize(scratch, size);
   // If this had non-zero bytes, it should be a valid color space.
   if (!color_space)
     SetInvalid();
@@ -431,8 +432,9 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
   TypefaceCtx typeface_ctx(options_.strike_client);
   procs.fTypefaceProc = &DeserializeTypeface;
   procs.fTypefaceCtx = &typeface_ctx;
-  sk_sp<SkTextBlob> deserialized_blob = SkTextBlob::Deserialize(
-      const_cast<const char*>(memory_), data_bytes, procs);
+  auto* scratch = CopyScratchSpace(data_bytes);
+  sk_sp<SkTextBlob> deserialized_blob =
+      SkTextBlob::Deserialize(scratch, data_bytes, procs);
   if (!deserialized_blob || typeface_ctx.invalid_typeface) {
     SetInvalid();
     return;

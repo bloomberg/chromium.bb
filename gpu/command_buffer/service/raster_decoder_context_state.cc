@@ -22,6 +22,10 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #endif
 
+namespace {
+static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
+}
+
 namespace gpu {
 namespace raster {
 
@@ -51,6 +55,9 @@ RasterDecoderContextState::RasterDecoderContextState(
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
   }
+  // Initialize the scratch buffer to some small initial size.
+  scratch_deserialization_buffer_.resize(
+      kInitialScratchDeserializationBufferSize);
 }
 
 RasterDecoderContextState::~RasterDecoderContextState() {
@@ -229,10 +236,15 @@ void RasterDecoderContextState::PurgeMemory(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       // With moderate pressure, clear any unlocked resources.
       gr_context->purgeUnlockedResources(true /* scratchResourcesOnly */);
+      scratch_deserialization_buffer_.resize(
+          kInitialScratchDeserializationBufferSize);
+      scratch_deserialization_buffer_.shrink_to_fit();
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // With critical pressure, purge as much as possible.
       gr_context->freeGpuResources();
+      scratch_deserialization_buffer_.resize(0u);
+      scratch_deserialization_buffer_.shrink_to_fit();
       break;
   }
 

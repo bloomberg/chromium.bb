@@ -3288,9 +3288,10 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   // Hold onto records so PaintShader pointer comparisons are valid.
   sk_sp<PaintRecord> records[5];
   const SkShader* last_shader = nullptr;
+  std::vector<uint8_t> scratch_buffer;
   PaintOp::DeserializeOptions deserialize_options(
       transfer_cache, options_provider.service_paint_cache(),
-      options_provider.strike_client());
+      options_provider.strike_client(), &scratch_buffer);
 
   // Several deserialization test cases:
   // (0) deserialize once, verify cached is the same as deserialized version
@@ -3390,9 +3391,10 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
   options_provider.context_supports_distance_field_text();
   serializer.Serialize(buffer.get());
 
+  std::vector<uint8_t> scratch_buffer;
   PaintOp::DeserializeOptions deserialize_options(
       transfer_cache, options_provider.service_paint_cache(),
-      options_provider.strike_client());
+      options_provider.strike_client(), &scratch_buffer);
   auto record = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialize_options);
   auto* shader_entry =
