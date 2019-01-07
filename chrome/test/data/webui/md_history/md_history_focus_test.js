@@ -80,7 +80,8 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       field.blur();
       assertFalse(field.showingSearch);
 
-      MockInteractions.pressAndReleaseKeyOn(document.body, 191, '', '/');
+      const modifier = cr.isMac ? 'meta' : 'ctrl';
+      MockInteractions.pressAndReleaseKeyOn(document.body, 70, modifier, 'f');
       assertTrue(field.showingSearch);
       assertEquals(field.$.searchInput, field.root.activeElement);
 
@@ -88,15 +89,6 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
           field.$.searchInput, 27, '', 'Escape');
       assertFalse(field.showingSearch, 'Pressing escape closes field.');
       assertNotEquals(field.$.searchInput, field.root.activeElement);
-
-      let modifier = 'ctrl';
-      if (cr.isMac) {
-        modifier = 'meta';
-      }
-
-      MockInteractions.pressAndReleaseKeyOn(document.body, 70, modifier, 'f');
-      assertTrue(field.showingSearch);
-      assertEquals(field.$.searchInput, field.root.activeElement);
     });
   });
 
