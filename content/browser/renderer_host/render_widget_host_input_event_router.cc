@@ -107,7 +107,7 @@ class TouchEventAckQueue {
   };
 
   explicit TouchEventAckQueue(RenderWidgetHostInputEventRouter* client)
-      : client_(client) {
+      : client_(client), last_view_destroyed_for_debugging_(nullptr) {
     DCHECK(client_);
   }
 
@@ -137,6 +137,10 @@ class TouchEventAckQueue {
 
   std::deque<AckData> ack_queue_;
   RenderWidgetHostInputEventRouter* client_;
+
+  // TODO(wjmaclean): This is temporary, and will be removed when
+  // https://crbug.com/915701 is resolved.
+  RenderWidgetHostViewBase* last_view_destroyed_for_debugging_;
 };
 
 void TouchEventAckQueue::Add(const TouchEventWithLatencyInfo& touch_event,
@@ -194,6 +198,7 @@ void TouchEventAckQueue::ProcessAckedTouchEvents() {
   if (ack_queue_.empty())
     return;
 
+  last_view_destroyed_for_debugging_ = nullptr;
   TouchEmulator* touch_emulator =
       client_->has_touch_emulator() ? client_->GetTouchEmulator() : nullptr;
   while (!ack_queue_.empty() && ack_queue_.front().touch_event_ack_status ==
@@ -210,6 +215,29 @@ void TouchEventAckQueue::ProcessAckedTouchEvents() {
                                                  ack_data.ack_result);
     }
     // Discard the event from the queue.
+    if (last_view_destroyed_for_debugging_ || ack_queue_.empty()) {
+      // The only way we expect to get here is if something above causes the
+      // root view to be destroyed on the UI thread. If that happens, log it
+      // so we know for sure this is happening. https://crbug.com/915701
+      static auto* destroyed_view_ptr_crash_key =
+          base::debug::AllocateCrashKeyString(
+              "destroyed_view_ptr", base::debug::CrashKeySize::Size64);
+      base::debug::SetCrashKeyString(
+          destroyed_view_ptr_crash_key,
+          base::StringPrintf("%p (%p)", last_view_destroyed_for_debugging_,
+                             ack_data.root_view));
+      static auto* ack_queue_empty_crash_string =
+          base::debug::AllocateCrashKeyString(
+              "ack_queue_empty", base::debug::CrashKeySize::Size32);
+      base::debug::SetCrashKeyString(ack_queue_empty_crash_string,
+                                     ack_queue_.empty() ? "true" : "false");
+      static auto* acked_touch_type_crash_string =
+          base::debug::AllocateCrashKeyString(
+              "acked_touch_type", base::debug::CrashKeySize::Size32);
+      base::debug::SetCrashKeyString(acked_touch_type_crash_string,
+                                     ack_data.touch_event.event.GetName(
+                                         ack_data.touch_event.event.GetType()));
+    }
     ack_queue_.pop_front();
   }
 }
@@ -224,6 +252,7 @@ void TouchEventAckQueue::ReportTouchEventAckQueueUmaStats() {
 
 void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
     RenderWidgetHostViewBase* target_view) {
+  last_view_destroyed_for_debugging_ = target_view;
   // If a queue entry's root view is being destroyed, just delete it.
   ack_queue_.erase(remove_if(ack_queue_.begin(), ack_queue_.end(),
                              [target_view](AckData data) {
