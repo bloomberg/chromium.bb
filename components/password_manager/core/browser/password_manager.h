@@ -198,9 +198,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
                                 PasswordFormManager* matched_manager,
                                 BrowserSavePasswordProgressLogger* logger);
 
-  // Returns true if |provisional_save_manager_| is ready for saving and
-  // non-blacklisted.
-  bool IsReadyForAutomaticSaving();
+  // Returns true if there is a form manager for a submitted form and this form
+  // manager contains the submitted credentials suitable for automatic save
+  // prompt, not for manual fallback only.
+  bool IsAutomaticSavePromptAvailable();
 
   // Returns true if there already exists a provisionally saved password form
   // from the same origin as |form|, but with a different and secure scheme.

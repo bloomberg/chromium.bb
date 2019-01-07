@@ -305,7 +305,7 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD:
       return "PasswordManager::AskUserOrSavePassword";
     case SavePasswordProgressLogger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD:
-      return "PasswordManager::IsReadyForAutomaticSaving";
+      return "PasswordManager::IsAutomaticSavePromptAvailable";
     case SavePasswordProgressLogger::STRING_NO_PROVISIONAL_SAVE_MANAGER:
       return "No provisional save manager";
     case SavePasswordProgressLogger::STRING_NUMBER_OF_VISIBLE_FORMS:
