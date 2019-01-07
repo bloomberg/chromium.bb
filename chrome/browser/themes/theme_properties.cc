@@ -222,12 +222,11 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TOOLBAR:
     case COLOR_STATUS_BUBBLE:
       return SK_ColorWHITE;
+    case COLOR_BACKGROUND_TAB_TEXT:
+    case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case COLOR_BOOKMARK_TEXT:
     case COLOR_TAB_TEXT:
       return gfx::kGoogleGrey800;
-    case COLOR_BACKGROUND_TAB_TEXT:
-    case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-      return gfx::kChromeIconGrey;
     case COLOR_NTP_BACKGROUND:
       return kDefaultColorNTPBackground;
     case COLOR_NTP_TEXT:
