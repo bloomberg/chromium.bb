@@ -397,7 +397,7 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
     SequenceAndTransaction sequence_and_transaction) {
   DCHECK(sequence_and_transaction.sequence);
-  shared_priority_queue_.BeginTransaction()->Push(
+  shared_priority_queue_.BeginTransaction().Push(
       std::move(sequence_and_transaction.sequence),
       sequence_and_transaction.transaction.GetSortKey());
 }
@@ -517,12 +517,12 @@ void SchedulerWorkerPoolImpl::UpdateSortKey(
   // TODO(fdoray): A worker should be woken up when the priority of a
   // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
   // equal to |max_best_effort_tasks_|.
-  shared_priority_queue_.BeginTransaction()->UpdateSortKey(
+  shared_priority_queue_.BeginTransaction().UpdateSortKey(
       std::move(sequence_and_transaction));
 }
 
 bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
-  return shared_priority_queue_.BeginTransaction()->RemoveSequence(
+  return shared_priority_queue_.BeginTransaction().RemoveSequence(
       std::move(sequence));
 }
 
@@ -628,10 +628,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   }
   scoped_refptr<Sequence> sequence;
   {
-    std::unique_ptr<PriorityQueue::Transaction> transaction(
-        outer_->shared_priority_queue_.BeginTransaction());
+    auto transaction = outer_->shared_priority_queue_.BeginTransaction();
 
-    if (transaction->IsEmpty()) {
+    if (transaction.IsEmpty()) {
       // |transaction| is kept alive while |worker| is added to
       // |idle_workers_stack_| to avoid this race:
       // 1. This thread creates a Transaction, finds |shared_priority_queue_|
@@ -650,7 +649,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     }
 
     // Enforce that no more than |max_best_effort_tasks_| run concurrently.
-    const TaskPriority priority = transaction->PeekSortKey().priority();
+    const TaskPriority priority = transaction.PeekSortKey().priority();
     if (priority == TaskPriority::BEST_EFFORT) {
       AutoSchedulerLock auto_lock(outer_->lock_);
       if (outer_->num_running_best_effort_tasks_ <
@@ -663,7 +662,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       }
     }
 
-    sequence = transaction->PopSequence();
+    sequence = transaction.PopSequence();
   }
   DCHECK(sequence);
 #if DCHECK_IS_ON()
@@ -914,8 +913,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerStarter starter(outer_);
   {
-    std::unique_ptr<PriorityQueue::Transaction> transaction(
-        outer_->shared_priority_queue_.BeginTransaction());
+    auto transaction = outer_->shared_priority_queue_.BeginTransaction();
     AutoSchedulerLock auto_lock(outer_->lock_);
 
     DCHECK(!incremented_max_tasks_since_blocked_);
@@ -930,7 +928,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
     if (outer_->workers_.size() < outer_->max_tasks_ - 1)
       return;
 
-    if (transaction->IsEmpty()) {
+    if (transaction.IsEmpty()) {
       starter.ScheduleStart(outer_->MaintainAtLeastOneIdleWorkerLockRequired());
     } else {
       // TODO(crbug.com/757897): We may create extra workers in this case:
@@ -1061,8 +1059,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
       after_start().service_thread_task_runner->RunsTasksInCurrentSequence());
 
   SchedulerWorkerStarter starter(tracked_ref_factory_.GetTrackedRef());
-  std::unique_ptr<PriorityQueue::Transaction> transaction(
-      shared_priority_queue_.BeginTransaction());
+  auto transaction = shared_priority_queue_.BeginTransaction();
   AutoSchedulerLock auto_lock(lock_);
 
   const size_t previous_max_tasks = max_tasks_;
@@ -1082,7 +1079,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   }
 
   // Wake up a worker per pending sequence, capacity permitting.
-  const size_t num_pending_sequences = transaction->Size();
+  const size_t num_pending_sequences = transaction.Size();
   const size_t num_wake_ups_needed =
       std::min(max_tasks_ - previous_max_tasks, num_pending_sequences);
 

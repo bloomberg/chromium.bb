@@ -41,10 +41,10 @@ void PlatformNativeWorkerPoolWin::Start() {
 
   size_t local_num_sequences_before_start;
   {
-    auto transaction(priority_queue_.BeginTransaction());
+    auto transaction = priority_queue_.BeginTransaction();
     DCHECK(!started_);
     started_ = true;
-    local_num_sequences_before_start = transaction->Size();
+    local_num_sequences_before_start = transaction.Size();
   }
 
   // Schedule sequences added to |priority_queue_| before Start().
@@ -91,12 +91,12 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
 }
 
 scoped_refptr<Sequence> PlatformNativeWorkerPoolWin::GetWork() {
-  auto transaction(priority_queue_.BeginTransaction());
+  auto transaction = priority_queue_.BeginTransaction();
 
   // The PQ should never be empty here as there's a 1:1 correspondence between
   // a call to ScheduleSequence()/SubmitThreadpoolWork() and GetWork().
-  DCHECK(!transaction->IsEmpty());
-  return transaction->PopSequence();
+  DCHECK(!transaction.IsEmpty());
+  return transaction.PopSequence();
 }
 
 void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
@@ -107,7 +107,7 @@ void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
 
 void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
     SequenceAndTransaction sequence_and_transaction) {
-  priority_queue_.BeginTransaction()->Push(
+  priority_queue_.BeginTransaction().Push(
       std::move(sequence_and_transaction.sequence),
       sequence_and_transaction.transaction.GetSortKey());
   if (started_) {

@@ -103,9 +103,8 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
-    std::unique_ptr<PriorityQueue::Transaction> transaction(
-        priority_queue_.BeginTransaction());
-    return transaction->IsEmpty() ? nullptr : transaction->PopSequence();
+    auto transaction = priority_queue_.BeginTransaction();
+    return transaction.IsEmpty() ? nullptr : transaction.PopSequence();
   }
 
   void DidRunTask() override {}
@@ -118,10 +117,9 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction) {
     const SequenceSortKey sequence_sort_key =
         sequence_and_transaction.transaction.GetSortKey();
-    std::unique_ptr<PriorityQueue::Transaction> transaction(
-        priority_queue_.BeginTransaction());
-    transaction->Push(std::move(sequence_and_transaction.sequence),
-                      sequence_sort_key);
+    auto transaction = priority_queue_.BeginTransaction();
+    transaction.Push(std::move(sequence_and_transaction.sequence),
+                     sequence_sort_key);
   }
 
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
