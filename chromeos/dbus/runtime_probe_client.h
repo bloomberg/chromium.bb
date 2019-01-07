@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_DBUS_RUNTIME_PROBE_CLIENT_H_
 #define CHROMEOS_DBUS_RUNTIME_PROBE_CLIENT_H_
 
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/runtime_probe/runtime_probe.pb.h"
@@ -16,7 +16,7 @@ namespace chromeos {
 
 // RuntimeProbeClient is used to communicate with Runtime Probe, which provides
 // data for hardware telemetry.
-class CHROMEOS_EXPORT RuntimeProbeClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) RuntimeProbeClient : public DBusClient {
  public:
   using RuntimeProbeCallback = DBusMethodCallback<runtime_probe::ProbeResult>;
 

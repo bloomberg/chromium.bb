@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeCecServiceClient : public CecServiceClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCecServiceClient
+    : public CecServiceClient {
  public:
   FakeCecServiceClient();
   ~FakeCecServiceClient() override;

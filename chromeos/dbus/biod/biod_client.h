@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/biod/constants.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -30,7 +30,7 @@ using AuthScanMatches =
 
 // BiodClient is used to communicate with a biod D-Bus manager
 // interface.
-class CHROMEOS_EXPORT BiodClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient : public DBusClient {
  public:
   // Interface for observing changes from the biometrics manager.
   class Observer {

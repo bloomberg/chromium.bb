@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace dbus {
 class Bus;
@@ -39,7 +39,7 @@ class UpdateEngineClient;
 class UpstartClient;
 
 // D-Bus clients used in multiple processes (e.g. ash, browser, mus).
-class CHROMEOS_EXPORT DBusClientsCommon {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
  public:
   // Creates real implementations if |use_real_clients| is true and fakes
   // otherwise. Fakes are used when running on Linux desktop and in tests.

@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 
 namespace chromeos {
@@ -21,7 +21,7 @@ namespace chromeos {
 // The client can generate fake DBus signals when
 // ShillThirdPartyVpnDriverClient::TestInterface methods are called. The
 // DBus methods are nops that only acknowledge the caller.
-class CHROMEOS_EXPORT FakeShillThirdPartyVpnDriverClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillThirdPartyVpnDriverClient
     : public ShillThirdPartyVpnDriverClient,
       public ShillThirdPartyVpnDriverClient::TestInterface {
  public:

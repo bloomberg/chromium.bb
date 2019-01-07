@@ -10,7 +10,8 @@
 namespace chromeos {
 
 // A fake implementation of ArcMidisClient.
-class CHROMEOS_EXPORT FakeArcMidisClient : public ArcMidisClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeArcMidisClient
+    : public ArcMidisClient {
  public:
   FakeArcMidisClient() = default;
   ~FakeArcMidisClient() override = default;

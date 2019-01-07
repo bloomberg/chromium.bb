@@ -6,10 +6,10 @@
 #define CHROMEOS_DBUS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 
@@ -17,7 +17,8 @@ namespace chromeos {
 
 // MediaAnalyticsClient is used to communicate with a media analytics process
 // running outside of Chrome.
-class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeMediaAnalyticsClient
+    : public MediaAnalyticsClient {
  public:
   FakeMediaAnalyticsClient();
   ~FakeMediaAnalyticsClient() override;

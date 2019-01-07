@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // ArcMidisClient is used to pass an FD to the midis daemon for the purpose
 // of setting up a Mojo channel. It is expected to be called once during browser
 // initialization.
-class CHROMEOS_EXPORT ArcMidisClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ArcMidisClient : public DBusClient {
  public:
   ~ArcMidisClient() override = default;
 

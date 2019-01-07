@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 
 namespace chromeos {
@@ -27,30 +27,33 @@ using GetTpmVersionCallback = base::OnceCallback<void(
 // If |full_version| is true version string with extra info is extracted,
 // otherwise it's in short format x.x.xx.x.
 // May block.
-CHROMEOS_EXPORT std::string GetVersion(VersionFormat format);
+COMPONENT_EXPORT(CHROMEOS_DBUS) std::string GetVersion(VersionFormat format);
 
 // Gets the TPM version information. Asynchronous, result is passed on to
 // callback.
-CHROMEOS_EXPORT void GetTpmVersion(GetTpmVersionCallback callback);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+void GetTpmVersion(GetTpmVersionCallback callback);
 
 // Gets the ARC version.
 // May block.
-CHROMEOS_EXPORT std::string GetARCVersion();
+COMPONENT_EXPORT(CHROMEOS_DBUS) std::string GetARCVersion();
 
 // Gets the firmware info.
 // May block.
-CHROMEOS_EXPORT std::string GetFirmware();
+COMPONENT_EXPORT(CHROMEOS_DBUS) std::string GetFirmware();
 
 // Extracts the firmware from the file.
-CHROMEOS_EXPORT std::string ParseFirmware(const std::string& contents);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+std::string ParseFirmware(const std::string& contents);
 
 // Returns true if |new_version| is older than |current_version|.
 // Version numbers should be dot separated. The sections are compared as
 // numbers if possible, as strings otherwise. Earlier sections have
 // precedence. If one version is prefix of another, the shorter one is
 // considered older. (See test for examples.)
-CHROMEOS_EXPORT bool IsRollback(const std::string& current_version,
-                                const std::string& new_version);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool IsRollback(const std::string& current_version,
+                const std::string& new_version);
 
 }  // namespace version_loader
 }  // namespace chromeos

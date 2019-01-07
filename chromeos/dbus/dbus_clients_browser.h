@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace dbus {
 class Bus;
@@ -39,7 +39,7 @@ class VirtualFileProviderClient;
 
 // D-Bus clients used only in the browser process.
 // TODO(jamescook): Move this under //chrome/browser. http://crbug.com/647367
-class CHROMEOS_EXPORT DBusClientsBrowser {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
  public:
   // Creates real implementations if |use_real_clients| is true and fakes
   // otherwise. Fakes are used when running on Linux desktop and in tests.

@@ -22,7 +22,8 @@ namespace chromeos {
 
 // The DebugDaemonClient implementation used on Linux desktop,
 // which does nothing.
-class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
+    : public DebugDaemonClient {
  public:
   FakeDebugDaemonClient();
   ~FakeDebugDaemonClient() override;

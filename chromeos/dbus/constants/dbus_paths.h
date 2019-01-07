@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_DBUS_CONSTANTS_DBUS_PATHS_H_
 #define CHROMEOS_DBUS_CONSTANTS_DBUS_PATHS_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class FilePath;
@@ -29,12 +29,13 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-CHROMEOS_EXPORT void RegisterPathProvider();
+COMPONENT_EXPORT(CHROMEOS_DBUS) void RegisterPathProvider();
 
 // Overrides some of the paths listed above so that those files can be used
 // when not running on ChromeOS. The stubs files will be relative to
 // |stubs_dir|. It is not valid to call this when running on ChromeOS.
-CHROMEOS_EXPORT void RegisterStubPathOverrides(const base::FilePath& stubs_dir);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+void RegisterStubPathOverrides(const base::FilePath& stubs_dir);
 
 }  // namespace dbus_paths
 }  // namespace chromeos

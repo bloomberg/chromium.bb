@@ -7,16 +7,16 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "dbus/object_proxy.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT DiagnosticsdClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DiagnosticsdClient : public DBusClient {
  public:
   // Factory function.
   static std::unique_ptr<DiagnosticsdClient> Create();

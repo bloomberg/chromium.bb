@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -22,7 +22,7 @@
 namespace chromeos {
 
 // CrasAudioClient is used to communicate with the cras audio dbus interface.
-class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient : public DBusClient {
  public:
   // Interface for observing changes from the cras audio changes.
   class Observer {

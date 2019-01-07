@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -17,7 +17,7 @@ namespace chromeos {
 
 // PowerPolicyController is responsible for sending Chrome's assorted power
 // management preferences to the Chrome OS power manager.
-class CHROMEOS_EXPORT PowerPolicyController
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
     : public PowerManagerClient::Observer {
  public:
   // Sets the global instance. Must be called before any calls to Get().

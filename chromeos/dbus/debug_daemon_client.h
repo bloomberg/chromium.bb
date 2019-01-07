@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task_runner.h"
 #include "base/trace_event/tracing_agent.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -26,7 +26,7 @@
 namespace chromeos {
 
 // DebugDaemonClient is used to communicate with the debug daemon.
-class CHROMEOS_EXPORT DebugDaemonClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
     : public DBusClient,
       public base::trace_event::TracingAgent {
  public:

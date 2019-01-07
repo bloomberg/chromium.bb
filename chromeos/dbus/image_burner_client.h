@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace chromeos {
@@ -19,7 +19,7 @@ namespace chromeos {
 // ImageBurnerClient is used to communicate with the image burner.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT ImageBurnerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ImageBurnerClient : public DBusClient {
  public:
   ~ImageBurnerClient() override;
 

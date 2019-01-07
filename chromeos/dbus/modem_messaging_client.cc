@@ -133,7 +133,8 @@ class ModemMessagingProxy {
   DISALLOW_COPY_AND_ASSIGN(ModemMessagingProxy);
 };
 
-class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClientImpl
+    : public ModemMessagingClient {
  public:
   ModemMessagingClientImpl() : bus_(NULL) {}
 

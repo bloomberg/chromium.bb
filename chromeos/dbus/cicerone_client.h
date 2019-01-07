@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -17,7 +17,7 @@ namespace chromeos {
 
 // CiceroneClient is used to communicate with Cicerone, which is used to
 // communicate with containers running inside VMs.
-class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
  public:
   class Observer {
    public:

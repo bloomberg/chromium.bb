@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -35,7 +35,7 @@ class SetBacklightBrightnessRequest;
 namespace chromeos {
 
 // PowerManagerClient is used to communicate with the power manager.
-class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient : public DBusClient {
  public:
   using TimerId = int32_t;
 

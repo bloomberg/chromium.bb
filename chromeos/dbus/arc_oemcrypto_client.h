@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -23,7 +23,7 @@ namespace chromeos {
 // the D-Bus service is to bootstrap a Mojo IPC connection.
 // All methods should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT ArcOemCryptoClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ArcOemCryptoClient : public DBusClient {
  public:
   ArcOemCryptoClient();
   ~ArcOemCryptoClient() override;

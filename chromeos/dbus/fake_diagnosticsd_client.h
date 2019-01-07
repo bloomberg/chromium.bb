@@ -7,15 +7,16 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/diagnosticsd_client.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeDiagnosticsdClient final : public DiagnosticsdClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDiagnosticsdClient final
+    : public DiagnosticsdClient {
  public:
   FakeDiagnosticsdClient();
   ~FakeDiagnosticsdClient() override;

@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_DBUS_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_CONCIERGE_CLIENT_H_
 
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -16,7 +16,7 @@ namespace chromeos {
 
 // ConciergeClient is used to communicate with Concierge, which is used to
 // start and stop VMs.
-class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
   class Observer {
    public:

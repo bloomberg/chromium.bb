@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
 
@@ -28,7 +28,7 @@ namespace chromeos {
 // fingerprint, until a completed enroll scan is sent. An attempt scan is also
 // sent with a string. If that string matches any string in the stored
 // fingerprint vector, it is considered a match.
-class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeBiodClient : public BiodClient {
  public:
   FakeBiodClient();
   ~FakeBiodClient() override;

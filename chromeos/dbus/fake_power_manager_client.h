@@ -13,13 +13,13 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -31,7 +31,8 @@ namespace chromeos {
 // A fake implementation of PowerManagerClient. This remembers the policy passed
 // to SetPolicy() and the user of this class can inspect the last set policy by
 // get_policy().
-class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
+    : public PowerManagerClient {
  public:
   FakePowerManagerClient();
   ~FakePowerManagerClient() override;

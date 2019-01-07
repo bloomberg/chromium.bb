@@ -5,18 +5,18 @@
 #ifndef CHROMEOS_DBUS_UTIL_ACCOUNT_IDENTIFIER_OPERATORS_H_
 #define CHROMEOS_DBUS_UTIL_ACCOUNT_IDENTIFIER_OPERATORS_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 
 namespace cryptohome {
 
 // operator< to use AccountIdentifier in STL containers.
-CHROMEOS_EXPORT bool operator<(const AccountIdentifier& l,
-                               const AccountIdentifier& r);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool operator<(const AccountIdentifier& l, const AccountIdentifier& r);
 
 // operator== to use AccountIdentifier in tests.
-CHROMEOS_EXPORT bool operator==(const AccountIdentifier& l,
-                                const AccountIdentifier& r);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool operator==(const AccountIdentifier& l, const AccountIdentifier& r);
 
 }  // namespace cryptohome
 

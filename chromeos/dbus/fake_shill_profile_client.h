@@ -9,16 +9,16 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 
 namespace chromeos {
 
 // A stub implementation of ShillProfileClient.
-class CHROMEOS_EXPORT FakeShillProfileClient :
-      public ShillProfileClient,
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillProfileClient
+    : public ShillProfileClient,
       public ShillProfileClient::TestInterface {
  public:
   FakeShillProfileClient();

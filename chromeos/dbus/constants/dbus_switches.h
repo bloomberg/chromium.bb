@@ -5,17 +5,17 @@
 #ifndef CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_
 #define CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 namespace switches {
 
-CHROMEOS_EXPORT extern const char kAttestationServer[];
-CHROMEOS_EXPORT extern const char kDbusStub[];
-CHROMEOS_EXPORT extern const char kFakeOobeConfiguration[];
-CHROMEOS_EXPORT extern const char kShillStub[];
-CHROMEOS_EXPORT extern const char kSmsTestMessages[];
-CHROMEOS_EXPORT extern const char kSystemDevMode[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kAttestationServer[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kDbusStub[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kFakeOobeConfiguration[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kShillStub[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kSmsTestMessages[];
+COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kSystemDevMode[];
 
 }  // namespace switches
 }  // namespace chromeos

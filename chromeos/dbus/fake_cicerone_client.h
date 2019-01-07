@@ -12,7 +12,8 @@ namespace chromeos {
 
 // FakeCiceroneClient is a fake implementation of CiceroneClient used for
 // testing.
-class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
+    : public CiceroneClient {
  public:
   FakeCiceroneClient();
   ~FakeCiceroneClient() override;

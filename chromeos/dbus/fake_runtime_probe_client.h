@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_RUNTIME_PROBE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_RUNTIME_PROBE_CLIENT_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/runtime_probe_client.h"
@@ -13,7 +14,8 @@ namespace chromeos {
 
 // FakeRuntimeProbeClient is a light mock of RuntimeProbeClient used for
 // used for tests and when running ChromeOS build on Linux.
-class CHROMEOS_EXPORT FakeRuntimeProbeClient : public RuntimeProbeClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeRuntimeProbeClient
+    : public RuntimeProbeClient {
  public:
   FakeRuntimeProbeClient();
   ~FakeRuntimeProbeClient() override;

@@ -19,7 +19,8 @@ namespace chromeos {
 
 // A fake implementation of CrosDiskeClient. This class provides a fake behavior
 // and the user of this class can raise a fake mouse events.
-class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
+    : public CrosDisksClient {
  public:
   using CustomMountPointCallback =
       base::RepeatingCallback<base::FilePath(const std::string&,
