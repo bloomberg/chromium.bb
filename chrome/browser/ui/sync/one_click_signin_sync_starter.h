@@ -20,6 +20,10 @@
 
 class Browser;
 
+namespace identity {
+class PrimaryAccountMutator;
+}
+
 namespace syncer {
 class SyncService;
 class SyncSetupInProgressHandle;
@@ -210,6 +214,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   Browser* browser_;
   signin_metrics::AccessPoint signin_access_point_;
   signin_metrics::Reason signin_reason_;
+  identity::PrimaryAccountMutator* primary_account_mutator_;
   std::unique_ptr<SigninTracker> signin_tracker_;
   ConfirmationRequired confirmation_required_;
 
