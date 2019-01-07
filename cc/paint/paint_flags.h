@@ -99,18 +99,6 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setDither(bool dither) {
     SetInternalFlag(dither, SkPaint::kDither_Flag);
   }
-  enum TextEncoding {
-    kUTF8_TextEncoding = static_cast<unsigned>(kUTF8_SkTextEncoding),
-    kUTF16_TextEncoding = static_cast<unsigned>(kUTF16_SkTextEncoding),
-    kUTF32_TextEncoding = static_cast<unsigned>(kUTF32_SkTextEncoding),
-    kGlyphID_TextEncoding = static_cast<unsigned>(kGlyphID_SkTextEncoding)
-  };
-  ALWAYS_INLINE TextEncoding getTextEncoding() const {
-    return static_cast<TextEncoding>(bitfields_.text_encoding_);
-  }
-  ALWAYS_INLINE void setTextEncoding(TextEncoding encoding) {
-    bitfields_.text_encoding_ = encoding;
-  }
   ALWAYS_INLINE SkScalar getTextSize() const { return text_size_; }
   ALWAYS_INLINE void setTextSize(SkScalar text_size) { text_size_ = text_size; }
   ALWAYS_INLINE void setFilterQuality(SkFilterQuality quality) {
@@ -251,7 +239,6 @@ class CC_PAINT_EXPORT PaintFlags {
     uint32_t cap_type_ : 2;
     uint32_t join_type_ : 2;
     uint32_t style_ : 2;
-    uint32_t text_encoding_ : 2;
     uint32_t hinting_ : 2;
     uint32_t filter_quality_ : 2;
   };

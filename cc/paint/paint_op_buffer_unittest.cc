@@ -1050,7 +1050,6 @@ std::vector<PaintFlags> test_flags = {
       flags.setStrokeCap(PaintFlags::kSquare_Cap);
       flags.setStrokeJoin(PaintFlags::kBevel_Join);
       flags.setStyle(PaintFlags::kStrokeAndFill_Style);
-      flags.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
       flags.setHinting(PaintFlags::kNormal_Hinting);
       flags.setFilterQuality(SkFilterQuality::kMedium_SkFilterQuality);
       flags.setShader(PaintShader::MakeColor(SkColorSetARGB(1, 2, 3, 4)));
@@ -1067,7 +1066,6 @@ std::vector<PaintFlags> test_flags = {
       flags.setStrokeCap(PaintFlags::kRound_Cap);
       flags.setStrokeJoin(PaintFlags::kRound_Join);
       flags.setStyle(PaintFlags::kFill_Style);
-      flags.setTextEncoding(PaintFlags::kUTF32_TextEncoding);
       flags.setHinting(PaintFlags::kSlight_Hinting);
       flags.setFilterQuality(SkFilterQuality::kHigh_SkFilterQuality);
 

@@ -16,7 +16,6 @@ Canvas log:
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
                 textScaleX : 1
                 textSize : 12
                 textSkewX : 0
@@ -43,7 +42,6 @@ Canvas log:
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
                 textScaleX : 1
                 textSize : 12
                 textSkewX : 0
@@ -81,7 +79,6 @@ Canvas log:
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
                 textScaleX : 1
                 textSize : 12
                 textSkewX : 0
@@ -135,7 +132,6 @@ Canvas log:
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
                 textScaleX : 1
                 textSize : 12
                 textSkewX : 0

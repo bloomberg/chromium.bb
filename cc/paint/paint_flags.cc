@@ -24,7 +24,6 @@ PaintFlags::PaintFlags() {
   bitfields_.cap_type_ = SkPaint::kDefault_Cap;
   bitfields_.join_type_ = SkPaint::kDefault_Join;
   bitfields_.style_ = SkPaint::kFill_Style;
-  bitfields_.text_encoding_ = static_cast<unsigned>(kUTF8_SkTextEncoding);
   bitfields_.hinting_ = static_cast<unsigned>(SkFontHinting::kNormal);
   bitfields_.filter_quality_ = SkFilterQuality::kNone_SkFilterQuality;
 
@@ -145,7 +144,6 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));
-  paint.setTextEncoding(static_cast<SkTextEncoding>(getTextEncoding()));
   paint.setHinting(static_cast<SkFontHinting>(getHinting()));
   paint.setFilterQuality(getFilterQuality());
   return paint;
@@ -191,8 +189,6 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
   if (getStrokeJoin() != other.getStrokeJoin())
     return false;
   if (getStyle() != other.getStyle())
-    return false;
-  if (getTextEncoding() != other.getTextEncoding())
     return false;
   if (getHinting() != other.getHinting())
     return false;
