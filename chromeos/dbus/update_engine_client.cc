@@ -19,7 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

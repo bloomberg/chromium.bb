@@ -56,7 +56,7 @@
 #if defined(USE_CRAS)
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "media/audio/cras/audio_manager_cras.h"

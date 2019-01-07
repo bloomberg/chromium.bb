@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_DBUS_SWITCHES_H_
-#define CHROMEOS_DBUS_DBUS_SWITCHES_H_
+#ifndef CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_
+#define CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_
 
 #include "chromeos/chromeos_export.h"
 
@@ -20,4 +20,4 @@ CHROMEOS_EXPORT extern const char kSystemDevMode[];
 }  // namespace switches
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_DBUS_SWITCHES_H_
+#endif  // CHROMEOS_DBUS_CONSTANTS_DBUS_SWITCHES_H_
