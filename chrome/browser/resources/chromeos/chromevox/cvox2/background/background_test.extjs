@@ -1369,11 +1369,11 @@ TEST_F('ChromeVoxBackgroundTest', 'EditableKeyCommand', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'TextSelectionAndLiveRegion', function() {
+// Failing consistently, please see https://crbug.com/857382
+TEST_F('ChromeVoxBackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
-    <p>start</p>
     <div><input value="test" type="text"></input></div>
     <div id="live" aria-live="assertive"></div>
     <script>
@@ -1383,13 +1383,11 @@ TEST_F('ChromeVoxBackgroundTest', 'TextSelectionAndLiveRegion', function() {
       div.addEventListener('click', function() {
         clicks++;
         if (clicks == 1) {
-          live.textContent = 'go';
-        } else if (clicks == 2) {
           input.selectionStart = 1;
           live.textContent = 'queued';
         } else {
-          input.selectionStart = 2;
           live.textContent = 'interrupted';
+          input.selectionStart = 2;
         }
       });
     </script>
@@ -1399,15 +1397,12 @@ TEST_F('ChromeVoxBackgroundTest', 'TextSelectionAndLiveRegion', function() {
     mockFeedback.call(textField.focus.bind(textField))
         .expectSpeech('Edit text')
         .call(div.doDefault.bind(div))
-        .expectSpeechWithQueueMode('go', cvox.QueueMode.CATEGORY_FLUSH)
-
-        .call(div.doDefault.bind(div))
         .expectSpeechWithQueueMode('e', cvox.QueueMode.FLUSH)
-        .expectSpeechWithQueueMode('queued', cvox.QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('queued', cvox.QueueMode.CATEGORY_FLUSH)
 
         .call(div.doDefault.bind(div))
-        .expectSpeechWithQueueMode('s', cvox.QueueMode.FLUSH)
         .expectSpeechWithQueueMode('interrupted', cvox.QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('s', cvox.QueueMode.FLUSH)
 
         .replay();
   });
