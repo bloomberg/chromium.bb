@@ -481,6 +481,7 @@ mojom("mojo_bindings") {
     "associated_interfaces.mojom",
     "child.mojom",
     "child_control.mojom",
+    "document_scoped_interface_bundle.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_messages.mojom",

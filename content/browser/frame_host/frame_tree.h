@@ -154,6 +154,10 @@ class CONTENT_EXPORT FrameTree {
                           int new_routing_id,
                           service_manager::mojom::InterfaceProviderRequest
                               interface_provider_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_content_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_blink_request,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,

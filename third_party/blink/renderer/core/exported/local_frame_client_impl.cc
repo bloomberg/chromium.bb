@@ -160,11 +160,21 @@ void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
 
 }  // namespace
 
-LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
-    : web_frame_(frame) {}
+LocalFrameClientImpl::LocalFrameClientImpl(
+    WebLocalFrameImpl* frame,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
+    : web_frame_(frame) {
+  DCHECK(document_interface_broker_handle.is_valid());
+  document_interface_broker_.Bind(mojom::blink::DocumentInterfaceBrokerPtrInfo(
+      std::move(document_interface_broker_handle),
+      mojom::blink::DocumentInterfaceBroker::Version_));
+}
 
-LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameImpl* frame) {
-  return MakeGarbageCollected<LocalFrameClientImpl>(frame);
+LocalFrameClientImpl* LocalFrameClientImpl::Create(
+    WebLocalFrameImpl* frame,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle) {
+  return MakeGarbageCollected<LocalFrameClientImpl>(
+      frame, std::move(document_interface_broker_handle));
 }
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
@@ -446,8 +456,17 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
 
   if (web_frame_->Client()) {
+    mojom::blink::DocumentInterfaceBrokerRequest
+        document_interface_broker_request;
+    if (global_object_reuse_policy !=
+        WebGlobalObjectReusePolicy::kUseExisting) {
+      document_interface_broker_request =
+          mojo::MakeRequest(&document_interface_broker_);
+    }
+
     web_frame_->Client()->DidCommitProvisionalLoad(
-        WebHistoryItem(item), commit_type, global_object_reuse_policy);
+        WebHistoryItem(item), commit_type, global_object_reuse_policy,
+        document_interface_broker_request.PassMessagePipe());
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
       // so that the browser and compositor could reset their states. However,
@@ -1049,6 +1068,12 @@ LocalFrameClientImpl::CreateURLLoaderFactory() {
 service_manager::InterfaceProvider*
 LocalFrameClientImpl::GetInterfaceProvider() {
   return web_frame_->Client()->GetInterfaceProvider();
+}
+
+mojom::blink::DocumentInterfaceBroker*
+LocalFrameClientImpl::GetDocumentInterfaceBroker() {
+  DCHECK(document_interface_broker_.is_bound());
+  return document_interface_broker_.get();
 }
 
 AssociatedInterfaceProvider*

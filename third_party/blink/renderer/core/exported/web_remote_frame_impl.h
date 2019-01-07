@@ -51,6 +51,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                   WebSandboxFlags,
                                   WebLocalFrameClient*,
                                   blink::InterfaceRegistry*,
+                                  mojo::ScopedMessagePipeHandle,
                                   WebFrame* previous_sibling,
                                   const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&,

@@ -55,6 +55,7 @@ class WebRemoteFrame : public WebFrame {
                                           WebSandboxFlags,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
+                                          mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
                                           const ParsedFeaturePolicy&,
                                           const WebFrameOwnerProperties&,

@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -51,9 +52,10 @@ struct WebScrollIntoViewParams;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
-  static LocalFrameClientImpl* Create(WebLocalFrameImpl*);
+  static LocalFrameClientImpl* Create(WebLocalFrameImpl*,
+                                      mojo::ScopedMessagePipeHandle);
 
-  explicit LocalFrameClientImpl(WebLocalFrameImpl*);
+  LocalFrameClientImpl(WebLocalFrameImpl*, mojo::ScopedMessagePipeHandle);
   ~LocalFrameClientImpl() override;
 
   void Trace(blink::Visitor*) override;
@@ -254,6 +256,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   service_manager::InterfaceProvider* GetInterfaceProvider() override;
+
+  mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() override;
+
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
 
@@ -303,6 +308,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
+
+  mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,

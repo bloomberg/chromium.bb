@@ -398,7 +398,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // body is known.
   virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
                                         WebHistoryCommitType,
-                                        WebGlobalObjectReusePolicy) {}
+                                        WebGlobalObjectReusePolicy,
+                                        mojo::ScopedMessagePipeHandle) {}
 
   // The frame's document has just been initialized.
   virtual void DidCreateNewDocument() {}

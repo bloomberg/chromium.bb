@@ -57,14 +57,21 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   auto interface_provider_request(mojo::MakeRequest(&interface_provider));
 
+  blink::mojom::DocumentInterfaceBrokerPtrInfo
+      document_interface_broker_content;
+  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
+
   // Create a FrameTreeNode in the outer WebContents to host the portal, in
   // response to the creation of a portal in the renderer process.
   FrameTreeNode* outer_node = outer_contents_impl->GetFrameTree()->AddFrame(
       owner_render_frame_host_->frame_tree_node(),
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetProcess()->GetNextRoutingID(),
-      std::move(interface_provider_request), blink::WebTreeScopeType::kDocument,
-      "", "", true, base::UnguessableToken::Create(), blink::FramePolicy(),
+      std::move(interface_provider_request),
+      mojo::MakeRequest(&document_interface_broker_content),
+      mojo::MakeRequest(&document_interface_broker_blink),
+      blink::WebTreeScopeType::kDocument, "", "", true,
+      base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);
 
   // Create the Portal WebContents.

@@ -18,8 +18,10 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
+struct FrameHostMsg_CreateChildFrame_Params_Reply;
 
 namespace IPC {
 class MessageFilter;
@@ -111,9 +113,16 @@ class MockRenderThread : public RenderThread {
   // Returns the request end of the InterfaceProvider interface whose client end
   // was passed in to construct RenderFrame with |routing_id|; if any. The
   // client end will be used by the RenderFrame to service interface requests
-  // originating from the original the initial empty document.
+  // originating from the initial empty document.
   service_manager::mojom::InterfaceProviderRequest
   TakeInitialInterfaceProviderRequestForFrame(int32_t routing_id);
+
+  // Returns the request end of the DocumentInterfaceBroker interface whose
+  // client end was passed in to construct RenderFrame with |routing_id|; if
+  // any. The client end will be used by the RenderFrame to service interface
+  // requests originating from the initial empty document.
+  blink::mojom::DocumentInterfaceBrokerRequest
+  TakeInitialDocumentInterfaceBrokerRequestForFrame(int32_t routing_id);
 
   // Called from the RenderViewTest harness to supply the request end of the
   // InterfaceProvider interface connection that the harness used to service the
@@ -129,10 +138,11 @@ class MockRenderThread : public RenderThread {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // The Frame expects to be returned a valid route_id different from its own.
-  void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
-                          int* new_render_frame_id,
-                          mojo::MessagePipeHandle* new_interface_provider,
-                          base::UnguessableToken* devtools_frame_token);
+  void OnCreateChildFrame(
+      const FrameHostMsg_CreateChildFrame_Params& params,
+      int* new_render_frame_id,
+      FrameHostMsg_CreateChildFrame_Params_Reply* params_reply,
+      base::UnguessableToken* devtools_frame_token);
 
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
@@ -146,6 +156,9 @@ class MockRenderThread : public RenderThread {
 
   std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
       frame_routing_id_to_initial_interface_provider_requests_;
+
+  std::map<int32_t, blink::mojom::DocumentInterfaceBrokerRequest>
+      frame_routing_id_to_initial_document_broker_requests_;
 
   // The last known good deserializer for sync messages.
   std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

@@ -88,14 +88,29 @@ class InterceptAndCancelDidCommitProvisionalLoad
     return intercepted_requests_;
   }
 
+  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>&
+  intercepted_broker_content_requests() {
+    return intercepted_broker_content_requests_;
+  }
+
+  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>&
+  intercepted_broker_blink_requests() {
+    return intercepted_broker_blink_requests_;
+  }
+
  protected:
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     intercepted_messages_.push_back(*params);
-    intercepted_requests_.push_back(std::move(*interface_provider_request));
+    intercepted_requests_.push_back(
+        std::move(interface_params->interface_provider_request));
+    intercepted_broker_content_requests_.push_back(
+        std::move(interface_params->document_interface_broker_content_request));
+    intercepted_broker_blink_requests_.push_back(
+        std::move(interface_params->document_interface_broker_blink_request));
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -106,6 +121,10 @@ class InterceptAndCancelDidCommitProvisionalLoad
       intercepted_messages_;
   std::vector<::service_manager::mojom::InterfaceProviderRequest>
       intercepted_requests_;
+  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>
+      intercepted_broker_content_requests_;
+  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>
+      intercepted_broker_blink_requests_;
   std::unique_ptr<base::RunLoop> loop_;
 };
 
@@ -1193,7 +1212,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   render_frame_host->DidCommitProvisionalLoadForTesting(
       std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
           interceptor.intercepted_messages()[0]),
-      std::move(interceptor.intercepted_requests()[0]));
+      mojom::DidCommitProvisionalLoadInterfaceParams::New(
+          std::move(interceptor.intercepted_requests()[0]),
+          std::move(interceptor.intercepted_broker_content_requests()[0]),
+          std::move(interceptor.intercepted_broker_blink_requests()[0])));
   recorder.WaitForEvents(5);
   EXPECT_EQ(5u, recorder.records().size());
   EXPECT_STREQ("did-commit /infinite_load_1.html",
@@ -1206,7 +1228,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   render_frame_host->DidCommitProvisionalLoadForTesting(
       std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
           interceptor.intercepted_messages()[1]),
-      std::move(interceptor.intercepted_requests()[1]));
+      mojom::DidCommitProvisionalLoadInterfaceParams::New(
+          std::move(interceptor.intercepted_requests()[1]),
+          std::move(interceptor.intercepted_broker_content_requests()[1]),
+          std::move(interceptor.intercepted_broker_blink_requests()[1])));
   recorder.WaitForEvents(6);
   EXPECT_EQ(6u, recorder.records().size());
   EXPECT_STREQ("did-commit /infinite_load_2.html",

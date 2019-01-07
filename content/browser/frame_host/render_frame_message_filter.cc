@@ -82,7 +82,9 @@ void CreateChildFrameOnUI(
     const FrameOwnerProperties& frame_owner_properties,
     blink::FrameOwnerElementType owner_type,
     int new_routing_id,
-    mojo::ScopedMessagePipeHandle interface_provider_request_handle) {
+    mojo::ScopedMessagePipeHandle interface_provider_request_handle,
+    mojo::ScopedMessagePipeHandle document_interface_broker_content_handle,
+    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -93,6 +95,10 @@ void CreateChildFrameOnUI(
         new_routing_id,
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
+        blink::mojom::DocumentInterfaceBrokerRequest(
+            std::move(document_interface_broker_content_handle)),
+        blink::mojom::DocumentInterfaceBrokerRequest(
+            std::move(document_interface_broker_blink_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
         devtools_frame_token, frame_policy, frame_owner_properties, owner_type);
   }
@@ -436,26 +442,41 @@ void RenderFrameMessageFilter::DownloadUrl(
 void RenderFrameMessageFilter::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
     int* new_routing_id,
-    mojo::MessagePipeHandle* new_interface_provider,
+    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply,
     base::UnguessableToken* devtools_frame_token) {
   *new_routing_id = render_widget_helper_->GetNextRoutingID();
 
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   auto interface_provider_request(mojo::MakeRequest(&interface_provider));
-  *new_interface_provider =
+  params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
+
+  blink::mojom::DocumentInterfaceBrokerPtrInfo
+      document_interface_broker_content;
+  auto document_interface_broker_request_content(
+      mojo::MakeRequest(&document_interface_broker_content));
+  params_reply->document_interface_broker_content_handle =
+      document_interface_broker_content.PassHandle().release();
+
+  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
+  auto document_interface_broker_request_blink(
+      mojo::MakeRequest(&document_interface_broker_blink));
+  params_reply->document_interface_broker_blink_handle =
+      document_interface_broker_blink.PassHandle().release();
 
   *devtools_frame_token = base::UnguessableToken::Create();
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
-                     params.parent_routing_id, params.scope, params.frame_name,
-                     params.frame_unique_name, params.is_created_by_script,
-                     *devtools_frame_token, params.frame_policy,
-                     params.frame_owner_properties,
-                     params.frame_owner_element_type, *new_routing_id,
-                     interface_provider_request.PassMessagePipe()));
+      base::BindOnce(
+          &CreateChildFrameOnUI, render_process_id_, params.parent_routing_id,
+          params.scope, params.frame_name, params.frame_unique_name,
+          params.is_created_by_script, *devtools_frame_token,
+          params.frame_policy, params.frame_owner_properties,
+          params.frame_owner_element_type, *new_routing_id,
+          interface_provider_request.PassMessagePipe(),
+          document_interface_broker_request_content.PassMessagePipe(),
+          document_interface_broker_request_blink.PassMessagePipe()));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,

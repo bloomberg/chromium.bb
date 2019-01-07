@@ -529,12 +529,19 @@ void RenderViewImpl::Initialize(
             params->proxy_routing_id != MSG_ROUTING_NONE);
 
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params->main_frame_interface_provider.is_valid());
+    CHECK(params->main_frame_interface_bundle);
     service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
-        std::move(params->main_frame_interface_provider));
+        std::move(params->main_frame_interface_bundle->interface_provider));
+
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params->main_frame_routing_id,
         std::move(main_frame_interface_provider),
+        blink::mojom::DocumentInterfaceBrokerPtr(
+            std::move(params->main_frame_interface_bundle
+                          ->document_interface_broker_content)),
+        blink::mojom::DocumentInterfaceBrokerPtr(
+            std::move(params->main_frame_interface_bundle
+                          ->document_interface_broker_blink)),
         params->main_frame_widget_routing_id, params->hidden,
         GetWidget()->GetWebScreenInfo(), GetWidget()->compositor_deps(),
         opener_frame, params->devtools_main_frame_token,
@@ -1395,8 +1402,13 @@ WebView* RenderViewImpl::CreateView(
   view_params->web_preferences = webkit_preferences_;
   view_params->view_id = reply->route_id;
   view_params->main_frame_routing_id = reply->main_frame_route_id;
-  view_params->main_frame_interface_provider =
-      std::move(reply->main_frame_interface_provider);
+  view_params->main_frame_interface_bundle =
+      mojom::DocumentScopedInterfaceBundle::New(
+          std::move(reply->main_frame_interface_bundle->interface_provider),
+          std::move(reply->main_frame_interface_bundle
+                        ->document_interface_broker_content),
+          std::move(reply->main_frame_interface_bundle
+                        ->document_interface_broker_blink));
   view_params->main_frame_widget_routing_id = reply->main_frame_widget_route_id;
   view_params->session_storage_namespace_id =
       reply->cloned_session_storage_namespace_id;

@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -401,6 +402,10 @@ class NavigationSimulator : public WebContentsObserver {
   int session_history_offset_ = 0;
   bool has_user_gesture_ = true;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request_;
+  blink::mojom::DocumentInterfaceBrokerRequest
+      document_interface_broker_content_request_;
+  blink::mojom::DocumentInterfaceBrokerRequest
+      document_interface_broker_blink_request_;
   std::string contents_mime_type_;
 
   bool auto_advance_ = true;

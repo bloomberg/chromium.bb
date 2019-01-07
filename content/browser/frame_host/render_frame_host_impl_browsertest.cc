@@ -1378,11 +1378,15 @@ class ScopedFakeInterfaceProviderRequestInjector
   bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr& interface_params)
+      override {
     url_of_last_commit_ = params->url;
-    original_request_of_last_commit_ = std::move(*interface_provider_request);
-    *interface_provider_request = std::move(next_fake_request_);
+    if (interface_params) {
+      original_request_of_last_commit_ =
+          std::move(interface_params->interface_provider_request);
+      interface_params->interface_provider_request =
+          std::move(next_fake_request_);
+    }
     return true;
   }
 

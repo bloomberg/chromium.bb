@@ -253,7 +253,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   // WebLocalFrame methods:
   WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
                                       WebLocalFrameClient*,
-                                      blink::InterfaceRegistry*) override;
+                                      blink::InterfaceRegistry*,
+                                      mojo::ScopedMessagePipeHandle) override;
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
   bool IsLocalRoot() const override;
@@ -334,25 +335,30 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* Create(WebTreeScopeType,
                                    WebLocalFrameClient*,
                                    InterfaceRegistry*,
+                                   mojo::ScopedMessagePipeHandle,
                                    WebFrame* opener);
   static WebLocalFrameImpl* CreateMainFrame(WebView*,
                                             WebLocalFrameClient*,
                                             InterfaceRegistry*,
+                                            mojo::ScopedMessagePipeHandle,
                                             WebFrame* opener,
                                             const WebString& name,
                                             WebSandboxFlags);
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
+                                              mojo::ScopedMessagePipeHandle,
                                               WebRemoteFrame*,
                                               WebSandboxFlags,
                                               ParsedFeaturePolicy);
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
+                    blink::InterfaceRegistry*,
+                    mojo::ScopedMessagePipeHandle);
   WebLocalFrameImpl(WebRemoteFrame*,
                     WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
+                    blink::InterfaceRegistry*,
+                    mojo::ScopedMessagePipeHandle);
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const AtomicString& name,

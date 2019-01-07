@@ -39,6 +39,11 @@ class MockFrameHost : public mojom::FrameHost {
     return std::move(last_interface_provider_request_);
   }
 
+  blink::mojom::DocumentInterfaceBrokerRequest
+  TakeLastDocumentInterfaceBrokerRequest() {
+    return std::move(last_document_interface_broker_request_);
+  }
+
   // Holds on to the request end of the InterfaceProvider interface whose client
   // end is bound to the corresponding RenderFrame's |remote_interfaces_| to
   // facilitate retrieving the most recent |interface_provider_request| in
@@ -47,6 +52,17 @@ class MockFrameHost : public mojom::FrameHost {
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request) {
     last_interface_provider_request_ = std::move(interface_provider_request);
+  }
+
+  // Holds on to the request end of the DocumentInterfaceBroker interface whose
+  // client end is bound to the corresponding RenderFrame's
+  // |document_interface_broker_| to facilitate retrieving the most recent
+  // |document_interface_broker_request| in tests.
+  void PassLastDocumentInterfaceBrokerRequest(
+      blink::mojom::DocumentInterfaceBrokerRequest
+          document_interface_broker_request) {
+    last_document_interface_broker_request_ =
+        std::move(document_interface_broker_request);
   }
 
  protected:
@@ -76,9 +92,16 @@ class MockFrameHost : public mojom::FrameHost {
 
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-      service_manager::mojom::InterfaceProviderRequest request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
+      override {
     last_commit_params_ = std::move(params);
-    last_interface_provider_request_ = std::move(request);
+    if (interface_params) {
+      last_interface_provider_request_ =
+          std::move(interface_params->interface_provider_request);
+      last_document_interface_broker_request_ =
+          blink::mojom::DocumentInterfaceBrokerRequest(std::move(
+              interface_params->document_interface_broker_content_request));
+    }
   }
 
   void DidCommitSameDocumentNavigation(
@@ -128,6 +151,8 @@ class MockFrameHost : public mojom::FrameHost {
       last_commit_params_;
   service_manager::mojom::InterfaceProviderRequest
       last_interface_provider_request_;
+  blink::mojom::DocumentInterfaceBrokerRequest
+      last_document_interface_broker_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -145,6 +170,9 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
       static_cast<MockRenderThread*>(RenderThread::Get());
   mock_frame_host_->PassLastInterfaceProviderRequest(
       mock_render_thread->TakeInitialInterfaceProviderRequestForFrame(
+          params.routing_id));
+  mock_frame_host_->PassLastDocumentInterfaceBrokerRequest(
+      mock_render_thread->TakeInitialDocumentInterfaceBrokerRequestForFrame(
           params.routing_id));
 }
 
@@ -240,6 +268,11 @@ TestRenderFrame::TakeLastCommitParams() {
 service_manager::mojom::InterfaceProviderRequest
 TestRenderFrame::TakeLastInterfaceProviderRequest() {
   return mock_frame_host_->TakeLastInterfaceProviderRequest();
+}
+
+blink::mojom::DocumentInterfaceBrokerRequest
+TestRenderFrame::TakeLastDocumentInterfaceBrokerRequest() {
+  return mock_frame_host_->TakeLastDocumentInterfaceBrokerRequest();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {
