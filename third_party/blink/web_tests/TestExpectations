@@ -5910,7 +5910,7 @@ crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery
 #Sheriff 2018-11-14
 crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass Crash ]
 crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-partition-alloc.js [ Failure Pass ]
-crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Failure Pass Crash ]
+crbug.com/905827 fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Skip ]
 
 # Flaky crash due to "bad mojo message".
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
