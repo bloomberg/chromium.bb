@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -160,6 +161,9 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Whether CloseContents() has been called.
   bool close_contents_called_ = false;
+
+  // Handler for unhandled key events from renderer.
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
