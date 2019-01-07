@@ -39,8 +39,9 @@ void VRBrowserRendererThreadWin::SetVRDisplayInfo(
 
 void VRBrowserRendererThreadWin::SetLocationInfo(GURL gurl) {
   task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VRBrowserRendererThreadWin::SetLocationInfo,
-                                base::Unretained(this), std::move(gurl)));
+      FROM_HERE,
+      base::BindOnce(&VRBrowserRendererThreadWin::SetLocationInfoOnRenderThread,
+                     base::Unretained(this), std::move(gurl)));
 }
 
 void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
@@ -62,6 +63,7 @@ void VRBrowserRendererThreadWin::SetDisplayInfoOnRenderThread(
 void VRBrowserRendererThreadWin::SetLocationInfoOnRenderThread(GURL gurl) {
   // TODO(https://crbug.com/905375): Set more of this state.  Only the GURL is
   // currently used, so its the only thing we are setting correctly.
+  DCHECK(ui_) << "Must be called after StartOverlay";
   LocationBarState state(gurl, security_state::SecurityLevel::SECURE,
                          nullptr /* vector icon */, true /* display url */,
                          false /* offline */);
@@ -82,7 +84,13 @@ void VRBrowserRendererThreadWin::
     overlay_->SetOverlayAndWebXRVisibility(false, true);
   } else if (!currently_showing_ui && show_ui) {
     // Draw UI instead of WebXr.
-    overlay_->SetOverlayAndWebXRVisibility(true, false);
+    //
+    // TODO(https://crbug.com/912765): This is supposed to use (true, false),
+    // but setting WebXRVisibility to false doesn't currently work right. The
+    // content is frozen on the desktop tab while the prompt is showing in the
+    // headset. After dismissing the prompt, the headset view also stops
+    // updating, switching to SteamVR's default fallback for unresponsive apps.
+    overlay_->SetOverlayAndWebXRVisibility(true, true);
     overlay_->RequestNextOverlayPose(base::BindOnce(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
@@ -103,6 +111,14 @@ void VRBrowserRendererThreadWin::StartOverlay(
       FROM_HERE,
       base::BindOnce(&VRBrowserRendererThreadWin::StartOverlayOnRenderThread,
                      base::Unretained(this), std::move(overlay_info)));
+}
+
+void VRBrowserRendererThreadWin::StopOverlay() {
+  // Post a task to the thread to stop the overlay.
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VRBrowserRendererThreadWin::StopOverlayOnRenderThread,
+                     base::Unretained(this)));
 }
 
 void VRBrowserRendererThreadWin::CleanUp() {
@@ -202,6 +218,11 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
   graphics_->ClearContext();
 }
 
+void VRBrowserRendererThreadWin::StopOverlayOnRenderThread() {
+  overlay_->SetOverlayAndWebXRVisibility(false, true);
+  CleanUp();
+}
+
 void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
   if (!ShouldPauseWebXrAndDrawUI()) {
     // We shouldn't be showing UI.
@@ -255,8 +276,10 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
   if (!success) {
     graphics_->ResetMemoryBuffer();
   }
-  overlay_->RequestNextOverlayPose(base::BindOnce(
-      &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  if (overlay_) {
+    overlay_->RequestNextOverlayPose(base::BindOnce(
+        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  }
 }
 
 bool VRBrowserRendererThreadWin::ShouldPauseWebXrAndDrawUI() {

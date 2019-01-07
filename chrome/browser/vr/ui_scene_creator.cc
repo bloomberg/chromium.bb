@@ -1465,13 +1465,9 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
             int message_id = 0;
             const gfx::VectorIcon* icon = nullptr;
             switch (prompt) {
-              case ExternalPromptNotificationType::kPromptAudio:
-                message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT;
-                icon = &vector_icons::kMicIcon;
-                break;
-              case ExternalPromptNotificationType::kPromptBluetooth:
-                message_id = IDS_VR_DESKTOP_BLUETOOTH_PROMPT;
-                icon = &kBluetoothIcon;
+              case ExternalPromptNotificationType::kPromptGenericPermission:
+                message_id = IDS_VR_DESKTOP_GENERIC_PERMISSION_PROMPT;
+                icon = &kOpenInBrowserIcon;
                 break;
               case ExternalPromptNotificationType::kPromptNone:
                 NOTREACHED();

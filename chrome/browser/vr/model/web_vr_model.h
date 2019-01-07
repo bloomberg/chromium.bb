@@ -28,11 +28,11 @@ enum WebVrState {
 };
 
 // Type of permission prompt visible out-of-headset on a desktop display that
-// the user may want to respond to.
+// the user may want to respond to. Currently this can't differentiate between
+// specific permission requests, in the future we may add kPromptBluetooth etc.
 enum class ExternalPromptNotificationType {
   kPromptNone = 0,
-  kPromptAudio,
-  kPromptBluetooth,
+  kPromptGenericPermission,
 };
 
 struct VR_BASE_EXPORT WebVrModel {

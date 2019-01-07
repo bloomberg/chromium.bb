@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "content/public/browser/web_contents.h"
@@ -17,7 +18,9 @@ class VRBrowserRendererThreadWin;
 
 // Concrete implementation of VRBrowserRendererHost, part of the "browser"
 // component. Used on the browser's main thread.
-class VRUiHostImpl : public VRUiHost, public BrowserXRRuntimeObserver {
+class VRUiHostImpl : public VRUiHost,
+                     public PermissionRequestManager::Observer,
+                     public BrowserXRRuntimeObserver {
  public:
   VRUiHostImpl(device::mojom::VRDisplayInfoPtr info,
                device::mojom::XRCompositorHostPtr compositor);
@@ -38,9 +41,15 @@ class VRUiHostImpl : public VRUiHost, public BrowserXRRuntimeObserver {
   void StartUiRendering();
   void StopUiRendering();
 
+  // PermissionRequestManager::Observer
+  void OnBubbleAdded() override;
+  void OnBubbleRemoved() override;
+
   device::mojom::XRCompositorHostPtr compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
+  content::WebContents* web_contents_ = nullptr;
+  PermissionRequestManager* permission_request_manager_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 

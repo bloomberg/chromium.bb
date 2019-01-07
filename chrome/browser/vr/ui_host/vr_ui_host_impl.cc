@@ -4,9 +4,18 @@
 
 #include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 
+#include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace vr {
 
@@ -32,6 +41,11 @@ VRUiHostImpl::~VRUiHostImpl() {
   // XRRuntimeManager, and the BrowserXRRuntime has been destroyed.
 
   StopUiRendering();
+
+  // Clean up permission observer.
+  if (permission_request_manager_) {
+    permission_request_manager_->RemoveObserver(this);
+  }
 }
 
 // static
@@ -47,10 +61,40 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
   // Eventually the contents will be used to poll for permissions, or determine
   // what overlays should show.
-  if (contents)
+
+  // permission_request_manager_ is an unowned pointer; it's owned by
+  // WebContents. If the WebContents change, make sure we unregister any
+  // pre-existing observers. We only have a non-null permission_request_manager_
+  // if we successfully added an observer.
+  if (permission_request_manager_) {
+    permission_request_manager_->RemoveObserver(this);
+    permission_request_manager_ = nullptr;
+  }
+
+  web_contents_ = contents;
+  if (contents) {
     StartUiRendering();
-  else
+
+    PermissionRequestManager::CreateForWebContents(contents);
+    permission_request_manager_ =
+        PermissionRequestManager::FromWebContents(contents);
+    // Attaching a permission request manager to WebContents can fail, so a
+    // DCHECK would be inappropriate here. If it fails, the user won't get
+    // notified about permission prompts, but other than that the session would
+    // work normally.
+    if (permission_request_manager_) {
+      permission_request_manager_->AddObserver(this);
+
+      // There might already be a visible permission bubble from before
+      // we registered the observer, show the HMD message now in that case.
+      if (permission_request_manager_->IsBubbleVisible())
+        OnBubbleAdded();
+    } else {
+      DVLOG(1) << __func__ << ": No PermissionRequestManager";
+    }
+  } else {
     StopUiRendering();
+  }
 }
 
 void VRUiHostImpl::SetVRDisplayInfo(
@@ -68,15 +112,9 @@ void VRUiHostImpl::StartUiRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-// Only used for testing currently.  To see an example overlay, enable the
-// following few lines. TODO(https://crbug.com/911734): show browser UI for
-// permission prompts in VR here.
-#if 0
   ui_rendering_thread_ = std::make_unique<VRBrowserRendererThreadWin>();
   ui_rendering_thread_->Start();
   ui_rendering_thread_->SetVRDisplayInfo(info_.Clone());
-  ui_rendering_thread_->StartOverlay(compositor_.get());
-#endif
 }
 
 void VRUiHostImpl::StopUiRendering() {
@@ -84,6 +122,33 @@ void VRUiHostImpl::StopUiRendering() {
   DVLOG(1) << __func__;
 
   ui_rendering_thread_ = nullptr;
+}
+
+void VRUiHostImpl::OnBubbleAdded() {
+  if (!ui_rendering_thread_) {
+    DVLOG(1) << __func__ << ": no ui_rendering_thread_";
+    return;
+  }
+
+  ui_rendering_thread_->StartOverlay(compositor_.get());
+
+  if (web_contents_) {
+    content::NavigationEntry* entry =
+        web_contents_->GetController().GetVisibleEntry();
+    if (entry) {
+      GURL gurl = entry->GetVirtualURL();
+      ui_rendering_thread_->SetLocationInfo(gurl);
+    }
+  }
+
+  ui_rendering_thread_->SetVisibleExternalPromptNotification(
+      ExternalPromptNotificationType::kPromptGenericPermission);
+}
+
+void VRUiHostImpl::OnBubbleRemoved() {
+  ui_rendering_thread_->SetVisibleExternalPromptNotification(
+      ExternalPromptNotificationType::kPromptNone);
+  ui_rendering_thread_->StopOverlay();
 }
 
 }  // namespace vr
