@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/common/appcache.mojom.h"
 #include "content/common/appcache_interfaces.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
@@ -17,20 +18,18 @@
 
 namespace content {
 
-class AppCacheBackendProxy;
-
 class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              AppCacheBackendProxy* backend,
+                              mojom::AppCacheBackend* backend,
                               int appcache_host_id);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
-  AppCacheBackendProxy* backend() const { return backend_; }
+  mojom::AppCacheBackend* backend() const { return backend_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const AppCacheInfo& info);
@@ -65,7 +64,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
 
   blink::WebApplicationCacheHostClient* client_;
-  AppCacheBackendProxy* backend_;
+  mojom::AppCacheBackend* backend_;
   int host_id_;
   AppCacheStatus status_;
   blink::WebURLResponse document_response_;

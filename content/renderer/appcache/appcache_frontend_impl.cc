@@ -4,7 +4,12 @@
 
 #include "content/renderer/appcache/appcache_frontend_impl.h"
 
+#include "content/common/appcache.mojom.h"
+#include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/web/web_console_message.h"
 
 using blink::WebApplicationCacheHost;
@@ -22,6 +27,14 @@ AppCacheFrontendImpl::~AppCacheFrontendImpl() = default;
 
 void AppCacheFrontendImpl::Bind(mojom::AppCacheFrontendRequest request) {
   binding_.Bind(std::move(request));
+}
+
+mojom::AppCacheBackend* AppCacheFrontendImpl::backend_proxy() {
+  if (!backend_ptr_) {
+    RenderThread::Get()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, mojo::MakeRequest(&backend_ptr_));
+  }
+  return backend_ptr_.get();
 }
 
 void AppCacheFrontendImpl::CacheSelected(int32_t host_id,

@@ -46,8 +46,6 @@ target(link_target_type, "renderer") {
     "android/synchronous_compositor_registry.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
-    "appcache/appcache_backend_proxy.cc",
-    "appcache/appcache_backend_proxy.h",
     "appcache/appcache_frontend_impl.cc",
     "appcache/appcache_frontend_impl.h",
     "appcache/web_application_cache_host_impl.cc",

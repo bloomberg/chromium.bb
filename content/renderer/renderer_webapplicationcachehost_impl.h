@@ -7,16 +7,17 @@
 
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 
+#include "content/common/appcache.mojom.h"
+
 namespace content {
 class RenderViewImpl;
-class AppCacheBackendProxy;
 
 class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      AppCacheBackendProxy* backend,
+      mojom::AppCacheBackend* backend,
       int appcache_host_id,
       int frame_routing_id);
 
