@@ -627,7 +627,7 @@ class AccountReconcilorTestTable
   }
 
   void ConfigureCookieManagerService(const std::vector<Cookie>& cookies) {
-    std::vector<FakeGaiaCookieManagerService::CookieParams> cookie_params;
+    std::vector<signin::CookieParams> cookie_params;
     for (const auto& cookie : cookies) {
       std::string gaia_id = cookie.gaia_id;
 

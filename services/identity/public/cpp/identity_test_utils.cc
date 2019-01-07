@@ -194,8 +194,7 @@ void SetInvalidRefreshTokenForPrimaryAccount(
   SetInvalidRefreshTokenForAccount(identity_manager, account_id);
 }
 
-void RemoveRefreshTokenForPrimaryAccount(
-    IdentityManager* identity_manager) {
+void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager) {
   if (!identity_manager->HasPrimaryAccount())
     return;
 
@@ -204,9 +203,8 @@ void RemoveRefreshTokenForPrimaryAccount(
   RemoveRefreshTokenForAccount(identity_manager, account_id);
 }
 
-AccountInfo MakePrimaryAccountAvailable(
-    IdentityManager* identity_manager,
-    const std::string& email) {
+AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
+                                        const std::string& email) {
   AccountInfo account_info = SetPrimaryAccount(identity_manager, email);
   SetRefreshTokenForPrimaryAccount(identity_manager);
   return account_info;
@@ -316,7 +314,7 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
                        IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts) {
   // Convert |cookie_accounts| to the format FakeGaiaCookieManagerService wants.
-  std::vector<FakeGaiaCookieManagerService::CookieParams> gaia_cookie_accounts;
+  std::vector<signin::CookieParams> gaia_cookie_accounts;
   for (const CookieParams& params : cookie_accounts) {
     gaia_cookie_accounts.push_back({params.email, params.gaia_id,
                                     /*valid=*/true, /*signed_out=*/false,
