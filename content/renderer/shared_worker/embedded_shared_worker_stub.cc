@@ -72,8 +72,6 @@ class SharedWorkerWebApplicationCacheHostImpl
       const WebApplicationCacheHost* spawning_host) override {}
   void DidReceiveResponseForMainResource(
       const blink::WebURLResponse&) override {}
-  void DidReceiveDataForMainResource(const char* data, size_t len) override {}
-  void DidFinishLoadingMainResource(bool success) override {}
 
   // Cache selection is also different for workers. We know at construction
   // time what cache to select and do so then.

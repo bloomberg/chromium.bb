@@ -50,8 +50,6 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   void SelectCacheWithoutManifest() override;
   bool SelectCacheWithManifest(const blink::WebURL& manifestURL) override;
   void DidReceiveResponseForMainResource(const blink::WebURLResponse&) override;
-  void DidReceiveDataForMainResource(const char* data, size_t len) override;
-  void DidFinishLoadingMainResource(bool success) override;
   blink::WebApplicationCacheHost::Status GetStatus() override;
   bool StartUpdate() override;
   bool SwapCache() override;

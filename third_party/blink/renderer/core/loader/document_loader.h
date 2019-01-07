@@ -334,8 +334,6 @@ class CORE_EXPORT DocumentLoader
   void NotifyFinished(Resource*) final;
   String DebugName() const override { return "DocumentLoader"; }
 
-  void ProcessData(const char* data, size_t length);
-
   bool MaybeLoadEmpty();
 
   bool IsRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);

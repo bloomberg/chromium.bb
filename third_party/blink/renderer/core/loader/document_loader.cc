@@ -430,9 +430,6 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
     return;
   }
 
-  if (application_cache_host_)
-    application_cache_host_->FailedLoadingMainResource();
-
   if (resource->GetResourceError().WasBlockedByResponse()) {
     probe::didReceiveResourceResponse(
         probe::ToCoreProbeSink(frame_->GetDocument()), MainResourceIdentifier(),
@@ -490,7 +487,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     scoped_refptr<SharedBuffer> buffer = GenerateFtpDirectoryListingHtml(
         response_.CurrentRequestUrl(), data_buffer_.get());
     for (const auto& span : *buffer)
-      ProcessData(span.data(), span.size());
+      CommitData(span.data(), span.size());
   }
 
   TimeTicks response_end_time = finish_time;
@@ -510,7 +507,6 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   if (!frame_)
     return;
 
-  application_cache_host_->FinishedLoadingMainResource();
   if (parser_) {
     if (parser_blocked_count_) {
       finished_loading_ = true;
@@ -834,6 +830,7 @@ void DocumentLoader::DataReceived(Resource* resource,
   DCHECK_EQ(resource, GetResource());
   DCHECK(!response_.IsNull());
   DCHECK(!frame_->GetPage()->Paused());
+  time_of_last_data_received_ = CurrentTimeTicks();
 
   if (listing_ftp_directory_ || loading_mhtml_archive_) {
     data_buffer_->Append(data, length);
@@ -852,24 +849,18 @@ void DocumentLoader::DataReceived(Resource* resource,
   }
 
   base::AutoReset<bool> reentrancy_protector(&in_data_received_, true);
-  ProcessData(data, length);
+  CommitData(data, length);
   ProcessDataBuffer();
 }
 
 void DocumentLoader::ProcessDataBuffer() {
   // Process data received in reentrant invocations. Note that the invocations
-  // of processData() may queue more data in reentrant invocations, so iterate
+  // of CommitData() may queue more data in reentrant invocations, so iterate
   // until it's empty.
   for (const auto& span : *data_buffer_)
-    ProcessData(span.data(), span.size());
+    CommitData(span.data(), span.size());
   // All data has been consumed, so flush the buffer.
   data_buffer_->Clear();
-}
-
-void DocumentLoader::ProcessData(const char* data, size_t length) {
-  application_cache_host_->MainResourceDataReceived(data, length);
-  time_of_last_data_received_ = CurrentTimeTicks();
-  CommitData(data, length);
 }
 
 void DocumentLoader::ClearRedirectChain() {

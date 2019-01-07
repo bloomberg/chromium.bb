@@ -261,20 +261,6 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     is_new_master_entry_ = OLD_ENTRY;
 }
 
-void WebApplicationCacheHostImpl::DidReceiveDataForMainResource(
-    const char* data,
-    size_t len) {
-  if (is_new_master_entry_ == OLD_ENTRY)
-    return;
-  // TODO(michaeln): write me
-}
-
-void WebApplicationCacheHostImpl::DidFinishLoadingMainResource(bool success) {
-  if (is_new_master_entry_ == OLD_ENTRY)
-    return;
-  // TODO(michaeln): write me
-}
-
 WebApplicationCacheHost::Status WebApplicationCacheHostImpl::GetStatus() {
   return static_cast<WebApplicationCacheHost::Status>(status_);
 }
