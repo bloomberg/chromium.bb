@@ -497,6 +497,7 @@ CREATED_BRANCHES = [
 TARGET_OS_PKG = 'virtual/target-os'
 TARGET_OS_DEV_PKG = 'virtual/target-os-dev'
 TARGET_OS_TEST_PKG = 'virtual/target-os-test'
+TARGET_OS_FACTORY_PKG = 'virtual/target-os-factory'
 
 # Constants for uprevving Chrome
 

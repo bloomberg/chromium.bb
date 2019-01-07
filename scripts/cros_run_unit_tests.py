@@ -22,7 +22,8 @@ from chromite.scripts import cros_extract_deps
 
 BOARD_VIRTUAL_PACKAGES = (constants.TARGET_OS_PKG,
                           constants.TARGET_OS_DEV_PKG,
-                          constants.TARGET_OS_TEST_PKG)
+                          constants.TARGET_OS_TEST_PKG,
+                          constants.TARGET_OS_FACTORY_PKG)
 IMPLICIT_TEST_DEPS = ('virtual/implicit-system',)
 
 
