@@ -385,6 +385,12 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
      IDR_PDF_VIEWER_PDF_TOOLBAR_HTML},
     {"pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js",
      IDR_PDF_VIEWER_PDF_TOOLBAR_JS},
+#if defined(OS_CHROMEOS)
+    {"pdf/elements/viewer-pen-options/viewer-pen-options.html",
+     IDR_PDF_VIEWER_PEN_OPTIONS_HTML},
+    {"pdf/elements/viewer-pen-options/viewer-pen-options.js",
+     IDR_PDF_VIEWER_PEN_OPTIONS_JS},
+#endif
     {"pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html",
      IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML},
     {"pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js",

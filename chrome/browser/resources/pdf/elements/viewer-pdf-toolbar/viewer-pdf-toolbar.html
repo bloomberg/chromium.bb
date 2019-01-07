@@ -5,6 +5,9 @@
 <link rel="import" href="../icons.html">
 <link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
+<if expr="chromeos">
+<link rel="import" href="../viewer-pen-options/viewer-pen-options.html">
+</if>
 <link rel="import" href="../viewer-toolbar-dropdown/viewer-toolbar-dropdown.html">
 
 <dom-module id="viewer-pdf-toolbar">
@@ -65,6 +68,17 @@
       #toolbar {
         @apply --shadow-elevation-2dp;
         background-color: rgb(50, 54, 57);
+        position: relative;
+      }
+
+      #annotations-bar {
+        align-items: center;
+        background-color: rgb(32, 33, 34);
+        justify-content: center;
+      }
+
+      #toolbar,
+      #annotations-bar {
         color: rgb(241, 241, 241);
         display: flex;
         height: 48px;
@@ -80,6 +94,12 @@
         top: auto;
         width: auto;
       }
+
+      #pen,
+      #highlighter {
+        --dropdown-width: 346px;
+      }
+
 
       .invisible {
         visibility: hidden;
@@ -163,6 +183,43 @@
       <div id="progress-container">
         <paper-progress id="progress" value="[[loadProgress]]"></paper-progress>
       </div>
+    </div>
+
+    <div id="annotations-bar" class="invisible">
+      <paper-icon-button id="eraser"
+          on-click="annotationToolClicked_"
+          icon="pdf:create"
+          aria-label$="{{strings.tooltipEraser}}"
+          title$="{{strings.tooltipEraser}}">
+      </paper-icon-button>
+
+      <viewer-toolbar-dropdown id="pen"
+          on-click="annotationToolClicked_"
+          open-icon="pdf:create"
+          closed-icon="pdf:create"
+          dropdown-centered>
+        <viewer-pen-options
+          selected-color="#000000"
+          selected-size="0.1429"
+          strings="[[strings]]"
+          on-selected-size-changed="annotationToolOptionChanged_"
+          on-selected-color-changed="annotationToolOptionChanged_">
+        </viewer-pen-options>
+      </viewer-toolbar-dropdown>
+
+      <viewer-toolbar-dropdown id="highlighter"
+          on-click="annotationToolClicked_"
+          open-icon="pdf:create"
+          closed-icon="pdf:create"
+          dropdown-centered>
+        <viewer-pen-options
+          selected-color="#ffbc00"
+          selected-size="0.7143"
+          strings="[[strings]]"
+          on-selected-size-changed="annotationToolOptionChanged_"
+          on-selected-color-changed="annotationToolOptionChanged_">
+        </viewer-pen-options>
+      </viewer-toolbar-dropdown>
     </div>
   </template>
   <script src="viewer-pdf-toolbar.js"></script>

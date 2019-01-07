@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @enum {string} */
 const State = {
   LOADING: 'loading',
   ACTIVE: 'active',
@@ -20,6 +21,17 @@ Polymer({
 
   /** @private {?string} */
   fileName_: null,
+
+  /** @private {State} */
+  state_: State.IDLE,
+
+  /** @param {AnnotationTool} tool */
+  setAnnotationTool(tool) {
+    this.tool_ = tool;
+    if (this.state_ == State.ACTIVE) {
+      this.ink_.setAnnotationTool(tool);
+    }
+  },
 
   /**
    * Begins annotation mode with the document represented by `data`.
