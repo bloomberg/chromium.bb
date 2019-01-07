@@ -814,10 +814,6 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
   window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
 }
 
-void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
-  OnEvent(native_event);
-}
-
 std::string NativeWidgetAura::GetName() const {
   return window_ ? window_->GetName() : std::string();
 }
