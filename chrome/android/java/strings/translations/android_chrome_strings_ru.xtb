@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">Удаление истории со всех устройств, на которых выполнен вход в аккаунт. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
 <translation id="360207483134687714">Помогите улучшить VR-режим в Chrome</translation>
+<translation id="3604604794717279723">Принимаю</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3620176948598597475">Будет удалена информация о сэкономленном трафике, в том числе список просмотренных сайтов.</translation>
 <translation id="3630011985153972676">Перейдите в настройки и предоставьте Chrome разрешение скачивать статьи только по сети Wi-Fi.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
 <translation id="4209895695669353772">Чтобы мы могли рекомендовать вам интересный контент, включите синхронизацию.</translation>
-<translation id="4222812745228723705">Продолжая, вы разрешаете Chrome отправлять данные Автозаполнения, а также URL и контент сайта в Google. Отключить Google Ассистента и Автозаполнение можно в настройках Chrome. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Ничего не найдено</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
 <translation id="423219824432660969">Выполнить шифрование синхронизированных данных, используя пароль аккаунта Google от <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
 <translation id="5990142338020175451">Расширенная персонализация сервисов Google, например более актуальные подсказки на странице быстрого доступа.</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
-<translation id="6001839398155993679">Начать</translation>
 <translation id="6005538289190791541">Предложенный пароль</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">Чтобы экспортировать пароли с этого устройства, включите блокировку экрана в настройках.</translation>
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6171019622954353983">Продолжая, вы разрешаете Chrome отправлять в Google данные автозаполнения, а также URL и контент сайта.\n\nОтключить Google Ассистента и функцию автозаполнения можно в любое время в настройках Chrome.  <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Закрыт доступ для текущей поисковой системы</translation>
 <translation id="6177390657002841081">Включить режим экономии трафика</translation>
 <translation id="6181444274883918285">Добавить исключение</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
+<translation id="7670842975141217779">Google Ассистент\nв Chrome</translation>
 <translation id="7682724950699840886">Убедитесь, что на вашем устройстве достаточно свободного места. Затем снова попробуйте экспортировать пароли.</translation>
 <translation id="7698359219371678927">Написать письмо в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>

@@ -333,6 +333,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="3599863153486145794">Törli az előzményeket valamennyi bejelentkezett eszközről. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="3600792891314830896">Elnémítja a hangot lejátszó webhelyeket</translation>
 <translation id="360207483134687714">Segítsen továbbfejleszteni a virtuális valósággal kapcsolatos élményt Chrome-ban</translation>
+<translation id="3604604794717279723">Elfogadom</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Az alaphelyzetbe állítás törli az Adatforgalom-csökkentő előzményeit, így a felkeresett webhelyek listáját is.</translation>
 <translation id="3630011985153972676">A beállítások között engedélyezheti, hogy a Chrome letöltse a cikkeket Wi-Fi-n keresztül.</translation>
@@ -409,7 +410,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4198423547019359126">Nem áll rendelkezésre letöltési hely</translation>
 <translation id="4209895695669353772">A Google által javasolt, személyre szabott tartalmak fogadásához kapcsolja be a szinkronizálást</translation>
-<translation id="4222812745228723705">Ha továbblép, azzal elfogadja, hogy a szolgáltatás biztosításához a Chrome böngésző elküldi a Chrome Automatikus kitöltés adatait, valamint a webhely URL-jét és tartalmát a Google-nak. Ha ki szeretné kapcsolni a Google Segéd a Chrome-ban szolgáltatást és a Chrome Automatikus kitöltés funkcióját, nyissa meg a Chrome beállításait. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4225719675976901337">Nem található tartalom</translation>
 <translation id="4226663524361240545">Az értesítések miatt rezeghet az eszköz</translation>
 <translation id="423219824432660969">A szinkronizált adatok titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5962718611393537961">Koppintson az összecsukáshoz</translation>
 <translation id="5990142338020175451">Személyre szabottabb Google-szolgáltatások, például jobb oldaljavaslatok</translation>
 <translation id="6000066717592683814">A Google megtartása</translation>
-<translation id="6001839398155993679">Kezdjük</translation>
 <translation id="6005538289190791541">Javasolt jelszó</translation>
 <translation id="6039379616847168523">Ugrás a következő lapra</translation>
 <translation id="6040143037577758943">Bezárás</translation>
@@ -674,6 +673,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6154478581116148741">Kapcsolja be a képernyőzárat a Beállítások menüben, hogy exportálhassa az ezen az eszközön tárolt jelszavait</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6171019622954353983">A továbblépéssel elfogadja, hogy a szolgáltatás biztosításához a Chrome böngésző elküldi a Chrome Automatikus kitöltés adatait, valamint a webhely URL-jét és tartalmát a Google-nak.\n\nHa szeretné kikapcsolni a Google Segédet a Chrome-ban és a Chrome Automatikus kitöltés funkcióját, lépjen a Chrome beállításaiba.  <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Tiltott a jelenlegi keresőmotor számára</translation>
 <translation id="6177390657002841081">Az Adatforgalom-csökkentő bekapcsolása</translation>
 <translation id="6181444274883918285">Webhelykivétel hozzáadása</translation>
@@ -882,6 +882,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
+<translation id="7670842975141217779">Google Segéd\na Chrome-ban</translation>
 <translation id="7682724950699840886">Próbálkozzon a következő tippekkel: Győződjön meg arról, hogy elegendő tárhely áll rendelkezésre az eszközön, majd próbálja újra az exportálást.</translation>
 <translation id="7698359219371678927">E-mail létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>

@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">ล้างประวัติจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3600792891314830896">ปิดเสียงไซต์ที่เล่นเสียง</translation>
 <translation id="360207483134687714">ช่วยปรับปรุงประสบการณ์ VR ใน Chrome</translation>
+<translation id="3604604794717279723">ฉันยอมรับ</translation>
 <translation id="3616113530831147358">เสียง</translation>
 <translation id="3620176948598597475">การรีเซ็ตจะลบประวัติโปรแกรมประหยัดอินเทอร์เน็ต รวมถึงรายการไซต์ที่เข้าชม</translation>
 <translation id="3630011985153972676">อนุญาตให้ Chrome ดาวน์โหลดบทความให้คุณเมื่อเชื่อมต่อ Wi-Fi ภายใต้การตั้งค่า</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
-<translation id="4222812745228723705">การดำเนินการต่อเป็นการยอมรับว่า Chrome จะส่งข้อมูลจากการป้อนข้อความอัตโนมัติของ Chrome, URL ของเว็บไซต์และเนื้อหาไปยัง Google เพื่อให้บริการนี้ ไปที่การตั้งค่า Chrome เพื่อปิด Google Assistant ใน Chrome และการป้อนข้อความอัตโนมัติของ Chrome <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">ไม่พบเนื้อหา</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="423219824432660969">เข้ารหัสลับข้อมูลที่ซิงค์ด้วยรหัสผ่าน Google ตั้งแต่ <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">แตะเพื่อยุบ</translation>
 <translation id="5990142338020175451">บริการของ Google ที่ตรงกับตัวคุณมากขึ้น เช่น คำแนะนำหน้าเว็บที่ดียิ่งขึ้น</translation>
 <translation id="6000066717592683814">ใช้ Google ต่อ</translation>
-<translation id="6001839398155993679">เริ่มเลย</translation>
 <translation id="6005538289190791541">รหัสผ่านที่แนะนำ</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
 <translation id="6040143037577758943">ปิด</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
+<translation id="6171019622954353983">การดำเนินการต่อเป็นการยอมรับว่า Chrome จะส่งข้อมูลจากการป้อนข้อความอัตโนมัติของ Chrome, URL ของเว็บไซต์และเนื้อหาไปยัง Google เพื่อให้บริการนี้\n\nไปที่การตั้งค่า Chrome เพื่อปิด Google Assistant ใน Chrome และการป้อนข้อความอัตโนมัติของ Chrome  <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">ถูกบล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
+<translation id="7670842975141217779">Google Assistant\nใน Chrome</translation>
 <translation id="7682724950699840886">ลองทำตามเคล็ดลับต่อไปนี้ ตรวจสอบว่าอุปกรณ์มีพื้นที่ว่างเพียงพอ จากนั้นพยายามส่งออกอีกครั้ง</translation>
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>

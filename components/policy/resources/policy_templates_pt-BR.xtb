@@ -1617,7 +1617,7 @@
       Todas as três políticas, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed precisam ser verdadeiras quando se aplicarem ao Crostini para que ele possa ser executado.
       Quando esta política é alterada para falsa, ela se aplica à criação de novos contêineres do Crostini, mas ela não encerra os contêineres que já estão em execução.</translation>
 <translation id="5283457834853986457">Desativar o localizador de plug-ins (uso suspenso)</translation>
-<translation id="5288772341821359899">Se a política for configurada, o alcance da porta UDP usado por WebRTC será restrito ao intervalo de porta especificado (pontos de extremidade inclusos).
+<translation id="5288772341821359899">Se a política for configurada, o alcance da porta UDP usado por WebRTC será restrito ao intervalo de porta especificado (endpoints inclusos).
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
@@ -3303,7 +3303,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="982497069985795632">Ativar verificação ortográfica</translation>
 <translation id="988537626274109600">Esta política controla os períodos durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não tem permissão para procurar atualizações automaticamente.
       Quando esta política for definida para uma lista não vazia de intervalos de tempo:
-      Os dispositivos não poderão procurar atualizações automaticamente durante os intervalos de tempo especificados. Dispositivos que exijam um rollback ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política, devido a possíveis problemas de segurança. Além disso, esta política não bloqueará verificações de atualização solicitadas por usuários ou administradores.
+      Os dispositivos não poderão procurar atualizações automaticamente durante os intervalos de tempo especificados. Dispositivos que exijam uma reversão ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política, devido a possíveis problemas de segurança. Além disso, esta política não bloqueará verificações de atualização solicitadas por usuários ou administradores.
       Quando esta política não for definida ou se não contiver nenhum intervalo de tempo:
       Nenhuma verificação automática de atualização será bloqueada por ela, mas as verificações poderão ser bloqueadas por outras políticas.</translation>
 </translationbundle>

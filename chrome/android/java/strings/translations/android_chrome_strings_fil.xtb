@@ -333,6 +333,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="3599863153486145794">Kini-clear ang history sa lahat ng naka-sign in na device. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">I-mute ang mga site na nagpe-play ng tunog</translation>
 <translation id="360207483134687714">Tumulong na mapaganda ang karanasan sa VR sa Chrome</translation>
+<translation id="3604604794717279723">Tinatanggap ko</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Kapag nag-reset, mabubura ang history ng Data Saver, kabilang ang listahan ng mga binisitang site.</translation>
 <translation id="3630011985153972676">Payagan ang Chrome na mag-download ng mga artikulo para sa iyo kapag gumagamit ng Wi-Fi sa ilalim ng mga setting.</translation>
@@ -409,7 +410,6 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="4198423547019359126">Walang available na lokasyon ng pag-download</translation>
 <translation id="4209895695669353772">Para makakuha ng naka-personalize na content na iminumungkahi ng Google, i-on ang pag-sync</translation>
-<translation id="4222812745228723705">Kapag nagpatuloy, sumasang-ayon kang magpapadala ang Chrome ng data mula sa Chrome Autofill, URL ng site at content nito sa Google para maibigay ang serbisyong ito. Pumunta sa mga setting ng Chrome para i-off ang Google Assistant sa Chrome at Chrome Autofill. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Walang nakitang content</translation>
 <translation id="4226663524361240545">Maaaring mag-vibrate ang device dahil sa mga notification</translation>
 <translation id="423219824432660969">I-encrypt ang naka-sync na data gamit ang password sa Google simula noong <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5962718611393537961">I-tap upang i-collapse</translation>
 <translation id="5990142338020175451">Higit pang personal na serbisyo ng Google, tulad ng mas mahuhusay na suhestyon sa page</translation>
 <translation id="6000066717592683814">Panatilihin ang Google</translation>
-<translation id="6001839398155993679">Tara na</translation>
 <translation id="6005538289190791541">Iminumungkahing password</translation>
 <translation id="6039379616847168523">Pumunta sa susunod na tab</translation>
 <translation id="6040143037577758943">Isara</translation>
@@ -674,6 +673,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6154478581116148741">I-on ang lock ng screen sa Mga Setting upang i-export ang iyong mga password mula sa device na ito</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> natipid sa data</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6171019622954353983">Kapag nagpatuloy, sumasang-ayon kang magpapadala ang Chrome ng data mula sa Autofill ng Chrome, URL ng site, at content ng site na ito sa Google para maibigay ang serbisyong ito.\n\nBisitahin ang mga setting ng Chrome para i-off ang Google Assistant sa Chrome at Autofill ng Chrome.  <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Naka-block para sa kasalukuyang search engine</translation>
 <translation id="6177390657002841081">I-on ang Data Saver</translation>
 <translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
@@ -882,6 +882,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
+<translation id="7670842975141217779">Google Assistant\nsa Chrome</translation>
 <translation id="7682724950699840886">Subukan ang mga sumusunod na tip: tiyaking may sapat na espasyo sa iyong device, at subukang mag-export muli.</translation>
 <translation id="7698359219371678927">Gumawa ng email sa <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Awtomatikong kumpletuhin ang mga paghahanap at URL</translation>

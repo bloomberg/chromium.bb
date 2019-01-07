@@ -333,6 +333,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="3599863153486145794">Vymaže históriu zo všetkých prihlásených zariadení. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Vypnutie zvuku webov, ktoré prehrávajú zvuk</translation>
 <translation id="360207483134687714">Pomôžte zlepšiť prostredie VR v Chrome</translation>
+<translation id="3604604794717279723">Súhlasím</translation>
 <translation id="3616113530831147358">Zvuk</translation>
 <translation id="3620176948598597475">Resetovaním vymažete históriu Šetriča dát vrátane zoznamu navštívených webov.</translation>
 <translation id="3630011985153972676">V nastaveniach povoľte Chromu sťahovať články počas pripojenia k sieti Wi‑Fi.</translation>
@@ -409,7 +410,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="4198423547019359126">Nie sú k dispozícii žiadne umiestnenia stiahnutých súborov</translation>
 <translation id="4209895695669353772">Ak chcete získavať prispôsobený obsah navrhnutý Googlom, zapnite synchronizáciu</translation>
-<translation id="4222812745228723705">Pokračovaním vyjadrujete súhlas s tým, že Chrome odošle údaje z automatického dopĺňania Chromu, adresu webu a jeho obsah Googlu a umožní tým poskytovanie tejto služby. Prejdite do nastavení Chromu, kde môžete vypnúť Asistenta Google a automatické dopĺňanie Chromu. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nenašiel sa žiadny obsah</translation>
 <translation id="4226663524361240545">Upozornenia môžu pri prijatí na zariadení spustiť vibrovanie</translation>
 <translation id="423219824432660969">Šifrovať synchronizované údaje heslom Google od <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5962718611393537961">Klepnutím zbaliť</translation>
 <translation id="5990142338020175451">Viac osobných služieb Googlu, napríklad lepšie návrhy stránok</translation>
 <translation id="6000066717592683814">Ponechať Google</translation>
-<translation id="6001839398155993679">Poďme na to</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Prechod na ďalšiu kartu</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -674,6 +673,7 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="6154478581116148741">Ak chcete exportovať heslá z tohto zariadenia, zapnite v Nastaveniach zámku obrazovky</translation>
 <translation id="6159335304067198720">Úspora dát: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
+<translation id="6171019622954353983">Pokračovaním vyjadrujete súhlas s tým, že Chrome odošle údaje z automatického dopĺňania Chromu, adresu webu a jeho obsah Googlu a umožní tým poskytovanie tejto služby.\n\nPrejdite do nastavení Chromu, kde môžete vypnúť Asistenta Google a automatické dopĺňanie Chromu.  <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blokované v aktuálnom vyhľadávači</translation>
 <translation id="6177390657002841081">Zapnúť Šetrič dát</translation>
 <translation id="6181444274883918285">Pridať výnimku pre web</translation>
@@ -882,6 +882,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
+<translation id="7670842975141217779">Asistent Google\nv Chrome</translation>
 <translation id="7682724950699840886">Skúste tieto tipy: Uistite sa, že máte v zariadení dosť miesta, a potom skúste znova spustiť exportovanie.</translation>
 <translation id="7698359219371678927">Vytvorte správu v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>

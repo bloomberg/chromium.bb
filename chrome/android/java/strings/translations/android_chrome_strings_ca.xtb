@@ -333,6 +333,7 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="3599863153486145794">Esborra l'historial de tots els dispositius en què tinguis iniciada la sessió. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="3600792891314830896">Silencia els llocs web que reprodueixen so</translation>
 <translation id="360207483134687714">Ajuda a millorar l'experiència de RV a Chrome</translation>
+<translation id="3604604794717279723">Accepto</translation>
 <translation id="3616113530831147358">Àudio</translation>
 <translation id="3620176948598597475">En restablir l'extensió Economitzador de dades, se n'esborrarà l'historial, inclosa la llista de llocs web visitats.</translation>
 <translation id="3630011985153972676">A la configuració, permet que Chrome et baixi articles quan estiguis connectat a la Wi-Fi.</translation>
@@ -409,7 +410,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="4198423547019359126">No hi ha cap ubicació de baixada disponible</translation>
 <translation id="4209895695669353772">Perquè Google et suggereixi contingut personalitzat, activa la sincronització</translation>
-<translation id="4222812745228723705">En continuar, acceptes que Chrome enviï a Google dades recollides amb la funció Emplenament automàtic, així com l'URL i el contingut del lloc web, per proporcionar aquest servei. Per desactivar l'Assistent de Google i la funció Emplenament automàtic a Chrome, ves a la configuració del navegador. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">No s'ha trobat contingut</translation>
 <translation id="4226663524361240545">És possible que les notificacions facin vibrar el dispositiu</translation>
 <translation id="423219824432660969">Encripta les dades sincronitzades amb la contrasenya de Google del dia <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5962718611393537961">Toca per replegar</translation>
 <translation id="5990142338020175451">Serveis de Google més personals, com ara millors suggeriments de pàgines</translation>
 <translation id="6000066717592683814">Continua amb Google</translation>
-<translation id="6001839398155993679">Som-hi</translation>
 <translation id="6005538289190791541">Contrasenya suggerida</translation>
 <translation id="6039379616847168523">Ves a la pestanya següent</translation>
 <translation id="6040143037577758943">Tanca</translation>
@@ -674,6 +673,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6154478581116148741">Activa el bloqueig de pantalla a Configuració per exportar les teves contrasenyes d'aquest dispositiu</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6171019622954353983">En continuar, acceptes que Chrome enviï a Google dades d'Emplenament automàtic, així com l'URL i el contingut del lloc web per oferir aquest servei.\n\nPer desactivar l'Assistent de Google i la funció Emplenament automàtic a Chrome, ves a la configuració del navegador.  <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">S'ha bloquejat per al motor de cerca actual</translation>
 <translation id="6177390657002841081">Activa l'Economitzador de dades</translation>
 <translation id="6181444274883918285">Afegeix una excepció per a un lloc web</translation>
@@ -882,6 +882,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
+<translation id="7670842975141217779">L'Assistent de Google\na Chrome</translation>
 <translation id="7682724950699840886">Segueix aquests consells: comprova que hi hagi prou espai al dispositiu i prova d'exportar les contrasenyes de nou.</translation>
 <translation id="7698359219371678927">Crea una adreça electrònica a <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completa automàticament les cerques i els URL</translation>

@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">ታሪክን በመለያ ከገቡ ሁሉም መሣሪያዎች ላይ ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል</translation>
 <translation id="3600792891314830896">ድምጽን በሚያጫውቱ ጣቢያዎች ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="360207483134687714">የVR ተሞክሮን በChrome ለማሻሻል ያግዙ</translation>
+<translation id="3604604794717279723">ተቀብያለሁ</translation>
 <translation id="3616113530831147358">ድምጽ</translation>
 <translation id="3620176948598597475">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝርን ጨምሮ የውሂብ ቆጣቢ ታሪክን ይደመስሳል።</translation>
 <translation id="3630011985153972676">በWi-Fi ላይ ሲኮን በቅንብሮች ስር Chrome ጽሑፎችን እንዲያወርድ ይፍቀዱ።</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="4198423547019359126">ምንም የማውረጃ አካባቢዎች የሉም</translation>
 <translation id="4209895695669353772">በGoogle የተጠቆመ ግላዊነት የተላበሰ ይዘትን ስምረትን ማብራት ለማግኘት</translation>
-<translation id="4222812745228723705">በመቀጠልዎ Chrome ይህን አገልግሎት ለማቅረብ ውሂብን ከChrome ራስ-ሙላ፣ ከጣቢያው ዩአርኤል እና ይዘቱ ወደ Google እንደሚልክ ተስማምተዋል። በChrome እና Chrome ራስ-ሙላ ውስጥ Google ረዳትን ለማጥፋት የChrome ቅንብሮችን ይጎብኙ። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">ምንም ይዘት አልተገኘም</translation>
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="423219824432660969">የተሳመረ ውሂብ <ph name="TIME" /> ላይ በነበረው የGoogle ይለፍ ቃል ያመስጥሩ</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">ለመሰብሰብ መታ ያድርጉ</translation>
 <translation id="5990142338020175451">እንደ የተሻሉ የገጽ ጥቆማዎች ያሉ ይበልጥ የግል Google አገልግሎቶች</translation>
 <translation id="6000066717592683814">Googleን አቆየው</translation>
-<translation id="6001839398155993679">እንሂድ</translation>
 <translation id="6005538289190791541">የተጠቆመ የይለፍ ቃል</translation>
 <translation id="6039379616847168523">ወደ ቀጣዩ ትር ዝለል</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">የይለፍ ቃላትዎን ከዚህ መሣሪያ ወደ ውጭ ለመላክ በቅንብሮች ውስጥ የማያ ገጽ ቁልፍን ያብሩ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> የውሂብ ቁጠባዎች</translation>
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
+<translation id="6171019622954353983">በመቀጠልዎ Chrome ይህን አገልግሎት ለማቅረብ ውሂብን ከChrome ራስ-ሙላ፣ ከጣቢያው ዩአርኤል እና ይዘቱ ወደ Google እንደሚልክ ተስማምተዋል።\n\nበChrome እና በChromeር ራስሙላ ውስጥ የGoogle ረዳትን ለማጥፋት የChrome ቅንብሮችን ይጎብኙ።  <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
 <translation id="6177390657002841081">የውሂብ አስቀማጭን አብራ</translation>
 <translation id="6181444274883918285">ለየት ያለ ጣቢያን አክል</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7665369617277396874">መለያ ያክሉ</translation>
+<translation id="7670842975141217779">የGoogle ረዳት\nin Chrome</translation>
 <translation id="7682724950699840886">የሚከተሉትን ጠቃሚ ምክሮች ይሞክሩ፦ በእርስዎ መሣሪያ ላይ በቂ ባዶ ቦታ መኖሩን ያረጋግጡ፣ ወይም እንደገና ወደ ውጭ ለመላክ ይሞክሩ።</translation>
 <translation id="7698359219371678927">በ<ph name="APP_NAME" /> ውስጥ ኢሜይል ይፍጠሩ</translation>
 <translation id="7704317875155739195">ፍለጋዎችን እና ዩአርኤልዎችን በራስ-አጠናቅቅ</translation>

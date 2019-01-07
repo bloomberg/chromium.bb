@@ -333,6 +333,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3599863153486145794">Išvaloma visų įrenginių, prie kurių prisijungta, istorija. „Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Nutildyti svetaines, kurios leidžia garsą</translation>
 <translation id="360207483134687714">Padėkite pagerinti VR patirtį „Chrome“</translation>
+<translation id="3604604794717279723">Sutinku</translation>
 <translation id="3616113530831147358">Garsas</translation>
 <translation id="3620176948598597475">Iš naujo nustačius bus ištrinta Duomenų taupymo priemonės istorija, įskaitant lankytų svetainių sąrašą.</translation>
 <translation id="3630011985153972676">Leiskite „Chrome“ atsisiųsti straipsnius už jus, kai nustatymuose esate įgalinę „Wi-Fi“.</translation>
@@ -409,7 +410,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="4198423547019359126">Nėra pasiekiamų atsisiuntimo vietų</translation>
 <translation id="4209895695669353772">Jei norite gauti „Google“ siūlomo suasmeninto turinio, įjunkite sinchronizavimą</translation>
-<translation id="4222812745228723705">Tęsdami sutinkate, kad „Chrome“ siųs „Chrome“ automatinio pildymo funkcijos, svetainių URL ir jų turinio duomenis sistemai „Google“, kad galėtų teikti minėtas paslaugas. Jei norite išjungti „Google“ padėjėją sistemoje „Chrome“ ir „Chrome“ automatinio pildymo funkcijoje, apsilankykite „Chrome“ skiltyje „Nustatymai“. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Turinys nerastas</translation>
 <translation id="4226663524361240545">Gavus pranešimą įrenginys gali vibruoti</translation>
 <translation id="423219824432660969">Šifruoti sinchronizuotus duomenis nuo <ph name="TIME" /> taikant „Google“ slaptažodį</translation>
@@ -654,7 +654,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5962718611393537961">Palieskite ir sutraukite</translation>
 <translation id="5990142338020175451">Daugiau suasmenintų „Google“ paslaugų, pvz., geresni puslapių pasiūlymai</translation>
 <translation id="6000066717592683814">Palikti „Google“</translation>
-<translation id="6001839398155993679">Pradėkime</translation>
 <translation id="6005538289190791541">Siūlomas slaptažodis</translation>
 <translation id="6039379616847168523">Pereiti prie kito skirtuko</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
@@ -674,6 +673,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="6154478581116148741">Norėdami iš šio įrenginio eksportuoti slaptažodžius, nustatymuose įjunkite ekrano užraktą</translation>
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
+<translation id="6171019622954353983">Tęsdami sutinkate, kad „Chrome“ siųs „Chrome“ automatinio pildymo funkcijos, svetainių URL ir jų turinio duomenis sistemai „Google“, kad galėtų teikti minėtas paslaugas.\n\nJei norite išjungti „Google“ padėjėją naršyklėje „Chrome“ ir „Chrome“ automatinio pildymo funkcijoje, apsilankykite „Chrome“ skiltyje „Nustatymai“.  <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Užblokuota dabartiniam paieškos varikliui</translation>
 <translation id="6177390657002841081">Duomenų taupymo priemonės įjungimas</translation>
 <translation id="6181444274883918285">Pridėti svetainės išimtį</translation>
@@ -882,6 +882,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
+<translation id="7670842975141217779">„Google“ padėjėjas\nsistemoje „Chrome“</translation>
 <translation id="7682724950699840886">Išbandykite nurodytus patarimus: įsitikinkite, kad įrenginyje yra pakankamai vietos, ir bandykite eksportuoti dar kartą.</translation>
 <translation id="7698359219371678927">Kurti el. laišką naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="7704317875155739195">Automatiškai užbaigti paieškas ir URL</translation>

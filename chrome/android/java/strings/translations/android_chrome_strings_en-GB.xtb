@@ -333,6 +333,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
 <translation id="360207483134687714">Help improve the VR experience in Chrome</translation>
+<translation id="3604604794717279723">I accept</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Resetting erases Data Saver history, including the list of visited sites.</translation>
 <translation id="3630011985153972676">Allow Chrome to download articles for you when on Wi-Fi under settings.</translation>
@@ -409,7 +410,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4198423547019359126">No available download locations</translation>
 <translation id="4209895695669353772">To get personalised content suggested by Google, turn on sync</translation>
-<translation id="4222812745228723705">By continuing, you agree that Chrome will send data from Chrome Auto-fill, the site’s URL and its content to Google to provide this service. Visit Chrome settings to turn off Google Assistant in Chrome and Chrome Auto-fill. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">No content found</translation>
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="423219824432660969">Encrypt synced data with Google password as of <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="6000066717592683814">Keep Google</translation>
-<translation id="6001839398155993679">Let's go</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -674,6 +673,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6171019622954353983">By continuing, you agree that Chrome will send data from Chrome Auto-fill, the site’s URL and its content to Google to provide this service.\n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Auto-fill.  <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blocked for current search engine</translation>
 <translation id="6177390657002841081">Turn on Data Saver</translation>
 <translation id="6181444274883918285">Add site exception</translation>
@@ -882,6 +882,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
+<translation id="7670842975141217779">Google Assistant\nin Chrome</translation>
 <translation id="7682724950699840886">Try the following tips: make sure that there is enough space on your device; try to export again.</translation>
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Auto-complete searches and URLs</translation>

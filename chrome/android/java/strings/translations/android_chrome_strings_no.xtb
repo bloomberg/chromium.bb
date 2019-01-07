@@ -333,6 +333,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3599863153486145794">Tømmer loggen på alle påloggede enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Kutt lyden for nettsteder som spiller av lyd</translation>
 <translation id="360207483134687714">Hjelp til med å forbedre VR-opplevelsen i Chrome</translation>
+<translation id="3604604794717279723">Godta</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3620176948598597475">Tilbakestilling gjør at datasparingsloggen tømmes, inkludert listen over besøkte nettsteder.</translation>
 <translation id="3630011985153972676">La Chrome laste ned artikler for deg når du er tilkoblet Wi-Fi under innstillinger.</translation>
@@ -409,7 +410,6 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4198423547019359126">Ingen tilgjengelige nedlastingssteder</translation>
 <translation id="4209895695669353772">For å få forslag om personlig tilpasset innhold fra Google, slå på synkronisering</translation>
-<translation id="4222812745228723705">Hvis du fortsetter, godtar du at Chrome sender data fra Chrome autofyll samt nettstedets nettadresse og innhold til Google, slik at vi kan levere denne tjenesten. Åpne Chrome-innstillingene for å slå av Google-assistenten i Chrome og Chrome autofyll. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Fant ikke noe innhold</translation>
 <translation id="4226663524361240545">Varsler kan gjøre at enheten vibrerer</translation>
 <translation id="423219824432660969">Kryptér synkroniserte data med Google-passord fra og med <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="5990142338020175451">Google-tjenester med et mer personlig preg, som for eksempel bedre sideforslag</translation>
 <translation id="6000066717592683814">Behold Google</translation>
-<translation id="6001839398155993679">Sett i gang</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -674,6 +673,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6154478581116148741">Slå på skjermlåsen i Innstillinger for å eksportere passordene dine fra denne enheten</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6165508094623778733">Les mer</translation>
+<translation id="6171019622954353983">Hvis du fortsetter, godtar du at Chrome sender data fra Chrome autofyll samt nettstedets nettadresse og innhold til Google, slik at vi kan levere denne tjenesten.\n\nDu kan gå til Chrome-innstillingene for å slå av Google-assistenten i Chrome og Chrome autofyll.  <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blokkert for den aktive søkemotoren</translation>
 <translation id="6177390657002841081">Slå på Datasparing</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
@@ -882,6 +882,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Legg til konto</translation>
+<translation id="7670842975141217779">Google-assistenten\ni Chrome</translation>
 <translation id="7682724950699840886">Prøv dette: Sørg for at det er nok plass på enheten, og prøv å eksportere på nytt.</translation>
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>

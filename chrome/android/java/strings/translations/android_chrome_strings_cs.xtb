@@ -333,6 +333,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="3600792891314830896">Ztlumit weby, které přehrávají zvuky</translation>
 <translation id="360207483134687714">Pomozte zlepšit virtuální realitu v Chromu</translation>
+<translation id="3604604794717279723">Přijímám</translation>
 <translation id="3616113530831147358">Zvuk</translation>
 <translation id="3620176948598597475">Resetováním vymažete historii Spořiče dat, včetně seznamu navštívených webů.</translation>
 <translation id="3630011985153972676">V nastavení můžete Chromu povolit, aby vám při připojení přes Wi-Fi stahoval články.</translation>
@@ -409,7 +410,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4195643157523330669">Otevřít na nové kartě</translation>
 <translation id="4198423547019359126">Nejsou k dispozici žádná umístění stažených souborů</translation>
 <translation id="4209895695669353772">Chcete-li od Googlu získat personalizované návrhy obsahu, zapněte synchronizaci</translation>
-<translation id="4222812745228723705">Pokračováním vyjádřujete souhlas s tím, že Chrome kvůli poskytování této služby bude data z Automatického vyplňování Chrome, adresu URL webu a jeho obsah odesílat do Googlu. Chcete-li Asistenta Google v Chromu a automatické vyplňování Chrome vypnout, přejděte do nastavení Chromu. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nebyl nalezen žádný obsah</translation>
 <translation id="4226663524361240545">Oznámení mohou aktivovat vibraci</translation>
 <translation id="423219824432660969">Zašifrovat synchronizovaná data pomocí hesla Google z <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5962718611393537961">Klepnutím sbalíte</translation>
 <translation id="5990142338020175451">Více osobních služeb Google, např. lepší návrhy stránek</translation>
 <translation id="6000066717592683814">Ponechat Google</translation>
-<translation id="6001839398155993679">Jdeme na to</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
 <translation id="6040143037577758943">Zavřít</translation>
@@ -674,6 +673,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6154478581116148741">Chcete-li z tohoto zařízení exportovat svá hesla, zapněte v Nastavení zámek obrazovky</translation>
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6171019622954353983">Pokračováním vyjadřujete souhlas s tím, že Chrome kvůli poskytování této služby bude data z Automatického vyplňování Chrome, adresu URL webu a jeho obsah odesílat do Googlu.\n\nChcete-li Asistenta Google v Chromu a automatické vyplňování Chrome vypnout, přejděte do nastavení Chromu.  <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Pro aktuální vyhledávač blokováno</translation>
 <translation id="6177390657002841081">Zapnutí Spořiče dat</translation>
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
@@ -882,6 +882,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
+<translation id="7670842975141217779">Asistent Google\nv Chromu</translation>
 <translation id="7682724950699840886">Vyzkoušejte tyto tipy: Zajistěte, aby v zařízení byl dostatek místa a zkuste export zopakovat.</translation>
 <translation id="7698359219371678927">Vytvořit e-mail v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky doplňovat vyhledávací dotazy a adresy URL</translation>

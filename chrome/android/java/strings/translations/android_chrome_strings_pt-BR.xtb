@@ -333,6 +333,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
 <translation id="360207483134687714">Ajude a melhorar a experiência de realidade virtual no Chrome</translation>
+<translation id="3604604794717279723">Aceito</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3620176948598597475">A redefinição limpa o histórico da Economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3630011985153972676">Permitir que o Chrome faça o download de artigos para você quando conectado ao Wi-Fi nas configurações.</translation>
@@ -409,7 +410,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198423547019359126">Não há locais de download disponíveis</translation>
 <translation id="4209895695669353772">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização</translation>
-<translation id="4222812745228723705">Ao continuar, você concorda que os dados do "Preenchimento automático" do Chrome, assim como o URL e o conteúdo do site, sejam enviados para o Google com o objetivo de fornecer este serviço. Acesse as configurações do navegador para desativar o Google Assistente e o "Preenchimento automático" no Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nenhum conteúdo encontrado</translation>
 <translation id="4226663524361240545">É possível que as notificações façam o dispositivo vibrar</translation>
 <translation id="423219824432660969">Criptografar dados sincronizados com a senha do Google a partir de <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5962718611393537961">Toque para recolher</translation>
 <translation id="5990142338020175451">Serviços do Google mais personalizados, como melhores sugestões de páginas</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
-<translation id="6001839398155993679">Vamos lá</translation>
 <translation id="6005538289190791541">Senha sugerida</translation>
 <translation id="6039379616847168523">Ir para a próxima guia</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -674,6 +673,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6154478581116148741">Ative o bloqueio da tela em Configurações para exportar suas senhas deste dispositivo</translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6171019622954353983">Ao continuar, você concorda que os dados do "Preenchimento automático" do Chrome, assim como o URL e o conteúdo do site, sejam enviados para o Google com o objetivo de fornecer este serviço.\n\nAcesse as configurações do Chrome para desativar o Google Assistente e o "Preenchimento automático" no Chrome.  <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
 <translation id="6177390657002841081">Ativar a Economia de dados</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
@@ -882,6 +882,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7670842975141217779">Google Assistente\nno Chrome</translation>
 <translation id="7682724950699840886">Experimente as seguintes dicas: verifique se há espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7698359219371678927">Criar e-mail no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Preencher automaticamente pesquisas e URLs</translation>

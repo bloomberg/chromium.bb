@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="360207483134687714">‏עזור לשפר את חוויית VR ב-Chrome</translation>
+<translation id="3604604794717279723">אני מסכים/ה</translation>
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3620176948598597475">‏האיפוס מוחק את ההיסטוריה של Data Saver, כולל רשימת האתרים שבהם ביקרת.</translation>
 <translation id="3630011985153972676">‏Chrome יכול להוריד בשבילך מאמרים כשקיים חיבור ל-Wi-Fi. האפשרות הזאת זמינה דרך ההגדרות.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
-<translation id="4222812745228723705">‏המשך מבטא את הסכמתך לכך שכדי לספק את השירות הזה, Chrome ישלח ל-Google נתונים מהמילוי האוטומטי של Chrome, את כתובת ה-URL של האתר ואת התוכן שלו. דרך הגדרות Chrome אפשר להשבית את Google Assistant ב-Chrome ובמילוי האוטומטי של Chrome. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">לא נמצא תוכן</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="423219824432660969">‏הצפנת נתונים מסונכרנים באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">הקש כדי לכווץ</translation>
 <translation id="5990142338020175451">‏התאמה אישית יותר של שירותי Google - למשל, הצעות לדפים מתאימים יותר</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
-<translation id="6001839398155993679">קדימה!</translation>
 <translation id="6005538289190791541">הצעה לסיסמה</translation>
 <translation id="6039379616847168523">עבור לכרטיסייה הבאה</translation>
 <translation id="6040143037577758943">סגור</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6171019622954353983">‏המשך מבטא את הסכמתך לכך שכדי לספק את השירות הזה, Chrome ישלח ל-Google נתונים מהמילוי האוטומטי של Chrome, את כתובת ה-URL של האתר ואת התוכן שלו.\n\nדרך הגדרות Chrome אפשר להשבית את Google Assistant ב-Chrome ובמילוי האוטומטי של Chrome.  <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
 <translation id="6177390657002841081">‏הפעלת Data Saver</translation>
 <translation id="6181444274883918285">הוסף חריג של אתר</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>
+<translation id="7670842975141217779">‏Google Assistant\nב-Chrome</translation>
 <translation id="7682724950699840886">אפשר לנסות את הטיפים הבאים: צריך לוודא שיש מספיק מקום פנוי במכשיר ואז לנסות לייצא שוב.</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>

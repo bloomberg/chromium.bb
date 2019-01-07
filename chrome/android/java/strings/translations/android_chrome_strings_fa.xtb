@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
 <translation id="360207483134687714">‏به بهبود تجربه «واقعیت مجازی» در Chrome کمک کنید</translation>
+<translation id="3604604794717279723">موافقم</translation>
 <translation id="3616113530831147358">صوتی</translation>
 <translation id="3620176948598597475">بازنشانی، سابقه صرفه‌جویی داده (ازجمله فهرست سایت‌های بازدید شده) را پاک می‌کند.</translation>
 <translation id="3630011985153972676">‏در بخش تنظیمات، به Chrome اجازه دهید هنگام اتصال به Wi-Fi برایتان مقاله بارگیری کند.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
 <translation id="4209895695669353772">‏برای اینکه Google محتوای شخصی‌شده به شما پیشنهاد دهد، همگام‌سازی را روشن کنید</translation>
-<translation id="4222812745228723705">‏با ادامه دادن، موافقت می‌‌کنید Chrome برای ارائه این سرویس، داده‌های «تکمیل خودکار Chrome» ، نشانی وب سایت و محتوای آن را برای Google ارسال کند. برای خاموش کردن «دستیار Google» در Chrome و «تکمیل خودکار Chrome»، به تنظیمات Chrome بروید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">محتوایی پیدا نشد</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="423219824432660969">‏رمزگذاری داده‌های همگام‌سازی‌شده با گذرواژه Google از <ph name="TIME" /></translation>
@@ -653,7 +653,6 @@
 <translation id="5962718611393537961">برای کوچک کردن ضربه بزنید</translation>
 <translation id="5990142338020175451">‏سرویس‌های Google شخصی‌شده بیشتر، مثل پیشنهادهای بهتر برای صفحه</translation>
 <translation id="6000066717592683814">‏حفظ Google</translation>
-<translation id="6001839398155993679">بیایید شروع کنیم</translation>
 <translation id="6005538289190791541">گذرواژه پیشنهادی</translation>
 <translation id="6039379616847168523">رفتن به برگه بعدی</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -673,6 +672,7 @@
 <translation id="6154478581116148741">برای صادر کردن گذرواژه‌ها از این دستگاه، قفل صفحه را در تنظیمات روشن کنید.</translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6171019622954353983">‏با ادامه دادن، موافقت می‌‌کنید Chrome برای ارائه این سرویس، داده‌های «تکمیل خودکار Chrome» ، نشانی وب سایت و محتوای آن را برای Google ارسال کند.\n\nبرای خاموش کردن «دستیار Google» در Chrome و «تکمیل خودکار Chrome»، به تنظیمات Chrome بروید.  <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
 <translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="6181444274883918285">افزودن استثنای سایت</translation>
@@ -881,6 +881,7 @@
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7665369617277396874">افزودن حساب</translation>
+<translation id="7670842975141217779">‏دستیار Google‏‎\nدر Chrome</translation>
 <translation id="7682724950699840886">نکات زیر را امتحان کنید: مطمئن شوید که در دستگاهتان فضای کافی وجود داشته باشد، سعی کنید دوباره صادر کنید.</translation>
 <translation id="7698359219371678927">ایجاد ایمیل در <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">تکمیل خودکار جستجوها و نشانی‌های وب</translation>

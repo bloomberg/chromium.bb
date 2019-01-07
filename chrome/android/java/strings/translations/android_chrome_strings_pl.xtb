@@ -333,6 +333,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3599863153486145794">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Wycisz strony, które odtwarzają dźwięk</translation>
 <translation id="360207483134687714">Pomóż ulepszyć korzystanie z Chrome w rzeczywistości wirtualnej</translation>
+<translation id="3604604794717279723">Zgadzam się</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3620176948598597475">Zresetowanie spowoduje usunięcie historii Oszczędzania danych, w tym listy odwiedzonych stron.</translation>
 <translation id="3630011985153972676">W ustawieniach możesz zezwolić Chrome na pobieranie artykułów dla Ciebie, gdy używasz Wi-Fi.</translation>
@@ -409,7 +410,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="4198423547019359126">Brak dostępnych miejsc zapisu pobieranych plików</translation>
 <translation id="4209895695669353772">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, włącz synchronizację</translation>
-<translation id="4222812745228723705">Przechodząc dalej, zgadzasz się, by w ramach tej usługi Chrome wysyłał do Google dane z Autouzupełniania, a także adres URL i zawartość strony. Autouzupełnianie i Asystenta Google możesz wyłączyć w ustawieniach Chrome. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nic nie znaleziono</translation>
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="423219824432660969">Zaszyfruj synchronizowane dane hasłem Google z <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
 <translation id="5990142338020175451">Bardziej spersonalizowane usługi Google, na przykład lepsze podpowiedzi stron</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
-<translation id="6001839398155993679">Do dzieła</translation>
 <translation id="6005538289190791541">Proponowane hasło</translation>
 <translation id="6039379616847168523">Przejdź do następnej karty</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -674,6 +673,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6154478581116148741">Włącz blokadę ekranu w ustawieniach, by wyeksportować hasła z urządzenia</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6171019622954353983">Przechodząc dalej, zgadzasz się, by w ramach tej usługi Chrome wysyłał do Google dane z Autouzupełniania, a także URL i zawartość strony.\n\nAutouzupełnianie i Asystenta Google możesz wyłączyć w ustawieniach Chrome.  <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Zablokowano dostęp obecnej wyszukiwarce</translation>
 <translation id="6177390657002841081">Włącz Oszczędzanie danych</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
@@ -882,6 +882,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
+<translation id="7670842975141217779">Asystent Google\nw Chrome</translation>
 <translation id="7682724950699840886">Skorzystaj z tych wskazówek: upewnij się, że masz wystarczająco dużo miejsca na urządzeniu, i ponownie spróbuj wyeksportować hasła.</translation>
 <translation id="7698359219371678927">Utwórz e-maila w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>

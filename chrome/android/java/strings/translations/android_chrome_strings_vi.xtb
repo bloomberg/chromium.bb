@@ -333,6 +333,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Tắt tiếng trên các trang web phát âm thanh</translation>
 <translation id="360207483134687714">Giúp nâng cao trải nghiệm VR trong Chrome</translation>
+<translation id="3604604794717279723">Tôi chấp nhận</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
 <translation id="3620176948598597475">Việc đặt lại sẽ xóa lịch sử của Trình tiết kiệm dữ liệu, bao gồm cả danh sách các trang web đã truy cập.</translation>
 <translation id="3630011985153972676">Cho phép Chrome tải bài viết xuống cho bạn khi bạn đang sử dụng mạng Wi-Fi trong phần Cài đặt.</translation>
@@ -409,7 +410,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4198423547019359126">Không có vị trí tải xuống</translation>
 <translation id="4209895695669353772">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy bật tính năng đồng bộ hóa</translation>
-<translation id="4222812745228723705">Bằng việc tiếp tục, bạn đồng ý rằng Chrome sẽ gửi dữ liệu từ tính năng Tự động điền của Chrome, URL và nội dung của trang web đến Google để cung cấp dịch vụ này. Bạn có thể tắt Trợ lý Google và tính năng Tự động điền của Chrome trong phần cài đặt của Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Không tìm thấy nội dung nào</translation>
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
 <translation id="423219824432660969">Mã hóa dữ liệu đã đồng bộ hóa bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
 <translation id="5990142338020175451">Tận hưởng nhiều dịch vụ cá nhân hóa khác của Google, như trang đề xuất có liên quan hơn</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
-<translation id="6001839398155993679">Bắt đầu</translation>
 <translation id="6005538289190791541">Mật khẩu đề xuất</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
 <translation id="6040143037577758943">Đóng</translation>
@@ -674,6 +673,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6154478581116148741">Bật khóa màn hình trong Cài đặt để xuất mật khẩu của bạn từ thiết bị này</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6171019622954353983">Bằng việc tiếp tục, bạn đồng ý rằng Chrome sẽ gửi dữ liệu từ tính năng Tự động điền của Chrome, URL và nội dung của trang web đến Google để cung cấp dịch vụ này.\n\nBạn có thể tắt Trợ lý Google và tính năng Tự động điền của Chrome trong phần cài đặt của Chrome.  <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Bị chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
@@ -882,6 +882,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
+<translation id="7670842975141217779">Trợ lý Google\ntrong Chrome</translation>
 <translation id="7682724950699840886">Thử các mẹo sau: đảm bảo thiết bị của bạn có đủ dung lượng, sau đó thử xuất lại.</translation>
 <translation id="7698359219371678927">Tạo email trong <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>

@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">ログインしているすべての端末の履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="3600792891314830896">音声が再生されるサイトをミュートする</translation>
 <translation id="360207483134687714">Chrome の VR モードの改善にご協力ください</translation>
+<translation id="3604604794717279723">同意する</translation>
 <translation id="3616113530831147358">音声</translation>
 <translation id="3620176948598597475">リセットすると、アクセスしたサイトのリストなど、データセーバーの履歴が削除されます。</translation>
 <translation id="3630011985153972676">設定での Wi-Fi 接続時にお客様向けの記事のダウンロードを許可します。</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198423547019359126">ダウンロードの保存先はありません</translation>
 <translation id="4209895695669353772">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、同期を有効にします</translation>
-<translation id="4222812745228723705">続行すると、本サービスの提供にあたって Chrome の自動入力のデータ、サイトの URL、サイトのコンテンツを Google に送信することに同意したものとみなされます。Chrome の Google アシスタントと自動入力をオフにするには、Chrome の設定にアクセスしてください。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">コンテンツが見つかりませんでした</translation>
 <translation id="4226663524361240545">通知を受け取ると端末が振動します</translation>
 <translation id="423219824432660969"><ph name="TIME" />時点の Google パスワードで同期データを暗号化する</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">タップして折りたたむ</translation>
 <translation id="5990142338020175451">おすすめのページなど、カスタマイズされた Google サービスを利用できます</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
-<translation id="6001839398155993679">開始する</translation>
 <translation id="6005538289190791541">推奨パスワード</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">この端末からパスワードをエクスポートするには、[設定] で画面ロックをオンにしてください。</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6171019622954353983">続行すると、本サービスの提供にあたって Chrome の自動入力のデータ、サイトの URL、サイトのコンテンツを Google に送信することに同意したものとみなされます。\n\nChrome の Google アシスタントと自動入力をオフにするには、Chrome の設定にアクセスしてください。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
+<translation id="7670842975141217779">Chrome で\nGoogle アシスタントを使う</translation>
 <translation id="7682724950699840886">推奨される対策: 端末に十分な空き容量があることを確認し、再度エクスポートを試します。</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> でメールを作成</translation>
 <translation id="7704317875155739195">検索語句や URL をオートコンプリートする</translation>

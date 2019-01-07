@@ -333,6 +333,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="3600792891314830896">Ses çalan sitelerin sesini kapat</translation>
 <translation id="360207483134687714">Chrome'da Sanal Gerçeklik deneyimini iyileştirmeye yardımcı olun</translation>
+<translation id="3604604794717279723">Kabul ediyorum</translation>
 <translation id="3616113530831147358">Ses</translation>
 <translation id="3620176948598597475">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere Veri Tasarrufu geçmişini siler.</translation>
 <translation id="3630011985153972676">Kablosuz bağlantı kullanılırken Chrome'un makaleleri indirmesine ayarlardan izin verin.</translation>
@@ -409,7 +410,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4198423547019359126">Kullanılabilir indirme yeri yok</translation>
 <translation id="4209895695669353772">Google tarafından önerilen kişiselleştirilmiş içeriği almak için senkronizasyonu açın</translation>
-<translation id="4222812745228723705">Devam ederek, Chrome'un, bu hizmeti sağlamak amacıyla Chrome Otomatik Doldurma özelliğinden verileri, sitenin URL'sini ve içeriğini Google'a göndermesini kabul etmiş olursunuz. Chrome'da ve Chrome Otomatik Doldurma özelliğinde Google Asistan'ı kapatmak için Chrome ayarlarına gidin. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">İçerik bulunamadı</translation>
 <translation id="4226663524361240545">Bildirimler cihazı titretebilir</translation>
 <translation id="423219824432660969"><ph name="TIME" /> itibarıyla, senkronize edilmiş verileri Google şifresiyle şifrele</translation>
@@ -654,7 +654,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5962718611393537961">Daraltmak için dokunun</translation>
 <translation id="5990142338020175451">Daha iyi sayfa önerileri gibi daha kişisel Google hizmetleri</translation>
 <translation id="6000066717592683814">Google kalsın</translation>
-<translation id="6001839398155993679">Başlayalım</translation>
 <translation id="6005538289190791541">Önerilen şifre</translation>
 <translation id="6039379616847168523">Sonraki sekmeye gider</translation>
 <translation id="6040143037577758943">Kapat</translation>
@@ -674,6 +673,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6154478581116148741">Bu cihazdaki şifrelerinizi dışarı aktarmak için Ayarlar'da ekran kilidini açın</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6171019622954353983">Devam ederek, Chrome'un, bu hizmeti sağlamak amacıyla Chrome Otomatik Doldurma özelliğinden verileri, sitenin URL'sini ve içeriğini Google'a göndermesini kabul etmiş olursunuz.\n\nChrome'da ve Chrome Otomatik Doldurma özelliğinde Google Asistan'ı kapatmak için Chrome ayarlarına gidin.  <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Geçerli arama motoru için engellendi</translation>
 <translation id="6177390657002841081">Veri Tasarrufu'nu aç</translation>
 <translation id="6181444274883918285">Site istisnası ekle</translation>
@@ -882,6 +882,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
+<translation id="7670842975141217779">Chrome'daki\nGoogle Asistan</translation>
 <translation id="7682724950699840886">Şu ipuçlarını deneyin: Cihazınızda yeterli alan bulunduğundan emin olun, daha sonra dışa aktarmayı tekrar deneyin.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> adlı uygulamada e-posta oluşturun</translation>
 <translation id="7704317875155739195">Aramaları ve URL'leri otomatik tamamla</translation>

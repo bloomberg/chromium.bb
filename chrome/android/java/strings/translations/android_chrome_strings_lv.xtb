@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">Notīra vēsturi no visām ierīcēm, kurās esat pierakstījies. Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> var būt citu veidu pārlūkošanas vēstures dati.</translation>
 <translation id="3600792891314830896">Izslēgt skaņu vietnēm, kurās tiek atskaņota skaņa</translation>
 <translation id="360207483134687714">Palīdziet uzlabot virtuālās realitātes pieredzi pārlūkā Chrome.</translation>
+<translation id="3604604794717279723">Piekrītu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Veicot atiestatīšanu, tiek dzēsta datu lietojuma samazinātāja vēsture, tostarp apmeklēto vietņu saraksts.</translation>
 <translation id="3630011985153972676">Iestatījumu sadaļā varat atļaut pārlūkam Chrome lejupielādēt rakstus, kad ir izveidots savienojums ar Wi-Fi tīklu.</translation>
@@ -409,7 +410,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="4198423547019359126">Nav pieejamu lejupielādes atrašanās vietu.</translation>
 <translation id="4209895695669353772">Lai saņemtu Google ieteikto personalizēto saturu, ieslēdziet sinhronizāciju.</translation>
-<translation id="4222812745228723705">Turpinot jūs piekrītat, ka Chrome sūtīs datus no Chrome automātiskās aizpildes funkcijas, vietnes vietrādi URL un tās saturu Google serveriem, lai nodrošinātu šo pakalpojumu. Pārejiet uz Chrome iestatījumiem, lai izslēgtu Google asistentu pārlūkprogrammā Chrome un Chrome automātiskās aizpildes funkcijā. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4225719675976901337">Saturs netika atrasts</translation>
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="423219824432660969">Šifrēt sinhronizētos datus ar Google paroli, sākot no: <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5962718611393537961">Pieskarties, lai sakļautu</translation>
 <translation id="5990142338020175451">Personalizētāki Google pakalpojumi, piemēram, precīzāki lapu ieteikumi</translation>
 <translation id="6000066717592683814">Arī turpmāk izmantot Google</translation>
-<translation id="6001839398155993679">Aiziet!</translation>
 <translation id="6005538289190791541">Ieteiktā parole</translation>
 <translation id="6039379616847168523">Pāriet uz nākamo cilni</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
@@ -674,6 +673,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6154478581116148741">Lai eksportētu paroles no šīs ierīces, sadaļā “Iestatījumi” ieslēdziet ekrāna bloķēšanu.</translation>
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6171019622954353983">Turpinot jūs piekrītat, ka Chrome sūtīs datus no Chrome automātiskās aizpildes funkcijas, vietnes vietrādi URL un tās saturu Google serveriem, lai nodrošinātu šo pakalpojumu.\n\nPārejiet uz Chrome iestatījumiem, lai izslēgtu Google asistentu pārlūkprogrammā Chrome un Chrome automātiskās aizpildes funkciju.  <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="6177111841848151710">Bloķēta pašreizējai meklētājprogrammai</translation>
 <translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
@@ -882,6 +882,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7665369617277396874">Pievienot kontu</translation>
+<translation id="7670842975141217779">Google asistents\npārlūkprogrammā Chrome</translation>
 <translation id="7682724950699840886">Ņemiet vērā šos ieteikumus: atbrīvojiet ierīcē vietu un mēģiniet eksportēt vēlreiz.</translation>
 <translation id="7698359219371678927">Izveidojiet e-pasta ziņojumu lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="7704317875155739195">Automātiski pabeigt meklēšanas vaicājumus un vietrāžus URL</translation>

@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
 <translation id="360207483134687714">帮助我们改进 Chrome 中的虚拟现实体验</translation>
+<translation id="3604604794717279723">我接受</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3620176948598597475">这项重置操作会清空流量节省程序的历史记录，包括曾访问过的网站的列表。</translation>
 <translation id="3630011985153972676">在“设置”中允许 Chrome 在连接到 Wi-Fi 网络时为您下载文章。</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
 <translation id="4209895695669353772">要获取 Google 推荐的个性化内容，请开启同步功能</translation>
-<translation id="4222812745228723705">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">找不到内容</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="423219824432660969">自 <ph name="TIME" />起，使用 Google 密码加密已同步的数据</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="5990142338020175451">畅享更加个性化的 Google 服务，例如更贴合个人需求的网页建议</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
-<translation id="6001839398155993679">开始</translation>
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6171019622954353983">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。\n\n若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">已设为不可供当前的搜索引擎使用</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
+<translation id="7670842975141217779">Chrome 中的\nGoogle 助理</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>

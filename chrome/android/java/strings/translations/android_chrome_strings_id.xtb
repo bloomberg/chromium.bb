@@ -333,6 +333,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3599863153486145794">Menghapus histori dari semua perangkat yang dibuat login. Akun Google Anda mungkin memiliki bentuk histori browsing lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mematikan suara situs yang memutar suara</translation>
 <translation id="360207483134687714">Bantu membuat VR di Chrome menjadi lebih baik</translation>
+<translation id="3604604794717279723">Saya setuju</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Menyetel ulang akan menghapus histori Penghemat Kuota Internet, termasuk daftar situs yang dikunjungi.</translation>
 <translation id="3630011985153972676">Izinkan Chrome mendownload artikel untuk Anda melalui Wi-Fi di bagian setelan.</translation>
@@ -409,7 +410,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198423547019359126">Tidak tersedia lokasi download</translation>
 <translation id="4209895695669353772">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, aktifkan sinkronisasi</translation>
-<translation id="4222812745228723705">Dengan melanjutkan, Anda setuju bahwa Chrome akan mengirimkan data dari IsiOtomatis Chrome, URL situs, dan konten situs tersebut ke Google untuk menyediakan layanan ini. Buka setelan Chrome untuk menonaktifkan Asisten Google di Chrome dan IsiOtomatis Chrome. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Konten tidak ditemukan</translation>
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="423219824432660969">Enkripsikan data yang disinkronkan dengan sandi Google mulai tanggal <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5962718611393537961">Tap untuk menciutkan</translation>
 <translation id="5990142338020175451">Layanan Google yang lebih personal, seperti saran halaman yang lebih baik</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
-<translation id="6001839398155993679">Ayo</translation>
 <translation id="6005538289190791541">Sandi yang disarankan</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -674,6 +673,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6154478581116148741">Aktifkan kunci layar di Setelan untuk mengekspor sandi dari perangkat ini</translation>
 <translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6171019622954353983">Dengan melanjutkan, Anda setuju bahwa Chrome akan mengirimkan data dari IsiOtomatis Chrome, URL situs, dan kontennya ke Google untuk menyediakan layanan ini.\n\nBuka setelan Chrome untuk menonaktifkan Asisten Google di Chrome dan IsiOtomatis Chrome.  <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
 <translation id="6177390657002841081">Mengaktifkan Penghemat Kuota Internet</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
@@ -882,6 +882,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665369617277396874">Tambahkan akun</translation>
+<translation id="7670842975141217779">Asisten Google\ndi Chrome</translation>
 <translation id="7682724950699840886">Coba tips berikut ini: pastikan ruang di perangkat Anda mencukupi, lalu coba ekspor lagi.</translation>
 <translation id="7698359219371678927">Buat email di <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Lengkapi otomatis penelusuran dan URL</translation>

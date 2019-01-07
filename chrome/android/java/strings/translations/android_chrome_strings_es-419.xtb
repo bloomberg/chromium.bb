@@ -333,6 +333,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que accediste. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios que reproducen sonido</translation>
 <translation id="360207483134687714">Ayuda a mejorar la experiencia de RV en Chrome</translation>
+<translation id="3604604794717279723">Acepto</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Si se restablece el Ahorro de datos, se borra su historial, incluida la lista de sitios visitados.</translation>
 <translation id="3630011985153972676">Permite que Chrome descargue artículos para ti cuando estés conectado a Wi-Fi.</translation>
@@ -409,7 +410,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4198423547019359126">No hay ubicaciones de descarga disponibles</translation>
 <translation id="4209895695669353772">Para obtener contenido personalizado y sugerido por Google, activa la sincronización</translation>
-<translation id="4222812745228723705">Si continúas, aceptas que Chrome envíe datos de Autocompletar de Chrome, las URL del sitio y su contenido a Google para proporcionar este servicio. Para desactivar el Asistente de Google en Chrome y Autocompletar de Chrome, ve a la configuración de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">No se encontró contenido</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="423219824432660969">Encriptar los datos sincronizados con la contraseña de Google a partir del <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5962718611393537961">Presiona para contraer</translation>
 <translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="6000066717592683814">Seguir usando Google</translation>
-<translation id="6001839398155993679">Comenzar</translation>
 <translation id="6005538289190791541">Contraseña sugerida</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -674,6 +673,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6154478581116148741">Para exportar tus contraseñas de este dispositivo, activa el bloqueo de pantalla en Configuración</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6171019622954353983">Si continúas, aceptas que Chrome envíe datos de "Autocompletar" de Chrome, la URL del sitio y su contenido a Google para proporcionar este servicio.\nPara desactivar el Asistente de Google en Chrome y "Autocompletar" de Chrome, ve a la configuración de Chrome.  <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Se bloqueó para el motor de búsqueda actual</translation>
 <translation id="6177390657002841081">Activar la extensión Ahorro de datos</translation>
 <translation id="6181444274883918285">Agregar excepción del sitio</translation>
@@ -882,6 +882,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
+<translation id="7670842975141217779">Asistente de Google\nen Chrome</translation>
 <translation id="7682724950699840886">Intenta las siguientes sugerencias: Antes de exportar las contraseñas nuevamente, asegúrate de que haya espacio suficiente en tu dispositivo.</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URL</translation>

@@ -333,6 +333,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Desativar o som dos sites que reproduzem som</translation>
 <translation id="360207483134687714">Ajude a melhorar a experiência de RV no Chrome</translation>
+<translation id="3604604794717279723">Aceito</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3620176948598597475">A reposição apaga o histórico da Poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3630011985153972676">Permita que o Chrome lhe transfira artigos quando ligado ao Wi-Fi nas definições.</translation>
@@ -409,7 +410,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4198423547019359126">Não existem localizações de transferência disponíveis.</translation>
 <translation id="4209895695669353772">Para obter conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
-<translation id="4222812745228723705">Ao continuar, aceita que o Chrome envie dados do Preenchimento automático do Chrome, do URL do site e respetivo conteúdo à Google para fornecer este serviço. Aceda às definições do Chrome para desativar o Assistente Google no Chrome e o Preenchimento automático do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nenhum conteúdo encontrado</translation>
 <translation id="4226663524361240545">As notificações podem fazer com que o dispositivo vibre</translation>
 <translation id="423219824432660969">Encriptar dados sincronizados com a palavra-passe do Google a partir de <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="5990142338020175451">Serviços Google mais pessoais, como melhores sugestões de páginas</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
-<translation id="6001839398155993679">Vamos lá</translation>
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -674,6 +673,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6154478581116148741">Ative o bloqueio de ecrã nas Definições para exportar as suas palavras-passe a partir deste dispositivo.</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6171019622954353983">Ao continuar, aceita que o Chrome envie dados do Preenchimento automático do Chrome, do URL do site e respetivo conteúdo à Google para fornecer este serviço.\nAceda às definições do Chrome para desativar o Assistente Google no Chrome e no Preenchimento automático do Chrome.  <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Bloqueado para o motor de pesquisa atual</translation>
 <translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
@@ -882,6 +882,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7670842975141217779">Assistente Google\nno Chrome</translation>
 <translation id="7682724950699840886">Experimente as seguintes sugestões: certifique-se de que existe espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Pesquisas de preenchimento automático e URLs</translation>

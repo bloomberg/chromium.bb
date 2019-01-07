@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">كتم صوت المواقع التي تُشغّل الصوت</translation>
 <translation id="360207483134687714">‏المساعدة في تحسين تجربة الواقع الافتراضي (VR) في Chrome</translation>
+<translation id="3604604794717279723">أوافق</translation>
 <translation id="3616113530831147358">الصوت</translation>
 <translation id="3620176948598597475">تؤدي إعادة الضبط إلى محو سجلّ توفير البيانات، بما في ذلك قائمة المواقع التي تمت زيارتها.</translation>
 <translation id="3630011985153972676">‏يمكنك السماح لمتصفِّح Chrome بتنزيل مقالات لك عند الاتصال بشبكة Wi-Fi ضمن الإعدادات.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
 <translation id="4209895695669353772">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تفعيل المزامنة.</translation>
-<translation id="4222812745228723705">‏تشير المتابعة إلى موافقتك على إرسال Chrome بيانات من ميزة الملء التلقائي من Chrome وعنوان URL لموقعك الإلكتروني ومحتواه إلى Google لتوفير هذه الخدمة. يمكنك الانتقال إلى إعدادات Chrome لإيقاف "مساعد Google" على Chrome وميزة الملء التلقائي من Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">لم يتم العثور على محتوى</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="423219824432660969">‏تشفير البيانات المتزامنة باستخدام كلمة مرور Google اعتبارًا من <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="5990142338020175451">‏مزيد من خدمات Google الشخصية، مثل أفضل اقتراحات الصفحة</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
-<translation id="6001839398155993679">البدء</translation>
 <translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">تشغيل قفل الشاشة في الإعدادات لتصدير كلمات المرور من هذا الجهاز</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
+<translation id="6171019622954353983">‏تشير المتابعة إلى موافقتك على إرسال Chrome بيانات من ميزة "الملء التلقائي" من Chrome وعنوان URL لموقعك الإلكتروني ومحتواه إلى Google لتوفير هذه الخدمة.\n\nيمكنك الانتقال إلى إعدادات Chrome لإيقاف "مساعد Google" على Chrome وميزة "الملء التلقائي" من Chrome.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
 <translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
+<translation id="7670842975141217779">‏"مساعد Google"\nعلى Chrome</translation>
 <translation id="7682724950699840886">يمكنك تجربة النصائح التالية: تأكد من توفر مساحة كافية على جهازك وحاول التصدير مرة أخرى.</translation>
 <translation id="7698359219371678927">إنشاء بريد إلكتروني في <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">‏الإكمال التلقائي لعناوين URL وعمليات البحث</translation>

@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">Очищує історію на всіх пристроях, на яких ви ввійшли в обліковий запис. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
 <translation id="360207483134687714">Допоможіть покращити віртуальну реальність у Chrome</translation>
+<translation id="3604604794717279723">Прийняти</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3620176948598597475">Буде скинуто історію функції Заощадження трафіку, зокрема список відвіданих сайтів.</translation>
 <translation id="3630011985153972676">Дозвольте Chrome завантажувати статті через Wi-Fi у налаштуваннях.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4198423547019359126">Немає доступних місць для завантаження</translation>
 <translation id="4209895695669353772">Щоб отримувати персоналізовані пропозиції від Google, увімкніть синхронізацію</translation>
-<translation id="4222812745228723705">Продовжуючи, ви дозволяєте Chrome надсилати дані Автозаповнення, а також URL-адресу та вміст сайту в Google. Щоб вимкнути Google Асистент у Chrome і Автозаповненні, перейдіть у налаштування Chrome. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Немає вмісту</translation>
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="423219824432660969">Зашифрувати синхронізовані дані за допомогою пароля Google від <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
 <translation id="5990142338020175451">Більш персоналізовані сервіси Google, як-от кращі пропозиції сторінок</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
-<translation id="6001839398155993679">Почати</translation>
 <translation id="6005538289190791541">Запропонований пароль</translation>
 <translation id="6039379616847168523">Перейти до наступної вкладки</translation>
 <translation id="6040143037577758943">Закрити</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Докладніше</translation>
+<translation id="6171019622954353983">Продовжуючи, ви дозволяєте Chrome надсилати дані Автозаповнення, а також URL-адресу та вміст сайту в Google.\n\nЩоб вимкнути Google Асистент і Автозаповнення в Chrome, перейдіть у налаштування веб-переглядача.  <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Заблоковано для поточної пошукової системи</translation>
 <translation id="6177390657002841081">Увімкнути Заощадження трафіку</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7665369617277396874">Додати обліковий запис</translation>
+<translation id="7670842975141217779">Google Асистент\nу Chrome</translation>
 <translation id="7682724950699840886">Порада. Переконайтеся, що на пристрої достатньо вільного місця та спробуйте експортувати дані знову.</translation>
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично завершувати пошукові запити та URL-адреси</translation>

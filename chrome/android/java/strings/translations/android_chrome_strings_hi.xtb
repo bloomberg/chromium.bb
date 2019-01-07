@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">प्रवेश किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="3600792891314830896">आवाज़ चलाने वाली साइटों की आवाज़ बंद करें</translation>
 <translation id="360207483134687714">Chrome में VR अनुभव को बेहतर बनाने में सहायता करें</translation>
+<translation id="3604604794717279723">मैं सहमत हूं</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3620176948598597475">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ, डेटा बचाने के साधन का इतिहास हमेशा के लिए मिट जाता है.</translation>
 <translation id="3630011985153972676">सेटिंग में जाकर जब वाई-फ़ाई पर हों तब Chrome को अपने लिए लेख डाउनलोड करने की अनुमति दें.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="4198423547019359126">डाउनलोड करने की कोई जगह उपलब्ध नहीं है</translation>
 <translation id="4209895695669353772">Google की ओर से सुझाई गई मनमुताबिक सामग्री पाने के लिए, 'सिंक करें' को चालू करें</translation>
-<translation id="4222812745228723705">जारी रखकर, आप सहमति देते हैं कि Chrome, यह सेवा देने के लिए, Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) के ज़रिए सेव किया गया डेटा, साइट का यूआरएल, और उसकी सामग्री Google को भेजेगा. Chrome और Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) में Google Assistant को बंद करने के लिए Chrome की सेटिंग पर जाएं. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">कोई सामग्री नहीं मिली</translation>
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="423219824432660969"><ph name="TIME" /> तक का सुरक्षित किया गया किया गया डेटा 'Google पासवर्ड' से सिंक करें</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
 <translation id="5990142338020175451">ज़्यादा निजी Google सेवाएं, जैसे कि बेहतर पेज सुझाव</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
-<translation id="6001839398155993679">आइए, शुरू करें</translation>
 <translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">इस डिवाइस से अपने पासवर्ड निर्यात करने के लिए सेटिंग में स्क्रीन लॉक चालू करें</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
+<translation id="6171019622954353983">जारी रखकर आप सहमति देते हैं कि यह सेवा देने के लिए Chrome, Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) से डेटा, साइट का यूआरएल, और इसकी सामग्री Google को भेजेगा.\n\nChrome में Google Assistant और Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) को बंद करने के लिए Chrome सेटिंग पर जाएं.  <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">अभी के खोज इंजन के लिए ब्लॉक किया गया</translation>
 <translation id="6177390657002841081">डेटा बचाने का साधन चालू करना</translation>
 <translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
+<translation id="7670842975141217779">Chrome में\n Google Assistant</translation>
 <translation id="7682724950699840886">ये सलाह आज़माएं: पक्का करें कि आपके डिवाइस पर ज़रूरी जगह उपलब्ध है, फिर दोबारा निर्यात करके देखें.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> में ईमेल बनाएं</translation>
 <translation id="7704317875155739195">खोजों और यूआरएल को अपने आप पूरा करें</translation>

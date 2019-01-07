@@ -333,6 +333,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="360207483134687714">Contribuisci a migliorare l'esperienza di realtà virtuale in Chrome</translation>
+<translation id="3604604794717279723">Accetto</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">La cronologia del Risparmio dati, incluso l'elenco dei siti visitati, verrà eliminata.</translation>
 <translation id="3630011985153972676">Consenti a Chrome di scaricare gli articoli quando è attiva la connessione Wi-Fi.</translation>
@@ -409,7 +410,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4198423547019359126">Nessun percorso di download disponibile</translation>
 <translation id="4209895695669353772">Per ricevere contenuti suggeriti appositamente per te da Google, attiva la sincronizzazione</translation>
-<translation id="4222812745228723705">Se continui, accetti che Chrome invii a Google dati di Compilazione automatica di Chrome, l'URL e i contenuti del sito per fornire questo servizio. Accedi alle impostazioni di Chrome per disattivare l'Assistente Google in Chrome e la Compilazione automatica di Chrome. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nessun contenuto trovato</translation>
 <translation id="4226663524361240545">Le notifiche possono far vibrare il dispositivo</translation>
 <translation id="423219824432660969">Cripta i dati sincronizzati con la password Google a partire dal giorno <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5962718611393537961">Tocca per comprimere</translation>
 <translation id="5990142338020175451">Servizi Google più personalizzati, ad esempio suggerimenti di pagine più pertinenti</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
-<translation id="6001839398155993679">Inizia</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -674,6 +673,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6154478581116148741">Attiva il blocco schermo in Impostazioni per esportare le tue password da questo dispositivo</translation>
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
+<translation id="6171019622954353983">Se continui, accetti che Chrome invii a Google dati di Compilazione automatica di Chrome, l'URL e i contenuti del sito per fornire questo servizio.\n\nAccedi alle impostazioni di Chrome per disattivare l'Assistente Google in Chrome e la Compilazione automatica di Chrome.  <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Bloccata per il motore di ricerca corrente</translation>
 <translation id="6177390657002841081">Attiva Risparmio dati</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
@@ -882,6 +882,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
+<translation id="7670842975141217779">Assistente Google\nin Chrome</translation>
 <translation id="7682724950699840886">Prova i seguenti suggerimenti: assicurati di avere spazio sufficiente sul dispositivo e prova a esportare di nuovo.</translation>
 <translation id="7698359219371678927">Crea email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completamento automatico di ricerche e URL</translation>

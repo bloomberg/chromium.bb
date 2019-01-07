@@ -24,17 +24,17 @@
 <translation id="1289185460362160437">Kom tilbage <ph name="COME_BACK_DAY_OF_WEEK" /> kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Svagt signal</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
-<translation id="1294929383540927798">Skift indstillinger for underretninger på låseskærm</translation>
+<translation id="1294929383540927798">Skift indstillinger for notifikationer på låseskærm</translation>
 <translation id="1302880136325416935">Vis Bluetooth-indstillinger. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vis altid hylde</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
-<translation id="1419738280318246476">Lås enheden op for at udføre underretningshandlingen</translation>
+<translation id="1419738280318246476">Lås enheden op for at udføre notifikationshandlingen</translation>
 <translation id="1455242230282523554">Vis sprogindstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis indstillinger for underretninger. Underretninger er slået fra for en app}one{Vis indstillinger for underretninger. Underretninger er slået fra for # app}other{Vis indstillinger for underretninger. Underretninger er slået fra for # apps}}</translation>
+<translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis indstillinger for notifikationer. Notifikationer er slået fra for en app}one{Vis indstillinger for notifikationer. Notifikationer er slået fra for # app}other{Vis indstillinger for notifikationer. Notifikationer er slået fra for # apps}}</translation>
 <translation id="1525508553941733066">AFVIS</translation>
 <translation id="1537254971476575106">Forstørrelse af fuld skærm</translation>
 <translation id="15373452373711364">Stor musemarkør</translation>
@@ -96,7 +96,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en session, der administreres af <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Forbundet til <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY" /></translation>
-<translation id="2482878487686419369">Underretninger</translation>
+<translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2484513351006226581">Tryk på <ph name="KEYBOARD_SHORTCUT" /> for at skifte tastaturlayout.</translation>
 <translation id="2501920221385095727">Træge taster</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
@@ -167,7 +167,7 @@
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
-<translation id="3631369015426612114">Tillad underretninger fra følgende</translation>
+<translation id="3631369015426612114">Tillad notifikationer fra følgende</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tag et screenshot af området</translation>
 <translation id="371370241367527062">Mikrofon på forsiden</translation>
@@ -196,7 +196,7 @@
 <translation id="4146833061457621061">Spil musik</translation>
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4217571870635786043">Diktering</translation>
-<translation id="4261870227682513959">Vis indstillinger for underretninger. Underretninger er slået fra</translation>
+<translation id="4261870227682513959">Vis indstillinger for notifikationer. Notifikationer er slået fra</translation>
 <translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
 <translation id="4274921305979314545">Knyt din Chromebook til din telefon</translation>
 <translation id="4279490309300973883">Spejling</translation>
@@ -314,7 +314,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>
-<translation id="642644398083277086">Ryd alle underretninger</translation>
+<translation id="642644398083277086">Ryd alle notifikationer</translation>
 <translation id="643147933154517414">Færdig</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Afvis</translation>
@@ -378,16 +378,16 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7548434653388805669">Det er sengetid</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
-<translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
+<translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende notifikationer, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
-<translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
+<translation id="7647488630410863958">Lås enheden op for at se dine notifikationer</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7654687942625752712">Tryk på begge lydstyrketaster, og hold dem nede i fem sekunder for at deaktivere oplæsning.</translation>
 <translation id="7692480393933218409">Oplader tilsluttede USB-C-enheder</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 underretning}one{# underretning}other{# underretninger}}</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikation}one{# notifikation}other{# notifikationer}}</translation>
 <translation id="776344839111254542">Klik for at se opdateringsoplysninger</translation>
 <translation id="7780159184141939021">Roter skærm</translation>
 <translation id="7796353162336583443">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge Google Assistent, laserpegepinden eller luppen.</translation>
@@ -420,7 +420,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
-<translation id="8192202700944119416">Underretninger er skjult.</translation>
+<translation id="8192202700944119416">Notifikationer er skjult.</translation>
 <translation id="8236042855478648955">Det er tid til at tage en pause</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8297006494302853456">Svag</translation>
@@ -446,7 +446,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> tilbage</translation>
 <translation id="8649101189709089199">Tekstoplæsning</translation>
 <translation id="8652175077544655965">Luk indstillinger</translation>
-<translation id="8653151467777939995">Vis indstillinger for underretninger. Underretninger er slået til</translation>
+<translation id="8653151467777939995">Vis indstillinger for notifikationer. Notifikationer er slået til</translation>
 <translation id="8664753092453405566">Vis netværksliste. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
@@ -468,7 +468,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> anvendes</translation>
-<translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre underretningshandlingen</translation>
+<translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre notifikationshandlingen</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>
 <translation id="9056839673611986238">En tidligere version gendannes på enheden</translation>

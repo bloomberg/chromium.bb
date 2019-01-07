@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="3600792891314830896">將播放音訊的網站設為靜音</translation>
 <translation id="360207483134687714">協助我們改善 Chrome 的 VR 體驗</translation>
+<translation id="3604604794717279723">我接受</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3620176948598597475">重設會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
 <translation id="3630011985153972676">允許 Chrome 透過 Wi-Fi 連線為你下載文章 (可自行啟用這項設定)。</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
-<translation id="4222812745228723705">選擇繼續即表示您同意 Chrome 將 Chrome 自動填入功能取得的資料、網站的網址及其內容傳送給 Google，讓 Google 為您提供這項服務。如要針對 Chrome 和 Chrome 自動填入功能關閉 Google 助理，請前往 Chrome 設定。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">找不到內容</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="5990142338020175451">體驗更加個人化的 Google 服務 (例如更適切的網頁建議)</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
-<translation id="6001839398155993679">立即開始</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定，即可從這部裝置匯出你的密碼</translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6171019622954353983">選擇繼續即表示您同意 Chrome 將 Chrome 自動填入功能取得的資料、網站的網址及內容傳送給 Google，讓 Google 為您提供這項服務。\n\n如要關閉 Chrome 的 Google 助理和 Chrome 自動填入功能，請前往 Chrome 設定。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">禁止目前的搜尋引擎存取位置資訊</translation>
 <translation id="6177390657002841081">開啟 Data Saver</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
+<translation id="7670842975141217779">Chrome 版\nGoogle 助理</translation>
 <translation id="7682724950699840886">請嘗試按照下列提示操作：確認你的裝置上有足夠空間，然後嘗試重新匯出。</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
 <translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>

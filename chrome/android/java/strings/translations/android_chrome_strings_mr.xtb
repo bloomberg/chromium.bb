@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">साइन-इन केलेल्या सर्व डिव्हाइसमधून इतिहास साफ करते. तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर कदाचित ब्राउझिंगचे इतर फॉर्म असतील.</translation>
 <translation id="3600792891314830896">ध्वनी प्ले करणाऱ्या साइट म्यूट करा</translation>
 <translation id="360207483134687714">Chrome मध्ये VR अनुभव सुधारण्यात मदत करा</translation>
+<translation id="3604604794717279723">मी स्वीकारत आहे</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
 <translation id="3620176948598597475">रीसेट केल्याने भेट दिलेल्या साइटच्या सूचीसह डेटा बचतकर्ता इतिहास मिटवला जाईल.</translation>
 <translation id="3630011985153972676">वाय-फाय वर असताना सेटिंग्ज अंतर्गत Chrome ला तुमच्यासाठी लेख डाउनलोड करण्याची अनुमती द्या.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">नवीन विंडोमध्ये उघडा</translation>
 <translation id="4198423547019359126">कोणतीही डाउनलोड स्थाने उपलब्ध नाहीत</translation>
 <translation id="4209895695669353772">Google ने सुचवलेला पर्सनलाइझ केलेला आशय मिळवण्यासाठी, सिंक सुरू करा</translation>
-<translation id="4222812745228723705">सुरू ठेवून, तुम्ही सहमती दर्शवता की, Chrome ही सेवा पुरवण्यासाठी Chrome ऑटोफिल साइटची URL आणि त्याच्या Google वरील आशयावरून डेटा पाठवेल. Chrome आणि Chrome ऑटोफिलमधील Google असिस्टंट बंद करण्यासाठी Chrome सेटिंग्जला भेट द्या. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">कोणताही आशय आढळला नाही</translation>
 <translation id="4226663524361240545">सूचनांमुळे डिव्हाइसचे कंपन होऊ शकते</translation>
 <translation id="423219824432660969"><ph name="TIME" /> पर्यंत Google पासवर्डसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">संकुचित करण्‍यासाठी टॅप करा</translation>
 <translation id="5990142338020175451">आणखी चांगल्या पेज सूचना, यासारख्या अधिक वैयक्तिक Google सेवा</translation>
 <translation id="6000066717592683814">Google ठेवा</translation>
-<translation id="6001839398155993679">चला करू या</translation>
 <translation id="6005538289190791541">सुचवलेला पासवर्ड</translation>
 <translation id="6039379616847168523">पुढील टॅबवर जा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून एक्सपोर्ट करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन चालू करा</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
+<translation id="6171019622954353983">सुरू ठेऊन, तुम्ही सहमती दर्शवता की, Chrome ही सेवा देण्यासाठी Chrome ऑटोफिल, साइटची URL आणि त्याच्या Google वरील आशयावरून डेटा पाठवेल.\n\nChrome आणि Chrome ऑटोफिलमधील Google असिस्टंट बंद करण्यासाठी Chrome सेटिंग्जला भेट द्या.  <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">वर्तमान शोध इंजिनसाठी अवरोधित केले</translation>
 <translation id="6177390657002841081">डेटा बचतकर्ता चालू करा</translation>
 <translation id="6181444274883918285">साइट एक्सेप्शन जोडा</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7665369617277396874">खाते जोडा</translation>
+<translation id="7670842975141217779">Google असिस्टंट\nChrome मध्ये</translation>
 <translation id="7682724950699840886">खालील टिपा वापरून पहा: तुमच्या डिव्हाइसवर पुरेशी जागा असल्याची खात्री करा, पुन्हा एक्सपोर्ट करण्याचा प्रयत्न करा.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> मध्ये ईमेल तयार करा</translation>
 <translation id="7704317875155739195">ऑटोकंप्लीट शोध आणि URL</translation>

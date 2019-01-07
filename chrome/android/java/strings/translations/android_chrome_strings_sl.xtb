@@ -333,6 +333,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="3599863153486145794">Izbriše zgodovino iz vseh naprav, v katerih ste prijavljeni. V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Izklop zvoka na spletnih mestih, ki predvajajo zvok</translation>
 <translation id="360207483134687714">Pomagajte izboljšati uporabo navidezne resničnosti v Chromu</translation>
+<translation id="3604604794717279723">Sprejmem</translation>
 <translation id="3616113530831147358">Zvok</translation>
 <translation id="3620176948598597475">Ponastavitev izbriše zgodovino varčevanja s podatki, vključno s seznamom obiskanih spletnih mest.</translation>
 <translation id="3630011985153972676">Omogočite Chromu, da prenese članke, ko je v nastavitvah omogočeno omrežje Wi-Fi.</translation>
@@ -409,7 +410,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="4198423547019359126">Ni razpoložljivih mest za prenos</translation>
 <translation id="4209895695669353772">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, vklopite sinhronizacijo</translation>
-<translation id="4222812745228723705">Če nadaljujete, se strinjate, da Chrome zaradi zagotavljanja te storitve Googlu pošilja podatke samodejnega izpolnjevanja za Chrome, URL spletnega mesta in njegovo vsebino. Obiščite nastavitve za Chrome, če želite izklopiti Pomočnika Google v Chromu in samodejnem izpolnjevanju za Chrome. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Ni vsebin</translation>
 <translation id="4226663524361240545">Ob prejemanju obvestil naprava morda vibrira</translation>
 <translation id="423219824432660969">Šifriranje sinhroniziranih podatkov z geslom za Google Račun z dnem <ph name="TIME" /></translation>
@@ -653,7 +653,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="5990142338020175451">Bolj osebne Googlove storitve, kot so boljši predlogi strani</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
-<translation id="6001839398155993679">Pa začnimo</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
@@ -673,6 +672,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6154478581116148741">Vklopite zaklepanje zaslona v nastavitvah, če želite izvoziti gesla iz te naprave.</translation>
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6171019622954353983">Če nadaljujete, se strinjate, da Chrome zaradi zagotavljanja te storitve Googlu pošilja podatke samodejnega izpolnjevanja za Chrome, URL spletnega mesta in njegovo vsebino.\n\nObiščite nastavitve za Chrome, če želite izklopiti Pomočnika Google v Chromu in samodejnem izpolnjevanju za Chrome.  <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blokirano za trenutni iskalnik</translation>
 <translation id="6177390657002841081">Vklop varčevanja s podatki</translation>
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
@@ -881,6 +881,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
+<translation id="7670842975141217779">Pomočnik Google\nv Chromu</translation>
 <translation id="7682724950699840886">Poskusite ta nasveta: poskrbite, da je v napravi dovolj prostora, ali poskusite znova izvoziti.</translation>
 <translation id="7698359219371678927">Ustvarite e-poštno sporočilo v aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Samodejno dokončanje iskanj in URL-jev</translation>

@@ -333,6 +333,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Stäng av ljudet på webbplatser</translation>
 <translation id="360207483134687714">Hjälp oss att förbättra VR-upplevelsen i Chrome</translation>
+<translation id="3604604794717279723">Godkänn</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3620176948598597475">Om du återställer raderas historiken för Databesparing, inklusive listan med besökta webbplatser.</translation>
 <translation id="3630011985153972676">Tillåt att artiklar laddas ned åt dig i Chrome när Wi-Fi används i inställningarna.</translation>
@@ -409,7 +410,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
 <translation id="4209895695669353772">Aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
-<translation id="4222812745228723705">Genom att fortsätta godkänner du att Chrome skickar webbplatsens webbadress och innehåll samt data från Chrome Autofyll till Google för att tillhandahålla tjänsten. Öppna inställningarna för Chrome och inaktivera Google-assistenten i Chrome och Chrome Autofyll. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Inget innehåll hittades</translation>
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="5990142338020175451">Personligare tjänster från Google, till exempel förbättrade förslag på sidor</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
-<translation id="6001839398155993679">Då kör vi</translation>
 <translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
@@ -674,6 +673,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6154478581116148741">Aktivera ett skärmlås i inställningarna om du vill exportera lösenord från den här enheten.</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6171019622954353983">Genom att fortsätta godkänner du att Chrome skickar webbplatsens webbadress och innehåll samt data från Chrome Autofyll till Google för att tillhandahålla tjänsten.\n\nÖppna inställningarna för Chrome om du vill inaktivera Google-assistenten i Chrome och Chrome Autofyll.  <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blockerad för den nuvarande sökmotorn</translation>
 <translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
@@ -882,6 +882,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
+<translation id="7670842975141217779">Google Assistent\ni Chrome</translation>
 <translation id="7682724950699840886">Testa följande: kontrollera att det finns tillräckligt mycket utrymme på enheten, gör om exporten.</translation>
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>

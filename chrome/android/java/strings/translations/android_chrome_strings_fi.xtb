@@ -333,6 +333,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="3599863153486145794">Tyhjentää kaikkien sisäänkirjautuneiden laitteiden historian. Google-tililläsi voi olla muuta toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mykistä ääniä toistavat sivustot</translation>
 <translation id="360207483134687714">Auta parantamaan Chromen virtuaalikokemusta.</translation>
+<translation id="3604604794717279723">Hyväksyn</translation>
 <translation id="3616113530831147358">Ääni</translation>
 <translation id="3620176948598597475">Nollaaminen tyhjentää Data Saverin historian, mukaan lukien avattujen sivustojen luettelon.</translation>
 <translation id="3630011985153972676">Salli asetuksista, että Chrome voi ladata puolestasi artikkeleita Wi-Fi-yhteydellä.</translation>
@@ -409,7 +410,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="4198423547019359126">Tallennussijainteja ei ole saatavilla</translation>
 <translation id="4209895695669353772">Ota synkronointi käyttöön, niin näet Googlen suosittelemaa yksilöllistä sisältöä</translation>
-<translation id="4222812745228723705">Jatkamalla hyväksyt, että Chrome lähettää Googlelle Chromen automaattisen täytön dataa, sivuston URL-osoitteen ja sen sisällön palvelun tuottamiseksi. Chromen asetuksissa voit poistaa Chromen automaattisen täytön käytöstä ja Google Assistantin käytöstä Chromessa. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Sisältöä ei löydy</translation>
 <translation id="4226663524361240545">Laite voi väristä ilmoitusten yhteydessä.</translation>
 <translation id="423219824432660969">Salaa synkronoitu data Google-salasanalla (<ph name="TIME" />)</translation>
@@ -654,7 +654,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5962718611393537961">Tiivistä napauttamalla.</translation>
 <translation id="5990142338020175451">Personoidumpia Google-palveluja, kuten parempia sivuehdotuksia</translation>
 <translation id="6000066717592683814">Käytä Googlea</translation>
-<translation id="6001839398155993679">Aloita</translation>
 <translation id="6005538289190791541">Salasanaehdotus</translation>
 <translation id="6039379616847168523">Siirry seuraavalle välilehdelle</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -674,6 +673,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6154478581116148741">Ota näytön lukitus käyttöön asetuksista viedäksesi salasanoja laitteelta.</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
+<translation id="6171019622954353983">Jatkamalla hyväksyt, että Chrome lähettää Googlelle Chromen automaattisen täytön dataa, sivuston URL-osoitteen ja sen sisällön palvelun tuottamiseksi.\n\nChromen asetuksissa voit poistaa Chromen automaattisen täytön käytöstä ja Google Assistantin käytöstä Chromessa.  <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Estetty nykyiseltä hakukoneelta</translation>
 <translation id="6177390657002841081">Ota Data Saver käyttöön</translation>
 <translation id="6181444274883918285">Lisää sivustopoikkeus</translation>
@@ -882,6 +882,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7665369617277396874">Lisää tili</translation>
+<translation id="7670842975141217779">Google Assistant\nChromessa</translation>
 <translation id="7682724950699840886">Kokeile seuraavia keinoja: varmista, että laitteellasi on tarpeeksi tilaa, yritä viedä uudelleen.</translation>
 <translation id="7698359219371678927">Luo sähköposti sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Täydennä automaattisesti hakuja ja URL-osoitteita</translation>

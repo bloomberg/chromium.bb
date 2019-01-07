@@ -333,6 +333,7 @@
 <translation id="3599863153486145794">બધા સાઇન ઇન કરેલ ડિવાઇસમાંથી ઇતિહાસ સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="3600792891314830896">જે સાઇટ અવાજ ચલાવતી હોય તેઓનો અવાજ બંધ કરો</translation>
 <translation id="360207483134687714">Chromeમાં VR અનુભવ સુધારવામાં સહાય કરો</translation>
+<translation id="3604604794717279723">હું સ્વીકારું છું</translation>
 <translation id="3616113530831147358">ઑડિઓ</translation>
 <translation id="3620176948598597475">રીસેટ કરવાથી મુલાકાત લીધેલ સાઇટોની સૂચિ સહિતનો ડેટા સેવર ઇતિહાસ કાઢી નાખવામાં આવે છે.</translation>
 <translation id="3630011985153972676">વાઇ-ફાઇ પર હો ત્યારે સેટિંગ હેઠળ, Chromeને તમારા માટે લેખ ડાઉનલોડ કરવાની મંજૂરી આપો.</translation>
@@ -409,7 +410,6 @@
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="4198423547019359126">કોઈ ડાઉનલોડ સ્થાનો ઉપલબ્ધ નથી</translation>
 <translation id="4209895695669353772">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
-<translation id="4222812745228723705">આગળ વધીને, તમે સંમત થાઓ છો કે આ સેવા પૂરી પાડવા માટે, Chromeનો આપમેળે ભરાવાનો ડેટા, સાઇટની URL અને તેનું કન્ટેન્ટ Chrome, Googleને મોકલશે. Chrome અને Chromeની આપમેળે ભરાવાની સુવિધામાં Google આસિસ્ટંટને બંધ કરવા માટે Chrome સેટિંગની મુલાકાત લો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">કોઈ કન્ટેન્ટ મળ્યું નથી</translation>
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="423219824432660969"><ph name="TIME" /> પ્રમાણે Google પાસવર્ડ વડે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
@@ -654,7 +654,6 @@
 <translation id="5962718611393537961">સંકુચિત કરવા માટે ટૅપ કરો</translation>
 <translation id="5990142338020175451">Googleની વધુ વ્યક્તિગત સેવાઓ, જેમ કે પેજના વધુ સારા સૂચનો</translation>
 <translation id="6000066717592683814">Google રાખો</translation>
-<translation id="6001839398155993679">ચાલો જઈએ</translation>
 <translation id="6005538289190791541">સૂચવેલ પાસવર્ડ</translation>
 <translation id="6039379616847168523">આગલા ટૅબ પર જાઓ</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
@@ -674,6 +673,7 @@
 <translation id="6154478581116148741">આ ઉપકરણ પરથી તમારા બધા પાસવર્ડને નિકાસ કરવા માટે સેટિંગમાંથી સ્ક્રીન લૉક ચાલુ કરો</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ડેટા બચત</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
+<translation id="6171019622954353983">આગળ વધીને, તમે સંમત થાઓ છો કે આ સેવા પૂરી પાડવા માટે, Chromeનો સ્વતઃભરણનો ડેટા, સાઇટની URL અને તેનું કન્ટેન્ટ Chrome, Googleને મોકલશે.\n\nChrome અને Chromeની સ્વતઃભરણની સુવિધામાં Google આસિસ્ટંટને બંધ કરવા માટે Chrome સેટિંગની મુલાકાત લો.  <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
 <translation id="6177390657002841081">ડેટા સેવર ચાલુ કરો</translation>
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
@@ -882,6 +882,7 @@
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7665369617277396874">એકાઉન્ટ ઉમેરો</translation>
+<translation id="7670842975141217779">Google આસિસ્ટંટ\nin Chrome</translation>
 <translation id="7682724950699840886">નીચેની ટિપ અજમાવી જુઓ: ખાતરી કરો કે તમારા ઉપકરણ પર પૂરતી સ્પેસ છે, ફરીથી નિકાસ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> માં ઇમેઇલ બનાવો</translation>
 <translation id="7704317875155739195">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>

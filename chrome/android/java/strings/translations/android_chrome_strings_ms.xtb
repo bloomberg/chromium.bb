@@ -333,6 +333,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3599863153486145794">Mengosongkan sejarah daripada semua peranti yang dilog masuk. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="360207483134687714">Bantu memperbaik pengalaman VR dalam Chrome</translation>
+<translation id="3604604794717279723">Saya terima</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Penetapan semula akan memadamkan sejarah Penjimat Data, termasuk senarai tapak yang dilawati.</translation>
 <translation id="3630011985153972676">Benarkan Chrome memuat turun artikel untuk anda apabila menggunakan Wi-Fi di bawah tetapan.</translation>
@@ -409,7 +410,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4195643157523330669">Buka dalam tab baharu</translation>
 <translation id="4198423547019359126">Tiada lokasi muat turun tersedia</translation>
 <translation id="4209895695669353772">Hidupkan penyegerakan untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google</translation>
-<translation id="4222812745228723705">Dengan meneruskan, anda bersetuju bahawa Chrome akan menghantar data daripada Autolengkap Chrome, URL tapak dan kandungannya kepada Google untuk menyediakan perkhidmatan ini. Lawati tetapan Chrome untuk mematikan Google Assistant dalam Chrome dan Autolengkap Chrome. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Tiada kandungan ditemui</translation>
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="423219824432660969">Sulitkan data yang disegerakkan dengan kata laluan Google bermula dari <ph name="TIME" /></translation>
@@ -654,7 +654,6 @@ Namun begitu, anda boleh dilihat. Menggunakan mod inkognoti tidak menyembunyikan
 <translation id="5962718611393537961">Ketik untuk runtuhkan</translation>
 <translation id="5990142338020175451">Perkhidmatan Google yang lebih peribadi, seperti cadangan halaman yang lebih baik</translation>
 <translation id="6000066717592683814">Kekalkan Google</translation>
-<translation id="6001839398155993679">Jom</translation>
 <translation id="6005538289190791541">Kata laluan yang disyorkan</translation>
 <translation id="6039379616847168523">Lompat ke tab seterusnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -674,6 +673,7 @@ Namun begitu, anda boleh dilihat. Menggunakan mod inkognoti tidak menyembunyikan
 <translation id="6154478581116148741">Hidupkan kunci skrin dalam Tetapan untuk mengeksport kata laluan anda daripada peranti ini</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> penjimatan data</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6171019622954353983">Dengan meneruskan, anda bersetuju bahawa Chrome akan menghantar data daripada Autolengkap Chrome, URL tapak dan kandungannya kepada Google untuk menyediakan perkhidmatan ini .\n\nLawati tetapan Chrome untuk mematikan Google Assistant dalam Chrome dan Autolengkap Chrome.  <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Disekat untuk enjin carian semasa</translation>
 <translation id="6177390657002841081">Hidupkan Penjimat Data</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
@@ -882,6 +882,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665369617277396874">Tambah akaun</translation>
+<translation id="7670842975141217779">Google Assistant\ndalam Chrome</translation>
 <translation id="7682724950699840886">Cuba petua berikut: pastikan ruang pada peranti anda mencukupi, cuba eksport sekali lagi.</translation>
 <translation id="7698359219371678927">Buat e-mel dalam <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autolengkap carian dan URL</translation>

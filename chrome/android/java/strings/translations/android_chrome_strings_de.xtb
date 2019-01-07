@@ -333,6 +333,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3599863153486145794">Löscht den Verlauf bei allen angemeldeten Geräten. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
 <translation id="360207483134687714">Unterstütze uns dabei, VR in Chrome zu verbessern</translation>
+<translation id="3604604794717279723">Ich stimme zu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3630011985153972676">Sie können in den Einstellungen festlegen, dass Chrome Artikel für Sie herunterlädt, wenn eine WLAN-Verbindung besteht.</translation>
@@ -409,7 +410,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
 <translation id="4209895695669353772">Aktivieren Sie die Synchronisierung, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten</translation>
-<translation id="4222812745228723705">Wenn Sie fortfahren, erklären Sie sich damit einverstanden, dass Chrome Daten von AutoFill sowie die URL und die Inhalte der Website an Google sendet, um diesen Dienst anbieten zu können. In den Chrome-Einstellungen können Sie Google Assistant für Chrome und AutoFill deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Keine Inhalte gefunden</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="423219824432660969">Synchronisierte Daten mit dem Google-Passwort vom <ph name="TIME" /> verschlüsseln</translation>
@@ -654,7 +654,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
 <translation id="5990142338020175451">Personalisierte Google-Dienste, z. B. bessere Seitenvorschläge</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
-<translation id="6001839398155993679">Los gehts</translation>
 <translation id="6005538289190791541">Vorgeschlagenes Passwort</translation>
 <translation id="6039379616847168523">Zum nächsten Tab wechseln</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -674,6 +673,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6154478581116148741">Aktivieren Sie die Displaysperre unter "Einstellungen", um Ihre Passwörter aus dem Gerät zu exportieren</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6171019622954353983">Wenn Sie fortfahren, erklären Sie sich damit einverstanden, dass Chrome Daten von AutoFill sowie die URL und die Inhalte der Website an Google sendet, um diesen Dienst anbieten zu können.\n\nIn den Chrome-Einstellungen können Sie Google Assistant für Chrome und AutoFill deaktivieren.  <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
 <translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
@@ -882,6 +882,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
+<translation id="7670842975141217779">Google Assistant\nfür Chrome</translation>
 <translation id="7682724950699840886">Probieren Sie folgende Tipps aus: Sorgen Sie dafür, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist, und wiederholen Sie den Export.</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
