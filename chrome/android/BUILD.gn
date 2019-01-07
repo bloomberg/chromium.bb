@@ -69,6 +69,9 @@ jinja_template("chrome_public_android_manifest") {
     "min_sdk_version=16",
     "target_sdk_version=$android_sdk_version",
   ]
+
+  # ARCore is supported only on monochrome - disable.
+  variables += [ "include_arcore_manifest_flag=false" ]
 }
 
 jinja_template("chrome_modern_public_android_manifest") {
@@ -79,6 +82,9 @@ jinja_template("chrome_modern_public_android_manifest") {
     "min_sdk_version=21",
     "target_sdk_version=$android_sdk_version",
   ]
+
+  # ARCore is supported only on monochrome - disable.
+  variables += [ "include_arcore_manifest_flag=false" ]
 }
 
 jinja_template("monochrome_public_apk_android_manifest") {
