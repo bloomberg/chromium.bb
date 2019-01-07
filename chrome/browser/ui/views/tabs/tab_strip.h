@@ -234,12 +234,6 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
-  // Returns the alpha that inactive tabs and the new tab button should use to
-  // blend against the frame background.  Inactive tabs and the new tab button
-  // differ in whether they change alpha when tab multiselection is occurring;
-  // |for_new_tab_button| toggles between the two calculations.
-  SkAlpha GetInactiveAlpha(bool for_new_tab_button) const;
-
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
   bool IsAnimating() const;

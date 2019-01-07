@@ -215,7 +215,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   PaintFlags draw_flags;
   draw_flags.setColor(SK_ColorMAGENTA);
@@ -245,7 +245,7 @@ TEST(PaintOpBufferTest, SaveDrawRestoreFail_BadFlags) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   PaintFlags draw_flags;
   draw_flags.setColor(SK_ColorMAGENTA);
@@ -272,7 +272,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_BadFlags255Alpha) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 255;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   PaintFlags draw_flags;
   draw_flags.setColor(SK_ColorMAGENTA);
@@ -297,7 +297,7 @@ TEST(PaintOpBufferTest, SaveDrawRestoreFail_TooManyOps) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   PaintFlags draw_flags;
   draw_flags.setColor(SK_ColorMAGENTA);
@@ -324,7 +324,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpNotADrawOp) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   buffer.push<NoopOp>();
   buffer.push<RestoreOp>();
@@ -352,7 +352,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleOp) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   buffer.push<DrawRecordOp>(std::move(record));
   buffer.push<RestoreOp>();
 
@@ -380,7 +380,7 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   buffer.push<DrawRecordOp>(std::move(record));
   buffer.push<RestoreOp>();
 
@@ -396,7 +396,7 @@ TEST(PaintOpBufferTest, SaveLayerRestore_DrawColor) {
   uint8_t alpha = 100;
   SkColor original = SkColorSetA(50, SK_ColorRED);
 
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   buffer.push<DrawColorOp>(original, SkBlendMode::kSrcOver);
   buffer.push<RestoreOp>();
 
@@ -733,7 +733,7 @@ TEST_F(PaintOpBufferOffsetsTest, ContiguousIndicesWithSaveLayerAlphaRestore) {
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
   uint8_t alpha = 100;
-  push_op<SaveLayerAlphaOp>(nullptr, alpha, true);
+  push_op<SaveLayerAlphaOp>(nullptr, alpha);
   push_op<RestoreOp>();
   push_op<DrawColorOp>(2u, SkBlendMode::kClear);
   push_op<DrawColorOp>(3u, SkBlendMode::kClear);
@@ -759,7 +759,7 @@ TEST_F(PaintOpBufferOffsetsTest,
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
   uint8_t alpha = 100;
-  push_op<SaveLayerAlphaOp>(nullptr, alpha, true);
+  push_op<SaveLayerAlphaOp>(nullptr, alpha);
   push_op<DrawColorOp>(2u, SkBlendMode::kClear);
   push_op<DrawColorOp>(3u, SkBlendMode::kClear);
   push_op<RestoreOp>();
@@ -809,7 +809,7 @@ TEST_F(PaintOpBufferOffsetsTest,
   add_draw_rect(0u);
   add_draw_rect(1u);
   uint8_t alpha = 100;
-  push_op<SaveLayerAlphaOp>(nullptr, alpha, true);
+  push_op<SaveLayerAlphaOp>(nullptr, alpha);
   add_draw_rect(2u);
   push_op<RestoreOp>();
   add_draw_rect(3u);
@@ -842,7 +842,7 @@ TEST_F(PaintOpBufferOffsetsTest,
   add_draw_rect(0u);
   add_draw_rect(1u);
   uint8_t alpha = 100;
-  push_op<SaveLayerAlphaOp>(nullptr, alpha, true);
+  push_op<SaveLayerAlphaOp>(nullptr, alpha);
   add_draw_rect(2u);
   add_draw_rect(3u);
   add_draw_rect(4u);
@@ -901,7 +901,7 @@ TEST(PaintOpBufferTest, SaveLayerAlphaDrawRestoreWithBadBlendMode) {
 
   add_draw_rect(&buffer, 0u);
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, true);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   add_draw_rect(&buffer, 1u);
   buffer.push<RestoreOp>();
   add_draw_rect(&buffer, 2u);
@@ -930,9 +930,9 @@ TEST(PaintOpBufferTest, UnmatchedSaveRestoreNoSideEffects) {
   // Push 2 saves.
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, true);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   add_draw_rect(&buffer, 0u);
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, true);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
   add_draw_rect(&buffer, 1u);
   add_draw_rect(&buffer, 2u);
   // But only 1 restore.
@@ -1567,10 +1567,10 @@ void PushSaveLayerOps(PaintOpBuffer* buffer) {
 void PushSaveLayerAlphaOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_uint8s.size(), test_rects.size());
   for (size_t i = 0; i < len; ++i)
-    buffer->push<SaveLayerAlphaOp>(&test_rects[i], test_uint8s[i], !!(i % 2));
+    buffer->push<SaveLayerAlphaOp>(&test_rects[i], test_uint8s[i]);
 
   // Test optional args.
-  buffer->push<SaveLayerAlphaOp>(nullptr, test_uint8s[0], false);
+  buffer->push<SaveLayerAlphaOp>(nullptr, test_uint8s[0]);
   ValidateOps<SaveLayerAlphaOp>(buffer);
 }
 
@@ -2253,7 +2253,7 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
   PaintOpBuffer buffer;
 
   uint8_t alpha = 100;
-  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
 
   PaintFlags draw_flags;
   draw_flags.setColor(SK_ColorMAGENTA);
@@ -2533,7 +2533,7 @@ TEST(PaintOpBufferTest, ValidateRects) {
   buffer.push<DrawRectOp>(bad_rect, test_flags[0]);
   buffer.push<SaveLayerOp>(&bad_rect, nullptr);
   buffer.push<SaveLayerOp>(&bad_rect, &test_flags[0]);
-  buffer.push<SaveLayerAlphaOp>(&bad_rect, test_uint8s[0], true);
+  buffer.push<SaveLayerAlphaOp>(&bad_rect, test_uint8s[0]);
 
   TestOptionsProvider options_provider;
 

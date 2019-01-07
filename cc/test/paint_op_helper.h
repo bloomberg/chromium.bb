@@ -192,7 +192,6 @@ class PaintOpHelper {
         str << "SaveLayerAlphaOp(bounds="
             << PaintOpHelper::SkiaTypeToString(op->bounds)
             << ", alpha=" << static_cast<uint32_t>(op->alpha)
-            << ", preserve_lcd_text_requests=" << op->preserve_lcd_text_requests
             << ")";
         break;
       }

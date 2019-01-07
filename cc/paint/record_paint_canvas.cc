@@ -49,7 +49,7 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
       // TODO(enne): maybe more callers should know this and call
       // saveLayerAlpha instead of needing to check here.
       uint8_t alpha = SkColorGetA(flags->getColor());
-      return saveLayerAlpha(bounds, alpha, false);
+      return saveLayerAlpha(bounds, alpha);
     }
 
     // TODO(enne): it appears that image filters affect matrices and color
@@ -63,10 +63,8 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
   return GetCanvas()->saveLayer(bounds, nullptr);
 }
 
-int RecordPaintCanvas::saveLayerAlpha(const SkRect* bounds,
-                                      uint8_t alpha,
-                                      bool preserve_lcd_text_requests) {
-  list_->push<SaveLayerAlphaOp>(bounds, alpha, preserve_lcd_text_requests);
+int RecordPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
+  list_->push<SaveLayerAlphaOp>(bounds, alpha);
   return GetCanvas()->saveLayerAlpha(bounds, alpha);
 }
 

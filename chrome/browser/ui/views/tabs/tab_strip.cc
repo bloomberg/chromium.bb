@@ -53,8 +53,6 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/compositing_recorder.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -902,23 +900,6 @@ bool TabStrip::IsActiveDropTarget() const {
   return false;
 }
 
-SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
-#if defined(OS_CHROMEOS)
-  static const SkAlpha kInactiveTabAlphaAsh = 230;
-  const SkAlpha base_alpha = kInactiveTabAlphaAsh;
-#else
-  static const SkAlpha kInactiveTabAlphaGlass = 200;
-  static const SkAlpha kInactiveTabAlphaOpaque = 255;
-  const SkAlpha base_alpha = TitlebarBackgroundIsTransparent()
-                                 ? kInactiveTabAlphaGlass
-                                 : kInactiveTabAlphaOpaque;
-#endif  // OS_CHROMEOS
-  static const double kMultiSelectionMultiplier = 0.6;
-  return (for_new_tab_button || (GetSelectionModel().size() <= 1))
-             ? base_alpha
-             : static_cast<SkAlpha>(kMultiSelectionMultiplier * base_alpha);
-}
-
 bool TabStrip::IsAnimating() const {
   return bounds_animator_.IsAnimating();
 }
@@ -1397,70 +1378,58 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   Tabs tabs_dragging;
   Tabs selected_and_hovered_tabs;
 
-  {
-    // Using transparency here normally disables LCD AA on title text in favor
-    // of greyscale AA.  In most cases, the tabs will be rendered opaquely on an
-    // opaque background before compositing, so it's safe to pass false for
-    // |lcd_text_requires_opaque_layer| to allow LCD AA.  If the theme does not
-    // fill a background color, however, it must fall back to greyscale AA.
-    bool has_background_color = GetThemeProvider()->GetDisplayProperty(
-        ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR);
-    ui::CompositingRecorder opacity_recorder(
-        paint_info.context(), GetInactiveAlpha(false), !has_background_color);
+  // When background tab shapes are visible, as for hovered or selected tabs,
+  // the paint order must be handled carefully to avoid Z-order errors, so
+  // this code defers drawing such tabs until later.
+  const auto paint_or_add_to_tabs = [&paint_info,
+                                     &selected_and_hovered_tabs](Tab* tab) {
+    if (tab->IsSelected() ||
+        (tab->mouse_hovered() || tab->hover_controller()->ShouldDraw())) {
+      selected_and_hovered_tabs.push_back(tab);
+    } else {
+      tab->Paint(paint_info);
+    }
+  };
 
-    // When background tab shapes are visible, as for hovered or selected tabs,
-    // the paint order must be handled carefully to avoid Z-order errors, so
-    // this code defers drawing such tabs until later.
-    const auto paint_or_add_to_tabs = [&paint_info,
-                                       &selected_and_hovered_tabs](Tab* tab) {
-      if (tab->IsSelected() ||
-          (tab->mouse_hovered() || tab->hover_controller()->ShouldDraw())) {
-        selected_and_hovered_tabs.push_back(tab);
-      } else {
-        tab->Paint(paint_info);
-      }
-    };
+  const auto paint_closing_tabs = [=](int index) {
+    if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
+      return;
+    for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
+      paint_or_add_to_tabs(tab);
+  };
 
-    const auto paint_closing_tabs = [=](int index) {
-      if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
-        return;
-      for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
-        paint_or_add_to_tabs(tab);
-    };
+  paint_closing_tabs(tab_count());
 
-    paint_closing_tabs(tab_count());
-
-    int active_tab_index = -1;
-    for (int i = tab_count() - 1; i >= 0; --i) {
-      Tab* tab = tab_at(i);
-      if (tab->dragging() && !stacked_layout_) {
-        is_dragging = true;
-        if (tab->IsActive()) {
-          active_tab = tab;
-          active_tab_index = i;
-        } else {
-          tabs_dragging.push_back(tab);
-        }
-      } else if (tab->IsActive()) {
+  int active_tab_index = -1;
+  for (int i = tab_count() - 1; i >= 0; --i) {
+    Tab* tab = tab_at(i);
+    if (tab->dragging() && !stacked_layout_) {
+      is_dragging = true;
+      if (tab->IsActive()) {
         active_tab = tab;
         active_tab_index = i;
-      } else if (!stacked_layout_) {
-        paint_or_add_to_tabs(tab);
+      } else {
+        tabs_dragging.push_back(tab);
       }
-      paint_closing_tabs(i);
+    } else if (tab->IsActive()) {
+      active_tab = tab;
+      active_tab_index = i;
+    } else if (!stacked_layout_) {
+      paint_or_add_to_tabs(tab);
+    }
+    paint_closing_tabs(i);
+  }
+
+  // Draw from the left and then the right if we're in touch mode.
+  if (stacked_layout_ && active_tab_index >= 0) {
+    for (int i = 0; i < active_tab_index; ++i) {
+      Tab* tab = tab_at(i);
+      tab->Paint(paint_info);
     }
 
-    // Draw from the left and then the right if we're in touch mode.
-    if (stacked_layout_ && active_tab_index >= 0) {
-      for (int i = 0; i < active_tab_index; ++i) {
-        Tab* tab = tab_at(i);
-        tab->Paint(paint_info);
-      }
-
-      for (int i = tab_count() - 1; i > active_tab_index; --i) {
-        Tab* tab = tab_at(i);
-        tab->Paint(paint_info);
-      }
+    for (int i = tab_count() - 1; i > active_tab_index; --i) {
+      Tab* tab = tab_at(i);
+      tab->Paint(paint_info);
     }
   }
 
@@ -1504,17 +1473,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     active_tab->Paint(paint_info);
 
   // Paint the New Tab button.
-  if (new_tab_button_->state() == views::Button::STATE_PRESSED) {
-    new_tab_button_->Paint(paint_info);
-  } else {
-    // Match the inactive tab opacity for non-pressed states.  See comments in
-    // NewTabButton::PaintFill() for why we don't do this for the pressed state.
-    // This call doesn't need to set |lcd_text_requires_opaque_layer| to false
-    // because no text will be drawn.
-    ui::CompositingRecorder opacity_recorder(paint_info.context(),
-                                             GetInactiveAlpha(true), true);
-    new_tab_button_->Paint(paint_info);
-  }
+  new_tab_button_->Paint(paint_info);
 
   // And the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
