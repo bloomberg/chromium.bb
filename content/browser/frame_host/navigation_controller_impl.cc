@@ -2826,7 +2826,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   } else {
     url_to_load = params.url;
     virtual_url = params.url;
-    CHECK_EQ(url_to_load, frame_entry->url());
+    CHECK(!frame_entry || url_to_load == frame_entry->url());
   }
 
   if (auto* rfh = node->current_frame_host()) {
