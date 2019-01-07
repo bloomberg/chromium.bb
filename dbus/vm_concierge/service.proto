@@ -104,6 +104,9 @@ message StartVmRequest {
 
   // The owner of the vm.
   string owner_id = 7;
+
+  // Enable GPU in the started Vm.
+  bool enable_gpu = 8;
 }
 
 // Information that must be included with every StartPluginVm request.
