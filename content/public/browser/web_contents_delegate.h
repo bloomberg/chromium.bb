@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/previews_state.h"
@@ -392,6 +393,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
+
+  // Shows a chooser for the user to select a serial port.  |callback| will be
+  // run when the prompt is closed. Deleting the returned object will cancel the
+  // prompt.
+  virtual std::unique_ptr<SerialChooser> RunSerialChooser(
+      RenderFrameHost* frame,
+      std::vector<blink::mojom::SerialPortFilterPtr> filters,
+      SerialChooser::Callback callback);
 
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling

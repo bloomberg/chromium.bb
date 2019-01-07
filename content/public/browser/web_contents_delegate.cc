@@ -143,6 +143,14 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
   return nullptr;
 }
 
+std::unique_ptr<SerialChooser> WebContentsDelegate::RunSerialChooser(
+    RenderFrameHost* frame,
+    std::vector<blink::mojom::SerialPortFilterPtr> filters,
+    SerialChooser::Callback callback) {
+  std::move(callback).Run(nullptr);
+  return nullptr;
+}
+
 bool WebContentsDelegate::EmbedsFullscreenWidget() const {
   return false;
 }
