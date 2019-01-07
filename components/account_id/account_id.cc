@@ -333,10 +333,10 @@ const AccountId& EmptyAccountId() {
   return AccountId::EmptyAccountId::GetInstance()->user_id;
 }
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 
 std::size_t hash<AccountId>::operator()(const AccountId& user_id) const {
   return hash<std::string>()(user_id.GetUserEmail());
 }
 
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
