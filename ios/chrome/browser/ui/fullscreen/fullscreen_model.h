@@ -58,6 +58,25 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
     return y_content_offset_ + scroll_view_height_ >= content_height_;
   }
 
+  // The min, max, and current insets caused by the toolbars.
+  UIEdgeInsets min_toolbar_insets() const {
+    return GetToolbarInsetsAtProgress(0.0);
+  }
+  UIEdgeInsets max_toolbar_insets() const {
+    return GetToolbarInsetsAtProgress(1.0);
+  }
+  UIEdgeInsets current_toolbar_insets() const {
+    return GetToolbarInsetsAtProgress(progress_);
+  }
+
+  // Returns the toolbar insets at |progress|.
+  UIEdgeInsets GetToolbarInsetsAtProgress(CGFloat progress) const {
+    return UIEdgeInsetsMake(
+        collapsed_toolbar_height_ +
+            progress * (expanded_toolbar_height_ - collapsed_toolbar_height_),
+        0, progress * bottom_toolbar_height_, 0);
+  }
+
   // Increments and decrements |disabled_counter_| for features that require the
   // toolbar be completely visible.
   void IncrementDisabledCounter();

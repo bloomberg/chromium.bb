@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_model_observer.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -20,6 +21,10 @@ const CGFloat kToolbarHeight = 50.0;
 const CGFloat kScrollViewHeight = 400.0;
 // The content height used for tests.
 const CGFloat kContentHeight = 5000.0;
+// Converts |insets| to a string for debugging.
+std::string GetStringFromInsets(UIEdgeInsets insets) {
+  return base::SysNSStringToUTF8(NSStringFromUIEdgeInsets(insets));
+}
 }  // namespace
 
 // Test fixture for FullscreenModel.
@@ -31,6 +36,7 @@ class FullscreenModelTest : public PlatformTest {
     // finishes with a 0.0 y content offset.
     model_.SetCollapsedToolbarHeight(0.0);
     model_.SetExpandedToolbarHeight(kToolbarHeight);
+    model_.SetBottomToolbarHeight(kToolbarHeight);
     model_.SetScrollViewHeight(kScrollViewHeight);
     model_.SetContentHeight(kContentHeight);
     model_.ResetForNavigation();
@@ -217,4 +223,29 @@ TEST_F(FullscreenModelTest, DraggingStarted) {
   model().ResetForNavigation();
   model().SetScrollViewIsDragging(true);
   EXPECT_TRUE(model().has_base_offset());
+}
+
+// Tests that toolbar_insets() returns the correct values.
+TEST_F(FullscreenModelTest, ToolbarInsets) {
+  // Checks whether |insets| are equal to the expected insets at |progress|.
+  void (^check_insets)(UIEdgeInsets insets, CGFloat progress) =
+      ^void(UIEdgeInsets insets, CGFloat progress) {
+        UIEdgeInsets expected_insets = UIEdgeInsetsMake(
+            progress * kToolbarHeight, 0, progress * kToolbarHeight, 0);
+        EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(insets, expected_insets))
+            << "Insets " << GetStringFromInsets(insets)
+            << " not equal to expected insets "
+            << GetStringFromInsets(expected_insets);
+      };
+
+  const CGFloat kFullyVisibleProgress = 1.0;
+  check_insets(model().max_toolbar_insets(), kFullyVisibleProgress);
+  check_insets(model().current_toolbar_insets(), kFullyVisibleProgress);
+  const CGFloat kHalfProgress = 0.5;
+  SimulateFullscreenUserScrollForProgress(&model(), kHalfProgress);
+  check_insets(model().current_toolbar_insets(), kHalfProgress);
+  const CGFloat kHiddenProgress = 0.0;
+  SimulateFullscreenUserScrollForProgress(&model(), kHiddenProgress);
+  check_insets(model().current_toolbar_insets(), kHiddenProgress);
+  check_insets(model().min_toolbar_insets(), kHiddenProgress);
 }
