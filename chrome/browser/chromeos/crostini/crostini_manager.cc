@@ -901,7 +901,8 @@ void CrostiniManager::StartLxdContainer(std::string vm_name,
     return;
   }
   if (!GetCiceroneClient()->IsContainerStartedSignalConnected() ||
-      !GetCiceroneClient()->IsContainerShutdownSignalConnected()) {
+      !GetCiceroneClient()->IsContainerShutdownSignalConnected() ||
+      !GetCiceroneClient()->IsLxdContainerStartingSignalConnected()) {
     LOG(ERROR) << "Async call to StartLxdContainer can't complete when signals "
                   "are not connected.";
     std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
@@ -911,6 +912,7 @@ void CrostiniManager::StartLxdContainer(std::string vm_name,
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
+  request.set_async(true);
   GetCiceroneClient()->StartLxdContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStartLxdContainer,
@@ -1598,21 +1600,37 @@ void CrostiniManager::OnStartLxdContainer(
     CrostiniResultCallback callback,
     base::Optional<vm_tools::cicerone::StartLxdContainerResponse> reply) {
   if (!reply.has_value()) {
-    LOG(ERROR) << "Failed to start lxd container in vm. Empty response.";
+    VLOG(1) << "Failed to start lxd container in vm. Empty response.";
     std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
     return;
   }
   vm_tools::cicerone::StartLxdContainerResponse response = reply.value();
 
-  if (!(response.status() ==
-            vm_tools::cicerone::StartLxdContainerResponse::STARTED ||
-        response.status() ==
-            vm_tools::cicerone::StartLxdContainerResponse::RUNNING)) {
-    LOG(ERROR) << "Failed to start container: " << response.failure_reason();
-    std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
-    return;
+  switch (response.status()) {
+    case vm_tools::cicerone::StartLxdContainerResponse::UNKNOWN:
+    case vm_tools::cicerone::StartLxdContainerResponse::FAILED:
+      LOG(ERROR) << "Failed to start container: " << response.failure_reason();
+      std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
+      break;
+
+    case vm_tools::cicerone::StartLxdContainerResponse::STARTED:
+    case vm_tools::cicerone::StartLxdContainerResponse::RUNNING:
+      std::move(callback).Run(CrostiniResult::SUCCESS);
+      break;
+
+    case vm_tools::cicerone::StartLxdContainerResponse::STARTING:
+    case vm_tools::cicerone::StartLxdContainerResponse::REMAPPING:
+      VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
+              << vm_name << ", " << container_name;
+      // The callback will be called when we receive the LxdContainerStarting
+      // signal.
+      start_lxd_container_callbacks_.emplace(
+          std::make_tuple(vm_name, container_name), std::move(callback));
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 
 void CrostiniManager::OnSetUpLxdContainerUser(
@@ -1705,6 +1723,37 @@ void CrostiniManager::OnTremplinStarted(
   tremplin_started_callbacks_.erase(range.first, range.second);
 }
 
+void CrostiniManager::OnLxdContainerStarting(
+    const vm_tools::cicerone::LxdContainerStartingSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+  CrostiniResult result;
+
+  switch (signal.status()) {
+    case vm_tools::cicerone::LxdContainerStartingSignal::UNKNOWN:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      break;
+    case vm_tools::cicerone::LxdContainerStartingSignal::CANCELLED:
+      result = CrostiniResult::CONTAINER_START_CANCELLED;
+      break;
+    case vm_tools::cicerone::LxdContainerStartingSignal::STARTED:
+      result = CrostiniResult::SUCCESS;
+      break;
+    case vm_tools::cicerone::LxdContainerStartingSignal::FAILED:
+      result = CrostiniResult::CONTAINER_START_FAILED;
+      break;
+    default:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      break;
+  }
+  // Find the callbacks to call, then erase them from the map.
+  auto range = start_lxd_container_callbacks_.equal_range(
+      std::make_tuple(signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(result);
+  }
+  start_lxd_container_callbacks_.erase(range.first, range.second);
+}
 void CrostiniManager::OnLaunchContainerApplication(
     LaunchContainerApplicationCallback callback,
     base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>

@@ -57,6 +57,12 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
     virtual void OnTremplinStarted(
         const vm_tools::cicerone::TremplinStartedSignal& signal) = 0;
 
+    // OnLxdContainerStarting is signaled from Cicerone when async container
+    // startup is used. This is necessary if long running file remapping is
+    // required before an old container is safe to use.
+    virtual void OnLxdContainerStarting(
+        const vm_tools::cicerone::LxdContainerStartingSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -94,6 +100,9 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   virtual bool IsTremplinStartedSignalConnected() = 0;
+
+  // This should be true prior to calling StartLxdContainer in async mode
+  virtual bool IsLxdContainerStartingSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.

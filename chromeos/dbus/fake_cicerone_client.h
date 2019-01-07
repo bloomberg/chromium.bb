@@ -47,6 +47,9 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   // StartLxdContainer.
   bool IsTremplinStartedSignalConnected() override;
 
+  // This should be true prior to calling StartLxdContainer in async mode
+  bool IsLxdContainerStartingSignalConnected() override;
+
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
   void LaunchContainerApplication(
@@ -147,13 +150,20 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
       vm_tools::cicerone::LxdContainerCreatedSignal_Status status) {
     lxd_container_created_signal_status_ = status;
   }
+
   // Set LxdContainerDownloadingSignalConnected state
   void set_lxd_container_downloading_signal_connected(bool connected) {
     is_lxd_container_downloading_signal_connected_ = connected;
   }
+
   // Set TremplinStartedSignalConnected state
   void set_tremplin_started_signal_connected(bool connected) {
     is_tremplin_started_signal_connected_ = connected;
+  }
+
+  // Set LxdContainerStartingSignalConnected state
+  void set_lxd_container_starting_signal_connected(bool connected) {
+    is_lxd_container_starting_signal_connected_ = connected;
   }
 
   void set_launch_container_application_response(
@@ -219,6 +229,8 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
       const vm_tools::cicerone::ContainerStartedSignal& signal);
   void NotifyTremplinStarted(
       const vm_tools::cicerone::TremplinStartedSignal& signal);
+  void NotifyLxdContainerStarting(
+      const vm_tools::cicerone::LxdContainerStartingSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -231,10 +243,14 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   bool is_lxd_container_created_signal_connected_ = true;
   bool is_lxd_container_downloading_signal_connected_ = true;
   bool is_tremplin_started_signal_connected_ = true;
+  bool is_lxd_container_starting_signal_connected_ = true;
 
   vm_tools::cicerone::LxdContainerCreatedSignal_Status
       lxd_container_created_signal_status_ =
           vm_tools::cicerone::LxdContainerCreatedSignal::CREATED;
+  vm_tools::cicerone::LxdContainerStartingSignal_Status
+      lxd_container_starting_signal_status_ =
+          vm_tools::cicerone::LxdContainerStartingSignal::STARTED;
 
   vm_tools::cicerone::LaunchContainerApplicationResponse
       launch_container_application_response_;
