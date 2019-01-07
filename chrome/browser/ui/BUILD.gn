@@ -1564,6 +1564,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/login/discover/modules/discover_module_pin_setup.h",
       "webui/chromeos/login/discover/modules/discover_module_redeem_offers.cc",
       "webui/chromeos/login/discover/modules/discover_module_redeem_offers.h",
+      "webui/chromeos/login/discover/modules/discover_module_set_wallpaper.cc",
+      "webui/chromeos/login/discover/modules/discover_module_set_wallpaper.h",
       "webui/chromeos/login/discover/modules/discover_module_sync_files.cc",
       "webui/chromeos/login/discover/modules/discover_module_sync_files.h",
       "webui/chromeos/login/discover/modules/discover_module_welcome.cc",
