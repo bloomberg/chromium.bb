@@ -62,7 +62,9 @@ class CORE_EXPORT TextPaintTimingDetector final
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
+  uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
   base::TimeTicks LastTextPaint() const { return last_text_paint_; }
+  uint64_t LastTextPaintSize() const { return last_text_paint_size_; }
   void StopRecordEntries();
   bool IsRecording() const { return is_recording_; }
   void Trace(blink::Visitor*);
@@ -101,7 +103,9 @@ class CORE_EXPORT TextPaintTimingDetector final
   bool is_recording_ = true;
 
   base::TimeTicks largest_text_paint_;
+  uint64_t largest_text_paint_size_ = 0;
   base::TimeTicks last_text_paint_;
+  uint64_t last_text_paint_size_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 };
