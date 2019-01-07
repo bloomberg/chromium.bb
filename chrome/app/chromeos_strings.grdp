@@ -795,6 +795,9 @@
   <message name="IDS_DISCOVER_SYNC_MY_FILES" desc="A label on the button that leads to the new web page where owner of the new device can sync their data with other devices.">
     Sync my files
   </message>
+  <message name="IDS_DISCOVER_SET_WALLPAPER" desc="A label on the button that leads to the new web page where owner of the new device can set their desktop wallpaper.">
+    Set Wallpaper
+  </message>
   <message name="IDS_DISCOVER_GET_HELP" desc="A label on the button that opens Help App.">
     Get Help
   </message>

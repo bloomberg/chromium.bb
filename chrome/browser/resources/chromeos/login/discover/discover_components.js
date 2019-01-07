@@ -11,6 +11,7 @@
 // <include src="modules/discover_module_launch_help_app.js">
 // <include src="modules/discover_module_sync_files.js">
 // <include src="modules/discover_module_pin_setup.js">
+// <include src="modules/discover_module_set_wallpaper.js">
 
 // --- These depend on modules.
 // <include src="discover_welcome.js">

@@ -10,10 +10,11 @@ function initializeDiscoverAPI() {
 
   window.discoverSendImpl = (message, callback, parameters) => {
     assert(message.startsWith('discover.'));
+    let fullParameters = [];
     // Callback Id should be random to prevent triggering of incorrect
     // callbacks if Id get screwed.
-    let callbackId;
     if (callback) {
+      let callbackId;
       for (let i = 0; i < 10; ++i) {
         callbackId =
             String(Math.floor(Math.random() * 2147483647));  // 2^31 - 1
@@ -22,8 +23,17 @@ function initializeDiscoverAPI() {
       }
       assert(!(callbackId in discoverCallbacks));
       discoverCallbacks[callbackId] = callback;
+      fullParameters.push(callbackId);
     }
-    chrome.send(message, [callbackId].concat(parameters));
+
+    if (parameters && parameters.length)
+      fullParameters = fullParameters.concat(parameters);
+
+    if (fullParameters.length) {
+      chrome.send(message, fullParameters);
+    } else {
+      chrome.send(message);
+    }
   };
 
   window.discoverReturn = (callbackId, value) => {

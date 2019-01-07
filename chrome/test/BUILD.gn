@@ -1849,6 +1849,7 @@ test("browser_tests") {
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.h",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app_test.cc",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_redeem_offers_test.cc",
+        "../browser/ui/webui/chromeos/login/discover/modules/discover_module_set_wallpaper_test.cc",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files_test.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h",
