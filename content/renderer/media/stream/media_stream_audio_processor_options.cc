@@ -139,10 +139,9 @@ void EnableNoiseSuppression(AudioProcessing* audio_processing,
 
 void EnableTypingDetection(AudioProcessing* audio_processing,
                            webrtc::TypingDetection* typing_detector) {
-  int err = audio_processing->voice_detection()->Enable(true);
-  err |= audio_processing->voice_detection()->set_likelihood(
-      webrtc::VoiceDetection::kVeryLowLikelihood);
-  CHECK_EQ(err, 0);
+  webrtc::AudioProcessing::Config apm_config = audio_processing->GetConfig();
+  apm_config.voice_detection.enabled = true;
+  audio_processing->ApplyConfig(apm_config);
 
   // Configure the update period to 1s (100 * 10ms) in the typing detector.
   typing_detector->SetParameters(0, 0, 0, 0, 0, 100);

@@ -261,18 +261,6 @@ void AudioProcessor::InitializeAPM() {
     DCHECK_EQ(err, 0);
   }
 
-  // Typing detection setup.
-  if (settings_.typing_detection) {
-    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
-    int err = audio_processing_->voice_detection()->Enable(true);
-    err |= audio_processing_->voice_detection()->set_likelihood(
-        webrtc::VoiceDetection::kVeryLowLikelihood);
-    DCHECK_EQ(err, 0);
-
-    // Configure the update period to 1s (100 * 10ms) in the typing detector.
-    typing_detector_->SetParameters(0, 0, 0, 0, 0, 100);
-  }
-
   // AGC setup part 2.
   if (settings_.automatic_gain_control != AutomaticGainControlType::kDisabled) {
     int err = audio_processing_->gain_control()->set_mode(
@@ -288,6 +276,15 @@ void AudioProcessor::InitializeAPM() {
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
+
+  // Typing detection setup.
+  if (settings_.typing_detection) {
+    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
+    // Configure the update period to 1s (100 * 10ms) in the typing detector.
+    typing_detector_->SetParameters(0, 0, 0, 0, 0, 100);
+
+    apm_config.voice_detection.enabled = true;
+  }
 
   // AEC setup part 2.
   apm_config.echo_canceller.enabled =
@@ -370,10 +367,12 @@ void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
 
 void AudioProcessor::UpdateTypingDetected(bool key_pressed) {
   if (typing_detector_) {
-    webrtc::VoiceDetection* vad = audio_processing_->voice_detection();
-    DCHECK(vad->is_enabled());
-    typing_detected_ =
-        typing_detector_->Process(key_pressed, vad->stream_has_voice());
+    // Ignore remote tracks to avoid unnecessary stats computation.
+    auto voice_detected =
+        audio_processing_->GetStatistics(false /* has_remote_tracks */)
+            .voice_detected;
+    DCHECK(voice_detected.has_value());
+    typing_detected_ = typing_detector_->Process(key_pressed, *voice_detected);
   }
 }
 
