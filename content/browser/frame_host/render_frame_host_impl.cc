@@ -91,6 +91,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/scoped_active_url.h"
+#include "content/browser/serial/serial_service.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
@@ -4040,6 +4041,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&SensorProviderProxyImpl::Bind,
                  base::Unretained(sensor_provider_proxy_.get())));
 
+  registry_->AddInterface(base::BindRepeating(
+      &RenderFrameHostImpl::BindSerialServiceRequest, base::Unretained(this)));
+
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.
   media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
@@ -5675,6 +5679,14 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
     delegate_->GetNFC(std::move(request));
 }
 #endif
+
+void RenderFrameHostImpl::BindSerialServiceRequest(
+    blink::mojom::SerialServiceRequest request) {
+  if (!serial_service_)
+    serial_service_ = std::make_unique<SerialService>(this);
+
+  serial_service_->Bind(std::move(request));
+}
 
 void RenderFrameHostImpl::BindPresentationServiceRequest(
     blink::mojom::PresentationServiceRequest request) {

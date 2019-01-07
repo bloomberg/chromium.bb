@@ -57,6 +57,7 @@ mojom("mojom_platform") {
     "quota/quota_types.mojom",
     "referrer.mojom",
     "script/script_type.mojom",
+    "serial/serial.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",

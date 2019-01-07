@@ -5,9 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
+#include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace blink {
 
@@ -18,11 +23,19 @@ class SerialPort final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit SerialPort(mojom::blink::SerialPortInfoPtr info);
+  ~SerialPort() override;
+
   ScriptValue in(ScriptState*);
   ScriptValue out(ScriptState*);
 
   ScriptPromise open(ScriptState*, const SerialOptions* options);
   ScriptPromise close(ScriptState*);
+
+  const base::UnguessableToken& Token() const;
+
+ private:
+  mojom::blink::SerialPortInfoPtr info_;
 };
 
 }  // namespace blink

@@ -71,6 +71,7 @@
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h"
@@ -148,6 +149,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SensorProviderProxyImpl;
+class SerialService;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
 struct CommonNavigationParams;
@@ -1230,6 +1232,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindNFCRequest(device::mojom::NFCRequest request);
 #endif
 
+  void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
+
   void BindPresentationServiceRequest(
       blink::mojom::PresentationServiceRequest request);
 
@@ -1721,6 +1725,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
+
+  // Hosts blink::mojom::SerialService for the RenderFrame.
+  std::unique_ptr<SerialService> serial_service_;
 
   // Hosts blink::mojom::PresentationService for the RenderFrame.
   std::unique_ptr<PresentationServiceImpl> presentation_service_;

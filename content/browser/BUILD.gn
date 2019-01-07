@@ -1584,6 +1584,8 @@ jumbo_source_set("browser") {
     "screenlock_monitor/screenlock_monitor_device_source_win.cc",
     "screenlock_monitor/screenlock_monitor_source.cc",
     "screenlock_monitor/screenlock_monitor_source.h",
+    "serial/serial_service.cc",
+    "serial/serial_service.h",
     "service_manager/common_browser_interfaces.cc",
     "service_manager/common_browser_interfaces.h",
     "service_manager/service_manager_context.cc",
