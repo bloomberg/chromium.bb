@@ -50,12 +50,14 @@ class QuarantineLinuxTest : public testing::Test {
 
  protected:
   void SetUp() override {
+#if !defined(OS_CHROMEOS)
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_file_));
     int result =
         setxattr(test_file_.value().c_str(), "user.test", "test", 4, 0);
     is_xattr_supported_ = (!result) || (errno != ENOTSUP);
+#endif  // !defined(OS_CHROMEOS)
     if (!is_xattr_supported_) {
       LOG(WARNING) << "Test will be skipped because extended attributes are "
                       "not supported on this OS/file system.";
