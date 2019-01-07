@@ -1460,6 +1460,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  const gfx::Rect initial_bounds(browser2->window()->GetBounds());
 
   // Place the first browser directly below the second in such a way that
   // dragging a tab upwards will drag it directly into the second browser's
@@ -1468,7 +1469,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
       BrowserView::GetBrowserViewForBrowser(browser2);
   const gfx::Rect tabstrip2_bounds =
       browser_view2->frame()->GetBoundsForTabStrip(browser_view2->tabstrip());
-  gfx::Rect bounds = browser2->window()->GetBounds();
+  gfx::Rect bounds = initial_bounds;
   bounds.Offset(0, tabstrip2_bounds.bottom());
   browser()->window()->SetBounds(bounds);
 
@@ -1498,19 +1499,21 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // Make sure that the window is still managed and not user moved.
+  EXPECT_TRUE(IsWindowPositionManaged(browser2->window()->GetNativeWindow()));
+  EXPECT_FALSE(HasUserChangedWindowPositionOrSize(
+      browser2->window()->GetNativeWindow()));
+
+  // Also make sure that the drag to window position has not changed.
+  EXPECT_EQ(initial_bounds.ToString(),
+            browser2->window()->GetBounds().ToString());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(pkasting): https://crbug.com/910791 Segfaults on CrOS.
-#define MAYBE_DragSingleTabToSeparateWindow \
-  DISABLED_DragSingleTabToSeparateWindow
-#else
-#define MAYBE_DragSingleTabToSeparateWindow DragSingleTabToSeparateWindow
-#endif
 // Creates two browsers, the first browser has a single tab and drags into the
 // second browser.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_DragSingleTabToSeparateWindow) {
+                       DragSingleTabToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   ResetIDs(browser()->tab_strip_model(), 0);
@@ -1518,7 +1521,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Create another browser.
   Browser* browser2 = CreateAnotherBrowserAndResize();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
-  const gfx::Rect initial_bounds(browser2->window()->GetBounds());
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -1540,14 +1542,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Remaining browser window should not be maximized
   EXPECT_FALSE(browser2->window()->IsMaximized());
-
-  // Make sure that the window is still managed and not user moved.
-  EXPECT_TRUE(IsWindowPositionManaged(browser2->window()->GetNativeWindow()));
-  EXPECT_FALSE(HasUserChangedWindowPositionOrSize(
-      browser2->window()->GetNativeWindow()));
-  // Also make sure that the drag to window position has not changed.
-  EXPECT_EQ(initial_bounds.ToString(),
-            browser2->window()->GetBounds().ToString());
 }
 
 namespace {
