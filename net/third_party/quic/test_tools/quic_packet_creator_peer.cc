@@ -5,6 +5,7 @@
 #include "net/third_party/quic/test_tools/quic_packet_creator_peer.h"
 
 #include "net/third_party/quic/core/quic_packet_creator.h"
+#include "net/third_party/quic/core/quic_types.h"
 
 namespace quic {
 namespace test {
@@ -73,7 +74,7 @@ SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
   DCHECK(creator->queued_frames_.empty());
   DCHECK(!frames.empty());
   for (const QuicFrame& frame : frames) {
-    bool success = creator->AddFrame(frame, false);
+    bool success = creator->AddFrame(frame, false, NOT_RETRANSMISSION);
     DCHECK(success);
   }
   creator->SerializePacket(buffer, buffer_len);

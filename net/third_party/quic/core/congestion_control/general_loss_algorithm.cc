@@ -39,7 +39,7 @@ GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
 
 void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
   loss_detection_timeout_ = QuicTime::Zero();
-  largest_sent_on_spurious_retransmit_ = 0;
+  largest_sent_on_spurious_retransmit_ = kInvalidPacketNumber;
   loss_type_ = loss_type;
   reordering_shift_ = loss_type == kAdaptiveTime
                           ? kDefaultAdaptiveLossDelayShift
@@ -49,7 +49,7 @@ void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_eighth_rtt_loss_detection);
     reordering_shift_ = 3;
   }
-  largest_previously_acked_ = 0;
+  largest_previously_acked_ = kInvalidPacketNumber;
 }
 
 LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {

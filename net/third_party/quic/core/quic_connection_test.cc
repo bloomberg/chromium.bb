@@ -2251,6 +2251,52 @@ TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
   EXPECT_EQ(2u, writer_->packets_write_attempts());
 }
 
+TEST_P(QuicConnectionTest, AckSentEveryNthPacket) {
+  if (connection_.version().transport_version == QUIC_VERSION_35) {
+    return;
+  }
+
+  connection_.set_ack_frequency_before_ack_decimation(3);
+
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(39);
+
+  // Expect 13 acks, every 3rd packet.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(13);
+  // Receives packets 1 - 39.
+  for (size_t i = 1; i <= 39; ++i) {
+    ProcessDataPacket(i);
+  }
+}
+
+TEST_P(QuicConnectionTest, AckDecimationReducesAcks) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+    return;
+  }
+
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
+
+  QuicConnectionPeer::SetAckMode(
+      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+
+  // Start ack decimation from 10th packet.
+  connection_.set_min_received_before_ack_decimation(10);
+
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(30);
+
+  // Expect 6 acks: 5 acks between packets 1-10, and ack at 20.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
+  // Receives packets 1 - 29.
+  for (size_t i = 1; i <= 29; ++i) {
+    ProcessDataPacket(i);
+  }
+
+  // We now receive the 30th packet, and so we send an ack.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  ProcessDataPacket(30);
+}
+
 TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
   if (connection_.version().transport_version == QUIC_VERSION_35) {
     return;

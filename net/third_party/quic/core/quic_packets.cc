@@ -77,7 +77,7 @@ QuicPacketHeader::QuicPacketHeader()
       version(
           ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),
       nonce(nullptr),
-      packet_number(0),
+      packet_number(kInvalidPacketNumber),
       form(GOOGLE_QUIC_PACKET),
       long_packet_type(INITIAL),
       possible_stateless_reset_token(0) {}
@@ -295,8 +295,8 @@ SerializedPacket::SerializedPacket(QuicPacketNumber packet_number,
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting),
       transmission_type(NOT_RETRANSMISSION),
-      original_packet_number(0),
-      largest_acked(0) {}
+      original_packet_number(kInvalidPacketNumber),
+      largest_acked(kInvalidPacketNumber) {}
 
 SerializedPacket::SerializedPacket(const SerializedPacket& other) = default;
 
@@ -327,7 +327,7 @@ void ClearSerializedPacket(SerializedPacket* serialized_packet) {
   }
   serialized_packet->encrypted_buffer = nullptr;
   serialized_packet->encrypted_length = 0;
-  serialized_packet->largest_acked = 0;
+  serialized_packet->largest_acked = kInvalidPacketNumber;
 }
 
 char* CopyBuffer(const SerializedPacket& packet) {

@@ -17,6 +17,7 @@
 namespace quic {
 
 // Interface for creating a GoogCC SendAlgorithmInterface.
+// TODO(b/122312335): Remove this file.
 SendAlgorithmInterface* CreateGoogCcSender(
     const QuicClock* clock,
     const RttStats* rtt_stats,

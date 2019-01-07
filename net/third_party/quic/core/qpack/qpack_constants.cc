@@ -4,6 +4,8 @@
 
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
 
+#include <limits>
+
 namespace quic {
 
 bool operator==(const QpackInstructionOpcode& a,

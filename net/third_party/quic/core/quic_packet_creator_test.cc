@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
@@ -85,6 +86,7 @@ class TestPacketCreator : public QuicPacketCreator {
                    QuicStreamOffset offset,
                    bool fin,
                    bool needs_full_padding,
+                   TransmissionType transmission_type,
                    QuicFrame* frame) {
     // Save data before data is consumed.
     QuicByteCount data_length = total_length - iov_offset;
@@ -93,7 +95,8 @@ class TestPacketCreator : public QuicPacketCreator {
                                 data_length);
     }
     return QuicPacketCreator::ConsumeData(id, data_length, iov_offset, offset,
-                                          fin, needs_full_padding, frame);
+                                          fin, needs_full_padding,
+                                          transmission_type, frame);
   }
 
   void StopSendingVersion() {
@@ -540,7 +543,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeData) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, false, false, &frame));
+      1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame));
   size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(
@@ -554,7 +557,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataFin) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, true, false, &frame));
+      1u, iov_.iov_len, 0u, 0u, true, false, NOT_RETRANSMISSION, &frame));
   size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(
@@ -567,7 +570,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataFinOnly) {
   QuicFrame frame;
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), nullptr,
-      0u, 0u, 0u, 0u, true, false, &frame));
+      0u, 0u, 0u, 0u, true, false, NOT_RETRANSMISSION, &frame));
   size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(0u, consumed);
   CheckStreamFrame(
@@ -597,7 +600,7 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
               this, &QuicPacketCreatorTest::ClearSerializedPacketForTests));
       ASSERT_TRUE(creator_.ConsumeData(GetNthClientInitiatedStreamId(1), &iov_,
                                        1u, iov_.iov_len, 0u, kOffset, false,
-                                       false, &frame));
+                                       false, NOT_RETRANSMISSION, &frame));
       size_t bytes_consumed = frame.stream_frame.data_length;
       EXPECT_LT(0u, bytes_consumed);
       creator_.Flush();
@@ -621,7 +624,7 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     MakeIOVector(data, &iov_);
     ASSERT_TRUE(creator_.ConsumeData(GetNthClientInitiatedStreamId(1), &iov_,
                                      1u, iov_.iov_len, 0u, kOffset, false,
-                                     false, &frame));
+                                     false, NOT_RETRANSMISSION, &frame));
 
     // BytesFree() returns bytes available for the next frame, which will
     // be two bytes smaller since the stream frame would need to be grown.
@@ -656,7 +659,8 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
             Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
     ASSERT_TRUE(creator_.ConsumeData(
         QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-        1u, iov_.iov_len, 0u, kOffset, false, true, &frame));
+        1u, iov_.iov_len, 0u, kOffset, false, true, NOT_RETRANSMISSION,
+        &frame));
     size_t bytes_consumed = frame.stream_frame.data_length;
     EXPECT_LT(0u, bytes_consumed);
     creator_.Flush();
@@ -694,7 +698,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
         .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
     ASSERT_TRUE(creator_.ConsumeData(GetNthClientInitiatedStreamId(1), &iov_,
                                      1u, iov_.iov_len, 0u, kOffset, false,
-                                     false, &frame));
+                                     false, NOT_RETRANSMISSION, &frame));
     size_t bytes_consumed = frame.stream_frame.data_length;
     EXPECT_LT(0u, bytes_consumed);
     creator_.Flush();
@@ -1119,7 +1123,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, true, false, &frame));
+      1u, iov_.iov_len, 0u, 0u, true, false, NOT_RETRANSMISSION, &frame));
   size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(payload_length, consumed);
   const QuicString payload(payload_length, 'a');
@@ -1151,7 +1155,8 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
 
   // Add a variety of frame types and then a padding frame.
   QuicAckFrame ack_frame(InitAckFrame(10u));
-  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(&ack_frame), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   EXPECT_FALSE(creator_.HasPendingStreamFramesOfStream(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version())));
@@ -1160,7 +1165,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, false, false, &frame));
+      1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame));
   size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   EXPECT_TRUE(creator_.HasPendingFrames());
@@ -1168,14 +1173,16 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version())));
 
   QuicPaddingFrame padding_frame;
-  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(padding_frame)));
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(padding_frame), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   EXPECT_EQ(0u, creator_.BytesFree());
 
   // Packet is full. Creator will flush.
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
-  EXPECT_FALSE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
+  EXPECT_FALSE(
+      creator_.AddSavedFrame(QuicFrame(&ack_frame), NOT_RETRANSMISSION));
 
   // Ensure the packet is successfully created.
   ASSERT_TRUE(serialized_packet_.encrypted_buffer);
@@ -1216,7 +1223,7 @@ TEST_P(QuicPacketCreatorTest, SerializeAndSendStreamFrame) {
   size_t num_bytes_consumed;
   creator_.CreateAndSerializeStreamFrame(
       QuicUtils::GetHeadersStreamId(client_framer_.transport_version()),
-      iov_.iov_len, 0, 0, true, &num_bytes_consumed);
+      iov_.iov_len, 0, 0, true, NOT_RETRANSMISSION, &num_bytes_consumed);
   EXPECT_EQ(4u, num_bytes_consumed);
 
   // Ensure the packet is successfully created.
@@ -1241,8 +1248,9 @@ TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
   QuicStreamFrame stream_frame(
       QuicUtils::GetHeadersStreamId(client_framer_.transport_version()),
       /*fin=*/false, 0u, QuicStringPiece());
-  EXPECT_QUIC_BUG(creator_.AddSavedFrame(QuicFrame(stream_frame)),
-                  "Cannot send stream data without encryption.");
+  EXPECT_QUIC_BUG(
+      creator_.AddSavedFrame(QuicFrame(stream_frame), NOT_RETRANSMISSION),
+      "Cannot send stream data without encryption.");
 }
 
 TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
@@ -1264,11 +1272,11 @@ TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
   QuicFrame frame;
   EXPECT_CALL(delegate_,
               OnUnrecoverableError(QUIC_CRYPTO_CHLO_TOO_LARGE, _, _));
-  EXPECT_QUIC_BUG(
-      creator_.ConsumeData(
-          QuicUtils::GetCryptoStreamId(client_framer_.transport_version()),
-          &iov, 1u, iov.iov_len, 0u, 0u, false, false, &frame),
-      "Client hello won't fit in a single packet.");
+  EXPECT_QUIC_BUG(creator_.ConsumeData(QuicUtils::GetCryptoStreamId(
+                                           client_framer_.transport_version()),
+                                       &iov, 1u, iov.iov_len, 0u, 0u, false,
+                                       false, NOT_RETRANSMISSION, &frame),
+                  "Client hello won't fit in a single packet.");
 }
 
 TEST_P(QuicPacketCreatorTest, PendingPadding) {
@@ -1305,7 +1313,7 @@ TEST_P(QuicPacketCreatorTest, FullPaddingDoesNotConsumePendingPadding) {
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
       1u, iov_.iov_len, 0u, 0u, false,
-      /*needs_full_padding=*/true, &frame));
+      /*needs_full_padding=*/true, NOT_RETRANSMISSION, &frame));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.Flush();
@@ -1381,7 +1389,7 @@ TEST_P(QuicPacketCreatorTest, SendPacketAfterFullPaddingRetransmission) {
 
   creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, false, false, &frame);
+      1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame);
   creator_.Flush();
   {
     InSequence s;
@@ -1422,7 +1430,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
   MakeIOVector(QuicStringPiece(buf, kStreamFramePayloadSize), &iov_);
   creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, false, false, &frame);
+      1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame);
   creator_.Flush();
   // 1 byte padding is sent.
   EXPECT_EQ(pending_padding_bytes - 1, creator_.pending_padding_bytes());
@@ -1430,7 +1438,8 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
   MakeIOVector(QuicStringPiece(buf, kStreamFramePayloadSize + 1), &iov_);
   creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, kStreamFramePayloadSize, false, false, &frame);
+      1u, iov_.iov_len, 0u, kStreamFramePayloadSize, false, false,
+      NOT_RETRANSMISSION, &frame);
   // No padding is sent.
   creator_.Flush();
   EXPECT_EQ(pending_padding_bytes - 1, creator_.pending_padding_bytes());
@@ -1451,7 +1460,7 @@ TEST_P(QuicPacketCreatorTest, FlushWithExternalBuffer) {
   ASSERT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
       1u, iov_.iov_len, 0u, 0u, false,
-      /*needs_full_padding=*/true, &frame));
+      /*needs_full_padding=*/true, NOT_RETRANSMISSION, &frame));
 
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke([expected_buffer](SerializedPacket* serialized_packet) {
@@ -1484,18 +1493,18 @@ TEST_P(QuicPacketCreatorTest, AddMessageFrame) {
   EXPECT_TRUE(
       creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
   QuicString message(creator_.GetLargestMessagePayload(), 'a');
-  EXPECT_TRUE(
-      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(1, message))));
+  EXPECT_TRUE(creator_.AddSavedFrame(
+      QuicFrame(new QuicMessageFrame(1, message)), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   creator_.Flush();
 
-  EXPECT_TRUE(
-      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(2, "message"))));
+  EXPECT_TRUE(creator_.AddSavedFrame(
+      QuicFrame(new QuicMessageFrame(2, "message")), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   // Verify if a new frame is added, 1 byte message length will be added.
   EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
-  EXPECT_TRUE(
-      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(3, "message2"))));
+  EXPECT_TRUE(creator_.AddSavedFrame(
+      QuicFrame(new QuicMessageFrame(3, "message2")), NOT_RETRANSMISSION));
   EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
   creator_.Flush();
 
@@ -1503,16 +1512,17 @@ TEST_P(QuicPacketCreatorTest, AddMessageFrame) {
   MakeIOVector("test", &iov_);
   EXPECT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, iov_.iov_len, 0u, 0u, false, false, &frame));
-  EXPECT_TRUE(
-      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(1, "message"))));
+      1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame));
+  EXPECT_TRUE(creator_.AddSavedFrame(
+      QuicFrame(new QuicMessageFrame(1, "message")), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   // Verify there is not enough room for largest payload.
   EXPECT_FALSE(
       creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
   // Add largest message will causes the flush of the stream frame.
   QuicMessageFrame message_frame(2, message);
-  EXPECT_FALSE(creator_.AddSavedFrame(QuicFrame(&message_frame)));
+  EXPECT_FALSE(
+      creator_.AddSavedFrame(QuicFrame(&message_frame), NOT_RETRANSMISSION));
   EXPECT_FALSE(creator_.HasPendingFrames());
 }
 
@@ -1525,8 +1535,10 @@ TEST_P(QuicPacketCreatorTest, MessageFrameConsumption) {
   // Test all possible size of message frames.
   for (size_t message_size = 0;
        message_size <= creator_.GetLargestMessagePayload(); ++message_size) {
-    EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(
-        0, QuicStringPiece(message_buffer.data(), message_size)))));
+    EXPECT_TRUE(creator_.AddSavedFrame(
+        QuicFrame(new QuicMessageFrame(
+            0, QuicStringPiece(message_buffer.data(), message_size))),
+        NOT_RETRANSMISSION));
     EXPECT_TRUE(creator_.HasPendingFrames());
 
     size_t expansion_bytes = message_size >= 64 ? 2 : 1;
@@ -1545,6 +1557,45 @@ TEST_P(QuicPacketCreatorTest, MessageFrameConsumption) {
     ASSERT_TRUE(serialized_packet_.encrypted_buffer);
     DeleteSerializedPacket();
   }
+}
+
+TEST_P(QuicPacketCreatorTest, PacketTransmissionType) {
+  creator_.set_can_set_transmission_type(true);
+  creator_.SetTransmissionType(NOT_RETRANSMISSION);
+
+  QuicAckFrame temp_ack_frame;
+  QuicFrame ack_frame(&temp_ack_frame);
+  ASSERT_FALSE(QuicUtils::IsRetransmittableFrame(ack_frame.type));
+
+  QuicFrame stream_frame(QuicStreamFrame(
+      QuicUtils::GetCryptoStreamId(client_framer_.transport_version()),
+      /*fin=*/false, 0u, QuicStringPiece()));
+  ASSERT_TRUE(QuicUtils::IsRetransmittableFrame(stream_frame.type));
+
+  QuicFrame padding_frame{QuicPaddingFrame()};
+  ASSERT_FALSE(QuicUtils::IsRetransmittableFrame(padding_frame.type));
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+
+  EXPECT_TRUE(creator_.AddSavedFrame(ack_frame, LOSS_RETRANSMISSION));
+  ASSERT_FALSE(serialized_packet_.encrypted_buffer);
+
+  EXPECT_TRUE(creator_.AddSavedFrame(stream_frame, RTO_RETRANSMISSION));
+  ASSERT_FALSE(serialized_packet_.encrypted_buffer);
+
+  EXPECT_TRUE(creator_.AddSavedFrame(padding_frame, TLP_RETRANSMISSION));
+  creator_.Flush();
+  ASSERT_TRUE(serialized_packet_.encrypted_buffer);
+
+  if (creator_.ShouldSetTransmissionTypeForNextFrame()) {
+    // The last retransmittable frame on packet is a stream frame, the packet's
+    // transmission type should be the same as the stream frame's.
+    EXPECT_EQ(serialized_packet_.transmission_type, RTO_RETRANSMISSION);
+  } else {
+    EXPECT_EQ(serialized_packet_.transmission_type, NOT_RETRANSMISSION);
+  }
+  DeleteSerializedPacket();
 }
 
 }  // namespace

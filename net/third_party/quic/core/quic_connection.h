@@ -792,6 +792,21 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     fill_up_link_during_probing_ = new_value;
   }
 
+  size_t min_received_before_ack_decimation() const {
+    return min_received_before_ack_decimation_;
+  }
+  void set_min_received_before_ack_decimation(size_t new_value) {
+    min_received_before_ack_decimation_ = new_value;
+  }
+
+  size_t ack_frequency_before_ack_decimation() const {
+    return ack_frequency_before_ack_decimation_;
+  }
+  void set_ack_frequency_before_ack_decimation(size_t new_value) {
+    DCHECK_GT(new_value, 0u);
+    ack_frequency_before_ack_decimation_ = new_value;
+  }
+
   // If |defer| is true, configures the connection to defer sending packets in
   // response to an ACK to the SendAlarm. If |defer| is false, packets may be
   // sent immediately after receiving an ACK.
@@ -1325,10 +1340,17 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Consecutive number of sent packets which have no retransmittable frames.
   size_t consecutive_num_packets_with_no_retransmittable_frames_;
+
   // After this many packets sent without retransmittable frames, an artificial
   // retransmittable frame(a WINDOW_UPDATE) will be created to solicit an ack
   // from the peer. Default to kMaxConsecutiveNonRetransmittablePackets.
   size_t max_consecutive_num_packets_with_no_retransmittable_frames_;
+
+  // Ack decimation will start happening after this many packets are received.
+  size_t min_received_before_ack_decimation_;
+
+  // Before ack decimation starts (if enabled), we ack every n-th packet.
+  size_t ack_frequency_before_ack_decimation_;
 
   // If true, the connection will fill up the pipe with extra data whenever the
   // congestion controller needs it in order to make a bandwidth estimate.  This

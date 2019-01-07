@@ -124,12 +124,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                 &provider, 1, std::numeric_limits<uint16_t>::max());
 
   // Encode header list.
-  QuicString encoded_header_block =
-      QpackEncode(fragment_size_generator, &header_list);
+  NoopDecoderStreamErrorDelegate decoder_stream_error_delegate;
+  NoopEncoderStreamSenderDelegate encoder_stream_sender_delegate;
+  QuicString encoded_header_block = QpackEncode(
+      &decoder_stream_error_delegate, &encoder_stream_sender_delegate,
+      fragment_size_generator, &header_list);
 
   // Decode header block.
   TestHeadersHandler handler;
-  QpackDecode(&handler, fragment_size_generator, encoded_header_block);
+  NoopEncoderStreamErrorDelegate encoder_stream_error_delegate;
+  NoopDecoderStreamSenderDelegate decoder_stream_sender_delegate;
+  QpackDecode(&encoder_stream_error_delegate, &decoder_stream_sender_delegate,
+              &handler, fragment_size_generator, encoded_header_block);
 
   // Since header block has been produced by encoding a header list, it must be
   // valid.

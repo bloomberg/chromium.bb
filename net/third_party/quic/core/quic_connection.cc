@@ -336,6 +336,9 @@ QuicConnection::QuicConnection(
       consecutive_num_packets_with_no_retransmittable_frames_(0),
       max_consecutive_num_packets_with_no_retransmittable_frames_(
           kMaxConsecutiveNonRetransmittablePackets),
+      min_received_before_ack_decimation_(kMinReceivedBeforeAckDecimation),
+      ack_frequency_before_ack_decimation_(
+          kDefaultRetransmittablePacketsBeforeAck),
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
       stateless_reset_token_received_(false),
@@ -1445,7 +1448,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   if (should_last_packet_instigate_acks_ && !ack_queued_) {
     ++num_retransmittable_packets_received_since_last_ack_sent_;
     if (ack_mode_ != TCP_ACKING &&
-        last_header_.packet_number > kMinReceivedBeforeAckDecimation) {
+        last_header_.packet_number > min_received_before_ack_decimation_) {
       // Ack up to 10 packets at once unless ack decimation is unlimited.
       if (!unlimited_ack_decimation_ &&
           num_retransmittable_packets_received_since_last_ack_sent_ >=
@@ -1472,7 +1475,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
     } else {
       // Ack with a timer or every 2 packets by default.
       if (num_retransmittable_packets_received_since_last_ack_sent_ >=
-          kDefaultRetransmittablePacketsBeforeAck) {
+          ack_frequency_before_ack_decimation_) {
         ack_queued_ = true;
       } else if (ShouldSetAckAlarm()) {
         const QuicTime approximate_now = clock_->ApproximateNow();
@@ -1880,7 +1883,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     QUIC_RESTART_FLAG_COUNT_N(quic_enable_accept_random_ipn, 2, 2);
     // Configured to accept any packet number in range 1...0x7fffffff
     // as initial packet number.
-    if (last_header_.packet_number != 0) {
+    if (last_header_.packet_number != kInvalidPacketNumber) {
       // The last packet's number is not 0. Ensure that this packet
       // is reasonably close to where it should be.
       if (!Near(header.packet_number, last_header_.packet_number)) {
@@ -1895,7 +1898,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       // The "last packet's number" is 0, meaning that this packet is the first
       // one received. Ensure it is in range 1..kMaxRandomInitialPacketNumber,
       // inclusive.
-      if ((header.packet_number == 0) ||
+      if ((header.packet_number == kInvalidPacketNumber) ||
           (header.packet_number > kMaxRandomInitialPacketNumber)) {
         // packet number is bad.
         QUIC_DLOG(INFO) << ENDPOINT << "Initial packet " << header.packet_number
@@ -2406,7 +2409,7 @@ void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
 
   if (transport_version() != QUIC_VERSION_35) {
     if (serialized_packet->retransmittable_frames.empty() &&
-        serialized_packet->original_packet_number == 0) {
+        serialized_packet->original_packet_number == kInvalidPacketNumber) {
       // Increment consecutive_num_packets_with_no_retransmittable_frames_ if
       // this packet is a new transmission with no retransmittable frames.
       ++consecutive_num_packets_with_no_retransmittable_frames_;

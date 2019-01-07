@@ -11,9 +11,9 @@ namespace quic {
 
 namespace {
 
-const size_t kEntrySizeOverhead = 32;
+const uint64_t kEntrySizeOverhead = 32;
 
-size_t EntrySize(QuicStringPiece name, QuicStringPiece value) {
+uint64_t EntrySize(QuicStringPiece name, QuicStringPiece value) {
   return name.size() + value.size() + kEntrySizeOverhead;
 }
 
@@ -32,7 +32,7 @@ QpackHeaderTable::QpackHeaderTable()
 QpackHeaderTable::~QpackHeaderTable() = default;
 
 const QpackEntry* QpackHeaderTable::LookupEntry(bool is_static,
-                                                size_t index) const {
+                                                uint64_t index) const {
   if (is_static) {
     if (index >= static_entries_.size()) {
       return nullptr;
@@ -58,7 +58,7 @@ QpackHeaderTable::MatchType QpackHeaderTable::FindHeaderField(
     QuicStringPiece name,
     QuicStringPiece value,
     bool* is_static,
-    size_t* index) const {
+    uint64_t* index) const {
   QpackEntry query(name, value);
 
   // Look for exact match in static table.
@@ -102,18 +102,19 @@ QpackHeaderTable::MatchType QpackHeaderTable::FindHeaderField(
 
 const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
                                                 QuicStringPiece value) {
-  const size_t entry_size = EntrySize(name, value);
+  const uint64_t entry_size = EntrySize(name, value);
   if (entry_size > dynamic_table_capacity_) {
     return nullptr;
   }
 
-  EvictDownTo(dynamic_table_capacity_ - entry_size);
-  dynamic_table_size_ += entry_size;
-  DCHECK_LE(dynamic_table_size_, dynamic_table_capacity_);
-
-  const size_t index = dropped_entry_count_ + dynamic_entries_.size();
+  const uint64_t index = dropped_entry_count_ + dynamic_entries_.size();
   dynamic_entries_.push_back({name, value, /* is_static = */ false, index});
   QpackEntry* const new_entry = &dynamic_entries_.back();
+
+  // Evict entries after inserting the new entry instead of before
+  // in order to avoid invalidating |name| and |value|.
+  dynamic_table_size_ += entry_size;
+  EvictDownToCurrentCapacity();
 
   auto index_result = dynamic_index_.insert(new_entry);
   if (!index_result.second) {
@@ -142,13 +143,13 @@ const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
   return new_entry;
 }
 
-bool QpackHeaderTable::UpdateTableSize(size_t max_size) {
+bool QpackHeaderTable::UpdateTableSize(uint64_t max_size) {
   if (max_size > maximum_dynamic_table_capacity_) {
     return false;
   }
 
   dynamic_table_capacity_ = max_size;
-  EvictDownTo(dynamic_table_capacity_);
+  EvictDownToCurrentCapacity();
 
   DCHECK_LE(dynamic_table_size_, dynamic_table_capacity_);
 
@@ -156,7 +157,7 @@ bool QpackHeaderTable::UpdateTableSize(size_t max_size) {
 }
 
 void QpackHeaderTable::SetMaximumDynamicTableCapacity(
-    size_t maximum_dynamic_table_capacity) {
+    uint64_t maximum_dynamic_table_capacity) {
   // This method can only be called once: in the decoding context, shortly after
   // construction; in the encoding context, upon receiving the SETTINGS frame.
   DCHECK_EQ(0u, dynamic_table_capacity_);
@@ -168,12 +169,12 @@ void QpackHeaderTable::SetMaximumDynamicTableCapacity(
   max_entries_ = maximum_dynamic_table_capacity / 32;
 }
 
-void QpackHeaderTable::EvictDownTo(size_t new_table_size) {
-  while (dynamic_table_size_ > new_table_size) {
+void QpackHeaderTable::EvictDownToCurrentCapacity() {
+  while (dynamic_table_size_ > dynamic_table_capacity_) {
     DCHECK(!dynamic_entries_.empty());
 
     QpackEntry* const entry = &dynamic_entries_.front();
-    const size_t entry_size = EntrySize(entry->name(), entry->value());
+    const uint64_t entry_size = EntrySize(entry->name(), entry->value());
 
     DCHECK_GE(dynamic_table_size_, entry_size);
     dynamic_table_size_ -= entry_size;

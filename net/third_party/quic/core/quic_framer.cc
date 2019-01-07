@@ -1513,7 +1513,8 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
       set_detailed_error("Unable to read packet number.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
-    if (header->packet_number == 0u) {
+
+    if (header->packet_number == kInvalidPacketNumber) {
       if (IsIetfStatelessResetPacket(*header)) {
         // This is a stateless reset packet.
         QuicIetfStatelessResetPacket packet(
@@ -2080,7 +2081,7 @@ bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
-  if (header->packet_number == 0u) {
+  if (header->packet_number == kInvalidPacketNumber) {
     set_detailed_error("packet numbers cannot be 0.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/quic_data_writer.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_aligned.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
@@ -55,7 +56,9 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       long_header_type_(HANDSHAKE),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
-      can_set_transmission_type_(false) {
+      can_set_transmission_type_(false),
+      set_transmission_type_for_next_frame_(
+          GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -133,6 +136,7 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
                                     QuicStreamOffset offset,
                                     bool fin,
                                     bool needs_full_padding,
+                                    TransmissionType transmission_type,
                                     QuicFrame* frame) {
   if (!HasRoomForStreamFrame(id, offset, write_length - iov_offset)) {
     return false;
@@ -151,7 +155,8 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
                                     ConnectionCloseSource::FROM_SELF);
     return false;
   }
-  if (!AddFrame(*frame, /*save_retransmittable_frames=*/true)) {
+  if (!AddFrame(*frame, /*save_retransmittable_frames=*/true,
+                transmission_type)) {
     // Fails if we try to write unencrypted stream data.
     return false;
   }
@@ -280,7 +285,7 @@ void QuicPacketCreator::ReserializeAllFrames(
 
   // Serialize the packet and restore packet number length state.
   for (const QuicFrame& frame : retransmission.retransmittable_frames) {
-    bool success = AddFrame(frame, false);
+    bool success = AddFrame(frame, false, retransmission.transmission_type);
     QUIC_BUG_IF(!success) << " Failed to add frame of type:" << frame.type
                           << " num_frames:"
                           << retransmission.retransmittable_frames.size()
@@ -332,14 +337,14 @@ void QuicPacketCreator::ClearPacket() {
   packet_.has_stop_waiting = false;
   packet_.has_crypto_handshake = NOT_HANDSHAKE;
   packet_.num_padding_bytes = 0;
-  packet_.original_packet_number = 0;
-  if (!can_set_transmission_type_) {
+  packet_.original_packet_number = kInvalidPacketNumber;
+  if (!can_set_transmission_type_ || ShouldSetTransmissionTypeForNextFrame()) {
     packet_.transmission_type = NOT_RETRANSMISSION;
   }
   packet_.encrypted_buffer = nullptr;
   packet_.encrypted_length = 0;
   DCHECK(packet_.retransmittable_frames.empty());
-  packet_.largest_acked = 0;
+  packet_.largest_acked = kInvalidPacketNumber;
   needs_full_padding_ = false;
 }
 
@@ -349,6 +354,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
     QuicStreamOffset iov_offset,
     QuicStreamOffset stream_offset,
     bool fin,
+    TransmissionType transmission_type,
     size_t* num_bytes_consumed) {
   DCHECK(queued_frames_.empty());
   // Write out the packet header
@@ -395,6 +401,12 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
                                   &writer)) {
     QUIC_BUG << "AppendStreamFrame failed";
     return;
+  }
+
+  if (ShouldSetTransmissionTypeForNextFrame()) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_set_transmission_type_for_next_frame, 1,
+                                 2);
+    packet_.transmission_type = transmission_type;
   }
 
   size_t encrypted_length = framer_->EncryptInPlace(
@@ -472,12 +484,17 @@ size_t QuicPacketCreator::PacketSize() {
   return packet_size_;
 }
 
-bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
-  return AddFrame(frame, /*save_retransmittable_frames=*/true);
+bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame,
+                                      TransmissionType transmission_type) {
+  return AddFrame(frame, /*save_retransmittable_frames=*/true,
+                  transmission_type);
 }
 
-bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
-  if (AddFrame(frame, /*save_retransmittable_frames=*/true)) {
+bool QuicPacketCreator::AddPaddedSavedFrame(
+    const QuicFrame& frame,
+    TransmissionType transmission_type) {
+  if (AddFrame(frame, /*save_retransmittable_frames=*/true,
+               transmission_type)) {
     needs_full_padding_ = true;
     return true;
   }
@@ -693,21 +710,11 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->long_packet_type = long_header_type_;
 }
 
-bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
-  switch (frame.type) {
-    case ACK_FRAME:
-    case PADDING_FRAME:
-    case STOP_WAITING_FRAME:
-    case MTU_DISCOVERY_FRAME:
-      return false;
-    default:
-      return true;
-  }
-}
-
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
-                                 bool save_retransmittable_frames) {
-  QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << frame;
+                                 bool save_retransmittable_frames,
+                                 TransmissionType transmission_type) {
+  QUIC_DVLOG(1) << ENDPOINT << "Adding frame with transmission type "
+                << transmission_type << ": " << frame;
   if (frame.type == STREAM_FRAME &&
       frame.stream_frame.stream_id !=
           QuicUtils::GetCryptoStreamId(framer_->transport_version()) &&
@@ -732,7 +739,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   packet_size_ += ExpansionOnNewFrame() + frame_len;
 
-  if (save_retransmittable_frames && ShouldRetransmit(frame)) {
+  if (save_retransmittable_frames &&
+      QuicUtils::IsRetransmittableFrame(frame.type)) {
     if (packet_.retransmittable_frames.empty()) {
       packet_.retransmittable_frames.reserve(2);
     }
@@ -758,6 +766,14 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
 
+  // Packet transmission type is determined by the last added retransmittable
+  // frame.
+  if (ShouldSetTransmissionTypeForNextFrame() &&
+      QuicUtils::IsRetransmittableFrame(frame.type)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_set_transmission_type_for_next_frame, 2,
+                                 2);
+    packet_.transmission_type = transmission_type;
+  }
   return true;
 }
 
@@ -789,7 +805,8 @@ void QuicPacketCreator::MaybeAddPadding() {
   }
 
   bool success =
-      AddFrame(QuicFrame(QuicPaddingFrame(packet_.num_padding_bytes)), false);
+      AddFrame(QuicFrame(QuicPaddingFrame(packet_.num_padding_bytes)), false,
+               packet_.transmission_type);
   DCHECK(success);
 }
 
@@ -828,10 +845,14 @@ void QuicPacketCreator::SetConnectionIdLength(QuicConnectionIdLength length) {
 
 void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
   DCHECK(can_set_transmission_type_);
-  QUIC_DVLOG_IF(1, type != packet_.transmission_type)
-      << ENDPOINT << "Setting Transmission type to "
-      << QuicUtils::TransmissionTypeToString(type);
-  packet_.transmission_type = type;
+
+  if (!ShouldSetTransmissionTypeForNextFrame()) {
+    QUIC_DVLOG_IF(1, type != packet_.transmission_type)
+        << ENDPOINT << "Setting Transmission type to "
+        << QuicUtils::TransmissionTypeToString(type);
+
+    packet_.transmission_type = type;
+  }
 }
 
 void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {

@@ -30,12 +30,18 @@ class QpackRoundTripTest
 
   spdy::SpdyHeaderBlock EncodeThenDecode(
       const spdy::SpdyHeaderBlock& header_list) {
+    NoopDecoderStreamErrorDelegate decoder_stream_error_delegate;
+    NoopEncoderStreamSenderDelegate encoder_stream_sender_delegate;
     QuicString encoded_header_block = QpackEncode(
+        &decoder_stream_error_delegate, &encoder_stream_sender_delegate,
         FragmentModeToFragmentSizeGenerator(encoding_fragment_mode_),
         &header_list);
 
     TestHeadersHandler handler;
-    QpackDecode(&handler,
+    NoopEncoderStreamErrorDelegate encoder_stream_error_delegate;
+    NoopDecoderStreamSenderDelegate decoder_stream_sender_delegate;
+    QpackDecode(&encoder_stream_error_delegate, &decoder_stream_sender_delegate,
+                &handler,
                 FragmentModeToFragmentSizeGenerator(decoding_fragment_mode_),
                 encoded_header_block);
 

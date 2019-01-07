@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/platform/impl/quic_file_utils_impl.h"
 
 using base::FilePath;
 

@@ -11,6 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::StrictMock;
 using ::testing::Values;
 
 namespace quic {
@@ -18,14 +19,18 @@ namespace test {
 namespace {
 
 class QpackEncoderTest : public QuicTestWithParam<FragmentMode> {
- public:
+ protected:
   QpackEncoderTest() : fragment_mode_(GetParam()) {}
   ~QpackEncoderTest() override = default;
 
   QuicString Encode(const spdy::SpdyHeaderBlock* header_list) {
-    return QpackEncode(FragmentModeToFragmentSizeGenerator(fragment_mode_),
-                       header_list);
+    return QpackEncode(
+        &decoder_stream_error_delegate_, &encoder_stream_sender_delegate_,
+        FragmentModeToFragmentSizeGenerator(fragment_mode_), header_list);
   }
+
+  StrictMock<MockDecoderStreamErrorDelegate> decoder_stream_error_delegate_;
+  NoopEncoderStreamSenderDelegate encoder_stream_sender_delegate_;
 
  private:
   const FragmentMode fragment_mode_;
@@ -131,7 +136,8 @@ TEST_P(QpackEncoderTest, SimpleIndexed) {
   spdy::SpdyHeaderBlock header_list;
   header_list[":path"] = "/";
 
-  QpackEncoder encoder;
+  QpackEncoder encoder(&decoder_stream_error_delegate_,
+                       &encoder_stream_sender_delegate_);
   auto progressive_encoder =
       encoder.EncodeHeaderList(/* stream_id = */ 1, &header_list);
   EXPECT_TRUE(progressive_encoder->HasNext());
@@ -143,6 +149,16 @@ TEST_P(QpackEncoderTest, SimpleIndexed) {
 
   EXPECT_EQ(QuicTextUtils::HexDecode("0000c1"), output);
   EXPECT_FALSE(progressive_encoder->HasNext());
+}
+
+TEST_P(QpackEncoderTest, DecoderStreamError) {
+  EXPECT_CALL(decoder_stream_error_delegate_,
+              OnError(QuicStringPiece("Encoded integer too large.")));
+
+  QpackEncoder encoder(&decoder_stream_error_delegate_,
+                       &encoder_stream_sender_delegate_);
+  encoder.DecodeDecoderStreamData(
+      QuicTextUtils::HexDecode("ffffffffffffffffffffff"));
 }
 
 }  // namespace

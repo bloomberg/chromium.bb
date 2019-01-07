@@ -5,7 +5,6 @@
 #include "net/third_party/quic/quartc/quartc_factory.h"
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/platform/api/quic_goog_cc_sender.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/quartc/quartc_session.h"
@@ -92,30 +91,6 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   sent_packet_manager.set_delayed_ack_time(
       QuicTime::Delta::FromMilliseconds(100));
 
-  switch (quartc_session_config.congestion_control_type) {
-    case kBBR:
-      copt.push_back(kTBBR);
-      break;
-    case kGoogCC: {
-      SendAlgorithmInterface* sender = CreateGoogCcSender(
-          clock_, sent_packet_manager.GetRttStats(),
-          &sent_packet_manager.unacked_packets(), GetRandomGenerator(),
-          /*stats=*/nullptr, sent_packet_manager.initial_congestion_window(),
-          kDefaultMaxCongestionWindowPackets);
-      sent_packet_manager.SetSendAlgorithm(sender);
-      break;
-    }
-    case kCubicBytes:
-      QUIC_LOG(FATAL) << "kCubicBytes is not supported";
-      break;
-    case kRenoBytes:
-      QUIC_LOG(FATAL) << "kRenoBytes is not supported";
-      break;
-    case kPCC:
-      QUIC_LOG(FATAL) << "kPCC is not supported";
-      break;
-  }
-
   // Note: flag settings have no effect for Exoblaze builds since
   // SetQuicReloadableFlag() gets stubbed out.
   SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
@@ -138,6 +113,13 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   }
 
   quic_connection->set_fill_up_link_during_probing(true);
+
+  // We start ack decimation after 15 packets. Typically, we would see
+  // 1-2 crypto handshake packets, one media packet, and 10 probing packets.
+  // We want to get acks for the probing packets as soon as possible,
+  // but we can start using ack decimation right after first probing completes.
+  // The default was to not start ack decimation for the first 100 packets.
+  quic_connection->set_min_received_before_ack_decimation(15);
 
   // TODO(b/112192153):  Test and possible enable slower startup when pipe
   // filling is ready to use.  Slower startup is kBBRS.

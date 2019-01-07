@@ -137,7 +137,7 @@ class StatelessConnectionTerminator {
     // TODO(fayang): Use the right long header type for conneciton close sent by
     // dispatcher.
     creator_.SetLongHeaderType(RETRY);
-    if (!creator_.AddSavedFrame(QuicFrame(frame))) {
+    if (!creator_.AddSavedFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
       QUIC_BUG << "Unable to add frame to an empty packet";
       delete frame;
       return;
@@ -163,7 +163,7 @@ class StatelessConnectionTerminator {
               QuicUtils::GetCryptoStreamId(framer_->transport_version()),
               reject.length(), offset, offset,
               /*fin=*/false,
-              /*needs_full_padding=*/true, &frame)) {
+              /*needs_full_padding=*/true, NOT_RETRANSMISSION, &frame)) {
         QUIC_BUG << "Unable to consume data into an empty packet.";
         return;
       }
@@ -548,9 +548,13 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
       !connection->termination_packets()->empty()) {
     action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
   } else if (connection->transport_version() > QUIC_VERSION_43) {
-    if (!GetQuicReloadableFlag(
-            quic_send_reset_for_post_handshake_connections_without_termination_packets) ||  // NOLINT
-        (source == ConnectionCloseSource::FROM_PEER)) {
+    // TODO(fayang): Always resetting IETF connections is a debugging
+    // expediency. Stop doing this when removing flag
+    // quic_always_reset_ietf_connections.
+    if (!GetQuicReloadableFlag(quic_always_reset_ietf_connections) &&
+        (!GetQuicReloadableFlag(
+             quic_send_reset_for_post_handshake_connections_without_termination_packets) ||  // NOLINT
+         (source == ConnectionCloseSource::FROM_PEER))) {
       action = QuicTimeWaitListManager::DO_NOTHING;
     } else if (!connection->IsHandshakeConfirmed()) {
       QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_handshake_failed);
