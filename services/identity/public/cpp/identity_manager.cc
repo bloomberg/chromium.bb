@@ -350,6 +350,17 @@ void IdentityManager::OnEndBatchChanges() {
     observer.OnEndBatchOfRefreshTokenStateChanges();
 }
 
+void IdentityManager::OnAuthErrorChanged(
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  AccountInfo account_info =
+      GetAccountInfoForAccountWithRefreshToken(account_id);
+
+  for (auto& observer : observer_list_)
+    observer.OnErrorStateOfRefreshTokenUpdatedForAccount(account_info,
+                                                         auth_error);
+}
+
 void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
