@@ -3183,6 +3183,12 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY" desc="A label for a toggle in site settings to block autoplay. If the toggle is on then Chrome will block autoplay by default and use an algorithm to determine which sites should still be able to autoplay. If the toggle is off then autoplay will be enabled for all sites.">
     Let Chrome choose when sites can play sound (recommended)
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_EMPTY_ALL_SITES_PAGE" desc="Explanation shown when there are no sites that have appeared yet on the All Sites page.">
+    Sites you visit will appear here
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NO_SITES_FOUND" desc="Explanation shown when there are no matching search results on All Sites page.">
+    No sites found
+  </message>
 
   <message name="IDS_SETTINGS_NO_USB_DEVICES_FOUND" desc="Explanation for not showing USB devices in site settings.">
     No USB devices found
