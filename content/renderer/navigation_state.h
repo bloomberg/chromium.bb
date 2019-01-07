@@ -27,7 +27,8 @@ class CONTENT_EXPORT NavigationState {
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       base::TimeTicks time_commit_requested,
-      mojom::FrameNavigationControl::CommitNavigationCallback callback);
+      mojom::FrameNavigationControl::CommitNavigationCallback callback,
+      std::unique_ptr<NavigationClient> navigation_client);
 
   static std::unique_ptr<NavigationState> CreateContentInitiated();
 
@@ -74,8 +75,8 @@ class CONTENT_EXPORT NavigationState {
       const CommitNavigationParams& commit_params,
       base::TimeTicks time_commit_requested,
       bool is_content_initiated,
-      content::mojom::FrameNavigationControl::CommitNavigationCallback
-          callback);
+      content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
+      std::unique_ptr<NavigationClient> navigation_client);
 
   bool request_committed_;
   bool was_within_same_document_;

@@ -482,7 +482,8 @@ NavigationRequest::NavigationRequest(
       request_navigation_client_ = mojom::NavigationClientAssociatedPtr();
       request_navigation_client_.Bind(std::move(navigation_client));
       // Binds the OnAbort callback
-      request_navigation_client_.set_connection_error_handler(
+      HandleInterfaceDisconnection(
+          &request_navigation_client_,
           base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
                          base::Unretained(this)));
       associated_site_instance_id_ = source_site_instance_->GetId();
@@ -818,7 +819,9 @@ void NavigationRequest::RegisterSubresourceOverride(
 mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   if (commit_navigation_client_ && commit_navigation_client_.is_bound())
     return commit_navigation_client_.get();
-  return nullptr;
+  commit_navigation_client_ = navigation_handle_->GetRenderFrameHost()
+                                  ->GetNavigationClientFromInterfaceProvider();
+  return commit_navigation_client_.get();
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -1715,18 +1718,14 @@ void NavigationRequest::CommitErrorPage(
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
-    // Two cases are possible here:
-    // Either we have a same-site navigation in which case the navigation
-    // request needs to be canceled in the RFH, so we need to rebind the handler
-    // to a post-ReadyToCommit handler.
-    // TODO(ahemery): Implement this second abort handler.
-    // Or this navigation is cross-site: the original document should no longer
-    // be able to cancel it.
-    IgnorePipeDisconnection();
     if (associated_site_instance_id_ ==
         render_frame_host->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
+    } else {
+      IgnoreInterfaceDisconnection();
+      // This navigation is cross-site: the original document should no longer
+      // be able to cancel it.
     }
     associated_site_instance_id_.reset();
   }
@@ -1765,18 +1764,14 @@ void NavigationRequest::CommitNavigation() {
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
-    // Two cases are possible here:
-    // Either we have a same-site navigation in which case the navigation
-    // request needs to be canceled in the RFH, so we need to rebind the handler
-    // to a post-ReadyToCommit handler.
-    // TODO(ahemery): Implement this second abort handler.
-    // Or this navigation is cross-site: the original document should no longer
-    // be able to cancel it.
-    IgnorePipeDisconnection();
     if (associated_site_instance_id_ ==
         render_frame_host->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
+    } else {
+      // This navigation is cross-site: the original document should no longer
+      // be able to cancel it.
+      IgnoreInterfaceDisconnection();
     }
     associated_site_instance_id_.reset();
   }
@@ -1983,12 +1978,22 @@ void NavigationRequest::UpdateCommitNavigationParamsHistory() {
 }
 
 void NavigationRequest::OnRendererAbortedNavigation() {
-  frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
+  if (navigation_handle_->IsWaitingToCommit()) {
+    navigation_handle_->GetRenderFrameHost()->NavigationRequestCancelled(this);
+  } else {
+    frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
+  }
 
   // Do not add code after this, NavigationRequest has been destroyed.
 }
 
-void NavigationRequest::IgnorePipeDisconnection() {
+void NavigationRequest::HandleInterfaceDisconnection(
+    mojom::NavigationClientAssociatedPtr* navigation_client,
+    base::OnceClosure error_handler) {
+  navigation_client->set_connection_error_handler(std::move(error_handler));
+}
+
+void NavigationRequest::IgnoreInterfaceDisconnection() {
   return request_navigation_client_.set_connection_error_handler(
       base::DoNothing());
 }
