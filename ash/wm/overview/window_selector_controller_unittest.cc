@@ -125,6 +125,11 @@ void WaitForOcclusionStateChange(aura::Window* window) {
     base::RunLoop().RunUntilIdle();
 }
 
+void WaitForShowAnimation(aura::Window* window) {
+  while (window->layer()->opacity() != 1.f)
+    base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace
 
 using WindowSelectorControllerTest = AshTestBase;
@@ -263,6 +268,11 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
       CreateTestWindowInShellWithBounds(bounds));
   std::unique_ptr<aura::Window> window2(
       CreateTestWindowInShellWithBounds(bounds));
+  // Wait for show/hide animation because occlusion tracker because
+  // the test depends on opacity.
+  WaitForShowAnimation(window1.get());
+  WaitForShowAnimation(window2.get());
+
   window1->TrackOcclusionState();
   window2->TrackOcclusionState();
   EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
