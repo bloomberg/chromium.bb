@@ -28,6 +28,16 @@ Polymer({
       value: function() {
         return new Map();
       },
+      observer: 'forceListUpdate_',
+    },
+
+    /**
+     * Filtered site group list.
+     * @type {!Array<SiteGroup>}
+     * @private
+     */
+    filteredList_: {
+      type: Array,
     },
 
     /**
@@ -48,6 +58,7 @@ Polymer({
     searchQuery_: {
       type: String,
       value: '',
+      observer: 'forceListUpdate_',
     },
 
     /**
@@ -136,10 +147,13 @@ Polymer({
     }
 
     this.browserProxy.getAllSites(contentTypes).then((response) => {
+      // Create a new map to make an observable change.
+      const newMap = /** @type {!Map<string, !SiteGroup>} */
+                      (new Map(this.siteGroupMap));
       response.forEach(siteGroup => {
-        this.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
+        newMap.set(siteGroup.etldPlus1, siteGroup);
       });
-      this.forceListUpdate_();
+      this.siteGroupMap = newMap;
     });
   },
 
@@ -149,9 +163,12 @@ Polymer({
    * @param {!Array<!SiteGroup>} list The list of sites using local storage.
    */
   onLocalStorageListFetched: function(list) {
+    // Create a new map to make an observable change.
+    const newMap = /** @type {!Map<string, !SiteGroup>} */
+                    (new Map(this.siteGroupMap));
     list.forEach(storageSiteGroup => {
-      if (this.siteGroupMap.has(storageSiteGroup.etldPlus1)) {
-        const siteGroup = this.siteGroupMap.get(storageSiteGroup.etldPlus1);
+      if (newMap.has(storageSiteGroup.etldPlus1)) {
+        const siteGroup = newMap.get(storageSiteGroup.etldPlus1);
         const storageOriginInfoMap = new Map();
         storageSiteGroup.origins.forEach(
             originInfo =>
@@ -170,10 +187,10 @@ Polymer({
         storageOriginInfoMap.forEach(
             originInfo => siteGroup.origins.push(originInfo));
       } else {
-        this.siteGroupMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
+        newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
       }
     });
-    this.forceListUpdate_();
+    this.siteGroupMap = newMap;
   },
 
   /**
@@ -305,8 +322,8 @@ Polymer({
    * @private
    */
   onSortMethodChanged_: function() {
-    this.$.allSitesList.items =
-        this.sortSiteGroupList_(this.$.allSitesList.items);
+    this.filteredList_ =
+        this.sortSiteGroupList_(this.filteredList_);
     // Force the iron-list to rerender its items, as the order has changed.
     this.$.allSitesList.fire('iron-resize');
   },
@@ -317,7 +334,7 @@ Polymer({
    * @private
    */
   forceListUpdate_: function() {
-    this.$.allSitesList.items =
+    this.filteredList_ =
         this.filterPopulatedList_(this.siteGroupMap, this.searchQuery_);
     this.$.allSitesList.fire('iron-resize');
   },
@@ -355,4 +372,23 @@ Polymer({
     this.focusConfig.set(
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path, onNavigatedTo);
   },
+
+  /**
+   * Whether the |siteGroupMap| is empty.
+   * @return {boolean}
+   * @private
+   */
+  siteGroupMapEmpty_: function() {
+    return !this.siteGroupMap.size;
+  },
+
+  /**
+   * Whether the |filteredList_| is empty due to searching.
+   * @return {boolean}
+   * @private
+   */
+  noSearchResultFound_: function() {
+    return !this.filteredList_.length && !this.siteGroupMapEmpty_();
+  }
+
 });

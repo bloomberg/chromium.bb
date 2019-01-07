@@ -2530,6 +2530,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_BLOCK},
     {"siteSettingsBlockAutoplaySetting",
      IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY},
+    {"emptyAllSitesPage", IDS_SETTINGS_SITE_SETTINGS_EMPTY_ALL_SITES_PAGE},
+    {"noSitesFound", IDS_SETTINGS_SITE_SETTINGS_NO_SITES_FOUND},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));

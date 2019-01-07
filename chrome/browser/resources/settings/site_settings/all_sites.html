@@ -52,12 +52,15 @@
         </select>
       </div>
     </div>
-    <div class="list-frame" hidden$="[[siteGroupMap.size]]">
-      <div class="list-item secondary">$i18n{noSitesAdded}</div>
+    <div class="list-frame" hidden$="[[!siteGroupMapEmpty_(siteGroupMap)]]">
+      <div class="list-item secondary">$i18n{emptyAllSitesPage}</div>
+    </div>
+    <div class="list-frame" hidden$="[[!noSearchResultFound_(filteredList_)]]">
+      <div class="list-item secondary">$i18n{noSitesFound}</div>
     </div>
     <div class="list-frame without-heading" id="listContainer">
       <iron-list id="allSitesList"
-          items="[[filterPopulatedList_(siteGroupMap, searchQuery_)]]"
+          items="[[filteredList_]]"
           scroll-target="[[subpageScrollTarget]]">
         <template>
           <site-entry site-group="[[item]]" list-index="[[index]]"
