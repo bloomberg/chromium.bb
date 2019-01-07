@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -123,7 +124,11 @@ class CreditCardSaveManager {
  private:
   friend class CreditCardSaveManagerTest;
   friend class CreditCardSaveManagerTestObserverBridge;
+  friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsBrowserTestBase;
+
+  // Returns the CreditCardSaveStrikeDatabase for |client_|.
+  CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
 
   // Sets |show_save_prompt| and moves forward with offering credit card local
   // save.
@@ -302,6 +307,8 @@ class CreditCardSaveManager {
 
   // The returned legal message from a GetUploadDetails call to Google Payments.
   std::unique_ptr<base::DictionaryValue> legal_message_;
+
+  std::unique_ptr<CreditCardSaveStrikeDatabase> strike_database_;
 
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;

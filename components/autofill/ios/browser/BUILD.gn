@@ -67,6 +67,7 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
+    "//components/leveldb_proto:leveldb_proto",
     "//ios/web/public",
   ]
 }

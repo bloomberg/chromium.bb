@@ -34,12 +34,22 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   // Returns whether OnDidUploadCard() was called.
   bool CreditCardWasUploaded();
 
+  void set_show_save_prompt(bool show_save_prompt);
+
+  void set_upload_request_card_number(const base::string16& credit_card_number);
+
  private:
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                        const std::string& server_id) override;
 
   bool credit_card_upload_enabled_ = false;
   bool credit_card_was_uploaded_ = false;
+
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardSaveManagerTest,
+      UploadCreditCard_NumLegacyStrikesLoggedOnUploadNotSuccess);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveManagerTest,
+                           UploadCreditCard_NumStrikesLoggedOnUploadNotSuccess);
 
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardSaveManager);
 };
