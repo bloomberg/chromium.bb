@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -138,12 +137,6 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
                                        PrefService* prefs) {
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // The improved recovery components requires elevation in the case where
-  // Chrome is installed per-machine. The elevation mechanism is not implemented
-  // yet; therefore, the component is not registered in this case.
-  if (!IsPerUserInstall())
-    return;
-
   DVLOG(1) << "Registering RecoveryImproved component.";
 
   // |cus| takes ownership of |installer| through the CrxComponent instance.
