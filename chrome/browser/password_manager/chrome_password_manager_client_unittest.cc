@@ -590,7 +590,7 @@ TEST_F(ChromePasswordManagerClientTest,
 
   EXPECT_EQ(
       SerializedNavigationEntry::HAS_PASSWORD_FIELD,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // Metrics disabled, syncing with non-custom passphrase: Do not annotate.
@@ -607,7 +607,7 @@ TEST_F(ChromePasswordManagerClientTest,
 
   EXPECT_EQ(
       SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // Metrics enabled, syncing with custom passphrase: Do not annotate.
@@ -624,7 +624,7 @@ TEST_F(ChromePasswordManagerClientTest,
 
   EXPECT_EQ(
       SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // Metrics disabled, syncing with custom passphrase: Do not annotate.
@@ -641,7 +641,7 @@ TEST_F(ChromePasswordManagerClientTest,
 
   EXPECT_EQ(
       SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // State transition: Unannotated
@@ -650,7 +650,7 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryUnannotated) {
 
   EXPECT_EQ(
       SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // State transition: unknown->false
@@ -660,7 +660,7 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryToFalse) {
   GetClient()->AnnotateNavigationEntry(false);
   EXPECT_EQ(
       SerializedNavigationEntry::NO_PASSWORD_FIELD,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // State transition: false->true
@@ -671,7 +671,7 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryToTrue) {
   GetClient()->AnnotateNavigationEntry(true);
   EXPECT_EQ(
       SerializedNavigationEntry::HAS_PASSWORD_FIELD,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // State transition: true->false (retains true)
@@ -682,7 +682,7 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryTrueToFalse) {
   GetClient()->AnnotateNavigationEntry(false);
   EXPECT_EQ(
       SerializedNavigationEntry::HAS_PASSWORD_FIELD,
-      GetPasswordStateFromNavigation(controller().GetLastCommittedEntry()));
+      GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
 
 // Handle missing ChromePasswordManagerClient instance in BindCredentialManager

@@ -7411,8 +7411,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Grab the NavigationEntry and clone its PageState into a new entry for
   // restoring into a new tab.
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
@@ -7519,8 +7520,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Grab the NavigationEntry and clone its PageState into a new entry for
   // restoring into a new tab.
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
@@ -7583,8 +7585,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Grab the NavigationEntry and clone its PageState into a new entry for
   // restoring into a new tab.
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
@@ -9466,7 +9469,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Inspect the navigation entries and make sure that the navigation target
   // remained constant across frame swaps.
-  auto& controller = static_cast<NavigationControllerImpl&>(
+  const auto& controller = static_cast<const NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
   EXPECT_EQ(4, controller.GetEntryCount());
 

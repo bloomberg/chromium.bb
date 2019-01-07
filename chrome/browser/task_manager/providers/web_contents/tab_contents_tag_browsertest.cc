@@ -92,7 +92,7 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
 
  private:
   GURL GetCurrentFaviconURL() {
-    content::NavigationController& controller =
+    const content::NavigationController& controller =
         driver_->web_contents()->GetController();
     content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     return entry ? entry->GetFavicon().url : GURL();

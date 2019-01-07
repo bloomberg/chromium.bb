@@ -51,7 +51,7 @@
 namespace {
 
 bool IsCacheableNTP(content::WebContents* contents) {
-  content::NavigationEntry* entry =
+  const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   return search::NavEntryIsInstantNTP(contents, entry) &&
          entry->GetURL() != chrome::kChromeSearchLocalNtpUrl;

@@ -315,7 +315,8 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
   // detecting when the user leaves or returns to the NTP. In particular, if the
   // Google URL changes (e.g. google.com -> google.de), then we fall back to the
   // local NTP.
-  content::NavigationEntry* entry = content->GetController().GetVisibleEntry();
+  const content::NavigationEntry* entry =
+      content->GetController().GetVisibleEntry();
   if (entry && (logger->ntp_url_ != entry->GetURL())) {
     DVLOG(1) << "NTP URL changed from \"" << logger->ntp_url_ << "\" to \""
              << entry->GetURL() << "\"";

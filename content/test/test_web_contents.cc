@@ -273,7 +273,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
 std::unique_ptr<WebContents> TestWebContents::Clone() {
   std::unique_ptr<WebContentsImpl> contents =
       Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext()));
-  contents->GetController().CopyStateFrom(&controller_, true);
+  contents->GetController().CopyStateFrom(controller_, true);
   return contents;
 }
 
@@ -318,7 +318,7 @@ void TestWebContents::TestSetIsLoading(bool value) {
 }
 
 void TestWebContents::CommitPendingNavigation() {
-  NavigationEntry* entry = GetController().GetPendingEntry();
+  const NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
 
   TestRenderFrameHost* old_rfh = GetMainFrame();

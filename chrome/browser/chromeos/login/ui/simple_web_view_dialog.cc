@@ -348,7 +348,7 @@ void SimpleWebViewDialog::LoadImages() {
 }
 
 void SimpleWebViewDialog::UpdateButtons() {
-  content::NavigationController& navigation_controller =
+  const content::NavigationController& navigation_controller =
       web_view_->web_contents()->GetController();
   back_->SetEnabled(navigation_controller.CanGoBack());
   forward_->SetEnabled(navigation_controller.CanGoForward());

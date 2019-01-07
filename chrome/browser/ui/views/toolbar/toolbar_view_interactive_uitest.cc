@@ -308,6 +308,6 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
   auto& controller =
       browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(
-      [&](content::NavigationEntry* entry) { return true; }));
+      [&](const content::NavigationEntry& entry) { return true; }));
   EXPECT_FALSE(toolbar->back_button()->enabled());
 }

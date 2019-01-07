@@ -750,7 +750,7 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() const {
   // GetLastCommittedEntry is correct here. GetNavigationEntryForResource cannot
   // be used since it may no longer be valid (eg, if the UnsafeResource was for
   // a blocking main page load which was then proceeded through).
-  NavigationEntry* nav_entry =
+  const NavigationEntry* nav_entry =
       web_contents()->GetController().GetLastCommittedEntry();
   return (nav_entry && nav_entry->GetUniqueID() == unsafe_unique_page_id_);
 }

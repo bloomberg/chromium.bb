@@ -291,7 +291,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool browser_initiated,
     const std::string& extra_headers,
     const FrameNavigationEntry& frame_entry,
-    NavigationEntryImpl* entry,
+    const NavigationEntryImpl& entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
@@ -317,7 +317,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params, std::move(navigation_params),
       commit_params, browser_initiated, false /* from_begin_navigation */,
-      false /* is_for_commit */, &frame_entry, entry,
+      false /* is_for_commit */, &frame_entry, &entry,
       std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
@@ -436,7 +436,7 @@ NavigationRequest::NavigationRequest(
     bool from_begin_navigation,
     bool is_for_commit,
     const FrameNavigationEntry* frame_entry,
-    NavigationEntryImpl* entry,
+    const NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator)

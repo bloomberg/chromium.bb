@@ -73,8 +73,8 @@ void SessionTabHelper::NavigationEntryCommitted(
                                               current_entry_index);
   const sessions::SerializedNavigationEntry navigation =
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          current_entry_index,
-          web_contents()->GetController().GetEntryAtIndex(current_entry_index));
+          current_entry_index, *web_contents()->GetController().GetEntryAtIndex(
+                                   current_entry_index));
   session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
 }
 
@@ -113,7 +113,7 @@ void SessionTabHelper::NavigationEntryChanged(
 
   const sessions::SerializedNavigationEntry navigation =
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          change_details.index, change_details.changed_entry);
+          change_details.index, *change_details.changed_entry);
   session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
 }
 #endif

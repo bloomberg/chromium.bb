@@ -187,7 +187,8 @@ void SupervisedUserInterstitial::Init() {
     // is default true. This results in is_navigation_to_different_page()
     // returning true.
     DCHECK(details.is_navigation_to_different_page());
-    content::NavigationController& controller = web_contents_->GetController();
+    const content::NavigationController& controller =
+        web_contents_->GetController();
     details.entry = controller.GetVisibleEntry();
     if (controller.GetLastCommittedEntry()) {
       details.previous_entry_index = controller.GetLastCommittedEntryIndex();

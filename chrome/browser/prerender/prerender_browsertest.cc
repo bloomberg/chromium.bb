@@ -2904,7 +2904,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   params.should_replace_current_entry = true;
   NavigateToURLWithParams(params, false);
 
-  NavigationController& controller = GetActiveWebContents()->GetController();
+  const NavigationController& controller =
+      GetActiveWebContents()->GetController();
   // First entry is about:blank, second is prerender_page.html.
   EXPECT_FALSE(controller.GetPendingEntry());
   ASSERT_EQ(2, controller.GetEntryCount());
