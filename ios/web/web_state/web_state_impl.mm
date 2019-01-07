@@ -31,6 +31,7 @@
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -683,26 +684,37 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
-  GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
+  GURL result = [web_controller_ currentURLWithTrustLevel:trust_level];
 
-  GURL lastCommittedUrl = GetLastCommittedURL();
+  web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+  GURL lastCommittedURL;
+  if (item) {
+    if ([web_controller_.nativeController
+            respondsToSelector:@selector(virtualURL)]) {
+      // For native content |currentURLWithTrustLevel:| returns virtual URL if
+      // one is available.
+      lastCommittedURL = item->GetVirtualURL();
+    } else {
+      // Otherwise document URL is returned.
+      lastCommittedURL = item->GetURL();
+    }
+  }
+
   bool equalOrigins;
-  if (URL.SchemeIs(url::kAboutScheme) &&
-      web::GetWebClient()->IsAppSpecificURL(lastCommittedUrl)) {
+  if (result.SchemeIs(url::kAboutScheme) &&
+      web::GetWebClient()->IsAppSpecificURL(GetLastCommittedURL())) {
     // This special case is added for any app specific URLs that have been
     // rewritten to about:// URLs.  In this case, an about scheme does not have
     // an origin to compare, only a path.
-    web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-    GURL lastCommittedUrl = item ? item->GetURL() : GURL::EmptyGURL();
-    equalOrigins = URL.path() == lastCommittedUrl.path();
+    equalOrigins = result.path() == lastCommittedURL.path();
   } else {
-    equalOrigins = URL.GetOrigin() == lastCommittedUrl.GetOrigin();
+    equalOrigins = result.GetOrigin() == lastCommittedURL.GetOrigin();
   }
-  DCHECK(equalOrigins) << "Origin mismatch. URL: " << URL.spec()
-                       << " Last committed: " << lastCommittedUrl.spec();
+  DCHECK(equalOrigins) << "Origin mismatch. URL: " << result.spec()
+                       << " Last committed: " << lastCommittedURL.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
-  return URL;
+  return result;
 }
 
 void WebStateImpl::AddScriptCommandCallback(
