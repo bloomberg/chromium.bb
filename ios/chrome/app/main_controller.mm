@@ -149,6 +149,7 @@
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -444,9 +445,11 @@ enum class EnterTabSwitcherSnapshotResult {
 // out if it is showing, the target BVC will become active, and the new tab will
 // be shown.
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
-// |completion| is executed after the tab is opened.
+// |completion| is executed after the tab is opened. After Tab is open the
+// virtual URL is set to the pending navigation item.
 - (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
+                   virtualURL:(const GURL&)virtualURL
                    transition:(ui::PageTransition)transition
                    completion:(ProceduralBlock)completion;
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
@@ -822,7 +825,8 @@ enum class EnterTabSwitcherSnapshotResult {
 
   if (_startupParameters) {
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
-                                        withURL:[_startupParameters externalURL]
+                                        withURL:_startupParameters.externalURL
+                                     virtualURL:GURL::EmptyGURL()
                                  dismissOmnibox:YES
                                      transition:ui::PAGE_TRANSITION_LINK
                                      completion:^{
@@ -1496,6 +1500,7 @@ enum class EnterTabSwitcherSnapshotResult {
     if ([command fromChrome]) {
       [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                           withURL:[command URL]
+                                       virtualURL:GURL::EmptyGURL()
                                    dismissOmnibox:YES
                                        transition:ui::PAGE_TRANSITION_TYPED
                                        completion:nil];
@@ -1736,6 +1741,7 @@ enum class EnterTabSwitcherSnapshotResult {
   ProceduralBlock completion = ^{
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[command URL]
+                                     virtualURL:GURL::EmptyGURL()
                                  dismissOmnibox:YES
                                      transition:ui::PAGE_TRANSITION_TYPED
                                      completion:nil];
@@ -2225,6 +2231,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
+                   virtualURL:(const GURL&)virtualURL
                    transition:(ui::PageTransition)transition
                    completion:(ProceduralBlock)completion {
   id<BrowserInterface> targetInterface =
@@ -2302,6 +2309,10 @@ enum class EnterTabSwitcherSnapshotResult {
     });
   }
 
+  if (!virtualURL.is_empty()) {
+    tab.webState->GetNavigationManager()->GetPendingItem()->SetVirtualURL(
+        virtualURL);
+  }
   return tab;
 }
 
@@ -2427,17 +2438,21 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
+                                   virtualURL:(const GURL&)virtualURL
                                dismissOmnibox:(BOOL)dismissOmnibox
                                    transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion {
   GURL copyOfURL = url;
-  [self dismissModalDialogsWithCompletion:^{
-    [self openSelectedTabInMode:targetMode
-                        withURL:copyOfURL
-                     transition:transition
-                     completion:completion];
-  }
-                           dismissOmnibox:dismissOmnibox];
+  GURL copyOfVirtualURL = virtualURL;
+  [self
+      dismissModalDialogsWithCompletion:^{
+        [self openSelectedTabInMode:targetMode
+                            withURL:copyOfURL
+                         virtualURL:copyOfVirtualURL
+                         transition:transition
+                         completion:completion];
+      }
+                         dismissOmnibox:dismissOmnibox];
 }
 
 - (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions

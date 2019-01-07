@@ -190,6 +190,12 @@ const char kBrowserContainerContainsNTPDescription[] =
     "When enabled, the BrowserContainer contains the NTP directly, rather than"
     "via native content.";
 
+const char kExternalFilesLoadedInWebStateName[] =
+    "External files loaded in WebState";
+const char kExternalFilesLoadedInWebStateDescription[] =
+    "When enabled, external files are loaded in WebState instead of using "
+    "ExternalFileController.";
+
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

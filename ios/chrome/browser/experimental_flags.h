@@ -7,10 +7,16 @@
 
 #include <string>
 
+#include "base/feature_list.h"
+
 // This file can be empty. Its purpose is to contain the relatively short lived
 // declarations required for experimental flags.
 
 namespace experimental_flags {
+
+// Feature to load external files with WebState instead of using
+// ExternalFileController.
+extern const base::Feature kExternalFilesLoadedInWebState;
 
 enum GaiaEnvironment {
   GAIA_ENVIRONMENT_PROD,

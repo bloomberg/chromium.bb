@@ -25,10 +25,14 @@ class GURL;
 @interface AppStartupParameters : NSObject
 
 // The URL that should be opened. This may not always be the same URL as the one
-// that was receieved. The reason for this is in the case of Universal Link
-// navigation where we may want to open up a fallback URL e.g., the New Tab
-// Page instead of the actual universal link.
+// that was received. The reason for this is in the case of Universal Link
+// navigation where we may want to open up a fallback URL e.g., the New Tab Page
+// instead of the actual universal link.
 @property(nonatomic, readonly, assign) const GURL& externalURL;
+
+// Original URL that should be opened. May or may not be the same as
+// |externalURL|.
+@property(nonatomic, readonly, assign) const GURL& completeURL;
 
 // The URL query string parameters in the case that the app was launched as a
 // result of Universal Link navigation. The map associates query string
@@ -48,6 +52,7 @@ class GURL;
 - (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
+                        completeURL:(const GURL&)completeURL
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithUniversalLink:(const GURL&)universalLink;

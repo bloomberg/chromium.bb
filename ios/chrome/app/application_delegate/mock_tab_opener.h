@@ -15,8 +15,9 @@ class GURL;
 // -dismissModalsAndOpenSelectedTabInMode:withURL:transition:completion:.
 @interface MockTabOpener : NSObject<TabOpening>
 // Arguments for
-// -dismissModalsAndOpenSelectedTabInMode:withURL:transition:completion:.
+// -dismissModalsAndOpenSelectedTabInMode:withURL:virtualURL:transition:completion:.
 @property(nonatomic, readonly) GURL url;
+@property(nonatomic, readonly) GURL virtualURL;
 @property(nonatomic, readonly) ApplicationMode applicationMode;
 @property(nonatomic, strong, readonly) void (^completionBlock)(void);
 

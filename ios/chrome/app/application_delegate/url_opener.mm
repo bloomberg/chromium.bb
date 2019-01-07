@@ -12,6 +12,7 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,6 +68,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
                                                     ? ApplicationMode::INCOGNITO
                                                     : ApplicationMode::NORMAL
                                         withURL:[params externalURL]
+                                     virtualURL:GURL::EmptyGURL()
                                  dismissOmnibox:[params postOpeningAction] !=
                                                 FOCUS_OMNIBOX
                                      transition:ui::PAGE_TRANSITION_LINK

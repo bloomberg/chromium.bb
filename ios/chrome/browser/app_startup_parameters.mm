@@ -17,6 +17,7 @@
 
 @implementation AppStartupParameters {
   GURL _externalURL;
+  GURL _completeURL;
 }
 
 @synthesize externalURLParams = _externalURLParams;
@@ -28,10 +29,16 @@
   return _externalURL;
 }
 
-- (instancetype)initWithExternalURL:(const GURL&)externalURL {
+- (const GURL&)completeURL {
+  return _completeURL;
+}
+
+- (instancetype)initWithExternalURL:(const GURL&)externalURL
+                        completeURL:(const GURL&)completeURL {
   self = [super init];
   if (self) {
     _externalURL = externalURL;
+    _completeURL = completeURL;
   }
   return self;
 }
@@ -40,7 +47,8 @@
   // If a new tab with |_externalURL| needs to be opened after the App
   // was launched as the result of a Universal Link navigation, the only
   // supported possibility at this time is the New Tab Page.
-  self = [self initWithExternalURL:GURL(kChromeUINewTabURL)];
+  self = [self initWithExternalURL:GURL(kChromeUINewTabURL)
+                       completeURL:GURL(kChromeUINewTabURL)];
 
   if (self) {
     std::map<std::string, std::string> parameters;

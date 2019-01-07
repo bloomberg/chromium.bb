@@ -49,6 +49,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
@@ -415,6 +416,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerContainsNTPName,
      flag_descriptions::kBrowserContainerContainsNTPDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
+    {"external-files-loaded-in-web-state",
+     flag_descriptions::kExternalFilesLoadedInWebStateName,
+     flag_descriptions::kExternalFilesLoadedInWebStateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(experimental_flags::kExternalFilesLoadedInWebState)},
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,

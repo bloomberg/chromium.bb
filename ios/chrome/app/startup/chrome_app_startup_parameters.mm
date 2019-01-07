@@ -62,18 +62,17 @@ enum SearchExtensionAction {
 @implementation ChromeAppStartupParameters {
   NSString* _secureSourceApp;
   NSString* _declaredSourceApp;
-  NSURL* _completeURL;
 }
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
                   declaredSourceApp:(NSString*)declaredSourceApp
                     secureSourceApp:(NSString*)secureSourceApp
                         completeURL:(NSURL*)completeURL {
-  self = [super initWithExternalURL:externalURL];
+  self = [super initWithExternalURL:externalURL
+                        completeURL:net::GURLWithNSURL(completeURL)];
   if (self) {
     _declaredSourceApp = [declaredSourceApp copy];
     _secureSourceApp = [secureSourceApp copy];
-    _completeURL = completeURL;
   }
   return self;
 }
@@ -374,7 +373,7 @@ enum SearchExtensionAction {
     return first_run::LAUNCH_BY_OTHERS;
   }
 
-  NSString* query = [_completeURL query];
+  NSString* query = base::SysUTF8ToNSString(self.completeURL.query());
   // Takes care of degenerated case of no QUERY_STRING.
   if (![query length])
     return first_run::LAUNCH_BY_MOBILESAFARI;
