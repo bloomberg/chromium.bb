@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASKRUNNER_H__
-#define WEBRTC_BASE_TASKRUNNER_H__
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_
 
 #include <stdint.h>
 
@@ -99,4 +99,4 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
 
 } // namespace rtc
 
-#endif  // TASK_BASE_TASKRUNNER_H__
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_

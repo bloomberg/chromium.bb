@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASKPARENT_H__
-#define WEBRTC_BASE_TASKPARENT_H__
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_
 
 #include <memory>
 #include <set>
@@ -60,4 +60,4 @@ class TaskParent {
 
 } // namespace rtc
 
-#endif  // WEBRTC_BASE_TASKPARENT_H__
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_
