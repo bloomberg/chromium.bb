@@ -312,7 +312,7 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
   // Analogous to TabSpecificContentSettings::OnContentSettingChanged:
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
                                        content_type, resource_identifier);
-  const NavigationController& controller = web_contents()->GetController();
+  NavigationController& controller = web_contents()->GetController();
 
   // The visible NavigationEntry is the URL in the URL field of a tab.
   // Currently this should be matched by the |primary_pattern|.

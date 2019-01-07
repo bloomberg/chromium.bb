@@ -29,7 +29,7 @@ namespace {
 bool IsNTP(content::WebContents* web_contents) {
   // Use the committed entry so the bookmarks bar disappears at the same time
   // the page does.
-  const content::NavigationEntry* entry =
+  content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents->GetController().GetVisibleEntry();

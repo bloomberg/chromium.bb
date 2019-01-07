@@ -591,7 +591,7 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   return Response::InvalidParams("No entry with passed id");
 }
 
-static bool ReturnTrue(const NavigationEntry& entry) {
+static bool ReturnTrue(NavigationEntry* entry) {
   return true;
 }
 

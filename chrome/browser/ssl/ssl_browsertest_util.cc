@@ -18,34 +18,33 @@ namespace ssl_test_util {
 
 namespace AuthState {
 
-void Check(const content::NavigationEntry& entry,
-           int expected_authentication_state) {
+void Check(content::NavigationEntry* entry, int expected_authentication_state) {
   if (expected_authentication_state == AuthState::SHOWING_ERROR ||
       (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials) &&
        expected_authentication_state == AuthState::SHOWING_INTERSTITIAL)) {
-    EXPECT_EQ(content::PAGE_TYPE_ERROR, entry.GetPageType());
+    EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
   } else {
     EXPECT_EQ(
         !!(expected_authentication_state & AuthState::SHOWING_INTERSTITIAL)
             ? content::PAGE_TYPE_INTERSTITIAL
             : content::PAGE_TYPE_NORMAL,
-        entry.GetPageType());
+        entry->GetPageType());
   }
 
   bool displayed_insecure_content =
-      !!(entry.GetSSL().content_status &
+      !!(entry->GetSSL().content_status &
          content::SSLStatus::DISPLAYED_INSECURE_CONTENT);
   EXPECT_EQ(
       !!(expected_authentication_state & AuthState::DISPLAYED_INSECURE_CONTENT),
       displayed_insecure_content);
 
-  bool ran_insecure_content = !!(entry.GetSSL().content_status &
+  bool ran_insecure_content = !!(entry->GetSSL().content_status &
                                  content::SSLStatus::RAN_INSECURE_CONTENT);
   EXPECT_EQ(!!(expected_authentication_state & AuthState::RAN_INSECURE_CONTENT),
             ran_insecure_content);
 
   bool displayed_form_with_insecure_action =
-      !!(entry.GetSSL().content_status &
+      !!(entry->GetSSL().content_status &
          content::SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
   EXPECT_EQ(!!(expected_authentication_state &
                AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION),
@@ -68,15 +67,15 @@ void Check(content::WebContents* tab,
 
 namespace CertError {
 
-void Check(const content::NavigationEntry& entry, net::CertStatus error) {
+void Check(content::NavigationEntry* entry, net::CertStatus error) {
   if (error) {
-    EXPECT_EQ(error, entry.GetSSL().cert_status & error);
+    EXPECT_EQ(error, entry->GetSSL().cert_status & error);
     net::CertStatus extra_cert_errors =
-        error ^ (entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+        error ^ (entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(extra_cert_errors)
         << "Got unexpected cert error: " << extra_cert_errors;
   } else {
-    EXPECT_EQ(0U, entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
   }
 }
 
@@ -92,9 +91,9 @@ void CheckSecurityState(content::WebContents* tab,
           ? tab->GetController().GetTransientEntry()
           : tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
-  CertError::Check(*entry, expected_error);
+  CertError::Check(entry, expected_error);
   SecurityStyle::Check(tab, expected_security_level);
-  AuthState::Check(*entry, expected_authentication_state);
+  AuthState::Check(entry, expected_authentication_state);
 }
 
 SecurityStateWebContentsObserver::SecurityStateWebContentsObserver(

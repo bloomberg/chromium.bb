@@ -161,7 +161,7 @@ class OfflinePageUtils {
   // Note that the offline header is assumed to be the onlt extra header if it
   // exists.
   static std::string ExtractOfflineHeaderValueFromNavigationEntry(
-      const content::NavigationEntry& entry);
+      content::NavigationEntry* entry);
 
   // Returns true if |web_contents| is showing a trusted offline page.
   static bool IsShowingTrustedOfflinePage(content::WebContents* web_contents);

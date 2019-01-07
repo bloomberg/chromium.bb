@@ -90,7 +90,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       bool browser_initiated,
       const std::string& extra_headers,
       const FrameNavigationEntry& frame_entry,
-      const NavigationEntryImpl& entry,
+      NavigationEntryImpl* entry,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       std::unique_ptr<NavigationUIData> navigation_ui_data);
 
@@ -234,7 +234,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     bool from_begin_navigation,
                     bool is_for_commit,
                     const FrameNavigationEntry* frame_navigation_entry,
-                    const NavigationEntryImpl* navitation_entry,
+                    NavigationEntryImpl* navitation_entry,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
                     mojom::NavigationClientAssociatedPtrInfo navigation_client,
                     blink::mojom::NavigationInitiatorPtr navigation_initiator);

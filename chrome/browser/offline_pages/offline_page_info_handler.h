@@ -21,8 +21,7 @@ class OfflinePageInfoHandler : public sessions::ExtendedInfoHandler {
   ~OfflinePageInfoHandler() override;
 
   // ExtendedInfoHandler:
-  std::string GetExtendedInfo(
-      const content::NavigationEntry& entry) const override;
+  std::string GetExtendedInfo(content::NavigationEntry* entry) const override;
   void RestoreExtendedInfo(const std::string& info,
                            content::NavigationEntry* entry) override;
 };

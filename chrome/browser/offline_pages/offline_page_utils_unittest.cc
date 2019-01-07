@@ -496,27 +496,27 @@ TEST_F(OfflinePageUtilsTest, TestExtractOfflineHeaderValueFromNavigationEntry) {
   std::string header_value;
 
   // Expect empty string if no header is present.
-  header_value =
-      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  header_value = OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
+      entry.get());
   EXPECT_EQ("", header_value);
 
   // Expect correct header value for correct header format.
   entry->AddExtraHeaders("X-Chrome-offline: foo");
-  header_value =
-      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  header_value = OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
+      entry.get());
   EXPECT_EQ("foo", header_value);
 
   // Expect empty string if multiple headers are set.
   entry->AddExtraHeaders("Another-Header: bar");
-  header_value =
-      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  header_value = OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
+      entry.get());
   EXPECT_EQ("", header_value);
 
   // Expect empty string for incorrect header format.
   entry = content::NavigationEntry::Create();
   entry->AddExtraHeaders("Random value");
-  header_value =
-      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  header_value = OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
+      entry.get());
   EXPECT_EQ("", header_value);
 }
 

@@ -40,8 +40,7 @@ void WriteToPickle(content::WebContents& web_contents, base::Pickle* pickle) {
 
   internal::WriteHeaderToPickle(pickle);
 
-  const content::NavigationController& controller =
-      web_contents.GetController();
+  content::NavigationController& controller = web_contents.GetController();
   const int entry_count = controller.GetEntryCount();
   const int selected_entry = controller.GetCurrentEntryIndex();
   DCHECK_GE(entry_count, 0);
@@ -133,13 +132,13 @@ bool IsSupportedVersion(uint32_t state_version) {
          state_version == internal::AW_STATE_VERSION_DATA_URL;
 }
 
-void WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
+void WriteNavigationEntryToPickle(content::NavigationEntry& entry,
                                   base::Pickle* pickle) {
   WriteNavigationEntryToPickle(AW_STATE_VERSION, entry, pickle);
 }
 
 void WriteNavigationEntryToPickle(uint32_t state_version,
-                                  const content::NavigationEntry& entry,
+                                  content::NavigationEntry& entry,
                                   base::Pickle* pickle) {
   DCHECK(IsSupportedVersion(state_version));
   pickle->WriteString(entry.GetURL().spec());

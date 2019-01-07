@@ -48,8 +48,8 @@ class WebContents;
 // exactly one NavigationController.
 class NavigationController {
  public:
-  typedef base::RepeatingCallback<bool(const content::NavigationEntry& entry)>
-      DeletionPredicate;
+  using DeletionPredicate =
+      base::RepeatingCallback<bool(content::NavigationEntry* entry)>;
 
   // Load type used in LoadURLParams.
   //
@@ -229,10 +229,10 @@ class NavigationController {
 
   // Returns the web contents associated with this controller. It can never be
   // nullptr.
-  virtual WebContents* GetWebContents() const = 0;
+  virtual WebContents* GetWebContents() = 0;
 
   // Get the browser context for this controller. It can never be nullptr.
-  virtual BrowserContext* GetBrowserContext() const = 0;
+  virtual BrowserContext* GetBrowserContext() = 0;
 
   // Initializes this NavigationController with the given saved navigations,
   // using |selected_navigation| as the currently loaded entry. Before this call
@@ -264,7 +264,7 @@ class NavigationController {
   // Returns the active entry, which is the transient entry if any, the pending
   // entry if a navigation is in progress or the last committed entry otherwise.
   // NOTE: This can be nullptr!!
-  virtual NavigationEntry* GetActiveEntry() const = 0;
+  virtual NavigationEntry* GetActiveEntry() = 0;
 
   // Returns the entry that should be displayed to the user in the address bar.
   // This is the transient entry if any, the pending entry if a navigation is
@@ -275,37 +275,37 @@ class NavigationController {
   // A pending entry is safe to display if it started in the browser process or
   // if it's a renderer-initiated navigation in a new tab which hasn't been
   // accessed by another tab.  (If it has been accessed, it risks a URL spoof.)
-  virtual NavigationEntry* GetVisibleEntry() const = 0;
+  virtual NavigationEntry* GetVisibleEntry() = 0;
 
   // Returns the index from which we would go back/forward or reload.  This is
   // the last_committed_entry_index_ if pending_entry_index_ is -1.  Otherwise,
   // it is the pending_entry_index_.
-  virtual int GetCurrentEntryIndex() const = 0;
+  virtual int GetCurrentEntryIndex() = 0;
 
   // Returns the last committed entry, which may be null if there are no
   // committed entries.
-  virtual NavigationEntry* GetLastCommittedEntry() const = 0;
+  virtual NavigationEntry* GetLastCommittedEntry() = 0;
 
   // Returns the index of the last committed entry.  It will be -1 if there are
   // no entries, or if there is a transient entry before the first entry
   // commits.
-  virtual int GetLastCommittedEntryIndex() const = 0;
+  virtual int GetLastCommittedEntryIndex() = 0;
 
   // Returns true if the source for the current entry can be viewed.
-  virtual bool CanViewSource() const = 0;
+  virtual bool CanViewSource() = 0;
 
   // Navigation list -----------------------------------------------------------
 
   // Returns the number of entries in the NavigationController, excluding
   // the pending entry if there is one, but including the transient entry if
   // any.
-  virtual int GetEntryCount() const = 0;
+  virtual int GetEntryCount() = 0;
 
-  virtual NavigationEntry* GetEntryAtIndex(int index) const = 0;
+  virtual NavigationEntry* GetEntryAtIndex(int index) = 0;
 
   // Returns the entry at the specified offset from current.  Returns nullptr
   // if out of bounds.
-  virtual NavigationEntry* GetEntryAtOffset(int offset) const = 0;
+  virtual NavigationEntry* GetEntryAtOffset(int offset) = 0;
 
   // Pending entry -------------------------------------------------------------
 
@@ -314,18 +314,18 @@ class NavigationController {
 
   // Returns the pending entry corresponding to the navigation that is
   // currently in progress, or null if there is none.
-  virtual NavigationEntry* GetPendingEntry() const = 0;
+  virtual NavigationEntry* GetPendingEntry() = 0;
 
   // Returns the index of the pending entry or -1 if the pending entry
   // corresponds to a new navigation (created via LoadURL).
-  virtual int GetPendingEntryIndex() const = 0;
+  virtual int GetPendingEntryIndex() = 0;
 
   // Transient entry -----------------------------------------------------------
 
   // Returns the transient entry if any. This is an entry which is removed and
   // discarded if any navigation occurs. Note that the returned entry is owned
   // by the navigation controller and may be deleted at any time.
-  virtual NavigationEntry* GetTransientEntry() const = 0;
+  virtual NavigationEntry* GetTransientEntry() = 0;
 
   // Adds an entry that is returned by GetActiveEntry(). The entry is
   // transient: any navigation causes it to be removed and discarded.  The
@@ -357,9 +357,9 @@ class NavigationController {
   // Renavigation --------------------------------------------------------------
 
   // Navigation relative to the "current entry"
-  virtual bool CanGoBack() const = 0;
-  virtual bool CanGoForward() const = 0;
-  virtual bool CanGoToOffset(int offset) const = 0;
+  virtual bool CanGoBack() = 0;
+  virtual bool CanGoForward() = 0;
+  virtual bool CanGoToOffset(int offset) = 0;
   virtual void GoBack() = 0;
   virtual void GoForward() = 0;
 
@@ -391,8 +391,7 @@ class NavigationController {
   // Session storage depends on dom_storage that depends on blink::WebString.
   // Returns all the SessionStorageNamespace objects that this
   // NavigationController knows about, the map key is a StoragePartition id.
-  virtual const SessionStorageNamespaceMap&
-      GetSessionStorageNamespaceMap() const = 0;
+  virtual const SessionStorageNamespaceMap& GetSessionStorageNamespaceMap() = 0;
 
   // TODO(ajwong): Remove this once prerendering, instant, and session restore
   // are migrated.
@@ -402,7 +401,7 @@ class NavigationController {
   // invoked). This is true for session/tab restore, cloned tabs and tabs that
   // requested a reload (using SetNeedsReload()) after their renderer was
   // killed.
-  virtual bool NeedsReload() const = 0;
+  virtual bool NeedsReload() = 0;
 
   // Request a reload to happen when activated. This can be used when a renderer
   // backing a background tab is killed by the system on Android or ChromeOS.
@@ -416,22 +415,22 @@ class NavigationController {
   // Returns true if this is a newly created tab or a cloned tab, which has not
   // yet committed a real page. Returns false after the initial navigation has
   // committed.
-  virtual bool IsInitialNavigation() const = 0;
+  virtual bool IsInitialNavigation() = 0;
 
   // Returns true if this is a newly created tab (not a clone) that has not yet
   // committed a real page.
-  virtual bool IsInitialBlankNavigation() const = 0;
+  virtual bool IsInitialBlankNavigation() = 0;
 
   // Broadcasts the NOTIFICATION_NAV_ENTRY_CHANGED notification for the given
   // entry. This will keep things in sync like the saved session.
-  virtual void NotifyEntryChanged(const NavigationEntry* entry) = 0;
+  virtual void NotifyEntryChanged(NavigationEntry* entry) = 0;
 
   // Copies the navigation state from the given controller to this one. This one
   // should be empty (just created). |needs_reload| indicates whether a reload
   // needs to happen when activated. If false, the WebContents remains unloaded
   // and is painted as a plain grey rectangle when activated. To force a reload,
   // call SetNeedsReload() followed by LoadIfNecessary().
-  virtual void CopyStateFrom(const NavigationController& source,
+  virtual void CopyStateFrom(NavigationController* source,
                              bool needs_reload) = 0;
 
   // A variant of CopyStateFrom. Removes all entries from this except the last

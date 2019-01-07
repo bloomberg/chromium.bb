@@ -334,7 +334,7 @@ ScopedJavaLocalRef<jobject> WriteNavigationsAsByteBuffer(
   for (size_t i = 0; i < navigations.size(); ++i) {
     serialized.push_back(
         sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-            i, *navigations[i]));
+            i, navigations[i]));
   }
   return WriteSerializedNavigationsAsByteBuffer(env, is_off_the_record,
                                                 serialized, current_entry);
