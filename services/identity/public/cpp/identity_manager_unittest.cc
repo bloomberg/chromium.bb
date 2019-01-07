@@ -1714,7 +1714,7 @@ TEST_F(IdentityManagerTest,
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
       identity_manager_observer()->accounts_info_from_cookie_change_callback();
   EXPECT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
-  EXPECT_TRUE(accounts_in_cookie_jar_info.accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar_info.signed_in_accounts.empty());
 }
 
 TEST_F(IdentityManagerTest,
@@ -1731,9 +1731,10 @@ TEST_F(IdentityManagerTest,
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
       identity_manager_observer()->accounts_info_from_cookie_change_callback();
   EXPECT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
-  ASSERT_EQ(1u, accounts_in_cookie_jar_info.accounts.size());
+  ASSERT_EQ(1u, accounts_in_cookie_jar_info.signed_in_accounts.size());
+  ASSERT_TRUE(accounts_in_cookie_jar_info.signed_out_accounts.empty());
 
-  AccountInfo account_info = accounts_in_cookie_jar_info.accounts[0];
+  AccountInfo account_info = accounts_in_cookie_jar_info.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
             account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
@@ -1754,22 +1755,84 @@ TEST_F(IdentityManagerTest,
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
       identity_manager_observer()->accounts_info_from_cookie_change_callback();
   EXPECT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
-  ASSERT_EQ(2u, accounts_in_cookie_jar_info.accounts.size());
+  ASSERT_EQ(2u, accounts_in_cookie_jar_info.signed_in_accounts.size());
+  ASSERT_TRUE(accounts_in_cookie_jar_info.signed_out_accounts.empty());
 
   // Verify not only that both accounts are present but that they are listed in
   // the expected order as well.
-  AccountInfo account_info1 = accounts_in_cookie_jar_info.accounts[0];
+  AccountInfo account_info1 = accounts_in_cookie_jar_info.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
             account_info1.account_id);
   EXPECT_EQ(kTestGaiaId, account_info1.gaia);
   EXPECT_EQ(kTestEmail, account_info1.email);
 
-  AccountInfo account_info2 = accounts_in_cookie_jar_info.accounts[1];
+  AccountInfo account_info2 = accounts_in_cookie_jar_info.signed_in_accounts[1];
   EXPECT_EQ(
       account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
       account_info2.account_id);
   EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
   EXPECT_EQ(kTestEmail2, account_info2.email);
+}
+
+TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
+  struct SignedOutStatus {
+    int account_1;
+    int account_2;
+  } signed_out_status_set[] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
+
+  for (const auto& signed_out_status : signed_out_status_set) {
+    base::RunLoop run_loop;
+    identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+        run_loop.QuitClosure());
+
+    gaia_cookie_manager_service()->SetListAccountsResponseWithParams(
+        {{kTestEmail, kTestGaiaId, true /* valid */,
+          signed_out_status.account_1 /* signed_out */, true /* verified */},
+         {kTestEmail2, kTestGaiaId2, true /* valid */,
+          signed_out_status.account_2 /* signed_out */, true /* verified */}});
+
+    gaia_cookie_manager_service()->TriggerListAccounts();
+    run_loop.Run();
+
+    unsigned int accounts_signed_out =
+        signed_out_status.account_1 + signed_out_status.account_2;
+    const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
+        identity_manager_observer()
+            ->accounts_info_from_cookie_change_callback();
+    EXPECT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
+    ASSERT_EQ(2 - accounts_signed_out,
+              accounts_in_cookie_jar_info.signed_in_accounts.size());
+    ASSERT_EQ(accounts_signed_out,
+              accounts_in_cookie_jar_info.signed_out_accounts.size());
+
+    // Verify not only that both accounts are present but that they are listed
+    // in the expected order as well.
+    //
+    // The two variables below, control the lookup indexes signed in and signed
+    // out accounts list, respectively.
+    int i = 0, j = 0;
+    AccountInfo account_info1 =
+        signed_out_status.account_1
+            ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
+            : accounts_in_cookie_jar_info.signed_in_accounts[j++];
+    if (!signed_out_status.account_1)
+      EXPECT_EQ(
+          account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
+          account_info1.account_id);
+    EXPECT_EQ(kTestGaiaId, account_info1.gaia);
+    EXPECT_EQ(kTestEmail, account_info1.email);
+
+    AccountInfo account_info2 =
+        signed_out_status.account_2
+            ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
+            : accounts_in_cookie_jar_info.signed_in_accounts[j++];
+    if (!signed_out_status.account_2)
+      EXPECT_EQ(
+          account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
+          account_info2.account_id);
+    EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
+    EXPECT_EQ(kTestEmail2, account_info2.email);
+  }
 }
 
 TEST_F(IdentityManagerTest,
@@ -1786,7 +1849,8 @@ TEST_F(IdentityManagerTest,
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
       identity_manager_observer()->accounts_info_from_cookie_change_callback();
   EXPECT_FALSE(accounts_in_cookie_jar_info.accounts_are_fresh);
-  EXPECT_TRUE(accounts_in_cookie_jar_info.accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar_info.signed_in_accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar_info.signed_out_accounts.empty());
 }
 
 TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
@@ -1802,7 +1866,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_FALSE(accounts_in_cookie_jar.accounts_are_fresh);
-  EXPECT_TRUE(accounts_in_cookie_jar.accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_out_accounts.empty());
 
   run_loop.Run();
 
@@ -1812,7 +1877,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
       identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_TRUE(updated_accounts_in_cookie_jar.accounts_are_fresh);
-  EXPECT_TRUE(updated_accounts_in_cookie_jar.accounts.empty());
+  EXPECT_TRUE(updated_accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(updated_accounts_in_cookie_jar.signed_out_accounts.empty());
 }
 
 TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
@@ -1829,7 +1895,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_FALSE(accounts_in_cookie_jar.accounts_are_fresh);
-  EXPECT_TRUE(accounts_in_cookie_jar.accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_out_accounts.empty());
 
   run_loop.Run();
 
@@ -1839,9 +1906,11 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
       identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_TRUE(updated_accounts_in_cookie_jar.accounts_are_fresh);
-  ASSERT_EQ(1u, updated_accounts_in_cookie_jar.accounts.size());
+  ASSERT_EQ(1u, updated_accounts_in_cookie_jar.signed_in_accounts.size());
+  ASSERT_TRUE(updated_accounts_in_cookie_jar.signed_out_accounts.empty());
 
-  AccountInfo account_info = updated_accounts_in_cookie_jar.accounts[0];
+  AccountInfo account_info =
+      updated_accounts_in_cookie_jar.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
             account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
@@ -1862,7 +1931,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_FALSE(accounts_in_cookie_jar.accounts_are_fresh);
-  EXPECT_TRUE(accounts_in_cookie_jar.accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_out_accounts.empty());
 
   run_loop.Run();
 
@@ -1872,17 +1942,20 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
       identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_TRUE(updated_accounts_in_cookie_jar.accounts_are_fresh);
-  ASSERT_EQ(2u, updated_accounts_in_cookie_jar.accounts.size());
+  ASSERT_EQ(2u, updated_accounts_in_cookie_jar.signed_in_accounts.size());
+  ASSERT_TRUE(updated_accounts_in_cookie_jar.signed_out_accounts.empty());
 
   // Verify not only that both accounts are present but that they are listed in
   // the expected order as well.
-  AccountInfo account_info1 = updated_accounts_in_cookie_jar.accounts[0];
+  AccountInfo account_info1 =
+      updated_accounts_in_cookie_jar.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
             account_info1.account_id);
   EXPECT_EQ(kTestGaiaId, account_info1.gaia);
   EXPECT_EQ(kTestEmail, account_info1.email);
 
-  AccountInfo account_info2 = updated_accounts_in_cookie_jar.accounts[1];
+  AccountInfo account_info2 =
+      updated_accounts_in_cookie_jar.signed_in_accounts[1];
   EXPECT_EQ(
       account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
       account_info2.account_id);

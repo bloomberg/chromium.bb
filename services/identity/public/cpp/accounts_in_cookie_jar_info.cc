@@ -10,15 +10,19 @@ AccountsInCookieJarInfo::AccountsInCookieJarInfo() = default;
 
 AccountsInCookieJarInfo::AccountsInCookieJarInfo(
     bool accounts_are_fresh_param,
-    const std::vector<AccountInfo>& accounts_param)
-    : accounts_are_fresh(accounts_are_fresh_param), accounts(accounts_param) {}
+    const std::vector<AccountInfo>& signed_in_accounts_param,
+    const std::vector<AccountInfo>& signed_out_accounts_param)
+    : accounts_are_fresh(accounts_are_fresh_param),
+      signed_in_accounts(signed_in_accounts_param),
+      signed_out_accounts(signed_out_accounts_param) {}
 
 AccountsInCookieJarInfo::AccountsInCookieJarInfo(
     const AccountsInCookieJarInfo& other) {
   if (this == &other)
     return;
   accounts_are_fresh = other.accounts_are_fresh;
-  accounts = other.accounts;
+  signed_in_accounts = other.signed_in_accounts;
+  signed_out_accounts = other.signed_out_accounts;
 }
 
 AccountsInCookieJarInfo::~AccountsInCookieJarInfo() = default;
