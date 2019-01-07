@@ -3,6 +3,17 @@
 // found in the LICENSE file.
 
 cr.define('omnibox_output', function() {
+  /**
+   * @typedef  {{
+   *   cursorPosition: number,
+   *   time: number,
+   *   done: boolean,
+   *   host: string,
+   *   isTypedHost: boolean,
+   * }}
+   */
+  let ResultsDetails;
+
   /** @param {!Element} element*/
   function clearChildren(element) {
     while (element.firstChild) {
@@ -49,7 +60,7 @@ cr.define('omnibox_output', function() {
     clearAutocompleteResponses() {
       this.responses = [];
       this.resultsGroups_ = [];
-      clearChildren(this.$$('contents'));
+      clearChildren(this.$$('#contents'));
     }
 
     /** @param {!mojom.OmniboxResult} response */
@@ -59,7 +70,7 @@ cr.define('omnibox_output', function() {
       const resultsGroup =
           OutputResultsGroup.create(response, this.queryInputs_.cursorPosition);
       this.resultsGroups_.push(resultsGroup);
-      this.$$('contents').appendChild(resultsGroup);
+      this.$$('#contents').appendChild(resultsGroup);
 
       this.updateVisibility_();
       this.updateFilterHighlights_();
@@ -137,7 +148,7 @@ cr.define('omnibox_output', function() {
     }
 
     constructor() {
-      super('details-and-table-template');
+      super('output-results-group-template');
     }
 
     /**
@@ -145,11 +156,8 @@ cr.define('omnibox_output', function() {
      *  @param {number} cursorPosition
      */
     setResultsGroup(resultsGroup, cursorPosition) {
-      /**
-       * @type {{cursorPosition: number, time: number, done: boolean, host:
-       *     string, isTypedHost: boolean}}
-       */
-      this.details = {
+      /** @private {ResultsDetails} */
+      this.details_ = {
         cursorPosition: cursorPosition,
         time: resultsGroup.timeSinceOmniboxStartedMs,
         done: resultsGroup.done,
@@ -183,33 +191,25 @@ cr.define('omnibox_output', function() {
       /** @private {!Array<!Element>} */
       this.innerHeaders_ = [];
 
-      this.$$('details').appendChild(this.renderDetails_());
-      this.$$('table').appendChild(this.renderHeader_());
-      this.$$('table').appendChild(this.combinedResults);
+      customElements.whenDefined(this.$$('output-results-details').localName)
+          .then(
+              () =>
+                  this.$$('output-results-details').setDetails(this.details_));
+
+      this.$$('#table').appendChild(this.renderHeader_());
+      this.$$('#table').appendChild(this.combinedResults);
       this.individualResultsList.forEach(results => {
         const innerHeader = this.renderInnerHeader_(results);
         this.innerHeaders_.push(innerHeader);
-        this.$$('table').appendChild(innerHeader);
-        this.$$('table').appendChild(results);
+        this.$$('#table').appendChild(innerHeader);
+        this.$$('#table').appendChild(results);
       });
-    }
-
-    /** @private @return {!Element} */
-    renderDetails_() {
-      const details = OmniboxElement.getTemplate('details-template');
-      details.querySelector('.cursor-position').textContent =
-          this.details.cursorPosition;
-      details.querySelector('.time').textContent = this.details.time;
-      details.querySelector('.done').textContent = this.details.done;
-      details.querySelector('.host').textContent = this.details.host;
-      details.querySelector('.is-typed-host').textContent =
-          this.details.isTypedHost;
-      return details;
     }
 
     /** @private @return {!Element} */
     renderHeader_() {
       const head = document.createElement('thead');
+      head.classList.add('head');
       const row = document.createElement('tr');
       this.headers.forEach(cell => row.appendChild(cell));
       head.appendChild(row);
@@ -222,7 +222,8 @@ cr.define('omnibox_output', function() {
      * @return {!Element}
      */
     renderInnerHeader_(results) {
-      const head = document.createElement('thead');
+      const head = document.createElement('tbody');
+      head.classList.add('head');
       const row = document.createElement('tr');
       const cell = document.createElement('th');
       // Reserve 1 more column for showing the additional properties column.
@@ -241,7 +242,8 @@ cr.define('omnibox_output', function() {
     updateVisibility(showIncompleteResults, showDetails, showAllProviders) {
       // Show the details section above each table if showDetails or
       // showIncompleteResults are true.
-      this.$$('details').hidden = !showDetails && !showIncompleteResults;
+      this.$$('output-results-details').hidden =
+          !showDetails && !showIncompleteResults;
 
       // Show individual results when showAllProviders is true.
       this.individualResultsList.forEach(
@@ -282,6 +284,21 @@ cr.define('omnibox_output', function() {
     }
   }
 
+  class OutputResultsDetails extends OmniboxElement {
+    constructor() {
+      super('output-results-details-template');
+    }
+
+    /** @param {ResultsDetails} details */
+    setDetails(details) {
+      this.$$('#cursor-position').textContent = details.cursorPosition;
+      this.$$('#time').textContent = details.time;
+      this.$$('#done').textContent = details.done;
+      this.$$('#host').textContent = details.host;
+      this.$$('#is-typed-host').textContent = details.isTypedHost;
+    }
+  }
+
   /**
    * Helps track and render a list of results. Each result is tracked and
    * rendered by OutputMatch below.
@@ -299,6 +316,7 @@ cr.define('omnibox_output', function() {
 
     constructor() {
       super();
+      this.classList.add('body');
       /** @type {!Array<!OutputMatch>} */
       this.matches = [];
     }
@@ -957,10 +975,11 @@ cr.define('omnibox_output', function() {
 
   customElements.define('omnibox-output', OmniboxOutput);
   customElements.define('output-results-group', OutputResultsGroup);
+  customElements.define('output-results-details', OutputResultsDetails);
   customElements.define(
       'output-results-table', OutputResultsTable, {extends: 'tbody'});
   customElements.define('output-match', OutputMatch, {extends: 'tr'});
-  customElements.define('output-haeder', OutputHeader, {extends: 'th'});
+  customElements.define('output-header', OutputHeader, {extends: 'th'});
   customElements.define(
       'output-pair-property', OutputPairProperty, {extends: 'td'});
   customElements.define(
