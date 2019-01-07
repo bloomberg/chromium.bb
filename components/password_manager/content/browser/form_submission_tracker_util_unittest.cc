@@ -33,21 +33,35 @@ class FormSubmissionTrackerUtilTest
 };
 
 TEST_F(FormSubmissionTrackerUtilTest, NotRendererInitiated) {
-  EXPECT_CALL(observer(), DidNavigateMainFrame(false));
+  EXPECT_CALL(observer(),
+              DidNavigateMainFrame(false /* form_may_be_submitted */));
   NotifyDidNavigateMainFrame(false /* is_renderer_initiated */,
-                             ui::PAGE_TRANSITION_FORM_SUBMIT, &observer());
+                             ui::PAGE_TRANSITION_RELOAD,
+                             true /* has_user_gesture */, &observer());
 }
 
 TEST_F(FormSubmissionTrackerUtilTest, LinkTransition) {
-  EXPECT_CALL(observer(), DidNavigateMainFrame(false));
+  EXPECT_CALL(observer(),
+              DidNavigateMainFrame(false /* form_may_be_submitted */));
   NotifyDidNavigateMainFrame(true /* is_renderer_initiated */,
-                             ui::PAGE_TRANSITION_LINK, &observer());
+                             ui::PAGE_TRANSITION_LINK,
+                             true /* has_user_gesture */, &observer());
 }
 
-TEST_F(FormSubmissionTrackerUtilTest, RendererInitiatedFormSubmit) {
-  EXPECT_CALL(observer(), DidNavigateMainFrame(true));
+TEST_F(FormSubmissionTrackerUtilTest, FormSubmission) {
+  EXPECT_CALL(observer(),
+              DidNavigateMainFrame(true /* form_may_be_submitted */));
   NotifyDidNavigateMainFrame(true /* is_renderer_initiated */,
-                             ui::PAGE_TRANSITION_FORM_SUBMIT, &observer());
+                             ui::PAGE_TRANSITION_FORM_SUBMIT,
+                             true /* has_user_gesture */, &observer());
+}
+
+TEST_F(FormSubmissionTrackerUtilTest, PageRedirectAfterJavaScriptSubmission) {
+  EXPECT_CALL(observer(),
+              DidNavigateMainFrame(true /* form_may_be_submitted */));
+  NotifyDidNavigateMainFrame(true /* is_renderer_initiated */,
+                             ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+                             false /* has_user_gesture */, &observer());
 }
 
 }  // namespace
