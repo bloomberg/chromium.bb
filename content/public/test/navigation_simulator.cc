@@ -969,7 +969,8 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
 
   if (IsPerNavigationMojoInterfaceEnabled()) {
     mojom::NavigationClientAssociatedPtr navigation_client_ptr;
-    mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr);
+    navigation_client_request_ =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr);
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,

@@ -32,6 +32,10 @@ class RenderFrameHost;
 class TestRenderFrameHost;
 struct Referrer;
 
+namespace mojom {
+class NavigationClient;
+}
+
 // An interface for simulating a navigation in unit tests. Supports both
 // renderer and browser-initiated navigations.
 // Note: this should not be used in browser tests.
@@ -429,6 +433,14 @@ class NavigationSimulator : public WebContentsObserver {
   // Closure that is called in OnThrottleChecksComplete if we are waiting on the
   // result. Calling this will quit the nested run loop.
   base::OnceClosure wait_closure_;
+
+  // This member simply ensures that we do not disconnect
+  // the NavigationClient interface, as it would be interpreted as a
+  // cancellation coming from the renderer process side. This member interface
+  // will never be bound.
+  // Only used when PerNavigationMojoInterface is enabled.
+  mojo::AssociatedInterfaceRequest<mojom::NavigationClient>
+      navigation_client_request_;
 
   base::WeakPtrFactory<NavigationSimulator> weak_factory_;
 };
