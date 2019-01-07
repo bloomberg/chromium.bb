@@ -243,6 +243,8 @@ source_set("skcms") {
     ]
   }
 
+  defines = [ "SKCMS_LEGACY_TF_INVERT" ]
+
   # LLVM automatically sets the equivalent of GCC's -mfp16-format=ieee on ARM
   # builds by default, while GCC itself does not. We need it to enable support
   # for half-precision floating point data types used by SKCMS on ARM.
