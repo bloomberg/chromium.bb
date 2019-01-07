@@ -63,7 +63,9 @@ class BookmarkRemoteUpdatesHandler {
   //    ignored.
   // 3. Otherwise, a new node is created in the local bookmark model and
   //    registered in |bookmark_tracker_|.
-  void ProcessCreate(const syncer::UpdateResponseData& update);
+  // Returns true if a new bookmark has been registered in the
+  // |bookmark_tracker_|, false otherwise.
+  bool ProcessCreate(const syncer::UpdateResponseData& update);
 
   // Processes a remote update of a bookmark node. |update| must not be a
   // deletion, and the server_id must be already tracked, otherwise, it is a

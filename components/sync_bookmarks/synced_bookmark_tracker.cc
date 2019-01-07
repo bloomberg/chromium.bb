@@ -287,6 +287,9 @@ void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
 
 void SyncedBookmarkTracker::IncrementSequenceNumber(
     const std::string& sync_id) {
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be switched to a DCHECK after figuring out the reason for the crash.
+  CHECK_NE(0U, sync_id_to_entities_map_.count(sync_id));
   Entity* entity = sync_id_to_entities_map_.find(sync_id)->second.get();
   DCHECK(entity);
   // TODO(crbug.com/516866): Update base hash specifics here if the entity is
