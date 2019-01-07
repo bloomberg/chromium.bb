@@ -200,6 +200,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   bool devtools_attached_ = false;
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
   base::TimeTicks completion_time_;
+  network::mojom::FetchResponseSource response_source_ =
+      network::mojom::FetchResponseSource::kUnspecified;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
   network::mojom::URLLoaderClientPtr url_loader_client_;

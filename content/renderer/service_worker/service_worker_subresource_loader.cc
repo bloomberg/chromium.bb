@@ -56,23 +56,6 @@ network::ResourceResponseHead RewriteServiceWorkerTime(
   return new_head;
 }
 
-const char* FetchResponseSourceToSuffix(
-    network::mojom::FetchResponseSource source) {
-  // Don't change these returned strings. They are used for recording UMAs.
-  switch (source) {
-    case network::mojom::FetchResponseSource::kUnspecified:
-      return ".Unspecified";
-    case network::mojom::FetchResponseSource::kNetwork:
-      return ".Network";
-    case network::mojom::FetchResponseSource::kHttpCache:
-      return ".HttpCache";
-    case network::mojom::FetchResponseSource::kCacheStorage:
-      return ".CacheStorage";
-  }
-  NOTREACHED();
-  return ".Unknown";
-}
-
 // A wrapper URLLoaderClient that invokes the given RewriteHeaderCallback
 // whenever a response or redirect is received.
 class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
@@ -639,7 +622,8 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
     base::UmaHistogramMediumTimes(
         base::StrCat({"ServiceWorker.LoadTiming.Subresource."
                       "ResponseReceivedToCompleted2",
-                      FetchResponseSourceToSuffix(response_source_)}),
+                      ServiceWorkerUtils::FetchResponseSourceToSuffix(
+                          response_source_)}),
         completion_time - response_head_.load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.
