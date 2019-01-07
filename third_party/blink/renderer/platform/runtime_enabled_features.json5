@@ -596,6 +596,7 @@
     // https://crbug.com/766694 for testing disabling the feature.
     {
       name: "HTMLImports",
+      origin_trial_feature_name: "WebComponentsV0",
       status: "stable",
     },
     // https://crbug.com/523952 for testing disabling the feature.

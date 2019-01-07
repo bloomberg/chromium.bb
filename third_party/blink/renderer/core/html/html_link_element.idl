@@ -51,7 +51,7 @@ interface HTMLLinkElement : HTMLElement {
 
     // HTML Imports
     // https://w3c.github.io/webcomponents/spec/imports/#interface-import
-    [RuntimeEnabled=HTMLImports] readonly attribute Document? import;
+    [OriginTrialEnabled=HTMLImports] readonly attribute Document? import;
 
     // Subresource Integrity
     // https://w3c.github.io/webappsec-subresource-integrity/#HTMLLinkElement
