@@ -15,6 +15,7 @@ if (is_win || (is_linux && use_udev) || is_mac) {
 
   source_set("serial") {
     visibility = [
+      ":test_support",
       "//services/device:lib",
       "//services/device:tests",
     ]
@@ -83,5 +84,19 @@ if (is_win || (is_linux && use_udev) || is_mac) {
         "//third_party/re2",
       ]
     }
+  }
+
+  static_library("test_support") {
+    testonly = true
+
+    sources = [
+      "fake_serial_device_enumerator.cc",
+      "fake_serial_device_enumerator.h",
+    ]
+
+    deps = [
+      ":serial",
+      "//base",
+    ]
   }
 }

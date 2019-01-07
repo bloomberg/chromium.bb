@@ -34,6 +34,9 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortManagerImpl() override;
 
+  void SetSerialEnumeratorForTesting(
+      std::unique_ptr<SerialDeviceEnumerator> fake_enumerator);
+
  private:
   // mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override;
