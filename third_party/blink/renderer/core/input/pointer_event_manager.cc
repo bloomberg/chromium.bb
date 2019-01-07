@@ -77,7 +77,7 @@ void PointerEventManager::Clear() {
   non_hovering_pointers_canceled_ = false;
   pointer_event_factory_.Clear();
   touch_ids_for_canceled_pointerdowns_.clear();
-  node_under_pointer_.clear();
+  element_under_pointer_.clear();
   pointer_capture_target_.clear();
   pending_pointer_capture_target_.clear();
   user_gesture_holder_.reset();
@@ -86,7 +86,7 @@ void PointerEventManager::Clear() {
 
 void PointerEventManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
-  visitor->Trace(node_under_pointer_);
+  visitor->Trace(element_under_pointer_);
   visitor->Trace(pointer_capture_target_);
   visitor->Trace(pending_pointer_capture_target_);
   visitor->Trace(touch_event_manager_);
@@ -184,16 +184,16 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   return WebInputEventResult::kNotHandled;
 }
 
-EventTarget* PointerEventManager::GetEffectiveTargetForPointerEvent(
-    EventTarget* target,
+Element* PointerEventManager::GetEffectiveTargetForPointerEvent(
+    Element* target,
     int pointer_id) {
-  if (EventTarget* capturing_target = GetCapturingNode(pointer_id))
+  if (Element* capturing_target = GetCapturingElement(pointer_id))
     return capturing_target;
   return target;
 }
 
 void PointerEventManager::SendMouseAndPointerBoundaryEvents(
-    Node* entered_node,
+    Element* entered_element,
     const String& canvas_region_id,
     const WebMouseEvent& mouse_event) {
   // Mouse event type does not matter as this pointerevent will only be used
@@ -215,7 +215,7 @@ void PointerEventManager::SendMouseAndPointerBoundaryEvents(
         mouse_event.pointer_type)] = false;
   }
 
-  ProcessCaptureAndPositionOfPointerEvent(dummy_pointer_event, entered_node,
+  ProcessCaptureAndPositionOfPointerEvent(dummy_pointer_event, entered_element,
                                           canvas_region_id, &mouse_event);
 }
 
@@ -227,22 +227,22 @@ void PointerEventManager::SendBoundaryEvents(EventTarget* exited_target,
   boundary_event_dispatcher.SendBoundaryEvents(exited_target, entered_target);
 }
 
-void PointerEventManager::SetNodeUnderPointer(PointerEvent* pointer_event,
-                                              EventTarget* target) {
-  if (node_under_pointer_.Contains(pointer_event->pointerId())) {
+void PointerEventManager::SetElementUnderPointer(PointerEvent* pointer_event,
+                                                 Element* target) {
+  if (element_under_pointer_.Contains(pointer_event->pointerId())) {
     EventTargetAttributes node =
-        node_under_pointer_.at(pointer_event->pointerId());
+        element_under_pointer_.at(pointer_event->pointerId());
     if (!target) {
-      node_under_pointer_.erase(pointer_event->pointerId());
+      element_under_pointer_.erase(pointer_event->pointerId());
     } else if (target !=
-               node_under_pointer_.at(pointer_event->pointerId()).target) {
-      node_under_pointer_.Set(pointer_event->pointerId(),
-                              EventTargetAttributes(target));
+               element_under_pointer_.at(pointer_event->pointerId()).target) {
+      element_under_pointer_.Set(pointer_event->pointerId(),
+                                 EventTargetAttributes(target));
     }
     SendBoundaryEvents(node.target, target, pointer_event);
   } else if (target) {
-    node_under_pointer_.insert(pointer_event->pointerId(),
-                               EventTargetAttributes(target));
+    element_under_pointer_.insert(pointer_event->pointerId(),
+                                  EventTargetAttributes(target));
     SendBoundaryEvents(nullptr, target, pointer_event);
   }
 }
@@ -281,9 +281,9 @@ void PointerEventManager::HandlePointerInterruption(
   for (auto pointer_event : canceled_pointer_events) {
     // If we are sending a pointercancel we have sent the pointerevent to some
     // target before.
-    DCHECK(node_under_pointer_.Contains(pointer_event->pointerId()));
-    EventTarget* target =
-        node_under_pointer_.at(pointer_event->pointerId()).target;
+    DCHECK(element_under_pointer_.Contains(pointer_event->pointerId()));
+    Element* target =
+        element_under_pointer_.at(pointer_event->pointerId()).target;
 
     DispatchPointerEvent(
         GetEffectiveTargetForPointerEvent(target, pointer_event->pointerId()),
@@ -373,34 +373,27 @@ PointerEventManager::ComputePointerEventTarget(
         LayoutPoint(web_pointer_event.PositionInWidget())));
     HitTestResult hit_test_tesult =
         frame_->GetEventHandler().HitTestResultAtLocation(location, hit_type);
-    Node* node = hit_test_tesult.InnerNode();
-    if (node) {
-      pointer_event_target.target_frame = node->GetDocument().GetFrame();
-      if (auto* canvas = ToHTMLCanvasElementOrNull(node)) {
+    Element* target = hit_test_tesult.InnerElement();
+    if (target) {
+      pointer_event_target.target_frame = target->GetDocument().GetFrame();
+      if (auto* canvas = ToHTMLCanvasElementOrNull(target)) {
         HitTestCanvasResult* hit_test_canvas_result =
             canvas->GetControlAndIdIfHitRegionExists(
                 hit_test_tesult.PointInInnerNodeFrame());
         if (hit_test_canvas_result->GetControl())
-          node = hit_test_canvas_result->GetControl();
+          target = hit_test_canvas_result->GetControl();
         pointer_event_target.region = hit_test_canvas_result->GetId();
       }
-      // TODO(crbug.com/612456): We need to investigate whether pointer
-      // events should go to text nodes or not. If so we need to
-      // update the mouse code as well. Also this logic looks similar
-      // to the one in TouchEventManager. We should be able to
-      // refactor it better after this investigation.
-      if (node->IsTextNode())
-        node = FlatTreeTraversal::Parent(*node);
-      pointer_event_target.target_node = node;
+      pointer_event_target.target_element = target;
     }
   } else {
-    // Set the target of pointer event to the captured node as this
+    // Set the target of pointer event to the captured element as this
     // pointer is captured otherwise it would have gone to the if block
     // and perform a hit-test.
-    pointer_event_target.target_node =
-        pending_pointer_capture_target_.at(pointer_id)->ToNode();
+    pointer_event_target.target_element =
+        pending_pointer_capture_target_.at(pointer_id);
     pointer_event_target.target_frame =
-        pointer_event_target.target_node->GetDocument().GetFrame();
+        pointer_event_target.target_element->GetDocument().GetFrame();
   }
   return pointer_event_target;
 }
@@ -414,15 +407,15 @@ WebInputEventResult PointerEventManager::DispatchTouchPointerEvent(
             WebInputEvent::Type::kPointerCausedUaAction);
 
   WebInputEventResult result = WebInputEventResult::kHandledSystem;
-  if (pointer_event_target.target_node && pointer_event_target.target_frame &&
-      !non_hovering_pointers_canceled_) {
+  if (pointer_event_target.target_element &&
+      pointer_event_target.target_frame && !non_hovering_pointers_canceled_) {
     PointerEvent* pointer_event = pointer_event_factory_.Create(
         web_pointer_event, coalesced_events, predicted_events,
-        pointer_event_target.target_node
-            ? pointer_event_target.target_node->GetDocument().domWindow()
+        pointer_event_target.target_element
+            ? pointer_event_target.target_element->GetDocument().domWindow()
             : nullptr);
 
-    result = SendTouchPointerEvent(pointer_event_target.target_node,
+    result = SendTouchPointerEvent(pointer_event_target.target_element,
                                    pointer_event, web_pointer_event.hovering);
 
     // If a pointerdown has been canceled, queue the unique id to allow
@@ -442,7 +435,7 @@ WebInputEventResult PointerEventManager::DispatchTouchPointerEvent(
 }
 
 WebInputEventResult PointerEventManager::SendTouchPointerEvent(
-    EventTarget* target,
+    Element* target,
     PointerEvent* pointer_event,
     bool hovering) {
   if (non_hovering_pointers_canceled_)
@@ -516,7 +509,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
       }
       target = pointer_locked_element;
     } else {
-      target = ComputePointerEventTarget(event).target_node;
+      target = ComputePointerEventTarget(event).target_element;
     }
 
     PointerEvent* pointer_event =
@@ -627,7 +620,7 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
 }
 
 WebInputEventResult PointerEventManager::SendMousePointerEvent(
-    Node* target,
+    Element* target,
     const String& canvas_region_id,
     const WebInputEvent::Type event_type,
     const WebMouseEvent& mouse_event,
@@ -674,7 +667,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     }
   }
 
-  EventTarget* pointer_event_target = ProcessCaptureAndPositionOfPointerEvent(
+  Element* pointer_event_target = ProcessCaptureAndPositionOfPointerEvent(
       pointer_event, target, canvas_region_id, &mouse_event);
 
   // Don't send fake mouse event to the DOM.
@@ -763,15 +756,15 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
 
 bool PointerEventManager::GetPointerCaptureState(
     int pointer_id,
-    EventTarget** pointer_capture_target,
-    EventTarget** pending_pointer_capture_target) {
+    Element** pointer_capture_target,
+    Element** pending_pointer_capture_target) {
   PointerCapturingMap::const_iterator it;
 
   it = pointer_capture_target_.find(pointer_id);
-  EventTarget* pointer_capture_target_temp =
+  Element* pointer_capture_target_temp =
       (it != pointer_capture_target_.end()) ? it->value : nullptr;
   it = pending_pointer_capture_target_.find(pointer_id);
-  EventTarget* pending_pointercapture_target_temp =
+  Element* pending_pointercapture_target_temp =
       (it != pending_pointer_capture_target_.end()) ? it->value : nullptr;
 
   if (pointer_capture_target)
@@ -782,32 +775,31 @@ bool PointerEventManager::GetPointerCaptureState(
   return pointer_capture_target_temp != pending_pointercapture_target_temp;
 }
 
-EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
+Element* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     PointerEvent* pointer_event,
-    EventTarget* hit_test_target,
+    Element* hit_test_target,
     const String& canvas_region_id,
     const WebMouseEvent* mouse_event) {
   ProcessPendingPointerCapture(pointer_event);
 
   PointerCapturingMap::const_iterator it =
       pointer_capture_target_.find(pointer_event->pointerId());
-  if (EventTarget* pointercapture_target =
+  if (Element* pointercapture_target =
           (it != pointer_capture_target_.end()) ? it->value : nullptr)
     hit_test_target = pointercapture_target;
 
-  SetNodeUnderPointer(pointer_event, hit_test_target);
+  SetElementUnderPointer(pointer_event, hit_test_target);
   if (mouse_event) {
-    mouse_event_manager_->SetNodeUnderMouse(
-        hit_test_target ? hit_test_target->ToNode() : nullptr, canvas_region_id,
-        *mouse_event);
+    mouse_event_manager_->SetElementUnderMouse(hit_test_target,
+                                               canvas_region_id, *mouse_event);
   }
   return hit_test_target;
 }
 
 void PointerEventManager::ProcessPendingPointerCapture(
     PointerEvent* pointer_event) {
-  EventTarget* pointer_capture_target;
-  EventTarget* pending_pointer_capture_target;
+  Element* pointer_capture_target;
+  Element* pending_pointer_capture_target;
   const int pointer_id = pointer_event->pointerId();
   const bool is_capture_changed = GetPointerCaptureState(
       pointer_id, &pointer_capture_target, &pending_pointer_capture_target);
@@ -821,8 +813,8 @@ void PointerEventManager::ProcessPendingPointerCapture(
     // Re-target lostpointercapture to the document when the element is
     // no longer participating in the tree.
     EventTarget* target = pointer_capture_target;
-    if (target->ToNode() && !target->ToNode()->isConnected()) {
-      target = target->ToNode()->ownerDocument();
+    if (!pointer_capture_target->isConnected()) {
+      target = pointer_capture_target->ownerDocument();
     }
     DispatchPointerEvent(
         target, pointer_event_factory_.CreatePointerCaptureEvent(
@@ -830,7 +822,7 @@ void PointerEventManager::ProcessPendingPointerCapture(
   }
 
   if (pending_pointer_capture_target) {
-    SetNodeUnderPointer(pointer_event, pending_pointer_capture_target);
+    SetElementUnderPointer(pointer_event, pending_pointer_capture_target);
     DispatchPointerEvent(
         pending_pointer_capture_target,
         pointer_event_factory_.CreatePointerCaptureEvent(
@@ -852,7 +844,7 @@ void PointerEventManager::ProcessPendingPointerCaptureForPointerLock(
 
 void PointerEventManager::RemoveTargetFromPointerCapturingMapping(
     PointerCapturingMap& map,
-    const EventTarget* target) {
+    const Element* target) {
   // We could have kept a reverse mapping to make this deletion possibly
   // faster but it adds some code complication which might not be worth of
   // the performance improvement considering there might not be a lot of
@@ -864,7 +856,7 @@ void PointerEventManager::RemoveTargetFromPointerCapturingMapping(
   }
 }
 
-EventTarget* PointerEventManager::GetCapturingNode(int pointer_id) {
+Element* PointerEventManager::GetCapturingElement(int pointer_id) {
   if (pointer_capture_target_.Contains(pointer_id))
     return pointer_capture_target_.at(pointer_id);
   return nullptr;
@@ -875,17 +867,16 @@ void PointerEventManager::RemovePointer(PointerEvent* pointer_event) {
   if (pointer_event_factory_.Remove(pointer_id)) {
     pending_pointer_capture_target_.erase(pointer_id);
     pointer_capture_target_.erase(pointer_id);
-    node_under_pointer_.erase(pointer_id);
+    element_under_pointer_.erase(pointer_id);
   }
 }
 
-void PointerEventManager::ElementRemoved(EventTarget* target) {
+void PointerEventManager::ElementRemoved(Element* target) {
   RemoveTargetFromPointerCapturingMapping(pending_pointer_capture_target_,
                                           target);
 }
 
-void PointerEventManager::SetPointerCapture(int pointer_id,
-                                            EventTarget* target) {
+void PointerEventManager::SetPointerCapture(int pointer_id, Element* target) {
   UseCounter::Count(frame_, WebFeature::kPointerEventSetCapture);
   if (pointer_event_factory_.IsActiveButtonsState(pointer_id)) {
     if (pointer_id != dispatching_pointer_id_) {
@@ -897,7 +888,7 @@ void PointerEventManager::SetPointerCapture(int pointer_id,
 }
 
 void PointerEventManager::ReleasePointerCapture(int pointer_id,
-                                                EventTarget* target) {
+                                                Element* target) {
   // Only the element that is going to get the next pointer event can release
   // the capture. Note that this might be different from
   // |m_pointercaptureTarget|. |m_pointercaptureTarget| holds the element
@@ -914,13 +905,13 @@ void PointerEventManager::ReleaseMousePointerCapture() {
 }
 
 bool PointerEventManager::HasPointerCapture(int pointer_id,
-                                            const EventTarget* target) const {
+                                            const Element* target) const {
   return pending_pointer_capture_target_.at(pointer_id) == target;
 }
 
 bool PointerEventManager::HasProcessedPointerCapture(
     int pointer_id,
-    const EventTarget* target) const {
+    const Element* target) const {
   return pointer_capture_target_.at(pointer_id) == target;
 }
 
@@ -942,12 +933,12 @@ bool PointerEventManager::IsTouchPointerIdActiveOnFrame(
   if (pointer_event_factory_.GetPointerType(pointer_id) !=
       WebPointerProperties::PointerType::kTouch)
     return false;
-  Node* last_node_receiving_event =
-      node_under_pointer_.Contains(pointer_id)
-          ? node_under_pointer_.at(pointer_id).target->ToNode()
+  Element* last_element_receiving_event =
+      element_under_pointer_.Contains(pointer_id)
+          ? element_under_pointer_.at(pointer_id).target
           : nullptr;
-  return last_node_receiving_event &&
-         last_node_receiving_event->GetDocument().GetFrame() == frame;
+  return last_element_receiving_event &&
+         last_element_receiving_event->GetDocument().GetFrame() == frame;
 }
 
 bool PointerEventManager::IsAnyTouchActive() const {

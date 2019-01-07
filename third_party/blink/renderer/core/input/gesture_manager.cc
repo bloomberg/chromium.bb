@@ -176,7 +176,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch),
         gesture_event.TimeStamp());
     mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-        current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
+        current_hit_test.InnerElement(), current_hit_test.CanvasRegionId(),
         event_type_names::kMousemove, fake_mouse_move);
   }
 
@@ -228,7 +228,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
 
     mouse_down_event_result =
         mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-            current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
+            current_hit_test.InnerElement(), current_hit_test.CanvasRegionId(),
             event_type_names::kMousedown, fake_mouse_down);
     selection_controller_->InitializeSelectionState();
     if (mouse_down_event_result == WebInputEventResult::kNotHandled) {
@@ -275,8 +275,9 @@ WebInputEventResult GestureManager::HandleGestureTap(
       suppress_mouse_events_from_gestures_
           ? WebInputEventResult::kHandledSuppressed
           : mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-                current_hit_test.InnerNode(), current_hit_test.CanvasRegionId(),
-                event_type_names::kMouseup, fake_mouse_up);
+                current_hit_test.InnerElement(),
+                current_hit_test.CanvasRegionId(), event_type_names::kMouseup,
+                fake_mouse_up);
 
   WebInputEventResult click_event_result = WebInputEventResult::kNotHandled;
   if (tapped_element) {
@@ -290,9 +291,13 @@ WebInputEventResult GestureManager::HandleGestureTap(
       tapped_element->UpdateDistributionForFlatTreeTraversal();
       Node* click_target_node = current_hit_test.InnerNode()->CommonAncestor(
           *tapped_element, event_handling_util::ParentForClickEvent);
+      Element* click_target_element = nullptr;
+      if (click_target_node && click_target_node->IsElementNode())
+        click_target_element = ToElement(click_target_node);
+
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-              click_target_node, String(), event_type_names::kClick,
+              click_target_element, String(), event_type_names::kClick,
               fake_mouse_up);
     }
     mouse_event_manager_->SetClickElement(nullptr);
@@ -402,7 +407,7 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
             modifiers | WebInputEvent::kIsCompatibilityEventForTouch),
         gesture_event.TimeStamp());
     mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
-        targeted_event.GetHitTestResult().InnerNode(),
+        targeted_event.GetHitTestResult().InnerElement(),
         targeted_event.CanvasRegionId(), event_type_names::kMousemove,
         fake_mouse_move);
   }

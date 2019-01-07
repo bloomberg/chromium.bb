@@ -119,7 +119,7 @@ MouseEventManager::MouseEventManager(LocalFrame& frame,
 }
 
 void MouseEventManager::Clear() {
-  node_under_mouse_ = nullptr;
+  element_under_mouse_ = nullptr;
   mouse_press_node_ = nullptr;
   mouse_down_may_start_autoscroll_ = false;
   mouse_down_may_start_drag_ = false;
@@ -146,7 +146,7 @@ MouseEventManager::~MouseEventManager() = default;
 void MouseEventManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(scroll_manager_);
-  visitor->Trace(node_under_mouse_);
+  visitor->Trace(element_under_mouse_);
   visitor->Trace(mouse_press_node_);
   visitor->Trace(click_element_);
   visitor->Trace(mouse_down_element_);
@@ -287,17 +287,12 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
 }
 
 WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
-    Node* target_node,
+    Element* target_element,
     const String& canvas_region_id,
     const AtomicString& event_type,
     const WebMouseEvent& web_mouse_event) {
-  // If the target node is a text node, dispatch on the parent node.
-  if (target_node && target_node->IsTextNode())
-    target_node = FlatTreeTraversal::Parent(*target_node);
-
-  SetNodeUnderMouse(target_node, canvas_region_id, web_mouse_event);
-
-  return DispatchMouseEvent(node_under_mouse_, event_type, web_mouse_event,
+  SetElementUnderMouse(target_element, canvas_region_id, web_mouse_event);
+  return DispatchMouseEvent(element_under_mouse_, event_type, web_mouse_event,
                             canvas_region_id, nullptr, nullptr);
 }
 
@@ -413,17 +408,17 @@ void MouseEventManager::CancelFakeMouseMoveEvent() {
   fake_mouse_move_event_timer_.Stop();
 }
 
-void MouseEventManager::SetNodeUnderMouse(
-    Node* target,
+void MouseEventManager::SetElementUnderMouse(
+    Element* target,
     const String& canvas_region_id,
     const WebMouseEvent& web_mouse_event) {
-  Node* last_node_under_mouse = node_under_mouse_;
-  node_under_mouse_ = target;
+  Element* last_element_under_mouse = element_under_mouse_;
+  element_under_mouse_ = target;
 
   PaintLayer* layer_for_last_node =
-      event_handling_util::LayerForNode(last_node_under_mouse);
+      event_handling_util::LayerForNode(last_element_under_mouse);
   PaintLayer* layer_for_node_under_mouse =
-      event_handling_util::LayerForNode(node_under_mouse_.Get());
+      event_handling_util::LayerForNode(element_under_mouse_.Get());
   Page* page = frame_->GetPage();
 
   if (page && (layer_for_last_node &&
@@ -445,13 +440,13 @@ void MouseEventManager::SetNodeUnderMouse(
       scrollable_area_for_node_under_mouse->MouseEnteredContentArea();
   }
 
-  if (last_node_under_mouse &&
-      last_node_under_mouse->GetDocument() != frame_->GetDocument()) {
-    last_node_under_mouse = nullptr;
+  if (last_element_under_mouse &&
+      last_element_under_mouse->GetDocument() != frame_->GetDocument()) {
+    last_element_under_mouse = nullptr;
   }
 
-  SendBoundaryEvents(last_node_under_mouse, node_under_mouse_, canvas_region_id,
-                     web_mouse_event);
+  SendBoundaryEvents(last_element_under_mouse, element_under_mouse_,
+                     canvas_region_id, web_mouse_event);
 }
 
 void MouseEventManager::NodeChildrenWillBeRemoved(ContainerNode& container) {
@@ -477,8 +472,8 @@ void MouseEventManager::NodeWillBeRemoved(Node& node_to_be_removed) {
   }
 }
 
-Node* MouseEventManager::GetNodeUnderMouse() {
-  return node_under_mouse_;
+Element* MouseEventManager::GetElementUnderMouse() {
+  return element_under_mouse_;
 }
 
 WebInputEventResult MouseEventManager::HandleMouseFocus(
@@ -496,12 +491,7 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   // The layout needs to be up to date to determine if an element is focusable.
   frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  Element* element = nullptr;
-  if (node_under_mouse_) {
-    element = node_under_mouse_->IsElementNode()
-                  ? ToElement(node_under_mouse_)
-                  : node_under_mouse_->ParentOrShadowHostElement();
-  }
+  Element* element = element_under_mouse_;
   for (; element; element = element->ParentOrShadowHostElement()) {
     if (element->IsFocusable() && element->IsFocusedElementInDocument())
       return WebInputEventResult::kNotHandled;

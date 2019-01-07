@@ -44,7 +44,7 @@ class CORE_EXPORT PointerEventManager
   // and sets the newNodeUnderMouse if the capturing is set
   // in this function.
   WebInputEventResult SendMousePointerEvent(
-      Node* target,
+      Element* target,
       const String& canvas_region_id,
       const WebInputEvent::Type,
       const WebMouseEvent&,
@@ -57,7 +57,7 @@ class CORE_EXPORT PointerEventManager
   // leaving a frame. Note that normal mouse events (e.g. mousemove/down/up)
   // and their corresponding boundary events will be handled altogether by
   // sendMousePointerEvent function.
-  void SendMouseAndPointerBoundaryEvents(Node* entered_node,
+  void SendMouseAndPointerBoundaryEvents(Element* entered_element,
                                          const String& canvas_region_id,
                                          const WebMouseEvent&);
 
@@ -79,17 +79,17 @@ class CORE_EXPORT PointerEventManager
   // Resets the internal state of this object.
   void Clear();
 
-  void ElementRemoved(EventTarget*);
+  void ElementRemoved(Element*);
 
-  void SetPointerCapture(int, EventTarget*);
-  void ReleasePointerCapture(int, EventTarget*);
+  void SetPointerCapture(int, Element*);
+  void ReleasePointerCapture(int, Element*);
   void ReleaseMousePointerCapture();
 
   // See Element::hasPointerCapture(int).
-  bool HasPointerCapture(int, const EventTarget*) const;
+  bool HasPointerCapture(int, const Element*) const;
 
   // See Element::hasProcessedPointerCapture(int).
-  bool HasProcessedPointerCapture(int, const EventTarget*) const;
+  bool HasProcessedPointerCapture(int, const Element*) const;
 
   bool IsActive(const int) const;
 
@@ -118,7 +118,7 @@ class CORE_EXPORT PointerEventManager
 
  private:
   typedef HeapHashMap<int,
-                      Member<EventTarget>,
+                      Member<Element>,
                       WTF::IntHash<int>,
                       WTF::UnsignedWithZeroKeyHashTraits<int>>
       PointerCapturingMap;
@@ -127,10 +127,9 @@ class CORE_EXPORT PointerEventManager
 
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
-    Member<EventTarget> target;
+    Member<Element> target;
     EventTargetAttributes() : target(nullptr) {}
-    EventTargetAttributes(EventTarget* target)
-        : target(target) {}
+    EventTargetAttributes(Element* target) : target(target) {}
   };
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
@@ -179,14 +178,14 @@ class CORE_EXPORT PointerEventManager
       const event_handling_util::PointerEventTarget&);
 
   // Returns whether the event is consumed or not.
-  WebInputEventResult SendTouchPointerEvent(EventTarget*,
+  WebInputEventResult SendTouchPointerEvent(Element*,
                                             PointerEvent*,
                                             bool hovering);
 
   void SendBoundaryEvents(EventTarget* exited_target,
                           EventTarget* entered_target,
                           PointerEvent*);
-  void SetNodeUnderPointer(PointerEvent*, EventTarget*);
+  void SetElementUnderPointer(PointerEvent*, Element*);
 
   // Processes the assignment of |m_pointerCaptureTarget| from
   // |m_pendingPointerCaptureTarget| and sends the got/lostpointercapture
@@ -194,21 +193,21 @@ class CORE_EXPORT PointerEventManager
   // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
   void ProcessPendingPointerCapture(PointerEvent*);
 
-  // Processes the capture state of a pointer, updates node under
+  // Processes the capture state of a pointer, updates element under
   // pointer, and sends corresponding boundary events for pointer if
   // setPointerPosition is true. It also sends corresponding boundary events
   // for mouse if sendMouseEvent is true.
   // Returns the target that the pointer event is supposed to be fired at.
-  EventTarget* ProcessCaptureAndPositionOfPointerEvent(
+  Element* ProcessCaptureAndPositionOfPointerEvent(
       PointerEvent*,
-      EventTarget* hit_test_target,
+      Element* hit_test_target,
       const String& canvas_region_id = String(),
       const WebMouseEvent* = nullptr);
 
   void RemoveTargetFromPointerCapturingMapping(PointerCapturingMap&,
-                                               const EventTarget*);
-  EventTarget* GetEffectiveTargetForPointerEvent(EventTarget*, int);
-  EventTarget* GetCapturingNode(int);
+                                               const Element*);
+  Element* GetEffectiveTargetForPointerEvent(Element*, int);
+  Element* GetCapturingElement(int);
   void RemovePointer(PointerEvent*);
   WebInputEventResult DispatchPointerEvent(EventTarget*,
                                            PointerEvent*,
@@ -216,8 +215,8 @@ class CORE_EXPORT PointerEventManager
   void ReleasePointerCapture(int);
   // Returns true if capture target and pending capture target were different.
   bool GetPointerCaptureState(int pointer_id,
-                              EventTarget** pointer_capture_target,
-                              EventTarget** pending_pointer_capture_target);
+                              Element** pointer_capture_target,
+                              Element** pending_pointer_capture_target);
 
   // Only adjust touch type primary pointer down.
   bool ShouldAdjustPointerEvent(const WebPointerEvent&) const;
@@ -242,16 +241,16 @@ class CORE_EXPORT PointerEventManager
 
   Deque<uint32_t> touch_ids_for_canceled_pointerdowns_;
 
-  // Note that this map keeps track of node under pointer with id=1 as well
+  // Note that this map keeps track of element under pointer with id=1 as well
   // which might be different than m_nodeUnderMouse in EventHandler. That one
   // keeps track of any compatibility mouse event positions but this map for
   // the pointer with id=1 is only taking care of true mouse related events.
-  using NodeUnderPointerMap =
+  using ElementUnderPointerMap =
       HeapHashMap<int,
                   EventTargetAttributes,
                   WTF::IntHash<int>,
                   WTF::UnsignedWithZeroKeyHashTraits<int>>;
-  NodeUnderPointerMap node_under_pointer_;
+  ElementUnderPointerMap element_under_pointer_;
 
   PointerCapturingMap pointer_capture_target_;
   PointerCapturingMap pending_pointer_capture_target_;

@@ -481,6 +481,8 @@ Element* HitTestResult::InnerElement() const {
     return nullptr;
   if (inner_node_->IsElementNode())
     return ToElement(inner_node_);
+  // TODO(nzolghadr): Add caching of this value instead of calculating it
+  // everytime.
   return FlatTreeTraversal::ParentElement(*inner_node_);
 }
 
