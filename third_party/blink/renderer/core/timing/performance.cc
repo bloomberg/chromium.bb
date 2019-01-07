@@ -460,7 +460,8 @@ void Performance::GenerateAndAddResourceTiming(
     return;
   AddResourceTiming(
       GenerateResourceTiming(*security_origin, info, *context),
-      !initiator_type.IsNull() ? initiator_type : info.InitiatorType());
+      !initiator_type.IsNull() ? initiator_type : info.InitiatorType(),
+      context->IsSecureContext());
 }
 
 WebResourceTimingInfo Performance::GenerateResourceTiming(
@@ -530,9 +531,10 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 }
 
 void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
-                                    const AtomicString& initiator_type) {
-  PerformanceEntry* entry =
-      PerformanceResourceTiming::Create(info, time_origin_, initiator_type);
+                                    const AtomicString& initiator_type,
+                                    bool is_secure_context) {
+  PerformanceEntry* entry = PerformanceResourceTiming::Create(
+      info, time_origin_, initiator_type, is_secure_context);
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&
