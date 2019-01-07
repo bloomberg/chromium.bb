@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_DISPATCHER_HOST_H_
 
-#include <map>
 #include <string>
 #include <utility>
 
@@ -31,8 +30,10 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                             int render_frame_id,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
-
-  void BindRequest(mojom::MediaStreamDispatcherHostRequest request);
+  static void Create(int render_process_id,
+                     int render_frame_id,
+                     MediaStreamManager* media_stream_manager,
+                     mojom::MediaStreamDispatcherHostRequest request);
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {
@@ -82,11 +83,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device);
 
+  static int next_requester_id_;
+
   const int render_process_id_;
   const int render_frame_id_;
+  const int requester_id_;
   MediaStreamManager* media_stream_manager_;
   mojom::MediaStreamDeviceObserverPtr media_stream_device_observer_;
-  mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;

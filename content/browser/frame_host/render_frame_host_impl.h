@@ -1142,10 +1142,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
-  void CreateMediaStreamDispatcherHost(
-      MediaStreamManager* media_stream_manager,
-      mojom::MediaStreamDispatcherHostRequest request);
-
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
 

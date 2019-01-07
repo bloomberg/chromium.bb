@@ -217,6 +217,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   std::string MakeMediaAccessRequest(int index) {
     const int render_process_id = 1;
     const int render_frame_id = 1;
+    const int requester_id = 1;
     const int page_request_id = 1;
     const url::Origin security_origin;
     MediaStreamManager::MediaAccessRequestCallback callback =
@@ -224,8 +225,8 @@ class MediaStreamManagerTest : public ::testing::Test {
                        base::Unretained(this), index);
     StreamControls controls(true, true);
     return media_stream_manager_->MakeMediaAccessRequest(
-        render_process_id, render_frame_id, page_request_id, controls,
-        security_origin, std::move(callback));
+        render_process_id, render_frame_id, requester_id, page_request_id,
+        controls, security_origin, std::move(callback));
   }
 
   // media_stream_manager_ needs to outlive thread_bundle_ because it is a
@@ -290,14 +291,15 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   // Second request.
   int render_process_id = 2;
   int render_frame_id = 2;
+  int requester_id = 2;
   int page_request_id = 2;
   url::Origin security_origin;
   StreamControls controls(true, true);
   MediaStreamManager::MediaAccessRequestCallback callback = base::BindOnce(
       &MediaStreamManagerTest::ResponseCallback, base::Unretained(this), 1);
   std::string label2 = media_stream_manager_->MakeMediaAccessRequest(
-      render_process_id, render_frame_id, page_request_id, controls,
-      security_origin, std::move(callback));
+      render_process_id, render_frame_id, requester_id, page_request_id,
+      controls, security_origin, std::move(callback));
 
   // Expecting the callbackS from requests will be triggered and quit the test.
   // Note, the callbacks might come in a different order depending on the
@@ -404,6 +406,7 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
   controls.video.stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
   const int render_process_id = 1;
   const int render_frame_id = 1;
+  const int requester_id = 1;
   const int page_request_id = 1;
 
   MediaStreamDevice video_device;
@@ -430,8 +433,8 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
                                     _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_DONE));
   media_stream_manager_->GenerateStream(
-      render_process_id, render_frame_id, page_request_id, controls,
-      MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      render_process_id, render_frame_id, requester_id, page_request_id,
+      controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
       std::move(generate_stream_callback), std::move(stopped_callback));
   run_loop_.Run();
 
@@ -441,7 +444,7 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
                                     _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_CLOSING));
   media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
-                                          video_device.id,
+                                          requester_id, video_device.id,
                                           video_device.session_id);
 }
 
@@ -470,15 +473,20 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
                                     _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_PENDING_APPROVAL));
+  const int render_process_id = 0;
+  const int render_frame_id = 0;
+  const int requester_id = 0;
+  const int page_request_id = 0;
   media_stream_manager_->GenerateStream(
-      0, 0, 0, controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      render_process_id, render_frame_id, requester_id, page_request_id,
+      controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
       std::move(generate_stream_callback),
       MediaStreamManager::DeviceStoppedCallback());
   run_loop_.Run();
 
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
       .Times(testing::AtLeast(1));
-  media_stream_manager_->CancelAllRequests(0, 0);
+  media_stream_manager_->CancelAllRequests(0, 0, 0);
 }
 
 }  // namespace content

@@ -157,6 +157,7 @@ class CONTENT_EXPORT MediaStreamManager
   // will be returned if the users deny the access.
   std::string MakeMediaAccessRequest(int render_process_id,
                                      int render_frame_id,
+                                     int requester_id,
                                      int page_request_id,
                                      const StreamControls& controls,
                                      const url::Origin& security_origin,
@@ -169,6 +170,7 @@ class CONTENT_EXPORT MediaStreamManager
   // is set to receive device stopped notifications.
   void GenerateStream(int render_process_id,
                       int render_frame_id,
+                      int requester_id,
                       int page_request_id,
                       const StreamControls& controls,
                       MediaDeviceSaltAndOrigin salt_and_origin,
@@ -180,6 +182,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Must be called on the IO thread.
   void CancelRequest(int render_process_id,
                      int render_frame_id,
+                     int requester_id,
                      int page_request_id);
 
   // Cancel an open request identified by |label|. Must be called on the IO
@@ -188,12 +191,15 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Cancel all requests for the given |render_process_id| and
   // |render_frame_id|. Must be called on the IO thread.
-  void CancelAllRequests(int render_process_id, int render_frame_id);
+  void CancelAllRequests(int render_process_id,
+                         int render_frame_id,
+                         int requester_id);
 
   // Closes the stream device for a certain render frame. The stream must have
   // been opened by a call to GenerateStream. Must be called on the IO thread.
   void StopStreamDevice(int render_process_id,
                         int render_frame_id,
+                        int requester_id,
                         const std::string& device_id,
                         int session_id);
 
@@ -203,6 +209,7 @@ class CONTENT_EXPORT MediaStreamManager
   // request is identified using string returned to the caller.
   void OpenDevice(int render_process_id,
                   int render_frame_id,
+                  int requester_id,
                   int page_request_id,
                   const std::string& device_id,
                   MediaStreamType type,
