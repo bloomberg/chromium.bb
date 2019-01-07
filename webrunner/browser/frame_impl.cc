@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/aura/layout_manager.h"
@@ -167,6 +168,9 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
   Observe(web_contents_.get());
   binding_.set_error_handler(
       [this](zx_status_t status) { context_->DestroyFrame(this); });
+
+  content::UpdateFontRendererPreferencesFromSystemSettings(
+      web_contents_->GetMutableRendererPrefs());
 }
 
 FrameImpl::~FrameImpl() {

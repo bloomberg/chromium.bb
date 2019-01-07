@@ -22,11 +22,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
-#include "ui/gfx/font_render_params.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
@@ -38,18 +38,6 @@ using content::WebPreferences;
 namespace android_webview {
 
 namespace {
-
-void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
-  // TODO(boliu): Deduplicate with chrome/ code.
-  static const base::NoDestructor<gfx::FontRenderParams> params(
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
-  prefs->should_antialias_text = params->antialiasing;
-  prefs->use_subpixel_positioning = params->subpixel_positioning;
-  prefs->hinting = params->hinting;
-  prefs->use_autohinter = params->autohinter;
-  prefs->use_bitmaps = params->use_bitmaps;
-  prefs->subpixel_rendering = params->subpixel_rendering;
-}
 
 void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->shrinks_standalone_images_to_fit = false;
@@ -233,7 +221,7 @@ void AwSettings::UpdateRendererPreferencesLocked(
   RendererPreferences* prefs = web_contents()->GetMutableRendererPrefs();
 
   if (!renderer_prefs_initialized_) {
-    PopulateFixedRendererPreferences(prefs);
+    content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
     renderer_prefs_initialized_ = true;
     update_prefs = true;
   }
