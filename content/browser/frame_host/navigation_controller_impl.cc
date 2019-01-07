@@ -2054,6 +2054,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     const Referrer& referrer,
     ui::PageTransition page_transition,
     bool should_replace_current_entry,
+    NavigationDownloadPolicy download_policy,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
@@ -2163,7 +2164,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
       CreateNavigationRequestFromLoadParams(
           render_frame_host->frame_tree_node(), params, override_user_agent,
           should_replace_current_entry, false /* has_user_gesture */,
-          ReloadType::NONE, *entry, frame_entry.get());
+          download_policy, ReloadType::NONE, *entry, frame_entry.get());
 
   if (!request)
     return;
@@ -2637,8 +2638,8 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
-          has_user_gesture, reload_type, *pending_entry_,
-          pending_entry_->GetFrameEntry(node));
+          has_user_gesture, NavigationDownloadPolicy::kAllow, reload_type,
+          *pending_entry_, pending_entry_->GetFrameEntry(node));
 
   // If the navigation couldn't start, return immediately and discard the
   // pending NavigationEntry.
@@ -2782,6 +2783,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     bool override_user_agent,
     bool should_replace_current_entry,
     bool has_user_gesture,
+    NavigationDownloadPolicy download_policy,
     ReloadType reload_type,
     const NavigationEntryImpl& entry,
     FrameNavigationEntry* frame_entry) {
@@ -2866,9 +2868,13 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   // Create the NavigationParams based on |params|.
 
   bool is_view_source_mode = virtual_url.SchemeIs(kViewSourceScheme);
-  NavigationDownloadPolicy download_policy =
-      is_view_source_mode ? NavigationDownloadPolicy::kDisallowViewSource
-                          : NavigationDownloadPolicy::kAllow;
+
+  // Update |download_policy| if the virtual URL is view-source. Why do this
+  // now? Possibly the URL could be rewritten to a view-source via some URL
+  // handler.
+  if (is_view_source_mode)
+    download_policy = NavigationDownloadPolicy::kDisallowViewSource;
+
   const GURL& history_url_for_data_url =
       params.base_url_for_data_url.is_empty() ? GURL() : virtual_url;
   CommonNavigationParams common_params(

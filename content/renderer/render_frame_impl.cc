@@ -493,26 +493,6 @@ WebURLRequest CreateURLRequestForNavigation(
   return request;
 }
 
-NavigationDownloadPolicy GetDownloadPolicy(
-    bool prevent_sandboxed_download,
-    bool is_opener_navigation,
-    const blink::WebURLRequest& request,
-    const WebSecurityOrigin& current_origin) {
-  if (prevent_sandboxed_download)
-    return NavigationDownloadPolicy::kDisallowSandbox;
-  if (!is_opener_navigation)
-    return NavigationDownloadPolicy::kAllow;
-  bool gesture = request.HasUserGesture();
-  bool cross_origin = !request.RequestorOrigin().CanAccess(current_origin);
-  if (!gesture && cross_origin)
-    return NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture;
-  if (!gesture)
-    return NavigationDownloadPolicy::kAllowOpenerNoGesture;
-  if (cross_origin)
-    return NavigationDownloadPolicy::kAllowOpenerCrossOrigin;
-  return NavigationDownloadPolicy::kAllowOpener;
-}
-
 CommonNavigationParams MakeCommonNavigationParams(
     const WebSecurityOrigin& current_origin,
     std::unique_ptr<blink::WebNavigationInfo> info,
@@ -557,8 +537,10 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<RequestExtraData*>(info->url_request.GetExtraData());
   DCHECK(extra_data);
   NavigationDownloadPolicy download_policy =
-      GetDownloadPolicy(prevent_sandboxed_download, info->is_opener_navigation,
-                        info->url_request, current_origin);
+      prevent_sandboxed_download
+          ? NavigationDownloadPolicy::kDisallowSandbox
+          : RenderFrameImpl::GetOpenerDownloadPolicy(
+                info->is_opener_navigation, info->url_request, current_origin);
   return CommonNavigationParams(
       info->url_request.Url(), info->url_request.RequestorOrigin(), referrer,
       extra_data->transition_type(), navigation_type, download_policy,
@@ -1617,6 +1599,24 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id) {
     return opener_frame->GetWebFrame();
 
   return nullptr;
+}
+
+// static
+NavigationDownloadPolicy RenderFrameImpl::GetOpenerDownloadPolicy(
+    bool is_opener_navigation,
+    const blink::WebURLRequest& request,
+    const WebSecurityOrigin& current_origin) {
+  if (!is_opener_navigation)
+    return NavigationDownloadPolicy::kAllow;
+  bool gesture = request.HasUserGesture();
+  bool cross_origin = !request.RequestorOrigin().CanAccess(current_origin);
+  if (!gesture && cross_origin)
+    return NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture;
+  if (!gesture)
+    return NavigationDownloadPolicy::kAllowOpenerNoGesture;
+  if (cross_origin)
+    return NavigationDownloadPolicy::kAllowOpenerCrossOrigin;
+  return NavigationDownloadPolicy::kAllowOpener;
 }
 
 blink::WebURL RenderFrameImpl::OverrideFlashEmbedWithHTML(
@@ -6470,6 +6470,9 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
     params.is_history_navigation_in_new_child = true;
 
   params.href_translate = info->href_translate.Latin1();
+  params.download_policy = RenderFrameImpl::GetOpenerDownloadPolicy(
+      info->is_opener_navigation, info->url_request,
+      frame_->GetSecurityOrigin());
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }

@@ -127,6 +127,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const Referrer& referrer,
       ui::PageTransition page_transition,
       bool should_replace_current_entry,
+      NavigationDownloadPolicy download_policy,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,

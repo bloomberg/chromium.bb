@@ -37,6 +37,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   // RemoteFrameClient overrides:
   void Navigate(const ResourceRequest&,
                 bool should_replace_current_entry,
+                bool is_opener_navigation,
                 mojom::blink::BlobURLTokenPtr) override;
   unsigned BackForwardLength() override;
   void CheckCompleted() override;

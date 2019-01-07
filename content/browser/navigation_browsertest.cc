@@ -1530,9 +1530,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
 
 // A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
 // cross-origin URL for the popup window.
-// TODO(csharrison): currently opener checks for DownloadPolicy has a bug when
-// the opener is cross-process. For now the test uses a.com and bar.a.com to get
-// cross-origin behavior but still same process.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                        CrossOriginOpenerNavigation_DownloadPolicy) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1553,7 +1550,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   ShellAddedObserver shell_observer;
   EXPECT_TRUE(EvalJs(opener, JsReplace("!!window.open($1);",
                                        embedded_test_server()->GetURL(
-                                           "bar.a.com", "/title1.html")))
+                                           "bar.com", "/title1.html")))
                   .ExtractBool());
   Shell* new_shell = shell_observer.GetShell();
   EXPECT_EQ(2u, Shell::windows().size());
