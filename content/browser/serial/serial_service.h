@@ -14,6 +14,7 @@
 namespace content {
 
 class RenderFrameHost;
+class SerialChooser;
 
 class SerialService : public blink::mojom::SerialService {
  public:
@@ -28,7 +29,11 @@ class SerialService : public blink::mojom::SerialService {
                    RequestPortCallback callback) override;
 
  private:
+  RenderFrameHost* const render_frame_host_;
   mojo::BindingSet<blink::mojom::SerialService> bindings_;
+
+  // The last shown serial port chooser UI.
+  std::unique_ptr<SerialChooser> chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialService);
 };
