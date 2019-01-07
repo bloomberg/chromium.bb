@@ -11,7 +11,7 @@
 #include "base/containers/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/renderer/appcache/appcache_backend_proxy.h"
+#include "content/common/appcache.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -57,7 +57,7 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
-    AppCacheBackendProxy* backend,
+    mojom::AppCacheBackend* backend,
     int appcache_host_id)
     : client_(client),
       backend_(backend),
@@ -266,20 +266,26 @@ WebApplicationCacheHost::Status WebApplicationCacheHostImpl::GetStatus() {
 }
 
 bool WebApplicationCacheHostImpl::StartUpdate() {
-  if (!backend_->StartUpdate(host_id_))
+  bool result = false;
+  backend_->StartUpdate(host_id_, &result);
+  if (!result)
     return false;
   if (status_ == AppCacheStatus::APPCACHE_STATUS_IDLE ||
-      status_ == AppCacheStatus::APPCACHE_STATUS_UPDATE_READY)
+      status_ == AppCacheStatus::APPCACHE_STATUS_UPDATE_READY) {
     status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
-  else
-    status_ = backend_->GetStatus(host_id_);
+  } else {
+    status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+    backend_->GetStatus(host_id_, &status_);
+  }
   return true;
 }
 
 bool WebApplicationCacheHostImpl::SwapCache() {
-  if (!backend_->SwapCache(host_id_))
+  bool result = false;
+  backend_->SwapCache(host_id_, &result);
+  if (!result)
     return false;
-  status_ = backend_->GetStatus(host_id_);
+  backend_->GetStatus(host_id_, &status_);
   return true;
 }
 
@@ -301,8 +307,12 @@ void WebApplicationCacheHostImpl::GetResourceList(
     WebVector<ResourceInfo>* resources) {
   if (!cache_info_.is_complete)
     return;
+  std::vector<mojom::AppCacheResourceInfoPtr> boxed_infos;
+  backend_->GetResourceList(host_id_, &boxed_infos);
   std::vector<AppCacheResourceInfo> resource_infos;
-  backend_->GetResourceList(host_id_, &resource_infos);
+  for (auto& b : boxed_infos) {
+    resource_infos.emplace_back(std::move(*b));
+  }
 
   WebVector<ResourceInfo> web_resources(resource_infos.size());
   for (size_t i = 0; i < resource_infos.size(); ++i) {

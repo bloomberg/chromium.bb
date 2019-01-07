@@ -11,7 +11,6 @@
 
 #include "content/common/appcache.mojom.h"
 #include "content/common/appcache_interfaces.h"
-#include "content/renderer/appcache/appcache_backend_proxy.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -25,7 +24,7 @@ class AppCacheFrontendImpl : public mojom::AppCacheFrontend {
 
   void Bind(mojom::AppCacheFrontendRequest request);
 
-  AppCacheBackendProxy* backend_proxy() { return &backend_proxy_; }
+  mojom::AppCacheBackend* backend_proxy();
 
  private:
   // mojom::AppCacheFrontend
@@ -48,7 +47,7 @@ class AppCacheFrontendImpl : public mojom::AppCacheFrontend {
       int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
 
-  AppCacheBackendProxy backend_proxy_;
+  mojom::AppCacheBackendPtr backend_ptr_;
   mojo::Binding<mojom::AppCacheFrontend> binding_;
 };
 
