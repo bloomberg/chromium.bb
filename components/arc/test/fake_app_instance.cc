@@ -498,6 +498,17 @@ void FakeAppInstance::RequestShortcutIcon(
   }
 }
 
+void FakeAppInstance::RequestPackageIcon(const std::string& package_name,
+                                         int dimension,
+                                         bool normalize,
+                                         RequestPackageIconCallback callback) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  std::string png_data_as_string;
+  GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
+  std::move(callback).Run(std::vector<uint8_t>(png_data_as_string.begin(),
+                                               png_data_as_string.end()));
+}
+
 void FakeAppInstance::RemoveCachedIcon(const std::string& icon_resource_id) {}
 
 }  // namespace arc
