@@ -56,9 +56,8 @@ struct BLINK_COMMON_EXPORT Manifest {
     // The special value "any" is represented by gfx::Size(0, 0).
     std::vector<gfx::Size> sizes;
 
-    // Empty if the field was not present or not of type "string". Defaults to
-    // a vector with a single value, IconPurpose::ANY, for all other parsing
-    // exceptions.
+    // Never empty. Defaults to a vector with a single value, IconPurpose::ANY,
+    // if not explicitly specified in the manifest.
     std::vector<Purpose> purpose;
   };
 

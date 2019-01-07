@@ -904,8 +904,10 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   const std::string kPurposeParseStringError =
       "property 'purpose' ignored, type string expected.";
   const std::string kPurposeInvalidValueError =
-      "found icon with invalid purpose. "
-      "Using default value 'any'.";
+      "found icon with no valid purpose; ignoring it.";
+  const std::string kSomeInvalidPurposeError =
+      "found icon with one or more invalid purposes; those purposes are "
+      "ignored.";
 
   // Smoke test.
   {
@@ -1006,19 +1008,30 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     blink::Manifest manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"badge notification\" } ] }");
+        "\"purpose\": \"badge fizzbuzz\" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
               blink::Manifest::ImageResource::Purpose::BADGE);
     ASSERT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
+    EXPECT_EQ(kSomeInvalidPurposeError, errors()[0]);
   }
 
-  // 'any' is added when developer-supplied purpose is invalid.
+  // If developer-supplied purpose is invalid, entire icon is removed.
   {
     blink::Manifest manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"notification\" } ] }");
+        "\"purpose\": \"fizzbuzz\" } ] }");
+    ASSERT_EQ(0u, manifest.icons.size());
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
+  }
+
+  // Two icons, one with an invalid purpose and the other normal.
+  {
+    blink::Manifest manifest = ParseManifest(
+        "{ \"icons\": [ {\"src\": \"\", \"purpose\": \"fizzbuzz\" }, "
+        "               {\"src\": \"\" }] }");
+    ASSERT_EQ(1u, manifest.icons.size());
     ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
               blink::Manifest::ImageResource::Purpose::ANY);
