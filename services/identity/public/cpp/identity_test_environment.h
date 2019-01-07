@@ -142,6 +142,12 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // NOTE: See disclaimer at top of file re: direct usage.
   void RemoveRefreshTokenForAccount(const std::string& account_id);
 
+  // Updates the persistent auth error set on |account_id| which must be a known
+  // account, i.e., an account with a refresh token.
+  void UpdatePersistentErrorOfRefreshTokenForAccount(
+      const std::string& account_id,
+      const GoogleServiceAuthError& auth_error);
+
   // Puts the given accounts into the Gaia cookie, replacing any previous
   // accounts. Blocks until the accounts have been set.
   void SetCookieAccounts(const std::vector<CookieParams>& cookie_accounts);
