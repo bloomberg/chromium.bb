@@ -98,6 +98,13 @@ void BackgroundFetchDelegateImpl::JobDetails::MarkJobAsStarted() {
     job_state = State::kStartedButPaused;
 }
 
+void BackgroundFetchDelegateImpl::JobDetails::UpdateJobOnDownloadComplete() {
+  fetch_description->completed_parts++;
+  in_progress_parts_size = 0u;
+  if (fetch_description->completed_parts == fetch_description->total_parts)
+    job_state = State::kDownloadsComplete;
+}
+
 void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   DCHECK_GT(fetch_description->total_parts, 0);
 
@@ -106,10 +113,9 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     // If we have completed all downloads, update progress max to
     // completed_parts_size in case total_parts_size was set too high. This
     // avoid unnecessary jumping in the progress bar.
-    offline_item.progress.max =
-        (fetch_description->completed_parts == fetch_description->total_parts)
-            ? fetch_description->completed_parts_size
-            : fetch_description->total_parts_size;
+    offline_item.progress.max = job_state == State::kDownloadsComplete
+                                    ? fetch_description->completed_parts_size
+                                    : fetch_description->total_parts_size;
   } else {
     offline_item.progress.value = fetch_description->completed_parts;
     offline_item.progress.max = fetch_description->total_parts;
@@ -124,19 +130,22 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   offline_item.is_resumable = true;
 
   using OfflineItemState = offline_items_collection::OfflineItemState;
-  if (job_state == State::kCancelled) {
-    offline_item.state = OfflineItemState::CANCELLED;
-  } else if (fetch_description->completed_parts ==
-             fetch_description->total_parts) {
-    // This includes cases when the download failed, or completed but the
-    // response was an HTTP error, e.g. 404.
-    offline_item.state = OfflineItemState::COMPLETE;
-    offline_item.is_openable = true;
-  } else if (job_state == State::kPendingWillStartPaused ||
-             job_state == State::kStartedButPaused) {
-    offline_item.state = OfflineItemState::PAUSED;
-  } else {
-    offline_item.state = OfflineItemState::IN_PROGRESS;
+  switch (job_state) {
+    case State::kCancelled:
+      offline_item.state = OfflineItemState::CANCELLED;
+      break;
+    case State::kDownloadsComplete:
+      // This includes cases when the download failed, or completed but the
+      // response was an HTTP error, e.g. 404.
+      offline_item.state = OfflineItemState::COMPLETE;
+      offline_item.is_openable = true;
+      break;
+    case State::kPendingWillStartPaused:
+    case State::kStartedButPaused:
+      offline_item.state = OfflineItemState::PAUSED;
+      break;
+    default:
+      offline_item.state = OfflineItemState::IN_PROGRESS;
   }
 }
 
@@ -352,6 +361,17 @@ void BackgroundFetchDelegateImpl::UpdateUI(
     job_details.offline_item.refresh_visuals = true;
   }
 
+  bool should_update_visuals = job_details.offline_item.refresh_visuals;
+#if !defined(OS_ANDROID)
+  should_update_visuals = false;
+#endif
+
+  if (!should_update_visuals) {
+    // Notify the client that the UI updates have been handed over.
+    if (client())
+      client()->OnUIUpdated(job_unique_id);
+  }
+
   UpdateOfflineItemAndUpdateObservers(&job_details);
 }
 
@@ -423,9 +443,8 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  ++job_details.fetch_description->completed_parts;
-  job_details.in_progress_parts_size = 0u;
 
+  job_details.UpdateJobOnDownloadComplete();
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   // The client cancelled or aborted the download so no need to notify it.
@@ -457,8 +476,7 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  ++job_details.fetch_description->completed_parts;
-  job_details.in_progress_parts_size = 0u;
+  job_details.UpdateJobOnDownloadComplete();
 
   job_details.fetch_description->completed_parts_size +=
       profile_->IsOffTheRecord() ? result->blob_handle->size()
@@ -617,9 +635,14 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
       std::make_unique<offline_items_collection::OfflineItemVisuals>();
   auto it = job_details_map_.find(id.id);
   if (it != job_details_map_.end()) {
+    auto& job_details = it->second;
     visuals->icon =
-        gfx::Image::CreateFrom1xBitmap(it->second.fetch_description->icon);
-    it->second.offline_item.refresh_visuals = false;
+        gfx::Image::CreateFrom1xBitmap(job_details.fetch_description->icon);
+    job_details.offline_item.refresh_visuals = false;
+    if (client() &&
+        job_details.job_state == JobDetails::State::kDownloadsComplete) {
+      client()->OnUIUpdated(id.id);
+    }
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

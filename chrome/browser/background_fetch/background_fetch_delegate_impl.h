@@ -139,7 +139,10 @@ class BackgroundFetchDelegateImpl
       kPendingWillStartDownloading,
       kStartedButPaused,
       kStartedAndDownloading,
+      // The job was aborted.
       kCancelled,
+      // All requests were processed (either succeeded or failed).
+      kDownloadsComplete,
     };
 
     JobDetails(JobDetails&&);
@@ -151,6 +154,7 @@ class BackgroundFetchDelegateImpl
 
     void UpdateOfflineItem();
     void MarkJobAsStarted();
+    void UpdateJobOnDownloadComplete();
 
     // Returns how many bytes have been processed by the Download Service so
     // far.

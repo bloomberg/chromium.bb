@@ -180,7 +180,9 @@ void MockBackgroundFetchDelegate::MarkJobComplete(
 void MockBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {}
+    const base::Optional<SkBitmap>& icon) {
+  client()->OnUIUpdated(job_unique_id);
+}
 
 void MockBackgroundFetchDelegate::RegisterResponse(
     const GURL& url,

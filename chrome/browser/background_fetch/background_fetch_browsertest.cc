@@ -671,6 +671,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchesRunToCompletionAndUpdateTitle_Fetched) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletion()", "backgroundfetchsuccess"));
+  EXPECT_EQ(offline_content_provider_observer_->latest_item().state,
+            offline_items_collection::OfflineItemState::COMPLETE);
+
   base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,
@@ -684,6 +687,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchesRunToCompletionAndUpdateTitle_Failed) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletionWithMissingResource()", "backgroundfetchfail"));
+  EXPECT_EQ(offline_content_provider_observer_->latest_item().state,
+            offline_items_collection::OfflineItemState::COMPLETE);
+
   base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,

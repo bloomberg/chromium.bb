@@ -250,8 +250,8 @@ void BackgroundFetchContext::UpdateUI(
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delegate_proxy_.UpdateUI(registration_id.unique_id(), title, icon);
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
+  delegate_proxy_.UpdateUI(registration_id.unique_id(), title, icon,
+                           std::move(callback));
 }
 
 void BackgroundFetchContext::Abort(

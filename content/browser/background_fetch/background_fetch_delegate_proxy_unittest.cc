@@ -303,7 +303,8 @@ TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   EXPECT_TRUE(controller.request_started_);
   EXPECT_TRUE(controller.request_completed_);
 
-  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt);
+  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt,
+                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(delegate_.ui_update_count_, 1);
 }

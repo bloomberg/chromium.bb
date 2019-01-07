@@ -211,6 +211,7 @@ class BackgroundFetchDelegateProxy::Core
       std::unique_ptr<content::BackgroundFetchResponse> response) override;
   void OnUIActivated(const std::string& unique_id) override;
   void OnDelegateShutdown() override;
+  void OnUIUpdated(const std::string& unique_id) override;
   void GetUploadData(
       const std::string& job_unique_id,
       const std::string& download_guid,
@@ -285,6 +286,16 @@ void BackgroundFetchDelegateProxy::Core::OnUIActivated(
 
 void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
   delegate_ = nullptr;
+}
+
+void BackgroundFetchDelegateProxy::Core::OnUIUpdated(
+    const std::string& job_unique_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&BackgroundFetchDelegateProxy::DidUpdateUI, io_parent_,
+                     job_unique_id));
 }
 
 void BackgroundFetchDelegateProxy::Core::GetUploadData(
@@ -413,8 +424,19 @@ void BackgroundFetchDelegateProxy::StartRequest(
 void BackgroundFetchDelegateProxy::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {
+    const base::Optional<SkBitmap>& icon,
+    blink::mojom::BackgroundFetchService::UpdateUICallback update_ui_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end()) {
+    std::move(update_ui_callback)
+        .Run(blink::mojom::BackgroundFetchError::INVALID_ID);
+    return;
+  }
+
+  JobDetails& job_details = job_details_iter->second;
+  job_details.update_ui_callback = std::move(update_ui_callback);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&Core::UpdateUI, ui_core_ptr_,
@@ -484,6 +506,19 @@ void BackgroundFetchDelegateProxy::DidActivateUI(
     const std::string& job_unique_id) {
   DCHECK(click_event_dispatcher_callback_);
   click_event_dispatcher_callback_.Run(job_unique_id);
+}
+
+void BackgroundFetchDelegateProxy::DidUpdateUI(
+    const std::string& job_unique_id) {
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+
+  DCHECK(job_details.update_ui_callback);
+  std::move(job_details.update_ui_callback)
+      .Run(blink::mojom::BackgroundFetchError::NONE);
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadUpdated(
