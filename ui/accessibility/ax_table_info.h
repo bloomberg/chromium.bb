@@ -84,7 +84,7 @@ class AX_EXPORT AXTableInfo {
   std::unordered_map<int32_t, int32_t> cell_id_to_index;
 
   // Map from each row's node ID to its row index.
-  base::hash_map<int32_t, int32_t> row_id_to_index;
+  std::unordered_map<int32_t, int32_t> row_id_to_index;
 
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.

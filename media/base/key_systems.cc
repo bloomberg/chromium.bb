@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -285,11 +286,11 @@ class KeySystemsImpl : public KeySystems {
   bool IsValidMimeTypeCodecsCombination(const std::string& mime_type,
                                         SupportedCodecs codecs) const;
 
-  typedef base::hash_map<std::string, std::unique_ptr<KeySystemProperties>>
+  typedef std::unordered_map<std::string, std::unique_ptr<KeySystemProperties>>
       KeySystemPropertiesMap;
-  typedef base::hash_map<std::string, SupportedCodecs> MimeTypeToCodecsMap;
-  typedef base::hash_map<std::string, EmeCodec> CodecMap;
-  typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
+  typedef std::unordered_map<std::string, SupportedCodecs> MimeTypeToCodecsMap;
+  typedef std::unordered_map<std::string, EmeCodec> CodecMap;
+  typedef std::unordered_map<std::string, EmeInitDataType> InitDataTypesMap;
 
   // TODO(sandersd): Separate container enum from codec mask value.
   // http://crbug.com/417440
