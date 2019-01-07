@@ -64,13 +64,9 @@ class AccountInvestigator : public KeyedService,
 
   // Internal implementation of OnAccountsInCookieUpdated. It is public given
   // that it is called directly by unittests.
-  //
-  // TODO(https://crbug.com/919482): Remove this method when AccountInvestigator
-  // switches the whole logic from ListedAccount to AccountInfo, and
-  // OnAccountsInCookieUpdated can be called directly.
   void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts,
       const GoogleServiceAuthError& error);
 
  private:
@@ -85,16 +81,16 @@ class AccountInvestigator : public KeyedService,
   // Calculate a hash of the listed accounts. Order of accounts should not
   // affect the hashed values, but signed in and out status should.
   static std::string HashAccounts(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts);
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts);
 
   // Compares the |info| object, which should correspond to the currently or
   // potentially signed into Chrome account, to the various account(s) in the
   // given cookie jar.
   static signin_metrics::AccountRelation DiscernRelation(
       const AccountInfo& info,
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts);
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts);
 
   // Tries to perform periodic reporting, potentially performing it now if the
   // cookie information is cached, otherwise sets things up to perform this
@@ -103,23 +99,22 @@ class AccountInvestigator : public KeyedService,
 
   // Performs periodic reporting with the given cookie jar data and restarts
   // the periodic reporting timer.
-  void DoPeriodicReport(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts);
+  void DoPeriodicReport(const std::vector<AccountInfo>& signed_in_accounts,
+                        const std::vector<AccountInfo>& signed_out_accounts);
 
   // Performs the reporting that's shared between the periodic case and the
   // on change case.
   void SharedCookieJarReport(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts,
       const base::Time now,
       const signin_metrics::ReportingType type);
 
   // Performs only the account relation reporting, which means comparing the
   // signed in account to the cookie jar accounts(s).
   void SignedInAccountRelationReport(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts,
       signin_metrics::ReportingType type);
 
   PrefService* pref_service_;
