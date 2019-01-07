@@ -634,3 +634,20 @@ Good::Good() = default;
 * Defaulted functions are constexpr if the implicit version would have been (and
   if defaulted in the class).
 * Using `=default` consistently helps readers identify customized operations.
+
+## Comment style
+
+It's very common to refer to class/function/variable names in comments. The
+following style is recommended for consistency, readability and convenience.
+
+* Class name: FooClass
+* Function name: FooFunction()
+* Variable name: |foo|, or |foo_| for member variable. Using |foo| notation also
+  gives nice clickable links in code search!
+
+Here's an example:
+
+```cpp
+// FooImpl implements FooBase class and uses |foo_impl| to do most of the work
+// in FooFunction().
+```
