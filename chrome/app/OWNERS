@@ -50,4 +50,5 @@ per-file chrome_manifest.json=file://ipc/SECURITY_OWNERS
 per-file chrome_renderer_manifest.json=set noparent
 per-file chrome_renderer_manifest.json=file://ipc/SECURITY_OWNERS
 
-per-file main_dll_loader_win.cc=scottmg@chromium.org
+per-file main_dll_loader_win.cc=brucedawson@chromium.org
+per-file main_dll_loader_win.cc=wfh@chromium.org
