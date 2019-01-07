@@ -57,15 +57,6 @@ rtc_static_library("rtc_xmllite") {
   all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 }
 
-config("rtc_xmpp_warnings_config") {
-  # GN orders flags on a target before flags from configs. The default config
-  # adds these flags so to cancel them out they need to come from a config and
-  # cannot be on the target directly.
-  if (is_android) {
-    cflags = [ "-Wno-error" ]
-  }
-}
-
 rtc_static_library("rtc_xmpp") {
   visibility = [ "*" ]
   cflags = []
@@ -108,7 +99,6 @@ rtc_static_library("rtc_xmpp") {
     ":rtc_task_runner",
     "//third_party/expat",
   ]
-  configs += [ ":rtc_xmpp_warnings_config" ]
   all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 
   if (is_nacl) {
