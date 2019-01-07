@@ -216,6 +216,9 @@ void TabDragControllerTest::AddTabAndResetBrowser(Browser* browser) {
   AddBlankTabAndShow(browser);
   StopAnimating(GetTabStripForBrowser(browser));
   ResetIDs(browser->tab_strip_model(), 0);
+#if defined(OS_CHROMEOS)
+  aura::test::WaitForAllChangesToComplete();
+#endif
 }
 
 Browser* TabDragControllerTest::CreateAnotherBrowserAndResize() {
@@ -232,6 +235,9 @@ Browser* TabDragControllerTest::CreateAnotherBrowserAndResize() {
   browser()->window()->SetBounds(browser_rect);
   browser_rect.set_x(browser_rect.right());
   browser2->window()->SetBounds(browser_rect);
+#if defined(OS_CHROMEOS)
+  aura::test::WaitForAllChangesToComplete();
+#endif
   return browser2;
 }
 
