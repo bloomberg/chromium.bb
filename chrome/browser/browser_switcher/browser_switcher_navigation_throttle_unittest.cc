@@ -13,16 +13,16 @@
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::MockNavigationHandle;
 using content::NavigationThrottle;
-using content::NavigationHandle;
 
 using ::testing::Return;
 using ::testing::_;
@@ -49,22 +49,6 @@ class MockBrowserSwitcherSitelist : public BrowserSwitcherSitelist {
   MOCK_METHOD1(SetExternalSitelist, void(ParsedXml&&));
 };
 
-class MockBrowserClient : public content::ContentBrowserClient {
- public:
-  MockBrowserClient() = default;
-  ~MockBrowserClient() override = default;
-
-  // Only construct a BrowserSwitcherNavigationThrottle so that we can test it
-  // in isolation.
-  std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
-      NavigationHandle* handle) override {
-    std::vector<std::unique_ptr<NavigationThrottle>> throttles;
-    throttles.push_back(
-        BrowserSwitcherNavigationThrottle::MaybeCreateThrottleFor(handle));
-    return throttles;
-  }
-};
-
 }  // namespace
 
 class BrowserSwitcherNavigationThrottleTest
@@ -74,7 +58,6 @@ class BrowserSwitcherNavigationThrottleTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    original_client_ = content::SetBrowserClientForTesting(&client_);
 
     BrowserSwitcherService* service =
         BrowserSwitcherServiceFactory::GetForBrowserContext(
@@ -91,41 +74,42 @@ class BrowserSwitcherNavigationThrottleTest
     service->SetSitelistForTesting(std::move(sitelist));
   }
 
-  void TearDown() override {
-    content::SetBrowserClientForTesting(original_client_);
-    ChromeRenderViewHostTestHarness::TearDown();
+  std::unique_ptr<MockNavigationHandle> CreateMockNavigationHandle(
+      const GURL& url) {
+    return std::make_unique<MockNavigationHandle>(url, main_rfh());
   }
 
-  std::unique_ptr<NavigationHandle> CreateNavigationHandle(const GURL& url) {
-    return NavigationHandle::CreateNavigationHandleForTesting(url, main_rfh());
+  std::unique_ptr<NavigationThrottle> CreateNavigationThrottle(
+      content::NavigationHandle* handle) {
+    return BrowserSwitcherNavigationThrottle::MaybeCreateThrottleFor(handle);
   }
 
   MockAlternativeBrowserLauncher* launcher() { return launcher_; }
   MockBrowserSwitcherSitelist* sitelist() { return sitelist_; }
 
  private:
-  MockBrowserClient client_;
-  content::ContentBrowserClient* original_client_;
-
   MockAlternativeBrowserLauncher* launcher_;
   MockBrowserSwitcherSitelist* sitelist_;
 };
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, ShouldIgnoreNavigation) {
   EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(false));
-  std::unique_ptr<NavigationHandle> handle =
-      CreateNavigationHandle(GURL("https://example.com/"));
-  EXPECT_EQ(NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting());
+  std::unique_ptr<MockNavigationHandle> handle =
+      CreateMockNavigationHandle(GURL("https://example.com/"));
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateNavigationThrottle(handle.get());
+  EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest());
 }
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnStartRequest) {
   EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(true));
   EXPECT_CALL(*launcher(), Launch(_)).WillOnce(Return(true));
-  std::unique_ptr<NavigationHandle> handle =
-      CreateNavigationHandle(GURL("https://example.com/"));
+  std::unique_ptr<MockNavigationHandle> handle =
+      CreateMockNavigationHandle(GURL("https://example.com/"));
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateNavigationThrottle(handle.get());
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            handle->CallWillStartRequestForTesting());
+            throttle->WillStartRequest());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -134,25 +118,25 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnRedirectRequest) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
   EXPECT_CALL(*launcher(), Launch(_)).WillOnce(Return(true));
-  std::unique_ptr<NavigationHandle> handle =
-      CreateNavigationHandle(GURL("https://yahoo.com/"));
-  EXPECT_EQ(NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting());
+  std::unique_ptr<MockNavigationHandle> handle =
+      CreateMockNavigationHandle(GURL("https://yahoo.com/"));
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateNavigationThrottle(handle.get());
+  EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest());
+  handle->set_url(GURL("https://bing.com/"));
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            handle->CallWillRedirectRequestForTesting(
-                GURL("https://bing.com/"), /* new_method_is_post */ false,
-                GURL("https://yahoo.com/"),
-                /* new_is_external_protocol */ false));
+            throttle->WillRedirectRequest());
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, FallsBackToLoadingNormally) {
   EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(true));
   EXPECT_CALL(*launcher(), Launch(_)).WillOnce(Return(false));
-  std::unique_ptr<NavigationHandle> handle =
-      CreateNavigationHandle(GURL("https://yahoo.com/"));
-  EXPECT_EQ(NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting());
+  std::unique_ptr<MockNavigationHandle> handle =
+      CreateMockNavigationHandle(GURL("https://yahoo.com/"));
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateNavigationThrottle(handle.get());
+  EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest());
 }
 
 }  // namespace browser_switcher

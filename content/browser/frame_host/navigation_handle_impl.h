@@ -139,23 +139,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const net::SSLInfo& GetSSLInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
-  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting()
-      override;
-  NavigationThrottle::ThrottleCheckResult CallWillRedirectRequestForTesting(
-      const GURL& new_url,
-      bool new_method_is_post,
-      const GURL& new_referrer_url,
-      bool new_is_external_protocol) override;
-  NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
-      RenderFrameHost* render_frame_host,
-      base::Optional<net::SSLInfo> ssl_info) override;
-  NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
-      RenderFrameHost* render_frame_host,
-      const std::string& raw_response_header,
-      bool was_cached,
-      const net::ProxyServer& proxy_server) override;
-  void CallDidCommitNavigationForTesting(const GURL& url) override;
-  void CallResumeForTesting() override;
   bool IsDeferredForTesting() override;
   bool WasStartedFromContextMenu() const override;
   const GURL& GetSearchableFormURL() override;
@@ -184,6 +167,20 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void Resume(NavigationThrottle* resuming_throttle);
   void CancelDeferredNavigation(NavigationThrottle* cancelling_throttle,
                                 NavigationThrottle::ThrottleCheckResult result);
+
+  // Simulates various calls on the NavigationHandle for testing.
+  // DEPRECATED: use NavigationSimulator to simulate a full navigation, or
+  // MockNavigationHandle.
+  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting();
+  NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
+      RenderFrameHost* render_frame_host,
+      const std::string& raw_response_header,
+      bool was_cached,
+      const net::ProxyServer& proxy_server);
+
+  // Simulates the navigation resuming. Most callers should just let the
+  // deferring NavigationThrottle do the resuming.
+  void CallResumeForTesting();
 
   NavigationData* GetNavigationData() override;
   void RegisterSubresourceOverride(

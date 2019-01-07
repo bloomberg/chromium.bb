@@ -527,37 +527,6 @@ NavigationHandleImpl::CallWillStartRequestForTesting() {
 }
 
 NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::CallWillRedirectRequestForTesting(
-    const GURL& new_url,
-    bool new_method_is_post,
-    const GURL& new_referrer_url,
-    bool new_is_external_protocol) {
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillRedirectRequest(new_url, new_method_is_post ? "POST" : "GET",
-                      new_referrer_url, new_is_external_protocol,
-                      scoped_refptr<net::HttpResponseHeaders>(),
-                      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN, nullptr,
-                      base::Bind(&UpdateThrottleCheckResult, &result));
-
-  // Reset the callback to ensure it will not be called later.
-  complete_callback_.Reset();
-  return result;
-}
-
-NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::CallWillFailRequestForTesting(
-    RenderFrameHost* render_frame_host,
-    base::Optional<net::SSLInfo> ssl_info) {
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillFailRequest(static_cast<RenderFrameHostImpl*>(render_frame_host),
-                  ssl_info, base::Bind(&UpdateThrottleCheckResult, &result));
-
-  // Reset the callback to ensure it will not be called later.
-  complete_callback_.Reset();
-  return result;
-}
-
-NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillProcessResponseForTesting(
     RenderFrameHost* render_frame_host,
     const std::string& raw_response_headers,
@@ -579,25 +548,6 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
   return result;
-}
-
-void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-
-  params.nav_entry_id = 1;
-  params.url = url;
-  params.referrer = content::Referrer();
-  params.transition = ui::PAGE_TRANSITION_TYPED;
-  params.redirects = std::vector<GURL>();
-  params.should_update_history = false;
-  params.did_create_new_entry = false;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url);
-  params.contents_mime_type = std::string("text/html");
-
-  DidCommitNavigation(params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
-                      render_frame_host_);
 }
 
 void NavigationHandleImpl::CallResumeForTesting() {

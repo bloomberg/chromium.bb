@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/bloated_renderer/bloated_renderer_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/page_importance_signals.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,36 +26,30 @@ class BloatedRendererTabHelperTest : public ChromeRenderViewHostTestHarness {
 TEST_F(BloatedRendererTabHelperTest, DetectReload) {
   EXPECT_EQ(BloatedRendererTabHelper::State::kInactive, tab_helper_->state_);
   tab_helper_->state_ = BloatedRendererTabHelper::State::kRequestingReload;
-  auto reload_navigation =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), web_contents()->GetMainFrame());
-  tab_helper_->DidStartNavigation(reload_navigation.get());
+  content::MockNavigationHandle reload_navigation;
+  tab_helper_->DidStartNavigation(&reload_navigation);
   EXPECT_EQ(BloatedRendererTabHelper::State::kStartedNavigation,
             tab_helper_->state_);
-  EXPECT_EQ(reload_navigation->GetNavigationId(),
+  EXPECT_EQ(reload_navigation.GetNavigationId(),
             tab_helper_->saved_navigation_id_);
-  tab_helper_->DidFinishNavigation(reload_navigation.get());
+  tab_helper_->DidFinishNavigation(&reload_navigation);
   EXPECT_EQ(BloatedRendererTabHelper::State::kInactive, tab_helper_->state_);
 }
 
 TEST_F(BloatedRendererTabHelperTest, IgnoreUnrelatedNavigation) {
   EXPECT_EQ(BloatedRendererTabHelper::State::kInactive, tab_helper_->state_);
   tab_helper_->state_ = BloatedRendererTabHelper::State::kRequestingReload;
-  auto reload_navigation =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), web_contents()->GetMainFrame());
-  tab_helper_->DidStartNavigation(reload_navigation.get());
+  content::MockNavigationHandle reload_navigation;
+  tab_helper_->DidStartNavigation(&reload_navigation);
   EXPECT_EQ(BloatedRendererTabHelper::State::kStartedNavigation,
             tab_helper_->state_);
-  EXPECT_EQ(reload_navigation->GetNavigationId(),
+  EXPECT_EQ(reload_navigation.GetNavigationId(),
             tab_helper_->saved_navigation_id_);
-  auto unrelated_navigation =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), web_contents()->GetMainFrame());
-  tab_helper_->DidFinishNavigation(unrelated_navigation.get());
+  content::MockNavigationHandle unrelated_navigation;
+  tab_helper_->DidFinishNavigation(&unrelated_navigation);
   EXPECT_EQ(BloatedRendererTabHelper::State::kStartedNavigation,
             tab_helper_->state_);
-  EXPECT_EQ(reload_navigation->GetNavigationId(),
+  EXPECT_EQ(reload_navigation.GetNavigationId(),
             tab_helper_->saved_navigation_id_);
 }
 

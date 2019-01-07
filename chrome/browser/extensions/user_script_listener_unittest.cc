@@ -25,6 +25,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -98,19 +99,9 @@ class UserScriptListenerTest : public testing::Test {
         profile_, std::move(instance));
   }
 
+  void MarkNavigationResumed() { was_navigation_resumed_ = true; }
+
  protected:
-  NavigationThrottle::ThrottleCheckResult StartTestRequest(
-      const std::string& url_string) {
-    handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(url_string), web_contents_->GetMainFrame());
-
-    std::unique_ptr<NavigationThrottle> throttle =
-        listener_.CreateNavigationThrottle(handle_.get());
-    if (throttle)
-      handle_->RegisterThrottleForTesting(std::move(throttle));
-    return handle_->CallWillStartRequestForTesting();
-  }
-
   void LoadTestExtension() {
     base::FilePath test_dir;
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
@@ -132,14 +123,24 @@ class UserScriptListenerTest : public testing::Test {
                               UnloadedExtensionReason::DISABLE);
   }
 
+  std::unique_ptr<NavigationThrottle> CreateListenerNavigationThrottle(
+      content::NavigationHandle* handle) {
+    std::unique_ptr<NavigationThrottle> throttle =
+        listener_.CreateNavigationThrottle(handle);
+    throttle->set_resume_callback_for_testing(
+        base::BindRepeating(&UserScriptListenerTest::MarkNavigationResumed,
+                            base::Unretained(this)));
+    return throttle;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   UserScriptListener listener_;
   TestingProfile* profile_ = nullptr;
   ExtensionService* service_ = nullptr;
+  bool was_navigation_resumed_ = false;
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<content::NavigationHandle> handle_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
@@ -150,46 +151,60 @@ namespace {
 TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   LoadTestExtension();
 
-  EXPECT_EQ(NavigationThrottle::DEFER, StartTestRequest(kMatchingUrl));
+  content::MockNavigationHandle handle(GURL(kMatchingUrl),
+                                       web_contents_->GetMainFrame());
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateListenerNavigationThrottle(&handle);
+  EXPECT_EQ(NavigationThrottle::DEFER, throttle->WillStartRequest());
 
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handle_->IsDeferredForTesting());
+  EXPECT_TRUE(was_navigation_resumed_);
 }
 
 TEST_F(UserScriptListenerTest, DelayAndUnload) {
   LoadTestExtension();
 
-  EXPECT_EQ(NavigationThrottle::DEFER, StartTestRequest(kMatchingUrl));
+  content::MockNavigationHandle handle(GURL(kMatchingUrl),
+                                       web_contents_->GetMainFrame());
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateListenerNavigationThrottle(&handle);
+  EXPECT_EQ(NavigationThrottle::DEFER, throttle->WillStartRequest());
 
   UnloadTestExtension();
   base::RunLoop().RunUntilIdle();
 
   // This is still not enough to start delayed requests. We have to notify the
   // listener that the user scripts have been updated.
-  EXPECT_TRUE(handle_->IsDeferredForTesting());
+  EXPECT_FALSE(was_navigation_resumed_);
 
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handle_->IsDeferredForTesting());
+  EXPECT_TRUE(was_navigation_resumed_);
 }
 
 TEST_F(UserScriptListenerTest, NoDelayNoExtension) {
-  EXPECT_EQ(NavigationThrottle::PROCEED, StartTestRequest(kMatchingUrl));
-  EXPECT_FALSE(handle_->IsDeferredForTesting());
+  content::MockNavigationHandle handle(GURL(kMatchingUrl),
+                                       web_contents_->GetMainFrame());
+  std::unique_ptr<NavigationThrottle> throttle =
+      listener_.CreateNavigationThrottle(&handle);
+  EXPECT_EQ(nullptr, throttle);
 }
 
 TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
   LoadTestExtension();
 
-  EXPECT_EQ(NavigationThrottle::PROCEED, StartTestRequest(kNotMatchingUrl));
-  EXPECT_FALSE(handle_->IsDeferredForTesting());
+  content::MockNavigationHandle handle(GURL(kNotMatchingUrl),
+                                       web_contents_->GetMainFrame());
+  std::unique_ptr<NavigationThrottle> throttle =
+      listener_.CreateNavigationThrottle(&handle);
+  EXPECT_EQ(nullptr, throttle);
 }
 
 TEST_F(UserScriptListenerTest, MultiProfile) {
@@ -209,7 +224,11 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   registry->AddEnabled(extension);
   registry->TriggerOnLoaded(extension.get());
 
-  EXPECT_EQ(NavigationThrottle::DEFER, StartTestRequest(kMatchingUrl));
+  content::MockNavigationHandle handle(GURL(kMatchingUrl),
+                                       web_contents_->GetMainFrame());
+  std::unique_ptr<NavigationThrottle> throttle =
+      CreateListenerNavigationThrottle(&handle);
+  EXPECT_EQ(NavigationThrottle::DEFER, throttle->WillStartRequest());
 
   // When the first profile's user scripts are ready, the request should still
   // be blocked waiting for profile2.
@@ -218,7 +237,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(handle_->IsDeferredForTesting());
+  EXPECT_FALSE(was_navigation_resumed_);
 
   // After profile2 is ready, the request should proceed.
   content::NotificationService::current()->Notify(
@@ -226,7 +245,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       content::Source<Profile>(profile2),
       content::NotificationService::NoDetails());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(handle_->IsDeferredForTesting());
+  EXPECT_TRUE(was_navigation_resumed_);
 }
 
 // Test when the script updated notification occurs before the throttle's
@@ -234,11 +253,10 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 // throttles.
 TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   LoadTestExtension();
-  handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
-      GURL(kMatchingUrl), web_contents_->GetMainFrame());
-
+  content::MockNavigationHandle handle(GURL(kMatchingUrl),
+                                       web_contents_->GetMainFrame());
   std::unique_ptr<NavigationThrottle> throttle =
-      listener_.CreateNavigationThrottle(handle_.get());
+      listener_.CreateNavigationThrottle(&handle);
   ASSERT_TRUE(throttle);
 
   content::NotificationService::current()->Notify(

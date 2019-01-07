@@ -11,7 +11,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,10 +57,13 @@ class SecurityStateTabHelperHistogramTest
   }
 
   void StartFormSubmissionNavigation() {
-    std::unique_ptr<content::NavigationHandle> handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("http://example.test"), web_contents()->GetMainFrame(), true,
-            net::OK, false, false, ui::PAGE_TRANSITION_LINK, true);
+    content::MockNavigationHandle handle(GURL("http://example.test"),
+                                         web_contents()->GetMainFrame());
+    handle.set_is_form_submission(true);
+    helper_->DidStartNavigation(&handle);
+
+    handle.set_has_committed(true);
+    helper_->DidFinishNavigation(&handle);
   }
 
   void NavigateToHTTP() { NavigateAndCommit(GURL("http://example.test")); }

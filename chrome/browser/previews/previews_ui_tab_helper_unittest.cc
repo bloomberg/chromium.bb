@@ -38,6 +38,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_util.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -60,8 +61,11 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
     MockInfoBarService::CreateForWebContents(web_contents());
     PreviewsUITabHelper::CreateForWebContents(web_contents());
-    test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
+    test_handle_ = std::make_unique<content::MockNavigationHandle>(
         GURL(kTestUrl), main_rfh());
+    std::vector<GURL> redirect_chain;
+    redirect_chain.push_back(GURL(kTestUrl));
+    test_handle_->set_redirect_chain(redirect_chain);
     content::RenderFrameHostTester::For(main_rfh())
         ->InitializeRenderFrameIfNeeded();
 
@@ -105,19 +109,19 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SimulateWillProcessResponse() {
-    std::string headers("HTTP/1.1 200 OK\n\n");
-    test_handle_->CallWillProcessResponseForTesting(
-        main_rfh(),
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()),
-        false, net::ProxyServer::Direct());
     SimulateCommit();
   }
 
   void SimulateCommit() {
-    test_handle_->CallDidCommitNavigationForTesting(GURL(kTestUrl));
+    test_handle_->set_has_committed(true);
+    test_handle_->set_url(GURL(kTestUrl));
   }
 
-  void CallDidFinishNavigation() { test_handle_.reset(); }
+  void CallDidFinishNavigation() {
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    ui_tab_helper->DidFinishNavigation(test_handle_.get());
+  }
 
   previews::PreviewsUserData* CreatePreviewsUserData(int64_t page_id) {
     PreviewsUITabHelper* ui_tab_helper =
@@ -135,7 +139,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
       drp_test_context_;
 
  private:
-  std::unique_ptr<content::NavigationHandle> test_handle_;
+  std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
 TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
