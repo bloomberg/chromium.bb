@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
@@ -16,29 +16,29 @@ namespace chromeos {
 namespace tpm_util {
 
 // Returns whether Tpm is presented and enabled.
-CHROMEOS_EXPORT bool TpmIsEnabled();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool TpmIsEnabled();
 
 // Returns whether device has already been owned.
-CHROMEOS_EXPORT bool TpmIsOwned();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool TpmIsOwned();
 
 // Returns whether device is being owned (Tpm password is generating).
-CHROMEOS_EXPORT bool TpmIsBeingOwned();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool TpmIsBeingOwned();
 
-CHROMEOS_EXPORT bool InstallAttributesGet(const std::string& name,
-                                          std::string* value);
-CHROMEOS_EXPORT bool InstallAttributesSet(const std::string& name,
-                                          const std::string& value);
-CHROMEOS_EXPORT bool InstallAttributesFinalize();
-CHROMEOS_EXPORT bool InstallAttributesIsInvalid();
-CHROMEOS_EXPORT bool InstallAttributesIsFirstInstall();
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool InstallAttributesGet(const std::string& name, std::string* value);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool InstallAttributesSet(const std::string& name, const std::string& value);
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool InstallAttributesFinalize();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool InstallAttributesIsInvalid();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool InstallAttributesIsFirstInstall();
 
 // Checks if device is locked for Active Directory management.
-CHROMEOS_EXPORT bool IsActiveDirectoryLocked();
+COMPONENT_EXPORT(CHROMEOS_DBUS) bool IsActiveDirectoryLocked();
 
 // Sets install attributes for an Active Directory managed device and persists
 // them on disk.
-CHROMEOS_EXPORT bool LockDeviceActiveDirectoryForTesting(
-    const std::string& realm);
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+bool LockDeviceActiveDirectoryForTesting(const std::string& realm);
 
 }  // namespace tpm_util
 }  // namespace chromeos

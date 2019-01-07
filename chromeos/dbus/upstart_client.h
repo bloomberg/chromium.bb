@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -19,7 +19,7 @@ namespace chromeos {
 // UpstartClient is used to communicate with the com.ubuntu.Upstart
 // sevice. All methods should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT UpstartClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient : public DBusClient {
  public:
   ~UpstartClient() override;
 

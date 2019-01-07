@@ -13,7 +13,8 @@
 namespace chromeos {
 
 // FakeConciergeClient is a light mock of ConciergeClient used for testing.
-class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
+    : public ConciergeClient {
  public:
   FakeConciergeClient();
   ~FakeConciergeClient() override;

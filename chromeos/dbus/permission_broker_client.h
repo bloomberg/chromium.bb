@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace chromeos {
@@ -24,7 +24,8 @@ namespace chromeos {
 // which the user the browser runs under normally wouldn't have access to. For
 // more details on the permission broker see:
 // http://git.chromium.org/gitweb/?p=chromiumos/platform/permission_broker.git
-class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient
+    : public DBusClient {
  public:
   // The ResultCallback is used for both the RequestPathAccess and
   // RequestUsbAccess methods. Its boolean parameter represents the result of

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace base {
@@ -26,7 +26,7 @@ namespace chromeos {
 // org.freedesktop.ModemManager1.SMS service.  All methods should be
 // called from the origin thread (UI thread) which initializes the
 // DBusThreadManager instance.
-class CHROMEOS_EXPORT SMSClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SMSClient : public DBusClient {
  public:
   using GetAllCallback =
       base::OnceCallback<void(const base::DictionaryValue& sms)>;

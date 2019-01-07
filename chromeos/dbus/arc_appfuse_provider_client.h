@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -21,7 +21,8 @@ namespace chromeos {
 // service which provides ProxyFileDescriptor (aka appfuse) feature for ARC. All
 // methods should be called from the origin thread (UI thread) which initializes
 // the DBusThreadManager instance.
-class CHROMEOS_EXPORT ArcAppfuseProviderClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ArcAppfuseProviderClient
+    : public DBusClient {
  public:
   ArcAppfuseProviderClient();
   ~ArcAppfuseProviderClient() override;

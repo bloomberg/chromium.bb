@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -47,7 +47,7 @@ namespace chromeos {
 // CryptohomeClient is used to communicate with the Cryptohome service.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
  public:
   class Observer {
    public:

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 

@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
 // Structure to hold AudioNode data received from cras.
-struct CHROMEOS_EXPORT AudioNode {
+struct COMPONENT_EXPORT(CHROMEOS_DBUS) AudioNode {
   bool is_input = false;
   uint64_t id = 0;
   bool has_v2_stable_device_id = false;

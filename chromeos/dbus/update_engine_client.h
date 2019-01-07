@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/message.h"
@@ -21,7 +21,7 @@
 namespace chromeos {
 
 // UpdateEngineClient is used to communicate with the update engine.
-class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
  public:
   // Edges for state machine
   //    IDLE->CHECKING_FOR_UPDATE

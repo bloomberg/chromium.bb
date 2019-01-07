@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 
 namespace dbus {
 
@@ -53,7 +53,8 @@ using WaitForServiceToBeAvailableCallback =
     base::OnceCallback<void(bool service_is_available)>;
 
 // Returns an empty callback that does nothing.
-CHROMEOS_EXPORT VoidDBusMethodCallback EmptyVoidDBusMethodCallback();
+COMPONENT_EXPORT(CHROMEOS_DBUS)
+VoidDBusMethodCallback EmptyVoidDBusMethodCallback();
 
 }  // namespace chromeos
 

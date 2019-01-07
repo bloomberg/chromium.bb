@@ -7,14 +7,14 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/hammerd_client.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeHammerdClient : public HammerdClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeHammerdClient : public HammerdClient {
  public:
   FakeHammerdClient();
   ~FakeHammerdClient() override;

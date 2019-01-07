@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -137,7 +137,7 @@ enum RemountOption {
 };
 
 // A class to represent information about a disk sent from cros-disks.
-class CHROMEOS_EXPORT DiskInfo {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DiskInfo {
  public:
   DiskInfo(const std::string& device_path, dbus::Response* response);
   ~DiskInfo();
@@ -238,7 +238,7 @@ class CHROMEOS_EXPORT DiskInfo {
 };
 
 // A struct to represent information about a mount point sent from cros-disks.
-struct CHROMEOS_EXPORT MountEntry {
+struct COMPONENT_EXPORT(CHROMEOS_DBUS) MountEntry {
  public:
   MountEntry()
       : error_code_(MOUNT_ERROR_UNKNOWN), mount_type_(MOUNT_TYPE_INVALID) {
@@ -269,7 +269,7 @@ struct CHROMEOS_EXPORT MountEntry {
 // A class to make the actual DBus calls for cros-disks service.
 // This class only makes calls, result/error handling should be done
 // by callbacks.
-class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
  public:
   // A callback to handle the result of EnumerateDevices.
   // The argument is the enumerated device paths.

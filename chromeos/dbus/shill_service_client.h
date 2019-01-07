@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
@@ -33,7 +33,7 @@ namespace chromeos {
 // service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;

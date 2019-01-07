@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/timezone/timezone_request.h"
 #include "url/gurl.h"
 

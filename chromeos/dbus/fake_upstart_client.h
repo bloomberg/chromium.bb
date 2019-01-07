@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
  public:
   FakeUpstartClient();
   ~FakeUpstartClient() override;

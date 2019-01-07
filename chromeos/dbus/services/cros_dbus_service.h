@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
-#include "chromeos/chromeos_export.h"
 
 namespace dbus {
 class Bus;
@@ -25,7 +25,7 @@ namespace chromeos {
 // CrosDBusService is used to run a D-Bus service inside Chrome for Chrome OS.
 // It exports D-Bus methods through service provider classes that implement
 // CrosDBusService::ServiceProviderInterface.
-class CHROMEOS_EXPORT CrosDBusService {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDBusService {
  public:
   // CrosDBusService consists of service providers that implement this
   // interface.

@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 
 namespace chromeos {
 
 // A fake implementation of ShillIPConfigClient.
-class CHROMEOS_EXPORT FakeShillIPConfigClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillIPConfigClient
     : public ShillIPConfigClient,
       public ShillIPConfigClient::TestInterface {
  public:

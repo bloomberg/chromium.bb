@@ -12,7 +12,7 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeVirtualFileProviderClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeVirtualFileProviderClient
     : public VirtualFileProviderClient {
  public:
   FakeVirtualFileProviderClient();

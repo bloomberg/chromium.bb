@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -32,7 +32,7 @@ class UpgradeArcContainerRequest;
 namespace chromeos {
 
 // SessionManagerClient is used to communicate with the session manager.
-class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient : public DBusClient {
  public:
   // The result type received from session manager on request to retrieve the
   // policy. Used to define the buckets for an enumerated UMA histogram.

@@ -9,13 +9,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeModemMessagingClient : public ModemMessagingClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeModemMessagingClient
+    : public ModemMessagingClient {
  public:
   FakeModemMessagingClient();
   ~FakeModemMessagingClient() override;

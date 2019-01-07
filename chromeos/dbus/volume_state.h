@@ -9,11 +9,11 @@
 
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
-struct CHROMEOS_EXPORT VolumeState {
+struct COMPONENT_EXPORT(CHROMEOS_DBUS) VolumeState {
   int32_t output_volume;
   bool output_system_mute;
   int32_t input_gain;

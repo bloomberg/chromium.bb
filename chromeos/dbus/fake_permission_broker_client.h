@@ -17,7 +17,7 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakePermissionBrokerClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePermissionBrokerClient
     : public PermissionBrokerClient {
  public:
   FakePermissionBrokerClient();

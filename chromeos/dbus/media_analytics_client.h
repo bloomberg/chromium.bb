@@ -6,9 +6,9 @@
 #define CHROMEOS_DBUS_MEDIA_ANALYTICS_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
@@ -17,7 +17,7 @@ namespace chromeos {
 
 // MediaAnalyticsClient is used to communicate with a media analytics process
 // running outside of Chrome.
-class CHROMEOS_EXPORT MediaAnalyticsClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) MediaAnalyticsClient : public DBusClient {
  public:
   class Observer {
    public:

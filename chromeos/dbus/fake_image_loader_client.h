@@ -19,7 +19,8 @@ class FilePath;
 namespace chromeos {
 
 // A fake implementation of ImageLoaderClient. This class does nothing.
-class CHROMEOS_EXPORT FakeImageLoaderClient : public ImageLoaderClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeImageLoaderClient
+    : public ImageLoaderClient {
  public:
   FakeImageLoaderClient();
   ~FakeImageLoaderClient() override;

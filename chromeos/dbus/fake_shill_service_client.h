@@ -11,16 +11,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_service_client.h"
 
 namespace chromeos {
 
 // A fake implementation of ShillServiceClient. This works in close coordination
 // with FakeShillManagerClient and is not intended to be used independently.
-class CHROMEOS_EXPORT FakeShillServiceClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillServiceClient
     : public ShillServiceClient,
       public ShillServiceClient::TestInterface {
  public:

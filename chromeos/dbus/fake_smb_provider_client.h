@@ -14,7 +14,8 @@
 namespace chromeos {
 
 // A fake implementation of SmbProviderClient.
-class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
+    : public SmbProviderClient {
  public:
   FakeSmbProviderClient();
   explicit FakeSmbProviderClient(bool should_run_synchronously);

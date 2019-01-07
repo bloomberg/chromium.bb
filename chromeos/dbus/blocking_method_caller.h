@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "chromeos/chromeos_export.h"
 #include "dbus/message.h"
 
 namespace dbus {
@@ -25,7 +25,7 @@ namespace chromeos {
 // A utility class to call D-Bus methods in a synchronous (blocking) way.
 // Note: Blocking the thread until it returns is not a good idea in most cases.
 //       Avoid using this class as hard as you can.
-class CHROMEOS_EXPORT BlockingMethodCaller {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) BlockingMethodCaller {
  public:
   BlockingMethodCaller(dbus::Bus* bus, dbus::ObjectProxy* proxy);
   virtual ~BlockingMethodCaller();

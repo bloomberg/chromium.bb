@@ -22,7 +22,8 @@ class AccountId;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeAuthPolicyClient
+    : public AuthPolicyClient {
  public:
   FakeAuthPolicyClient();
   ~FakeAuthPolicyClient() override;

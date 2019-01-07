@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
@@ -24,7 +24,7 @@ class ShillPropertyChangedObserver;
 // ShillManagerClient is used to communicate with the Shill Manager
 // service.  All methods should be called from the origin thread which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillManagerClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;

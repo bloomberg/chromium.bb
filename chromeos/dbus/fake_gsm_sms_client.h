@@ -19,7 +19,7 @@
 namespace chromeos {
 
 // A fake implementation of GsmSMSClient used for tests.
-class CHROMEOS_EXPORT FakeGsmSMSClient : public GsmSMSClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeGsmSMSClient : public GsmSMSClient {
  public:
   FakeGsmSMSClient();
   ~FakeGsmSMSClient() override;

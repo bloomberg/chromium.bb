@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace chromeos {
@@ -23,7 +23,7 @@ namespace chromeos {
 //  * the connected base pairing events.
 // The client forwards the received signals to its observers (together with any
 // data extracted from the signal object).
-class CHROMEOS_EXPORT HammerdClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient : public DBusClient {
  public:
   class Observer {
    public:

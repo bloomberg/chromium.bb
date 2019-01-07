@@ -11,15 +11,15 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_device_client.h"
 
 namespace chromeos {
 
 // A fake implementation of ShillDeviceClient.
 // Implemented: Stub cellular device for SMS testing.
-class CHROMEOS_EXPORT FakeShillDeviceClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillDeviceClient
     : public ShillDeviceClient,
       public ShillDeviceClient::TestInterface {
  public:

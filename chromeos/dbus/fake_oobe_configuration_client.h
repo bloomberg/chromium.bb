@@ -14,7 +14,7 @@ namespace chromeos {
 
 // A fake implementation of OobeConfigurationClient, provides configuration
 // specified via command-line flag.
-class CHROMEOS_EXPORT FakeOobeConfigurationClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeOobeConfigurationClient
     : public OobeConfigurationClient {
  public:
   FakeOobeConfigurationClient();

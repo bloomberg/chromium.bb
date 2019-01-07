@@ -23,7 +23,8 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCryptohomeClient
+    : public CryptohomeClient {
  public:
   FakeCryptohomeClient();
   ~FakeCryptohomeClient() override;

@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ namespace chromeos {
 // A fake implementation of ShillManagerClient. This works in close coordination
 // with FakeShillServiceClient. FakeShillDeviceClient, and
 // FakeShillProfileClient, and is not intended to be used independently.
-class CHROMEOS_EXPORT FakeShillManagerClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillManagerClient
     : public ShillManagerClient,
       public ShillManagerClient::TestInterface {
  public:

@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 
 namespace base {
 class Thread;
@@ -86,7 +86,7 @@ class VirtualFileProviderClient;
 // WeakPtrFactory when creating callbacks that run on UI thread. See
 // session_manager_client.cc for examples.
 //
-class CHROMEOS_EXPORT DBusThreadManager {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
  public:
   // Processes for which to create and initialize the D-Bus clients.
   // TODO(jamescook): Move creation of clients into //ash and //chrome/browser.
@@ -204,7 +204,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
 };
 
 // TODO(jamescook): Replace these with FooClient::InitializeForTesting().
-class CHROMEOS_EXPORT DBusThreadManagerSetter {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 

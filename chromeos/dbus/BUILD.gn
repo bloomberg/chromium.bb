@@ -9,7 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("dbus") {
-  configs += [ "//chromeos:chromeos_implementation" ]
+  defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   public_deps = [
     ":constants",
     "//dbus",
@@ -20,7 +20,6 @@ source_set("dbus") {
     "//chromeos:attestation_proto",
     "//chromeos:authpolicy_proto",
     "//chromeos:biod_proto",
-    "//chromeos:chromeos_export",
     "//chromeos:cicerone_proto",
     "//chromeos:concierge_proto",
     "//chromeos:cryptohome_proto",
@@ -241,7 +240,6 @@ source_set("constants") {
   configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
-    "//chromeos:chromeos_export",
   ]
   sources = [
     "constants/dbus_paths.cc",
