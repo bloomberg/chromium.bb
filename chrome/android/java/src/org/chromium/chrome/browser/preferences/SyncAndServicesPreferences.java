@@ -159,13 +159,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private @Nullable Preference mContextualSuggestions;
 
     private SigninExpandablePreferenceGroup mNonpersonalizedServices;
-    private ChromeBaseCheckBoxPreference mSearchSuggestions;
-    private ChromeBaseCheckBoxPreference mNetworkPredictions;
-    private ChromeBaseCheckBoxPreference mNavigationError;
-    private ChromeBaseCheckBoxPreference mSafeBrowsing;
-    private ChromeBaseCheckBoxPreference mSafeBrowsingReporting;
-    private ChromeBaseCheckBoxPreference mUsageAndCrashReporting;
-    private ChromeBaseCheckBoxPreference mUrlKeyedAnonymizedData;
+    private ChromeSwitchPreference mSearchSuggestions;
+    private ChromeSwitchPreference mNetworkPredictions;
+    private ChromeSwitchPreference mNavigationError;
+    private ChromeSwitchPreference mSafeBrowsing;
+    private ChromeSwitchPreference mSafeBrowsingReporting;
+    private ChromeSwitchPreference mUsageAndCrashReporting;
+    private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable Preference mContextualSearch;
 
     private boolean mIsEngineInitialized;
@@ -237,35 +237,34 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             type.setOnPreferenceChangeListener(this);
         }
 
-        mSearchSuggestions = (ChromeBaseCheckBoxPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
+        mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
         mSearchSuggestions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mNetworkPredictions =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
+        mNetworkPredictions = (ChromeSwitchPreference) findPreference(PREF_NETWORK_PREDICTIONS);
         mNetworkPredictions.setOnPreferenceChangeListener(this);
         mNetworkPredictions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mNavigationError = (ChromeBaseCheckBoxPreference) findPreference(PREF_NAVIGATION_ERROR);
+        mNavigationError = (ChromeSwitchPreference) findPreference(PREF_NAVIGATION_ERROR);
         mNavigationError.setOnPreferenceChangeListener(this);
         mNavigationError.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mSafeBrowsing = (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
+        mSafeBrowsing = (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING);
         mSafeBrowsing.setOnPreferenceChangeListener(this);
         mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mSafeBrowsingReporting =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUsageAndCrashReporting =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
         mUsageAndCrashReporting.setOnPreferenceChangeListener(this);
         mUsageAndCrashReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUrlKeyedAnonymizedData =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
+                (ChromeSwitchPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 

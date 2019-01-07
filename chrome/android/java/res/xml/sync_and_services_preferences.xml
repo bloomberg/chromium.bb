@@ -85,34 +85,37 @@
         android:title="@string/prefs_nonpersonalized_services_section_title"
         android:summary="@string/prefs_nonpersonalized_services_section_summary">
 
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="search_suggestions"
             android:title="@string/autocomplete_searches_and_urls_title"
             android:summary="@string/autocomplete_searches_and_urls_summary"
-            android:defaultValue="true"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="network_predictions"
             android:title="@string/preload_pages_title"
             android:summary="@string/preload_pages_summary"
             android:persistent="false"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="navigation_error"
             android:title="@string/navigation_error_suggestions_title"
             android:summary="@string/navigation_error_suggestions_summary"
-            android:defaultValue="true"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="safe_browsing"
             android:title="@string/safe_browsing_title"
-            android:summary="@string/safe_browsing_summary"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:summary="@string/safe_browsing_summary"
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="safe_browsing_scout_reporting"
             android:title="@string/safe_browsing_scout_reporting_title"
-            android:summary="@string/safe_browsing_scout_reporting_summary"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:summary="@string/safe_browsing_scout_reporting_summary"
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="usage_and_crash_reports"
             android:title="@string/usage_and_crash_reports_title"
-            android:summary="@string/usage_and_crash_reports_summary"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:summary="@string/usage_and_crash_reports_summary"
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="url_keyed_anonymized_data"
             android:title="@string/url_keyed_anonymized_data_title"
             android:summary="@string/url_keyed_anonymized_data_summary"
