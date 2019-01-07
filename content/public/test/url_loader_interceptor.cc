@@ -364,6 +364,9 @@ URLLoaderInterceptor::RequestParams::RequestParams(RequestParams&& other) =
 URLLoaderInterceptor::RequestParams& URLLoaderInterceptor::RequestParams::
 operator=(RequestParams&& other) = default;
 
+URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
+    : URLLoaderInterceptor(callback, {}) {}
+
 URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback,
                                            base::OnceClosure ready_callback)
     : callback_(callback), io_thread_(base::MakeRefCounted<IOState>(this)) {
