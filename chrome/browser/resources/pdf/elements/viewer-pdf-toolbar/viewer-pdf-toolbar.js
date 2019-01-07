@@ -192,6 +192,7 @@ Polymer({
       selectedSize: 1,
       selectedColor: null,
     };
+    element.attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
     this.annotationTool = {
       tool: tool,
       size: options.selectedSize,

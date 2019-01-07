@@ -188,16 +188,17 @@
     <div id="annotations-bar" class="invisible">
       <paper-icon-button id="eraser"
           on-click="annotationToolClicked_"
-          icon="pdf:create"
+          icon="pdf:eraser"
           aria-label$="{{strings.tooltipEraser}}"
           title$="{{strings.tooltipEraser}}">
       </paper-icon-button>
 
       <viewer-toolbar-dropdown id="pen"
           on-click="annotationToolClicked_"
-          open-icon="pdf:create"
-          closed-icon="pdf:create"
-          dropdown-centered>
+          open-icon="pdf:marker"
+          closed-icon="pdf:marker"
+          dropdown-centered
+          style="--pen-tip-fill: #000000">
         <viewer-pen-options
           selected-color="#000000"
           selected-size="0.1429"
@@ -209,9 +210,10 @@
 
       <viewer-toolbar-dropdown id="highlighter"
           on-click="annotationToolClicked_"
-          open-icon="pdf:create"
-          closed-icon="pdf:create"
-          dropdown-centered>
+          open-icon="pdf:highlighter"
+          closed-icon="pdf:highlighter"
+          dropdown-centered
+          style="--pen-tip-fill: #ffbc00">
         <viewer-pen-options
           selected-color="#ffbc00"
           selected-size="0.7143"
