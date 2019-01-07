@@ -113,6 +113,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const Referrer& referrer,
       ui::PageTransition page_transition,
       bool should_replace_current_entry,
+      NavigationDownloadPolicy download_policy,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
@@ -317,6 +318,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool override_user_agent,
       bool should_replace_current_entry,
       bool has_user_gesture,
+      NavigationDownloadPolicy download_policy,
       ReloadType reload_type,
       const NavigationEntryImpl& entry,
       FrameNavigationEntry* frame_entry);

@@ -990,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   const char* kScriptFormat =
       "window.domAutomationController.send(!!window.open('%s'));";
-  GURL popup_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL popup_url = embedded_test_server()->GetURL("b.com", "/title1.html");
   content::TestNavigationObserver popup_waiter(nullptr, 1);
   popup_waiter.StartWatchingNewWebContents();
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -1013,12 +1013,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
-  histograms.ExpectUniqueSample(
-      "Navigation.DownloadPolicy",
-      // TODO(csharrison): Update this to avoid using hardcoded number, since
-      // right now NavigationDownloadPolicy is not exposed publicly through
-      // //content.
-      4 /* NavigationDownloadPolicy::kAllowOpenerNoGesture */, 1);
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOriginNoGesture,
+      1);
 
   // Delete any pending download.
   std::vector<download::DownloadItem*> download_items;

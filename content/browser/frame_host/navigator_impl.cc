@@ -474,6 +474,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
     const Referrer& referrer,
     ui::PageTransition page_transition,
     bool should_replace_current_entry,
+    NavigationDownloadPolicy download_policy,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
@@ -525,8 +526,8 @@ void NavigatorImpl::NavigateFromFrameProxy(
   controller_->NavigateFromFrameProxy(
       render_frame_host, url, initiator_origin, is_renderer_initiated,
       source_site_instance, referrer_to_use, page_transition,
-      should_replace_current_entry, method, post_body, extra_headers,
-      std::move(blob_url_loader_factory));
+      should_replace_current_entry, download_policy, method, post_body,
+      extra_headers, std::move(blob_url_loader_factory));
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,

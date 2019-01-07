@@ -30,6 +30,7 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void Navigate(const ResourceRequest&,
                         bool should_replace_current_entry,
+                        bool is_opener_navigation,
                         mojom::blink::BlobURLTokenPtr) = 0;
   unsigned BackForwardLength() override = 0;
 

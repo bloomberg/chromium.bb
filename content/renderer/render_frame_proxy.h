@@ -201,6 +201,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           bool has_user_gesture) override;
   void Navigate(const blink::WebURLRequest& request,
                 bool should_replace_current_entry,
+                bool is_opener_navigation,
                 mojo::ScopedMessagePipeHandle blob_url_token) override;
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;
