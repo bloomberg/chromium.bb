@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -11,7 +12,9 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -434,6 +437,12 @@ public class AwTestContainerView extends FrameLayout {
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
         return mAwContents.performAccessibilityAction(action, arguments);
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.N)
+    public boolean onDragEvent(DragEvent event) {
+        return mAwContents.onDragEvent(event);
     }
 
     private class NativeDrawFunctorFactory implements AwContents.NativeDrawFunctorFactory {
