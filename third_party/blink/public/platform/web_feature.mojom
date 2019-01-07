@@ -2160,6 +2160,10 @@ enum WebFeature {
   kHistoryLength = 2719,
   kFeaturePolicyReportOnlyHeader = 2720,
   kV8PaymentRequest_HasEnrolledInstrument_Method = 2721,
+  kTrustedTypesEnabled = 2722,
+  kTrustedTypesCreatePolicy = 2723,
+  kTrustedTypesDefaultPolicyUsed = 2724,
+  kTrustedTypesAssignmentError = 2725,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

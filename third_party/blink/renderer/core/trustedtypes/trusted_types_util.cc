@@ -33,6 +33,11 @@ String GetStringFromTrustedType(
   if (string_or_trusted_type.IsString() && doc && doc->RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires a Trusted Type assignment.");
+
+    // Test case docs (Document::CreateForTest) might not have a window.
+    if (doc->ExecutingWindow())
+      doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
+
     return g_empty_string;
   }
 
@@ -86,6 +91,7 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
   if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -96,6 +102,7 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment and 'default' policy "
         "failed to execute.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -138,6 +145,7 @@ String GetStringFromTrustedScript(
   if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedScript` assignment.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -154,6 +162,7 @@ String GetStringFromTrustedScript(
         "This document requires `TrustedScript` assignment and 'default' "
         "policy "
         "failed to execute.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -182,6 +191,7 @@ String GetStringFromTrustedScriptURL(
   if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedScriptURL` assignment.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -195,6 +205,7 @@ String GetStringFromTrustedScriptURL(
         "This document requires `TrustedScriptURL` assignment and 'default' "
         "policy "
         "failed to execute.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -222,6 +233,7 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
   if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedURL` assignment.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 
@@ -233,6 +245,7 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
     exception_state.ThrowTypeError(
         "This document requires `TrustedURL` assignment and 'default' policy "
         "failed to execute.");
+    doc->ExecutingWindow()->trustedTypes()->CountTrustedTypeAssignmentError();
     return g_empty_string;
   }
 

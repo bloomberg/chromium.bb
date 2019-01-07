@@ -21195,6 +21195,10 @@ Called by update_net_error_codes.py.-->
   <int value="2719" label="HistoryLength"/>
   <int value="2720" label="FeaturePolicyReportOnlyHeader"/>
   <int value="2721" label="V8PaymentRequest_HasEnrolledInstrument_Method"/>
+  <int value="2722" label="TrustedTypesEnabled"/>
+  <int value="2723" label="TrustedTypesCreatePolicy"/>
+  <int value="2724" label="TrustedTypesDefaultPolicyUsed"/>
+  <int value="2725" label="TrustedTypesAssignmentError"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
