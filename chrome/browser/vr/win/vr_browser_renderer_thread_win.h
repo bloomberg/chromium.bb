@@ -55,6 +55,7 @@ class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
 
   // Methods called on the browser's main thread.
   void StartOverlay(device::mojom::XRCompositorHost* host);
+  void StopOverlay();
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info);
   void SetLocationInfo(GURL gurl);
   void SetVisibleExternalPromptNotification(
@@ -67,6 +68,7 @@ class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
   // Methods called on render thread.
   void StartOverlayOnRenderThread(
       device::mojom::ImmersiveOverlayPtrInfo overlay);
+  void StopOverlayOnRenderThread();
   void SetDisplayInfoOnRenderThread(
       device::mojom::VRDisplayInfoPtr display_info);
   void SetLocationInfoOnRenderThread(GURL gurl);

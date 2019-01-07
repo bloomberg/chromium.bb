@@ -4,6 +4,7 @@
 
 import("//build/util/branding.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//device/vr/buildflags/buildflags.gni")
 
 aggregate_vector_icons("chrome_vector_icons") {
   icon_directory = "."
@@ -141,6 +142,11 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   if (is_chromeos) {
     icons += [ "warning_badge_circle.icon" ]
+  }
+
+  if (enable_vr && !is_android) {
+    # Used for permission prompts on desktop VR headsets and Linux unit tests.
+    icons += [ "open_in_browser.icon" ]
   }
 }
 
