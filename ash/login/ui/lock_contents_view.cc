@@ -42,6 +42,7 @@
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -388,7 +389,7 @@ LockContentsView::LockContentsView(
   system_info_ = new views::View();
   auto* system_info_layout =
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(5, 8)));
+          views::BoxLayout::kVertical, gfx::Insets(6, 8)));
   system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
   system_info_->SetVisible(false);
@@ -879,6 +880,8 @@ void LockContentsView::OnSystemInfoChanged(
   if (system_info_->child_count() == 0) {
     for (int i = 0; i < 3; ++i)
       system_info_->AddChildView(create_info_label());
+    if (::features::IsSingleProcessMash())
+      system_info_->AddChildView(create_info_label());
   }
 
   if (show)
@@ -893,6 +896,8 @@ void LockContentsView::OnSystemInfoChanged(
   update_label(0, os_version_label_text);
   update_label(1, enterprise_info_text);
   update_label(2, bluetooth_name);
+  if (::features::IsSingleProcessMash())
+    update_label(3, "SingleProcessMash enabled");
 
   LayoutTopHeader();
 }
