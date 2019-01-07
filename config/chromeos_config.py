@@ -1498,11 +1498,11 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _mst_hwtest_boards = frozenset([])
-  _mst_no_hwtest_boards = frozenset([])
-  _mst_no_hwtest_experimental_boards = frozenset([
+  _mst_hwtest_boards = frozenset([
       'eve-arcnext',
   ])
+  _mst_no_hwtest_boards = frozenset([])
+  _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
 
   # Android PI master.
