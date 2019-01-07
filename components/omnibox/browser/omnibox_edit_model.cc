@@ -359,19 +359,16 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     return;
 
   // If the user has not modified the display text and is copying the whole
-  // display text, copy the current page's full URL.
-  //
-  // This early exit is meant for cases where we elide portions of the URL, so
-  // it's inappropriate for the Query in Omnibox case.
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-  if (!user_input_in_progress_ && *text == GetPermanentDisplayText() &&
-      !location_bar_model->GetDisplaySearchTerms(nullptr)) {
-    // It's safe to copy the underlying URL.  These lines ensure that if the
-    // scheme was stripped it's added back, and the URL is unescaped (we escape
-    // parts of it for display).
+  // display text, copy the omnibox contents as a hyperlink to the current page.
+  if (!user_input_in_progress_ && *text == GetPermanentDisplayText()) {
     *url_from_text = PermanentURL();
-    *text = base::UTF8ToUTF16(url_from_text->spec());
     *write_url = true;
+
+    // If the omnibox is displaying a URL, set the hyperlink text to the URL's
+    // spec. This undoes any URL elisions.
+    if (!controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr))
+      *text = base::UTF8ToUTF16(url_from_text->spec());
+
     return;
   }
 

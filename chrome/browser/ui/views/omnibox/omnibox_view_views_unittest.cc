@@ -571,12 +571,11 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
     expected_text = base::ASCIIToUTF16("https://test.com/");
   EXPECT_EQ(expected_text, omnibox_view()->GetText());
 
-  // Make sure HTML format isn't written. See
-  // BookmarkNodeData::WriteToClipboard() for details.
+  // Make sure both HTML and Plain Text formats are available.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), clipboard_type));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                            clipboard_type));
+  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+                                           clipboard_type));
 
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.

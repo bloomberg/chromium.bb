@@ -79,6 +79,11 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
+// TODO(tommycli): Remove this killswitch once we are confident that the new
+// behavior doesn't cause big user breakage.
+constexpr base::Feature kOmniboxCanCopyHyperlinksToClipboard{
+    "OmniboxCanCopyHyperlinksToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // OmniboxState ---------------------------------------------------------------
 
 // Stores omnibox state for each tab.
@@ -1506,7 +1511,7 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   base::string16 selected_text;
   cb->ReadText(clipboard_type, &selected_text);
   GURL url;
-  bool write_url;
+  bool write_url = false;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
                              &write_url);
   if (IsSelectAll())
@@ -1514,6 +1519,11 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
 
   ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
   scoped_clipboard_writer.WriteText(selected_text);
+
+  if (write_url &&
+      base::FeatureList::IsEnabled(kOmniboxCanCopyHyperlinksToClipboard)) {
+    scoped_clipboard_writer.WriteHyperlink(selected_text, url.spec());
+  }
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
