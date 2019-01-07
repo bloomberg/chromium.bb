@@ -383,6 +383,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return GetDeferringThrottle();
   }
 
+  // Whether the navigation was sent to be committed in a renderer by the
+  // RenderFrameHost. This can either be for the commit of a successful
+  // navigation or an error page.
+  bool IsWaitingToCommit();
+
   // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
   // default value if |timeout| is zero.
   static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);

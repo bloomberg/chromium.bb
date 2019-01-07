@@ -463,6 +463,10 @@ const net::SSLInfo& NavigationHandleImpl::GetSSLInfo() {
   return ssl_info_;
 }
 
+bool NavigationHandleImpl::IsWaitingToCommit() {
+  return state_ == READY_TO_COMMIT;
+}
+
 bool NavigationHandleImpl::HasCommitted() {
   return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }

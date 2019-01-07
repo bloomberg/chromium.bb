@@ -830,6 +830,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void LeaveBackForwardCache();  // The document leaves the BackForwardCache.
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
+  // Request a new NavigationClient interface from the renderer and returns the
+  // ownership of the AssociatedPtr. This is intended for use by the
+  // NavigationRequest. Only used with PerNavigationMojoInterface enabled.
+  mojom::NavigationClientAssociatedPtr
+  GetNavigationClientFromInterfaceProvider();
+
+  // Called to signify the RenderFrameHostImpl that one of its ongoing
+  // NavigationRequest's has been cancelled.
+  void NavigationRequestCancelled(NavigationRequest* navigation_request);
+
  protected:
   friend class RenderFrameHostFactory;
 

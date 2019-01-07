@@ -17,18 +17,19 @@ std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     base::TimeTicks time_commit_requested,
-    mojom::FrameNavigationControl::CommitNavigationCallback callback) {
-  return base::WrapUnique(new NavigationState(common_params, commit_params,
-                                              time_commit_requested, false,
-                                              std::move(callback)));
+    mojom::FrameNavigationControl::CommitNavigationCallback callback,
+    std::unique_ptr<NavigationClient> navigation_client) {
+  return base::WrapUnique(new NavigationState(
+      common_params, commit_params, time_commit_requested, false,
+      std::move(callback), std::move(navigation_client)));
 }
 
 // static
 std::unique_ptr<NavigationState> NavigationState::CreateContentInitiated() {
   return base::WrapUnique(new NavigationState(
       CommonNavigationParams(), CommitNavigationParams(), base::TimeTicks(),
-      true,
-      content::mojom::FrameNavigationControl::CommitNavigationCallback()));
+      true, content::mojom::FrameNavigationControl::CommitNavigationCallback(),
+      nullptr));
 }
 
 // static
@@ -57,14 +58,15 @@ NavigationState::NavigationState(
     const CommitNavigationParams& commit_params,
     base::TimeTicks time_commit_requested,
     bool is_content_initiated,
-    mojom::FrameNavigationControl::CommitNavigationCallback callback)
+    mojom::FrameNavigationControl::CommitNavigationCallback callback,
+    std::unique_ptr<NavigationClient> navigation_client)
     : request_committed_(false),
       was_within_same_document_(false),
       is_content_initiated_(is_content_initiated),
       common_params_(common_params),
       commit_params_(commit_params),
       time_commit_requested_(time_commit_requested),
-      navigation_client_(nullptr),
+      navigation_client_(std::move(navigation_client)),
       commit_callback_(std::move(callback)) {}
 
 }  // namespace content

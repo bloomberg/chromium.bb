@@ -851,7 +851,8 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     const CommitNavigationParams& commit_params,
     base::TimeTicks time_commit_requested,
     mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
-    const network::ResourceResponseHead* head) {
+    const network::ResourceResponseHead* head,
+    std::unique_ptr<NavigationClient> navigation_client) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state.get());
@@ -908,7 +909,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   InternalDocumentStateData::FromDocumentState(document_state.get())
       ->set_navigation_state(NavigationState::CreateBrowserInitiated(
           common_params, commit_params, time_commit_requested,
-          std::move(commit_callback)));
+          std::move(commit_callback), std::move(navigation_client)));
   return document_state;
 }
 
@@ -2832,7 +2833,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     document_state = BuildDocumentStateFromParams(
         navigation_state->common_params(), navigation_state->commit_params(),
         base::TimeTicks(),  // Not used for failed navigation.
-        CommitNavigationCallback(), nullptr);
+        CommitNavigationCallback(), nullptr, nullptr);
     FillNavigationParams(navigation_state->common_params(),
                          navigation_state->commit_params(),
                          navigation_params.get());
@@ -3247,7 +3248,7 @@ void RenderFrameImpl::CommitNavigation(
     response_head = &head;
   std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks::Now(), std::move(callback),
-      response_head));
+      response_head, std::move(navigation_client_impl_)));
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -3480,7 +3481,7 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks(), std::move(callback),
-      nullptr);
+      nullptr, std::move(navigation_client_impl_));
 
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
@@ -3542,7 +3543,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
         common_params, commit_params,
         base::TimeTicks(),  // Not used for same-document navigation.
-        CommitNavigationCallback()));
+        CommitNavigationCallback(), nullptr));
 
     // Load the request.
     commit_status = frame_->CommitSameDocumentNavigation(
@@ -6809,10 +6810,8 @@ void RenderFrameImpl::BeginNavigationInternal(
                     : base::nullopt);
 
   mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
-  if (IsPerNavigationMojoInterfaceEnabled()) {
+  if (IsPerNavigationMojoInterfaceEnabled())
     BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
-    navigation_state->set_navigation_client(std::move(navigation_client_impl_));
-  }
 
   blink::mojom::NavigationInitiatorPtr initiator_ptr(
       blink::mojom::NavigationInitiatorPtrInfo(
