@@ -197,8 +197,6 @@ source_set("dbus") {
     "runtime_probe_client.h",
     "seneschal_client.cc",
     "seneschal_client.h",
-    "services/cros_dbus_service.cc",
-    "services/cros_dbus_service.h",
     "session_manager_client.cc",
     "session_manager_client.h",
     "shill_client_helper.cc",
@@ -266,8 +264,6 @@ source_set("test_support") {
   sources = [
     "biod/test_utils.cc",
     "biod/test_utils.h",
-    "services/service_provider_test_helper.cc",
-    "services/service_provider_test_helper.h",
   ]
 }
 
@@ -308,7 +304,6 @@ source_set("unit_tests") {
     "pipe_reader_unittest.cc",
     "power_manager_client_unittest.cc",
     "power_policy_controller_unittest.cc",
-    "services/cros_dbus_service_unittest.cc",
     "shill_client_unittest_base.cc",
     "shill_client_unittest_base.h",
     "shill_device_client_unittest.cc",
