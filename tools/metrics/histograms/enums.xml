@@ -2573,6 +2573,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Cannot proceed"/>
 </enum>
 
+<enum name="AutoclickActionType">
+  <int value="0" label="Left click"/>
+  <int value="1" label="Right click"/>
+  <int value="2" label="Drag and drop"/>
+  <int value="3" label="Double click"/>
+  <int value="4" label="Pause"/>
+</enum>
+
 <enum name="AutocompleteEvents">
   <int value="0" label="Suggestions Shown"/>
   <int value="1" label="Suggestion Selected"/>

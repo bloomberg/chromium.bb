@@ -1169,39 +1169,26 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="Accessibility.Autoclick.DoubleClick">
+<action name="Accessibility.Autoclick">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
-  <description>
-    A user has used autoclick to perform a double click action.
-  </description>
+  <description>A user has used autoclick to perform an action.</description>
 </action>
 
-<action name="Accessibility.Autoclick.DragAndDrop">
+<action name="Accessibility.Autoclick.TrayMenu.Open">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
-  <description>
-    A user has used autoclick to perform a drag and drop action.
-  </description>
+  <description>A user has opened the autoclick tray menu.</description>
 </action>
 
-<action name="Accessibility.Autoclick.LeftClick">
+<action name="Accessibility.Autoclick.TrayMenu.Settings">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
   <description>
-    A user has used autoclick to perform a left click action.
-  </description>
-</action>
-
-<action name="Accessibility.Autoclick.RightClick">
-  <owner>katie@chromium.org</owner>
-  <owner>dtseng@chromium.org</owner>
-  <owner>dmazzoni@chromium.org</owner>
-  <description>
-    A user has used autoclick to perform a right click action.
+    A user has used the autoclick tray menu to open Autoclick settings.
   </description>
 </action>
 
@@ -21151,6 +21138,14 @@ should be able to be added at any place in this file.
       label="The suggestion was clicked directly."/>
   <suffix name="ToolbarButtonClicked" label="The toolbar button was shown."/>
   <affected-action name="ContextualSuggestions"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="DoubleClick" label="Double click action."/>
+  <suffix name="DragAndDrop" label="DragAndDrop action."/>
+  <suffix name="LeftClick" label="Left click action."/>
+  <suffix name="RightClick" label="Right click action."/>
+  <affected-action name="Accessibility.Autoclick"/>
 </action-suffix>
 
 </actions>
