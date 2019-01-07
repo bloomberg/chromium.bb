@@ -40,7 +40,9 @@ void DiscoverScreenHandler::Bind(DiscoverScreen* screen) {
 
 void DiscoverScreenHandler::Hide() {}
 
-void DiscoverScreenHandler::Initialize() {}
+void DiscoverScreenHandler::Initialize() {
+  discover_ui_.Initialize();
+}
 
 void DiscoverScreenHandler::Show() {
   ShowScreen(kScreenId);

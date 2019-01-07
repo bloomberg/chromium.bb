@@ -1845,6 +1845,13 @@ test("browser_tests") {
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
+        "../browser/ui/webui/chromeos/login/discover/discover_browser_test.cc",
+        "../browser/ui/webui/chromeos/login/discover/discover_browser_test.h",
+        "../browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app_test.cc",
+        "../browser/ui/webui/chromeos/login/discover/modules/discover_module_redeem_offers_test.cc",
+        "../browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files_test.cc",
+        "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.cc",
+        "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h",
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",
       ]
