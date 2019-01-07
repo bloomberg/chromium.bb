@@ -9,13 +9,9 @@
 namespace gpu {
 namespace {
 
-scoped_refptr<Buffer> MakeBufferForTesting(size_t num_handles) {
-  size_t size = sizeof(base::subtle::Atomic32) * num_handles;
-  base::UnsafeSharedMemoryRegion shmem_region =
-      base::UnsafeSharedMemoryRegion::Create(size);
-  base::WritableSharedMemoryMapping shmem_mapping = shmem_region.Map();
-  return MakeBufferFromSharedMemory(std::move(shmem_region),
-                                    std::move(shmem_mapping));
+scoped_refptr<Buffer> MakeBufferForTesting(uint32_t num_handles) {
+  uint32_t size = sizeof(base::subtle::Atomic32) * num_handles;
+  return MakeMemoryBuffer(size);
 }
 
 }  // namespace

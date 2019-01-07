@@ -441,7 +441,7 @@ class CommandBufferSetup {
     if (!InitDecoder())
       return;
 
-    size_t buffer_size = buffer_->size();
+    uint32_t buffer_size = buffer_->size();
     CHECK_LE(padded_size, buffer_size);
     command_buffer_->SetGetBuffer(buffer_id_);
     auto* memory = static_cast<char*>(buffer_->memory());

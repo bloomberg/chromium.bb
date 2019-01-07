@@ -147,7 +147,8 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
 
   base::WritableSharedMemoryMapping shared_memory_mapping =
       shared_memory_region.Map();
-  if (!shared_memory_mapping.IsValid()) {
+  if (!shared_memory_mapping.IsValid() ||
+      (shared_memory_mapping.size() > UINT32_MAX)) {
     if (last_state_.error == gpu::error::kNoError)
       last_state_.error = gpu::error::kOutOfBounds;
     *id = -1;
