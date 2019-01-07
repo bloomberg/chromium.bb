@@ -82,8 +82,9 @@ class URLLoaderInterceptor {
   // provided, a nested RunLoop is used to ensure the interceptor is ready
   // before returning. If |ready_callback| is provided, no RunLoop is called,
   // and instead |ready_callback| is called after the interceptor is installed.
+  explicit URLLoaderInterceptor(const InterceptCallback& callback);
   URLLoaderInterceptor(const InterceptCallback& callback,
-                       base::OnceClosure ready_callback = {});
+                       base::OnceClosure ready_callback);
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.
