@@ -515,9 +515,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
           effect->GetColorFilter()));
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
     } else {
-      constexpr bool preserve_lcd_text_requests = false;
-      save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(
-          nullptr, alpha, preserve_lcd_text_requests);
+      save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(nullptr, alpha);
     }
     saved_count++;
   } else {

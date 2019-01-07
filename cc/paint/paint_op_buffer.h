@@ -825,13 +825,8 @@ class CC_PAINT_EXPORT SaveLayerOp final : public PaintOpWithFlags {
 class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::SaveLayerAlpha;
-  SaveLayerAlphaOp(const SkRect* bounds,
-                   uint8_t alpha,
-                   bool preserve_lcd_text_requests)
-      : PaintOp(kType),
-        bounds(bounds ? *bounds : kUnsetRect),
-        alpha(alpha),
-        preserve_lcd_text_requests(preserve_lcd_text_requests) {}
+  SaveLayerAlphaOp(const SkRect* bounds, uint8_t alpha)
+      : PaintOp(kType), bounds(bounds ? *bounds : kUnsetRect), alpha(alpha) {}
   static void Raster(const SaveLayerAlphaOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
@@ -841,7 +836,6 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
 
   SkRect bounds;
   uint8_t alpha;
-  bool preserve_lcd_text_requests;
 };
 
 class CC_PAINT_EXPORT ScaleOp final : public PaintOp {

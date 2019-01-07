@@ -149,7 +149,7 @@ void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
     {
       // First, modulate the background by 1 - alpha.
       cc::PaintCanvasAutoRestore auto_restore(canvas->sk_canvas(), false);
-      canvas->sk_canvas()->saveLayerAlpha(&sk_rect, 255 - fg_alpha, false);
+      canvas->sk_canvas()->saveLayerAlpha(&sk_rect, 255 - fg_alpha);
       state = native_theme_delegate->GetBackgroundThemeState(&extra);
       PaintHelper(this, canvas, state, rect, extra);
     }

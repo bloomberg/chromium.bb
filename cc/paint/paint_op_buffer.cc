@@ -1393,14 +1393,7 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
                               const PlaybackParams& params) {
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
-  if (op->preserve_lcd_text_requests) {
-    SkPaint paint;
-    paint.setAlpha(op->alpha);
-    canvas->saveLayerPreserveLCDTextRequests(unset ? nullptr : &op->bounds,
-                                             &paint);
-  } else {
-    canvas->saveLayerAlpha(unset ? nullptr : &op->bounds, op->alpha);
-  }
+  canvas->saveLayerAlpha(unset ? nullptr : &op->bounds, op->alpha);
 }
 
 void ScaleOp::Raster(const ScaleOp* op,
@@ -1813,8 +1806,6 @@ bool SaveLayerAlphaOp::AreEqual(const PaintOp* base_left,
   if (!AreSkRectsEqual(left->bounds, right->bounds))
     return false;
   if (left->alpha != right->alpha)
-    return false;
-  if (left->preserve_lcd_text_requests != right->preserve_lcd_text_requests)
     return false;
   return true;
 }

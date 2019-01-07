@@ -295,11 +295,10 @@ TEST(PaintOpHelper, SaveLayerToString) {
 
 TEST(PaintOpHelper, SaveLayerAlphaToString) {
   SkRect bounds = SkRect::MakeXYWH(1, 2, 3, 4);
-  SaveLayerAlphaOp op(&bounds, 255, false);
+  SaveLayerAlphaOp op(&bounds, 255);
   std::string str = PaintOpHelper::ToString(&op);
   EXPECT_EQ(str,
-            "SaveLayerAlphaOp(bounds=[1.000,2.000 3.000x4.000], alpha=255, "
-            "preserve_lcd_text_requests=false)");
+            "SaveLayerAlphaOp(bounds=[1.000,2.000 3.000x4.000], alpha=255)");
 }
 
 TEST(PaintOpHelper, ScaleToString) {
