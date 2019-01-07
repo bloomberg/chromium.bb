@@ -34,6 +34,12 @@ class ExtensionIdsMap {
   static bool HasExtensionId(const PrefService* pref_service,
                              const std::string& extension_id);
 
+  // Returns true if |extension_id| was added with |install_source| to
+  // |pref_service|.
+  static bool HasExtensionIdWithInstallSource(const PrefService* pref_service,
+                                              const std::string& extension_id,
+                                              InstallSource install_source);
+
   // Returns the URLs of the apps that were installed from |install_source|.
   static std::vector<GURL> GetInstalledAppUrls(Profile* profile,
                                                InstallSource install_source);

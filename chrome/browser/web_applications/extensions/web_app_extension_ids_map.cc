@@ -45,6 +45,33 @@ namespace {
 constexpr char kExtensionId[] = "extension_id";
 constexpr char kInstallSource[] = "install_source";
 
+// Returns the base::Value in |pref_service| corresponding to our stored dict
+// for |extension_id|, or nullptr if it doesn't exist.
+const base::Value* GetPreferenceValue(const PrefService* pref_service,
+                                      const std::string& extension_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::DictionaryValue* urls_to_dicts =
+      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
+  if (!urls_to_dicts) {
+    return nullptr;
+  }
+  // Do a simple O(N) scan for extension_id being a value in each dictionary's
+  // key/value pairs. We expect both N and the number of times
+  // GetPreferenceValue is called to be relatively small in practice. If they
+  // turn out to be large, we can write a more sophisticated implementation.
+  for (const auto& it : urls_to_dicts->DictItems()) {
+    const base::Value* root = &it.second;
+    const base::Value* v = root;
+    if (v->is_dict()) {
+      v = v->FindKey(kExtensionId);
+      if (v && v->is_string() && (v->GetString() == extension_id)) {
+        return root;
+      }
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // static
@@ -56,26 +83,21 @@ void ExtensionIdsMap::RegisterProfilePrefs(
 // static
 bool ExtensionIdsMap::HasExtensionId(const PrefService* pref_service,
                                      const std::string& extension_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::DictionaryValue* urls_to_dicts =
-      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
-  if (!urls_to_dicts) {
+  return GetPreferenceValue(pref_service, extension_id) != nullptr;
+}
+
+// static
+
+bool ExtensionIdsMap::HasExtensionIdWithInstallSource(
+    const PrefService* pref_service,
+    const std::string& extension_id,
+    InstallSource install_source) {
+  const base::Value* v = GetPreferenceValue(pref_service, extension_id);
+  if (v == nullptr || !v->is_dict())
     return false;
-  }
-  // Do a simple O(N) scan for extension_id being a value in each dictionary's
-  // key/value pairs. We expect both N and the number of times HasExtensionId
-  // is called to be relatively small in practice. If they turn out to be
-  // large, we can write a more sophisticated implementation.
-  for (const auto& it : urls_to_dicts->DictItems()) {
-    const base::Value* v = &it.second;
-    if (v->is_dict()) {
-      v = v->FindKey(kExtensionId);
-      if (v && v->is_string() && (v->GetString() == extension_id)) {
-        return true;
-      }
-    }
-  }
-  return false;
+
+  v = v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
+  return (v && v->GetInt() == static_cast<int>(install_source));
 }
 
 // static
