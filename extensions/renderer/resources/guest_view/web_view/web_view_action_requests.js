@@ -5,6 +5,7 @@
 // This module implements helper objects for the dialog, newwindow, and
 // permissionrequest <webview> events.
 
+var logging = requireNative('logging');
 var MessagingNatives = requireNative('messaging_natives');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewInternal = getInternalApi ?
@@ -18,6 +19,15 @@ var PERMISSION_TYPES = ['media',
                         'loadplugin',
                         'filesystem',
                         'fullscreen'];
+
+// The browser will kill us if we send it a bad instance ID.
+// TODO(780728): Remove once the cause of the bad ID is known.
+function CrashIfInvalidInstanceId(instanceId, culpritFunction) {
+  logging.CHECK(
+      instanceId > 0,
+      'WebView: Invalid instance ID (' + instanceId + ') from ' +
+          culpritFunction);
+}
 
 // -----------------------------------------------------------------------------
 // WebViewActionRequest object.
@@ -55,6 +65,8 @@ WebViewActionRequest.prototype.defaultAction = function() {
   }
 
   this.actionTaken = true;
+  CrashIfInvalidInstanceId(
+      this.guestInstanceId, 'WebViewActionRequest.defaultAction');
   WebViewInternal.setPermission(this.guestInstanceId, this.requestId, 'default',
                                 '', $Function.bind(function(allowed) {
     if (allowed) {
@@ -128,11 +140,13 @@ Dialog.prototype.getInterfaceObject = function() {
     ok: $Function.bind(function(user_input) {
       this.validateCall();
       user_input = user_input || '';
+      CrashIfInvalidInstanceId(this.guestInstanceId, 'Dialog ok');
       WebViewInternal.setPermission(
           this.guestInstanceId, this.requestId, 'allow', user_input);
     }, this),
     cancel: $Function.bind(function() {
       this.validateCall();
+      CrashIfInvalidInstanceId(this.guestInstanceId, 'Dialog cancel');
       WebViewInternal.setPermission(
           this.guestInstanceId, this.requestId, 'deny');
     }, this)
@@ -197,6 +211,7 @@ NewWindow.prototype.getInterfaceObject = function() {
       // then we will fail and it will be treated as if the new window
       // was rejected. The permission API plumbing is used here to clean
       // up the state created for the new window if attaching fails.
+      CrashIfInvalidInstanceId(this.guestInstanceId, 'NewWindow attach');
       WebViewInternal.setPermission(this.guestInstanceId, this.requestId,
                                     attached ? 'allow' : 'deny');
     }, this),
@@ -207,6 +222,7 @@ NewWindow.prototype.getInterfaceObject = function() {
         // guestInstanceId.
         return;
       }
+      CrashIfInvalidInstanceId(this.guestInstanceId, 'NewWindow discard');
       WebViewInternal.setPermission(
           this.guestInstanceId, this.requestId, 'deny');
     }, this)
@@ -237,11 +253,13 @@ PermissionRequest.prototype.__proto__ = WebViewActionRequest.prototype;
 
 PermissionRequest.prototype.allow = function() {
   this.validateCall();
+  CrashIfInvalidInstanceId(this.guestInstanceId, 'PermissionRequest.allow');
   WebViewInternal.setPermission(this.guestInstanceId, this.requestId, 'allow');
 };
 
 PermissionRequest.prototype.deny = function() {
   this.validateCall();
+  CrashIfInvalidInstanceId(this.guestInstanceId, 'PermissionRequest.deny');
   WebViewInternal.setPermission(this.guestInstanceId, this.requestId, 'deny');
 };
 
