@@ -185,11 +185,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // At this point the tab model will no longer ever be active, and will likely be
 // deallocated soon.
 - (void)browserStateDestroyed;
-// Called by |tab| to inform the model that a navigation has taken place.
-// TODO(crbug.com/661983): once more of the navigation state has moved into WC,
-// replace this with WebStateObserver.
-- (void)navigationCommittedInTab:(Tab*)tab
-                    previousItem:(web::NavigationItem*)previousItem;
 
 @end
 
