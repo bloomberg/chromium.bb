@@ -1336,10 +1336,9 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
 
 // Returns the accessible tab name for the tab.
 base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
-  int model_index = GetModelIndexOfTab(tab);
-  if (IsValidModelIndex(model_index))
-    return controller_->GetAccessibleTabName(tab);
-  return base::string16();
+  const int model_index = GetModelIndexOfTab(tab);
+  return IsValidModelIndex(model_index) ? controller_->GetAccessibleTabName(tab)
+                                        : base::string16();
 }
 
 int TabStrip::GetBackgroundResourceId(
@@ -2298,47 +2297,40 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE);
-  const SkColor inactive_tab_bg_color = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor inactive_bg = GetTabBackgroundColor(TAB_INACTIVE);
+  const auto get_alpha = [inactive_bg](SkColor target, float contrast) {
+    return color_utils::GetBlendValueWithMinimumContrast(inactive_bg, target,
+                                                         inactive_bg, contrast);
+  };
+
+  const SkColor active_bg = GetTabBackgroundColor(TAB_ACTIVE);
+  const auto get_hover_opacity = [active_bg, &get_alpha](float contrast) {
+    return get_alpha(active_bg, contrast) / 255.0f;
+  };
 
   // The contrast ratio for the hover effect on standard-width tabs.
   // In the default color scheme, this corresponds to a hover opacity of 0.4.
-  constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
-  const SkAlpha hover_base_alpha_wide =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastHoveredStandardWidthTab);
-  hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
+  constexpr float kStandardWidthContrast = 1.11f;
+  hover_opacity_min_ = get_hover_opacity(kStandardWidthContrast);
 
   // The contrast ratio for the hover effect on min-width tabs.
   // In the default color scheme, this corresponds to a hover opacity of 0.65.
-  constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
-  const SkAlpha hover_base_alpha_narrow =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastHoveredMinWidthTab);
-  hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
+  constexpr float kMinWidthContrast = 1.19f;
+  hover_opacity_max_ = get_hover_opacity(kMinWidthContrast);
 
   // The contrast ratio for the radial gradient effect on hovered tabs.
   // In the default color scheme, this corresponds to a hover opacity of 0.45.
-  constexpr float kDesiredContrastRadialGradient = 1.13728f;
-  const SkAlpha radial_highlight_alpha =
-      color_utils::GetBlendValueWithMinimumContrast(
-          inactive_tab_bg_color, active_tab_bg_color, inactive_tab_bg_color,
-          kDesiredContrastRadialGradient);
-  radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
+  constexpr float kRadialGradientContrast = 1.13728f;
+  radial_highlight_opacity_ = get_hover_opacity(kRadialGradientContrast);
 
+  const SkColor inactive_fg = GetTabForegroundColor(TAB_INACTIVE, inactive_bg);
   // The contrast ratio for the separator between inactive tabs.
   // In the default color scheme, this corresponds to a separator opacity of
   // 0.46.
-  const SkColor text_color =
-      GetTabForegroundColor(TAB_INACTIVE, inactive_tab_bg_color);
-  constexpr float kTabSeparatorRatio = 1.84f;
-  const SkAlpha separator_alpha = color_utils::GetBlendValueWithMinimumContrast(
-      inactive_tab_bg_color, text_color, inactive_tab_bg_color,
-      kTabSeparatorRatio);
-  separator_color_ = color_utils::AlphaBlend(text_color, inactive_tab_bg_color,
-                                             separator_alpha);
+  constexpr float kTabSeparatorContrast = 1.84f;
+  const SkAlpha separator_alpha = get_alpha(inactive_fg, kTabSeparatorContrast);
+  separator_color_ =
+      color_utils::AlphaBlend(inactive_fg, inactive_bg, separator_alpha);
 }
 
 void TabStrip::ResizeLayoutTabs() {

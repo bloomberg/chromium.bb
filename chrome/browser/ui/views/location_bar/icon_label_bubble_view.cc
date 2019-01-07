@@ -139,7 +139,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetVisible(false);
   set_ink_drop_visible_opacity(
-      GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
+      GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
 
   UpdateBorder();
 
@@ -333,7 +333,7 @@ IconLabelBubbleView::CreateInkDropHighlight() const {
           gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
           ink_drop_container_->size());
   highlight->set_visible_opacity(
-      GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
+      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
   return highlight;
 }
 
