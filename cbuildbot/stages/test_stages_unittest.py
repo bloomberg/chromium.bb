@@ -63,6 +63,8 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     makedirs_mock = self.PatchObject(osutils, 'SafeMakedirs')
 
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('test_artifacts_uploaded', True)
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     self.rununittests_mock.assert_called_once_with(
@@ -106,6 +108,8 @@ class UnitTestOnlyStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests if full unit tests are run correctly."""
     makedirs_mock = self.PatchObject(osutils, 'SafeMakedirs')
 
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('test_artifacts_uploaded', True)
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     self.rununittests_mock.assert_called_once_with(

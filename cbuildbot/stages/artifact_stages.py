@@ -777,6 +777,11 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(UploadTestArtifactsStage, self)._HandleStageException(exc_info)
 
+  def HandleSkip(self):
+    """Launch DebugSymbolsStage if UnitTestStage is skipped."""
+    self.board_runattrs.SetParallel('test_artifacts_uploaded', False)
+    return super(UploadTestArtifactsStage, self).HandleSkip()
+
 
 # TODO(mtennant): This class continues to exist only for subclasses that still
 # need self.archive_stage.  Hopefully, we can get rid of that need, eventually.

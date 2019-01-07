@@ -50,6 +50,18 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
   # minutes, so we picked 90 minutes because it gives us a little buffer time.
   UNIT_TEST_TIMEOUT = 90 * 60
 
+  def WaitUntilReady(self):
+    """Block until UploadTestArtifacts completes.
+
+    The attribute 'test_artifacts_uploaded' is set by UploadTestArtifacts.
+
+    Returns:
+      Boolean that authorizes running this stage.
+    """
+    self.board_runattrs.GetParallel('test_artifacts_uploaded',
+                                    timeout=None)
+    return True
+
   def HandleSkip(self):
     """Launch DebugSymbolsStage if UnitTestStage is skipped."""
     self.board_runattrs.SetParallel('unittest_completed', True)

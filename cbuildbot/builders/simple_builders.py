@@ -204,6 +204,8 @@ class SimpleBuilder(generic_builders.Builder):
 
     # Skip most steps if we're a compilecheck builder.
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
+      board_runattrs = builder_run.GetBoardRunAttrs(board)
+      board_runattrs.SetParallel('test_artifacts_uploaded', False)
       for x in stage_list:
         self._RunStage(*x, builder_run=builder_run)
       return
