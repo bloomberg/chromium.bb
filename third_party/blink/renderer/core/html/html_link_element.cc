@@ -172,7 +172,7 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
 
   if (!link_) {
     if (rel_attribute_.IsImport() &&
-        RuntimeEnabledFeatures::HTMLImportsEnabled()) {
+        origin_trials::HTMLImportsEnabled(&GetDocument())) {
       link_ = LinkImport::Create(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
