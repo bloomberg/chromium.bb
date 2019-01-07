@@ -702,13 +702,6 @@ AutomationRichEditableText.prototype = {
     return this.value.length;
   },
 
-  /** @override */
-  changed: function(evt) {
-    // This path does not use the Output module to synthesize speech.
-    Output.forceModeForNextSpeechUtterance(undefined);
-    cvox.ChromeVoxEditableTextBase.prototype.changed.call(this, evt);
-  },
-
   /**
    * @private
    * @param {editing.EditableLine} cur Current line.

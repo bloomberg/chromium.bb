@@ -708,7 +708,7 @@ Output.forceModeForNextSpeechUtterance_;
  * Calling this will make the next speech utterance use |mode| even if it would
  * normally queue or do a category flush. This differs from the |withQueueMode|
  * instance method as it can apply to future output.
- * @param {cvox.QueueMode|undefined} mode
+ * @param {cvox.QueueMode} mode
  */
 Output.forceModeForNextSpeechUtterance = function(mode) {
   Output.forceModeForNextSpeechUtterance_ = mode;
