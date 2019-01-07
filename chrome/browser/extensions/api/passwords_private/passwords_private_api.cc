@@ -111,11 +111,22 @@ ExtensionFunction::ResponseAction
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
-  delegate->RequestShowPassword(parameters->id, GetSenderWebContents());
+  delegate->RequestShowPassword(
+      parameters->id,
+      base::BindOnce(
+          &PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword, this),
+      GetSenderWebContents());
 
-  // No response given from this API function; instead, listeners wait for the
-  // chrome.passwordsPrivate.onPlaintextPasswordRetrieved event to fire.
-  return RespondNow(NoArguments());
+  // GotPassword() might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword(
+    base::Optional<base::string16> password) {
+  if (password)
+    Respond(OneArgument(std::make_unique<base::Value>(std::move(*password))));
+  else
+    Respond(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

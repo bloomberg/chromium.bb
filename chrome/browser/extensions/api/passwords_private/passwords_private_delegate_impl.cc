@@ -159,38 +159,37 @@ void PasswordsPrivateDelegateImpl::
 
 void PasswordsPrivateDelegateImpl::RequestShowPassword(
     int id,
+    PlaintextPasswordCallback callback,
     content::WebContents* web_contents) {
-  ExecuteFunction(
-      base::Bind(&PasswordsPrivateDelegateImpl::RequestShowPasswordInternal,
-                 base::Unretained(this), id, web_contents));
-}
-
-void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
-    int id,
-    content::WebContents* web_contents) {
-  // Save |web_contents| so that the call to RequestShowPassword() below
-  // can use this value by calling GetNativeWindow(). Note: This is safe because
-  // GetNativeWindow() will only be called immediately from
-  // RequestShowPassword().
-  // TODO(stevenjb): Pass this directly to RequestShowPassword(); see
-  // crbug.com/495290.
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
+  // called. Note: This is safe because the |web_contents| is used before
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
   web_contents_ = web_contents;
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
           password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
   const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
-  if (sort_key)
-    password_manager_presenter_->RequestShowPassword(*sort_key);
+  if (!sort_key) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  password_manager_presenter_->RequestShowPassword(*sort_key,
+                                                   std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(
     password_manager::ReauthPurpose purpose) {
 #if defined(OS_WIN)
-  return password_manager_util_win::AuthenticateUser(GetNativeWindow(),
-                                                     purpose);
+  DCHECK(web_contents_);
+  return password_manager_util_win::AuthenticateUser(
+      web_contents_->GetTopLevelNativeWindow(), purpose);
 #elif defined(OS_MACOSX)
   return password_manager_util_mac::AuthenticateUser(purpose);
 #else
@@ -200,17 +199,6 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
 
 Profile* PasswordsPrivateDelegateImpl::GetProfile() {
   return profile_;
-}
-
-void PasswordsPrivateDelegateImpl::ShowPassword(
-    const std::string& sort_key,
-    const base::string16& password_value) {
-  auto* router = PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
-  if (router) {
-    router->OnPlaintextPasswordFetched(
-        password_id_generator_.GenerateId(sort_key),
-        base::UTF16ToUTF8(password_value));
-  }
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordList(
@@ -283,10 +271,11 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
 void PasswordsPrivateDelegateImpl::ExportPasswords(
     base::OnceCallback<void(const std::string&)> callback,
     content::WebContents* web_contents) {
-  // Save |web_contents| so that it can be used later when GetNativeWindow() is
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
   // called. Note: This is safe because the |web_contents| is used before
-  // exiting this method. TODO(crbug.com/495290): Pass the native window
-  // directly to the reauth-handling code.
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
   web_contents_ = web_contents;
   if (!password_access_authenticator_.ForceUserReauthentication(
           password_manager::ReauthPurpose::EXPORT)) {
@@ -307,13 +296,6 @@ api::passwords_private::ExportProgressStatus
 PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
   return ConvertStatus(password_manager_porter_->GetExportProgressStatus());
 }
-
-#if !defined(OS_ANDROID)
-gfx::NativeWindow PasswordsPrivateDelegateImpl::GetNativeWindow() const {
-  DCHECK(web_contents_);
-  return web_contents_->GetTopLevelNativeWindow();
-}
-#endif
 
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,

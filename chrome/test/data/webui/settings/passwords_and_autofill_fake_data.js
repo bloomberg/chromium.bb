@@ -238,9 +238,11 @@ TestPasswordManager.prototype = {
   },
 
   /** @override */
-  getPlaintextPassword: function(id, callback) {
+  getPlaintextPassword: function(id) {
     this.actual_.requested.plaintextPassword++;
-    this.lastCallback.getPlaintextPassword = callback;
+    return new Promise(resolve => {
+      this.lastCallback.getPlaintextPassword = resolve;
+    });
   },
 
   /**

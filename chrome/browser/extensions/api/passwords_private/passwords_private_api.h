@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "extensions/browser/extension_function.h"
@@ -100,6 +102,8 @@ class PasswordsPrivateRequestPlaintextPasswordFunction :
   ResponseAction Run() override;
 
  private:
+  void GotPassword(base::Optional<base::string16> password);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRequestPlaintextPasswordFunction);
 };
 

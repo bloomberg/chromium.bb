@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -31,6 +33,9 @@ namespace extensions {
 // have changed.
 class PasswordsPrivateDelegate : public KeyedService {
  public:
+  using PlaintextPasswordCallback =
+      base::OnceCallback<void(base::Optional<base::string16>)>;
+
   ~PasswordsPrivateDelegate() override {}
 
   // Sends the saved passwords list to the event router.
@@ -67,9 +72,12 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Requests the plain text password for entry corresponding to the |id|
   // generated for each entry of the password list.
   // |id| the id created when going over the list of saved passwords.
+  // |callback| The callback that gets invoked with the saved password if it
+  // could be obtained successfully, or base::nullopt otherwise.
   // |web_contents| The web content object used as the UI; will be used to show
   //     an OS-level authentication dialog if necessary.
   virtual void RequestShowPassword(int id,
+                                   PlaintextPasswordCallback callback,
                                    content::WebContents* web_contents) = 0;
 
   // Trigger the password import procedure, allowing the user to select a file

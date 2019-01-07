@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -249,12 +250,15 @@ void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
   undo_manager_.Undo();
 }
 
-void PasswordManagerPresenter::RequestShowPassword(
-    const std::string& sort_key) {
 #if !defined(OS_ANDROID)  // This is never called on Android.
+void PasswordManagerPresenter::RequestShowPassword(
+    const std::string& sort_key,
+    base::OnceCallback<void(base::Optional<base::string16>)> callback) const {
   auto it = password_map_.find(sort_key);
-  if (it == password_map_.end())
+  if (it == password_map_.end()) {
+    std::move(callback).Run(base::nullopt);
     return;
+  }
 
   DCHECK(!it->second.empty());
   const auto& form = *it->second[0];
@@ -273,13 +277,13 @@ void PasswordManagerPresenter::RequestShowPassword(
   }
 
   // Call back the front end to reveal the password.
-  password_view_->ShowPassword(sort_key, form.password_value);
+  std::move(callback).Run(form.password_value);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.AccessPasswordInSettings",
       password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
       password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
-#endif
 }
+#endif
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
   PasswordStore* store = GetPasswordStore();

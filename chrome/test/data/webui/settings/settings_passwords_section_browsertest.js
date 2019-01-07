@@ -628,41 +628,26 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
                      .classList.contains('icon-visibility-off'));
     });
 
-    // Test will timeout if event is not received.
+    // Tests that invoking the plaintext password sets the corresponding
+    // password.
     test('onShowSavedPasswordEditDialog', function(done) {
       const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordDialog = createPasswordDialog(expectedItem);
-
-      passwordDialog.addEventListener('show-password', function(event) {
-        const actualItem = event.detail.item;
-        assertEquals(
-            expectedItem.loginPair.urls.origin,
-            actualItem.entry.loginPair.urls.origin);
-        assertEquals(
-            expectedItem.loginPair.username,
-            actualItem.entry.loginPair.username);
-        done();
-      });
+      assertEquals('', passwordDialog.item.password);
 
       passwordDialog.$.showPasswordButton.click();
+      assertEquals(1, passwordManager.actual_.requested.plaintextPassword);
+      done();
     });
 
     test('onShowSavedPasswordListItem', function(done) {
       const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordListItem = createPasswordListItem(expectedItem);
-
-      passwordListItem.addEventListener('show-password', function(event) {
-        const actualItem = event.detail.item;
-        assertEquals(
-            expectedItem.loginPair.urls.origin,
-            actualItem.entry.loginPair.urls.origin);
-        assertEquals(
-            expectedItem.loginPair.username,
-            actualItem.entry.loginPair.username);
-        done();
-      });
+      assertEquals('', passwordListItem.item.password);
 
       passwordListItem.$$('#showPasswordButton').click();
+      assertEquals(1, passwordManager.actual_.requested.plaintextPassword);
+      done();
     });
 
     test('closingPasswordsSectionHidesUndoToast', function(done) {

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
@@ -34,6 +35,12 @@ using ::testing::StrictMock;
 namespace extensions {
 
 namespace {
+
+template <typename T>
+base::OnceCallback<void(T)> GetCallbackArgument(T* arg) {
+  return base::BindOnce([](T* arg, T value) { *arg = std::move(value); },
+                        base::Unretained(arg));
+}
 
 template <typename T>
 class CallbackTracker {
@@ -219,21 +226,16 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
   // |delegate| to be completed.
   base::RunLoop().RunUntilIdle();
 
-  SetUpRouters();
-  PasswordEventObserver event_observer(
-      api::passwords_private::OnPlaintextPasswordRetrieved::kEventName);
-  event_router_->AddEventObserver(&event_observer);
-
   bool reauth_called = false;
   delegate.SetOsReauthCallForTesting(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
 
-  delegate.RequestShowPassword(0, nullptr);
+  base::Optional<base::string16> plaintext_password;
+  delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
+                               nullptr);
   EXPECT_TRUE(reauth_called);
-  EXPECT_EQ("test", event_observer.PassEventArgs()
-                        .GetList()[0]
-                        .FindKey("plaintextPassword")
-                        ->GetString());
+  EXPECT_TRUE(plaintext_password.has_value());
+  EXPECT_EQ(base::ASCIIToUTF16("test"), *plaintext_password);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
@@ -244,19 +246,15 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
   // |delegate| to be completed.
   base::RunLoop().RunUntilIdle();
 
-  SetUpRouters();
-  PasswordEventObserver event_observer(
-      api::passwords_private::OnPlaintextPasswordRetrieved::kEventName);
-  event_router_->AddEventObserver(&event_observer);
-
   bool reauth_called = false;
   delegate.SetOsReauthCallForTesting(base::BindRepeating(
       &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
 
-  delegate.RequestShowPassword(0, nullptr);
+  base::Optional<base::string16> plaintext_password;
+  delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
+                               nullptr);
   EXPECT_TRUE(reauth_called);
-  base::Value captured_args = event_observer.PassEventArgs();
-  EXPECT_EQ(base::Value::Type::NONE, captured_args.type()) << captured_args;
+  EXPECT_FALSE(plaintext_password.has_value());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {

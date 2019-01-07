@@ -28,6 +28,8 @@ class PasswordManagerProxy {
 
   /**
    * Request the list of saved passwords.
+   * TODO(https://crbug.com/919483): Return a promise instead of taking a
+   * callback argument.
    * @param {function(!Array<!PasswordManagerProxy.PasswordUiEntry>):void}
    *     callback
    */
@@ -61,6 +63,8 @@ class PasswordManagerProxy {
 
   /**
    * Request the list of password exceptions.
+   * TODO(https://crbug.com/919483): Return a promise instead of taking a
+   * callback argument.
    * @param {function(!Array<!PasswordManagerProxy.ExceptionEntry>):void}
    *     callback
    */
@@ -82,11 +86,11 @@ class PasswordManagerProxy {
   /**
    * Gets the saved password for a given login pair.
    * @param {number} id The id for password entry that should be
-   *     retrieved. No-op if |id| is not in the list.
-   * @param {function(!PasswordManagerProxy.PlaintextPasswordEvent):void}
-   *     callback
+   *     retrieved.
+   * @return {!Promise<(string|undefined)>} Gets invoked with the password if
+   *     it could be retrieved successfully.
    */
-  getPlaintextPassword(id, callback) {}
+  getPlaintextPassword(id) {}
 
   /**
    * Triggers the dialogue for importing passwords.
@@ -95,12 +99,16 @@ class PasswordManagerProxy {
 
   /**
    * Triggers the dialogue for exporting passwords.
+   * TODO(https://crbug.com/919483): Return a promise instead of taking a
+   * callback argument.
    * @param {function():void} callback
    */
   exportPasswords(callback) {}
 
   /**
    * Queries the status of any ongoing export.
+   * TODO(https://crbug.com/919483): Return a promise instead of taking a
+   * callback argument.
    * @param {function(!PasswordManagerProxy.ExportProgressStatus):void}
    *     callback
    */
@@ -131,9 +139,6 @@ PasswordManagerProxy.LoginPair;
 
 /** @typedef {chrome.passwordsPrivate.ExceptionEntry} */
 PasswordManagerProxy.ExceptionEntry;
-
-/** @typedef {chrome.passwordsPrivate.PlaintextPasswordEventParameters} */
-PasswordManagerProxy.PlaintextPasswordEvent;
 
 /**
  * @typedef {{ entry: !PasswordManagerProxy.PasswordUiEntry, password: string }}
@@ -205,17 +210,10 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  getPlaintextPassword(id, callback) {
-    const listener = function(reply) {
-      // Only handle the reply for our loginPair request.
-      if (reply.id == id) {
-        chrome.passwordsPrivate.onPlaintextPasswordRetrieved.removeListener(
-            listener);
-        callback(reply);
-      }
-    };
-    chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(listener);
-    chrome.passwordsPrivate.requestPlaintextPassword(id);
+  getPlaintextPassword(id) {
+    return new Promise(resolve => {
+      chrome.passwordsPrivate.requestPlaintextPassword(id, resolve);
+    });
   }
 
   /** @override */
