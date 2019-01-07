@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
-#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -416,22 +415,6 @@ String StyleName(SkPaint::Style style) {
   };
 }
 
-String TextEncodingName(SkTextEncoding encoding) {
-  switch (encoding) {
-    case kUTF8_SkTextEncoding:
-      return "UTF-8";
-    case kUTF16_SkTextEncoding:
-      return "UTF-16";
-    case kUTF32_SkTextEncoding:
-      return "UTF-32";
-    case kGlyphID_SkTextEncoding:
-      return "GlyphID";
-    default:
-      NOTREACHED();
-      return "?";
-  };
-}
-
 String HintingName(SkFontHinting hinting) {
   switch (hinting) {
     case SkFontHinting::kNone:
@@ -464,8 +447,6 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("strokeCap", StrokeCapName(paint.getStrokeCap()));
   paint_item->SetString("strokeJoin", StrokeJoinName(paint.getStrokeJoin()));
   paint_item->SetString("styleName", StyleName(paint.getStyle()));
-  paint_item->SetString("textEncoding",
-                        TextEncodingName(paint.getTextEncoding()));
   paint_item->SetString("hinting", HintingName(paint.getHinting()));
   if (paint.getBlendMode() != SkBlendMode::kSrcOver)
     paint_item->SetString("blendMode", SkBlendMode_Name(paint.getBlendMode()));

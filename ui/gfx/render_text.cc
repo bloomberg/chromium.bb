@@ -191,7 +191,6 @@ namespace internal {
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_(canvas), canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
-  flags_.setTextEncoding(cc::PaintFlags::kGlyphID_TextEncoding);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
   flags_.setAntiAlias(true);
   flags_.setSubpixelText(true);

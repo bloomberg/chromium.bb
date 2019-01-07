@@ -368,20 +368,6 @@ class PaintOpHelper {
     return "<unknown PaintFlags::Hinting>";
   }
 
-  static std::string SkiaTypeToString(PaintFlags::TextEncoding encoding) {
-    switch (encoding) {
-      case PaintFlags::kUTF8_TextEncoding:
-        return "kUTF8_TextEncoding";
-      case PaintFlags::kUTF16_TextEncoding:
-        return "kUTF16_TextEncoding";
-      case PaintFlags::kUTF32_TextEncoding:
-        return "kUTF32_TextEncoding";
-      case PaintFlags::kGlyphID_TextEncoding:
-        return "kGlyphID_TextEncoding";
-    }
-    return "<unknown PaintFlags::TextEncoding>";
-  }
-
   static std::string SkiaTypeToString(SkFilterQuality quality) {
     switch (quality) {
       case kNone_SkFilterQuality:
@@ -612,8 +598,6 @@ class PaintOpHelper {
     str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());
     str << ", isAutohinted=" << flags.isAutohinted();
     str << ", isDither=" << flags.isDither();
-    str << ", textEncoding="
-        << PaintOpHelper::SkiaTypeToString(flags.getTextEncoding());
     str << ", textSize="
         << PaintOpHelper::SkiaTypeToString(flags.getTextSize());
     str << ", filterQuality="
