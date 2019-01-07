@@ -22,6 +22,7 @@ Polymer({
   is: 'history-app',
 
   behaviors: [
+    FindShortcutBehavior,
     Polymer.IronScrollTargetBehavior,
   ],
 
@@ -205,23 +206,12 @@ Polymer({
   },
 
   /**
-   * Shows and focuses the search bar in the toolbar.
-   */
-  focusToolbarSearchField: function() {
-    this.$.toolbar.showSearchField();
-  },
-
-  /**
    * @param {Event} e
    * @private
    */
   onCanExecute_: function(e) {
     e = /** @type {cr.ui.CanExecuteEvent} */ (e);
     switch (e.command.id) {
-      case 'find-command':
-      case 'slash-command':
-        e.canExecute = !this.$.toolbar.searchField.isSearchFocused();
-        break;
       case 'delete-command':
         e.canExecute = this.$.toolbar.count > 0;
         break;
@@ -237,9 +227,7 @@ Polymer({
    * @private
    */
   onCommand_: function(e) {
-    if (e.command.id == 'find-command' || e.command.id == 'slash-command') {
-      this.focusToolbarSearchField();
-    } else if (e.command.id == 'delete-command') {
+    if (e.command.id == 'delete-command') {
       this.deleteSelected();
     } else if (e.command.id == 'select-all-command') {
       this.selectOrUnselectAll();
@@ -354,5 +342,19 @@ Polymer({
     md_history.BrowserService.getInstance().recordHistogram(
         'History.HistoryPageView', histogramValue,
         HistoryPageViewHistogram.END);
+  },
+
+  // Override FindShortcutBehavior methods.
+  handleFindShortcut: function(modalContextOpen) {
+    if (modalContextOpen) {
+      return false;
+    }
+    this.$.toolbar.searchField.showAndFocus();
+    return true;
+  },
+
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    return this.$.toolbar.searchField.isSearchFocused();
   },
 });

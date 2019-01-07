@@ -57,10 +57,6 @@ Polymer({
         .getSearchField();
   },
 
-  showSearchField: function() {
-    this.searchField.showAndFocus();
-  },
-
   deleteSelectedItems: function() {
     this.fire('delete-selected');
   },
