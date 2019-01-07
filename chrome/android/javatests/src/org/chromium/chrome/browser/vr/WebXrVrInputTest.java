@@ -838,11 +838,13 @@ public class WebXrVrInputTest {
                                 "generic_webxr_permission_page")),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
                     WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                             POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
                 });
+        NativeUiUtils.waitForUiQuiescence();
         // Click outside the prompt and ensure that it gets dismissed.
         NativeUiUtils.clickElement(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.55f, 0.0f));
