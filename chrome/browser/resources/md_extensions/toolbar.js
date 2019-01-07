@@ -184,6 +184,10 @@ cr.define('extensions', function() {
             this.isUpdating_ = false;
           });
     },
+
+    focusOnSearchInput: function() {
+      this.$$('cr-toolbar').getSearchField().showAndFocus();
+    },
   });
 
   return {
