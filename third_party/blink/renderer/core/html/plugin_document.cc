@@ -99,8 +99,8 @@ class PluginDocumentParser : public RawDataDocumentParser {
 
  private:
   void AppendBytes(const char*, size_t) override;
-
   void Finish() override;
+  void StopParsing() override;
 
   void CreateDocumentStructure();
 
@@ -111,6 +111,9 @@ class PluginDocumentParser : public RawDataDocumentParser {
 };
 
 void PluginDocumentParser::CreateDocumentStructure() {
+  if (embed_element_)
+    return;
+
   // FIXME: Assert we have a loader to figure out why the original null checks
   // and assert were added for the security bug in
   // http://trac.webkit.org/changeset/87566
@@ -183,12 +186,9 @@ void PluginDocumentParser::CreateDocumentStructure() {
 }
 
 void PluginDocumentParser::AppendBytes(const char* data, size_t length) {
-  if (!embed_element_) {
-    CreateDocumentStructure();
-    if (IsStopped())
-      return;
-  }
-
+  CreateDocumentStructure();
+  if (IsStopped())
+    return;
   if (!length)
     return;
   if (WebPluginContainerImpl* view = GetPluginView())
@@ -196,8 +196,14 @@ void PluginDocumentParser::AppendBytes(const char* data, size_t length) {
 }
 
 void PluginDocumentParser::Finish() {
+  CreateDocumentStructure();
   embed_element_ = nullptr;
   RawDataDocumentParser::Finish();
+}
+
+void PluginDocumentParser::StopParsing() {
+  CreateDocumentStructure();
+  RawDataDocumentParser::StopParsing();
 }
 
 WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {

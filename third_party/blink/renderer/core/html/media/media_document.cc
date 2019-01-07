@@ -54,25 +54,25 @@ namespace blink {
 
 using namespace html_names;
 
-// FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
  public:
-  static MediaDocumentParser* Create(MediaDocument* document) {
-    return MakeGarbageCollected<MediaDocumentParser>(document);
-  }
-
   explicit MediaDocumentParser(Document* document)
-      : RawDataDocumentParser(document), did_build_document_structure_(false) {}
+      : RawDataDocumentParser(document) {}
 
  private:
-  void AppendBytes(const char*, size_t) override;
+  void AppendBytes(const char*, size_t) override {}
+  void Finish() override;
 
   void CreateDocumentStructure();
 
-  bool did_build_document_structure_;
+  bool did_build_document_structure_ = false;
 };
 
 void MediaDocumentParser::CreateDocumentStructure() {
+  if (did_build_document_structure_)
+    return;
+  did_build_document_structure_ = true;
+
   DCHECK(GetDocument());
   HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*GetDocument());
   GetDocument()->AppendChild(root_element);
@@ -109,16 +109,11 @@ void MediaDocumentParser::CreateDocumentStructure() {
   if (IsDetached())
     return;  // DOM insertion events can detach the frame.
   root_element->AppendChild(body);
-
-  did_build_document_structure_ = true;
 }
 
-void MediaDocumentParser::AppendBytes(const char*, size_t) {
-  if (did_build_document_structure_)
-    return;
-
+void MediaDocumentParser::Finish() {
   CreateDocumentStructure();
-  Finish();
+  RawDataDocumentParser::Finish();
 }
 
 MediaDocument::MediaDocument(const DocumentInit& initializer)
@@ -134,7 +129,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
 }
 
 DocumentParser* MediaDocument::CreateParser() {
-  return MediaDocumentParser::Create(this);
+  return MakeGarbageCollected<MediaDocumentParser>(this);
 }
 
 void MediaDocument::DefaultEventHandler(Event& event) {
