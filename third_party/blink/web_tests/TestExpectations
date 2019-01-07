@@ -633,11 +633,6 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 
-crbug.com/855009 external/wpt/workers/semantics/structured-clone/dedicated.html [ Skip ]
-crbug.com/855009 external/wpt/workers/semantics/structured-clone/shared.html [ Skip ]
-crbug.com/855009 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/dedicated.html [ Skip ]
-crbug.com/855009 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/shared.html [ Skip ]
-
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
