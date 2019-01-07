@@ -54,6 +54,7 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemv.h"
+#include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/ethread.h"
@@ -5173,7 +5174,6 @@ static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
 }
 
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                                     int skip_adapt,
                                      unsigned int *frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
@@ -5450,8 +5450,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   cpi->seq_params_locked = 1;
 
-  if (skip_adapt) return AOM_CODEC_OK;
-
   // Update reference frame ids for reference frames this frame will overwrite
   if (seq_params->frame_id_numbers_present_flag) {
     for (int i = 0; i < REF_FRAMES; i++) {
@@ -5539,6 +5537,20 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   return AOM_CODEC_OK;
 }
 
+int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
+               const EncodeFrameParams *const frame_params,
+               EncodeFrameResults *const frame_results) {
+  // TODO(david.turner@argondesign.com): Copy data from frame_params to cpi and
+  // cm as appropriate
+
+  if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
+                                frame_params->frame_flags) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+
+  return AOM_CODEC_OK;
+}
+
 static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
   // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
   //               differently here for rc->avg_frame_bandwidth.
@@ -5591,14 +5603,13 @@ static void set_additional_frame_flags(AV1_COMMON *const cm,
 }
 
 static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                       int skip_adapt, unsigned int *frame_flags) {
+                       unsigned int *frame_flags) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     av1_rc_get_one_pass_cbr_params(cpi);
   } else {
     av1_rc_get_one_pass_vbr_params(cpi);
   }
-  if (encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags) !=
-      AOM_CODEC_OK) {
+  if (av1_encode_strategy(cpi, size, dest, frame_flags) != AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
   set_additional_frame_flags(&cpi->common, frame_flags);
@@ -5619,8 +5630,7 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->txcoeff_cost_count = 0;
 #endif
 
-  if (encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags) !=
-      AOM_CODEC_OK) {
+  if (av1_encode_strategy(cpi, size, dest, frame_flags) != AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
   set_additional_frame_flags(&cpi->common, frame_flags);
@@ -7017,7 +7027,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       return AOM_CODEC_ERROR;
   } else {
     // One pass encode
-    if (Pass0Encode(cpi, size, dest, 0, frame_flags) != AOM_CODEC_OK)
+    if (Pass0Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
   }
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {

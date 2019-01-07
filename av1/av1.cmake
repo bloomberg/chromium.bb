@@ -137,6 +137,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/encodemb.h"
             "${AOM_ROOT}/av1/encoder/encodemv.c"
             "${AOM_ROOT}/av1/encoder/encodemv.h"
+            "${AOM_ROOT}/av1/encoder/encode_strategy.c"
+            "${AOM_ROOT}/av1/encoder/encode_strategy.h"
             "${AOM_ROOT}/av1/encoder/encoder.c"
             "${AOM_ROOT}/av1/encoder/encoder.h"
             "${AOM_ROOT}/av1/encoder/encodetxb.c"

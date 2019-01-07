@@ -867,6 +867,18 @@ typedef struct AV1_COMP {
   int is_screen_content_type;
 } AV1_COMP;
 
+// EncodeFrameParams contains per-frame encoding parameters decided upon by
+// av1_encode_strategy() and passed down to av1_encode()
+typedef struct {
+  unsigned int *frame_flags;
+} EncodeFrameParams;
+
+// EncodeFrameResults contains information about the result of encoding a
+// single frame
+typedef struct {
+  size_t size;  // Size of resulting bitstream
+} EncodeFrameResults;
+
 // Must not be called more than once.
 void av1_initialize_enc(void);
 
@@ -886,6 +898,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
                             const aom_rational_t *timebase);
+
+int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
+               const EncodeFrameParams *const frame_params,
+               EncodeFrameResults *const frame_results);
 
 int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest);
 
