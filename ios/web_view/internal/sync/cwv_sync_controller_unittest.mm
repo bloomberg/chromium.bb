@@ -30,6 +30,7 @@
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
 #import "ios/web_view/public/cwv_sync_controller_delegate.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -65,10 +66,13 @@ class CWVSyncControllerTest : public PlatformTest {
                         &token_service_,
                         &account_tracker_service_,
                         &gaia_cookie_manager_service_),
+        identity_test_env_(&account_tracker_service_,
+                           &token_service_,
+                           &signin_manager_,
+                           &gaia_cookie_manager_service_),
         signin_error_controller_(
             SigninErrorController::AccountMode::ANY_ACCOUNT,
-            &token_service_,
-            &signin_manager_) {
+            identity_test_env_.identity_manager()) {
     web_state_.SetBrowserState(&browser_state_);
 
     browser_sync::ProfileSyncService::InitParams init_params;
@@ -122,6 +126,7 @@ class CWVSyncControllerTest : public PlatformTest {
   FakeProfileOAuth2TokenService token_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;
   CWVSyncController* sync_controller_;
   syncer::SyncServiceObserver* sync_service_observer_;

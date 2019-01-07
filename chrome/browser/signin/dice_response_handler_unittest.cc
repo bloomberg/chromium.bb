@@ -103,15 +103,14 @@ class DiceResponseHandlerTest : public testing::Test,
                         &token_service_,
                         &account_tracker_service_,
                         nullptr),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::PRIMARY_ACCOUNT,
-            &token_service_,
-            &signin_manager_),
         cookie_service_(&token_service_, &signin_client_),
         identity_test_env_(&account_tracker_service_,
                            &token_service_,
                            &signin_manager_,
                            &cookie_service_),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::PRIMARY_ACCOUNT,
+            identity_test_env_.identity_manager()),
         about_signin_internals_(&token_service_,
                                 &account_tracker_service_,
                                 identity_test_env_.identity_manager(),
@@ -207,9 +206,9 @@ class DiceResponseHandlerTest : public testing::Test,
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
   FakeSigninManager signin_manager_;
-  SigninErrorController signin_error_controller_;
   FakeGaiaCookieManagerService cookie_service_;
   identity::IdentityTestEnvironment identity_test_env_;
+  SigninErrorController signin_error_controller_;
   AboutSigninInternals about_signin_internals_;
   std::unique_ptr<AccountReconcilor> account_reconcilor_;
   std::unique_ptr<DiceResponseHandler> dice_response_handler_;

@@ -429,6 +429,7 @@ test("ios_web_view_unittests") {
     "//components/sync:test_support_driver",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/cpp:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

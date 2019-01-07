@@ -11,17 +11,15 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 // Keep track of auth errors and expose them to observers in the UI. Services
 // that wish to expose auth errors to the user should register an
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
 class SigninErrorController : public KeyedService,
-                              public OAuth2TokenService::Observer,
-                              public SigninManagerBase::Observer {
+                              public identity::IdentityManager::Observer {
  public:
   enum class AccountMode {
     // Signin error controller monitors all the accounts. When multiple accounts
@@ -42,8 +40,7 @@ class SigninErrorController : public KeyedService,
   };
 
   SigninErrorController(AccountMode mode,
-                        OAuth2TokenService* token_service,
-                        SigninManagerBase* signin_manager);
+                        identity::IdentityManager* identity_manager);
   ~SigninErrorController() override;
 
   // KeyedService implementation:
@@ -62,25 +59,20 @@ class SigninErrorController : public KeyedService,
   // Invoked when the auth status has changed.
   void Update();
 
-  // OAuth2TokenService::Observer implementation:
-  void OnEndBatchChanges() override;
-  void OnAuthErrorChanged(const std::string& account_id,
-                          const GoogleServiceAuthError& auth_error) override;
-
-  // SigninManagerBase::Observer implementation:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const AccountInfo& account_info) override;
+  // identity::IdentityManager::Observer:
+  void OnEndBatchOfRefreshTokenStateChanges() override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info,
+      const GoogleServiceAuthError& error) override;
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
   const AccountMode account_mode_;
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
 
-  // Used only in PRIMARY_ACCOUNT mode, where it must be non-null; otherwise,
-  // may be null.
-  SigninManagerBase* signin_manager_;
-  ScopedObserver<OAuth2TokenService, SigninErrorController>
-      scoped_token_service_observer_;
-  ScopedObserver<SigninManagerBase, SigninErrorController>
-      scoped_signin_manager_observer_;
+  ScopedObserver<identity::IdentityManager, SigninErrorController>
+      scoped_identity_manager_observer_;
 
   // The account that generated the last auth error.
   std::string error_account_id_;
