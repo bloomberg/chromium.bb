@@ -230,6 +230,11 @@ static_library("internals_test_support") {
     "fake_profile_oauth2_token_service.h",
     "fake_signin_manager.cc",
     "fake_signin_manager.h",
+
+    # TODO(https://crbug.com/907782): Move list_accounts_test_utils to
+    # //services/identity/public/cpp once FakeGCMS no longer depends on it.
+    "list_accounts_test_utils.cc",
+    "list_accounts_test_utils.h",
     "test_signin_client.cc",
     "test_signin_client.h",
   ]

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -49,59 +49,33 @@ FakeGaiaCookieManagerService::~FakeGaiaCookieManagerService() {
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseHttpNotFound() {
-  test_url_loader_factory_->AddResponse(
-      GaiaUrls::GetInstance()
-          ->ListAccountsURLWithSource(GaiaConstants::kChromeSource)
-          .spec(),
-      /*content=*/"", net::HTTP_NOT_FOUND);
+  signin::SetListAccountsResponseHttpNotFound(test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseWebLoginRequired() {
-  test_url_loader_factory_->AddResponse(
-      GaiaUrls::GetInstance()
-          ->ListAccountsURLWithSource(GaiaConstants::kChromeSource)
-          .spec(),
-      "Info=WebLoginRequired");
+  signin::SetListAccountsResponseWebLoginRequired(test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseWithParams(
-    const std::vector<CookieParams>& params) {
-  std::vector<std::string> response_body;
-  for (const auto& param : params) {
-    std::string response_part = base::StringPrintf(
-        "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"%s\"",
-        param.email.c_str(), param.valid ? 1 : 0, param.gaia_id.c_str());
-    if (param.signed_out || !param.verified) {
-      response_part +=
-          base::StringPrintf(", null, null, null, %d, %d",
-                             param.signed_out ? 1 : 0, param.verified ? 1 : 0);
-    }
-    response_part += "]";
-    response_body.push_back(response_part);
-  }
-
-  test_url_loader_factory_->AddResponse(
-      GaiaUrls::GetInstance()
-          ->ListAccountsURLWithSource(GaiaConstants::kChromeSource)
-          .spec(),
-      std::string("[\"f\", [") + base::JoinString(response_body, ", ") + "]]");
+    const std::vector<signin::CookieParams>& params) {
+  signin::SetListAccountsResponseWithParams(params, test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseNoAccounts() {
-  SetListAccountsResponseWithParams({});
+  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccount(
     const std::string& email,
     const std::string& gaia_id) {
-  CookieParams params = {email, gaia_id, true /* valid */,
-                         false /* signed_out */, true /* verified */};
-  SetListAccountsResponseWithParams({params});
+  signin::SetListAccountsResponseOneAccount(email, gaia_id,
+                                            test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccountWithParams(
-    const CookieParams& params) {
-  SetListAccountsResponseWithParams({params});
+    const signin::CookieParams& params) {
+  signin::SetListAccountsResponseOneAccountWithParams(params,
+                                                      test_url_loader_factory_);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
@@ -109,11 +83,8 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
     const std::string& gaia_id1,
     const std::string& email2,
     const std::string& gaia_id2) {
-  SetListAccountsResponseWithParams(
-      {{email1, gaia_id1, true /* valid */, false /* signed_out */,
-        true /* verified */},
-       {email2, gaia_id2, true /* valid */, false /* signed_out */,
-        true /* verified */}});
+  signin::SetListAccountsResponseTwoAccounts(email1, gaia_id1, email2, gaia_id2,
+                                             test_url_loader_factory_);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

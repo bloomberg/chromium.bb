@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace network {
@@ -18,15 +19,6 @@ class WeakWrapperSharedURLLoaderFactory;
 
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
-  // Parameters for the fake ListAccounts response.
-  struct CookieParams {
-    std::string email;
-    std::string gaia_id;
-    bool valid;
-    bool signed_out;
-    bool verified;
-  };
-
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
                                SigninClient* client);
 
@@ -47,13 +39,14 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   void SetListAccountsResponseHttpNotFound();
   void SetListAccountsResponseWebLoginRequired();
   void SetListAccountsResponseWithParams(
-      const std::vector<CookieParams>& params);
+      const std::vector<signin::CookieParams>& params);
 
   // Helper methods, equivalent to calling SetListAccountsResponseWithParams().
   void SetListAccountsResponseNoAccounts();
   void SetListAccountsResponseOneAccount(const std::string& email,
                                          const std::string& gaia_id);
-  void SetListAccountsResponseOneAccountWithParams(const CookieParams& params);
+  void SetListAccountsResponseOneAccountWithParams(
+      const signin::CookieParams& params);
   void SetListAccountsResponseTwoAccounts(const std::string& email1,
                                           const std::string& gaia_id1,
                                           const std::string& email2,
