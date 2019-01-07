@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -488,7 +490,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
 
   // Navigates to an empty page and runs |javascript| to create a URL with with
   // a scheme of |scheme|. Expects a security level of NONE if
-  // |use_secure_inner_origin| is true and HTTP_SHOW_WARNING otherwise.
+  // |use_secure_inner_origin| is true and DANGEROUS otherwise.
   void TestBlobOrFilesystemURL(const std::string& scheme,
                                const std::string& javascript,
                                bool use_secure_inner_origin) {
@@ -521,8 +523,25 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
         contents->GetController().GetVisibleEntry();
     ASSERT_TRUE(entry);
 
+    // TODO(crbug.com/917693): Remove this conditional and hard-code the test
+    // expectation to DANGEROUS when the feature fully launches.
+    security_state::SecurityLevel expected_security_level =
+        security_state::NONE;
+    if (base::FeatureList::IsEnabled(
+            security_state::features::kMarkHttpAsFeature)) {
+      std::string parameter = base::GetFieldTrialParamValueByFeature(
+          security_state::features::kMarkHttpAsFeature,
+          security_state::features::kMarkHttpAsFeatureParameterName);
+      if (parameter ==
+          security_state::features::kMarkHttpAsParameterDangerous) {
+        expected_security_level = security_state::DANGEROUS;
+      } else {
+        expected_security_level = security_state::HTTP_SHOW_WARNING;
+      }
+    }
+
     EXPECT_EQ(use_secure_inner_origin ? security_state::NONE
-                                      : security_state::HTTP_SHOW_WARNING,
+                                      : expected_security_level,
               security_info.security_level);
   }
 
