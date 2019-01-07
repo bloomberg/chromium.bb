@@ -781,13 +781,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
     // the default url loader if the all |interceptors_| doesn't handle the
-    // redirected request. If the network service is enabled, only certain
-    // schemes are handled by the default URL loader. We need to make sure the
-    // redirected URL is a handled scheme, otherwise reset the loader so the
-    // correct non-network service loader can be used.
+    // redirected request. If the network service is enabled, reset the loader
+    // if the redirected URL's scheme and the previous URL scheme don't match in
+    // their use or disuse of the network service loader.
     if (!default_loader_used_ ||
         (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !IsURLHandledByDefaultLoader(resource_request_->url))) {
+         url_chain_.size() > 1 &&
+         IsURLHandledByDefaultLoader(url_chain_[url_chain_.size() - 1]) !=
+             IsURLHandledByDefaultLoader(url_chain_[url_chain_.size() - 2]))) {
       url_loader_.reset();
     }
     interceptor_index_ = 0;

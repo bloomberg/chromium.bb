@@ -4387,6 +4387,40 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
   return logging::GetLogFileName(command_line);
 }
 
+namespace {
+// TODO(jam): move this to a separate file.
+class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
+ public:
+  explicit ProtocolHandlerThrottle(
+      const scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>&
+          protocol_handler_registry)
+      : protocol_handler_registry_(protocol_handler_registry) {}
+  ~ProtocolHandlerThrottle() override = default;
+
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    GURL translated_url = protocol_handler_registry_->Translate(request->url);
+    if (!translated_url.is_empty())
+      request->url = translated_url;
+  }
+
+  void WillRedirectRequest(net::RedirectInfo* redirect_info,
+                           const network::ResourceResponseHead& response_head,
+                           bool* defer,
+                           std::vector<std::string>* to_be_removed_headers,
+                           net::HttpRequestHeaders* modified_headers) override {
+    GURL translated_url =
+        protocol_handler_registry_->Translate(redirect_info->new_url);
+    if (!translated_url.is_empty())
+      redirect_info->new_url = translated_url;
+  }
+
+ private:
+  scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
+      protocol_handler_registry_;
+};
+}  // namespace
+
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
@@ -4472,6 +4506,11 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             ->GetClientDataHeader(is_signed_in)};
     result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
         is_off_the_record, std::move(dynamic_params)));
+
+    if (network_service_enabled) {
+      result.push_back(std::make_unique<ProtocolHandlerThrottle>(
+          io_data->protocol_handler_registry_io_thread_delegate()));
+    }
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -5,9 +5,6 @@
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/769401
 
-# Uncategorized timeouts or test failures.
--RegisterProtocolHandlerBrowserTest.CustomHandler
-
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
 -ProfileBrowserTest.SeparateMediaCache
