@@ -38,6 +38,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/backoff_entry.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -357,10 +358,17 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserExpiredToken) {
   IssueOAuthToken(kOAuthToken, mock_time_task_runner_->Now() - kTokenLifetime);
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_TRUE(token_forwarder->IsTokenRefreshScheduledForTesting());
-  // If the token is expired then next token fetch is scheduled with the default
-  // retry delay.
-  EXPECT_EQ(token_forwarder->GetTokenRefreshDelayForTesting(),
-            UserCloudPolicyTokenForwarder::kFetchTokenRetryDelay);
+  // If the token fetch fails then next token fetch is scheduled according to
+  // backoff policy.
+  const double max_initial_retry_delay =
+      UserCloudPolicyTokenForwarder::kFetchTokenRetryBackoffPolicy
+          .initial_delay_ms *
+      UserCloudPolicyTokenForwarder::kFetchTokenRetryBackoffPolicy
+          .multiply_factor;
+  const double retry_delay =
+      token_forwarder->GetTokenRefreshDelayForTesting()->InMilliseconds();
+  EXPECT_LE(retry_delay, max_initial_retry_delay);
+  EXPECT_GT(retry_delay, 0);
 
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
@@ -381,10 +389,17 @@ TEST_F(UserCloudPolicyTokenForwarderTest, ChildUserTokenFetchFailed) {
   IssueOAuthTokenError();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
   EXPECT_TRUE(token_forwarder->IsTokenRefreshScheduledForTesting());
-  // If the token fetch fails then next token fetch is scheduled with the
-  // default retry delay.
-  EXPECT_EQ(token_forwarder->GetTokenRefreshDelayForTesting(),
-            UserCloudPolicyTokenForwarder::kFetchTokenRetryDelay);
+  // If the token fetch fails then next token fetch is scheduled according to
+  // backoff policy.
+  const double max_initial_retry_delay =
+      UserCloudPolicyTokenForwarder::kFetchTokenRetryBackoffPolicy
+          .initial_delay_ms *
+      UserCloudPolicyTokenForwarder::kFetchTokenRetryBackoffPolicy
+          .multiply_factor;
+  const double retry_delay =
+      token_forwarder->GetTokenRefreshDelayForTesting()->InMilliseconds();
+  EXPECT_LE(retry_delay, max_initial_retry_delay);
+  EXPECT_GT(retry_delay, 0);
 
   token_forwarder->Shutdown();
   EXPECT_FALSE(token_forwarder->IsTokenFetchInProgressForTesting());
