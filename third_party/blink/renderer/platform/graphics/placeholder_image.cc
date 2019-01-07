@@ -49,30 +49,36 @@ constexpr int kFontSize = 14;
 void DrawIcon(cc::PaintCanvas* canvas,
               const PaintFlags& flags,
               float x,
-              float y) {
+              float y,
+              float scale_factor) {
+  // Note that |icon_image| will be a 0x0 image when running
+  // blink_platform_unittests.
   DEFINE_STATIC_REF(Image, icon_image,
                     (Image::LoadPlatformResource("placeholderIcon")));
-  DCHECK(!icon_image->IsNull());
 
   // Note that the |icon_image| is not scaled according to dest_rect / src_rect,
   // and is always drawn at the same size. This is so that placeholder icons are
   // visible (e.g. when replacing a large image that's scaled down to a small
   // area) and so that all placeholder images on the same page look consistent.
-  canvas->drawImageRect(icon_image->PaintImageForCurrentFrame(),
-                        IntRect(IntPoint::Zero(), icon_image->Size()),
-                        FloatRect(x, y, kIconWidth, kIconHeight), &flags,
-                        cc::PaintCanvas::kFast_SrcRectConstraint);
+  canvas->drawImageRect(
+      icon_image->PaintImageForCurrentFrame(),
+      IntRect(IntPoint::Zero(), icon_image->Size()),
+      FloatRect(x, y, scale_factor * kIconWidth, scale_factor * kIconHeight),
+      &flags, cc::PaintCanvas::kFast_SrcRectConstraint);
 }
 
 void DrawCenteredIcon(cc::PaintCanvas* canvas,
                       const PaintFlags& flags,
-                      const FloatRect& dest_rect) {
-  DrawIcon(canvas, flags,
-           dest_rect.X() + (dest_rect.Width() - kIconWidth) / 2.0f,
-           dest_rect.Y() + (dest_rect.Height() - kIconHeight) / 2.0f);
+                      const FloatRect& dest_rect,
+                      float scale_factor) {
+  DrawIcon(
+      canvas, flags,
+      dest_rect.X() + (dest_rect.Width() - scale_factor * kIconWidth) / 2.0f,
+      dest_rect.Y() + (dest_rect.Height() - scale_factor * kIconHeight) / 2.0f,
+      scale_factor);
 }
 
-FontDescription CreatePlaceholderFontDescription() {
+FontDescription CreatePlaceholderFontDescription(float scale_factor) {
   FontDescription description;
   description.FirstFamily().SetFamily("Roboto");
 
@@ -88,7 +94,7 @@ FontDescription CreatePlaceholderFontDescription() {
   description.FirstFamily().AppendFamily(std::move(helvetica_neue));
 
   description.SetGenericFamily(FontDescription::kSansSerifFamily);
-  description.SetComputedSize(kFontSize);
+  description.SetComputedSize(scale_factor * kFontSize);
   description.SetWeight(FontSelectionValue(500));
 
   return description;
@@ -152,13 +158,24 @@ String FormatOriginalResourceSizeBytes(int64_t bytes) {
 // can share the same Font.
 class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
  public:
-  static scoped_refptr<SharedFont> GetOrCreateInstance() {
-    if (g_instance_)
-      return scoped_refptr<SharedFont>(g_instance_);
+  static scoped_refptr<SharedFont> GetOrCreateInstance(float scale_factor) {
+    if (g_instance_) {
+      scoped_refptr<SharedFont> shared_font(g_instance_);
+      shared_font->MaybeUpdateForScaleFactor(scale_factor);
+      return shared_font;
+    }
 
-    scoped_refptr<SharedFont> shared_font(base::AdoptRef(new SharedFont()));
+    scoped_refptr<SharedFont> shared_font =
+        base::MakeRefCounted<SharedFont>(scale_factor);
     g_instance_ = shared_font.get();
     return shared_font;
+  }
+
+  // This constructor is public so that base::MakeRefCounted() can call it.
+  explicit SharedFont(float scale_factor)
+      : font_(CreatePlaceholderFontDescription(scale_factor)),
+        scale_factor_(scale_factor) {
+    font_.Update(nullptr);
   }
 
   ~SharedFont() {
@@ -166,15 +183,22 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
     g_instance_ = nullptr;
   }
 
-  const Font& font() const { return font_; }
+  void MaybeUpdateForScaleFactor(float scale_factor) {
+    if (scale_factor_ == scale_factor)
+      return;
 
- private:
-  SharedFont() : font_(CreatePlaceholderFontDescription()) {
+    scale_factor_ = scale_factor;
+    font_ = Font(CreatePlaceholderFontDescription(scale_factor_));
     font_.Update(nullptr);
   }
 
+  const Font& font() const { return font_; }
+
+ private:
   static SharedFont* g_instance_;
+
   Font font_;
+  float scale_factor_;
 };
 
 // static
@@ -237,6 +261,15 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
       .TakePaintImage();
 }
 
+void PlaceholderImage::SetIconAndTextScaleFactor(
+    float icon_and_text_scale_factor) {
+  if (icon_and_text_scale_factor_ == icon_and_text_scale_factor)
+    return;
+  icon_and_text_scale_factor_ = icon_and_text_scale_factor;
+  cached_text_width_.reset();
+  paint_record_for_current_frame_.reset();
+}
+
 void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
                             const PaintFlags& base_flags,
                             const FloatRect& dest_rect,
@@ -259,27 +292,35 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
   flags.setColor(SkColorSetARGB(0x80, 0xD9, 0xD9, 0xD9));
   canvas->drawRect(dest_rect, flags);
 
-  if (dest_rect.Width() < kIconWidth + 2 * kFeaturePaddingX ||
-      dest_rect.Height() < kIconHeight + 2 * kIconPaddingY) {
+  if (dest_rect.Width() <
+          icon_and_text_scale_factor_ * (kIconWidth + 2 * kFeaturePaddingX) ||
+      dest_rect.Height() <
+          icon_and_text_scale_factor_ * (kIconHeight + 2 * kIconPaddingY)) {
     return;
   }
 
   if (text_.IsEmpty()) {
-    DrawCenteredIcon(canvas, base_flags, dest_rect);
+    DrawCenteredIcon(canvas, base_flags, dest_rect,
+                     icon_and_text_scale_factor_);
     return;
   }
 
   if (!shared_font_)
-    shared_font_ = SharedFont::GetOrCreateInstance();
+    shared_font_ = SharedFont::GetOrCreateInstance(icon_and_text_scale_factor_);
+  else
+    shared_font_->MaybeUpdateForScaleFactor(icon_and_text_scale_factor_);
+
   if (!cached_text_width_.has_value())
     cached_text_width_ = shared_font_->font().Width(TextRun(text_));
 
   const float icon_and_text_width =
       cached_text_width_.value() +
-      (kIconWidth + 2 * kFeaturePaddingX + kPaddingBetweenIconAndText);
+      icon_and_text_scale_factor_ *
+          (kIconWidth + 2 * kFeaturePaddingX + kPaddingBetweenIconAndText);
 
   if (dest_rect.Width() < icon_and_text_width) {
-    DrawCenteredIcon(canvas, base_flags, dest_rect);
+    DrawCenteredIcon(canvas, base_flags, dest_rect,
+                     icon_and_text_scale_factor_);
     return;
   }
 
@@ -287,25 +328,32 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
       dest_rect.X() + (dest_rect.Width() - icon_and_text_width) / 2.0f;
   const float feature_y =
       dest_rect.Y() +
-      (dest_rect.Height() - (kIconHeight + 2 * kIconPaddingY)) / 2.0f;
+      (dest_rect.Height() -
+       icon_and_text_scale_factor_ * (kIconHeight + 2 * kIconPaddingY)) /
+          2.0f;
 
   float icon_x, text_x;
   if (Locale::DefaultLocale().IsRTL()) {
     icon_x = feature_x + cached_text_width_.value() +
-             (kFeaturePaddingX + kPaddingBetweenIconAndText);
-    text_x = feature_x + kFeaturePaddingX;
+             icon_and_text_scale_factor_ *
+                 (kFeaturePaddingX + kPaddingBetweenIconAndText);
+    text_x = feature_x + icon_and_text_scale_factor_ * kFeaturePaddingX;
   } else {
-    icon_x = feature_x + kFeaturePaddingX;
+    icon_x = feature_x + icon_and_text_scale_factor_ * kFeaturePaddingX;
     text_x = feature_x +
-             (kFeaturePaddingX + kIconWidth + kPaddingBetweenIconAndText);
+             icon_and_text_scale_factor_ *
+                 (kFeaturePaddingX + kIconWidth + kPaddingBetweenIconAndText);
   }
 
-  DrawIcon(canvas, base_flags, icon_x, feature_y + kIconPaddingY);
+  DrawIcon(canvas, base_flags, icon_x,
+           feature_y + icon_and_text_scale_factor_ * kIconPaddingY,
+           icon_and_text_scale_factor_);
 
   flags.setColor(SkColorSetARGB(0xAB, 0, 0, 0));
   shared_font_->font().DrawBidiText(
       canvas, TextRunPaintInfo(TextRun(text_)),
-      FloatPoint(text_x, feature_y + (kTextPaddingY + kFontSize)),
+      FloatPoint(text_x, feature_y + icon_and_text_scale_factor_ *
+                                         (kTextPaddingY + kFontSize)),
       Font::kUseFallbackIfFontNotReady, 1.0f, flags);
 }
 
@@ -337,6 +385,10 @@ void PlaceholderImage::DestroyDecodedData() {
 Image::SizeAvailability PlaceholderImage::SetData(scoped_refptr<SharedBuffer>,
                                                   bool) {
   return Image::kSizeAvailable;
+}
+
+const Font* PlaceholderImage::GetFontForTesting() const {
+  return shared_font_ ? &shared_font_->font() : nullptr;
 }
 
 }  // namespace blink
