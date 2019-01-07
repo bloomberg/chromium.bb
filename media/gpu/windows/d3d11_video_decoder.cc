@@ -294,7 +294,15 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       NotifyError("Failed to get decoder config");
       return;
     }
-    if (dec_config.ConfigBitstreamRaw == 2) {
+
+    if (IsVP9(config) && dec_config.ConfigBitstreamRaw == 1) {
+      // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
+      found = true;
+      break;
+    }
+
+    if (IsH264(config) && dec_config.ConfigBitstreamRaw == 2) {
+      // ConfigBitstreamRaw == 2 means the decoder uses DXVA_Slice_H264_Short.
       found = true;
       break;
     }
