@@ -87,6 +87,18 @@ class UI_BASE_EXPORT Cursor {
     Assign(cursor);
   }
 
+  // Checks if the data in |rhs| was created from the same input data.
+  //
+  // This is subtly different from operator==, as we need this to be a
+  // lightweight operation instead of performing pixel equality checks on
+  // arbitrary sized SkBitmaps. So we check the internal SkBitmap generation
+  // IDs, which are per-process, monotonically increasing ids which get changed
+  // whenever there's a modification to the pixel data. This means that this
+  // method can have false negatives: two SkBitmap instances made with the same
+  // input data (but which weren't copied from each other) can have equal pixel
+  // data, but different generation ids.
+  bool IsSameAs(const Cursor& rhs) const;
+
  private:
   void Assign(const Cursor& cursor);
 

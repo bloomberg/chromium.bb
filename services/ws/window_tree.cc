@@ -54,6 +54,10 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/cursor_factory_ozone.h"
+#endif
+
 namespace ws {
 namespace {
 
@@ -1273,7 +1277,7 @@ bool WindowTree::SetFocusImpl(const ClientWindowId& window_id) {
 }
 
 bool WindowTree::SetCursorImpl(const ClientWindowId& window_id,
-                               ui::CursorData cursor) {
+                               ui::Cursor cursor) {
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
     DVLOG(1) << "SetCursor failed (no window)";
@@ -1286,16 +1290,26 @@ bool WindowTree::SetCursorImpl(const ClientWindowId& window_id,
 
   auto* proxy_window = ProxyWindow::GetMayBeNull(window);
 
-  ui::Cursor old_cursor_type = cursor.ToNativeCursor();
+#if defined(USE_OZONE)
+  auto* factory = ui::CursorFactoryOzone::GetInstance();
+  if (cursor.native_type() != ui::CursorType::kCustom) {
+    cursor.SetPlatformCursor(factory->GetDefaultCursor(cursor.native_type()));
+  } else {
+    cursor.SetPlatformCursor(factory->CreateImageCursor(
+        cursor.GetBitmap(), cursor.GetHotspot(), cursor.device_scale_factor()));
+    cursor.UnrefCustomCursor();
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
 
   // Ask our delegate to set the cursor. This will save the cursor for toplevels
   // and also update the active cursor if appropriate (i.e. if |window| is the
   // last to have set the cursor/is currently hovered).
-  if (!window_service_->delegate()->StoreAndSetCursor(window,
-                                                      old_cursor_type)) {
+  if (!window_service_->delegate()->StoreAndSetCursor(window, cursor)) {
     // Store the cursor on ProxyWindow. This will later be accessed by the
     // WindowDelegate for non-toplevels, i.e. WindowDelegateImpl.
-    proxy_window->StoreCursor(old_cursor_type);
+    proxy_window->StoreCursor(cursor);
   }
 
   return true;
@@ -1855,7 +1869,7 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
 
 void WindowTree::SetCursor(uint32_t change_id,
                            Id transport_window_id,
-                           ui::CursorData cursor) {
+                           ui::Cursor cursor) {
   window_tree_client_->OnChangeCompleted(
       change_id,
       SetCursorImpl(MakeClientWindowId(transport_window_id), cursor));

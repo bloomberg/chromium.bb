@@ -38,7 +38,6 @@ _typemap_imports = [
   "//services/proxy_resolver/public/cpp/typemaps.gni",
   "//services/resource_coordinator/public/cpp/typemaps.gni",
   "//services/service_manager/public/cpp/typemaps.gni",
-  "//services/ws/public/mojom/cursor/typemaps.gni",
   "//services/ws/public/mojom/ime/typemaps.gni",
   "//services/viz/privileged/cpp/typemaps.gni",
   "//services/viz/privileged/interfaces/compositing/typemaps.gni",

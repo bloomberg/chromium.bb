@@ -253,7 +253,7 @@ void InFlightPropertyChange::Revert() {
 // InFlightCursorChange ----------------------------------------------------
 
 InFlightCursorChange::InFlightCursorChange(WindowMus* window,
-                                           const ui::CursorData& revert_value)
+                                           const ui::Cursor& revert_value)
     : InFlightChange(window, ChangeType::CURSOR),
       revert_cursor_(revert_value) {}
 

@@ -105,7 +105,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       ui::Cursor cursor(ui::CursorType::kCustom);
       SkBitmap bitmap;
       gfx::Point hotspot;
-      float scale_factor;
+      float scale_factor = 1.f;
       CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot,
                                                  &scale_factor);
       cursor.set_custom_bitmap(bitmap);

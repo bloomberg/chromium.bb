@@ -228,7 +228,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
                                ws::mojom::EventTargetingPolicy policy) override;
   void SetCursor(uint32_t change_id,
                  ws::Id transport_window_id,
-                 ui::CursorData cursor_data) override;
+                 ui::Cursor cursor) override;
   void SetWindowTextInputState(ws::Id window_id,
                                ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(ws::Id window_id,
