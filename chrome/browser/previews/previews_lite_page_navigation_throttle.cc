@@ -537,7 +537,7 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
     // it is pointing towards the original page, it is considered a bypass.
     // Otherwise it is just a forwarded bypass.
     if (GURL(original_url) == navigation_handle()->GetURL()) {
-      GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kBypass;
+      SetServerLitePageInfoStatus(previews::ServerLitePageStatus::kBypass);
       manager_->AddSingleBypass(navigation_handle()->GetURL().spec());
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "Previews.ServerLitePage.HttpOnlyFallbackPenalty",
@@ -569,7 +569,7 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
     // Otherwise fall out of this if and potentially trigger again.
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               ServerResponse::kRedirect);
-    GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kRedirect;
+    SetServerLitePageInfoStatus(previews::ServerLitePageStatus::kRedirect);
   }
 
   return MaybeNavigateToPreview();
@@ -585,7 +585,7 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
 
   UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                             ServerResponse::kFailed);
-  GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kFailure;
+  SetServerLitePageInfoStatus(previews::ServerLitePageStatus::kFailure);
 
   // The Preview was triggered but there was some irrecoverable issue (like
   // there is no network connection). Load the original page and let it go
@@ -593,7 +593,8 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
   LoadAndBypass(
       navigation_handle()->GetWebContents(), manager_,
       MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string()),
-      GetServerLitePageInfo()->Clone(), true);
+      GetServerLitePageInfo() ? GetServerLitePageInfo()->Clone() : nullptr,
+      true);
   return content::NavigationThrottle::CANCEL;
 }
 
@@ -683,6 +684,15 @@ PreviewsLitePageNavigationThrottle::GetServerLitePageInfo() const {
     return nullptr;
 
   return previews_data->server_lite_page_info();
+}
+
+void PreviewsLitePageNavigationThrottle::SetServerLitePageInfoStatus(
+    previews::ServerLitePageStatus status) {
+  previews::PreviewsUserData::ServerLitePageInfo* info =
+      GetServerLitePageInfo();
+  if (!info)
+    return;
+  info->status = status;
 }
 
 previews::PreviewsUserData::ServerLitePageInfo*

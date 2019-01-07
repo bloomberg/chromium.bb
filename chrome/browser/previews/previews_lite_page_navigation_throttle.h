@@ -142,6 +142,10 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // navigation, if there is one. If not, returns nullptr.
   previews::PreviewsUserData::ServerLitePageInfo* GetServerLitePageInfo() const;
 
+  // Safely sets the status of the ServerLitePageInfo struct from an existing
+  // attempted lite page navigation, if there is one. If not, does nothing.
+  void SetServerLitePageInfoStatus(previews::ServerLitePageStatus status);
+
   // Gets the ServerLitePageInfo struct from an existing attempted lite page
   // navigation, if there is one. If not, returns a new ServerLitePageInfo
   // initialized with metadata from navigation_handle() and |this| that is owned
