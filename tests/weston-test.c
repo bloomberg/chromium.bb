@@ -36,12 +36,6 @@
 #include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 
-#ifdef ENABLE_EGL
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include "weston-egl-ext.h"
-#endif /* ENABLE_EGL */
-
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 

@@ -45,10 +45,7 @@ exe_plugin_test = shared_library(
 	weston_test_server_protocol_h,
 	weston_test_protocol_c,
 	include_directories: include_directories('..', '../shared'),
-	dependencies: [
-		dep_libweston,
-		dependency('egl'),
-	],
+	dependencies: [ dep_libweston ],
 	name_prefix: '',
 	install: false,
 )

@@ -1376,11 +1376,6 @@ weston_test_desktop_shell_la_SOURCES = 			\
 	tests/weston-test-desktop-shell.c		\
 	shared/helpers.h
 
-if ENABLE_EGL
-weston_test_la_CFLAGS += $(EGL_TESTS_CFLAGS)
-weston_test_la_LDFLAGS += $(EGL_TESTS_LIBS)
-endif
-
 libtest_runner_la_SOURCES =			\
 	tests/weston-test-runner.c		\
 	tests/weston-test-runner.h
