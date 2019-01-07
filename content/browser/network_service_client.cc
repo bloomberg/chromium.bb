@@ -424,8 +424,12 @@ NetworkServiceClient::NetworkServiceClient(
                               base::Unretained(this))))
 #endif
 {
-  if (IsOutOfProcessNetworkService())
+  if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->AddObserver(this);
+    memory_pressure_listener_ =
+        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
+            &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
+  }
 }
 
 NetworkServiceClient::~NetworkServiceClient() {
@@ -591,6 +595,11 @@ void NetworkServiceClient::OnClearSiteData(int process_id,
 
 void NetworkServiceClient::OnCertDBChanged() {
   GetNetworkService()->OnCertDBChanged();
+}
+
+void NetworkServiceClient::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  GetNetworkService()->OnMemoryPressure(memory_pressure_level);
 }
 
 #if defined(OS_ANDROID)

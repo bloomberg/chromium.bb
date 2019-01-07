@@ -182,6 +182,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void AddCorbExceptionForPlugin(uint32_t process_id) override;
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
+  void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
+                            memory_pressure_level) override;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif

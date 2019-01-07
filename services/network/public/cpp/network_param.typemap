@@ -4,6 +4,7 @@
 
 mojom = "//services/network/public/mojom/network_param.mojom"
 public_headers = [
+  "//base/memory/memory_pressure_listener.h",
   "//net/base/auth.h",
   "//net/base/host_port_pair.h",
   "//net/cert/cert_verify_result.h",
@@ -40,6 +41,7 @@ type_mappings = [
   "network.mojom.HostPortPair=net::HostPortPair",
   "network.mojom.HttpResponseHeaders=scoped_refptr<net::HttpResponseHeaders>[nullable_is_same_type]",
   "network.mojom.HttpVersion=net::HttpVersion",
+  "network.mojom.MemoryPressureLevel=base::MemoryPressureListener::MemoryPressureLevel",
   "network.mojom.SSLCertRequestInfo=scoped_refptr<net::SSLCertRequestInfo>[nullable_is_same_type]",
   "network.mojom.SSLInfo=net::SSLInfo",
   "network.mojom.X509Certificate=scoped_refptr<net::X509Certificate>[nullable_is_same_type]",

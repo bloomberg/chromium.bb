@@ -352,6 +352,9 @@ interface NetworkService {
   // Reverts AddCorbExceptionForPlugin.
   RemoveCorbExceptionForPlugin(uint32 process_id);
 
+  // Called when the system is low on memory.
+  OnMemoryPressure(MemoryPressureLevel memory_pressure_level);
+
   // Called on state changes of the Android application.
   [EnableIf=is_android]
   OnApplicationStateChange(ApplicationState state);

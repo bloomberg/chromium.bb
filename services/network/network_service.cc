@@ -519,6 +519,11 @@ void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
 }
 
+void NetworkService::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
+}
+
 #if defined(OS_ANDROID)
 void NetworkService::OnApplicationStateChange(
     base::android::ApplicationState state) {
