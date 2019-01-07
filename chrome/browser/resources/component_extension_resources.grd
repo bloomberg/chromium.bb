@@ -124,6 +124,8 @@
           <include name="IDR_PDF_VIEWER_INK_INK_API_JS" file="pdf/ink/ink_api.js" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_INK_HOST_HTML" file="pdf/elements/viewer-ink-host/viewer-ink-host.html" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_INK_HOST_JS" file="pdf/elements/viewer-ink-host/viewer-ink-host.js" type="BINDATA" />
+          <include name="IDR_PDF_VIEWER_PEN_OPTIONS_HTML" file="pdf/elements/viewer-pen-options/viewer-pen-options.html" type="BINDATA" />
+          <include name="IDR_PDF_VIEWER_PEN_OPTIONS_JS" file="pdf/elements/viewer-pen-options/viewer-pen-options.js" type="BINDATA" />
         </if>
         <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_HTML" file="pdf/elements/viewer-page-indicator/viewer-page-indicator.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_JS" file="pdf/elements/viewer-page-indicator/viewer-page-indicator.js" type="BINDATA" flattenhtml="true" />
@@ -131,7 +133,7 @@
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="pdf/elements/viewer-page-selector/viewer-page-selector.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML" file="pdf/elements/viewer-password-screen/viewer-password-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="pdf/elements/viewer-password-screen/viewer-password-screen.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_HTML" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_HTML" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html" type="BINDATA" preprocess="true" />
         <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_JS" file="pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML" file="pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS" file="pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js" type="BINDATA" />

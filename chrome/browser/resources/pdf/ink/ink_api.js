@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   tool: string,
+ *   size: number,
+ *   color: string,
+ * }}
+ */
+let AnnotationTool;
+
+/**
  * Wraps the Ink component with an API that can be called
  * across an IFrame boundary.
  */
@@ -32,6 +41,12 @@ class InkAPI {
   setCamera(camera) {
     this.embed_.setCamera(camera);
   }
+
+  /** @param {AnnotationTool} tool */
+  setAnnotationTool(tool) {
+    // TODO(dstockwell): Use Ink api to convert `tool` to `Brush`
+    this.embed_.setTool(tool);
+  }
 }
 
 /**
@@ -39,6 +54,9 @@ class InkAPI {
  */
 window.initInk = function() {
   // TODO(dstockwell): Create real Ink embed and pass to InkAPI.
-  const embed = {setCamera() {}};
+  const embed = {
+    setCamera: function() {},
+    setTool: function() {},
+  };
   return new InkAPI(embed);
 };

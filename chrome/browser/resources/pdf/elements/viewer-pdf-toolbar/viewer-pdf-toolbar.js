@@ -42,6 +42,13 @@ Polymer({
     annotationMode: {
       type: Boolean,
       notify: true,
+      value: false,
+    },
+
+    annotationTool: {
+      type: Object,
+      value: null,
+      notify: true,
     },
 
     /**
@@ -64,11 +71,13 @@ Polymer({
       this.$.pageselector.classList.toggle('invisible', !loaded);
       this.$.buttons.classList.toggle('invisible', !loaded);
       this.$.progress.style.opacity = loaded ? 0 : 1;
+      this.$['annotations-bar'].classList.toggle(
+          'invisible', !(loaded && this.annotationMode));
     }
   },
 
   hide: function() {
-    if (this.opened) {
+    if (this.opened && !this.shouldKeepOpen()) {
       this.toggleVisibility();
     }
   },
@@ -117,15 +126,24 @@ Polymer({
 
   shouldKeepOpen: function() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
-        this.$.pageselector.isActive();
+        this.$.pageselector.isActive() || this.annotationMode;
   },
 
   hideDropdowns: function() {
+    let result = false;
     if (this.$.bookmarks.dropdownOpen) {
       this.$.bookmarks.toggleDropdown();
-      return true;
+      result = true;
     }
-    return false;
+    if (this.$.pen.dropdownOpen) {
+      this.$.pen.toggleDropdown();
+      result = true;
+    }
+    if (this.$.highlighter.dropdownOpen) {
+      this.$.highlighter.toggleDropdown();
+      result = true;
+    }
+    return result;
   },
 
   setDropdownLowerBound: function(lowerBound) {
@@ -146,6 +164,39 @@ Polymer({
 
   toggleAnnotation: function() {
     this.annotationMode = !this.annotationMode;
+    if (this.annotationMode) {
+      // Select pen tool when entering annotation mode.
+      this.updateAnnotationTool_(this.$.pen);
+    }
+  },
+
+  /** @param {Event} e */
+  annotationToolClicked_: function(e) {
+    this.updateAnnotationTool_(e.currentTarget);
+
+  },
+
+  /** @param {Event} e */
+  annotationToolOptionChanged_: function(e) {
+    const element = e.currentTarget.parentElement;
+    if (!this.annotationTool || element.id != this.annotationTool.tool) {
+      return;
+    }
+    this.updateAnnotationTool_(e.currentTarget.parentElement);
+  },
+
+  /** @param {Element} element */
+  updateAnnotationTool_: function(element) {
+    const tool = element.id;
+    const options = element.querySelector('viewer-pen-options') || {
+      selectedSize: 1,
+      selectedColor: null,
+    };
+    this.annotationTool = {
+      tool: tool,
+      size: options.selectedSize,
+      color: options.selectedColor,
+    };
   }
 });
 })();

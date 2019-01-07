@@ -256,6 +256,9 @@ function PDFViewer(browserApi) {
         'rotate-right', () => this.currentController_.rotateClockwise());
     this.toolbar_.addEventListener(
         'annotation-mode-changed', e => this.annotationModeChanged_(e));
+    this.toolbar_.addEventListener(
+        'annotation-tool-changed',
+        e => this.inkController_.setAnnotationTool(e.detail.value));
 
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
@@ -503,6 +506,7 @@ PDFViewer.prototype = {
       // TODO(dstockwell): feed real progress data from the Ink component
       this.updateProgress(50);
       await this.inkController_.load(result.fileName, result.dataToSave);
+      this.inkController_.setAnnotationTool(this.toolbar_.annotationTool);
       this.currentController_ = this.inkController_;
       this.pluginController_.unload();
       this.updateProgress(100);
@@ -1203,6 +1207,14 @@ class InkController extends ContentController {
 
     /** @type {ViewerInkHost} */
     this.inkHost_ = null;
+  }
+
+  /** @param {AnnotationTool} tool */
+  setAnnotationTool(tool) {
+    this.tool_ = tool;
+    if (this.inkHost_) {
+      this.inkHost_.setAnnotationTool(tool);
+    }
   }
 
   /** @override */
