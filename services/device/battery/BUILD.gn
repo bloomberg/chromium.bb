@@ -43,7 +43,7 @@ if (!is_android) {
       configs += [ "//build/config/linux/dbus" ]
       deps += [
         "//chromeos:chromeos",
-        "//chromeos:power_manager_proto",
+        "//chromeos/dbus:power_manager_proto",
       ]
       sources -= [
         "battery_status_manager_default.cc",
