@@ -686,30 +686,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateObserver.reset();
 }
 
-- (void)navigationCommittedInTab:(Tab*)tab
-                    previousItem:(web::NavigationItem*)previousItem {
-  if (self.offTheRecord)
-    return;
-  if (![tab navigationManager])
-    return;
-
-  // See if the navigation was within a page; if so ignore it.
-  if (previousItem) {
-    GURL previousURL = previousItem->GetURL();
-    GURL currentURL = [tab navigationManager]->GetVisibleItem()->GetURL();
-
-    url::Replacements<char> replacements;
-    replacements.ClearRef();
-    if (previousURL.ReplaceComponents(replacements) ==
-        currentURL.ReplaceComponents(replacements)) {
-      return;
-    }
-  }
-
-  int tabCount = static_cast<int>(self.count);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
-}
-
 #pragma mark - Private methods
 
 - (SessionIOS*)sessionForSaving {
@@ -853,14 +829,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   [self notifyTabChanged:tab];
 
-  web::NavigationItem* previousItem = nullptr;
-  if (load_details.previous_item_index >= 0) {
-    DCHECK(webState->GetNavigationManager());
-    previousItem = webState->GetNavigationManager()->GetItemAtIndex(
-        load_details.previous_item_index);
+  if (!load_details.is_in_page && !self.offTheRecord) {
+    int tabCount = static_cast<int>(self.count);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
   }
-
-  [self navigationCommittedInTab:tab previousItem:previousItem];
 
   // Sending a notification about the url change for crash reporting.
   // TODO(crbug.com/661675): Consider using the navigation entry committed
