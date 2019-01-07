@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
@@ -198,6 +199,12 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     mojom::blink::QueryParamsPtr cache_query_params,
     ExceptionState& exception_state,
     bool match_all) {
+  DCHECK(script_state);
+  UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.MatchCalledFromDocumentScope",
+                        ExecutionContext::From(script_state)->IsDocument());
+  UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.MatchCalledWhenFetchIsIncomplete",
+                        result_ == mojom::BackgroundFetchResult::UNSET);
+
   if (!records_available_) {
     return ScriptPromise::RejectWithDOMException(
         script_state,

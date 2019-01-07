@@ -228,6 +228,10 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
     int num_requests,
     bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  registration_notifier_->NoteTotalRequests(registration_id.unique_id(),
+                                            num_requests);
+
   auto controller = CreateInitializedController(
       registration_id, registration, std::move(options), icon,
       /* completed_requests= */ 0, num_requests,
