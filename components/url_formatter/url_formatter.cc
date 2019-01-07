@@ -63,7 +63,7 @@ class AppendComponentTransform {
 
 class HostComponentTransform : public AppendComponentTransform {
  public:
-  HostComponentTransform(bool trim_trivial_subdomains)
+  explicit HostComponentTransform(bool trim_trivial_subdomains)
       : trim_trivial_subdomains_(trim_trivial_subdomains) {}
 
  private:
@@ -417,6 +417,7 @@ const FormatUrlType kFormatUrlOmitHTTPS = 1 << 3;
 const FormatUrlType kFormatUrlOmitTrivialSubdomains = 1 << 5;
 const FormatUrlType kFormatUrlTrimAfterHost = 1 << 6;
 const FormatUrlType kFormatUrlOmitFileScheme = 1 << 7;
+const FormatUrlType kFormatUrlOmitMailToScheme = 1 << 8;
 
 const FormatUrlType kFormatUrlOmitDefaults =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
@@ -607,13 +608,17 @@ base::string16 FormatUrlWithAdjustments(
        ((format_types & kFormatUrlOmitHTTPS) &&
         url.SchemeIs(url::kHttpsScheme)) ||
        ((format_types & kFormatUrlOmitFileScheme) &&
-        url.SchemeIs(url::kFileScheme)));
+        url.SchemeIs(url::kFileScheme)) ||
+       ((format_types & kFormatUrlOmitMailToScheme) &&
+        url.SchemeIs(url::kMailToScheme)));
 
   // If we need to strip out schemes do it after the fact.
   if (strip_scheme) {
     DCHECK(new_parsed->scheme.is_valid());
     size_t scheme_and_separator_len =
-        new_parsed->scheme.len + 3;  // +3 for ://.
+        url.SchemeIs(url::kMailToScheme)
+            ? new_parsed->scheme.len + 1   // +1 for :.
+            : new_parsed->scheme.len + 3;  // +3 for ://.
 #if defined(OS_WIN)
     // Because there's an additional leading slash after the scheme for local
     // files on Windows, we should remove it for URL display when eliding

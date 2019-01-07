@@ -84,6 +84,9 @@ extern const FormatUrlType kFormatUrlTrimAfterHost;
 // If the scheme is 'file://', it's removed. Not in kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlOmitFileScheme;
 
+// If the scheme is 'mailto:', it's removed. Not in kFormatUrlOmitDefaults.
+extern const FormatUrlType kFormatUrlOmitMailToScheme;
+
 // Convenience for omitting all unecessary types. Does not include HTTPS scheme
 // removal, or experimental flags.
 extern const FormatUrlType kFormatUrlOmitDefaults;
