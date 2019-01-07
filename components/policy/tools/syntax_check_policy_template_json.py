@@ -285,8 +285,19 @@ class PolicyTemplateChecker(object):
     # Each policy must have a caption message.
     self._CheckContains(policy, 'caption', str)
 
-    # Each policy must have a description message.
-    self._CheckContains(policy, 'desc', str)
+    # Each policy must have a description message shorter than 4096 characters
+    # in all its translations (ADM format limitation).
+    desc = self._CheckContains(policy, 'desc', str)
+    if len(desc.decode("UTF-8")) > 4096:
+      self._Error(
+          'The length of the description is more than the limit of 4096'
+          ' characters long', 'policy', policy.get('name'))
+    # Warning length picked right above the largest existing policy.
+    elif len(desc.decode("UTF-8")) > 3100:
+      self.warning_count += 1
+      print('In policy %s: Warning: Length of description is more than 3100 '
+            'characters. It might exceed limit of 4096 characters in one of '
+            'its translations.' % (policy.get('name')))
 
     # If 'label' is present, it must be a string.
     self._CheckContains(policy, 'label', str, True)
