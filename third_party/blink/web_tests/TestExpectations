@@ -307,13 +307,6 @@ crbug.com/736052 virtual/stable/compositing/overflow/composited-scroll-with-frac
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.html [ Skip ]
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.worker.html [ Skip ]
 
-# Expected temporary breakage due to timing issues
-crbug.com/872076 printing/offscreencanvas-2d-printing.html [ Skip ]
-crbug.com/872076 printing/offscreencanvas-webgl-printing.html  [ Skip ]
-crbug.com/872076 virtual/layout_ng_experimental/printing/offscreencanvas-2d-printing.html  [ Skip ]
-crbug.com/872076 virtual/threaded/printing/offscreencanvas-2d-printing.html  [ Skip ]
-crbug.com/872076 virtual/threaded/printing/offscreencanvas-webgl-printing.html  [ Skip ]
-
 # With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
