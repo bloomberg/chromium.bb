@@ -362,13 +362,15 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
     const base::FilePath& path,
     VolumeType volume_type,
     chromeos::DeviceType device_type,
-    bool read_only) {
+    bool read_only,
+    const base::FilePath& device_path) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = volume_type;
   volume->device_type_ = device_type;
   // Keep source_path empty.
   volume->source_ = SOURCE_DEVICE;
   volume->mount_path_ = path;
+  volume->system_path_prefix_ = device_path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->is_read_only_ = read_only;
   volume->volume_id_ = GenerateVolumeId(*volume);
@@ -638,11 +640,12 @@ bool VolumeManager::RegisterCrostiniDirectoryForTesting(
 void VolumeManager::AddVolumeForTesting(const base::FilePath& path,
                                         VolumeType volume_type,
                                         chromeos::DeviceType device_type,
-                                        bool read_only) {
+                                        bool read_only,
+                                        const base::FilePath& device_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DoMountEvent(
-      chromeos::MOUNT_ERROR_NONE,
-      Volume::CreateForTesting(path, volume_type, device_type, read_only));
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForTesting(path, volume_type, device_type,
+                                        read_only, device_path));
 }
 
 void VolumeManager::AddVolumeForTesting(std::unique_ptr<Volume> volume) {
