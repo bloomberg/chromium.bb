@@ -8,6 +8,7 @@ Polymer({
   behaviors: [
     bookmarks.MouseFocusBehavior,
     bookmarks.StoreClient,
+    FindShortcutBehavior,
   ],
 
   properties: {
@@ -43,10 +44,6 @@ Polymer({
 
     this.watch('folderOpenState_', function(state) {
       return state.folderOpenState;
-    });
-
-    this.addEventListener('select-toolbar-search', () => {
-      this.$$('bookmarks-toolbar').searchField.showAndFocus();
     });
 
     chrome.bookmarks.getTree((results) => {
@@ -148,5 +145,19 @@ Polymer({
   folderOpenStateChanged_: function() {
     window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY] =
         JSON.stringify(Array.from(this.folderOpenState_));
+  },
+
+  // Override FindShortcutBehavior methods.
+  handleFindShortcut: function(modalContextOpen) {
+    if (modalContextOpen) {
+      return false;
+    }
+    this.$$('bookmarks-toolbar').searchField.showAndFocus();
+    return true;
+  },
+
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    return this.$$('bookmarks-toolbar').searchField.isSearchFocused();
   },
 });

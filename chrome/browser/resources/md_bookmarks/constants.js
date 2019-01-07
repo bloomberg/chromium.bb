@@ -46,10 +46,8 @@ const Command = {
   EXPORT: 19,
   HELP_CENTER: 20,
 
-  FIND: 21,
-
   // Append new values to the end of the enum.
-  MAX_VALUE: 22,
+  MAX_VALUE: 21,
 };
 
 /**

@@ -90,11 +90,12 @@ suite('<bookmarks-app>', function() {
     assertEquals(null, getFocusAttribute());
   });
 
-  test('when select-toolbar-search is fired, focus on search input', () => {
+  test('when find shortcut is invoked, focus on search input', () => {
     const searchInput =
         app.$$('bookmarks-toolbar').searchField.getSearchInput();
     assertNotEquals(searchInput, getDeepActiveElement());
-    app.dispatchEvent(new Event('select-toolbar-search'));
+    MockInteractions.pressAndReleaseKeyOn(
+        document.body, '', cr.isMac ? 'meta' : 'ctrl', 'f');
     assertEquals(searchInput, getDeepActiveElement());
   });
 });

@@ -441,12 +441,6 @@ suite('<bookmarks-command-manager>', function() {
     store.dispatch(bookmarks.actions.createBookmark(item2.id, item2));
     assertTrue(commandManager.canExecute(Command.SORT, new Set()));
   });
-
-  test('find shortcut invokes FIND command', () => {
-    const modifier = cr.isMac ? 'meta' : 'ctrl';
-    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'f');
-    commandManager.assertLastCommand(Command.FIND, []);
-  });
 });
 
 suite('<bookmarks-item> CommandManager integration', function() {
@@ -676,13 +670,6 @@ suite('<bookmarks-command-manager> whole page integration', function() {
     assertEquals(action.items[1], displayedIdsAfter[3]);
     assertEquals(2, action.items.length);
     assertEquals(action.anchor, displayedIdsAfter[2]);
-  });
-
-  test('FIND fires select-toolbar-search event', () => {
-    const wait =
-        test_util.eventToPromise('select-toolbar-search', commandManager);
-    commandManager.handle(Command.FIND, new Set());
-    return wait;
   });
 
   suiteTeardown(function(done) {
