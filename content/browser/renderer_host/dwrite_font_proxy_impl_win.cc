@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -23,10 +24,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/text_analysis_source.h"
+
+#include "base/threading/platform_thread.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -274,10 +280,10 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
 bool AddFilesForFont(IDWriteFont* font,
                      const base::string16& windows_fonts_path,
                      std::set<base::string16>* path_set,
-                     std::set<base::string16>* custom_font_path_set) {
+                     std::set<base::string16>* custom_font_path_set,
+                     uint32_t* ttc_index) {
   base::string16 file_path;
-  uint32_t dummy_ttc_index;
-  if (!FontFilePathAndTtcIndex(font, file_path, dummy_ttc_index)) {
+  if (!FontFilePathAndTtcIndex(font, file_path, *ttc_index)) {
     return false;
   }
 
@@ -294,10 +300,54 @@ bool AddFilesForFont(IDWriteFont* font,
   return true;
 }
 
+// The unresponsive renderer timeout is 30 seconds (kDefaultCommitTimeout). As a
+// starting point, let's set the max time for indexing fonts to a third of that,
+// 10 seconds and record a UMA histogram for how long indexing usually
+// takes. Once we have UMA data, we can look into reducing this timeout. This
+// timeout is meant to cover pathological cases of font indexing where a Windows
+// installation has an unusually large collection of fonts. In practice,
+// building the unique font name table should not take longer than tens of
+// milliseconds (~26 ms on a developer machine, Windows 10, default fonts).
+const base::TimeDelta kFontIndexingTimeout = base::TimeDelta::FromSeconds(10);
+
+const base::TimeDelta kIndexingSlowDownForTesting =
+    base::TimeDelta::FromMilliseconds(1200);
+
+bool extract_case_folded_localized_strings(
+    IDWriteLocalizedStrings* dwrite_localized_strings,
+    std::vector<std::string>* localized_strings) {
+  if (!dwrite_localized_strings->GetCount())
+    return false;
+
+  localized_strings->clear();
+  localized_strings->reserve(dwrite_localized_strings->GetCount());
+  for (UINT32 j = 0; j < dwrite_localized_strings->GetCount(); ++j) {
+    UINT32 length;
+    HRESULT hr = dwrite_localized_strings->GetStringLength(j, &length);
+    if (FAILED(hr))
+      continue;
+    std::wstring localized_name;
+    localized_name.resize(length + 1);
+    hr = dwrite_localized_strings->GetString(j, &localized_name[0], length + 1);
+    if (FAILED(hr)) {
+      continue;
+    }
+    localized_name.resize(length);
+    // The documentation for the API call does not specify an encoding but the
+    // results are wchar_t and FireFox considers them UTF-16, as seen here:
+    // https://dxr.mozilla.org/mozilla-central/source/gfx/thebes/gfxDWriteFontList.cpp#90
+    // so we'll assume that.
+    localized_strings->push_back(base::UTF16ToUTF8(
+        base::i18n::FoldCase(base::string16(localized_name))));
+  }
+  return true;
+}
+
 }  // namespace
 
 DWriteFontProxyImpl::DWriteFontProxyImpl()
-    : windows_fonts_path_(GetWindowsFontsPath()) {}
+    : windows_fonts_path_(GetWindowsFontsPath()),
+      slow_down_indexing_for_testing_(false) {}
 
 DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
@@ -311,6 +361,10 @@ void DWriteFontProxyImpl::Create(
 
 void DWriteFontProxyImpl::SetWindowsFontsPathForTesting(base::string16 path) {
   windows_fonts_path_.swap(path);
+}
+
+void DWriteFontProxyImpl::SetSlowDownIndexingForTesting(bool slow_down) {
+  slow_down_indexing_for_testing_ = slow_down;
 }
 
 void DWriteFontProxyImpl::FindFamily(const base::string16& family_name,
@@ -432,8 +486,9 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
       return;
     }
 
+    uint32_t dummy_ttc_index = 0;
     if (!AddFilesForFont(font.Get(), windows_fonts_path_, &path_set,
-                         &custom_font_path_set)) {
+                         &custom_font_path_set, &dummy_ttc_index)) {
       if (IsLastResortFallbackFont(family_index))
         LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
     }
@@ -568,6 +623,153 @@ void DWriteFontProxyImpl::MapCharacters(
   LogMessageFilterError(MAP_CHARACTERS_NO_FAMILY);
   DCHECK_EQ(result->family_index, UINT32_MAX);
   DCHECK_GT(result->mapped_length, 0u);
+}
+
+bool DWriteFontProxyImpl::IsFontUniqueNameTableValid() {
+  return font_unique_name_table_memory_.IsValid() &&
+         font_unique_name_table_memory_.mapping.size();
+}
+
+bool DWriteFontProxyImpl::EnsureFontUniqueNameTable() {
+  if (IsFontUniqueNameTableValid())
+    return true;
+
+  base::TimeTicks time_ticks = base::TimeTicks::Now();
+
+  blink::FontUniqueNameTable font_unique_name_table;
+
+  bool timed_out = false;
+
+  // The stored_for_platform_version_identifier proto field is used for
+  // persisting the table to disk and identifiying whether and update to the
+  // table is needed when loading it back. This functionality is not used on
+  // Windows, hence setting it to the empty string is sufficient.
+  font_unique_name_table.set_stored_for_platform_version_identifier("");
+
+  for (UINT32 family_index = 0;
+       family_index < collection_->GetFontFamilyCount(); ++family_index) {
+    if (base::TimeTicks::Now() - time_ticks > kFontIndexingTimeout) {
+      timed_out = true;
+      break;
+    }
+
+    mswr::ComPtr<IDWriteFontFamily> family;
+    HRESULT hr = collection_->GetFontFamily(family_index, &family);
+    if (FAILED(hr))
+      return false;
+    UINT32 font_count = family->GetFontCount();
+
+    for (UINT32 font_index = 0; font_index < font_count; ++font_index) {
+      mswr::ComPtr<IDWriteFont> font;
+      hr = family->GetFont(font_index, &font);
+      if (FAILED(hr)) {
+        if (IsLastResortFallbackFont(family_index))
+          LogMessageFilterError(LAST_RESORT_FONT_GET_FONT_FAILED);
+        return false;
+      }
+
+      if (font->GetSimulations() != DWRITE_FONT_SIMULATIONS_NONE)
+        continue;
+
+      std::set<base::string16> path_set;
+      std::set<base::string16> custom_font_path_set;
+      uint32_t ttc_index = 0;
+      if (!AddFilesForFont(font.Get(), windows_fonts_path_, &path_set,
+                           &custom_font_path_set, &ttc_index)) {
+        if (IsLastResortFallbackFont(family_index))
+          LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+      }
+
+      // After having received clarification from Microsoft, the API is designed
+      // for allowing multiple files to be returned, if MS was to support a file
+      // format like Type1 fonts with this API, but for now only ever returns 1
+      // font file as only TrueType / OpenType fonts are supported.
+      CHECK_EQ(path_set.size() + custom_font_path_set.size(), 1u);
+      base::FilePath file_path(*path_set.begin());
+      CHECK(!file_path.empty());
+
+      // Add file entry to map.
+      blink::FontUniqueNameTable_UniqueFont* added_unique_font =
+          font_unique_name_table.add_fonts();
+      added_unique_font->set_file_path(file_path.AsUTF8Unsafe());
+      added_unique_font->set_ttc_index(ttc_index);
+
+      int added_font_index = font_unique_name_table.fonts_size() - 1;
+
+      auto extract_and_append_names =
+          [&font_unique_name_table, &hr, &font, &added_font_index](
+              DWRITE_INFORMATIONAL_STRING_ID font_info_string_id) {
+            // Now get names, and make them point to the added font.
+            IDWriteLocalizedStrings* font_id_keyed_names;
+            BOOL has_id_keyed_names;
+            hr = font->GetInformationalStrings(
+                font_info_string_id, &font_id_keyed_names, &has_id_keyed_names);
+            if (FAILED(hr) || !has_id_keyed_names)
+              return;
+
+            std::vector<std::string> extracted_names;
+            extract_case_folded_localized_strings(font_id_keyed_names,
+                                                  &extracted_names);
+            for (auto& extracted_name : extracted_names) {
+              blink::FontUniqueNameTable_UniqueNameToFontMapping* name_mapping =
+                  font_unique_name_table.add_name_map();
+              name_mapping->set_font_name(extracted_name);
+              name_mapping->set_font_index(added_font_index);
+            }
+          };
+
+      extract_and_append_names(DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME);
+      extract_and_append_names(DWRITE_INFORMATIONAL_STRING_FULL_NAME);
+    }
+
+    if (UNLIKELY(slow_down_indexing_for_testing_))
+      base::PlatformThread::Sleep(kIndexingSlowDownForTesting);
+  }
+
+  if (timed_out) {
+    LOG(ERROR) << "Creating unique font lookup table timed out, emptying "
+                  "partial table.";
+    font_unique_name_table.clear_fonts();
+    font_unique_name_table.clear_name_map();
+  }
+
+  // Sort names for using binary search on this proto in FontTableMatcher.
+  std::sort(font_unique_name_table.mutable_name_map()->begin(),
+            font_unique_name_table.mutable_name_map()->end(),
+            [](const blink::FontUniqueNameTable_UniqueNameToFontMapping& a,
+               const blink::FontUniqueNameTable_UniqueNameToFontMapping& b) {
+              return a.font_name() < b.font_name();
+            });
+
+  font_unique_name_table_memory_ = base::ReadOnlySharedMemoryRegion::Create(
+      font_unique_name_table.ByteSizeLong());
+  if (!IsFontUniqueNameTableValid())
+    return false;
+
+  if (!font_unique_name_table.SerializeToArray(
+          font_unique_name_table_memory_.mapping.memory(),
+          font_unique_name_table_memory_.mapping.size())) {
+    font_unique_name_table_memory_ = base::MappedReadOnlyRegion();
+    return false;
+  }
+
+  // TODO(drott): Add UMA for table build time and table size.
+
+  return true;
+}
+
+void DWriteFontProxyImpl::GetUniqueNameLookupTable(
+    GetUniqueNameLookupTableCallback callback) {
+  InitializeDirectWrite();
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), base::ReadOnlySharedMemoryRegion());
+  if (!collection_)
+    return;
+
+  if (!EnsureFontUniqueNameTable())
+    return;
+
+  std::move(callback).Run(font_unique_name_table_memory_.region.Duplicate());
 }
 
 void DWriteFontProxyImpl::InitializeDirectWrite() {
