@@ -258,7 +258,7 @@ base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
   if (!active_tab)
     return base::Time();
 
-  content::NavigationEntry* navigation =
+  const content::NavigationEntry* navigation =
       active_tab->GetController().GetLastCommittedEntry();
   if (!navigation)
     return base::Time();

@@ -16,7 +16,7 @@ namespace sessions {
 
 // Helper functions for storing/getting PasswordState in a NavigationEntry.
 SESSIONS_EXPORT SerializedNavigationEntry::PasswordState
-GetPasswordStateFromNavigation(content::NavigationEntry* entry);
+GetPasswordStateFromNavigation(const content::NavigationEntry& entry);
 
 SESSIONS_EXPORT void SetPasswordStateInNavigation(
     SerializedNavigationEntry::PasswordState state,

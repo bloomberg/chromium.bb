@@ -462,7 +462,8 @@ const Extension* ProcessManager::GetExtensionForWebContents(
     // For hosted apps, be sure to exclude URLs outside of the app that might
     // be loaded in the same SiteInstance (extensions guarantee that only
     // extension urls are loaded in that SiteInstance).
-    content::NavigationController& controller = web_contents->GetController();
+    const content::NavigationController& controller =
+        web_contents->GetController();
     content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     // If there is no last committed entry, check the pending entry. This can
     // happen in cases where we query this before any entry is fully committed,

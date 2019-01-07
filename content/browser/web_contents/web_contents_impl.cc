@@ -1936,7 +1936,7 @@ std::unique_ptr<WebContents> WebContentsImpl::Clone() {
     opener_rfh = opener->current_frame_host();
   std::unique_ptr<WebContentsImpl> tc =
       CreateWithOpener(create_params, opener_rfh);
-  tc->GetController().CopyStateFrom(&controller_, true);
+  tc->GetController().CopyStateFrom(controller_, true);
   for (auto& observer : observers_)
     observer.DidCloneToNewWebContents(this, tc.get());
   return tc;
@@ -3793,7 +3793,7 @@ void WebContentsImpl::SaveFrameWithHeaders(
 
   int64_t post_id = -1;
   if (is_main_frame) {
-    NavigationEntry* entry = controller_.GetLastCommittedEntry();
+    const NavigationEntry* entry = controller_.GetLastCommittedEntry();
     if (entry)
       post_id = entry->GetPostID();
   }

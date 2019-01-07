@@ -60,7 +60,8 @@ bool IframeSource::GetOrigin(
   content::WebContents* contents = wc_getter.Run();
   if (!contents)
     return false;
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  const content::NavigationEntry* entry =
+      contents->GetController().GetVisibleEntry();
   if (!entry)
     return false;
 

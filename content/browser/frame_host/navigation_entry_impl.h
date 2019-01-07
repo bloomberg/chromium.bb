@@ -96,60 +96,63 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   ~NavigationEntryImpl() override;
 
   // NavigationEntry implementation:
-  int GetUniqueID() override;
-  PageType GetPageType() override;
+  int GetUniqueID() const override;
+  PageType GetPageType() const override;
   void SetURL(const GURL& url) override;
-  const GURL& GetURL() override;
+  const GURL& GetURL() const override;
   void SetBaseURLForDataURL(const GURL& url) override;
-  const GURL& GetBaseURLForDataURL() override;
+  const GURL& GetBaseURLForDataURL() const override;
 #if defined(OS_ANDROID)
   void SetDataURLAsString(
       scoped_refptr<base::RefCountedString> data_url) override;
   const scoped_refptr<const base::RefCountedString>& GetDataURLAsString()
-      override;
+      const override;
 #endif
   void SetReferrer(const Referrer& referrer) override;
-  const Referrer& GetReferrer() override;
+  const Referrer& GetReferrer() const override;
   void SetVirtualURL(const GURL& url) override;
-  const GURL& GetVirtualURL() override;
+  const GURL& GetVirtualURL() const override;
   void SetTitle(const base::string16& title) override;
-  const base::string16& GetTitle() override;
+  const base::string16& GetTitle() const override;
   void SetPageState(const PageState& state) override;
-  PageState GetPageState() override;
-  const base::string16& GetTitleForDisplay() override;
-  bool IsViewSourceMode() override;
+  PageState GetPageState() const override;
+  const base::string16& GetTitleForDisplay() const override;
+  bool IsViewSourceMode() const override;
   void SetTransitionType(ui::PageTransition transition_type) override;
-  ui::PageTransition GetTransitionType() override;
-  const GURL& GetUserTypedURL() override;
+  ui::PageTransition GetTransitionType() const override;
+  const GURL& GetUserTypedURL() const override;
   void SetHasPostData(bool has_post_data) override;
-  bool GetHasPostData() override;
+  bool GetHasPostData() const override;
   void SetPostID(int64_t post_id) override;
-  int64_t GetPostID() override;
+  int64_t GetPostID() const override;
   void SetPostData(
       const scoped_refptr<network::ResourceRequestBody>& data) override;
-  scoped_refptr<network::ResourceRequestBody> GetPostData() override;
+  scoped_refptr<network::ResourceRequestBody> GetPostData() const override;
+  const FaviconStatus& GetFavicon() const override;
   FaviconStatus& GetFavicon() override;
+  const SSLStatus& GetSSL() const override;
   SSLStatus& GetSSL() override;
   void SetOriginalRequestURL(const GURL& original_url) override;
-  const GURL& GetOriginalRequestURL() override;
+  const GURL& GetOriginalRequestURL() const override;
   void SetIsOverridingUserAgent(bool override) override;
-  bool GetIsOverridingUserAgent() override;
+  bool GetIsOverridingUserAgent() const override;
   void SetTimestamp(base::Time timestamp) override;
-  base::Time GetTimestamp() override;
+  base::Time GetTimestamp() const override;
   void SetCanLoadLocalResources(bool allow) override;
-  bool GetCanLoadLocalResources() override;
+  bool GetCanLoadLocalResources() const override;
   void SetExtraData(const std::string& key,
                     const base::string16& data) override;
-  bool GetExtraData(const std::string& key, base::string16* data) override;
+  bool GetExtraData(const std::string& key,
+                    base::string16* data) const override;
   void ClearExtraData(const std::string& key) override;
   void SetHttpStatusCode(int http_status_code) override;
-  int GetHttpStatusCode() override;
+  int GetHttpStatusCode() const override;
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
-  const std::vector<GURL>& GetRedirectChain() override;
+  const std::vector<GURL>& GetRedirectChain() const override;
   const base::Optional<ReplacedNavigationEntryData>& GetReplacedEntryData()
-      override;
-  bool IsRestored() override;
-  std::string GetExtraHeaders() override;
+      const override;
+  bool IsRestored() const override;
+  std::string GetExtraHeaders() const override;
   void AddExtraHeaders(const std::string& extra_headers) override;
 
   // Creates a copy of this NavigationEntryImpl that can be modified
@@ -185,7 +188,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       FrameMsg_Navigate_Type::Value navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
-      base::TimeTicks input_start);
+      base::TimeTicks input_start) const;
   CommitNavigationParams ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
@@ -195,7 +198,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
-      int current_length_to_send);
+      int current_length_to_send) const;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
@@ -386,7 +389,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   }
 
   // Returns the history URL for a data URL to use in Blink.
-  GURL GetHistoryURLForDataURL();
+  GURL GetHistoryURLForDataURL() const;
 
   // These flags are set when the navigation controller gets notified of an SSL
   // error while a navigation is pending.

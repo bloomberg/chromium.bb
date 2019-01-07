@@ -171,7 +171,8 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
     web_contents()->SetUserAgentOverride(override, true);
   }
 
-  content::NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   for (int i = 0; i < controller.GetEntryCount(); ++i)
     controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(ua_overidden);
 }

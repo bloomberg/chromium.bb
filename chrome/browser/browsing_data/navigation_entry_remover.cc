@@ -46,9 +46,9 @@ bool ShouldDeleteNavigationEntry(
     base::Time begin,
     base::Time end,
     const base::Optional<std::set<GURL>>& restrict_urls,
-    content::NavigationEntry* entry) {
-  return ShouldDeleteUrl(begin, end, restrict_urls, entry->GetURL(),
-                         entry->GetTimestamp());
+    const content::NavigationEntry& entry) {
+  return ShouldDeleteUrl(begin, end, restrict_urls, entry.GetURL(),
+                         entry.GetTimestamp());
 }
 
 bool ShouldDeleteSerializedNavigationEntry(
@@ -61,8 +61,8 @@ bool ShouldDeleteSerializedNavigationEntry(
 }
 
 bool UrlMatcherForNavigationEntry(const base::flat_set<GURL>& urls,
-                                  content::NavigationEntry* entry) {
-  return urls.find(entry->GetURL()) != urls.end();
+                                  const content::NavigationEntry& entry) {
+  return urls.find(entry.GetURL()) != urls.end();
 }
 
 bool UrlMatcherForSerializedNavigationEntry(

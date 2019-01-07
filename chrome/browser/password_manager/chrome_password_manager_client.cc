@@ -839,7 +839,7 @@ void ChromePasswordManagerClient::AnnotateNavigationEntry(
     return;
 
   SerializedNavigationEntry::PasswordState old_state =
-      sessions::GetPasswordStateFromNavigation(entry);
+      sessions::GetPasswordStateFromNavigation(*entry);
 
   SerializedNavigationEntry::PasswordState new_state =
       (has_password_field ? SerializedNavigationEntry::HAS_PASSWORD_FIELD

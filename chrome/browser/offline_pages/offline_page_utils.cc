@@ -385,8 +385,8 @@ bool OfflinePageUtils::GetCachedOfflinePageSizeBetween(
 
 // static
 std::string OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(
-    content::NavigationEntry* entry) {
-  std::string extra_headers = entry->GetExtraHeaders();
+    const content::NavigationEntry& entry) {
+  std::string extra_headers = entry.GetExtraHeaders();
   if (extra_headers.empty())
     return std::string();
 

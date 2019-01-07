@@ -3964,7 +3964,7 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
-  other_controller.CopyStateFrom(&controller, true);
+  other_controller.CopyStateFrom(controller, true);
 
   // other_controller should now contain 2 urls.
   ASSERT_EQ(2, other_controller.GetEntryCount());
@@ -4247,7 +4247,7 @@ TEST_F(NavigationControllerTest, DeleteNavigationEntries) {
 
   // Delete nothing.
   controller.DeleteNavigationEntries(base::BindRepeating(
-      [](content::NavigationEntry* entry) { return false; }));
+      [](const content::NavigationEntry& entry) { return false; }));
   EXPECT_EQ(0U, navigation_entries_deleted_counter_);
   ASSERT_EQ(5, controller.GetEntryCount());
   ASSERT_EQ(4, controller.GetCurrentEntryIndex());
@@ -4255,8 +4255,8 @@ TEST_F(NavigationControllerTest, DeleteNavigationEntries) {
   // Delete url2 and url4.
   contents()->ExpectSetHistoryOffsetAndLength(2, 3);
   controller.DeleteNavigationEntries(
-      base::BindLambdaForTesting([&](content::NavigationEntry* entry) {
-        return entry->GetURL() == url2 || entry->GetURL() == url4;
+      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
+        return entry.GetURL() == url2 || entry.GetURL() == url4;
       }));
   EXPECT_EQ(1U, navigation_entries_deleted_counter_);
   ASSERT_EQ(3, controller.GetEntryCount());
@@ -4269,7 +4269,7 @@ TEST_F(NavigationControllerTest, DeleteNavigationEntries) {
   // Delete url1 and url3.
   contents()->ExpectSetHistoryOffsetAndLength(0, 1);
   controller.DeleteNavigationEntries(base::BindRepeating(
-      [](content::NavigationEntry* entry) { return true; }));
+      [](const content::NavigationEntry& entry) { return true; }));
   EXPECT_EQ(2U, navigation_entries_deleted_counter_);
   ASSERT_EQ(1, controller.GetEntryCount());
   ASSERT_EQ(0, controller.GetCurrentEntryIndex());
