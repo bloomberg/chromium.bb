@@ -20,9 +20,9 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -51,8 +51,8 @@ void SetUserKeys(const policy::UserPolicyBuilder& user_policy) {
   const AccountId account_id =
       AccountId::FromUserEmail(user_policy.policy_data().username());
   base::FilePath user_keys_dir;
-  ASSERT_TRUE(
-      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
+  ASSERT_TRUE(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
+                                     &user_keys_dir));
   const std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
           cryptohome::CreateAccountIdentifierFromAccountId(account_id));

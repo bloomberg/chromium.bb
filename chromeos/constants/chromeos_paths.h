@@ -21,10 +21,6 @@ enum {
 
   FILE_DEFAULT_APP_ORDER,   // Full path to the json file that defines the
                             // default app order.
-  DIR_USER_POLICY_KEYS,     // Directory where the session_manager stores
-                            // the user policy keys.
-  FILE_OWNER_KEY,           // Full path to the owner key file.
-  FILE_INSTALL_ATTRIBUTES,  // Full path to the install attributes file.
   FILE_MACHINE_INFO,        // Full path to machine hardware info file.
   FILE_VPD,                 // Full path to VPD file.
   FILE_UPTIME,              // Full path to the file via which the kernel

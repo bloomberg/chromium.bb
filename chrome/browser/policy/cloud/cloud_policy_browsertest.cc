@@ -62,8 +62,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
@@ -281,8 +281,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
     // Get the path to the user policy key file.
     base::FilePath user_policy_key_dir;
-    ASSERT_TRUE(base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
-                                       &user_policy_key_dir));
+    ASSERT_TRUE(base::PathService::Get(
+        chromeos::dbus_paths::DIR_USER_POLICY_KEYS, &user_policy_key_dir));
     std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(
             cryptohome::CreateAccountIdentifierFromAccountId(

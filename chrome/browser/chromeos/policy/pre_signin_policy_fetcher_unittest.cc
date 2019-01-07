@@ -16,8 +16,8 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -63,7 +63,7 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
     // are shared between session_manager and chrome through files) and set it
     // into PathService, so PreSigninPolicyFetcher will use it.
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    base::PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
+    base::PathService::Override(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
                                 user_policy_keys_dir());
 
     auto cloud_policy_client = std::make_unique<MockCloudPolicyClient>();
