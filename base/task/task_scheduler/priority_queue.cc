@@ -73,24 +73,39 @@ class PriorityQueue::SequenceAndSortKey {
   DISALLOW_COPY_AND_ASSIGN(SequenceAndSortKey);
 };
 
-PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
-    : auto_lock_(outer_queue->container_lock_), outer_queue_(outer_queue) {}
+PriorityQueue::Transaction::Transaction(Transaction&& other)
+    : outer_queue_(other.outer_queue_) {
+  other.outer_queue_ = nullptr;
+}
 
-PriorityQueue::Transaction::~Transaction() = default;
+PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
+    : outer_queue_(outer_queue) {
+  outer_queue_->container_lock_.Acquire();
+}
+
+PriorityQueue::Transaction::~Transaction() {
+  if (outer_queue_) {
+    outer_queue_->container_lock_.AssertAcquired();
+    outer_queue_->container_lock_.Release();
+  }
+}
 
 void PriorityQueue::Transaction::Push(
     scoped_refptr<Sequence> sequence,
     const SequenceSortKey& sequence_sort_key) {
+  DCHECK(outer_queue_);
   outer_queue_->container_.insert(
       SequenceAndSortKey(std::move(sequence), sequence_sort_key));
 }
 
 const SequenceSortKey& PriorityQueue::Transaction::PeekSortKey() const {
+  DCHECK(outer_queue_);
   DCHECK(!IsEmpty());
   return outer_queue_->container_.Min().sort_key();
 }
 
 scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
+  DCHECK(outer_queue_);
   DCHECK(!IsEmpty());
 
   // The const_cast on top() is okay since the SequenceAndSortKey is
@@ -106,6 +121,7 @@ scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
 
 bool PriorityQueue::Transaction::RemoveSequence(
     scoped_refptr<Sequence> sequence) {
+  DCHECK(outer_queue_);
   DCHECK(sequence);
 
   if (IsEmpty())
@@ -123,6 +139,7 @@ bool PriorityQueue::Transaction::RemoveSequence(
 
 void PriorityQueue::Transaction::UpdateSortKey(
     SequenceAndTransaction sequence_and_transaction) {
+  DCHECK(outer_queue_);
   DCHECK(sequence_and_transaction.sequence);
 
   if (IsEmpty())
@@ -140,10 +157,12 @@ void PriorityQueue::Transaction::UpdateSortKey(
 }
 
 bool PriorityQueue::Transaction::IsEmpty() const {
+  DCHECK(outer_queue_);
   return outer_queue_->container_.empty();
 }
 
 size_t PriorityQueue::Transaction::Size() const {
+  DCHECK(outer_queue_);
   return outer_queue_->container_.size();
 }
 
@@ -152,7 +171,7 @@ PriorityQueue::PriorityQueue() = default;
 PriorityQueue::~PriorityQueue() {
   if (is_flush_sequences_on_destroy_enabled_) {
     while (!container_.empty()) {
-      scoped_refptr<Sequence> sequence = BeginTransaction()->PopSequence();
+      scoped_refptr<Sequence> sequence = BeginTransaction().PopSequence();
       {
         Sequence::Transaction sequence_transaction(
             sequence->BeginTransaction());
@@ -163,10 +182,6 @@ PriorityQueue::~PriorityQueue() {
       }
     }
   }
-}
-
-std::unique_ptr<PriorityQueue::Transaction> PriorityQueue::BeginTransaction() {
-  return WrapUnique(new Transaction(this));
 }
 
 void PriorityQueue::EnableFlushSequencesOnDestroyForTesting() {
