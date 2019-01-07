@@ -386,7 +386,7 @@ class ContextualSearchFakeServer
         OverlayPanelContentWrapper(OverlayContentDelegate contentDelegate,
                 OverlayContentProgressObserver progressObserver, ChromeActivity activity,
                 float barHeight) {
-            super(contentDelegate, progressObserver, activity, barHeight);
+            super(contentDelegate, progressObserver, activity, false, barHeight);
         }
 
         @Override
