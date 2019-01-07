@@ -54,7 +54,7 @@ class CORE_EXPORT MouseEventManager final
                                          bool check_for_listener = false);
 
   WebInputEventResult SetMousePositionAndDispatchMouseEvent(
-      Node* target_node,
+      Element* target_element,
       const String& canvas_region_id,
       const AtomicString& event_type,
       const WebMouseEvent&);
@@ -79,9 +79,9 @@ class CORE_EXPORT MouseEventManager final
                           const String& canvas_region_id,
                           const WebMouseEvent&);
 
-  void SetNodeUnderMouse(Node*,
-                         const String& canvas_region_id,
-                         const WebMouseEvent&);
+  void SetElementUnderMouse(Element*,
+                            const String& canvas_region_id,
+                            const WebMouseEvent&);
 
   WebInputEventResult HandleMouseFocus(
       const HitTestResult&,
@@ -129,7 +129,7 @@ class CORE_EXPORT MouseEventManager final
 
   // TODO: These functions ideally should be private but the code needs more
   // refactoring to be able to remove the dependency from EventHandler.
-  Node* GetNodeUnderMouse();
+  Element* GetElementUnderMouse();
   bool IsMousePositionUnknown();
   // TODO(aelias): Make LastKnownMousePosition return FloatPoint.
   IntPoint LastKnownMousePosition();
@@ -217,7 +217,7 @@ class CORE_EXPORT MouseEventManager final
   // The effective position of the mouse pointer.
   // See
   // https://w3c.github.io/pointerevents/#dfn-tracking-the-effective-position-of-the-legacy-mouse-pointer.
-  Member<Node> node_under_mouse_;
+  Member<Element> element_under_mouse_;
 
   // The last mouse movement position this frame has seen in viewport
   // coordinates.

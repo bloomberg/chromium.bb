@@ -487,7 +487,7 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   {
     ContextMenuAllowedScope scope;
     target_local_frame->GetEventHandler().SendContextMenuEvent(
-        transformed_event, nullptr);
+        transformed_event);
   }
   // Actually showing the context menu is handled by the ContextMenuController
   // implementation...

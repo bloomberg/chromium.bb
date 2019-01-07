@@ -518,7 +518,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   touch_attribute_map_.Set(event.id,
                            MakeGarbageCollected<TouchPointAttributes>(event));
 
-  Node* touch_node = pointer_event_target.target_node;
+  Node* touch_node = pointer_event_target.target_element;
   String region = pointer_event_target.region;
 
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
