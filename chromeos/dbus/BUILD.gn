@@ -15,21 +15,23 @@ source_set("dbus") {
     "//dbus",
   ]
   deps = [
+    ":attestation_proto",
+    ":authpolicy_proto",
+    ":biod_proto",
+    ":cicerone_proto",
+    ":concierge_proto",
+    ":cryptohome_proto",
+    ":cryptohome_signkey_proto",
+    ":login_manager_proto",
+    ":media_perception_proto",
+    ":metrics_event_proto",
+    ":oobe_config_proto",
+    ":power_manager_proto",
+    ":runtime_probe_proto",
+    ":seneschal_proto",
+    ":smbprovider_proto",
+    ":vm_applications_apps_proto",
     "//base",
-    "//base:i18n",
-    "//chromeos:attestation_proto",
-    "//chromeos:authpolicy_proto",
-    "//chromeos:biod_proto",
-    "//chromeos:cicerone_proto",
-    "//chromeos:concierge_proto",
-    "//chromeos:cryptohome_proto",
-    "//chromeos:login_manager_proto",
-    "//chromeos:media_perception_proto",
-    "//chromeos:oobe_config_proto",
-    "//chromeos:power_manager_proto",
-    "//chromeos:runtime_probe_proto",
-    "//chromeos:seneschal_proto",
-    "//chromeos:smbprovider_proto",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
@@ -253,9 +255,9 @@ source_set("test_support") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
   deps = [
+    ":biod_proto",
     ":dbus",
     "//base",
-    "//chromeos:biod_proto",
     "//dbus",
     "//dbus:test_support",
     "//testing/gmock",
@@ -273,13 +275,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/linux/dbus" ]
   testonly = true
   deps = [
+    ":attestation_proto",
+    ":biod_proto",
     ":dbus",
+    ":oobe_config_proto",
+    ":power_manager_proto",
+    ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos:biod_proto",
-    "//chromeos:chromeos_constants",
-    "//chromeos:oobe_config_proto",
-    "//chromeos:test_support_source_set",
     "//components/account_id",
     "//dbus",
     "//dbus:test_support",
@@ -317,4 +320,146 @@ source_set("unit_tests") {
     "update_engine_client_unittest.cc",
     "util/version_loader_unittest.cc",
   ]
+}
+
+proto_library("attestation_proto") {
+  sources = [
+    "proto/attestation.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/attestation"
+}
+
+proto_library("authpolicy_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/authpolicy"
+}
+
+proto_library("biod_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/biod/constants.proto",
+    "//third_party/cros_system_api/dbus/biod/messages.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/biod"
+}
+
+proto_library("cicerone_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_cicerone/cicerone_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cicerone"
+}
+
+proto_library("concierge_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_concierge/service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/concierge"
+}
+
+proto_library("cryptohome_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/cryptohome/key.proto",
+    "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cryptohome"
+}
+
+proto_library("cryptohome_signkey_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cryptohome"
+}
+
+proto_library("login_manager_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/login_manager/arc.proto",
+    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/login_manager"
+}
+
+proto_library("media_perception_proto") {
+  sources = [
+    "proto/media_perception.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/media_perception"
+}
+
+proto_library("metrics_event_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/metrics_event"
+}
+
+proto_library("oobe_config_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/oobe_config/oobe_config.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/oobe_config"
+}
+
+proto_library("power_manager_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/power_manager/backlight.proto",
+    "//third_party/cros_system_api/dbus/power_manager/idle.proto",
+    "//third_party/cros_system_api/dbus/power_manager/input_event.proto",
+    "//third_party/cros_system_api/dbus/power_manager/peripheral_battery_status.proto",
+    "//third_party/cros_system_api/dbus/power_manager/policy.proto",
+    "//third_party/cros_system_api/dbus/power_manager/power_supply_properties.proto",
+    "//third_party/cros_system_api/dbus/power_manager/suspend.proto",
+    "//third_party/cros_system_api/dbus/power_manager/switch_states.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/power_manager"
+}
+
+proto_library("runtime_probe_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/runtime_probe/runtime_probe.proto",
+  ]
+
+  # chromeos side uses full runtime, so we don't specify lite runtime in proto
+  # file, instead we specify lite runtime here.
+  cc_generator_options = "lite=true:"
+
+  proto_out_dir = "chromeos/dbus/runtime_probe"
+}
+
+proto_library("seneschal_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/seneschal/seneschal_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/seneschal"
+}
+
+proto_library("smbprovider_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/smbprovider"
+}
+
+proto_library("vm_applications_apps_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_applications/apps.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/vm_applications"
 }

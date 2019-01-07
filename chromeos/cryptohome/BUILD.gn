@@ -13,8 +13,8 @@ source_set("cryptohome") {
   deps = [
     "//base",
     "//chromeos:chromeos_export",
-    "//chromeos:cryptohome_proto",
     "//chromeos/dbus",
+    "//chromeos/dbus:cryptohome_proto",
     "//chromeos/login/auth:challenge_response_key",
     "//components/account_id",
     "//components/device_event_log",
@@ -40,8 +40,8 @@ source_set("unit_tests") {
     ":cryptohome",
     "//base",
     "//base/test:test_support",
-    "//chromeos:cryptohome_proto",
     "//chromeos/dbus",
+    "//chromeos/dbus:cryptohome_proto",
     "//chromeos/login/auth:challenge_response_key",
     "//testing/gtest:gtest",
   ]

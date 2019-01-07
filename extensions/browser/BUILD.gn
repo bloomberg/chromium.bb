@@ -503,8 +503,8 @@ source_set("browser_tests") {
 
     deps += [
       "//chromeos",
-      "//chromeos:media_perception_proto",
-      "//chromeos:power_manager_proto",
+      "//chromeos/dbus:media_perception_proto",
+      "//chromeos/dbus:power_manager_proto",
       "//chromeos/login/login_state",
     ]
   }
@@ -690,8 +690,8 @@ source_set("unit_tests") {
     ]
 
     deps += [
-      "//chromeos:media_perception_proto",
       "//chromeos:test_support",
+      "//chromeos/dbus:media_perception_proto",
       "//chromeos/login/login_state",
       "//components/feedback",
       "//extensions/shell:app_shell_lib",
