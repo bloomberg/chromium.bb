@@ -90,4 +90,17 @@ promise_test(t => {
     assert_equals(query, '?name-pd1=value-pd1&sub1=subvalue1&sub2=subvalue2&sub2=subvalue3');
   });
 }, 'Multiple values - name content attribute is ignored');
+
+promise_test(t => {
+  $('#container').innerHTML = '<form action="../../external/wpt/common/blank.html" target="if1">' +
+      '<input name=name-pd1 value="value-pd1">' +
+      '<my-control name=name-ce1></my-control>' +
+      '</form>' +
+      '<iframe name="if1"></iframe>';
+  $('my-control').value = 'value-ce1';
+  $('my-control').setValues([]);
+  return submitPromise(t).then(query => {
+    assert_equals(query, '?name-pd1=value-pd1');
+  });
+}, 'setFormValue with an empty FormData should submit nothing');
 </script>
