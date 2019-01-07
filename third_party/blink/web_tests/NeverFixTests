@@ -2198,3 +2198,4 @@ Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix
 external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ WontFix ]
 external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ WontFix ]
+external/wpt/payment-request/billing-address-changed-manual.https.html [ WontFix ]
