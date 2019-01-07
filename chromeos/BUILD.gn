@@ -187,7 +187,7 @@ source_set("chromeos_constants") {
     ":chromeos_export",
     "//base",
     "//base:i18n",
-    "//chromeos/dbus:dbus_switches",
+    "//chromeos/dbus:constants",
     "//third_party/icu",
   ]
   sources = [

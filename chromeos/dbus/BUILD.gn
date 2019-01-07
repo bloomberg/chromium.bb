@@ -11,7 +11,7 @@ assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 source_set("dbus") {
   configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
-    ":dbus_switches",
+    ":constants",
     "//dbus",
   ]
   deps = [
@@ -241,15 +241,15 @@ source_set("dbus") {
   ]
 }
 
-source_set("dbus_switches") {
+source_set("constants") {
   configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
     "//chromeos:chromeos_export",
   ]
   sources = [
-    "dbus_switches.cc",
-    "dbus_switches.h",
+    "constants/dbus_switches.cc",
+    "constants/dbus_switches.h",
   ]
 }
 

@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 
 namespace chromeos {
 namespace switches {
