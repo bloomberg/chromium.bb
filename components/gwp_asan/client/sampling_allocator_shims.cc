@@ -97,12 +97,12 @@ void* AllocZeroInitializedFn(const AllocatorDispatch* self,
                              size_t n,
                              size_t size,
                              void* context) {
-  base::CheckedNumeric<size_t> checked_total = size;
-  checked_total *= n;
-  if (UNLIKELY(!checked_total.IsValid()))
-    return nullptr;
-
   if (UNLIKELY(sampling_state.Sample())) {
+    base::CheckedNumeric<size_t> checked_total = size;
+    checked_total *= n;
+    if (UNLIKELY(!checked_total.IsValid()))
+      return nullptr;
+
     size_t total_size = checked_total.ValueOrDie();
     if (void* allocation = GetGpa().Allocate(total_size)) {
       memset(allocation, 0, total_size);
