@@ -292,8 +292,8 @@ bool WebDialogView::HandleKeyboardEvent(content::WebContents* source,
   if (!event.os_event)
     return false;
 
-  GetWidget()->native_widget_private()->RepostNativeEvent(event.os_event);
-  return true;
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, GetFocusManager());
 }
 
 void WebDialogView::CloseContents(WebContents* source) {
