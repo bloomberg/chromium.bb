@@ -76,7 +76,6 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -2137,15 +2136,6 @@ public class Tab
     }
 
     /**
-     * Returns the SnackbarManager for the activity that owns this Tab, if any. May
-     * return null.
-     */
-    public SnackbarManager getSnackbarManager() {
-        if (getActivity() == null) return null;
-        return getActivity().getSnackbarManager();
-    }
-
-    /**
      * @return The native pointer representing the native side of this {@link Tab} object.
      */
     @CalledByNative
@@ -2224,21 +2214,6 @@ public class Tab
      */
     public void setIsTabStateDirty(boolean isDirty) {
         mIsTabStateDirty = isDirty;
-    }
-
-    /**
-     * @return Whether the Tab should be preserved in Android's Recents list when users hit "back".
-     */
-    public boolean shouldPreserve() {
-        return mShouldPreserve;
-    }
-
-    /**
-     * Sets whether the Tab should be preserved in Android's Recents list when users hit "back".
-     * @param preserve Whether the tab should be preserved.
-     */
-    public void setShouldPreserve(boolean preserve) {
-        mShouldPreserve = preserve;
     }
 
     /**
