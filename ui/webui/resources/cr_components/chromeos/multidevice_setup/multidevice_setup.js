@@ -6,7 +6,6 @@ cr.exportPath('multidevice_setup');
 
 /** @enum {string} */
 multidevice_setup.PageName = {
-  FAILURE: 'setup-failed-page',
   PASSWORD: 'password-page',
   SUCCESS: 'setup-succeeded-page',
   START: 'start-setup-page',
@@ -80,7 +79,7 @@ cr.define('multidevice_setup', function() {
        * DOM Element corresponding to the visible page.
        *
        * @private {!PasswordPageElement|!StartSetupPageElement|
-       *           !SetupSucceededPageElement|!SetupFailedPageElement}
+       *           !SetupSucceededPageElement}
        */
       visiblePage_: Object,
 
@@ -190,9 +189,6 @@ cr.define('multidevice_setup', function() {
     /** @private */
     navigateForward_: function() {
       switch (this.visiblePageName) {
-        case PageName.FAILURE:
-          this.visiblePageName = PageName.START;
-          return;
         case PageName.PASSWORD:
           this.$$('password-page').clearPasswordTextInput();
           this.setHostDevice_();

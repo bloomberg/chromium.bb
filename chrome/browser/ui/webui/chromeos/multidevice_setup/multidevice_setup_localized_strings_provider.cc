@@ -53,8 +53,6 @@ constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION},
     {"startSetupPageFeatureListAddFeatures",
      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES},
-    {"setupFailedPageHeader", IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HEADER},
-    {"setupFailedPageMessage", IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_MESSAGE},
     {"setupSucceededPageHeader",
      IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_HEADER},
     {"setupSucceededPageMessage",
