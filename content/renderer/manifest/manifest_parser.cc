@@ -407,15 +407,28 @@ std::vector<base::string16> ManifestParser::ParseShareTargetFileAccept(
     return accept_types;
   }
 
-  const base::ListValue* accept_list = nullptr;
-  if (!dictionary.GetList("accept", &accept_list)) {
-    AddErrorInfo("property 'accept' ignored, type array expected.");
-    accept_types.push_back(base::ASCIIToUTF16("invalid mimetype"));
+  base::string16 accept_str;
+  if (dictionary.GetString("accept", &accept_str)) {
+    accept_types.push_back(accept_str);
     return accept_types;
   }
 
-  for (const base::Value& accept_value : accept_list->GetList())
+  const base::ListValue* accept_list = nullptr;
+  if (!dictionary.GetList("accept", &accept_list)) {
+    // 'accept' property is the wrong type. Returning an empty vector here
+    // causes the 'files' entry to be discarded.
+    AddErrorInfo("property 'accept' ignored, type array or string expected.");
+    return accept_types;
+  }
+
+  for (const base::Value& accept_value : accept_list->GetList()) {
+    if (!accept_value.is_string()) {
+      // A particular 'accept' entry is invalid - just drop that one entry.
+      AddErrorInfo("'accept' entry ignored, expected to be of type string.");
+      continue;
+    }
     accept_types.push_back(base::ASCIIToUTF16(accept_value.GetString()));
+  }
 
   return accept_types;
 }
@@ -429,24 +442,52 @@ ManifestParser::ParseShareTargetFiles(
 
   const base::ListValue* file_list = nullptr;
   if (!share_target_params.GetList("files", &file_list)) {
-    AddErrorInfo("property 'files' ignored, type array expected.");
+    // https://wicg.github.io/web-share-target/level-2/#share_target-member
+    // step 5 indicates that the 'files' attribute is allowed to be a single
+    // (non-array) ShareTargetFile.
+    const base::DictionaryValue* file_dictionary = nullptr;
+    if (!share_target_params.GetDictionary("files", &file_dictionary)) {
+      AddErrorInfo(
+          "property 'files' ignored, type array or ShareTargetFile expected.");
+      return files;
+    }
+
+    ParseShareTargetFile(*file_dictionary, &files);
+
     return files;
   }
 
   for (const base::Value& file_value : file_list->GetList()) {
     const base::DictionaryValue* file_dictionary = nullptr;
     if (!file_value.GetAsDictionary(&file_dictionary)) {
-      AddErrorInfo("files must be a sequence of non-empty file entires.");
+      AddErrorInfo("files must be a sequence of non-empty file entries.");
       continue;
     }
 
-    blink::Manifest::ShareTargetFile file;
-    file.name = ParseShareTargetFileName(*file_dictionary);
-    file.accept = ParseShareTargetFileAccept(*file_dictionary);
-    files.push_back(file);
+    ParseShareTargetFile(*file_dictionary, &files);
   }
 
   return files;
+}
+
+void ManifestParser::ParseShareTargetFile(
+    const base::DictionaryValue& file_dictionary,
+    std::vector<blink::Manifest::ShareTargetFile>* files) {
+  blink::Manifest::ShareTargetFile file;
+  file.name = ParseShareTargetFileName(file_dictionary);
+  if (file.name.empty()) {
+    // https://wicg.github.io/web-share-target/level-2/#share_target-member
+    // step 7.1 requires that we invalidate this ShareTargetFile if 'name' is an
+    // empty string. We also invalidate if 'name' is undefined or not a
+    // string.
+    return;
+  }
+
+  file.accept = ParseShareTargetFileAccept(file_dictionary);
+  if (file.accept.empty())
+    return;
+
+  files->push_back(file);
 }
 
 base::Optional<blink::Manifest::ShareTarget::Method>
