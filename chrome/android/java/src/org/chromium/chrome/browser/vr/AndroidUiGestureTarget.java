@@ -19,6 +19,7 @@ import org.chromium.content_public.browser.MotionEventSynthesizer;
 public class AndroidUiGestureTarget {
     private final MotionEventSynthesizer mMotionEventSynthesizer;
     private final long mNativePointer;
+    private long mLastTimestampMs;
 
     public AndroidUiGestureTarget(
             View target, float scaleFactor, float scrollRatio, int touchSlop) {
@@ -29,6 +30,7 @@ public class AndroidUiGestureTarget {
     @CalledByNative
     private void inject(int action, long timeInMs) {
         mMotionEventSynthesizer.inject(action, 1 /* pointerCount */, timeInMs);
+        mLastTimestampMs = timeInMs;
     }
 
     @CalledByNative
@@ -42,9 +44,14 @@ public class AndroidUiGestureTarget {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                long delayedTimestampMs = timeInMs + delayMs;
+                // Drop this event if it's been delayed too long and another event has already
+                // been injected.
+                if (mLastTimestampMs > delayedTimestampMs) return;
                 mMotionEventSynthesizer.setPointer(
                         0 /* index */, x, y, 0 /* id */, MotionEvent.TOOL_TYPE_STYLUS);
-                mMotionEventSynthesizer.inject(action, 1 /* pointerCount */, timeInMs + delayMs);
+                mMotionEventSynthesizer.inject(action, 1 /* pointerCount */, delayedTimestampMs);
+                mLastTimestampMs = delayedTimestampMs;
             }
         }, delayMs);
     }
