@@ -6,12 +6,33 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_CACHED_METADATA_HANDLER_H_
 
 #include <stdint.h>
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
 class CachedMetadata;
+class ResourceResponse;
+
+// A callback for sending the serialized data of cached metadata back to the
+// platform.
+class PLATFORM_EXPORT CachedMetadataSender {
+ public:
+  static std::unique_ptr<CachedMetadataSender> Create(
+      const ResourceResponse&,
+      blink::mojom::CodeCacheType,
+      scoped_refptr<const SecurityOrigin> requestor_origin);
+
+  virtual ~CachedMetadataSender() = default;
+  virtual void Send(const uint8_t*, size_t) = 0;
+
+  // IsServedFromCacheStorage is used to alter caching strategy to be more
+  // aggressive. See V8CodeCache::GetCompileOptions() for an example.
+  virtual bool IsServedFromCacheStorage() = 0;
+};
 
 // Handler class for caching operations.
 class CachedMetadataHandler

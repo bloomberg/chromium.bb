@@ -87,18 +87,6 @@ enum class ResourceType : uint8_t {
   kMock  // Only for testing
 };
 
-// A callback for sending the serialized data of cached metadata back to the
-// platform.
-class CachedMetadataSender {
- public:
-  virtual ~CachedMetadataSender() = default;
-  virtual void Send(const uint8_t*, size_t) = 0;
-
-  // IsServedFromCacheStorage is used to alter caching strategy to be more
-  // aggressive. See ScriptController.cpp CacheOptions() for an example.
-  virtual bool IsServedFromCacheStorage() = 0;
-};
-
 // A resource that is held in the cache. Classes who want to use this object
 // should derive from ResourceClient, to get the function calls in case the
 // requested data has arrived. This class also does the actual communication
@@ -538,10 +526,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void CheckResourceIntegrity();
   void TriggerNotificationForFinishObservers(base::SingleThreadTaskRunner*);
-
-  // Helper for creating the send callback function for the cached metadata
-  // handler.
-  std::unique_ptr<CachedMetadataSender> CreateCachedMetadataSender() const;
 
   ResourceType type_;
   ResourceStatus status_;

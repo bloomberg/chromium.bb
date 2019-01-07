@@ -24,6 +24,7 @@ blink_platform_sources("loader") {
     "fetch/buffering_data_pipe_writer.h",
     "fetch/cached_metadata.cc",
     "fetch/cached_metadata.h",
+    "fetch/cached_metadata_handler.cc",
     "fetch/cached_metadata_handler.h",
     "fetch/client_hints_preferences.cc",
     "fetch/client_hints_preferences.h",
