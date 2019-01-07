@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +14,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
+#include "components/security_state/core/features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -166,8 +168,16 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
 }
 
 // Tests that whitelisted insecure origins are correctly set as security level
-// NONE instead of the default level HTTPS_SHOW_WARNING.
+// NONE instead of the default level DANGEROUS.
 IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
+  // TODO(crbug.com/917693): Remove this forced feature/param when the feature
+  // fully launches.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerous}});
+
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL(
@@ -180,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
 
   if (GetParam() == TestVariant::kPolicyOldAndNew) {
     // When both policies are set, the new policy overrides the old policy.
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL(
@@ -189,7 +199,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
     EXPECT_EQ(security_state::NONE, security_info.security_level);
   } else {
     EXPECT_EQ(ExpectSecureContext() ? security_state::NONE
-                                    : security_state::HTTP_SHOW_WARNING,
+                                    : security_state::DANGEROUS,
               security_info.security_level);
   }
 }
