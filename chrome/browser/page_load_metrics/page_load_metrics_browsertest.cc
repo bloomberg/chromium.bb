@@ -77,6 +77,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -1540,6 +1541,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetricsFailed) {
+  // https://crbug.com/842445: page load metrics don't work for non-committed
+  // navigations with network service.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadTimingInfo);
