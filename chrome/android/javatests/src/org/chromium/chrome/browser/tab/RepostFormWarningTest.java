@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -20,7 +20,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -28,6 +30,9 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.TimeoutException;
 
@@ -89,10 +94,10 @@ public class RepostFormWarningTest {
 
         // Trigger a reload and wait for the warning to be displayed.
         reload();
-        AlertDialog dialog = waitForRepostFormWarningDialog();
+        PropertyModel dialog = waitForRepostFormWarningDialog();
 
         // Click "Continue" and verify that the page is reloaded.
-        clickButton(dialog, AlertDialog.BUTTON_POSITIVE);
+        clickButton(dialog, ModalDialogProperties.ButtonType.POSITIVE);
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
@@ -114,10 +119,10 @@ public class RepostFormWarningTest {
 
         // Trigger a reload and wait for the warning to be displayed.
         reload();
-        AlertDialog dialog = waitForRepostFormWarningDialog();
+        PropertyModel dialog = waitForRepostFormWarningDialog();
 
         // Click "Cancel" and verify that the page is not reloaded.
-        clickButton(dialog, AlertDialog.BUTTON_NEGATIVE);
+        clickButton(dialog, ModalDialogProperties.ButtonType.NEGATIVE);
         boolean timedOut = false;
         try {
             mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
@@ -146,10 +151,18 @@ public class RepostFormWarningTest {
         waitForRepostFormWarningDialog();
 
         ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mActivityTestRule.getActivity().getCurrentTabModel().closeTab(
-                        mTab));
+                (Runnable) ()
+                        -> mActivityTestRule.getActivity().getCurrentTabModel().closeTab(mTab));
 
         waitForNoReportFormWarningDialog();
+    }
+
+    private PropertyModel getCurrentModalDialog() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getModalDialogManager()
+                                   .getCurrentDialogForTest());
     }
 
     private void waitForNoReportFormWarningDialog() {
@@ -157,31 +170,39 @@ public class RepostFormWarningTest {
                 new Criteria("Form resubmission dialog not dismissed correctly") {
                     @Override
                     public boolean isSatisfied() {
-                        return RepostFormWarningDialog.getCurrentDialogForTesting() == null;
+                        return getCurrentModalDialog() == null;
                     }
                 });
     }
 
-    private AlertDialog waitForRepostFormWarningDialog() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Form resubmission warning not shown") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return RepostFormWarningDialog.getCurrentDialogForTesting() != null;
-                    }
-                });
-        return ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> (AlertDialog) RepostFormWarningDialog.getCurrentDialogForTesting());
+    private PropertyModel waitForRepostFormWarningDialog() {
+        CriteriaHelper.pollUiThread(new Criteria("Form resubmission warning not shown") {
+            @Override
+            public boolean isSatisfied() {
+                PropertyModel dialogModel = getCurrentModalDialog();
+                if (dialogModel == null) {
+                    updateFailureReason("No modal dialog shown");
+                    return false;
+                }
+
+                updateFailureReason("Modal dialog is not a HTTP post dialog");
+                return TextUtils.equals(
+                        mActivityTestRule.getActivity().getString(R.string.http_post_warning_title),
+                        dialogModel.get(ModalDialogProperties.TITLE));
+            }
+        });
+        return getCurrentModalDialog();
     }
 
     /** Performs a POST navigation in mTab. */
     private void postNavigation() throws Throwable {
         final String url = "/chrome/test/data/android/test.html";
-        final byte[] postData = new byte[] { 42 };
+        final byte[] postData = new byte[] {42};
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
-                        mTestServer.getURL(url), postData)));
+                ()
+                        -> mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
+                                mTestServer.getURL(url), postData)));
     }
 
     /** Reloads mTab. */
@@ -190,8 +211,9 @@ public class RepostFormWarningTest {
     }
 
     /** Clicks the given button in the given dialog. */
-    private void clickButton(final AlertDialog dialog, final int buttonId) throws Throwable {
+    private void clickButton(final PropertyModel dialog, final @ButtonType int type)
+            throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> dialog.getButton(buttonId).performClick());
+                () -> dialog.get(ModalDialogProperties.CONTROLLER).onClick(dialog, type));
     }
 }
