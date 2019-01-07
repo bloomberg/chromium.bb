@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ab8eb2d6edb42673b3efc86044db1e96fe67e663',
+  'dawn_revision': '7c0f0fbf919b07161799d1e000b524bd9a3a5aa6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
