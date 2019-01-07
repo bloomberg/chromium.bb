@@ -73,6 +73,7 @@ js_library("app") {
     ":router",
     ":store",
     ":store_client",
+    "//ui/webui/resources/js:find_shortcut_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr/ui:splitter",
   ]
