@@ -242,6 +242,45 @@ TEST_F(RTCQuicTransportTest, RTCIceTransportStopDeletesP2PQuicTransport) {
   EXPECT_TRUE(mock_deleted);
 }
 
+// Test that the P2PQuicTransport is deleted and the RTCQuicTransport goes to
+// the "failed" state when the QUIC connection fails.
+TEST_F(RTCQuicTransportTest,
+       ConnectionFailedBecomesClosedAndDeletesP2PQuicTransport) {
+  V8TestingScope scope;
+
+  bool mock_deleted = false;
+  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+  EXPECT_CALL(*mock_transport, Die()).WillOnce(Assign(&mock_deleted, true));
+
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateConnectedQuicTransport(scope, std::move(mock_transport), &delegate);
+  DCHECK(delegate);
+  delegate->OnConnectionFailed("test_failure", /*from_remote=*/false);
+  RunUntilIdle();
+
+  EXPECT_TRUE(mock_deleted);
+  EXPECT_EQ("failed", quic_transport->state());
+}
+
+// Test that after the connection fails, stop() will change the state
+// of the transport to "closed".
+TEST_F(RTCQuicTransportTest, StopAfterConnectionFailed) {
+  V8TestingScope scope;
+
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport = CreateConnectedQuicTransport(
+      scope, std::make_unique<MockP2PQuicTransport>(), &delegate);
+  DCHECK(delegate);
+  delegate->OnConnectionFailed("test_failure", /*from_remote=*/false);
+  RunUntilIdle();
+
+  EXPECT_EQ("failed", quic_transport->state());
+
+  quic_transport->stop();
+  EXPECT_EQ("closed", quic_transport->state());
+}
+
 // Test that the P2PQuicTransport is deleted when the underlying RTCIceTransport
 // is ContextDestroyed.
 TEST_F(RTCQuicTransportTest,

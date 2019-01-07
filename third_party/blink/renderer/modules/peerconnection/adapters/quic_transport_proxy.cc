@@ -131,8 +131,8 @@ void QuicTransportProxy::OnRemoteStopped() {
 void QuicTransportProxy::OnConnectionFailed(const std::string& error_details,
                                             bool from_remote) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  delegate_->OnConnectionFailed(error_details, from_remote);
   stream_proxies_.clear();
+  delegate_->OnConnectionFailed(error_details, from_remote);
 }
 
 void QuicTransportProxy::OnStream(
