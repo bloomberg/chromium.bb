@@ -144,8 +144,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     https_url_ = https_server_->GetURL("/previews/noscript_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
-    https_redirect_url_ = https_server_->GetURL("/previews/redirect.html");
-    ASSERT_TRUE(https_redirect_url_.SchemeIs(url::kHttpsScheme));
+    https_to_https_redirect_url_ =
+        https_server_->GetURL("/previews/to_https_redirect.html");
+    ASSERT_TRUE(https_to_https_redirect_url_.SchemeIs(url::kHttpsScheme));
 
     base_https_lite_page_url_ =
         https_server_->GetURL("/previews/lite_page_test.html");
@@ -173,8 +174,13 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     subframe_url_ = http_server_->GetURL("/previews/iframe_blank.html");
     ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
 
-    redirect_url_ = http_server_->GetURL("/previews/redirect.html");
-    ASSERT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
+    http_to_https_redirect_url_ =
+        http_server_->GetURL("/previews/to_https_redirect.html");
+    ASSERT_TRUE(http_to_https_redirect_url_.SchemeIs(url::kHttpScheme));
+
+    client_redirect_url_ =
+        http_server_->GetURL("/previews/client_redirect.html");
+    ASSERT_TRUE(client_redirect_url_.SchemeIs(url::kHttpScheme));
 
     // Set up previews server with resource handler.
     previews_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -468,21 +474,39 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   const GURL& base_http_lite_page_url() const {
     return base_http_lite_page_url_;
   }
-  const GURL& redirect_url() const { return redirect_url_; }
-  const GURL& https_redirect_url() const { return https_redirect_url_; }
+  const GURL& http_to_https_redirect_url() const {
+    return http_to_https_redirect_url_;
+  }
+  const GURL& https_to_https_redirect_url() const {
+    return https_to_https_redirect_url_;
+  }
+  const GURL& client_redirect_url() const { return client_redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
   int subresources_requested() const { return subresources_requested_; }
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
       const net::test_server::HttpRequest& request) {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response;
-    if (request.GetURL().spec().find("redirect") != std::string::npos) {
-      response = std::make_unique<net::test_server::BasicHttpResponse>();
+    if (request.GetURL().spec().find("to_https_redirect") !=
+        std::string::npos) {
+      std::unique_ptr<net::test_server::BasicHttpResponse> response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_FOUND);
       response->AddCustomHeader("Location", https_url().spec());
+      return std::move(response);
     }
-    return std::move(response);
+
+    if (request.GetURL().spec().find("client_redirect") != std::string::npos) {
+      std::unique_ptr<net::test_server::BasicHttpResponse> response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      response->set_content_type("text/html");
+      response->set_content("<html><body><script>window.location = \"" +
+                            HttpsLitePageURL(kSuccess).spec() +
+                            "\";</script></body></html>");
+      return std::move(response);
+    }
+    return nullptr;
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleSlowResourceRequest(
@@ -634,8 +658,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL https_media_url_;
   GURL http_url_;
   GURL base_http_lite_page_url_;
-  GURL https_redirect_url_;
-  GURL redirect_url_;
+  GURL http_to_https_redirect_url_;
+  GURL https_to_https_redirect_url_;
+  GURL client_redirect_url_;
   GURL subframe_url_;
   int subresources_requested_ = 0;
 };
@@ -877,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
     base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), redirect_url());
+    ui_test_utils::NavigateToURL(browser(), http_to_https_redirect_url());
     VerifyPreviewLoaded();
     VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
@@ -887,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   {
     // Verify the preview is triggered when an HTTPS page redirects to HTTPS.
     base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), https_redirect_url());
+    ui_test_utils::NavigateToURL(browser(), https_to_https_redirect_url());
     VerifyPreviewLoaded();
     VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
@@ -1141,6 +1166,20 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
   EXPECT_EQ(GetDataUsage(), 20U);
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsClientRedirect)) {
+  // Navigate to a non-preview first.
+  ui_test_utils::NavigateToURL(browser(), https_media_url());
+  VerifyPreviewNotLoaded();
+
+  // Navigate to a page that causes a client redirect to a page that will
+  // get a preview.
+  ui_test_utils::NavigateToURL(browser(), client_redirect_url());
+  VerifyPreviewLoaded();
+  EXPECT_EQ(GetWebContents()->GetController().GetEntryAtOffset(-1)->GetURL(),
+            https_media_url());
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
