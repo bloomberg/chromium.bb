@@ -1327,7 +1327,7 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendMediaRouterItem();
   if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
     menu_model_.AddItemWithStringId(IDC_SEND_TO_MY_DEVICES,
-                                    IDS_SEND_TO_MY_DEVICES);
+                                    IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(
@@ -1987,6 +1987,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_SAVE_PAGE:
       embedder_web_contents_->OnSavePage();
+      break;
+
+    case IDC_SEND_TO_MY_DEVICES:
+      // TODO(tinazwang): add implementation
+      NOTIMPLEMENTED();
       break;
 
     case IDC_RELOAD:
