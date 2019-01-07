@@ -90,7 +90,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
    private:
     friend class Sequence;
 
-    explicit Transaction(scoped_refptr<Sequence> sequence);
+    explicit Transaction(Sequence* sequence);
 
     Sequence* sequence_;
 

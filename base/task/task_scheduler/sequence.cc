@@ -27,8 +27,7 @@ SequenceAndTransaction::SequenceAndTransaction(SequenceAndTransaction&& other) =
 
 SequenceAndTransaction::~SequenceAndTransaction() = default;
 
-Sequence::Transaction::Transaction(scoped_refptr<Sequence> sequence)
-    : sequence_(sequence.get()) {
+Sequence::Transaction::Transaction(Sequence* sequence) : sequence_(sequence) {
   sequence_->lock_.Acquire();
 }
 
