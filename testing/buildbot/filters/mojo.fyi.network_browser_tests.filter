@@ -1,8 +1,0 @@
-# These tests currently fail when run with --enable-features=NetworkService
-# See https://crbug.com/769401
-
-# https://crbug.com/816684 Track Page Load Metrics.
--PageLoadMetricsBrowserTest.LoadingMetricsFailed
-
-# DO NOT ADD ANY MORE ENTRIES! Network service is about to ship to stable.
-# Please reach out to network-service-dev@ if you have any questions.

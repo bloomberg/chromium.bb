@@ -1871,7 +1871,7 @@
       {
         "args": [
           "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter;../../testing/buildbot/filters/mojo.fyi.chromeos.network_browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_browser_tests.filter"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -2013,8 +2013,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -2026,8 +2025,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "name": "network_service_in_process_browser_tests",
         "swarming": {
@@ -2126,8 +2124,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -2138,8 +2135,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "name": "network_service_in_process_browser_tests",
         "swarming": {
@@ -2576,8 +2572,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -5864,8 +5859,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -6604,8 +6598,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "isolate_coverage_data": true,
         "name": "network_service_browser_tests",
@@ -10007,8 +10000,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -10685,8 +10677,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
@@ -10948,8 +10939,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_browser_tests",
         "swarming": {
