@@ -239,7 +239,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                 // since we do not need to show default icon then change it to favicon. It is ok to
                 // wait here since the favicon is loaded from local cache in favicon service sql
                 // database.
-                if (mCurrentMediaImage == null && !fetchFaviconImage()) {
+                // Incognito Tabs need the default icon as they don't show the media icon.
+                if (mTab.isIncognito() || (mCurrentMediaImage == null && !fetchFaviconImage())) {
                     mNotificationInfoBuilder.setDefaultNotificationLargeIcon(
                             R.drawable.audio_playing_square);
                 }
