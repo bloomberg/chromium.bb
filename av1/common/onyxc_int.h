@@ -630,6 +630,21 @@ static INLINE int get_free_fb(AV1_COMMON *cm) {
   return i;
 }
 
+static INLINE RefCntBuffer *assign_cur_frame_new_fb(AV1_COMMON *const cm) {
+  // Release the previously-used frame-buffer
+  if (cm->cur_frame != NULL) {
+    --cm->cur_frame->ref_count;
+    cm->cur_frame = NULL;
+  }
+
+  // Assign a new framebuffer
+  const int new_fb_idx = get_free_fb(cm);
+  if (new_fb_idx == INVALID_IDX) return NULL;
+
+  cm->cur_frame = &cm->buffer_pool->frame_bufs[new_fb_idx];
+  return cm->cur_frame;
+}
+
 // Modify 'lhs_ptr' to reference the buffer at 'rhs_ptr', and update the ref
 // counts accordingly.
 static INLINE void assign_frame_buffer_p(RefCntBuffer **lhs_ptr,

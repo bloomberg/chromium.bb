@@ -6562,6 +6562,44 @@ static void setup_tpl_stats(AV1_COMP *cpi) {
     mc_flow_dispenser(cpi, gf_picture, frame_idx);
 }
 
+// Determine whether there is a forced keyframe pending in the lookahead buffer
+static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
+                                      const int up_to_index) {
+  for (int i = 0; i <= up_to_index; i++) {
+    const struct lookahead_entry *e = av1_lookahead_peek(lookahead, i);
+    if (e == NULL) {
+      // We have reached the end of the lookahead buffer and not early-returned
+      // so there isn't a forced key-frame pending.
+      return 0;
+    } else if (e->flags == AOM_EFLAG_FORCE_KF) {
+      return 1;
+    } else {
+      continue;
+    }
+  }
+  return 0;  // Never reached
+}
+
+// Don't allow a show_existing_frame to coincide with an error resilient or
+// S-Frame. An exception can be made in the case of a keyframe, since it does
+// not depend on any previous frames.
+static int allow_show_existing(const AV1_COMP *const cpi) {
+  if (cpi->common.current_frame.frame_number == 0) return 0;
+
+  const struct lookahead_entry *lookahead_src =
+      av1_lookahead_peek(cpi->lookahead, 0);
+  if (lookahead_src == NULL) return 1;
+
+  const int is_error_resilient =
+      cpi->oxcf.error_resilient_mode ||
+      (lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT);
+  const int is_s_frame =
+      cpi->oxcf.s_frame_mode || (lookahead_src->flags & AOM_EFLAG_SET_S_FRAME);
+  const int is_key_frame =
+      (cpi->rc.frames_to_key == 0) || (cpi->frame_flags & FRAMEFLAGS_KEY);
+  return !(is_error_resilient || is_s_frame) || is_key_frame;
+}
+
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
@@ -6570,7 +6608,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   const int num_planes = av1_num_planes(cm);
-  BufferPool *const pool = cm->buffer_pool;
   RATE_CONTROL *const rc = &cpi->rc;
   struct aom_usec_timer cmptimer;
   YV12_BUFFER_CONFIG *force_src_buffer = NULL;
@@ -6607,27 +6644,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->no_show_kf = 0;
   cm->reset_decoder_state = 0;
 
-  // Don't allow a show_existing_frame to coincide with an error resilient or
-  // S-Frame. An exception can be made in the case of a keyframe, since it
-  // does not depend on any previous frames. We must make this exception here
-  // because of the use of show_existing_frame with forward coded keyframes.
-  struct lookahead_entry *lookahead_src = NULL;
-  if (current_frame->frame_number > 0)
-    lookahead_src = av1_lookahead_peek(cpi->lookahead, 0);
-
-  int use_show_existing = 1;
-  if (lookahead_src != NULL) {
-    const int is_error_resilient =
-        cpi->oxcf.error_resilient_mode ||
-        (lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT);
-    const int is_s_frame = cpi->oxcf.s_frame_mode ||
-                           (lookahead_src->flags & AOM_EFLAG_SET_S_FRAME);
-    const int is_key_frame =
-        (rc->frames_to_key == 0) || (cpi->frame_flags & FRAMEFLAGS_KEY);
-    use_show_existing = !(is_error_resilient || is_s_frame) || is_key_frame;
-  }
-
-  if (oxcf->pass == 2 && cm->show_existing_frame && use_show_existing) {
+  if (oxcf->pass == 2 && cm->show_existing_frame && allow_show_existing(cpi)) {
     // Manage the source buffer and flush out the source frame that has been
     // coded already; Also get prepared for PSNR calculation if needed.
     if ((source = av1_lookahead_pop(cpi->lookahead, flush)) == NULL) {
@@ -6644,16 +6661,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // We need to adjust frame rate for an overlay frame
     if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
 
-    // Find a free buffer for the new frame, releasing the reference
-    // previously held.
-    if (cm->cur_frame != NULL) {
-      --cm->cur_frame->ref_count;
-      cm->cur_frame = NULL;
-    }
-
-    const int new_fb_idx = get_free_fb(cm);
-    if (new_fb_idx == INVALID_IDX) return -1;
-    cm->cur_frame = &pool->frame_bufs[new_fb_idx];
+    if (assign_cur_frame_new_fb(cm) == NULL) return -1;
 
     // Clear down mmx registers
     aom_clear_system_state();
@@ -6682,18 +6690,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   // Should we encode an arf frame.
   arf_src_index = get_arf_src_index(cpi);
-  if (arf_src_index) {
-    for (i = 0; i <= arf_src_index; ++i) {
-      struct lookahead_entry *e = av1_lookahead_peek(cpi->lookahead, i);
-      // Avoid creating an alt-ref if there's a forced keyframe pending.
-      if (e == NULL) {
-        break;
-      } else if (e->flags == AOM_EFLAG_FORCE_KF) {
-        arf_src_index = 0;
-        flush = 1;
-        break;
-      }
-    }
+  if (arf_src_index &&
+      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
+    arf_src_index = 0;
+    flush = 1;
   }
 
   if (arf_src_index) {
@@ -6730,18 +6730,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   // Should we encode an arf2 frame.
   arf_src_index = get_arf2_src_index(cpi);
-  if (arf_src_index) {
-    for (i = 0; i <= arf_src_index; ++i) {
-      struct lookahead_entry *e = av1_lookahead_peek(cpi->lookahead, i);
-      // Avoid creating an alt-ref if there's a forced keyframe pending.
-      if (e == NULL) {
-        break;
-      } else if (e->flags == AOM_EFLAG_FORCE_KF) {
-        arf_src_index = 0;
-        flush = 1;
-        break;
-      }
-    }
+  if (arf_src_index &&
+      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
+    arf_src_index = 0;
+    flush = 1;
   }
 
   if (arf_src_index) {
@@ -6832,17 +6824,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   // adjust frame rates based on timestamps given
   if (cm->show_frame) adjust_frame_rate(cpi, source);
 
-  // Find a free buffer for the new frame, releasing the reference previously
-  // held.
-  if (cm->cur_frame != NULL) {
-    --cm->cur_frame->ref_count;
-    cm->cur_frame = NULL;
-  }
+  if (assign_cur_frame_new_fb(cm) == NULL) return -1;
 
-  int new_fb_idx = get_free_fb(cm);
-  if (new_fb_idx == INVALID_IDX) return -1;
-
-  cm->cur_frame = &pool->frame_bufs[new_fb_idx];
   // Retain the RF_LEVEL for the current newly coded frame.
   cm->cur_frame->frame_rf_level =
       cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];

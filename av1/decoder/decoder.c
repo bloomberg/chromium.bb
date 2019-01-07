@@ -435,7 +435,6 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
 int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                                 const uint8_t **psource) {
   AV1_COMMON *volatile const cm = &pbi->common;
-  BufferPool *volatile const pool = cm->buffer_pool;
   const uint8_t *source = *psource;
   cm->error.error_code = AOM_CODEC_OK;
   cm->error.has_detail = 0;
@@ -453,18 +452,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     if (ref_buf != NULL) ref_buf->buf.corrupted = 1;
   }
 
-  // Find a free buffer for the new frame, releasing the reference previously
-  // held.
-
-  // Find a free frame buffer. Return error if can not find any.
-  int new_fb_idx = get_free_fb(cm);
-  if (new_fb_idx == INVALID_IDX) {
+  if (assign_cur_frame_new_fb(cm) == NULL) {
     cm->error.error_code = AOM_CODEC_MEM_ERROR;
     return 1;
   }
-
-  // Assign a MV array to the frame buffer.
-  cm->cur_frame = &pool->frame_bufs[new_fb_idx];
 
   if (!pbi->camera_frame_header_ready) pbi->hold_ref_buf = 0;
 
