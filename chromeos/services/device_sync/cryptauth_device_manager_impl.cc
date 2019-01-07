@@ -146,6 +146,7 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
         SoftwareFeatureStringToEnum(software_feature_key);
 
     int software_feature_state;
+    bool software_feature_success_result = true;
     if (!dictionary->GetInteger(software_feature_key,
                                 &software_feature_state) ||
         static_cast<multidevice::SoftwareFeatureState>(
@@ -160,15 +161,12 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
       } else {
         PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
                       << software_feature_key << ". Not setting as enabled.";
-        RecordDeviceSyncSoftwareFeaturesResult(false /* success */,
-                                               software_feature);
-
-        continue;
+        software_feature_success_result = false;
       }
     }
 
-    RecordDeviceSyncSoftwareFeaturesResult(true /* success */,
-                                           software_feature);
+    RecordDeviceSyncSoftwareFeaturesResult(
+        software_feature_success_result /* success */, software_feature);
 
     dictionary->SetInteger(
         software_feature_key,
