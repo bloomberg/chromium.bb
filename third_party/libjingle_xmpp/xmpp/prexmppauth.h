@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_PREXMPPAUTH_H_
-#define WEBRTC_LIBJINGLE_XMPP_PREXMPPAUTH_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PREXMPPAUTH_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PREXMPPAUTH_H_
 
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
@@ -67,4 +67,4 @@ public:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_PREXMPPAUTH_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PREXMPPAUTH_H_

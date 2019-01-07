@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_
 
 #include <memory>
 #include <sstream>
@@ -264,4 +264,4 @@ class XmppEngineImpl : public XmppEngine {
 
 }  // namespace buzz
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_

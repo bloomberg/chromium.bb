@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_
 
 #include <deque>
 #include <memory>
@@ -172,4 +172,4 @@ private:
 
 }  // namespace buzz
 
-#endif // WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
+#endif // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_

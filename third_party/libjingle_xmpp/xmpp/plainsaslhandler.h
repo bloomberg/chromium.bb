@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_PLAINSASLHANDLER_H_
-#define WEBRTC_LIBJINGLE_XMPP_PLAINSASLHANDLER_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PLAINSASLHANDLER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PLAINSASLHANDLER_H_
 
 #include <algorithm>
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
@@ -60,4 +60,4 @@ private:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_PLAINSASLHANDLER_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_PLAINSASLHANDLER_H_

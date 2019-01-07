@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
-#define WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_
 
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 
@@ -44,4 +44,4 @@ private:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_
