@@ -30,5 +30,6 @@ For midl.exe:
   files producing output in the same output directory, create directories called
   "foo1.idl", "foo2.idl" etc in that directory and put the output for each idl
   file into the directory named after the input file.  Because midl.exe produces
-  different outputs in 32-bit and 64-bit builds, do one each and put the
-  32-bit outputs in subfolder 'x86' and 64-bit outputs in subfolder 'x64'.
+  different outputs for each target cpu, do one each and put the x86 outputs in
+  subfolder 'x86', x64 outputs in subfolder 'x64' and arm64 outputs in subfolder
+  'arm64'.
