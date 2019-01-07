@@ -6,6 +6,10 @@ cr.define('downloads', function() {
   const Manager = Polymer({
     is: 'downloads-manager',
 
+    behaviors: [
+      FindShortcutBehavior,
+    ],
+
     properties: {
       /** @private */
       hasDownloads_: {
@@ -176,9 +180,6 @@ cr.define('downloads', function() {
         case 'clear-all-command':
           e.canExecute = this.$.toolbar.canClearAll();
           break;
-        case 'find-command':
-          e.canExecute = true;
-          break;
       }
     },
 
@@ -191,8 +192,6 @@ cr.define('downloads', function() {
         this.mojoHandler_.clearAll();
       } else if (e.command.id == 'undo-command') {
         this.mojoHandler_.undo();
-      } else if (e.command.id == 'find-command') {
-        this.$.toolbar.onFindCommand();
       }
     },
 
@@ -281,6 +280,20 @@ cr.define('downloads', function() {
         const list = /** @type {!IronListElement} */ (this.$.downloadsList);
         list.updateSizeForIndex(index);
       });
+    },
+
+    // Override FindShortcutBehavior methods.
+    handleFindShortcut: function(modalContextOpen) {
+      if (modalContextOpen) {
+        return false;
+      }
+      this.$.toolbar.focusOnSearchInput();
+      return true;
+    },
+
+    // Override FindShortcutBehavior methods.
+    searchInputHasFocus: function() {
+      return this.$.toolbar.isSearchFocused();
     },
   });
 
