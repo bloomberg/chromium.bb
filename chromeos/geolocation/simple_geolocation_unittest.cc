@@ -395,6 +395,7 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+  provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), GetParam(),
@@ -464,6 +465,7 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+  provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false,

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -21,6 +22,7 @@ class SharedURLLoaderFactory;
 }
 
 namespace chromeos {
+class GeolocationHandler;
 
 // This class implements Google Maps Geolocation API.
 //
@@ -50,6 +52,8 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
 
  private:
   friend class TestGeolocationAPILoaderFactory;
+  FRIEND_TEST_ALL_PREFIXES(SimpleGeolocationWirelessTest, CellularExists);
+  FRIEND_TEST_ALL_PREFIXES(SimpleGeolocationWirelessTest, WiFiExists);
 
   // Geolocation response callback. Deletes request from requests_.
   void OnGeolocationResponse(
@@ -58,6 +62,10 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
       const Geoposition& geoposition,
       bool server_error,
       const base::TimeDelta elapsed);
+
+  void set_geolocation_handler(GeolocationHandler* geolocation_handler) {
+    geolocation_handler_ = geolocation_handler;
+  }
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
@@ -68,6 +76,8 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
   // SimpleGeolocationProvider owns all requests, so this vector is deleted on
   // destroy.
   std::vector<std::unique_ptr<SimpleGeolocationRequest>> requests_;
+
+  GeolocationHandler* geolocation_handler_ = nullptr;
 
   // Creation and destruction should happen on the same thread.
   base::ThreadChecker thread_checker_;
