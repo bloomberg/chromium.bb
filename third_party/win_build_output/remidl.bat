@@ -2,7 +2,8 @@
 @REM Use of this source code is governed by a BSD-style license that can be
 @REM found in the LICENSE file.
 
-@REM midl.exe output is arch-specific, remember to run this for both target_cpu.
+@REM midl.exe output is arch-specific, remember to run this for all supported
+@REM target_cpu, currently x86, x64 and arm64.
 ninja -C out\gn ^
     gen/google_update/google_update_idl.h ^
     gen/remoting/host/win/chromoting_lib.h ^
