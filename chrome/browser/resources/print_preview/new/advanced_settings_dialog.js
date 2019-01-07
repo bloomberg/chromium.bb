@@ -91,8 +91,8 @@ Polymer({
       item.hidden = !matches;
       hasMatch = hasMatch || matches;
       const result = item.updateHighlighting(this.searchQuery_);
-      this.highlights_.push.apply(this.highlights_, result.highlights);
-      this.bubbles_.push.apply(this.bubbles_, result.bubbles);
+      this.highlights_.push(...result.highlights);
+      this.bubbles_.push(...result.bubbles);
     });
     return hasMatch;
   },
