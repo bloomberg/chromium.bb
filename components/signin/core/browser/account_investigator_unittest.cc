@@ -30,7 +30,6 @@
 using base::HistogramTester;
 using base::Time;
 using base::TimeDelta;
-using gaia::ListedAccount;
 using signin_metrics::AccountRelation;
 using signin_metrics::ReportingType;
 
@@ -75,20 +74,20 @@ class AccountInvestigatorTest : public testing::Test {
                   const TimeDelta interval) {
     return AccountInvestigator::CalculatePeriodicDelay(previous, now, interval);
   }
-  std::string Hash(const std::vector<ListedAccount>& signed_in_accounts,
-                   const std::vector<ListedAccount>& signed_out_accounts) {
+  std::string Hash(const std::vector<AccountInfo>& signed_in_accounts,
+                   const std::vector<AccountInfo>& signed_out_accounts) {
     return AccountInvestigator::HashAccounts(signed_in_accounts,
                                              signed_out_accounts);
   }
   AccountRelation Relation(
       const AccountInfo& info,
-      const std::vector<ListedAccount>& signed_in_accounts,
-      const std::vector<ListedAccount>& signed_out_accounts) {
+      const std::vector<AccountInfo>& signed_in_accounts,
+      const std::vector<AccountInfo>& signed_out_accounts) {
     return AccountInvestigator::DiscernRelation(info, signed_in_accounts,
                                                 signed_out_accounts);
   }
-  void SharedReport(const std::vector<gaia::ListedAccount>& signed_in_accounts,
-                    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+  void SharedReport(const std::vector<AccountInfo>& signed_in_accounts,
+                    const std::vector<AccountInfo>& signed_out_accounts,
                     const Time now,
                     const ReportingType type) {
     investigator_.SharedCookieJarReport(signed_in_accounts, signed_out_accounts,
@@ -101,11 +100,10 @@ class AccountInvestigatorTest : public testing::Test {
   }
   base::OneShotTimer* timer() { return &investigator_.timer_; }
 
-  void ExpectRelationReport(
-      const std::vector<ListedAccount> signed_in_accounts,
-      const std::vector<ListedAccount> signed_out_accounts,
-      const ReportingType type,
-      const AccountRelation expected) {
+  void ExpectRelationReport(const std::vector<AccountInfo> signed_in_accounts,
+                            const std::vector<AccountInfo> signed_out_accounts,
+                            const ReportingType type,
+                            const AccountRelation expected) {
     HistogramTester histogram_tester;
     investigator_.SignedInAccountRelationReport(signed_in_accounts,
                                                 signed_out_accounts, type);
@@ -176,9 +174,9 @@ class AccountInvestigatorTest : public testing::Test {
 
 namespace {
 
-ListedAccount Account(const std::string& id) {
-  ListedAccount account;
-  account.id = id;
+AccountInfo Account(const std::string& id) {
+  AccountInfo account;
+  account.account_id = id;
   return account;
 }
 
@@ -191,13 +189,13 @@ AccountInfo Info(const std::string& id) {
 // NOTE: IdentityTestEnvironment uses a prefix for generating gaia IDs:
 // "gaia_id_for_". For this reason, the tests prefix expected account IDs
 // used so that there is a match.
-const std::vector<ListedAccount> no_accounts{};
-const std::vector<ListedAccount> just_one{Account("gaia_id_for_1_mail.com")};
-const std::vector<ListedAccount> just_two{Account("gaia_id_for_2_mail.com")};
-const std::vector<ListedAccount> both{Account("gaia_id_for_1_mail.com"),
-                                      Account("gaia_id_for_2_mail.com")};
-const std::vector<ListedAccount> both_reversed{
-    Account("gaia_id_for_2_mail.com"), Account("gaia_id_for_1_mail.com")};
+const std::vector<AccountInfo> no_accounts{};
+const std::vector<AccountInfo> just_one{Account("gaia_id_for_1_mail.com")};
+const std::vector<AccountInfo> just_two{Account("gaia_id_for_2_mail.com")};
+const std::vector<AccountInfo> both{Account("gaia_id_for_1_mail.com"),
+                                    Account("gaia_id_for_2_mail.com")};
+const std::vector<AccountInfo> both_reversed{Account("gaia_id_for_2_mail.com"),
+                                             Account("gaia_id_for_1_mail.com")};
 
 const AccountInfo one(Info("gaia_id_for_1_mail.com"));
 const AccountInfo three(Info("gaia_id_for_3_mail.com"));
