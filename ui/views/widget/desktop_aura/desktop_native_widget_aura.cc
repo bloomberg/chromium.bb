@@ -1007,10 +1007,6 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 
-void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
-  OnEvent(native_event);
-}
-
 std::string DesktopNativeWidgetAura::GetName() const {
   return name_;
 }

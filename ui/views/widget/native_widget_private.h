@@ -231,9 +231,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual ui::GestureRecognizer* GetGestureRecognizer() = 0;
   virtual void OnSizeConstraintsChanged() = 0;
 
-  // Repost an unhandled event to the native widget for default OS processing.
-  virtual void RepostNativeEvent(gfx::NativeEvent native_event) = 0;
-
   // Returns an internal name that matches the name of the associated Widget.
   virtual std::string GetName() const = 0;
 
