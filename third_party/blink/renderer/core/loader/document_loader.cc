@@ -500,11 +500,12 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     response_end_time = CurrentTimeTicks();
   GetTiming().SetResponseEnd(response_end_time);
   if (!MaybeCreateArchive()) {
-    // If this is an empty document, it will not have actually been created yet.
-    // Force a commit so that the Document actually gets created.
+    // If this is an empty document, it might not have actually been
+    // committed yet. Force a commit so that the Document actually gets created.
     if (state_ == kProvisional)
-      CommitData(nullptr, 0);
+      CommitNavigation(response_.MimeType());
   }
+  DCHECK_GE(state_, kCommitted);
 
   if (!frame_)
     return;
@@ -796,6 +797,12 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
       response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
   ReportPreviewsIntervention();
+
+  // If we did commit MediaDocument, we should stop here.
+  if (frame_ && frame_->GetDocument()->IsMediaDocument()) {
+    parser_->Finish();
+    fetcher_->StopFetching();
+  }
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -863,11 +870,6 @@ void DocumentLoader::ProcessData(const char* data, size_t length) {
   application_cache_host_->MainResourceDataReceived(data, length);
   time_of_last_data_received_ = CurrentTimeTicks();
   CommitData(data, length);
-
-  // If we are sending data to MediaDocument, we should stop here and cancel the
-  // request.
-  if (frame_ && frame_->GetDocument()->IsMediaDocument())
-    fetcher_->StopFetching();
 }
 
 void DocumentLoader::ClearRedirectChain() {
