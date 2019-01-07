@@ -339,7 +339,10 @@
         { "kind" : "IdRef",        "name" : "'Pointer Type'" },
         { "kind" : "StorageClass" }
       ],
-      "capabilities" : [ "Addresses" ]
+      "capabilities" : [
+        "Addresses",
+        "PhysicalStorageBufferAddressesEXT"
+      ]
     },
     {
       "opname" : "OpConstantTrue",
@@ -563,7 +566,8 @@
       "capabilities" : [
         "Addresses",
         "VariablePointers",
-        "VariablePointersStorageBuffer"
+        "VariablePointersStorageBuffer",
+        "PhysicalStorageBufferAddressesEXT"
       ]
     },
     {
@@ -1048,7 +1052,10 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef",        "name" : "'Pointer'" }
       ],
-      "capabilities" : [ "Addresses" ]
+      "capabilities" : [
+        "Addresses",
+        "PhysicalStorageBufferAddressesEXT"
+      ]
     },
     {
       "opname" : "OpSatConvertSToU",
@@ -1078,7 +1085,10 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef",        "name" : "'Integer Value'" }
       ],
-      "capabilities" : [ "Addresses" ]
+      "capabilities" : [
+        "Addresses",
+        "PhysicalStorageBufferAddressesEXT"
+      ]
     },
     {
       "opname" : "OpPtrCastToGeneric",
@@ -4502,6 +4512,12 @@
           "enumerant" : "Physical64",
           "value" : 2,
           "capabilities" : [ "Addresses" ]
+        },
+        {
+          "enumerant" : "PhysicalStorageBuffer64EXT",
+          "value" : 5348,
+          "extensions" : [ "SPV_EXT_physical_storage_buffer" ],
+          "capabilities" : [ "PhysicalStorageBufferAddressesEXT" ]
         }
       ]
     },
@@ -4973,6 +4989,12 @@
           "value" : 5343,
           "extensions" : [ "SPV_NV_ray_tracing" ],
           "capabilities" : [ "RayTracingNV" ]
+        },
+        {
+          "enumerant" : "PhysicalStorageBufferEXT",
+          "value" : 5349,
+          "extensions" : [ "SPV_EXT_physical_storage_buffer" ],
+          "capabilities" : [ "PhysicalStorageBufferAddressesEXT" ]
         }
       ]
     },
@@ -5963,6 +5985,20 @@
             { "kind" : "LiteralString", "name" : "'Semantic'" }
           ],
           "extensions" : [ "SPV_GOOGLE_hlsl_functionality1" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RestrictPointerEXT",
+          "value" : 5355,
+          "capabilities" : [ "PhysicalStorageBufferAddressesEXT" ],
+          "extensions" : [ "SPV_EXT_physical_storage_buffer" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "AliasedPointerEXT",
+          "value" : 5356,
+          "capabilities" : [ "PhysicalStorageBufferAddressesEXT" ],
+          "extensions" : [ "SPV_EXT_physical_storage_buffer" ],
           "version" : "None"
         }
       ]
@@ -7394,6 +7430,13 @@
           "value" : 5291,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_NV_shading_rate", "SPV_EXT_fragment_invocation_density" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "PhysicalStorageBufferAddressesEXT",
+          "value" : 5347,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_EXT_physical_storage_buffer" ],
           "version" : "None"
         }
       ]

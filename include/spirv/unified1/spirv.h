@@ -95,6 +95,7 @@ typedef enum SpvAddressingModel_ {
     SpvAddressingModelLogical = 0,
     SpvAddressingModelPhysical32 = 1,
     SpvAddressingModelPhysical64 = 2,
+    SpvAddressingModelPhysicalStorageBuffer64EXT = 5348,
     SpvAddressingModelMax = 0x7fffffff,
 } SpvAddressingModel;
 
@@ -180,6 +181,7 @@ typedef enum SpvStorageClass_ {
     SpvStorageClassHitAttributeNV = 5339,
     SpvStorageClassIncomingRayPayloadNV = 5342,
     SpvStorageClassShaderRecordBufferNV = 5343,
+    SpvStorageClassPhysicalStorageBufferEXT = 5349,
     SpvStorageClassMax = 0x7fffffff,
 } SpvStorageClass;
 
@@ -440,6 +442,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationPerTaskNV = 5273,
     SpvDecorationPerVertexNV = 5285,
     SpvDecorationNonUniformEXT = 5300,
+    SpvDecorationRestrictPointerEXT = 5355,
+    SpvDecorationAliasedPointerEXT = 5356,
     SpvDecorationHlslCounterBufferGOOGLE = 5634,
     SpvDecorationHlslSemanticGOOGLE = 5635,
     SpvDecorationMax = 0x7fffffff,
@@ -809,6 +813,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityRayTracingNV = 5340,
     SpvCapabilityVulkanMemoryModelKHR = 5345,
     SpvCapabilityVulkanMemoryModelDeviceScopeKHR = 5346,
+    SpvCapabilityPhysicalStorageBufferAddressesEXT = 5347,
     SpvCapabilityComputeDerivativeGroupLinearNV = 5350,
     SpvCapabilitySubgroupShuffleINTEL = 5568,
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
