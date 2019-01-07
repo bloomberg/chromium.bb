@@ -462,6 +462,55 @@ and I am ${to - from} years old`;
 
 ---
 
+### Spread Operators
+
+Spreading the elements from an iterable collection into individual literals as
+function parameters.
+
+This only applies to arrays and not objects.
+
+**Usage Example:**
+
+```js
+// Spreading an Array
+var params = ['hello', true, 7];
+var other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
+
+// Spreading a String
+var str = 'foo';
+var chars = [...str];  // ['f', 'o', 'o']
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/LqP4AniIs8c)
+
+---
+
+### Rest Parameters
+
+Aggregation of function arguments into one Array variable.
+
+This only applies to arrays and function parameters, and not objects.
+
+**Usage Example:**
+
+```js
+function usesRestParams(a, b, ...theRest) {
+  console.log(a);  // 'a'
+  console.log(b);  // 'b'
+  console.log(theRest);  // [1, 2, 3]
+}
+
+usesRestParams('a', 'b', 1, 2, 3);
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-function-definitions)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/LqP4AniIs8c)
+
+---
+
 ## Banned Features
 
 The following features are banned for Chromium development.
@@ -524,51 +573,6 @@ hide(document.body, false);  // Not animated.
 
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-functiondeclarationinstantiation)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Rest Parameters
-
-Aggregation of function arguments into one Array variable.
-
-**Usage Example:**
-
-```js
-function usesRestParams(a, b, ...theRest) {
-  console.log(a);  // 'a'
-  console.log(b);  // 'b'
-  console.log(theRest);  // [1, 2, 3]
-}
-
-usesRestParams('a', 'b', 1, 2, 3);
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-function-definitions)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Spread Operators
-
-Spreading the elements from an iterable collection into individual literals as
-function parameters.
-
-**Usage Example:**
-
-```js
-// Spreading an Array
-const params = ['hello', true, 7];
-const other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
-
-// Spreading a String
-const str = 'foo';
-const chars = [...str];  // ['f', 'o', 'o']
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
 
 **Discussion Notes / Link to Thread:**
 
