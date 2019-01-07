@@ -38,6 +38,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -75,10 +76,6 @@ class TaskSchedulerWorkerPoolImplTestBase
       : service_thread_("TaskSchedulerServiceThread"),
         tracked_ref_factory_(this){};
 
-  void CommonSetUp(TimeDelta suggested_reclaim_time = TimeDelta::Max()) {
-    CreateAndStartWorkerPool(suggested_reclaim_time, kMaxTasks);
-  }
-
   void CommonTearDown() {
     service_thread_.Stop();
     task_tracker_.FlushForTesting();
@@ -99,19 +96,23 @@ class TaskSchedulerWorkerPoolImplTestBase
     mock_scheduler_task_runner_delegate_.SetWorkerPool(worker_pool_.get());
   }
 
-  virtual void StartWorkerPool(TimeDelta suggested_reclaim_time,
-                               size_t max_tasks) {
+  void StartWorkerPool(
+      TimeDelta suggested_reclaim_time,
+      size_t max_tasks,
+      Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>()) {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
         SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time), max_tasks,
         service_thread_.task_runner(), nullptr,
-        SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+        SchedulerWorkerPoolImpl::WorkerEnvironment::NONE, may_block_threshold);
   }
 
-  void CreateAndStartWorkerPool(TimeDelta suggested_reclaim_time,
-                                size_t max_tasks) {
+  void CreateAndStartWorkerPool(
+      TimeDelta suggested_reclaim_time = TimeDelta::Max(),
+      size_t max_tasks = kMaxTasks,
+      Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>()) {
     CreateWorkerPool();
-    StartWorkerPool(suggested_reclaim_time, max_tasks);
+    StartWorkerPool(suggested_reclaim_time, max_tasks, may_block_threshold);
   }
 
   Thread service_thread_;
@@ -138,7 +139,7 @@ class TaskSchedulerWorkerPoolImplTest
  protected:
   TaskSchedulerWorkerPoolImplTest() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
+  void SetUp() override { CreateAndStartWorkerPool(); }
 
   void TearDown() override {
     TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
@@ -154,7 +155,7 @@ class TaskSchedulerWorkerPoolImplTestParam
  protected:
   TaskSchedulerWorkerPoolImplTestParam() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
+  void SetUp() override { CreateAndStartWorkerPool(); }
 
   void TearDown() override {
     TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
@@ -330,22 +331,19 @@ class TaskSchedulerWorkerPoolImplTestCOMMTAParam
  protected:
   TaskSchedulerWorkerPoolImplTestCOMMTAParam() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
+  void SetUp() override {
+    CreateWorkerPool();
+    ASSERT_TRUE(worker_pool_);
+    worker_pool_->Start(SchedulerWorkerPoolParams(kMaxTasks, TimeDelta::Max()),
+                        kMaxTasks, service_thread_.task_runner(), nullptr,
+                        SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA);
+  }
 
   void TearDown() override {
     TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
   }
 
  private:
-  void StartWorkerPool(TimeDelta suggested_reclaim_time,
-                       size_t max_tasks) override {
-    ASSERT_TRUE(worker_pool_);
-    worker_pool_->Start(
-        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time), max_tasks,
-        service_thread_.task_runner(), nullptr,
-        SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA);
-  }
-
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTestCOMMTAParam);
 };
 
@@ -805,8 +803,7 @@ class TaskSchedulerWorkerPoolStandbyPolicyTest
   TaskSchedulerWorkerPoolStandbyPolicyTest() = default;
 
   void SetUp() override {
-    TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(
-        kReclaimTimeForCleanupTests);
+    CreateAndStartWorkerPool(kReclaimTimeForCleanupTests);
   }
 
   void TearDown() override {
@@ -1014,13 +1011,6 @@ class TaskSchedulerWorkerPoolBlockingTest
     return str;
   }
 
-  void SetUp() override {
-    TaskSchedulerWorkerPoolImplTestBase::CommonSetUp();
-    task_runner_ =
-        test::CreateTaskRunnerWithTraits({MayBlock(), WithBaseSyncPrimitives()},
-                                         &mock_scheduler_task_runner_delegate_);
-  }
-
   void TearDown() override {
     TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
   }
@@ -1078,7 +1068,9 @@ class TaskSchedulerWorkerPoolBlockingTest
   // Unblocks tasks posted by SaturateWithBlockingTasks().
   void UnblockTasks() { blocking_threads_continue_.Signal(); }
 
-  scoped_refptr<TaskRunner> task_runner_;
+  const scoped_refptr<TaskRunner> task_runner_ =
+      test::CreateTaskRunnerWithTraits({MayBlock(), WithBaseSyncPrimitives()},
+                                       &mock_scheduler_task_runner_delegate_);
 
  private:
   WaitableEvent blocking_threads_running_;
@@ -1091,6 +1083,8 @@ class TaskSchedulerWorkerPoolBlockingTest
 // worker if needed. Also verify that BlockingScopeExited() decreases max tasks
 // after an increase.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
+  CreateAndStartWorkerPool();
+
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
   SaturateWithBlockingTasks(GetParam());
@@ -1110,6 +1104,8 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
 // Verify that tasks posted in a saturated pool before a ScopedBlockingCall will
 // execute after ScopedBlockingCall is instantiated.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
+  CreateAndStartWorkerPool();
+
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
   WaitableEvent thread_can_block;
   WaitableEvent threads_continue;
@@ -1173,6 +1169,8 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
 // Verify that workers become idle when the pool is over-capacity and that
 // those workers do no work.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
+  CreateAndStartWorkerPool();
+
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
   SaturateWithBlockingTasks(GetParam());
@@ -1261,18 +1259,22 @@ INSTANTIATE_TEST_CASE_P(
     TaskSchedulerWorkerPoolBlockingTest::ParamInfoToString);
 
 // Verify that if a thread enters the scope of a MAY_BLOCK ScopedBlockingCall,
-// but exits the scope before the MayBlockThreshold() is reached, that the max
+// but exits the scope before the MayBlock threshold is reached, that the max
 // tasks does not increase.
 TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
+  // Create a pool with an infinite MayBlock threshold so that a MAY_BLOCK
+  // ScopedBlockingCall never increases the max tasks.
+  CreateAndStartWorkerPool(TimeDelta::Max(),  // |suggested_reclaim_time|
+                           kMaxTasks,         // |max_tasks|
+                           TimeDelta::Max()   // |may_block_threshold|
+  );
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
-
-  TimeDelta max_tasks_change_sleep = GetMaxTasksChangeSleepTime();
-  worker_pool_->MaximizeMayBlockThresholdForTesting();
 
   SaturateWithBlockingTasks(NestedBlockingType(BlockingType::MAY_BLOCK,
                                                OptionalBlockingType::NO_BLOCK,
                                                BlockingType::MAY_BLOCK));
-  PlatformThread::Sleep(max_tasks_change_sleep);
+  PlatformThread::Sleep(2 * TimeDelta::FromMicroseconds(
+                                kBlockedWorkersPollMicrosecondsParam.Get()));
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), kMaxTasks);
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
@@ -1286,6 +1288,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
 // WILL_BLOCK ScopedBlockingCall.
 TEST_F(TaskSchedulerWorkerPoolBlockingTest,
        MayBlockIncreaseCapacityNestedWillBlock) {
+  CreateAndStartWorkerPool();
+
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
   auto task_runner =
       test::CreateTaskRunnerWithTraits({MayBlock(), WithBaseSyncPrimitives()},
@@ -1442,6 +1446,8 @@ TEST_F(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
 // Verify that the maximum number of workers is 256 and that hitting the max
 // leaves the pool in a valid state with regards to max tasks.
 TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
+  CreateAndStartWorkerPool();
+
   constexpr size_t kMaxNumberOfWorkers = 256;
   constexpr size_t kNumExtraTasks = 10;
 
