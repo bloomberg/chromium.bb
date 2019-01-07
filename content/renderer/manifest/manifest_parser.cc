@@ -299,7 +299,7 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   return sizes;
 }
 
-std::vector<blink::Manifest::ImageResource::Purpose>
+base::Optional<std::vector<blink::Manifest::ImageResource::Purpose>>
 ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
   std::vector<blink::Manifest::ImageResource::Purpose> purposes;
@@ -312,6 +312,15 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   std::vector<base::string16> keywords = base::SplitString(
       purpose_str.string(), base::ASCIIToUTF16(" "),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // "any" is the default if there are no other keywords.
+  if (keywords.empty()) {
+    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    return purposes;
+  }
+
+  bool unrecognised_purpose = false;
+
   for (const base::string16& keyword : keywords) {
     if (base::LowerCaseEqualsASCII(keyword, "any")) {
       purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
@@ -320,14 +329,20 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
     } else if (base::LowerCaseEqualsASCII(keyword, "maskable")) {
       purposes.push_back(blink::Manifest::ImageResource::Purpose::MASKABLE);
     } else {
-      AddErrorInfo(
-          "found icon with invalid purpose. "
-          "Using default value 'any'.");
+      unrecognised_purpose = true;
     }
   }
 
+  // This implies there was at least one purpose given, but none recognised.
+  // Instead of defaulting to "any" (which would not be future proof),
+  // invalidate the whole icon.
   if (purposes.empty()) {
-    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    AddErrorInfo("found icon with no valid purpose; ignoring it.");
+    return base::nullopt;
+  } else if (unrecognised_purpose) {
+    AddErrorInfo(
+        "found icon with one or more invalid purposes; those purposes are "
+        "ignored.");
   }
 
   return purposes;
@@ -355,9 +370,14 @@ std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
     if (!icon.src.is_valid())
       continue;
+
     icon.type = ParseIconType(*icon_dictionary);
     icon.sizes = ParseIconSizes(*icon_dictionary);
-    icon.purpose = ParseIconPurpose(*icon_dictionary);
+    auto purpose = ParseIconPurpose(*icon_dictionary);
+    if (!purpose)
+      continue;
+
+    icon.purpose = std::move(*purpose);
 
     icons.push_back(icon);
   }

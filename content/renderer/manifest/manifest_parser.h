@@ -144,10 +144,9 @@ class CONTENT_EXPORT ManifestParser {
   // Parses the 'purpose' field of an icon, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-purpose-member-of-an-image
   // Returns a vector of Manifest::Icon::IconPurpose with the successfully
-  // parsed icon purposes, and a vector with Manifest::Icon::IconPurpose::Any if
-  // the parsing failed.
-  std::vector<blink::Manifest::ImageResource::Purpose> ParseIconPurpose(
-      const base::DictionaryValue& icon);
+  // parsed icon purposes, and nullopt if the parsing failed.
+  base::Optional<std::vector<blink::Manifest::ImageResource::Purpose>>
+  ParseIconPurpose(const base::DictionaryValue& icon);
 
   // Parses the 'icons' field of a Manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images

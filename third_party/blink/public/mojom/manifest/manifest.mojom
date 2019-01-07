@@ -78,8 +78,8 @@ struct ManifestImageResource {
   // The special value "any" is represented by gfx::Size(0, 0).
   array<gfx.mojom.Size> sizes;
 
-  // Defaults to a vector with a single value, Purpose::ANY, for all other
-  // parsing exceptions.
+  // Never empty. Defaults to a vector with a single value, IconPurpose::ANY,
+  // if not explicitly specified in the manifest.
   array<Purpose> purpose;
 };
 
