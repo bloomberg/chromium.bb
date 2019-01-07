@@ -63,6 +63,8 @@ def _CheckFilesUsingEventSender(input_api, output_api):
     for f in input_api.AffectedFiles():
         if f.Action() == 'A':
             for line_num, line in f.ChangedContents():
+                if line.find("eventSender.beginDragWithFiles") != -1:
+                    break
                 if any(action in line for action in actions):
                     results.append(output_api.PresubmitPromptWarning(
                         'eventSender is deprecated, please use chrome.gpuBenchmarking.pointerActionSequence instead ' +
