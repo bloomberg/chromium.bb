@@ -44,6 +44,7 @@ enum class CrostiniResult {
   CONTAINER_DOWNLOAD_TIMED_OUT,
   CONTAINER_CREATE_CANCELLED,
   CONTAINER_CREATE_FAILED,
+  CONTAINER_START_CANCELLED,
   CONTAINER_START_FAILED,
   LAUNCH_CONTAINER_APPLICATION_FAILED,
   INSTALL_LINUX_PACKAGE_FAILED,
@@ -438,6 +439,8 @@ class CrostiniManager : public KeyedService,
       const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) override;
   void OnTremplinStarted(
       const vm_tools::cicerone::TremplinStartedSignal& signal) override;
+  void OnLxdContainerStarting(
+      const vm_tools::cicerone::LxdContainerStartingSignal& signal) override;
 
   void RemoveCrostini(std::string vm_name,
                       std::string container_name,
@@ -626,6 +629,12 @@ class CrostiniManager : public KeyedService,
   // wait for an LxdContainerCreate signal.
   std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
       create_lxd_container_callbacks_;
+
+  // Pending StartLxdContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs. These are used if StartLxdContainer indicates we need to
+  // wait for an LxdContainerStarting signal.
+  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
+      start_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are
   // used if StartTerminaVm completes but we need to wait from Tremplin to

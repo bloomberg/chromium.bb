@@ -27,7 +27,7 @@ FakeCiceroneClient::FakeCiceroneClient() {
       vm_tools::cicerone::CreateLxdContainerResponse::CREATING);
 
   start_lxd_container_response_.set_status(
-      vm_tools::cicerone::StartLxdContainerResponse::STARTED);
+      vm_tools::cicerone::StartLxdContainerResponse::STARTING);
 
   setup_lxd_container_user_response_.set_status(
       vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS);
@@ -61,6 +61,10 @@ bool FakeCiceroneClient::IsLxdContainerDownloadingSignalConnected() {
 
 bool FakeCiceroneClient::IsTremplinStartedSignalConnected() {
   return is_tremplin_started_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsLxdContainerStartingSignalConnected() {
+  return is_lxd_container_starting_signal_connected_;
 }
 
 bool FakeCiceroneClient::IsInstallLinuxPackageProgressSignalConnected() {
@@ -146,6 +150,18 @@ void FakeCiceroneClient::StartLxdContainer(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), start_lxd_container_response_));
+  if (request.async()) {
+    // Trigger CiceroneClient::Observer::NotifyLxdContainerStartingSignal.
+    vm_tools::cicerone::LxdContainerStartingSignal signal;
+    signal.set_owner_id(request.owner_id());
+    signal.set_vm_name(request.vm_name());
+    signal.set_container_name(request.container_name());
+    signal.set_status(lxd_container_starting_signal_status_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,
+                       base::Unretained(this), std::move(signal)));
+  }
 }
 
 void FakeCiceroneClient::GetLxdContainerUsername(
@@ -194,6 +210,13 @@ void FakeCiceroneClient::NotifyTremplinStarted(
     const vm_tools::cicerone::TremplinStartedSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnTremplinStarted(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyLxdContainerStarting(
+    const vm_tools::cicerone::LxdContainerStartingSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnLxdContainerStarting(proto);
   }
 }
 
