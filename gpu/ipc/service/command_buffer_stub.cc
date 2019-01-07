@@ -567,7 +567,7 @@ void CommandBufferStub::OnRegisterTransferBuffer(
 
   // Map the shared memory into this process.
   base::WritableSharedMemoryMapping mapping = transfer_buffer.Map();
-  if (!mapping.IsValid()) {
+  if (!mapping.IsValid() || (mapping.size() > UINT32_MAX)) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
   }

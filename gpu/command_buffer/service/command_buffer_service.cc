@@ -106,7 +106,7 @@ void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
   // This means ring_buffer_ can be nullptr.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
   if (ring_buffer_) {
-    int32_t size = ring_buffer_->size();
+    uint32_t size = ring_buffer_->size();
     volatile void* memory = ring_buffer_->memory();
     // check proper alignments.
     DCHECK_EQ(

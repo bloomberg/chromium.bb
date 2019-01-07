@@ -37,9 +37,7 @@ MemoryChunk::MemoryChunk(int32_t shm_id,
                          CommandBufferHelper* helper)
     : shm_id_(shm_id),
       shm_(shm),
-      allocator_(base::checked_cast<unsigned int>(shm->size()),
-                 helper,
-                 shm->memory()) {}
+      allocator_(shm->size(), helper, shm->memory()) {}
 
 MemoryChunk::~MemoryChunk() = default;
 
