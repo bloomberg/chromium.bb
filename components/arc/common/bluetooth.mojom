@@ -402,7 +402,7 @@ interface BluetoothHost {
 };
 
 // Next Method ID: 22
-// Deprecated Method ID: 2, 6
+// Deprecated Method ID: 2, 6, 11, 12
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -435,11 +435,6 @@ interface BluetoothInstance {
                                     BluetoothGattStatus status);
   [MinVersion=1] OnGetGattDB@10(BluetoothAddress remote_addr,
                                 array<BluetoothGattDBElement> db);
-  [MinVersion=1] OnServicesRemoved@11(BluetoothAddress remote_addr,
-                                      uint16 start_handle,
-                                      uint16 end_handle);
-  [MinVersion=1] OnServicesAdded@12(BluetoothAddress remote_addr,
-                                    array<BluetoothGattDBElement> db);
   [MinVersion=2] OnGattNotify@13(BluetoothAddress remote_addr,
                                  BluetoothGattServiceID service_id,
                                  BluetoothGattID char_id,
