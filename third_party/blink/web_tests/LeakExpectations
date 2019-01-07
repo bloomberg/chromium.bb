@@ -97,6 +97,9 @@ crbug.com/916893 [ Linux ] virtual/bidi-caret-affinity/editing/pasteboard/drag-d
 
 # Sheriff 2019-01-04
 crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Pass Leak ]
+
+# Sheriff 2019-01-07
+crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Leak ]
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
