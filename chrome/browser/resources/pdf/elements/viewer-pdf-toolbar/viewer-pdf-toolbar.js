@@ -43,6 +43,7 @@ Polymer({
       type: Boolean,
       notify: true,
       value: false,
+      reflectToAttribute: true,
     },
 
     annotationTool: {
@@ -173,7 +174,6 @@ Polymer({
   /** @param {Event} e */
   annotationToolClicked_: function(e) {
     this.updateAnnotationTool_(e.currentTarget);
-
   },
 
   /** @param {Event} e */
@@ -198,6 +198,17 @@ Polymer({
       size: options.selectedSize,
       color: options.selectedColor,
     };
-  }
+  },
+
+  /**
+   * Used to determine equality in computed bindings.
+   *
+   * @param {*} a
+   * @param {*} b
+   */
+  equal_: function(a, b) {
+    return a == b;
+  },
+
 });
 })();

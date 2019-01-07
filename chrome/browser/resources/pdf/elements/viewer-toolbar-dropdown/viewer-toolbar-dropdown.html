@@ -48,8 +48,9 @@
         display: inline-block;
       }
 
-      :host([dropdown-open]) #icon {
-        background-color: rgb(25, 27, 29);
+      :host([dropdown-open]) #icon,
+      :host([selected]) #icon {
+        background-color: var(--dropdown-open-background, rgb(25, 27, 29));
         border-radius: 4px;
       }
 
