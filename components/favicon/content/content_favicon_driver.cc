@@ -73,8 +73,7 @@ void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
 gfx::Image ContentFaviconDriver::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().image;
@@ -86,8 +85,7 @@ gfx::Image ContentFaviconDriver::GetFavicon() const {
 }
 
 bool ContentFaviconDriver::FaviconIsValid() const {
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().valid;

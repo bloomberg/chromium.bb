@@ -44,7 +44,7 @@ bool IsInstantNTP(content::WebContents* contents);
 // Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
 // instead of using the visible entry.
 bool NavEntryIsInstantNTP(content::WebContents* contents,
-                          const content::NavigationEntry* nav_entry);
+                          content::NavigationEntry* nav_entry);
 
 // Returns true if |url| corresponds to a New Tab page that would get rendered
 // in an Instant process.

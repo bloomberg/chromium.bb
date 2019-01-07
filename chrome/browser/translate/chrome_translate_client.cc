@@ -93,8 +93,7 @@ void LogTranslateEvent(content::WebContents* const web_contents,
   syncer::UserEventService* const user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile);
 
-  const auto* const entry =
-      web_contents->GetController().GetLastCommittedEntry();
+  auto* const entry = web_contents->GetController().GetLastCommittedEntry();
 
   // If entry is null, we don't record the page.
   // The navigation entry can be null in situations like download or initial
@@ -316,8 +315,7 @@ void ChromeTranslateClient::RecordLanguageDetectionEvent(
   syncer::UserEventService* const user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile);
 
-  const auto* const entry =
-      web_contents()->GetController().GetLastCommittedEntry();
+  auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
 
   // If entry is null, we don't record the page.
   // The navigation entry can be null in situations like download or initial

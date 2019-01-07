@@ -166,8 +166,7 @@ void TabWebContentsDelegateAndroid::CloseContents(
 
 bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
     WebContents* source) {
-  const content::NavigationEntry* entry =
-      source->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = source->GetController().GetActiveEntry();
   if (entry) {
     GURL url = entry->GetURL();
     GURL virtual_url = entry->GetVirtualURL();

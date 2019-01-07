@@ -665,13 +665,13 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
   }
 
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = (i == pending_index) ?
-        tab->GetController().GetPendingEntry() :
-        tab->GetController().GetEntryAtIndex(i);
+    NavigationEntry* entry = (i == pending_index)
+                                 ? tab->GetController().GetPendingEntry()
+                                 : tab->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackURLForRestore(entry->GetVirtualURL())) {
       const SerializedNavigationEntry navigation =
-          ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry);
+          ContentSerializedNavigationBuilder::FromNavigationEntry(i, entry);
       base_session_service_->AppendRebuildCommand(
           CreateUpdateTabNavigationCommand(session_id, navigation));
     }

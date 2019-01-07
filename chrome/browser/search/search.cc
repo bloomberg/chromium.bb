@@ -277,7 +277,7 @@ bool IsInstantNTP(content::WebContents* contents) {
   if (contents->ShowingInterstitialPage())
     return false;
 
-  const content::NavigationEntry* entry =
+  content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = contents->GetController().GetVisibleEntry();
@@ -285,7 +285,7 @@ bool IsInstantNTP(content::WebContents* contents) {
 }
 
 bool NavEntryIsInstantNTP(content::WebContents* contents,
-                          const content::NavigationEntry* entry) {
+                          content::NavigationEntry* entry) {
   if (!contents || !entry || !IsInstantExtendedAPIEnabled())
     return false;
 

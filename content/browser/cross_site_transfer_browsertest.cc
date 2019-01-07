@@ -116,8 +116,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
 // request transfers that began with a cross-process navigation.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        MAYBE_ReplaceEntryCrossProcessThenTransfer) {
-  const NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
@@ -159,8 +158,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 // in-process.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        ReplaceEntryInProcessThenTransfer) {
-  const NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
@@ -194,8 +192,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 // request transfers that cross processes twice from renderer policy.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
                        MAYBE_ReplaceEntryCrossProcessTwice) {
-  const NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
@@ -238,8 +235,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 // Tests that the request is destroyed when a cross process navigation is
 // cancelled.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
-  const NavigationController& controller =
-      shell()->web_contents()->GetController();
+  NavigationController& controller = shell()->web_contents()->GetController();
 
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
