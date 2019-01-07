@@ -57,7 +57,6 @@ class XRWebGLLayer final : public XRLayer {
   bool depth() const { return drawing_buffer_->depth(); }
   bool stencil() const { return drawing_buffer_->stencil(); }
   bool alpha() const { return drawing_buffer_->alpha(); }
-  bool multiview() const { return drawing_buffer_->multiview(); }
 
   XRViewport* getViewport(XRView*);
   void requestViewportScaling(double scale_factor);

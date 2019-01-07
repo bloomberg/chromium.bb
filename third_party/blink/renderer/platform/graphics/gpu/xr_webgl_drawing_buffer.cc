@@ -42,8 +42,7 @@ scoped_refptr<XRWebGLDrawingBuffer> XRWebGLDrawingBuffer::Create(
     bool want_alpha_channel,
     bool want_depth_buffer,
     bool want_stencil_buffer,
-    bool want_antialiasing,
-    bool want_multiview) {
+    bool want_antialiasing) {
   DCHECK(drawing_buffer);
 
   // Don't proceeed if the context is already lost.
@@ -83,16 +82,11 @@ scoped_refptr<XRWebGLDrawingBuffer> XRWebGLDrawingBuffer::Create(
   if (discard_framebuffer_supported)
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-  // TODO(bajones): Support multiview.
-  bool multiview_supported = false;
-
   scoped_refptr<XRWebGLDrawingBuffer> xr_drawing_buffer =
       base::AdoptRef(new XRWebGLDrawingBuffer(
           drawing_buffer, framebuffer, discard_framebuffer_supported,
-          want_alpha_channel, want_depth_buffer, want_stencil_buffer,
-          multiview_supported));
-  if (!xr_drawing_buffer->Initialize(size, multisample_supported,
-                                     multiview_supported)) {
+          want_alpha_channel, want_depth_buffer, want_stencil_buffer));
+  if (!xr_drawing_buffer->Initialize(size, multisample_supported)) {
     DLOG(ERROR) << "XRWebGLDrawingBuffer Initialization Failed";
     return nullptr;
   }
@@ -167,15 +161,13 @@ XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
                                            bool discard_framebuffer_supported,
                                            bool want_alpha_channel,
                                            bool want_depth_buffer,
-                                           bool want_stencil_buffer,
-                                           bool multiview_supported)
+                                           bool want_stencil_buffer)
     : drawing_buffer_(drawing_buffer),
       framebuffer_(framebuffer),
       discard_framebuffer_supported_(discard_framebuffer_supported),
       depth_(want_depth_buffer),
       stencil_(want_stencil_buffer),
-      alpha_(want_alpha_channel),
-      multiview_(false) {}
+      alpha_(want_alpha_channel) {}
 
 void XRWebGLDrawingBuffer::BeginDestruction() {
   mirror_client_ = nullptr;
@@ -187,8 +179,7 @@ void XRWebGLDrawingBuffer::BeginDestruction() {
 // TODO(bajones): The GL resources allocated in this function are leaking. Add
 // a way to clean up the buffers when the layer is GCed or the session ends.
 bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
-                                      bool use_multisampling,
-                                      bool use_multiview) {
+                                      bool use_multisampling) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   std::unique_ptr<Extensions3DUtil> extensions_util =

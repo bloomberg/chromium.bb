@@ -72,7 +72,6 @@ XRWebGLLayer* XRWebGLLayer::Create(
   bool want_depth_buffer = initializer->depth();
   bool want_stencil_buffer = initializer->stencil();
   bool want_alpha_channel = initializer->alpha();
-  bool want_multiview = initializer->multiview();
 
   double framebuffer_scale = 1.0;
 
@@ -99,10 +98,10 @@ XRWebGLLayer* XRWebGLLayer::Create(
   WebGLFramebuffer* framebuffer = WebGLFramebuffer::CreateOpaque(webgl_context);
 
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer =
-      XRWebGLDrawingBuffer::Create(
-          webgl_context->GetDrawingBuffer(), framebuffer->Object(),
-          desired_size, want_alpha_channel, want_depth_buffer,
-          want_stencil_buffer, want_antialiasing, want_multiview);
+      XRWebGLDrawingBuffer::Create(webgl_context->GetDrawingBuffer(),
+                                   framebuffer->Object(), desired_size,
+                                   want_alpha_channel, want_depth_buffer,
+                                   want_stencil_buffer, want_antialiasing);
 
   if (!drawing_buffer) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
