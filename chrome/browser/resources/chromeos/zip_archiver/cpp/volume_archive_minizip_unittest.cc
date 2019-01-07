@@ -224,6 +224,26 @@ TEST_F(VolumeArchiveMinizipTest, Read) {
   }
 }
 
+// Regression test for https://crbug.com/915960
+TEST_F(VolumeArchiveMinizipTest, ReadPartial) {
+  std::unique_ptr<TestVolumeReader> reader =
+      std::make_unique<TestVolumeReader>(GetTestZipPath("small_zip.zip"));
+  VolumeArchiveMinizip archive(std::move(reader));
+  ASSERT_TRUE(archive.Init(""));
+
+  for (auto it : kSmallZipFiles) {
+    EXPECT_TRUE(archive.SeekHeader(it.first));
+    if (it.second.is_directory)
+      continue;
+
+    // Read 1 byte.
+    const int32_t read_length = 1;
+    const char* buffer = nullptr;
+    int64_t read = archive.ReadData(0, read_length, &buffer);
+    EXPECT_EQ(read, read_length);
+  }
+}
+
 TEST_F(VolumeArchiveMinizipTest, Encrypted_PkCrypt) {
   std::unique_ptr<TestVolumeReader> reader =
       std::make_unique<TestVolumeReader>(GetTestZipPath("encrypted.zip"));

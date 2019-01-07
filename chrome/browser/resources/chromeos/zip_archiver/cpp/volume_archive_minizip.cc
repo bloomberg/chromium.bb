@@ -14,6 +14,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "third_party/minizip/src/mz.h"
 #include "third_party/minizip/src/mz_strm.h"
@@ -526,5 +527,13 @@ bool VolumeArchiveMinizip::CloseZipEntry() {
   if (mz_zip_entry_is_open(zip_file_.get()) != MZ_OK)
     return true;
 
-  return mz_zip_entry_close(zip_file_.get()) == MZ_OK;
+  const int32_t error = mz_zip_entry_close(zip_file_.get());
+  // If the zip entry was not read in full, then closing the entry may cause a
+  // CRC error, because the whole file may not have been decompressed and
+  // checksummed.
+  const bool ok = (error == MZ_OK || error == MZ_CRC_ERROR);
+  if (!ok) {
+    set_error_message(base::StringPrintf("mz_zip_entry_close err = %d", error));
+  }
+  return ok;
 }
