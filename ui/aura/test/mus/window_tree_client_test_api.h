@@ -14,6 +14,7 @@
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
+#include "ui/aura/test/ui_controls_factory_aura.h"
 
 namespace ws {
 namespace mojom {
@@ -76,6 +77,10 @@ class WindowTreeClientTestApi {
   bool HasChangeInFlightOfType(ChangeType type);
 
  private:
+#if defined(USE_OZONE)
+  friend void test::OnWindowServiceProcessedEvent(base::OnceClosure closure,
+                                                  bool result);
+#endif
   friend void test::WaitForAllChangesToComplete(WindowTreeClient* client);
 
   ws::mojom::WindowDataPtr CreateWindowDataForEmbed();
