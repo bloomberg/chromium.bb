@@ -1,0 +1,18 @@
+{
+        "python.autoComplete.extraPaths": [
+                "${workspaceFolder}/third_party",
+        ],
+        "python.unitTest.cwd": "${workspaceFolder}",
+        "python.unitTest.unittestArgs": [
+                "-v",
+                "-s",
+                ".",
+                "-t",
+                "..",
+                "-p",
+                "*unittest.py"
+        ],
+        "python.unitTest.pyTestEnabled": false,
+        "python.unitTest.nosetestsEnabled": false,
+        "python.unitTest.unittestEnabled": true,
+}
