@@ -1169,8 +1169,10 @@ cr.define('print_preview', function() {
           assert(origin === print_preview.DestinationOrigin.EXTENSION);
           return;
         }
-        dest = print_preview.parseDestination(
-            print_preview.originToType(origin), assert(settingsInfo.printer));
+        dest = /** @type {!print_preview.Destination} */ (
+            print_preview.parseDestination(
+                print_preview.originToType(origin),
+                assert(settingsInfo.printer)));
       }
       if (dest) {
         if ((origin === print_preview.DestinationOrigin.LOCAL ||
@@ -1181,15 +1183,8 @@ cr.define('print_preview', function() {
           // as the user does not change to a new non-recent destination.
           return;
         }
-        const updateDestination = destination => {
-          destination.capabilities = settingsInfo.capabilities;
-          this.updateDestination_(destination);
-        };
-        if (Array.isArray(dest)) {
-          dest.forEach(updateDestination);
-        } else {
-          updateDestination(dest);
-        }
+        dest.capabilities = settingsInfo.capabilities;
+        this.updateDestination_(dest);
       }
     }
 
@@ -1321,15 +1316,15 @@ cr.define('print_preview', function() {
       if (type == print_preview.PrinterType.PRIVET_PRINTER) {
         const printer =
             /** !print_preview.PrivetPrinterDescription */ (printers[0]);
-        if (printer.serviceName == this.waitForRegisterDestination_ &&
-            !printer.isUnregistered) {
+        if (printer.serviceName == this.waitForRegisterDestination_) {
           this.waitForRegisterDestination_ = null;
           this.onDestinationsReload();
           return;
         }
       }
       this.insertDestinations_(printers.map(
-          printer => print_preview.parseDestination(type, printer)));
+          printer => /** @type {!print_preview.Destination} */ (
+              print_preview.parseDestination(type, printer))));
 
       if (this.selectFirstDestination_) {
         this.selectDestination(this.destinations_[0]);
