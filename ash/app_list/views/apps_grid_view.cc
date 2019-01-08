@@ -51,6 +51,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -385,6 +386,12 @@ void AppsGridView::ResetForShowApps() {
 void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
   for (int i = 0; i < view_model_.view_size(); ++i)
     view_model_.view_at(i)->SetEnabled(!disabled);
+
+  // Ignore the grid view in accessibility tree so that items inside it will not
+  // be accessed by ChromeVox.
+  GetViewAccessibility().OverrideIsIgnored(disabled);
+  GetViewAccessibility().NotifyAccessibilityEvent(
+      ax::mojom::Event::kTreeChanged);
 }
 
 void AppsGridView::OnTabletModeChanged(bool started) {
