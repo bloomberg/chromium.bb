@@ -782,6 +782,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // used in the context of a URL KVO callback firing, and only if |isLoading| is
 // YES for the web view (since if it's not, no guesswork is needed).
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL;
+// Returns YES if a SafeBrowsing warning is currently displayed within
+// WKWebView.
+- (BOOL)isSafeBrowsingWarningDisplayedInWebView;
 // Called when a non-document-changing URL change occurs. Updates the
 // _documentURL, and informs the superclass of the change.
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)URL;
@@ -1080,6 +1083,27 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 - (BOOL)isViewAlive {
   return !_webProcessCrashed && [_containerView isViewAlive];
+}
+
+- (BOOL)isSafeBrowsingWarningDisplayedInWebView {
+  // A SafeBrowsing warning is a UIScrollView that is inserted on top of
+  // WKWebView's scroll view. This method uses heuristics to detect this view.
+  // It may break in the future if WebKit's implementation of SafeBrowsing
+  // warnings changes.
+  UIView* containingView = _webView.scrollView.superview;
+  if (!containingView)
+    return NO;
+
+  UIView* topView = containingView.subviews.lastObject;
+
+  if (topView == _webView.scrollView)
+    return NO;
+
+  return
+      [topView isKindOfClass:[UIScrollView class]] &&
+      [NSStringFromClass([topView class]) containsString:@"Warning"] &&
+      topView.subviews.count > 0 &&
+      [topView.subviews[0].subviews.lastObject isKindOfClass:[UIButton class]];
 }
 
 - (BOOL)contentIsHTML {
@@ -5408,7 +5432,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
   GURL URL(net::GURLWithNSURL([_webView URL]));
-  // URL changes happen at three points:
+  // URL changes happen at four points:
   // 1) When a load starts; at this point, the load is provisional, and
   //    it should be ignored until it's committed, since the document/window
   //    objects haven't changed yet.
@@ -5417,11 +5441,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   //    be reported.
   // 3) When a navigation error occurs after provisional navigation starts,
   //    the URL reverts to the previous URL without triggering a new navigation.
+  // 4) When a SafeBrowsing warning is displayed after
+  //    decidePolicyForNavigationAction but before a provisional navigation
+  //    starts, and the user clicks the "Go Back" link on the warning page.
   //
-  // If |isLoading| is NO, then it must be case 2 or 3. If the last committed
-  // URL (_documentURL) matches the current URL, assume that it is a revert from
-  // navigation failure and do nothing. If the URL does not match, assume it is
-  // a non-document-changing URL change, and handle accordingly.
+  // If |isLoading| is NO, then it must be case 2, 3, or 4. If the last
+  // committed URL (_documentURL) matches the current URL, assume that it is
+  // case 4 if a SafeBrowsing warning is currently displayed and case 3
+  // otherwise. If the URL does not match, assume it is a non-document-changing
+  // URL change, and handle accordingly.
   //
   // If |isLoading| is YES, then it could either be case 1, or it could be case
   // 2 on a page that hasn't finished loading yet. If it's possible that it
@@ -5435,8 +5463,31 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // window.location.href will match the previous URL at this stage, not the web
   // view's current URL.
   if (![_webView isLoading]) {
-    if (_documentURL == URL)
+    if (_documentURL == URL) {
+      if (![self isSafeBrowsingWarningDisplayedInWebView])
+        return;
+
+      self.navigationManagerImpl->DiscardNonCommittedItems();
+      _webStateImpl->SetIsLoading(false);
+      _pendingNavigationInfo = nil;
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        // Right after a history navigation that gets cancelled by a tap on
+        // "Go Back", WKWebView's current back/forward list item will still be
+        // for the unsafe page; updating this is the responsibility of the
+        // WebProcess, so only happens after an IPC round-trip to and from the
+        // WebProcess with no notification to the embedder. This means that
+        // WKBasedNavigationManagerImpl::WKWebViewCache::GetCurrentItemIndex()
+        // will be the index of the unsafe page's item. To get back into a
+        // consistent state, force a reload.
+        [_webView reload];
+      } else {
+        // Tapping "Go Back" on a SafeBrowsing interstitial can change whether
+        // there are any forward or back items, e.g., by returning to or
+        // moving away from the forward-most or back-most item.
+        _webStateImpl->OnBackForwardStateChanged();
+      }
       return;
+    }
 
     // At this point, _webView, _webView.backForwardList.currentItem and its
     // associated NavigationItem should all have the same URL, except in two
