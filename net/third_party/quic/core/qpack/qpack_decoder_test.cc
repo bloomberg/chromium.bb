@@ -144,7 +144,8 @@ TEST_P(QpackDecoderTest, MultipleLiteralEntries) {
       "616161616161"));
 }
 
-TEST_P(QpackDecoderTest, NameLenTooLarge) {
+// Name Length value is too large for varint decoder to decode.
+TEST_P(QpackDecoderTest, NameLenTooLargeForVarintDecoder) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Encoded integer too large.")));
 
@@ -166,6 +167,14 @@ TEST_P(QpackDecoderTest, ValueLenTooLargeForVarintDecoder) {
 
   DecodeHeaderBlock(
       QuicTextUtils::HexDecode("000023666f6f7fffffffffffffffffffff"));
+}
+
+// Value Length value can be decoded by varint decoder but exceeds 1 MB limit.
+TEST_P(QpackDecoderTest, ValueLenExceedsLimit) {
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            QuicStringPiece("String literal too long.")));
+
+  DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f7fffff7f"));
 }
 
 TEST_P(QpackDecoderTest, IncompleteHeaderBlock) {
@@ -444,7 +453,7 @@ TEST_P(QpackDecoderTest, EncoderStreamErrorDuplicateInvalidEntry) {
 
 TEST_P(QpackDecoderTest, EncoderStreamErrorTooLargeInteger) {
   EXPECT_CALL(encoder_stream_error_delegate_,
-              OnError(QuicStringPiece("Encoded integer too large.")));
+              OnError(Eq("Encoded integer too large.")));
 
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fffffffffffffffffffff"));
 }
@@ -538,7 +547,7 @@ TEST_P(QpackDecoderTest, InvalidDynamicEntryByPostBaseIndex) {
 
 TEST_P(QpackDecoderTest, TableCapacityMustNotExceedMaximum) {
   EXPECT_CALL(encoder_stream_error_delegate_,
-              OnError(QuicStringPiece("Error updating dynamic table size.")));
+              OnError(Eq("Error updating dynamic table size.")));
 
   // Try to update dynamic table capacity to 2048, which exceeds the maximum.
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe10f"));

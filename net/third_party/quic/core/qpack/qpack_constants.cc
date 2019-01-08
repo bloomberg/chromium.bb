@@ -6,7 +6,34 @@
 
 #include <limits>
 
+#include "base/logging.h"
+
 namespace quic {
+
+namespace {
+
+// Validate that
+//  * in each instruction, the bits of |value| that are zero in |mask| are zero;
+//  * every byte matches exactly one opcode.
+void ValidateLangague(const QpackLanguage* language) {
+#ifndef NDEBUG
+  for (const auto* instruction : *language) {
+    DCHECK_EQ(0, instruction->opcode.value & ~instruction->opcode.mask);
+  }
+
+  for (uint8_t byte = 0; byte < std::numeric_limits<uint8_t>::max(); ++byte) {
+    size_t match_count = 0;
+    for (const auto* instruction : *language) {
+      if ((byte & instruction->opcode.mask) == instruction->opcode.value) {
+        ++match_count;
+      }
+    }
+    DCHECK_EQ(1u, match_count) << static_cast<int>(byte);
+  }
+#endif
+}
+
+}  // namespace
 
 bool operator==(const QpackInstructionOpcode& a,
                 const QpackInstructionOpcode& b) {
@@ -55,6 +82,7 @@ const QpackLanguage* QpackEncoderStreamLanguage() {
       InsertWithNameReferenceInstruction(),
       InsertWithoutNameReferenceInstruction(), DuplicateInstruction(),
       DynamicTableSizeUpdateInstruction()};
+  ValidateLangague(language);
   return language;
 }
 
@@ -86,6 +114,7 @@ const QpackLanguage* QpackDecoderStreamLanguage() {
   static const QpackLanguage* const language = new QpackLanguage{
       TableStateSynchronizeInstruction(), HeaderAcknowledgementInstruction(),
       StreamCancellationInstruction()};
+  ValidateLangague(language);
   return language;
 }
 
@@ -104,6 +133,7 @@ const QpackInstruction* QpackPrefixInstruction() {
 const QpackLanguage* QpackPrefixLanguage() {
   static const QpackLanguage* const language =
       new QpackLanguage{QpackPrefixInstruction()};
+  ValidateLangague(language);
   return language;
 }
 
@@ -163,6 +193,7 @@ const QpackLanguage* QpackRequestStreamLanguage() {
                         QpackLiteralHeaderFieldNameReferenceInstruction(),
                         QpackLiteralHeaderFieldPostBaseInstruction(),
                         QpackLiteralHeaderFieldInstruction()};
+  ValidateLangague(language);
   return language;
 }
 
