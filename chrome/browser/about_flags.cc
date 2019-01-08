@@ -1347,6 +1347,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHistoryRequiresUserGestureName,
      flag_descriptions::kHistoryRequiresUserGestureDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kHistoryEntryRequiresUserGesture)},
+    {"enable-history-manipulation-intervention",
+     flag_descriptions::kHistoryManipulationIntervention,
+     flag_descriptions::kHistoryManipulationInterventionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHistoryManipulationIntervention)},
     {"disable-pushstate-throttle",
      flag_descriptions::kDisablePushStateThrottleName,
      flag_descriptions::kDisablePushStateThrottleDescription, kOsAll,
@@ -1562,8 +1566,7 @@ const FeatureEntry kFeatureEntries[] = {
     {
         "disable-office-editing-component-app",
         flag_descriptions::kOfficeEditingComponentAppName,
-        flag_descriptions::kOfficeEditingComponentAppDescription,
-        kOsCrOS,
+        flag_descriptions::kOfficeEditingComponentAppDescription, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
@@ -1576,10 +1579,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesGoogleComDomain)},
     {
-        "enable-background-blur",
-        flag_descriptions::kEnableBackgroundBlurName,
-        flag_descriptions::kEnableBackgroundBlurDescription,
-        kOsCrOS,
+        "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
+        flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
         FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
     },
     {"enable-notification-indicator",
@@ -1591,10 +1592,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppListSearchAutocomplete)},
     {
-        "enable-pinch",
-        flag_descriptions::kPinchScaleName,
-        flag_descriptions::kPinchScaleDescription,
-        kOsLinux | kOsWin | kOsCrOS,
+        "enable-pinch", flag_descriptions::kPinchScaleName,
+        flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
         ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch,
                                   switches::kDisablePinch),
     },
@@ -1646,17 +1645,14 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 #if defined(OS_CHROMEOS)
     {
-        "ash-debug-shortcuts",
-        flag_descriptions::kDebugShortcutsName,
-        flag_descriptions::kDebugShortcutsDescription,
-        kOsAll,
+        "ash-debug-shortcuts", flag_descriptions::kDebugShortcutsName,
+        flag_descriptions::kDebugShortcutsDescription, kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
     },
     {
         "ash-enable-mirrored-screen",
         flag_descriptions::kAshEnableMirroredScreenName,
-        flag_descriptions::kAshEnableMirroredScreenDescription,
-        kOsCrOS,
+        flag_descriptions::kAshEnableMirroredScreenDescription, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
     },
     {"ash-shelf-color", flag_descriptions::kAshShelfColorName,

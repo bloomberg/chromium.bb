@@ -1012,6 +1012,9 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kShowOverdrawFeedbackName[];
 extern const char kShowOverdrawFeedbackDescription[];
 
+extern const char kHistoryManipulationIntervention[];
+extern const char kHistoryManipulationInterventionDescription[];
+
 extern const char kSupervisedUserCommittedInterstitialsName[];
 extern const char kSupervisedUserCommittedInterstitialsDescription[];
 
