@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_TASK_TRAITS_DETAILS_H_
-#define BASE_TASK_TASK_TRAITS_DETAILS_H_
+#ifndef BASE_TRAITS_BAG_H_
+#define BASE_TRAITS_BAG_H_
 
 #include <initializer_list>
 #include <tuple>
@@ -100,8 +100,7 @@ template <class TraitFilterType, class... ArgTypes>
 constexpr TraitFilterType GetTraitFromArgListImpl(CallSecondTag,
                                                   ArgTypes... args) {
   static_assert(std::is_constructible<TraitFilterType>::value,
-                "TaskTraits contains a Trait that must be explicity "
-                "initialized in its constructor.");
+                "The traits bag is missing a required trait.");
   return TraitFilterType();
 }
 
@@ -115,16 +114,8 @@ constexpr typename TraitFilterType::ValueType GetTraitFromArgList(
   static_assert(
       count({std::is_constructible<TraitFilterType, ArgTypes>::value...},
             true) <= 1,
-      "Multiple arguments of the same type were provided to the "
-      "constructor of TaskTraits.");
+      "The traits bag contains multiple traits of the same type.");
   return GetTraitFromArgListImpl<TraitFilterType>(CallFirstTag(), args...);
-}
-
-// Returns true if this trait is explicitly defined in an argument list, i.e.
-// there is an argument compatible with this trait in |args...|.
-template <class TraitFilterType, class... ArgTypes>
-constexpr bool TraitIsDefined(ArgTypes... args) {
-  return any_of({std::is_constructible<TraitFilterType, ArgTypes>::value...});
 }
 
 // Helper class to implemnent a |TraitFilterType|.
@@ -170,7 +161,30 @@ struct AreValidTraits
           bool,
           all_of({std::is_convertible<ArgTypes, ValidTraits>::value...})> {};
 
+// Helper to make getting an enum from a trait more readable.
+template <typename Enum, typename... Args>
+static constexpr Enum GetEnum(Args... args) {
+  return GetTraitFromArgList<RequiredEnumTraitFilter<Enum>>(args...);
+}
+
+// Helper to make getting an enum from a trait with a default more readable.
+template <typename Enum, Enum DefaultValue, typename... Args>
+static constexpr Enum GetEnum(Args... args) {
+  return GetTraitFromArgList<EnumTraitFilter<Enum, DefaultValue>>(args...);
+}
+
+// Helper to make checking for the presence of a trait more readable.
+template <typename Trait, typename... Args>
+static constexpr bool HasTrait(Args... args) {
+  return GetTraitFromArgList<BooleanTraitFilter<Trait>>(args...);
+}
+
+// If you need a template vararg constructor to delegate to a private
+// constructor, you may need to add this to the private constructor to ensure
+// it's not matched by accident.
+struct NotATraitTag {};
+
 }  // namespace trait_helpers
 }  // namespace base
 
-#endif  // BASE_TASK_TASK_TRAITS_DETAILS_H_
+#endif  // BASE_TRAITS_BAG_H_

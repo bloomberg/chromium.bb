@@ -10,9 +10,9 @@
 
 namespace content {
 
-#if defined(NCTEST_BROWSER_TASK_TRAITS_NO_THREAD)  // [r"TaskTraits contains a Trait that must be explicity initialized in its constructor."]
+#if defined(NCTEST_BROWSER_TASK_TRAITS_NO_THREAD)  // [r"The traits bag is missing a required trait."]
 constexpr base::TaskTraits traits = {NonNestable()};
-#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_THREADS)  // [r"Multiple arguments of the same type were provided to the constructor of TaskTraits."]
+#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_THREADS)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr base::TaskTraits traits = {BrowserThread::UI,
                                      BrowserThread::IO};
 #endif
