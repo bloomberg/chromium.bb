@@ -1036,10 +1036,8 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
-
   Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node);
-  if (!parent_node || !parent_node->GetComputedStyle())
-    return InitialStyleForElement(GetDocument());
+  DCHECK(parent_node);
   return parent_node->MutableComputedStyle();
 }
 
