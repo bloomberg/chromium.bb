@@ -184,11 +184,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // adds the current WorkerThread* as the first parameter |function|.
   template <typename FunctionType, typename... Parameters>
   static void CallOnAllWorkerThreads(FunctionType function,
+                                     TaskType task_type,
                                      Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
-          *thread->GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+          *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
                           parameters...));
     }

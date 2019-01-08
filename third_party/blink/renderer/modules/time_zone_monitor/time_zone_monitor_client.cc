@@ -65,7 +65,8 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& time_zone_info) {
   }
 
   NotifyTimezoneChangeToV8(V8PerIsolateData::MainThreadIsolate());
-  WorkerThread::CallOnAllWorkerThreads(&NotifyTimezoneChangeOnWorkerThread);
+  WorkerThread::CallOnAllWorkerThreads(&NotifyTimezoneChangeOnWorkerThread,
+                                       TaskType::kInternalDefault);
 }
 
 }  // namespace blink
