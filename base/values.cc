@@ -290,6 +290,26 @@ const Value* Value::FindKeyOfType(StringPiece key, Type type) const {
   return result;
 }
 
+base::Optional<bool> Value::FindBoolKey(StringPiece key) const {
+  const Value* result = FindKeyOfType(key, Type::BOOLEAN);
+  return result ? base::make_optional(result->bool_value_) : base::nullopt;
+}
+
+base::Optional<int> Value::FindIntKey(StringPiece key) const {
+  const Value* result = FindKeyOfType(key, Type::INTEGER);
+  return result ? base::make_optional(result->int_value_) : base::nullopt;
+}
+
+base::Optional<double> Value::FindDoubleKey(StringPiece key) const {
+  const Value* result = FindKeyOfType(key, Type::DOUBLE);
+  return result ? base::make_optional(result->double_value_) : base::nullopt;
+}
+
+const std::string* Value::FindStringKey(StringPiece key) const {
+  const Value* result = FindKeyOfType(key, Type::STRING);
+  return result ? &result->string_value_ : nullptr;
+}
+
 bool Value::RemoveKey(StringPiece key) {
   CHECK(is_dict());
   // NOTE: Can't directly return dict_->erase(key) due to MSVC warning C4800.
