@@ -4,6 +4,7 @@
 
 #include "services/identity/public/cpp/identity_manager.h"
 
+#include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -272,7 +273,13 @@ void IdentityManager::SetPrimaryAccountSynchronously(
 
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
     const std::string& account_id) const {
+  // TODO(https://crbug.com/919793): This invariant is not currently possible to
+  // enforce on Android due to the underlying relationship between
+  // O2TS::GetAccounts(), O2TS::RefreshTokenIsAvailable(), and
+  // O2TS::Observer::OnRefreshTokenAvailable().
+#if !defined(OS_ANDROID)
   DCHECK(HasAccountWithRefreshToken(account_id));
+#endif
 
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
