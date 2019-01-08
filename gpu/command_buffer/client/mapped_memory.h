@@ -100,9 +100,7 @@ class GPU_EXPORT MemoryChunk {
   // Returns true of any memory in this chunk is in use or free pending token.
   bool InUseOrFreePending() { return allocator_.InUseOrFreePending(); }
 
-  size_t bytes_in_use() const {
-    return allocator_.bytes_in_use();
-  }
+  uint32_t bytes_in_use() const { return allocator_.bytes_in_use(); }
 
   FencedAllocator::State GetPointerStatusForTest(void* pointer,
                                                  int32_t* token_if_pending) {
