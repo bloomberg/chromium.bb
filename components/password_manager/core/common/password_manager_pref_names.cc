@@ -41,9 +41,6 @@ const char kSyncPasswordHash[] = "profile.sync_password_hash";
 const char kSyncPasswordLengthAndHashSalt[] =
     "profile.sync_password_length_and_hash_salt";
 
-const char kCredentialsWithWrongSignonRealmRemoved[] =
-    "profile.credentials_with_wrong_signon_realm_removed";
-
 const char kLastTimeObsoleteHttpCredentialsRemoved[] =
     "profile.last_time_obsolete_http_credentials_removed";
 

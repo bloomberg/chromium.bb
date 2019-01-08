@@ -334,8 +334,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kWasAutoSignInFirstRunExperienceShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(prefs::kCredentialsWithWrongSignonRealmRemoved,
-                                false);
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
 
