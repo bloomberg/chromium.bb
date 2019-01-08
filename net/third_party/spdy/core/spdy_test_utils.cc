@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/sys_byteorder.h"
+#include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
@@ -95,7 +95,7 @@ void SetFrameFlags(SpdySerializedFrame* frame, uint8_t flags) {
 void SetFrameLength(SpdySerializedFrame* frame, size_t length) {
   CHECK_GT(1u << 14, length);
   {
-    int32_t wire_length = base::HostToNet32(length);
+    int32_t wire_length = SpdyHostToNet32(length);
     memcpy(frame->data(), reinterpret_cast<char*>(&wire_length) + 1, 3);
   }
 }
