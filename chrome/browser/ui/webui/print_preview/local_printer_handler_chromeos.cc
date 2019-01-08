@@ -26,7 +26,7 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "components/printing/common/printer_capabilities.h"
+#include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend_consts.h"
