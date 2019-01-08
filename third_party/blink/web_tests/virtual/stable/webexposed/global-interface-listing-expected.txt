@@ -4883,11 +4883,6 @@ interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
     method constructor
-interface RTCRtpContributingSource
-    attribute @@toStringTag
-    getter source
-    getter timestamp
-    method constructor
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag

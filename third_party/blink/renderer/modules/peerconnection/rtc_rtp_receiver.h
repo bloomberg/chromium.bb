@@ -8,7 +8,9 @@
 #include <map>
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_contributing_source.h"
@@ -41,7 +43,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
   RTCDtlsTransport* transport();
   RTCDtlsTransport* rtcp_transport();
   RTCRtpReceiveParameters* getParameters();
-  const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
+  HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
   ScriptPromise getStats(ScriptState*);
 
   const WebRTCRtpReceiver& web_receiver() const;
@@ -60,9 +62,11 @@ class RTCRtpReceiver final : public ScriptWrappable {
   Member<MediaStreamTrack> track_;
   MediaStreamVector streams_;
 
-  // The current contributing sources (|getContributingSources|).
-  HeapVector<Member<RTCRtpContributingSource>> contributing_sources_;
-  bool contributing_sources_needs_updating_ = true;
+  // The current SSRCs and CSRCs. getContributingSources() returns the CSRCs.
+  // TODO(https://crbug.com/893158): Add getSynchronizationSources() and return
+  // the SSRCs.
+  WebVector<std::unique_ptr<WebRTCRtpContributingSource>> web_sources_;
+  bool web_sources_needs_updating_ = true;
   Member<RTCRtpTransceiver> transceiver_;
 };
 

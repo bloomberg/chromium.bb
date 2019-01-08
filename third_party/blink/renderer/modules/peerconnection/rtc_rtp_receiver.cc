@@ -46,10 +46,20 @@ RTCDtlsTransport* RTCRtpReceiver::rtcp_transport() {
   return nullptr;
 }
 
-const HeapVector<Member<RTCRtpContributingSource>>&
+HeapVector<Member<RTCRtpContributingSource>>
 RTCRtpReceiver::getContributingSources() {
   UpdateSourcesIfNeeded();
-  return contributing_sources_;
+  HeapVector<Member<RTCRtpContributingSource>> contributing_sources;
+  for (const auto& web_source : web_sources_) {
+    if (web_source->SourceType() != WebRTCRtpContributingSourceType::CSRC)
+      continue;
+    RTCRtpContributingSource* contributing_source =
+        MakeGarbageCollected<RTCRtpContributingSource>();
+    contributing_source->setTimestamp(web_source->TimestampMs());
+    contributing_source->setSource(web_source->Source());
+    contributing_sources.push_back(contributing_source);
+  }
+  return contributing_sources;
 }
 
 ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
@@ -77,44 +87,28 @@ void RTCRtpReceiver::set_transceiver(RTCRtpTransceiver* transceiver) {
 }
 
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
-  if (!contributing_sources_needs_updating_)
+  if (!web_sources_needs_updating_)
     return;
-  contributing_sources_.clear();
-  for (const std::unique_ptr<WebRTCRtpContributingSource>&
-           web_contributing_source : receiver_->GetSources()) {
-    if (web_contributing_source->SourceType() ==
-        WebRTCRtpContributingSourceType::SSRC) {
-      // TODO(hbos): When |getSynchronizationSources| is added to get SSRC
-      // sources don't ignore SSRCs here.
-      continue;
-    }
-    DCHECK_EQ(web_contributing_source->SourceType(),
-              WebRTCRtpContributingSourceType::CSRC);
-    RTCRtpContributingSource* contributing_source =
-        MakeGarbageCollected<RTCRtpContributingSource>(
-            this, *web_contributing_source);
-    contributing_sources_.push_back(contributing_source);
-  }
+  web_sources_ = receiver_->GetSources();
   // Clear the flag and schedule a microtask to reset it to true. This makes
   // the cache valid until the next microtask checkpoint. As such, sources
   // represent a snapshot and can be compared reliably in .js code, no risk of
   // being updated due to an RTP packet arriving. E.g.
   // "source.timestamp == source.timestamp" will always be true.
-  contributing_sources_needs_updating_ = false;
+  web_sources_needs_updating_ = false;
   Microtask::EnqueueMicrotask(
       WTF::Bind(&RTCRtpReceiver::SetContributingSourcesNeedsUpdating,
                 WrapWeakPersistent(this)));
 }
 
 void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
-  contributing_sources_needs_updating_ = true;
+  web_sources_needs_updating_ = true;
 }
 
 void RTCRtpReceiver::Trace(blink::Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);
   visitor->Trace(streams_);
-  visitor->Trace(contributing_sources_);
   visitor->Trace(transceiver_);
   ScriptWrappable::Trace(visitor);
 }
