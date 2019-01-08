@@ -218,8 +218,13 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   if (show_hit_test_borders && hit_test_region_list)
     hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
 
-  // Do not send duplicate hit-test data.
-  if (hit_test_region_list && !hit_test_data_changed) {
+  // If |hit_test_data_changed| was set or local_surface_id has been updated,
+  // we always send hit-test data; otherwise we check for equality with the
+  // last submitted hit-test data for possible optimization.
+  if (!hit_test_region_list) {
+    last_hit_test_data_ = viz::HitTestRegionList();
+  } else if (!hit_test_data_changed &&
+             local_surface_id_ == last_submitted_local_surface_id_) {
     if (viz::HitTestRegionList::IsEqual(*hit_test_region_list,
                                         last_hit_test_data_)) {
       DCHECK(!viz::HitTestRegionList::IsEqual(*hit_test_region_list,
@@ -232,7 +237,7 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     UMA_HISTOGRAM_BOOLEAN("Event.VizHitTest.HitTestDataIsEqualAccuracy",
                           !hit_test_region_list);
   } else {
-    last_hit_test_data_ = viz::HitTestRegionList();
+    last_hit_test_data_ = *hit_test_region_list;
   }
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
