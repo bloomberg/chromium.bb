@@ -317,7 +317,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetupOverdrawFeedback();
   void FlushOverdrawFeedback(const gfx::Rect& output_rect);
   // Process overdraw feedback from query.
-  using OverdrawFeedbackCallback = base::Callback<void(unsigned, int)>;
   void ProcessOverdrawFeedback(std::vector<int>* overdraw,
                                size_t num_expected_results,
                                int max_result,

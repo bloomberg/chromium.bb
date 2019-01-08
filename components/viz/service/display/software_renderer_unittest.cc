@@ -112,13 +112,13 @@ class SoftwareRendererTest : public testing::Test {
   }
 
   static void SaveBitmapResult(std::unique_ptr<SkBitmap>* bitmap_result,
-                               const base::Closure& quit_closure,
+                               base::OnceClosure quit_closure,
                                std::unique_ptr<CopyOutputResult> result) {
     DCHECK(!result->IsEmpty());
     DCHECK_EQ(result->format(), CopyOutputResult::Format::RGBA_BITMAP);
     *bitmap_result = std::make_unique<SkBitmap>(result->AsSkBitmap());
     DCHECK((*bitmap_result)->readyToDraw());
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
  protected:

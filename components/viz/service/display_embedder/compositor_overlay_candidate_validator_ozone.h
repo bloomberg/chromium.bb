@@ -40,7 +40,7 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
   // Callback declaration to allocate a new OverlayProcessor::Strategy.
   using StrategyInstantiator =
-      base::Callback<std::unique_ptr<OverlayProcessor::Strategy>(
+      base::RepeatingCallback<std::unique_ptr<OverlayProcessor::Strategy>(
           CompositorOverlayCandidateValidatorOzone*)>;
   // List callbacks used to instantiate OverlayProcessor::Strategy
   // as defined by |strategies_string| paramter in the constructor.

@@ -3578,7 +3578,8 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   int max_result = current_surface_size_.GetArea();
   DCHECK_GT(max_result, 0);
 
-  OverdrawFeedbackCallback overdraw_feedback_callback = base::Bind(
+  // Callback is repeating to allow sharing the owned vector<int>.
+  auto overdraw_feedback_callback = base::BindRepeating(
       &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
       base::Owned(new std::vector<int>), base::size(stencil_tests), max_result);
 

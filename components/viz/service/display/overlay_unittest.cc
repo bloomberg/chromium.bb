@@ -2862,7 +2862,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, provider_.get(), nullptr);
 
-    provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
+    provider_->support()->SetScheduleOverlayPlaneCallback(base::BindRepeating(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));
 
     child_provider_ = TestContextProvider::Create();
