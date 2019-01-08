@@ -683,11 +683,7 @@ class ExtensionUpdaterTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SimulateTimerFired(ExtensionUpdater* updater) {
-    EXPECT_TRUE(updater->timer_.IsRunning());
-    updater->timer_.Stop();
-    updater->TimerFired();
-  }
+  void SimulateTimerFired(ExtensionUpdater* updater) { updater->NextCheck(); }
 
   // Adds a Result with the given data to results.
   void AddParseResult(const std::string& id,
@@ -1440,6 +1436,7 @@ class ExtensionUpdaterTest : public testing::Test {
     MockExtensionDownloaderDelegate delegate;
     delegate.DelegateTo(&updater);
     service->OverrideDownloaderDelegate(&delegate);
+    updater.StopScheduledUpdatesForTesting();
     updater.Start();
     updater.EnsureDownloaderCreated();
     updater.downloader_->extensions_queue_.set_backoff_policy(
@@ -2577,6 +2574,8 @@ TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
                            service.GetDownloaderFactory());
   EXPECT_FALSE(updater.WillCheckSoon());
   updater.Start();
+  EXPECT_TRUE(updater.WillCheckSoon());
+  RunUntilIdle();
   EXPECT_FALSE(updater.WillCheckSoon());
   updater.CheckSoon();
   EXPECT_TRUE(updater.WillCheckSoon());
@@ -2634,23 +2633,6 @@ TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
   // runs the extension update process has a chance to exit gracefully; without
   // it, the test would crash.
   RunUntilIdle();
-}
-
-// Tests that we don't get a DCHECK failure when the next check time saved in
-// prefs happens to be within one second of startup.
-TEST_F(ExtensionUpdaterTest, TestPersistedNextCheckTime) {
-  base::Time next_check_time =
-      base::Time::Now() + base::TimeDelta::FromMilliseconds(500);
-  prefs_->pref_service()->SetInt64(pref_names::kNextUpdateCheck,
-                                   next_check_time.ToInternalValue());
-  ServiceForManifestTests service(prefs_.get(),
-                                  test_shared_url_loader_factory_);
-  ExtensionUpdater updater(&service, service.extension_prefs(),
-                           service.pref_service(), service.profile(),
-                           kDefaultUpdateFrequencySeconds, nullptr,
-                           service.GetDownloaderFactory());
-  updater.Start();
-  updater.Stop();
 }
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchDataAddExtension) {
