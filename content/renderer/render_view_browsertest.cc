@@ -2041,19 +2041,14 @@ class RendererErrorPageTest : public RenderViewImplTest {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
-  WebURLError error(net::ERR_FILE_NOT_FOUND,
-                    GURL("http://example.com/suppress"));
-
-  // Start a load that will reach provisional state synchronously,
-  // but won't complete synchronously.
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
+  common_params.url = GURL("http://example.com/suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, CommitNavigationParams());
+  main_frame->NavigateWithError(common_params, CommitNavigationParams(),
+                                net::ERR_FILE_NOT_FOUND,
+                                "A suffusion of yellow.");
 
-  // An error occurred.
-  main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", WebFrameContentDumper::DumpWebViewAsText(view()->GetWebView(),
                                                          kMaxOutputCharacters)
@@ -2068,19 +2063,13 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
-  WebURLError error(net::ERR_FILE_NOT_FOUND,
-                    GURL("http://example.com/dont-suppress"));
-
-  // Start a load that will reach provisional state synchronously,
-  // but won't complete synchronously.
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
+  common_params.url = GURL("http://example.com/dont-suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, CommitNavigationParams());
-
-  // An error occurred.
-  main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
+  main_frame->NavigateWithError(common_params, CommitNavigationParams(),
+                                net::ERR_FILE_NOT_FOUND,
+                                "A suffusion of yellow.");
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();
@@ -2238,11 +2227,12 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
 // recorded at an appropriate time and is passed in the corresponding message.
 TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   base::TimeTicks lower_bound_navigation_start(base::TimeTicks::Now());
+  FrameLoadWaiter waiter(frame());
   frame()->LoadHTMLString("hello world", GURL("data:text/html,"), "UTF-8",
                           GURL(), false /* replace_current_item */);
-
+  waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_FALSE(navigation_state->common_params().navigation_start.is_null());
   EXPECT_LE(lower_bound_navigation_start,
             navigation_state->common_params().navigation_start);
@@ -2255,9 +2245,11 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
 TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
+  FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params, CommitNavigationParams());
+  waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2291,10 +2283,11 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   ExecuteJavaScriptForTests("document.title = 'Hi!';");
 
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
+  FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params, CommitNavigationParams());
-
+  waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2314,11 +2307,13 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
 
   // The browser navigation_start should not be used because beforeunload will
   // be fired during Navigate.
+  FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params, CommitNavigationParams());
+  waiter.Wait();
 
   // The browser navigation_start is always used.
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
@@ -2376,10 +2371,12 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   commit_params.pending_history_list_offset = 1;
   commit_params.current_history_list_offset = 0;
   commit_params.current_history_list_length = 1;
+  FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params, commit_params);
+  waiter.Wait();
 
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params.navigation_start,
             navigation_state->common_params().navigation_start);
 }
