@@ -40,7 +40,7 @@ BrowsingHistoryBridge::BrowsingHistoryBridge(JNIEnv* env,
   history::HistoryService* local_history = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
 

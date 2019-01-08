@@ -407,8 +407,7 @@ void DiceTurnSyncOnHelper::OnNewProfileCreated(Profile* new_profile,
 
 syncer::SyncService* DiceTurnSyncOnHelper::GetSyncService() {
   return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                   profile_)
+             ? ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_)
              : nullptr;
 }
 

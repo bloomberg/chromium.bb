@@ -97,7 +97,7 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 // their history.
 bool IsHistorySyncEnabled(Profile* profile) {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   return sync && sync->IsSyncFeatureEnabled() &&
          sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }

@@ -1579,7 +1579,7 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
     // Disable sync for doomed profile.
     if (ProfileSyncServiceFactory::HasProfileSyncService(profile)) {
       syncer::SyncService* sync_service =
-          ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+          ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
       // Ensure data is cleared even if sync was already off.
       sync_service->StopAndClear();
     }

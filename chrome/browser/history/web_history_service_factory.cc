@@ -17,8 +17,7 @@ namespace {
 // and false otherwise.
 bool IsHistorySyncEnabled(Profile* profile) {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
-          profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }

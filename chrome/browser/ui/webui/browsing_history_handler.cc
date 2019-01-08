@@ -240,7 +240,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
   HistoryService* local_history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
 

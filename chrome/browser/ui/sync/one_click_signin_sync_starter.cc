@@ -561,7 +561,7 @@ void OneClickSigninSyncStarter::ShowSyncSetupSettingsSubpage() {
 syncer::SyncService* OneClickSigninSyncStarter::GetSyncService() {
   if (!profile_->IsSyncAllowed())
     return nullptr;
-  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+  return ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
 }
 
 void OneClickSigninSyncStarter::FinishSyncServiceSetup() {

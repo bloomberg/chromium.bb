@@ -93,8 +93,7 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
         NewPersonalizedDataCollectionConsentHelper(
-            ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                profile));
+            ProfileSyncServiceFactory::GetSyncServiceForProfile(profile));
   }
 
   auto contextual_suggestions_fetcher =
