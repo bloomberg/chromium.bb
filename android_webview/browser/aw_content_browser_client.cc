@@ -276,6 +276,20 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
+      GetNetworkContextParams();
+
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context), std::move(context_params));
+
+  // Quic is not currently supported in WebView.
+  content::GetNetworkService()->DisableQuic();
+
+  return network_context;
+}
+
+network::mojom::NetworkContextParamsPtr
+AwContentBrowserClient::GetNetworkContextParams() {
+  network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = GetUserAgent();
   // TODO(ntfschr): set this value to a proper value based on the user's
@@ -289,19 +303,21 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   context_params->http_cache_max_size = GetHttpCacheSize();
   context_params->http_cache_path = AwBrowserContext::GetCacheDir();
 
+  context_params->initial_ssl_config = network::mojom::SSLConfig::New();
+  // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
+  // should behave like the Android system would.
+  context_params->initial_ssl_config->sha1_local_anchors_enabled = true;
+  // Do not enforce the Legacy Symantec PKI policies outlined in
+  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
+  // defer to the Android system.
+  context_params->initial_ssl_config->symantec_enforcement_disabled = true;
+
   // WebView does not currently support Certificate Transparency.
   context_params->enforce_chrome_ct_policy = false;
 
   // WebView does not support ftp yet.
   context_params->enable_ftp_url_support = false;
-
-  content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context), std::move(context_params));
-
-  // Quic is not currently supported in WebView.
-  content::GetNetworkService()->DisableQuic();
-
-  return network_context;
+  return context_params;
 }
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
