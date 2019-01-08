@@ -65,8 +65,9 @@ ImageEditorMode.Adjust.prototype = {
  * @return {Command.Filter} Filter command.
  */
 ImageEditorMode.Adjust.prototype.getCommand = function() {
-  if (!this.filter_)
+  if (!this.filter_) {
     return null;
+  }
 
   return new Command.Filter(this.name, this.filter_, this.doneMessage_);
 };
@@ -131,8 +132,9 @@ ImageEditorMode.Adjust.prototype.updatePreviewImage_ = function(options) {
       this.viewportGeneration_ !== this.getViewport().getCacheGeneration()) {
     this.viewportGeneration_ = this.getViewport().getCacheGeneration();
 
-    if (!this.canvas_)
+    if (!this.canvas_) {
       this.canvas_ = this.getImageView().createOverlayCanvas();
+    }
 
     this.getImageView().setupDeviceBuffer(this.canvas_);
     var canvas = this.getImageView().getImageCanvasWith(

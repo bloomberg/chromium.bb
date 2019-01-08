@@ -91,8 +91,9 @@ DirectoryTreeNamingController.prototype.attachAndStart = function(
   this.isRemovableRoot_ = isRemovableRoot;
   this.volumeInfo_ = this.isRemovableRoot_ ? assert(volumeInfo) : null;
 
-  if (!!this.currentDirectoryItem_)
+  if (!!this.currentDirectoryItem_) {
     return;
+  }
 
   this.currentDirectoryItem_ = directoryItem;
   this.currentDirectoryItem_.setAttribute('renaming', true);
@@ -120,8 +121,9 @@ DirectoryTreeNamingController.prototype.attachAndStart = function(
  * @private
  */
 DirectoryTreeNamingController.prototype.commitRename_ = function() {
-  if (!this.editting_)
+  if (!this.editting_) {
     return;
+  }
   this.editting_ = false;
 
   var entry = this.currentDirectoryItem_.entry;
@@ -169,8 +171,9 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
     entry, newName) {
   var renamingCurrentDirectory = util.isSameEntry(entry,
       this.directoryModel_.getCurrentDirEntry());
-  if (renamingCurrentDirectory)
+  if (renamingCurrentDirectory) {
     this.directoryModel_.setIgnoringCurrentDirectoryDeletion(true /* ignore */);
+  }
 
   // TODO(yawano): Rename might take time on some volumes. Optimistically show
   // new name in the UI before actual rename is completed.
@@ -232,8 +235,9 @@ DirectoryTreeNamingController.prototype.performExternalDriveRename_ = function(
  * @private
  */
 DirectoryTreeNamingController.prototype.cancelRename_ = function() {
-  if (!this.editting_)
+  if (!this.editting_) {
     return;
+  }
   this.editting_ = false;
 
   this.detach_();
@@ -272,8 +276,9 @@ DirectoryTreeNamingController.prototype.detach_ = function() {
 DirectoryTreeNamingController.prototype.onKeyDown_ = function(event) {
   // Ignore key events if event.keyCode is VK_PROCESSKEY(229).
   // TODO(fukino): Remove this workaround once crbug.com/644140 is fixed.
-  if (event.keyCode === 229)
+  if (event.keyCode === 229) {
     return;
+  }
 
   event.stopPropagation();
 

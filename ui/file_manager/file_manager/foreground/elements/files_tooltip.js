@@ -94,8 +94,9 @@ var FilesTooltip = Polymer({
    * is not dispatched. This method is used to handle these cases manually.
    */
   hideTooltip: function() {
-    if (this.visibleTooltipTarget_)
+    if (this.visibleTooltipTarget_) {
       this.initHidingTooltip_(this.visibleTooltipTarget_);
+    }
   },
 
   /**
@@ -111,12 +112,14 @@ var FilesTooltip = Polymer({
       }
     }
 
-    if (this.visibleTooltipTarget_ === target)
+    if (this.visibleTooltipTarget_ === target) {
       return;
+    }
 
     this.upcomingTooltipTarget_ = target;
-    if (this.showTooltipTimerId_)
+    if (this.showTooltipTimerId_) {
       clearTimeout(this.showTooltipTimerId_);
+    }
     this.showTooltipTimerId_ = setTimeout(
         this.showTooltip_.bind(this, target),
         this.visibleTooltipTarget_ ? 0 : this.showTimeout);
@@ -136,8 +139,9 @@ var FilesTooltip = Polymer({
       return;
     }
 
-    if (this.hideTooltipTimerId_)
+    if (this.hideTooltipTimerId_) {
       clearTimeout(this.hideTooltipTimerId_);
+    }
     this.hideTooltipTimerId_ = setTimeout(
         this.hideTooltip_.bind(this), this.hideTimeout);
   },
@@ -155,22 +159,26 @@ var FilesTooltip = Polymer({
     this.visibleTooltipTarget_ = target;
 
     var label = target.getAttribute('aria-label');
-    if (!label)
+    if (!label) {
       return;
+    }
 
     this.$.label.textContent = label;
     var rect = target.getBoundingClientRect();
 
     var top = rect.top + rect.height;
-    if (top + this.offsetHeight > document.body.offsetHeight)
+    if (top + this.offsetHeight > document.body.offsetHeight) {
       top = rect.top - this.offsetHeight;
+    }
     this.style.top = `${Math.round(top)}px`;
 
     var left = rect.left + rect.width / 2 - this.offsetWidth / 2;
-    if (left < 0)
+    if (left < 0) {
       left = 0;
-    if (left > document.body.offsetWidth - this.offsetWidth)
+    }
+    if (left > document.body.offsetWidth - this.offsetWidth) {
       left = document.body.offsetWidth - this.offsetWidth;
+    }
     this.style.left = `${Math.round(left)}px`;
 
     this.setAttribute('visible', true);

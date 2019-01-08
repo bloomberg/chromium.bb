@@ -17,8 +17,9 @@ function installMockChrome(mockChrome) {
  */
 function MockCommandLinePrivate() {
   this.flags_ = {};
-  if (!chrome)
+  if (!chrome) {
     installMockChrome({});
+  }
 
   if (!chrome.commandLinePrivate) {
     /** @suppress {checkTypes} */

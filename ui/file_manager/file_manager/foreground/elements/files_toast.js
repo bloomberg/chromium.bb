@@ -76,8 +76,9 @@ var FilesToast = Polymer({
    * @private
    */
   showInternal_: function(text, action, generationId) {
-    if (this.generationId_ !== generationId)
+    if (this.generationId_ !== generationId) {
       return;
+    }
 
     this._setVisible(true);
 
@@ -112,8 +113,9 @@ var FilesToast = Polymer({
    * @param {number} generationId Generation id.
    */
   timeout_: function(generationId) {
-    if (this.generationId_ !== generationId)
+    if (this.generationId_ !== generationId) {
       return;
+    }
 
     this.hide();
   },
@@ -122,8 +124,9 @@ var FilesToast = Polymer({
    * Handles tap event of action button.
    */
   onActionTapped_: function() {
-    if (!this.action_ || !this.action_.callback)
+    if (!this.action_ || !this.action_.callback) {
       return;
+    }
 
     this.action_.callback();
     this.hide();
@@ -134,8 +137,9 @@ var FilesToast = Polymer({
    * @return {!Promise} A promise which is resolved when toast is hidden.
    */
   hide: function() {
-    if (!this.visible)
+    if (!this.visible) {
       return Promise.resolve();
+    }
 
     // If it's performing enter animation, wait until it's done and come back
     // later.
@@ -143,8 +147,10 @@ var FilesToast = Polymer({
       return new Promise(function(resolve) {
         // Check that the animation is still playing. Animation can be finished
         // between the above condition check and this function call.
-        if (!this.enterAnimationPlayer_ || this.enterAnimationPlayer_.finished)
+        if (!this.enterAnimationPlayer_ ||
+            this.enterAnimationPlayer_.finished) {
           resolve();
+        }
 
         this.enterAnimationPlayer_.addEventListener('finish', resolve);
       }.bind(this)).then(this.hide.bind(this));

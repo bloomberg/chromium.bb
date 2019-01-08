@@ -138,8 +138,9 @@ ImageView.LoadTarget = {
  * @return {ImageView.LoadTarget} Load target.
  */
 ImageView.getLoadTarget = function(item, effect) {
-  if (item.contentImage && !item.requireLongRenderingTime())
+  if (item.contentImage && !item.requireLongRenderingTime()) {
     return ImageView.LoadTarget.CACHED_MAIN_IMAGE;
+  }
 
   // Only show thumbnails if there is no effect or the effect is Slide or
   // ZoomToScreen.
@@ -163,14 +164,17 @@ ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 /**
  * @override
  */
-ImageView.prototype.getZIndex = function() { return -1; };
+ImageView.prototype.getZIndex = function() {
+  return -1;
+};
 
 /**
  * @override
  */
 ImageView.prototype.draw = function() {
-  if (!this.contentImage_)  // Do nothing if the image content is not set.
+  if (!this.contentImage_) {  // Do nothing if the image content is not set.
     return;
+  }
   this.setTransform_(
       this.contentImage_,
       this.viewport_,
@@ -426,8 +430,9 @@ ImageView.prototype.load =
           width,
           height,
           true /* preview */);
-      if (displayCallback)
+      if (displayCallback) {
         displayCallback();
+      }
     }
     loadMainImage(loadType, entry, !!canvas,
         (effect && canvas) ? effect.getSafeInterval() : 0);
@@ -467,8 +472,9 @@ ImageView.prototype.load =
    * @param {string=} opt_error Error message.
    */
   function displayMainImage(loadType, previewShown, content, opt_error) {
-    if (opt_error)
+    if (opt_error) {
       loadType = ImageView.LoadType.ERROR;
+    }
 
     // If we already displayed the preview we should not replace the content if
     // the full content failed to load.
@@ -501,11 +507,13 @@ ImageView.prototype.load =
  * @param {number=} opt_delay Image load delay in ms.
  */
 ImageView.prototype.prefetch = function(item, opt_delay) {
-  if (item.contentImage || this.prefetchLoader_.isLoading(item.getEntry()))
+  if (item.contentImage || this.prefetchLoader_.isLoading(item.getEntry())) {
     return;
+  }
   this.prefetchLoader_.load(item, function(canvas) {
-    if (canvas.width && canvas.height && !item.contentImage)
+    if (canvas.width && canvas.height && !item.contentImage) {
       item.contentImage = canvas;
+    }
   }, opt_delay);
 };
 
@@ -542,9 +550,9 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
  */
 ImageView.prototype.replaceContent_ = function(
     content, opt_width, opt_height, opt_preview) {
-
-  if (this.contentImage_ && this.contentImage_.parentNode === this.container_)
+  if (this.contentImage_ && this.contentImage_.parentNode === this.container_) {
     this.container_.removeChild(this.contentImage_);
+  }
 
   this.contentImage_ = content;
   this.preview_ = opt_preview || false;
@@ -604,8 +612,9 @@ ImageView.prototype.addContentCallback = function(callback) {
  */
 ImageView.prototype.updateThumbnail_ = function(image) {
   // Ignore video. TODO(tapted): Support updating from the poster?
-  if (image instanceof HTMLVideoElement)
+  if (image instanceof HTMLVideoElement) {
     return;
+  }
 
   ImageUtil.trace.resetTimer('thumb');
   var pixelCount = 10000;
@@ -676,13 +685,15 @@ ImageView.prototype.replace = function(
           this.setTransform_(oldContentImage, oldViewport, reverse);
           setTimeout(function() {
             if (oldContentImage.parentNode &&
-                  this.contentImage_ !== oldContentImage)
+                this.contentImage_ !== oldContentImage) {
               oldContentImage.parentNode.removeChild(oldContentImage);
+            }
           }.bind(this), reverse.getSafeInterval());
         } else {
           if (oldContentImage.parentNode &&
-              this.contentImage_ !== oldContentImage)
+              this.contentImage_ !== oldContentImage) {
             oldContentImage.parentNode.removeChild(oldContentImage);
+          }
         }
       }
     }.bind(this));
@@ -699,10 +710,12 @@ ImageView.prototype.replace = function(
  */
 ImageView.prototype.setTransform_ = function(
     element, viewport, opt_effect, opt_duration) {
-  if (!opt_effect)
+  if (!opt_effect) {
     opt_effect = new ImageView.Effect.None();
-  if (typeof opt_duration !== 'number')
+  }
+  if (typeof opt_duration !== 'number') {
     opt_duration = opt_effect.getDuration();
+  }
   element.style.transitionDuration = opt_duration + 'ms';
   element.style.transitionTimingFunction = opt_effect.getTiming();
   element.style.transform = opt_effect.transform(element, viewport);
@@ -784,9 +797,10 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   }.bind(this));
 
   setTimeout(function() {
-  if (oldScreenImage.parentNode)
+    if (oldScreenImage.parentNode) {
       oldScreenImage.parentNode.removeChild(oldScreenImage);
-      oldScreenImage.style.zIndex = '';
+    }
+    oldScreenImage.style.zIndex = '';
   }, effect.getSafeInterval());
 
   return effect.getSafeInterval();
@@ -824,7 +838,9 @@ ImageView.Effect.MARGIN = 100;
 /**
  * @return {number} Effect duration in ms.
  */
-ImageView.Effect.prototype.getDuration = function() { return this.duration_; };
+ImageView.Effect.prototype.getDuration = function() {
+  return this.duration_;
+};
 
 /**
  * @return {number} Delay in ms since the beginning of the animation after which
@@ -846,7 +862,9 @@ ImageView.Effect.prototype.getReverse = function() {
 /**
  * @return {string} CSS transition timing function name.
  */
-ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
+ImageView.Effect.prototype.getTiming = function() {
+  return this.timing_;
+};
 
 /**
  * Obtains the CSS transformation string of the effect.

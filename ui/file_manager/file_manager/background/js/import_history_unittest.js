@@ -308,8 +308,9 @@ function testRecordStorage_SerializingOperations(callback) {
           function(storage) {
             var writePromises = [];
             var WRITES_COUNT = 20;
-            for (var i = 0; i < WRITES_COUNT; i++)
+            for (var i = 0; i < WRITES_COUNT; i++) {
               writePromises.push(storage.write(['abc', '123']));
+            }
             var readAllPromise = storage.readAll(recorder.callback).then(
               function() {
                 recorder.assertCallCount(WRITES_COUNT);

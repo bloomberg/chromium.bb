@@ -42,8 +42,9 @@ crostiniMount.testMountCrostiniSuccess = (done) => {
       .then(() => {
         // Ensure mountCrostini is called.
         return test.repeatUntil(() => {
-          if (!mountCallback)
+          if (!mountCallback) {
             return test.pending('Waiting for mountCrostini');
+          }
           return mountCallback;
         });
       })

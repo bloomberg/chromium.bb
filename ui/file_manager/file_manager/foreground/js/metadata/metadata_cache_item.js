@@ -46,8 +46,9 @@ MetadataCacheItem.prototype.startRequests = function(requestId, names) {
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
     assert(!/Error$/.test(name));
-    if (!this.properties_[name])
+    if (!this.properties_[name]) {
       this.properties_[name] = new MetadataCacheItemProperty();
+    }
     this.properties_[name].requestId = requestId;
     this.properties_[name].state = MetadataCacheItemPropertyState.LOADING;
   }
@@ -63,14 +64,17 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
   var changed = false;
   var object = /** @type {!Object} */(typedObject);
   for (var name in object) {
-    if (/.Error$/.test(name) && object[name])
+    if (/.Error$/.test(name) && object[name]) {
       object[name.substr(0, name.length - 5)] = undefined;
+    }
   }
   for (var name in object) {
-    if (/.Error$/.test(name))
+    if (/.Error$/.test(name)) {
       continue;
-    if (!this.properties_[name])
+    }
+    if (!this.properties_[name]) {
       this.properties_[name] = new MetadataCacheItemProperty();
+    }
     if (requestId < this.properties_[name].requestId ||
         this.properties_[name].state ===
         MetadataCacheItemPropertyState.FULFILLED) {

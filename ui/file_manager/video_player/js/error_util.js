@@ -11,7 +11,9 @@ window.JSErrorCount = 0;
 /**
  * Counts uncaught exceptions.
  */
-window.onerror = function() { window.JSErrorCount++; };
+window.onerror = function() {
+  window.JSErrorCount++;
+};
 
 /**
  * Wraps the function to use it as a callback.

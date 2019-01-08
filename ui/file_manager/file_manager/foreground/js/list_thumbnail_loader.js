@@ -194,8 +194,9 @@ ListThumbnailLoader.prototype.onChange_ = function(event) {
   // Mark the thumbnail in cache as invalid.
   var entry = this.dataModel_.item(event.index);
   var cachedThumbnail = this.cache_.peek(entry.toURL());
-  if (cachedThumbnail)
+  if (cachedThumbnail) {
     cachedThumbnail.outdated = true;
+  }
 
   this.cursor_ = this.beginIndex_;
   this.continue_();
@@ -209,8 +210,9 @@ ListThumbnailLoader.prototype.onChange_ = function(event) {
  */
 ListThumbnailLoader.prototype.setHighPriorityRange = function(
     beginIndex, endIndex) {
-  if (!(beginIndex < endIndex))
+  if (!(beginIndex < endIndex)) {
     return;
+  }
 
   this.beginIndex_ = beginIndex;
   this.endIndex_ = endIndex;
@@ -238,8 +240,9 @@ ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
 ListThumbnailLoader.prototype.continue_ = function() {
   // If directory scan is running or all items are scanned, do nothing.
   if (this.directoryModel_.isScanning() ||
-      !(this.cursor_ < this.dataModel_.length))
+      !(this.cursor_ < this.dataModel_.length)) {
     return;
+  }
 
   var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_));
 

@@ -16,8 +16,9 @@ window.appWindows = {};
 window.getSimilarWindows = function(url) {
   var result = [];
   for (var appID in window.appWindows) {
-    if (window.appWindows[appID].contentWindow.appInitialURL === url)
+    if (window.appWindows[appID].contentWindow.appInitialURL === url) {
       result.push(window.appWindows[appID]);
+    }
   }
   return result;
 };

@@ -34,8 +34,9 @@ MetadataCacheSet.prototype.createRequests = function(entries, names) {
   for (var i = 0; i < entries.length; i++) {
     var item = this.items_.peek(urls[i]);
     var requestedNames = item ? item.createRequests(names) : names;
-    if (requestedNames.length)
+    if (requestedNames.length) {
       requests.push(new MetadataRequest(entries[i], requestedNames));
+    }
   }
   return requests;
 };
@@ -83,8 +84,9 @@ MetadataCacheSet.prototype.storeProperties = function(
     }
   }
 
-  if (!changedEntries.length)
+  if (!changedEntries.length) {
     return false;
+  }
 
   var event = new Event('update');
   event.entries = changedEntries;
@@ -121,8 +123,9 @@ MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
   var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
     var item = this.items_.peek(urls[i]);
-    if (item)
+    if (item) {
       item.invalidate(requestId);
+    }
   }
 };
 
@@ -153,8 +156,9 @@ MetadataCacheSet.prototype.createSnapshot = function(entries) {
   for (var i = 0; i < entries.length; i++) {
     var url = urls[i];
     var item = this.items_.peek(url);
-    if (item)
+    if (item) {
       items[url] = item.clone();
+    }
   }
   return new MetadataCacheSet(new MetadataCacheSetStorageForObject(items));
 };
@@ -166,13 +170,15 @@ MetadataCacheSet.prototype.createSnapshot = function(entries) {
  * @return {boolean}
  */
 MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
-  if (!names.length)
+  if (!names.length) {
     return true;
+  }
   var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
     var item = this.items_.peek(urls[i]);
-    if (!(item && item.hasFreshCache(names)))
+    if (!(item && item.hasFreshCache(names))) {
       return false;
+    }
   }
   return true;
 };

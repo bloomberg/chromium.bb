@@ -15,8 +15,12 @@ function makeFileEntryFromDataURL(name, dataUrl) {
     name: name,
     isDirectory: false,
     url: dataUrl,
-    file: function(callback) { callback(blob); },
-    toURL: function() { return dataUrl; }
+    file: function(callback) {
+      callback(blob);
+    },
+    toURL: function() {
+      return dataUrl;
+    }
   };
 }
 

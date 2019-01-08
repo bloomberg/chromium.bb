@@ -147,8 +147,9 @@ async function expandRoot(appId, selector) {
   const element = await remoteCall.waitForElement(appId, expandedSubtree);
 
   // Verify expected subtree child item name.
-  if (element.text.indexOf('photos') === -1)
+  if (element.text.indexOf('photos') === -1) {
     chrome.test.fail('directory subtree child item "photos" not found');
+  }
 }
 
 testcase.selectCreateFolderDownloads = async function() {

@@ -26,7 +26,7 @@ var TrackInfo;
       tracks: {
         type: Array,
         value: [],
-        observer: 'tracksChanged'
+        observer: 'tracksChanged',
       },
 
       /**
@@ -38,7 +38,7 @@ var TrackInfo;
         type: Number,
         value: -1,
         observer: 'currentTrackIndexChanged',
-        notify: true
+        notify: true,
       },
 
       /**
@@ -47,7 +47,7 @@ var TrackInfo;
       shuffle: {
         type: Boolean,
         value: false,
-        observer: 'shuffleChanged'
+        observer: 'shuffleChanged',
       },
 
       /**
@@ -56,7 +56,7 @@ var TrackInfo;
       expanded: {
         type: Boolean,
         value: false,
-        observer: 'expandedChanged'
+        observer: 'expandedChanged',
       }
     },
 
@@ -90,11 +90,13 @@ var TrackInfo;
      * @param {number} oldValue old value.
      */
     currentTrackIndexChanged: function(newValue, oldValue) {
-      if (oldValue === newValue)
+      if (oldValue === newValue) {
         return;
+      }
 
-      if (!isNaN(oldValue) && 0 <= oldValue && oldValue < this.tracks.length)
+      if (!isNaN(oldValue) && 0 <= oldValue && oldValue < this.tracks.length) {
         this.set('tracks.' + oldValue + '.active', false);
+      }
 
       if (0 <= newValue && newValue < this.tracks.length) {
         var currentPlayOrder = this.playOrder.indexOf(newValue);
@@ -108,10 +110,11 @@ var TrackInfo;
       }
 
       // Invalid index
-      if (this.tracks.length === 0)
+      if (this.tracks.length === 0) {
         this.currentTrackIndex = -1;
-      else
+      } else {
         this.generatePlayOrder(false /* no need to keep the current track */);
+      }
     },
 
     /**
@@ -145,8 +148,9 @@ var TrackInfo;
     trackClicked: function(event) {
       var index = ~~event.currentTarget.getAttribute('index');
       var track = this.tracks[index];
-      if (track)
+      if (track) {
         this.selectTrack(track);
+      }
     },
 
     /**
@@ -189,18 +193,22 @@ var TrackInfo;
       }
 
       // Creates sequenced array.
-      this.playOrder =
-          this.tracks.
-          map(function(unused, index) { return index; });
+      this.playOrder = this.tracks.map(function(unused, index) {
+        return index;
+      });
 
       if (this.shuffle) {
         // Randomizes the play order array (Schwarzian-transform algorithm).
         this.playOrder = this.playOrder
-            .map(function(a) {
-              return {weight: Math.random(), index: a};
-            })
-            .sort(function(a, b) { return a.weight - b.weight })
-            .map(function(a) { return a.index });
+                             .map(function(a) {
+                               return {weight: Math.random(), index: a};
+                             })
+                             .sort(function(a, b) {
+                               return a.weight - b.weight;
+                             })
+                             .map(function(a) {
+                               return a.index;
+                             });
 
         if (keepCurrentTrack) {
           // Puts the current track at the beginning of the play order.
@@ -212,8 +220,9 @@ var TrackInfo;
         }
       }
 
-      if (!keepCurrentTrack)
+      if (!keepCurrentTrack) {
         this.currentTrackIndex = this.playOrder[0];
+      }
     },
 
     /**
@@ -244,8 +253,9 @@ var TrackInfo;
      * @return {TrackInfo} track TrackInfo of the current track.
      */
     getCurrentTrack: function() {
-      if (this.tracks.length === 0)
+      if (this.tracks.length === 0) {
         return null;
+      }
 
       return this.tracks[this.currentTrackIndex];
     },
@@ -261,9 +271,10 @@ var TrackInfo;
      *     last.
      * @return {number} The next track index.
      */
-    getNextTrackIndex: function(forward, cyclic)  {
-      if (this.tracks.length === 0)
+    getNextTrackIndex: function(forward, cyclic) {
+      if (this.tracks.length === 0) {
         return -1;
+      }
 
       var defaultTrackIndex =
           forward ? this.playOrder[0] : this.playOrder[this.tracks.length - 1];
@@ -275,8 +286,9 @@ var TrackInfo;
               'track list.');
 
       var newPlayOrder = currentPlayOrder + (forward ? +1 : -1);
-      if (newPlayOrder === -1 || newPlayOrder === this.tracks.length)
+      if (newPlayOrder === -1 || newPlayOrder === this.tracks.length) {
         return cyclic ? defaultTrackIndex : -1;
+      }
 
       var newTrackIndex = this.playOrder[newPlayOrder];
       console.assert(

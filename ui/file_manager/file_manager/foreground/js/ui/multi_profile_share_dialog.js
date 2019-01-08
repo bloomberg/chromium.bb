@@ -92,8 +92,9 @@ MultiProfileShareDialog.prototype.showMultiProfileShareDialog =
           function() {
             fulfill(MultiProfileShareDialog.Result.CANCEL);
           });
-      if (!result)
+      if (!result) {
         reject(new Error('Another dialog has already shown.'));
+      }
     }.bind(this));
   }.bind(this));
 };

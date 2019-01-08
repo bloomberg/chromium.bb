@@ -111,8 +111,9 @@ GearMenu.prototype.setSpaceInfo = function(
   }
 
   spaceInfoPromise.then(function(spaceInfo) {
-    if (this.spaceInfoPromise_ != spaceInfoPromise)
+    if (this.spaceInfoPromise_ != spaceInfoPromise) {
       return;
+    }
     this.volumeSpaceInnerBar_.removeAttribute('pending');
     if (spaceInfo) {
       var sizeStr = util.bytesToString(spaceInfo.remainingSize);

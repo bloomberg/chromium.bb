@@ -618,8 +618,9 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
  */
 importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
     function(event) {
-  if (!this.watchedDirectories_[event.entry.toURL()])
+  if (!this.watchedDirectories_[event.entry.toURL()]) {
     return;
+  }
   this.triggered = true;
   for (var url in this.watchedDirectories_) {
     window.webkitResolveLocalFileSystemURL(url, function(entry) {

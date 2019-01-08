@@ -67,8 +67,9 @@ function setUpPage() {
   let linksLoaded = 0;
 
   const onLinkLoaded = () => {
-    if (++linksLoaded < 2)
+    if (++linksLoaded < 2) {
       return;
+    }
     document.body.innerHTML += testPage.join('\n');
     window.waitUser = false;
   };

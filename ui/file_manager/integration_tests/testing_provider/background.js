@@ -33,19 +33,17 @@ chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
 
 chrome.fileSystemProvider.onMountRequested.addListener(mountFileSystem);
 
-chrome.fileSystemProvider.onUnmountRequested.addListener(
-    function(options, onSuccess, onError) {
-      chrome.fileSystemProvider.unmount(
-          {
-            fileSystemId: options.fileSystemId
-          },
-          function() {
-            if (chrome.runtime.lastError)
-              onError(chrome.runtime.lastError.message);
-            else
-              onSuccess();
-          });
-    });
+chrome.fileSystemProvider.onUnmountRequested.addListener(function(
+    options, onSuccess, onError) {
+  chrome.fileSystemProvider.unmount(
+      {fileSystemId: options.fileSystemId}, function() {
+        if (chrome.runtime.lastError) {
+          onError(chrome.runtime.lastError.message);
+        } else {
+          onSuccess();
+        }
+      });
+});
 
 chrome.fileSystemProvider.onGetActionsRequested.addListener(
     function(options, onSuccess, onError) {

@@ -83,8 +83,9 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   // Check if the window is opened or not.
   if (this.openingOrOpened_) {
     console.error('The window is already opened.');
-    if (opt_callback)
+    if (opt_callback) {
       opt_callback();
+    }
     return;
   }
   this.openingOrOpened_ = true;
@@ -134,24 +135,28 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   // Closure creating the window, once all preprocessing tasks are finished.
   this.queue.run(function(callback) {
     // Apply the last bounds.
-    if (lastBounds)
+    if (lastBounds) {
       this.options_.bounds = lastBounds;
+    }
 
     // Overwrite maximized state with remembered last window state.
-    if (isMaximized !== undefined)
+    if (isMaximized !== undefined) {
       this.options_.state = isMaximized ? 'maximized' : undefined;
+    }
 
     // Create a window.
     chrome.app.window.create(this.url_, this.options_, function(appWindow) {
       // Exit full screen state if it's created as a full screen window.
-      if (appWindow.isFullscreen())
+      if (appWindow.isFullscreen()) {
         appWindow.restore();
+      }
 
       // This is a temporary workaround for crbug.com/452737.
       // {state: 'maximized'} in CreateWindowOptions is ignored when a window is
       // launched with hidden option, so we maximize the window manually here.
-      if (this.options_.hidden && this.options_.state === 'maximized')
+      if (this.options_.hidden && this.options_.state === 'maximized') {
         appWindow.maximize();
+      }
       this.window_ = appWindow;
       callback();
     }.bind(this));
@@ -171,8 +176,9 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     var candidateBounds = this.window_.getBounds();
     while (true) {
       var key = makeBoundsKey(candidateBounds);
-      if (!notAvailablePositions[key])
+      if (!notAvailablePositions[key]) {
         break;
+      }
       // Make the position available to avoid an infinite loop.
       notAvailablePositions[key] = false;
       var nextLeft = candidateBounds.left + AppWindowWrapper.SHIFT_DISTANCE;
@@ -194,16 +200,18 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     contentWindow.appState = this.appState_;
     contentWindow.appReopen = reopen;
     contentWindow.appInitialURL = this.url_;
-    if (window.IN_TEST)
+    if (window.IN_TEST) {
       contentWindow.IN_TEST = true;
+    }
 
     // Register event listeners.
     appWindow.onBoundsChanged.addListener(this.onBoundsChanged_.bind(this));
     appWindow.onClosed.addListener(this.onClosed_.bind(this));
 
     // Callback.
-    if (opt_callback)
+    if (opt_callback) {
       opt_callback();
+    }
     callback();
   }.bind(this));
 };
@@ -221,8 +229,9 @@ AppWindowWrapper.prototype.onClosed_ = function() {
   // Unload the window.
   var appWindow = this.window_;
   var contentWindow = this.window_.contentWindow;
-  if (contentWindow.unload)
+  if (contentWindow.unload) {
     contentWindow.unload();
+  }
   this.window_ = null;
   this.openingOrOpened_ = false;
 
@@ -305,8 +314,9 @@ SingletonAppWindowWrapper.prototype.launch =
     } else {
       this.window_.contentWindow.reload();
     }
-    if (opt_callback)
+    if (opt_callback) {
       opt_callback();
+    }
     nextStep();
   }.bind(this));
 };

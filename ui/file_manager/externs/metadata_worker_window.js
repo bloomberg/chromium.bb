@@ -40,7 +40,7 @@ MetadataParserLogger.prototype.vlog = function(var_args) {};
  * @param {function(new:MetadataParser, !MetadataParserLogger)} parserClass
  *     Parser constructor function.
  */
-var registerParserClass = function(parserClass) {}
+var registerParserClass = function(parserClass) {};
 
 /**
  * @param {string} url

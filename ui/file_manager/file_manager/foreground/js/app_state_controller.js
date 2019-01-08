@@ -73,8 +73,9 @@ AppStateController.prototype.loadInitialViewOptions = function() {
   }.bind(this)).then(function(values) {
     this.viewOptions_ = {};
     var value = values[this.viewOptionStorageKey_];
-    if (!value)
+    if (!value) {
       return;
+    }
 
     // Load the global default options.
     try {
@@ -84,8 +85,9 @@ AppStateController.prototype.loadInitialViewOptions = function() {
     // Override with window-specific options.
     if (window.appState && window.appState.viewOptions) {
       for (var key in window.appState.viewOptions) {
-        if (window.appState.viewOptions.hasOwnProperty(key))
+        if (window.appState.viewOptions.hasOwnProperty(key)) {
           this.viewOptions_[key] = window.appState.viewOptions[key];
+        }
       }
     }
   }.bind(this)).catch(function(error) {
@@ -117,14 +119,17 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
   // Restore preferences.
   this.ui_.setCurrentListType(
       this.viewOptions_.listType || ListContainer.ListType.DETAIL);
-  if (this.viewOptions_.sortField)
+  if (this.viewOptions_.sortField) {
     this.fileListSortField_ = this.viewOptions_.sortField;
-  if (this.viewOptions_.sortDirection)
+  }
+  if (this.viewOptions_.sortDirection) {
     this.fileListSortDirection_ = this.viewOptions_.sortDirection;
+  }
   this.directoryModel_.getFileList().sort(
       this.fileListSortField_, this.fileListSortDirection_);
-  if (this.viewOptions_.isAllAndroidFoldersVisible)
+  if (this.viewOptions_.isAllAndroidFoldersVisible) {
     this.directoryModel_.getFileFilter().setAllAndroidFoldersVisible(true);
+  }
   if (this.viewOptions_.columnConfig) {
     this.ui_.listContainer.table.columnModel.restoreColumnConfig(
         this.viewOptions_.columnConfig);
@@ -149,9 +154,10 @@ AppStateController.prototype.saveViewOptions = function() {
   var items = {};
   items[this.viewOptionStorageKey_] = JSON.stringify(prefs);
   chrome.storage.local.set(items, function() {
-    if (chrome.runtime.lastError)
-      console.error('Failed to save view options: ' +
-          chrome.runtime.lastError.message);
+    if (chrome.runtime.lastError) {
+      console.error(
+          'Failed to save view options: ' + chrome.runtime.lastError.message);
+    }
   });
 
   // Save the window-specific preference.
@@ -166,8 +172,9 @@ AppStateController.prototype.saveViewOptions = function() {
  */
 AppStateController.prototype.onFileListSorted_ = function() {
   var currentDirectory = this.directoryModel_.getCurrentDirEntry();
-  if (!currentDirectory)
+  if (!currentDirectory) {
     return;
+  }
 
   // Update preferred sort field and direction only when the current directory
   // is not Recent folder.
@@ -197,8 +204,9 @@ AppStateController.prototype.onFileFilterChanged_ = function() {
  * @private
  */
 AppStateController.prototype.onDirectoryChanged_ = function(event) {
-  if (!event.newDirEntry)
+  if (!event.newDirEntry) {
     return;
+  }
 
   // Sort the file list by:
   // 1) 'date-mofidied' and 'desc' order on Recent folder.

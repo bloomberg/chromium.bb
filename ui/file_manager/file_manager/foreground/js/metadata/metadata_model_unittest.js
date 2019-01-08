@@ -83,8 +83,9 @@ var entryB = /** @type {!Entry} */ ({
  * @return {string}
  */
 function getProperty(result, property) {
-  if (!result)
+  if (!result) {
     throw new Error('Fail: Metadata result is undefined');
+  }
   return result[property];
 }
 

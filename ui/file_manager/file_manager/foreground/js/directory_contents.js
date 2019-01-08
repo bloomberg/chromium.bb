@@ -155,8 +155,9 @@ DriveSearchContentScanner.prototype.scan = function(
             entries = entries.slice(0, DriveSearchContentScanner.MAX_RESULTS_);
           }
 
-          if (entries.length > 0)
+          if (entries.length > 0) {
             entriesCallback(entries);
+          }
 
           successCallback();
         });
@@ -191,8 +192,9 @@ LocalSearchContentScanner.prototype.scan = function(
   util.readEntriesRecursively(assert(this.entry_), (entries) => {
     const matchEntries = entries.filter(
         entry => entry.name.toLowerCase().indexOf(this.query_) >= 0);
-    if (matchEntries.length > 0)
+    if (matchEntries.length > 0) {
       entriesCallback(matchEntries);
+    }
   }, successCallback, errorCallback, () => this.cancelled_);
 };
 
@@ -246,9 +248,12 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
           return;
         }
 
-        var entries = results.map(function(result) { return result.entry; });
-        if (entries.length > 0)
+        var entries = results.map(function(result) {
+          return result.entry;
+        });
+        if (entries.length > 0) {
           entriesCallback(entries);
+        }
         successCallback();
       }.bind(this));
 };
@@ -467,8 +472,9 @@ FileFilter.prototype.isHiddenFilesVisible = function() {
 FileFilter.prototype.setAllAndroidFoldersVisible = function(visible) {
   if (!visible) {
     this.addFilter('android_hidden', entry => {
-      if (entry.filesystem && entry.filesystem.name !== 'android_files')
+      if (entry.filesystem && entry.filesystem.name !== 'android_files') {
         return true;
+      }
       // If |entry| is an Android top-level folder which is not whitelisted or
       // its sub folder, it should be hidden.
       if (entry.fullPath) {
@@ -515,8 +521,9 @@ FileFilter.prototype.hideAndroidDownload = function() {
  */
 FileFilter.prototype.filter = function(entry) {
   for (var name in this.filters_) {
-    if (!this.filters_[name](entry))
+    if (!this.filters_[name](entry)) {
       return false;
+    }
   }
   return true;
 };
@@ -718,8 +725,9 @@ DirectoryContents.prototype.replaceContextFileList = function() {
         }
       }
 
-      if (updatedIndexes.length > 0)
+      if (updatedIndexes.length > 0) {
         this.fileList_.updateIndexes(updatedIndexes);
+      }
     }
   }
 };
@@ -824,16 +832,18 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
     }
   }
 
-  if (updatedIndexes.length > 0)
+  if (updatedIndexes.length > 0) {
     this.fileList_.updateIndexes(updatedIndexes);
+  }
 
   var addedList = [];
   for (var url in updatedMap) {
     addedList.push(updatedMap[url]);
   }
 
-  if (removedUrls.length > 0)
+  if (removedUrls.length > 0) {
     this.context_.metadataModel.notifyEntriesRemoved(removedUrls);
+  }
 
   this.prefetchMetadata(updatedList, true, function() {
     this.onNewEntries_(true, addedList);
@@ -846,11 +856,13 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
  * Cancels the running scan.
  */
 DirectoryContents.prototype.cancelScan = function() {
-  if (this.scanCancelled_)
+  if (this.scanCancelled_) {
     return;
+  }
   this.scanCancelled_ = true;
-  if (this.scanner_)
+  if (this.scanner_) {
     this.scanner_.cancel();
+  }
 
   this.onScanFinished_();
 
@@ -873,8 +885,9 @@ DirectoryContents.prototype.onScanFinished_ = function() {
  * @private
  */
 DirectoryContents.prototype.onScanCompleted_ = function() {
-  if (this.scanCancelled_)
+  if (this.scanCancelled_) {
     return;
+  }
 
   this.processNewEntriesQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
@@ -890,8 +903,9 @@ DirectoryContents.prototype.onScanCompleted_ = function() {
  * @private
  */
 DirectoryContents.prototype.onScanError_ = function(error) {
-  if (this.scanCancelled_)
+  if (this.scanCancelled_) {
     return;
+  }
 
   this.processNewEntriesQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
@@ -911,8 +925,9 @@ DirectoryContents.prototype.onScanError_ = function(error) {
  * @private
  */
 DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
-  if (this.scanCancelled_)
+  if (this.scanCancelled_) {
     return;
+  }
 
   // Caching URL to reduce a number of calls of toURL in sort.
   // This is a temporary solution. We need to fix a root cause of slow toURL.
@@ -921,8 +936,9 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
     entry['cachedUrl'] = entry.toURL();
   });
 
-  if (entries.length === 0)
+  if (entries.length === 0) {
     return;
+  }
 
   // Enlarge the cache size into the new filelist size.
   var newListSize = this.fileList_.length + entries.length;
@@ -937,8 +953,9 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
         // Just before inserting entries into the file list, check and avoid
         // duplication.
         var currentURLs = {};
-        for (var i = 0; i < this.fileList_.length; i++)
+        for (var i = 0; i < this.fileList_.length; i++) {
           currentURLs[this.fileList_.item(i).toURL()] = true;
+        }
         entriesFiltered = entriesFiltered.filter(function(entry) {
           return !currentURLs[entry.toURL()];
         });
@@ -954,15 +971,17 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
     var MAX_CHUNK_SIZE = 25;
     var prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
     for (var i = 0; i < entries.length; i += MAX_CHUNK_SIZE) {
-      if (prefetchMetadataQueue.isCancelled())
+      if (prefetchMetadataQueue.isCancelled()) {
         break;
+      }
 
       var chunk = entries.slice(i, i + MAX_CHUNK_SIZE);
       prefetchMetadataQueue.run(function(chunk, callbackInner) {
         this.prefetchMetadata(chunk, refresh, function() {
           if (!prefetchMetadataQueue.isCancelled()) {
-            if (this.scanCancelled_)
+            if (this.scanCancelled_) {
               prefetchMetadataQueue.cancel();
+            }
           }
 
           // Checks if this is the last task.
@@ -986,10 +1005,11 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
  *     one.
  * @param {function(Object)} callback Callback on done.
  */
-DirectoryContents.prototype.prefetchMetadata =
-    function(entries, refresh, callback) {
-  if (refresh)
+DirectoryContents.prototype.prefetchMetadata = function(
+    entries, refresh, callback) {
+  if (refresh) {
     this.context_.metadataModel.notifyEntriesChanged(entries);
+  }
   this.context_.metadataModel.get(
       entries, this.context_.prefetchPropertyNames).then(callback);
 };

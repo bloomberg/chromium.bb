@@ -15,8 +15,9 @@ async function openQuickView(appId, name) {
 
   function checkQuickViewElementsDisplayBlock(elements) {
     const haveElements = Array.isArray(elements) && elements.length !== 0;
-    if (!haveElements || elements[0].styles.display !== 'block')
+    if (!haveElements || elements[0].styles.display !== 'block') {
       return pending(caller, 'Waiting for Quick View to open.');
+    }
     return;
   }
 
@@ -51,8 +52,9 @@ async function closeQuickView(appId) {
 
   function checkQuickViewElementsDisplayNone(elements) {
     chrome.test.assertTrue(Array.isArray(elements));
-    if (elements.length > 0 && elements[0].styles.display !== 'none')
+    if (elements.length > 0 && elements[0].styles.display !== 'none') {
       return pending(caller, 'Waiting for Quick View to close.');
+    }
     return;
   }
 
@@ -286,10 +288,12 @@ testcase.openQuickViewScrollText = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || !elements[0].attributes.src)
+    }
+    if (!haveElements || !elements[0].attributes.src) {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -336,10 +340,12 @@ testcase.openQuickViewBackgroundColorText = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || !elements[0].attributes.src)
+    }
+    if (!haveElements || !elements[0].attributes.src) {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -379,10 +385,12 @@ testcase.openQuickViewPdf = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewPdfLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || !elements[0].attributes.src)
+    }
+    if (!haveElements || !elements[0].attributes.src) {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -393,8 +401,9 @@ testcase.openQuickViewPdf = async function() {
   // Get the <webview> embed type attribute.
   function checkPdfEmbedType(type) {
     let haveElements = Array.isArray(type) && type.length === 1;
-    if (!haveElements || !type[0].toString().includes('pdf'))
+    if (!haveElements || !type[0].toString().includes('pdf')) {
       return pending(caller, 'Waiting for plugin <embed> type.');
+    }
     return type[0];
   }
   const type = await repeatUntil(async () => {
@@ -444,10 +453,12 @@ testcase.openQuickViewScrollHtml = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewHtmlLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || elements[0].attributes.loaded !== '')
+    }
+    if (!haveElements || elements[0].attributes.loaded !== '') {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -496,10 +507,12 @@ testcase.openQuickViewBackgroundColorHtml = async function() {
   // Get the <files-safe-media type='html'> backgroundColor style.
   function getFileSafeMediaBackgroundColor(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || !elements[0].styles.backgroundColor)
+    }
+    if (!haveElements || !elements[0].styles.backgroundColor) {
       return pending(caller, 'Waiting for <file-safe-media> element.');
+    }
     return elements[0].styles.backgroundColor;
   }
   const backgroundColor = await repeatUntil(async () => {
@@ -534,10 +547,12 @@ testcase.openQuickViewAudio = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewAudioLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || elements[0].attributes.loaded !== '')
+    }
+    if (!haveElements || elements[0].attributes.loaded !== '') {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -577,10 +592,12 @@ testcase.openQuickViewImage = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || elements[0].attributes.loaded !== '')
+    }
+    if (!haveElements || elements[0].attributes.loaded !== '') {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {
@@ -620,10 +637,12 @@ testcase.openQuickViewVideo = async function() {
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewVideoLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
-    if (haveElements)
+    if (haveElements) {
       haveElements = elements[0].styles.display.includes('block');
-    if (!haveElements || elements[0].attributes.loaded !== '')
+    }
+    if (!haveElements || elements[0].attributes.loaded !== '') {
       return pending(caller, 'Waiting for <webview> to load.');
+    }
     return;
   }
   await repeatUntil(async () => {

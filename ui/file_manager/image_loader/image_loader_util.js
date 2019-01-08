@@ -17,16 +17,19 @@ ImageLoaderUtil.shouldProcess = function(width, height, request) {
       ImageLoaderUtil.resizeDimensions(width, height, request);
 
   // Dimensions has to be adjusted.
-  if (targetDimensions.width != width || targetDimensions.height != height)
+  if (targetDimensions.width != width || targetDimensions.height != height) {
     return true;
+  }
 
   // Orientation has to be adjusted.
-  if (!request.orientation.isIdentity())
+  if (!request.orientation.isIdentity()) {
     return true;
+  }
 
   // Non-standard color space has to be converted.
-  if (request.colorSpace && request.colorSpace !== ColorSpace.SRGB)
+  if (request.colorSpace && request.colorSpace !== ColorSpace.SRGB) {
     return true;
+  }
 
   // No changes required.
   return false;
@@ -63,11 +66,13 @@ ImageLoaderUtil.resizeDimensions = function(width, height, request) {
     targetHeight *= scale;
   }
 
-  if (request.width)
+  if (request.width) {
     targetWidth = request.width;
+  }
 
-  if (request.height)
+  if (request.height) {
     targetHeight = request.height;
+  }
 
   targetWidth = Math.round(targetWidth);
   targetHeight = Math.round(targetHeight);
@@ -198,8 +203,9 @@ ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD = [
  * @param {ColorSpace} colorSpace Current color space.
  */
 ImageLoaderUtil.convertColorSpace = function(target, colorSpace) {
-  if (colorSpace === ColorSpace.SRGB)
+  if (colorSpace === ColorSpace.SRGB) {
     return;
+  }
   if (colorSpace === ColorSpace.ADOBE_RGB) {
     const matrix = ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD;
     let context =

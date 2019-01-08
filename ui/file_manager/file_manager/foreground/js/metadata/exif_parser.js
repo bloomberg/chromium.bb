@@ -86,8 +86,9 @@ ExifParser.prototype.parseSlice = function(
     if (filePos === 0) {
       // First slice, check for the SOI mark.
       var firstMark = this.readMark(br);
-      if (firstMark !== Exif.Mark.SOI)
+      if (firstMark !== Exif.Mark.SOI) {
         throw new Error('Invalid file header: ' + firstMark.toString(16));
+      }
     }
 
     var self = this;
@@ -109,8 +110,9 @@ ExifParser.prototype.parseSlice = function(
       }
 
       var mark = this.readMark(br);
-      if (mark === Exif.Mark.SOS)
+      if (mark === Exif.Mark.SOS) {
         throw new Error('SOS marker found before SOF');
+      }
 
       var markLength = this.readMarkLength(br);
 
@@ -349,8 +351,9 @@ ExifParser.prototype.readTagValue = function(br, tag) {
     } else {
       // Read multiple components into an array.
       tag.value = [];
-      for (var i = 0; i < tag.componentCount; i++)
+      for (var i = 0; i < tag.componentCount; i++) {
         tag.value[i] = readFunction(size);
+      }
     }
 
     if (totalSize > 4) {

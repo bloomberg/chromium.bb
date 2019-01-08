@@ -158,8 +158,9 @@ Polymer({
       if (currentTrack && currentTrack.url != this.$.audio.src) {
         this.$.audio.src = currentTrack.url;
         currentTrackUrl = this.$.audio.src;
-        if (this.playing)
+        if (this.playing) {
           this.$.audio.play();
+        }
       }
     }
 
@@ -245,10 +246,12 @@ Polymer({
   onAudioStatusUpdate_: function() {
     this.playing = !this.$.audio.paused;
     // If we're paused due to drag, do not update time.
-    if (this.playing)
+    if (this.playing) {
       this.time = this.$.audio.currentTime * 1000;
-    if (!Number.isNaN(this.$.audio.duration))
+    }
+    if (!Number.isNaN(this.$.audio.duration)) {
       this.duration = this.$.audio.duration * 1000;
+    }
   },
 
   /**
@@ -319,15 +322,17 @@ Polymer({
     var timerId = setTimeout(
         function() {
           // If the other timer is scheduled, do nothing.
-          if (this.autoAdvanceTimer_ !== timerId)
+          if (this.autoAdvanceTimer_ !== timerId) {
             return;
+          }
 
           this.autoAdvanceTimer_ = null;
 
           // If the track has been changed since the advance was scheduled, do
           // nothing.
-          if (this.currentTrackIndex !== currentTrackIndex)
+          if (this.currentTrackIndex !== currentTrackIndex) {
             return;
+          }
 
           // We are advancing only if the next track is not known to be invalid.
           // This prevents an endless auto-advancing in the case when all tracks
@@ -362,8 +367,9 @@ Polymer({
     return this.$.trackList ? this.$.trackList.tracks : null;
   },
   set tracks(tracks) {
-    if (this.$.trackList.tracks === tracks)
+    if (this.$.trackList.tracks === tracks) {
       return;
+    }
 
     this.cancelAutoAdvance_();
 
@@ -381,8 +387,9 @@ Polymer({
    * @param {number} index The index of the track whose metadata is updated.
    */
   notifyTrackMetadataUpdated: function(index) {
-    if (index < 0 || index >= this.tracks.length)
+    if (index < 0 || index >= this.tracks.length) {
       return;
+    }
 
     this.$.trackList.notifyPath('tracks.' + index + '.title',
         this.tracks[index].title);
@@ -433,8 +440,9 @@ Polymer({
   /** @private */
   onTimeChanged_: function() {
     const newTime = this.time / 1000;
-    if (this.$.audio.currentTime != newTime)
+    if (this.$.audio.currentTime != newTime) {
       this.$.audio.currentTime = newTime;
+    }
   },
 
   /**

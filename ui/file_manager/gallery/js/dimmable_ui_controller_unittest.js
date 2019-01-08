@@ -36,5 +36,5 @@ function testShouldBeDisabled() {
   // Disabled when user is renaming an image.
   assertTrue(DimmableUIController.shouldBeDisabled(
       GalleryMode.SLIDE, GallerySubMode.BROWSE, false /* loading */,
-      false /* spokenFeedbackEnabled */, true /* renaming */))
+      false /* spokenFeedbackEnabled */, true /* renaming */));
 }

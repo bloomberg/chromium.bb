@@ -33,8 +33,9 @@ FileGrid.prototype = {
   set dataModel(model) {
     // The setter for dataModel is overridden to remove/add the 'splice'
     // listener for the current data model.
-    if (this.dataModel)
+    if (this.dataModel) {
       this.dataModel.removeEventListener('splice', this.onSplice_.bind(this));
+    }
     this.dataModelDescriptor_.set.call(this, model);
     if (this.dataModel) {
       this.dataModel.addEventListener('splice', this.onSplice_.bind(this));
@@ -225,8 +226,9 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
         this.insertBefore(spacer, next);
         item = next;
       }
-    } else
+    } else {
       item = next;
+    }
   }
 
   function isSpacer(child) {
@@ -239,26 +241,30 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
   // from being animated unintentionally by redraw.
   for (var i = beginIndex; i < endIndex; i++) {
     var item = this.getListItemByIndex(i);
-    if (!item)
+    if (!item) {
       continue;
+    }
     var isSelected = this.selectionModel.getIndexSelected(i);
-    if (item.selected != isSelected)
+    if (item.selected != isSelected) {
       item.selected = isSelected;
+    }
   }
 
   // Keep these values to set range when a new list thumbnail loader is set.
   this.beginIndex_ = beginIndex;
   this.endIndex_ = endIndex;
-  if (this.listThumbnailLoader_ !== null)
+  if (this.listThumbnailLoader_ !== null) {
     this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
+  }
 };
 
 /**
  * @override
  */
 FileGrid.prototype.getItemTop = function(index) {
-  if (index < this.dataModel.getFolderCount())
+  if (index < this.dataModel.getFolderCount()) {
     return Math.floor(index / this.columns) * this.getFolderItemHeight_();
+  }
 
   var folderRows = this.getFolderRowCount();
   var indexInFiles = index - this.dataModel.getFolderCount();
@@ -271,8 +277,9 @@ FileGrid.prototype.getItemTop = function(index) {
  * @override
  */
 FileGrid.prototype.getItemRow = function(index) {
-  if (index < this.dataModel.getFolderCount())
+  if (index < this.dataModel.getFolderCount()) {
     return Math.floor(index / this.columns);
+  }
 
   var folderRows = this.getFolderRowCount();
   var indexInFiles = index - this.dataModel.getFolderCount();
@@ -284,8 +291,9 @@ FileGrid.prototype.getItemRow = function(index) {
  * @param {number} index The item index.
  */
 FileGrid.prototype.getItemColumn = function(index) {
-  if (index < this.dataModel.getFolderCount())
+  if (index < this.dataModel.getFolderCount()) {
     return index % this.columns;
+  }
 
   var indexInFiles = index - this.dataModel.getFolderCount();
   return indexInFiles % this.columns;
@@ -298,8 +306,9 @@ FileGrid.prototype.getItemColumn = function(index) {
  * @param {number} column The column index.
  */
 FileGrid.prototype.getItemIndex = function(row, column) {
-  if (row < 0 || column < 0 || column >= this.columns)
+  if (row < 0 || column < 0 || column >= this.columns) {
     return -1;
+  }
   var folderCount = this.dataModel.getFolderCount();
   var folderRows = this.getFolderRowCount();
   if (row < folderRows) {
@@ -315,8 +324,9 @@ FileGrid.prototype.getItemIndex = function(row, column) {
  */
 FileGrid.prototype.getFirstItemInRow = function(row) {
   var folderRows = this.getFolderRowCount();
-  if (row < folderRows)
+  if (row < folderRows) {
     return row * this.columns;
+  }
 
   return this.dataModel.getFolderCount() + (row - folderRows) * this.columns;
 };
@@ -326,8 +336,9 @@ FileGrid.prototype.getFirstItemInRow = function(row) {
  */
 FileGrid.prototype.scrollIndexIntoView = function(index) {
   var dataModel = this.dataModel;
-  if (!dataModel || index < 0 || index >= dataModel.length)
+  if (!dataModel || index < 0 || index >= dataModel.length) {
     return;
+  }
 
   var itemHeight = index < this.dataModel.getFolderCount() ?
       this.getFolderItemHeight_() : this.getFileItemHeight_();
@@ -352,15 +363,17 @@ FileGrid.prototype.scrollIndexIntoView = function(index) {
 
   // Check if the entire of given indexed row can be shown in the viewport.
   if (itemHeight <= availableHeight) {
-    if (top < scrollTop)
+    if (top < scrollTop) {
       scrollToAdjustTop();
-    else if (scrollTop + availableHeight < top + itemHeight)
+    } else if (scrollTop + availableHeight < top + itemHeight) {
       scrollToAdjustBottom();
+    }
   } else {
-    if (scrollTop < top)
+    if (scrollTop < top) {
       scrollToAdjustTop();
-    else if (top + itemHeight < scrollTop + availableHeight)
+    } else if (top + itemHeight < scrollTop + availableHeight) {
       scrollToAdjustBottom();
+    }
   }
 };
 
@@ -391,8 +404,9 @@ FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
   if (row < folderRows) {
     var fillerHeight = (folderRows - 1 - row) * this.getFolderItemHeight_() +
                        fileRows * this.getFileItemHeight_();
-    if (fileRows > 0)
+    if (fileRows > 0) {
       fillerHeight += this.getSeparatorHeight_();
+    }
     return fillerHeight;
   }
   var rowInFiles = row - folderRows;
@@ -472,12 +486,14 @@ FileGrid.prototype.getSeparatorHeight_ = function() {
 FileGrid.prototype.getRowForListOffset_ = function(offset) {
   var innerOffset = Math.max(0, offset - this.paddingTop_);
   var folderRows = this.getFolderRowCount();
-  if (innerOffset < folderRows * this.getFolderItemHeight_())
+  if (innerOffset < folderRows * this.getFolderItemHeight_()) {
     return Math.floor(innerOffset / this.getFolderItemHeight_());
+  }
 
   var offsetInFiles = innerOffset - folderRows * this.getFolderItemHeight_();
-  if (folderRows > 0)
+  if (folderRows > 0) {
     offsetInFiles = Math.max(0, offsetInFiles - this.getSeparatorHeight_());
+  }
   return folderRows + Math.floor(offsetInFiles / this.getFileItemHeight_());
 };
 
@@ -501,8 +517,9 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     var box = boxes[i];
     var listItem = this.getListItemAncestor(box);
     var entry = listItem && this.dataModel.item(listItem.listIndex);
-    if (!entry || urls.indexOf(entry.toURL()) === -1)
+    if (!entry || urls.indexOf(entry.toURL()) === -1) {
       continue;
+    }
 
     this.decorateThumbnailBox_(assert(listItem), entry);
     this.updateSharedStatus_(assert(listItem), entry);
@@ -536,8 +553,9 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  */
 FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   li.className = 'thumbnail-item';
-  if (entry)
+  if (entry) {
     filelist.decorateListItem(li, entry, this.metadataModel_);
+  }
 
   var frame = li.ownerDocument.createElement('div');
   frame.className = 'thumbnail-frame';
@@ -546,8 +564,9 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   var box = li.ownerDocument.createElement('div');
   box.className = 'img-container';
   frame.appendChild(box);
-  if (entry)
+  if (entry) {
     this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
+  }
 
   var shield = li.ownerDocument.createElement('div');
   shield.className = 'shield';
@@ -645,16 +664,19 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
  * @private
  */
 FileGrid.prototype.updateSharedStatus_ = function(li, entry) {
-  if (!entry.isDirectory)
+  if (!entry.isDirectory) {
     return;
+  }
 
   var shared = !!this.metadataModel_.getCache([entry], ['shared'])[0].shared;
   var box = li.querySelector('.img-container');
-  if (box)
+  if (box) {
     box.classList.toggle('shared', shared);
+  }
   var icon = li.querySelector('.detail-icon');
-  if (icon)
+  if (icon) {
     icon.classList.toggle('shared', shared);
+  }
 };
 
 /**
@@ -705,8 +727,9 @@ FileGrid.setThumbnailImage_ = function(
   // it to cover the thumbnail box.
   var type = FileType.getType(entry, opt_mimeType);
   if ((type.type === 'image' && type.subtype === 'JPEG') ||
-      width > FileGrid.GridSize || height > FileGrid.GridSize)
+      width > FileGrid.GridSize || height > FileGrid.GridSize) {
     thumbnail.style.backgroundSize = 'cover';
+  }
 
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
   thumbnail.addEventListener('animationend', function() {
@@ -715,12 +738,14 @@ FileGrid.setThumbnailImage_ = function(
     thumbnail.classList.remove('animate');
 
     for (var i = 0; i < oldThumbnails.length; i++) {
-      if (box.contains(oldThumbnails[i]))
+      if (box.contains(oldThumbnails[i])) {
         box.removeChild(oldThumbnails[i]);
+      }
     }
   });
-  if (shouldAnimate)
+  if (shouldAnimate) {
     thumbnail.classList.add('animate');
+  }
   box.appendChild(thumbnail);
 };
 
@@ -871,8 +896,9 @@ FileGrid.prototype.getHitRowIndex_ = function(y, reverse) {
     return Math.floor((y + shift) / folderHeight);
   }
   var yInFiles = y - folderHeight * folderRows;
-  if (folderRows > 0)
+  if (folderRows > 0) {
     yInFiles = Math.max(0, yInFiles - this.getSeparatorHeight_());
+  }
   var shift = reverse ? -this.getItemMarginTop_() : 0;
   return folderRows + Math.floor((yInFiles + shift) / fileHeight);
 };
@@ -923,8 +949,9 @@ FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   for (var row = firstRow; row <= lastRow; row++) {
     for (var col = firstColumn; col <= lastColumn; col++) {
       var index = this.getItemIndex(row, col);
-      if (0 <= index && index < this.dataModel.length)
+      if (0 <= index && index < this.dataModel.length) {
         currentSelection.push(index);
+      }
     }
   }
   return currentSelection;
@@ -969,11 +996,13 @@ FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
 
 /** @override */
 FileGridSelectionController.prototype.handleTouchEvents = function(e, index) {
-  if (!this.enableTouchMode_)
+  if (!this.enableTouchMode_) {
     return;
+  }
   if (this.tapHandler_.handleTouchEvents(
-          e, index, filelist.handleTap.bind(this)))
+          e, index, filelist.handleTap.bind(this))) {
     filelist.focusParentList(e);
+  }
 };
 
 /** @override */
@@ -983,10 +1012,12 @@ FileGridSelectionController.prototype.handleKeyDown = function(e) {
 
 /** @override */
 FileGridSelectionController.prototype.getIndexBelow = function(index) {
-  if (this.isAccessibilityEnabled())
+  if (this.isAccessibilityEnabled()) {
     return this.getIndexAfter(index);
-  if (index === this.getLastIndex())
+  }
+  if (index === this.getLastIndex()) {
     return -1;
+  }
 
   var grid = /** @type {!FileGrid} */ (this.grid_);
   var row = grid.getItemRow(index);
@@ -1002,15 +1033,18 @@ FileGridSelectionController.prototype.getIndexBelow = function(index) {
 
 /** @override */
 FileGridSelectionController.prototype.getIndexAbove = function(index) {
-  if (this.isAccessibilityEnabled())
+  if (this.isAccessibilityEnabled()) {
     return this.getIndexBefore(index);
-  if (index == 0)
+  }
+  if (index == 0) {
     return -1;
+  }
 
   var grid = /** @type {!FileGrid} */ (this.grid_);
   var row = grid.getItemRow(index);
-  if (row - 1 < 0)
+  if (row - 1 < 0) {
     return 0;
+  }
   var col = grid.getItemColumn(index);
   var nextIndex = grid.getItemIndex(row - 1, col);
   if (nextIndex === -1) {

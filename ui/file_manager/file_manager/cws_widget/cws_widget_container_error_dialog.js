@@ -53,6 +53,7 @@ CWSWidgetContainerErrorDialog.prototype.initDom_ = function() {
  * @private
  */
 CWSWidgetContainerErrorDialog.prototype.refocusOkButton_ = function() {
-  if (this.shown())
+  if (this.shown()) {
     this.okButton_.focus();
+  }
 };

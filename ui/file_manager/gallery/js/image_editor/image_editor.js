@@ -212,8 +212,9 @@ ImageEditor.prototype.calculateModeApplicativity_ = function() {
  */
 ImageEditor.prototype.openSession = function(
     item, effect, saveFunction, displayCallback, loadCallback) {
-  if (this.commandQueue_)
+  if (this.commandQueue_) {
     throw new Error('Session not closed');
+  }
 
   this.lockUI(true);
 
@@ -273,8 +274,9 @@ ImageEditor.prototype.executeWhenReady = function(callback) {
     this.leaveMode(false /* not to switch mode */);
     this.commandQueue_.executeWhenReady(callback);
   } else {
-    if (!this.imageView_.isLoading())
+    if (!this.imageView_.isLoading()) {
       console.warn('Inconsistent image editor state');
+    }
     callback();
   }
 };
@@ -340,22 +342,30 @@ ImageEditor.prototype.getImage = function() {
 /**
  * @return {!ImageBuffer} ImageBuffer instance.
  */
-ImageEditor.prototype.getBuffer = function() { return this.buffer_; };
+ImageEditor.prototype.getBuffer = function() {
+  return this.buffer_;
+};
 
 /**
  * @return {!ImageView} ImageView instance.
  */
-ImageEditor.prototype.getImageView = function() { return this.imageView_; };
+ImageEditor.prototype.getImageView = function() {
+  return this.imageView_;
+};
 
 /**
  * @return {!Viewport} Viewport instance.
  */
-ImageEditor.prototype.getViewport = function() { return this.viewport_; };
+ImageEditor.prototype.getViewport = function() {
+  return this.viewport_;
+};
 
 /**
  * @return {!ImageEditorPrompt} Prompt instance.
  */
-ImageEditor.prototype.getPrompt = function() { return this.prompt_; };
+ImageEditor.prototype.getPrompt = function() {
+  return this.prompt_;
+};
 
 /**
  * Handle the toolbar controls update.
@@ -381,7 +391,9 @@ ImageEditor.prototype.registerAction_ = function(name) {
 /**
  * @return {ImageEditorMode} The current mode.
  */
-ImageEditor.prototype.getMode = function() { return this.currentMode_; };
+ImageEditor.prototype.getMode = function() {
+  return this.currentMode_;
+};
 
 /**
  * The user clicked on the mode button.
@@ -399,8 +411,9 @@ ImageEditor.prototype.enterMode = function(mode) {
   }
 
   // Guard not to call setUpMode_ more than once.
-  if (this.settingUpNextMode_)
+  if (this.settingUpNextMode_) {
     return;
+  }
   this.settingUpNextMode_ = true;
 
   this.recordToolUse(mode.name);
@@ -488,8 +501,9 @@ ImageEditor.prototype.onCancelClicked_ = function(event) {
  * @private
  */
 ImageEditor.prototype.leaveModeInternal_ = function(commit, leaveToSwitchMode) {
-  if (!this.currentMode_)
+  if (!this.currentMode_) {
     return;
+  }
 
   // If the current mode is 'Resize', and commit is required,
   // leaving mode should be stopped when an input value is not valid.
@@ -527,8 +541,9 @@ ImageEditor.prototype.leaveModeInternal_ = function(commit, leaveToSwitchMode) {
 
   var filesToggleRipple =
       this.currentTool_.querySelector('files-toggle-ripple');
-  if (filesToggleRipple)
+  if (filesToggleRipple) {
     filesToggleRipple.activated = false;
+  }
 
   this.exitButton_.hidden = false;
 
@@ -558,8 +573,9 @@ ImageEditor.prototype.enterModeByName_ = function(name) {
   for (var i = 0; i !== this.modes_.length; i++) {
     var mode = this.modes_[i];
     if (mode.name === name) {
-      if (!mode.button_.hasAttribute('disabled'))
+      if (!mode.button_.hasAttribute('disabled')) {
         this.enterMode(mode);
+      }
       return;
     }
   }
@@ -572,8 +588,9 @@ ImageEditor.prototype.enterModeByName_ = function(name) {
  * @return {boolean} True if handled.
  */
 ImageEditor.prototype.onKeyDown = function(event) {
-  if (this.currentMode_ && this.currentMode_.isConsumingKeyEvents())
+  if (this.currentMode_ && this.currentMode_.isConsumingKeyEvents()) {
     return false;
+  }
 
   switch (util.getKeyModifiers(event) + event.key) {
     case 'Escape':
@@ -631,10 +648,11 @@ ImageEditor.prototype.onKeyDown = function(event) {
 ImageEditor.prototype.onDoubleTap_ = function(x, y) {
   if (this.getMode()) {
     var action = this.buffer_.getDoubleTapAction(x, y);
-    if (action === ImageBuffer.DoubleTapAction.COMMIT)
+    if (action === ImageBuffer.DoubleTapAction.COMMIT) {
       this.leaveModeInternal_(true, false /* not to switch mode */);
-    else if (action === ImageBuffer.DoubleTapAction.CANCEL)
+    } else if (action === ImageBuffer.DoubleTapAction.CANCEL) {
       this.leaveModeInternal_(false, false /* not to switch mode */);
+    }
   }
 };
 
@@ -753,10 +771,11 @@ ImageEditor.MouseControl.getPosition_ = function(e) {
  * @private
  */
 ImageEditor.MouseControl.prototype.getTouchPosition_ = function(e) {
-  if (e.targetTouches.length == 1)
+  if (e.targetTouches.length == 1) {
     return ImageEditor.MouseControl.getPosition_(e.targetTouches[0]);
-  else
+  } else {
     return null;
+  }
 };
 
 /**
@@ -838,8 +857,9 @@ ImageEditor.MouseControl.prototype.onTouchCancel = function() {
  */
 ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
   var position = this.getTouchPosition_(e);
-  if (!position)
+  if (!position) {
     return;
+  }
 
   if (this.touchStartInfo_ && !this.dragHappened_) {
     var tapCircle = new Circle(
@@ -922,6 +942,7 @@ ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
   var oldCursor = this.container_.getAttribute('cursor');
   var newCursor = this.buffer_.getCursorStyle(
       position.x, position.y, !!this.dragHandler_);
-  if (newCursor != oldCursor)  // Avoid flicker.
+  if (newCursor != oldCursor) {  // Avoid flicker.
     this.container_.setAttribute('cursor', newCursor);
+  }
 };

@@ -125,8 +125,9 @@ function ListContainer(element, table, grid) {
       'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
   util.isTouchModeEnabled().then(function(enabled) {
-    if (!enabled)
+    if (!enabled) {
       return;
+    }
     this.disableContextMenuByLongTapDuringCheckSelect_();
   }.bind(this));
 }
@@ -390,8 +391,9 @@ ListContainer.prototype.onKeyPress_ = function(event) {
   this.textSearchState.text = text + character;
   this.textSearchState.date = now;
 
-  if (this.textSearchState.text)
+  if (this.textSearchState.text) {
     cr.dispatchSimpleEvent(this.element, ListContainer.EventType.TEXT_SEARCH);
+  }
 };
 
 /**

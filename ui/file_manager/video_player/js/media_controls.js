@@ -241,8 +241,9 @@ MediaControls.prototype.createButton = function(
 
   button.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
 
-  if (opt_handler)
+  if (opt_handler) {
     button.addEventListener('click', opt_handler);
+  }
 
   return button;
 };
@@ -257,10 +258,11 @@ MediaControls.prototype.enableControls_ = function(on) {
   var controls = this.container_.querySelectorAll('.media-control');
   for (var i = 0; i != controls.length; i++) {
     var classList = controls[i].classList;
-    if (on)
+    if (on) {
       classList.remove('disabled');
-    else
+    } else {
       classList.add('disabled');
+    }
   }
   this.progressSlider_.disabled = !on;
   this.volume_.disabled = !on;
@@ -274,8 +276,9 @@ MediaControls.prototype.enableControls_ = function(on) {
  * Play the media.
  */
 MediaControls.prototype.play = function() {
-  if (!this.media_)
-    return;  // Media is detached.
+  if (!this.media_) {
+    return;
+  }  // Media is detached.
 
   this.media_.play();
 };
@@ -284,8 +287,9 @@ MediaControls.prototype.play = function() {
  * Pause the media.
  */
 MediaControls.prototype.pause = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;  // Media is detached.
+  }
 
   this.media_.pause();
 };
@@ -301,10 +305,11 @@ MediaControls.prototype.isPlaying = function() {
  * Toggle play/pause.
  */
 MediaControls.prototype.togglePlayState = function() {
-  if (this.isPlaying())
+  if (this.isPlaying()) {
     this.pause();
-  else
+  } else {
     this.play();
+  }
 };
 
 /**
@@ -402,8 +407,9 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
 
 /** @private */
 MediaControls.prototype.updateTimeFromSlider_ = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;  // Media is detached.
+  }
 
   if (this.media_.duration && this.progressSlider_.max > 0) {
     this.media_.currentTime =
@@ -413,8 +419,9 @@ MediaControls.prototype.updateTimeFromSlider_ = function() {
 
 /** @private */
 MediaControls.prototype.onProgressChange_ = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;  // Media is detached.
+  }
 
   if (!this.media_.seekable || !this.media_.duration) {
     console.error('Inconsistent media state');
@@ -422,8 +429,9 @@ MediaControls.prototype.onProgressChange_ = function() {
   }
 
   // Re-start playing the video when the seek bar is moved from ending point.
-  if (this.media_.ended)
+  if (this.media_.ended) {
     this.play();
+  }
 
   if (this.media_.duration && this.progressSlider_.max > 0) {
     this.updateTimeLabel_(
@@ -456,8 +464,9 @@ MediaControls.prototype.smallSkip = function(forward) {
   var secondsToSkip = Math.min(
       MediaControls.PROGRESS_MAX_SECONDS_TO_SMALL_SKIP,
       this.media_.duration * MediaControls.PROGRESS_MAX_RATIO_TO_SMALL_SKIP);
-  if (!forward)
+  if (!forward) {
     secondsToSkip *= -1;
+  }
   this.skip_(secondsToSkip);
 };
 
@@ -469,8 +478,9 @@ MediaControls.prototype.bigSkip = function(forward) {
   var secondsToSkip = Math.min(
       MediaControls.PROGRESS_MAX_SECONDS_TO_BIG_SKIP,
       this.media_.duration * MediaControls.PROGRESS_MAX_RATIO_TO_BIG_SKIP);
-  if (!forward)
+  if (!forward) {
     secondsToSkip *= -1;
+  }
   this.skip_(secondsToSkip);
 };
 
@@ -481,8 +491,9 @@ MediaControls.prototype.bigSkip = function(forward) {
  * @private
  */
 MediaControls.prototype.setSeeking_ = function(seeking) {
-  if (seeking === this.seeking_)
+  if (seeking === this.seeking_) {
     return;
+  }
 
   this.seeking_ = seeking;
 
@@ -491,10 +502,11 @@ MediaControls.prototype.setSeeking_ = function(seeking) {
     this.media_.pause(true /* seeking */);
   } else {
     if (this.resumeAfterDrag_) {
-      if (this.media_.ended)
+      if (this.media_.ended) {
         this.onMediaPlay_(false);
-      else
+      } else {
         this.media_.play(true /* seeking */);
+      }
     }
     this.resumeAfterDrag_ = false;
   }
@@ -519,13 +531,16 @@ MediaControls.prototype.onTimeLabelClick_ = function(event) {
  */
 MediaControls.prototype.updateTimeLabel_ = function(current, opt_duration) {
   var duration = opt_duration;
-  if (duration === undefined)
+  if (duration === undefined) {
     duration = this.media_ ? this.media_.duration : 0;
+  }
   // media's duration and currentTime can be NaN. Default to 0.
-  if (isNaN(duration))
+  if (isNaN(duration)) {
     duration = 0;
-  if (isNaN(current))
+  }
+  if (isNaN(current)) {
     current = 0;
+  }
 
   if (isFinite(duration)) {
     this.currentTime_.textContent =
@@ -644,8 +659,9 @@ MediaControls.prototype.reflectVolumeToUi_ = function() {
  * @private
  */
 MediaControls.prototype.onVolumeChange_ = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;  // Media is detached.
+  }
 
   this.volumeModel_.onVolumeChanged(this.volume_.getRatio());
   this.saveVolumeControlState();
@@ -755,8 +771,9 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
  * Detach media event handlers.
  */
 MediaControls.prototype.detachMedia = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;
+  }
 
   this.media_.removeEventListener('play', this.onMediaPlayBound_);
   this.media_.removeEventListener('pause', this.onMediaPauseBound_);
@@ -774,8 +791,9 @@ MediaControls.prototype.detachMedia = function() {
  * but we want the media pipeline to deinitialize ASAP to minimize leakage.
  */
 MediaControls.prototype.cleanup = function() {
-  if (!this.media_)
+  if (!this.media_) {
     return;
+  }
 
   this.media_.src = '';
   this.media_.load();
@@ -788,8 +806,9 @@ MediaControls.prototype.cleanup = function() {
  * @private
  */
 MediaControls.prototype.onMediaPlay_ = function(playing) {
-  if (this.progressSlider_.dragging)
+  if (this.progressSlider_.dragging) {
     return;
+  }
 
   this.updatePlayButtonState_(playing);
   this.onPlayStateChanged();
@@ -807,15 +826,17 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   this.enableControls_(true);
 
-  if (this.media_.seekable)
+  if (this.media_.seekable) {
     this.progressSlider_.classList.remove('readonly');
-  else
+  } else {
     this.progressSlider_.classList.add('readonly');
+  }
 
   this.updateTimeLabel_(this.media_.currentTime, this.media_.duration);
 
-  if (this.media_.seekable)
+  if (this.media_.seekable) {
     this.restorePlayState();
+  }
 };
 
 /**
@@ -831,8 +852,9 @@ MediaControls.prototype.onMediaProgress_ = function() {
   var current = this.media_.currentTime;
   var duration = this.media_.duration;
 
-  if (this.progressSlider_.dragging)
+  if (this.progressSlider_.dragging) {
     return;
+  }
 
   this.displayProgress_(current, duration);
 
@@ -887,8 +909,9 @@ MediaControls.prototype.restorePlayState = function() {};
  * Encode current state into the page URL or the app state.
  */
 MediaControls.prototype.encodeState = function() {
-  if (!this.media_ || !this.media_.duration)
+  if (!this.media_ || !this.media_.duration) {
     return;
+  }
 
   if (window.appState) {
     window.appState.time = this.media_.currentTime;
@@ -902,8 +925,9 @@ MediaControls.prototype.encodeState = function() {
  * @return {boolean} True if decode succeeded.
  */
 MediaControls.prototype.decodeState = function() {
-  if (!this.media_ || !window.appState || !('time' in window.appState))
+  if (!this.media_ || !window.appState || !('time' in window.appState)) {
     return false;
+  }
   // There is no page reload for apps v2, only app restart.
   // Always restart in paused state.
   this.media_.currentTime = window.appState.time;
@@ -915,11 +939,13 @@ MediaControls.prototype.decodeState = function() {
  * Remove current state from the page URL or the app state.
  */
 MediaControls.prototype.clearState = function() {
-  if (!window.appState)
+  if (!window.appState) {
     return;
+  }
 
-  if ('time' in window.appState)
+  if ('time' in window.appState) {
     delete window.appState.time;
+  }
   util.saveAppState();
   return;
 };
@@ -980,8 +1006,9 @@ function VideoControls(
   this.enableControls_(false);
 
   var videoControls = this;
-  chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
-      function() { videoControls.togglePlayStateWithFeedback(); });
+  chrome.mediaPlayerPrivate.onTogglePlayState.addListener(function() {
+    videoControls.togglePlayStateWithFeedback();
+  });
 }
 
 /**
@@ -1013,8 +1040,9 @@ VideoControls.prototype.showIconFeedback_ = function() {
     var newState = this.isPlaying() ? 'play' : 'pause';
 
     var onAnimationEnd = function(state, event) {
-      if (stateIcon.getAttribute('state') === state)
+      if (stateIcon.getAttribute('state') === state) {
         stateIcon.removeAttribute('state');
+      }
 
       stateIcon.removeEventListener('animationend', onAnimationEnd);
     }.bind(null, newState);
@@ -1053,8 +1081,9 @@ VideoControls.prototype.showTextBanner_ = function(identifier) {
 VideoControls.prototype.onPlayButtonClicked = function(event) {
   if (event.ctrlKey) {
     this.toggleLoopedModeWithFeedback(true);
-    if (!this.isPlaying())
+    if (!this.isPlaying()) {
       this.togglePlayState();
+    }
   } else {
     this.togglePlayState();
   }
@@ -1073,8 +1102,9 @@ VideoControls.prototype.onMediaComplete = function() {
  * @param {boolean} on Whether enabled or not.
  */
 VideoControls.prototype.toggleLoopedModeWithFeedback = function(on) {
-  if (!this.getMedia().duration)
+  if (!this.getMedia().duration) {
     return;
+  }
   this.toggleLoopedMode(on);
   if (on) {
     // TODO(mtomasz): Simplify, crbug.com/254318.
@@ -1094,8 +1124,9 @@ VideoControls.prototype.toggleLoopedMode = function(on) {
  * Toggles play/pause state and flash an icon over the video.
  */
 VideoControls.prototype.togglePlayStateWithFeedback = function() {
-  if (!this.getMedia().duration)
+  if (!this.getMedia().duration) {
     return;
+  }
 
   this.togglePlayState();
   this.showIconFeedback_();
@@ -1140,8 +1171,9 @@ VideoControls.prototype.savePosition = function(opt_sync) {
   if (opt_sync) {
     // Packaged apps cannot save synchronously.
     // Pass the data to the background page.
-    if (!window.saveOnExit)
+    if (!window.saveOnExit) {
       window.saveOnExit = [];
+    }
     window.saveOnExit.push({ key: this.media_.src, value: position });
   } else {
     util.AppCache.update(this.media_.src, position);
@@ -1154,8 +1186,9 @@ VideoControls.prototype.savePosition = function(opt_sync) {
 VideoControls.prototype.restorePlayState = function() {
   if (this.media_ && this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
     util.AppCache.getValue(this.media_.src, function(position) {
-      if (position)
+      if (position) {
         this.media_.currentTime = position;
+      }
     }.bind(this));
   }
 };
@@ -1179,7 +1212,8 @@ VideoControls.prototype.onFullScreenChanged = function() {
     // If the fullscreen button has focus on entering fullscreen mode, reset the
     // focus to make the spacebar toggle play/pause state. This is the
     // consistent behavior with Youtube Web UI.
-    if (fullscreen)
+    if (fullscreen) {
       this.fullscreenButton_.blur();
+    }
   }
 };

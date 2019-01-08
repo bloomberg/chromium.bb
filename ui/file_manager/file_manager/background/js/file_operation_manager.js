@@ -97,8 +97,9 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
   // If the task is not on progress, remove it immediately.
   for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
     task = this.pendingCopyTasks_[i];
-    if (task.taskId !== taskId)
+    if (task.taskId !== taskId) {
       continue;
+    }
     task.requestCancel();
     this.eventRouter_.sendProgressEvent(
         fileOperationUtil.EventRouter.EventType.CANCELED,
@@ -109,14 +110,16 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
 
   for (var volumeId in this.runningCopyTasks_) {
     task = this.runningCopyTasks_[volumeId];
-    if (task.taskId === taskId)
+    if (task.taskId === taskId) {
       task.requestCancel();
+    }
   }
 
   for (var i = 0; i < this.deleteTasks_.length; i++) {
     task = this.deleteTasks_[i];
-    if (task.taskId !== taskId)
+    if (task.taskId !== taskId) {
       continue;
+    }
     task.cancelRequested = true;
     // If the task is not on progress, remove it immediately.
     if (i !== 0) {
@@ -140,11 +143,14 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
  */
 FileOperationManagerImpl.prototype.filterSameDirectoryEntry = function(
     sourceEntries, targetEntry, isMove) {
-  if (!isMove)
+  if (!isMove) {
     return Promise.resolve(sourceEntries);
+  }
   // Utility function to concat arrays.
   var compactArrays = function(arrays) {
-    return arrays.filter(function(element) { return !!element; });
+    return arrays.filter(function(element) {
+      return !!element;
+    });
   };
   // Call processEntry for each item of entries.
   var processEntries = function(entries) {
@@ -154,15 +160,18 @@ FileOperationManagerImpl.prototype.filterSameDirectoryEntry = function(
   // Check all file entries and keeps only those need sharing operation.
   var processFileOrDirectoryEntries = function(entry) {
     return new Promise(function(resolve) {
-      entry.getParent(function(inParentEntry) {
-        if (!util.isSameEntry(inParentEntry, targetEntry))
-          resolve(entry);
-        else
-          resolve(null);
-      }, function(error) {
-        console.error(error.stack || error);
-        resolve(null);
-      });
+      entry.getParent(
+          function(inParentEntry) {
+            if (!util.isSameEntry(inParentEntry, targetEntry)) {
+              resolve(entry);
+            } else {
+              resolve(null);
+            }
+          },
+          function(error) {
+            console.error(error.stack || error);
+            resolve(null);
+          });
     });
   };
   return processEntries(sourceEntries);
@@ -183,17 +192,20 @@ FileOperationManagerImpl.prototype.filterSameDirectoryEntry = function(
 FileOperationManagerImpl.prototype.paste = function(
     sourceEntries, targetEntry, isMove, opt_taskId) {
   // Do nothing if sourceEntries is empty.
-  if (sourceEntries.length === 0)
+  if (sourceEntries.length === 0) {
     return;
+  }
 
-  this.filterSameDirectoryEntry(sourceEntries, targetEntry, isMove).then(
-      function(entries) {
-        if (entries.length === 0)
+  this.filterSameDirectoryEntry(sourceEntries, targetEntry, isMove)
+      .then(function(entries) {
+        if (entries.length === 0) {
           return;
+        }
         this.queueCopy_(targetEntry, entries, isMove, opt_taskId);
-  }.bind(this)).catch(function(error) {
-    console.error(error.stack || error);
-  });
+      }.bind(this))
+      .catch(function(error) {
+        console.error(error.stack || error);
+      });
 };
 
 /**
@@ -299,8 +311,9 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
   }
 
   // There is no task which can run at now.
-  if (nextTask === null)
+  if (nextTask === null) {
     return;
+  }
 
   var onTaskProgress = function(task) {
     this.eventRouter_.sendProgressEvent(
@@ -390,8 +403,9 @@ FileOperationManagerImpl.prototype.deleteEntries = function(entries) {
     this.deleteTasks_.push(task);
     this.eventRouter_.sendDeleteEvent(
         fileOperationUtil.EventRouter.EventType.BEGIN, task);
-    if (this.deleteTasks_.length === 1)
+    if (this.deleteTasks_.length === 1) {
       this.serviceAllDeleteTasks_();
+    }
   }.bind(this));
 };
 
@@ -408,8 +422,9 @@ FileOperationManagerImpl.prototype.serviceAllDeleteTasks_ = function() {
       this.deleteTasks_[0],
       function() {
         this.deleteTasks_.shift();
-        if (this.deleteTasks_.length)
+        if (this.deleteTasks_.length) {
           this.serviceAllDeleteTasks_();
+        }
       }.bind(this));
 };
 
@@ -453,12 +468,13 @@ FileOperationManagerImpl.prototype.serviceDeleteTask_ = function(
   queue.run(function(inCallback) {
     var EventType = fileOperationUtil.EventRouter.EventType;
     var reason;
-    if (error)
+    if (error) {
       reason = EventType.ERROR;
-    else if (task.cancelRequested)
+    } else if (task.cancelRequested) {
       reason = EventType.CANCELED;
-    else
+    } else {
       reason = EventType.SUCCESS;
+    }
     this.eventRouter_.sendDeleteEvent(reason, task);
     inCallback();
     callback();

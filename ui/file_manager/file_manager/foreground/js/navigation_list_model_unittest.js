@@ -448,8 +448,9 @@ function testMyFilesVolumeEnabled(callback) {
   const reader = myFilesEntryList.createReader();
   const foundEntries = [];
   reader.readEntries((entries) => {
-    for (const entry of entries)
+    for (const entry of entries) {
       foundEntries.push(entry);
+    }
   });
 
   reportPromise(

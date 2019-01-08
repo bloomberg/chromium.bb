@@ -11,8 +11,9 @@
  * @param {boolean} value New value of hidden property.
  */
 cr.ui.Command.prototype.setHidden = function(value) {
-  if (value === this.hidden)
+  if (value === this.hidden) {
     return;
+  }
 
   var oldValue = this.hidden;
   this.hidden = value;

@@ -85,17 +85,21 @@ MultiMetadataProvider.prototype.get = function(requests) {
         fallbackContentPropertyNames.push(name);
         continue;
       }
-      if (isFileSystemProperty)
+      if (isFileSystemProperty) {
         fileSystemPropertyNames.push(name);
-      if (isExternalProperty)
+      }
+      if (isExternalProperty) {
         externalPropertyNames.push(name);
-      if (isContentProperty)
+      }
+      if (isContentProperty) {
         contentPropertyNames.push(name);
+      }
     }
     var volumeInfo = this.volumeManager_.getVolumeInfo(request.entry);
     var addRequests = function(list, names) {
-      if (names.length)
+      if (names.length) {
         list.push(new MetadataRequest(request.entry, names));
+      }
     };
     if (volumeInfo &&
         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE ||

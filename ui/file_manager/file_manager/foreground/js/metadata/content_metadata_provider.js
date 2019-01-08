@@ -100,8 +100,9 @@ ContentMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
  * @override
  */
 ContentMetadataProvider.prototype.get = function(requests) {
-  if (!requests.length)
+  if (!requests.length) {
     return Promise.resolve([]);
+  }
 
   var promises = [];
   for (var i = 0; i < requests.length; i++) {

@@ -150,8 +150,9 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       this.hasLongPressProcessed_ = false;
       this.longTapDetectorTimerId_ = setTimeout(function() {
         this.longTapDetectorTimerId_ = -1;
-        if (!this.tapStarted_)
+        if (!this.tapStarted_) {
           return;
+        }
         this.isLongTap_ = true;
         if (callback(event, index, FileTapHandler.TapEvent.LONG_PRESS)) {
           this.hasLongPressProcessed_ = true;
@@ -160,11 +161,13 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       break;
 
     case 'touchmove':
-      if (this.activeTouchId_ === undefined)
+      if (this.activeTouchId_ === undefined) {
         break;
+      }
       var touch = this.findActiveTouch_(event.changedTouches);
-      if (!touch)
+      if (!touch) {
         break;
+      }
 
       var clientX = touch.clientX;
       var clientY = touch.clientY;
@@ -180,16 +183,18 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
           this.totalMoveY_ <= FileTapHandler.MAX_TRACKING_FOR_TAP_ ||
           this.totalMoveX_ <= FileTapHandler.MAX_TRACKING_FOR_TAP_;
 
-      if (!couldBeTap)
+      if (!couldBeTap) {
         // If the pointer is slided, it is a drag. It is no longer a tap.
         this.tapStarted_ = false;
+      }
       this.lastMoveX_ = moveX;
       this.lastMoveY_ = moveY;
       break;
 
     case 'touchend':
-      if (!this.tapStarted_)
+      if (!this.tapStarted_) {
         break;
+      }
       // Mark as no longer being touched.
       // Two-finger tap event is issued when either of the 2 touch points is
       // released. Stop tracking the tap to avoid issuing duplicate events.
@@ -240,8 +245,9 @@ FileTapHandler.prototype.findActiveTouch_ = function(touches) {
   // A TouchList isn't actually an array, so we shouldn't use
   // Array.prototype.filter/some, etc.
   for (var i = 0; i < touches.length; i++) {
-    if (touches[i].identifier == this.activeTouchId_)
+    if (touches[i].identifier == this.activeTouchId_) {
       return touches[i];
+    }
   }
   return undefined;
 };

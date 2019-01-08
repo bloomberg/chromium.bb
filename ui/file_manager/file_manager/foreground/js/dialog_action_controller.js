@@ -149,11 +149,12 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
   // Save-as doesn't require a valid selection from the list, since
   // we're going to take the filename from the text input.
   var filename = this.dialogFooter_.filenameInput.value;
-  if (!filename)
+  if (!filename) {
     throw new Error('Missing filename!');
+  }
 
-  this.namingController_.validateFileNameForSaving(filename).then(
-      function(url) {
+  this.namingController_.validateFileNameForSaving(filename)
+      .then(function(url) {
         // TODO(mtomasz): Clean this up by avoiding constructing a URL
         //                via string concatenation.
         this.selectFilesAndClose_({
@@ -161,9 +162,11 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
           multiple: false,
           filterIndex: this.dialogFooter_.selectedFilterIndex
         });
-      }.bind(this)).catch(function(error) {
-        if (error instanceof Error)
+      }.bind(this))
+      .catch(function(error) {
+        if (error instanceof Error) {
           console.error(error.stack && error);
+        }
       });
 };
 
@@ -203,8 +206,9 @@ DialogActionController.prototype.processOKAction_ = function() {
   // All other dialog types require at least one selected list item.
   // The logic to control whether or not the ok button is enabled should
   // prevent us from ever getting here, but we sanity check to be sure.
-  if (!selectedIndexes.length)
+  if (!selectedIndexes.length) {
     throw new Error('Nothing selected!');
+  }
 
   var dm = this.directoryModel_.getFileList();
   for (var i = 0; i < selectedIndexes.length; i++) {
@@ -228,17 +232,20 @@ DialogActionController.prototype.processOKAction_ = function() {
   }
 
   // Everything else must have exactly one.
-  if (files.length > 1)
+  if (files.length > 1) {
     throw new Error('Too many files selected!');
+  }
 
   var selectedEntry = dm.item(selectedIndexes[0]);
 
   if (DialogType.isFolderDialog(this.dialogType_)) {
-    if (!selectedEntry.isDirectory)
+    if (!selectedEntry.isDirectory) {
       throw new Error('Selected entry is not a folder!');
+    }
   } else if (this.dialogType_ === DialogType.SELECT_OPEN_FILE) {
-    if (!selectedEntry.isFile)
+    if (!selectedEntry.isFile) {
       throw new Error('Selected entry is not a file!');
+    }
   }
 
   var singleSelection = {
@@ -338,10 +345,12 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   var bytesDone = 0;
 
   var onFileTransfersUpdated = function(status) {
-    if (!(status.fileUrl in progressMap))
+    if (!(status.fileUrl in progressMap)) {
       return;
-    if (status.total === -1)
+    }
+    if (status.total === -1) {
       return;
+    }
 
     var old = progressMap[status.fileUrl];
     if (old === -1) {
@@ -364,7 +373,9 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
 
   var setup = function() {
     document.querySelector('.dialog-container').appendChild(shade);
-    setTimeout(function() { shade.setAttribute('fadein', 'fadein'); }, 100);
+    setTimeout(function() {
+      shade.setAttribute('fadein', 'fadein');
+    }, 100);
     footer.setAttribute('progress', 'progress');
     this.dialogFooter_.cancelButton.removeEventListener(
         'click', this.onCancelBound_);
@@ -458,8 +469,9 @@ DialogActionController.prototype.onFileSelectionChanged_ = function() {
   }
 
   this.updateOkButton_();
-  if (!this.dialogFooter_.okButton.disabled)
+  if (!this.dialogFooter_.okButton.disabled) {
     util.testSendMessage('dialog-ready');
+  }
 };
 
 /**

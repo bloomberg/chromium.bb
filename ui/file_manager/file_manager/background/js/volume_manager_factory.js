@@ -33,10 +33,11 @@ var volumeManagerFactory = (function() {
         });
       });
     }
-    if (opt_callback)
+    if (opt_callback) {
       instancePromise.then(opt_callback);
+    }
     return instancePromise;
-  };
+  }
 
   /**
    * Returns instance of VolumeManager for debug purpose.
@@ -46,7 +47,7 @@ var volumeManagerFactory = (function() {
    */
   function getInstanceForDebug() {
     return instance;
-  };
+  }
 
   /**
    * Revokes the singleton instance for testing.
@@ -54,7 +55,7 @@ var volumeManagerFactory = (function() {
   function revokeInstanceForTesting() {
     instancePromise = null;
     instance = null;
-  };
+  }
 
   return {
     getInstance: getInstance,

@@ -17,8 +17,9 @@ function notreached(error) {
  */
 function fakeVolumeEntry(volumeType, displayRoot, additionalProperties) {
   const kLabel = 'Fake Filesystem';
-  if (displayRoot === undefined)
+  if (displayRoot === undefined) {
     displayRoot = createFakeDisplayRoot();
+  }
   let fakeVolumeInfo = {
     displayRoot: displayRoot,
     label: kLabel,
@@ -221,8 +222,9 @@ function testStaticReader(testReportCallback) {
     callCounter++;
     // merge on testResults.
     readerResult.map(f => testResults.push(f));
-    if (readerResult.length > 0)
+    if (readerResult.length > 0) {
       reader.readEntries(accumulateResults, () => {});
+    }
   };
 
   reader.readEntries(accumulateResults, () => {});
@@ -255,8 +257,9 @@ function testCombinedReader(testReportCallback) {
     callCounter++;
     // merge on testResults.
     readerResult.map(f => testResults.push(f));
-    if (readerResult.length > 0)
+    if (readerResult.length > 0) {
       reader.readEntries(accumulateResults, () => {});
+    }
   };
 
   reader.readEntries(accumulateResults, () => {});
@@ -298,8 +301,9 @@ function testCombinedReaderError(testReportCallback) {
     callCounter++;
     // merge on testResults.
     readerResult.map(f => testResults.push(f));
-    if (readerResult.length > 0)
+    if (readerResult.length > 0) {
       reader.readEntries(accumulateResults, accumulateFailures);
+    }
   };
 
 
@@ -365,8 +369,9 @@ function testVolumeEntryCreateReader(testReportCallback) {
   const readFiles = [];
   const accumulateResults = (readerResult) => {
     readerResult.map((f) => readFiles.push(f));
-    if (readerResult.length > 0)
+    if (readerResult.length > 0) {
       reader.readEntries(accumulateResults);
+    }
   };
 
   reader.readEntries(accumulateResults);
@@ -407,8 +412,9 @@ function testVolumeEntryCreateReaderUnresolved(testReportCallback) {
   const readFiles = [];
   const accumulateResults = (readerResult) => {
     readerResult.map((f) => readFiles.push(f));
-    if (readerResult.length > 0)
+    if (readerResult.length > 0) {
       reader.readEntries(accumulateResults);
+    }
   };
 
   reader.readEntries(accumulateResults);

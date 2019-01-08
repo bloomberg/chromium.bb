@@ -33,8 +33,9 @@ cr.define('cr.ui', function() {
       var menuitem = this.menu.addMenuItem(item);
 
       // If menu is files-menu, decorate menu item as FilesMenuItem.
-      if (this.menu.classList.contains('files-menu'))
+      if (this.menu.classList.contains('files-menu')) {
         cr.ui.decorate(menuitem, cr.ui.FilesMenuItem);
+      }
 
       menuitem.data = item;
       if (item.iconType) {
@@ -126,8 +127,9 @@ cr.define('cr.ui', function() {
       switch (e.key) {
         case 'ArrowDown':
         case 'ArrowUp':
-          if (!this.isMenuShown())
+          if (!this.isMenuShown()) {
             this.showMenu(false);
+          }
           e.preventDefault();
           break;
         case 'Escape': // Maybe this is remote desktop playing a prank?

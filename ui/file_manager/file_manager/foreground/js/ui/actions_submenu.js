@@ -94,8 +94,9 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   if (saveForOfflineAction || offlineNotNecessaryAction) {
     var menuItem = this.addMenuItem_({});
     menuItem.command = '#toggle-pinned';
-    if (saveForOfflineAction)
+    if (saveForOfflineAction) {
       delete remainingActions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
+    }
     if (offlineNotNecessaryAction) {
       delete remainingActions[
         ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY

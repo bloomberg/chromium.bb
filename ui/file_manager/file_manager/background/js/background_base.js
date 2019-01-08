@@ -45,8 +45,9 @@ function BackgroundBase() {
  */
 BackgroundBase.prototype.onLaunched_ = function(launchData) {
   // Skip if files are not selected.
-  if (!launchData || !launchData.items || launchData.items.length == 0)
+  if (!launchData || !launchData.items || launchData.items.length == 0) {
     return;
+  }
 
   this.initializationPromise_.then(function() {
     // Volume list needs to be initialized (more precisely,
@@ -66,8 +67,9 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
         isolatedEntries,
         function(externalEntries) {
           var urls = util.entriesToURLs(externalEntries);
-          if (this.launchHandler_)
+          if (this.launchHandler_) {
             this.launchHandler_(urls);
+          }
         }.bind(this));
   }.bind(this));
 };

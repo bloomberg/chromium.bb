@@ -38,8 +38,9 @@ MetadataParser.prototype.log = function(var_args) {
  * @param {...(Object|string)} var_args Arguments.
  */
 MetadataParser.prototype.vlog = function(var_args) {
-  if (this.verbose)
+  if (this.verbose) {
     this.parent_.log.apply(this.parent_, arguments);
+  }
 };
 
 /**

@@ -126,8 +126,9 @@ MockVolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
     var volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.profile.isCurrentProfile &&
-        volumeInfo.volumeType === volumeType)
+        volumeInfo.volumeType === volumeType) {
       return volumeInfo;
+    }
   }
   return null;
 };

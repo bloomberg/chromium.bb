@@ -25,8 +25,9 @@ class MockModule extends HTMLDivElement {
   postMessage(message) {
     setTimeout(() => {
       this.dispatchEvent(new Event('load', {bubbles: true}));
-      if (this.onBeforeMessageCallback_)
+      if (this.onBeforeMessageCallback_) {
         this.onBeforeMessageCallback_();
+      }
 
       let e = new Event('message', {bubbles: true});
       // Cast to a MessageEvent to write to |data|. We can't use

@@ -70,16 +70,18 @@ test.util.registerRemoteTestUtils = function() {
     window.IN_TEST = true;
 
     // If testing functions are loaded just run the requested function.
-    if (test.util.executeTestMessage !== null)
+    if (test.util.executeTestMessage !== null) {
       return test.util.executeTestMessage(request, sendResponse);
+    }
 
     // Queue the request/response pair.
     const obj = {request, sendResponse};
     responsesWaitingForLoad.push(obj);
 
     // Only load the script with testing functions in the first request.
-    if (responsesWaitingForLoad.length > 1)
+    if (responsesWaitingForLoad.length > 1) {
       return true;
+    }
 
     // Asynchronously load the testing functions.
     let script = document.createElement('script');

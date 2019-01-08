@@ -160,8 +160,9 @@ ProvidersModel.prototype.getMountableProviders = function() {
     var mountedProviders = {};
     for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
       var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
-      if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED)
+      if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
         mountedProviders[volumeInfo.providerId] = true;
+      }
     }
     return providers.filter(function(item) {
       // File systems handling files are mounted via file handlers. Device
@@ -179,7 +180,8 @@ ProvidersModel.prototype.getMountableProviders = function() {
 ProvidersModel.prototype.requestMount = function(providerId) {
   chrome.fileManagerPrivate.addProvidedFileSystem(
       assert(providerId), function() {
-        if (chrome.runtime.lastError)
+        if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
+        }
       });
 };

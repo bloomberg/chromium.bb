@@ -386,8 +386,9 @@ window.addEventListener('load', function() {
     },
     // Request the root entry paths.
     function(mode) {
-      if (JSON.parse(mode) != chrome.extension.inIncognitoContext)
+      if (JSON.parse(mode) != chrome.extension.inIncognitoContext) {
         return;
+      }
       sendBrowserTestCommand({name: 'getRootPaths'}, steps.shift());
     },
     // Request the test case name.

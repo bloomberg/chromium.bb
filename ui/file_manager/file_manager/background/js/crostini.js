@@ -96,8 +96,9 @@ CrostiniImpl.prototype.isEnabled = function() {
  */
 CrostiniImpl.prototype.registerSharedPath = function(entry) {
   const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info)
+  if (!info) {
     return;
+  }
   let paths = this.shared_paths_[info.rootType];
   if (!paths) {
     paths = {};
@@ -105,8 +106,9 @@ CrostiniImpl.prototype.registerSharedPath = function(entry) {
   }
   // Remove any existing paths that are children of the new path.
   for (let path in paths) {
-    if (path.startsWith(entry.fullPath))
+    if (path.startsWith(entry.fullPath)) {
       delete paths[path];
+    }
   }
   paths[entry.fullPath] = true;
 
@@ -125,8 +127,9 @@ CrostiniImpl.prototype.registerSharedPath = function(entry) {
  */
 CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
   const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info)
+  if (!info) {
     return;
+  }
   const paths = this.shared_paths_[info.rootType];
   if (paths) {
     delete paths[entry.fullPath];
@@ -159,13 +162,15 @@ CrostiniImpl.prototype.onChange_ = function(event) {
 CrostiniImpl.prototype.isPathShared = function(entry) {
   const root = this.volumeManager_.getLocationInfo(entry).rootType;
   const paths = this.shared_paths_[root];
-  if (!paths)
+  if (!paths) {
     return false;
+  }
   // Check path and all ancestor directories.
   let path = entry.fullPath;
   while (path.length > 1) {
-    if (paths[path])
+    if (paths[path]) {
       return true;
+    }
     path = path.substring(0, path.lastIndexOf('/'));
   }
   return !!paths['/'];
@@ -177,12 +182,14 @@ CrostiniImpl.prototype.isPathShared = function(entry) {
  * @param {boolean} persist If path is to be persisted.
  */
 CrostiniImpl.prototype.canSharePath = function(entry, persist) {
-  if (!this.enabled_)
+  if (!this.enabled_) {
     return false;
+  }
 
   // Only directories for persistent shares.
-  if (persist && !entry.isDirectory)
+  if (persist && !entry.isDirectory) {
     return false;
+  }
 
   // Allow Downloads, and Drive if DriveFS is enabled.
   const rootType = this.volumeManager_.getLocationInfo(entry).rootType;

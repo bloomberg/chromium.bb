@@ -371,27 +371,31 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
   var volume = event.volumeMetadata;
 
   if (event.status === 'success' && event.shouldNotify) {
-    if (event.eventType === 'mount')
+    if (event.eventType === 'mount') {
       this.onMount_(event);
-    else if (event.eventType === 'unmount')
+    } else if (event.eventType === 'unmount') {
       this.onUnmount_(event);
+    }
   }
 
-  if (!volume.deviceType || !volume.devicePath || !event.shouldNotify)
+  if (!volume.deviceType || !volume.devicePath || !event.shouldNotify) {
     return;
+  }
 
   var getFirstStatus = function(event) {
-    if (event.status === 'success')
+    if (event.status === 'success') {
       return DeviceHandler.MountStatus.SUCCESS;
-    else if (event.volumeMetadata.isParentDevice)
+    } else if (event.volumeMetadata.isParentDevice) {
       return DeviceHandler.MountStatus.ONLY_PARENT_ERROR;
-    else
+    } else {
       return DeviceHandler.MountStatus.CHILD_ERROR;
+    }
   };
 
   // Update the current status.
-  if (!this.mountStatus_[volume.devicePath])
+  if (!this.mountStatus_[volume.devicePath]) {
     this.mountStatus_[volume.devicePath] = DeviceHandler.MountStatus.NO_RESULT;
+  }
   switch (this.mountStatus_[volume.devicePath]) {
     // If the multipart error message has already shown, do nothing because the
     // message does not changed by the following mount results.
@@ -405,9 +409,10 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
     // the parent error. (parent device contains partition table, which is
     // unmountable)
     case DeviceHandler.MountStatus.ONLY_PARENT_ERROR:
-      if (!volume.isParentDevice)
+      if (!volume.isParentDevice) {
         DeviceHandler.Notification.DEVICE_FAIL.hide(
             /** @type {string} */ (volume.devicePath));
+      }
       this.mountStatus_[volume.devicePath] = getFirstStatus(event);
       break;
     // We have a multi-partition device for which at least one mount
@@ -426,8 +431,9 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
       break;
   }
 
-  if (event.eventType === 'unmount')
+  if (event.eventType === 'unmount') {
     return;
+  }
 
   // Show the notification for the current errors.
   // If there is no error, do not show/update the notification.

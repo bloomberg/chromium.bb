@@ -186,11 +186,13 @@ importer.isEligibleEntry = function(volumeManager, entry) {
  * @return {boolean}
  */
 importer.isMediaDirectory = function(entry, volumeManager) {
-  if (!entry || !entry.isDirectory || !entry.fullPath)
+  if (!entry || !entry.isDirectory || !entry.fullPath) {
     return false;
+  }
   var splitPath = importer.splitPath_(/** @type {Entry} */(entry));
-  if (importer.isEligiblePath_(splitPath))
+  if (importer.isEligiblePath_(splitPath)) {
     return true;
+  }
 
   // This is a media root if there is only one element in the path, and it is a
   // valid import root.
@@ -215,8 +217,9 @@ importer.getMediaDirectory = function(directory) {
            */
           function(results) {
             for (var i = 0; i < results.length; i++) {
-              if (!!results[i] && results[i].isDirectory)
+              if (!!results[i] && results[i].isDirectory) {
                 return Promise.resolve(results[i]);
+              }
             }
             // If standard (upper case) forms are not present,
             // check for a lower-case "DCIM".
@@ -253,17 +256,12 @@ importer.hasMediaDirectory = function(directory) {
  * @private
  */
 importer.getDirectory_ = function(parent, name) {
-  return new Promise(
-    function(resolve, reject) {
-      parent.getDirectory(
-          name,
-          {
-            create: false,
-            exclusive: false
-          },
-          resolve,
-          function() { resolve(null); });
-    });
+  return new Promise(function(resolve, reject) {
+    parent.getDirectory(
+        name, {create: false, exclusive: false}, resolve, function() {
+          resolve(null);
+        });
+  });
 };
 
 /**

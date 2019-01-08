@@ -102,8 +102,9 @@ testcase.fileDisplayDriveOnline = async function() {
 
   // Check: all files must have 'online' CSS style (not dimmed).
   chrome.test.assertEq(BASIC_DRIVE_ENTRY_SET.length, elements.length);
-  for (let i = 0; i < elements.length; ++i)
+  for (let i = 0; i < elements.length; ++i) {
     chrome.test.assertEq('1', elements[i].styles.opacity);
+  }
 };
 
 /**

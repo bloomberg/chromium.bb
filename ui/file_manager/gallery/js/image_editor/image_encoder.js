@@ -249,8 +249,10 @@ ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
  * @param {string} encodedImage An encoded image.
  * @return {{from:number, to:number}} An object with from and to properties.
  */
-ImageEncoder.MetadataEncoder.prototype.
-    findInsertionRange = function(encodedImage) { return {from: 0, to: 0}; };
+ImageEncoder.MetadataEncoder.prototype.findInsertionRange = function(
+    encodedImage) {
+  return {from: 0, to: 0};
+};
 
 /**
  * Returns serialized metadata ready to write to an image file.

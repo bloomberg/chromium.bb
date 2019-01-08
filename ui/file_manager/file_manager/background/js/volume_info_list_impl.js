@@ -18,7 +18,9 @@ function VolumeInfoListImpl() {
 }
 
 VolumeInfoListImpl.prototype = {
-  get length() { return this.model_.length; }
+  get length() {
+    return this.model_.length;
+  }
 };
 
 /** @override */
@@ -34,17 +36,19 @@ VolumeInfoListImpl.prototype.removeEventListener = function(type, handler) {
 /** @override */
 VolumeInfoListImpl.prototype.add = function(volumeInfo) {
   var index = this.findIndex(volumeInfo.volumeId);
-  if (index !== -1)
+  if (index !== -1) {
     this.model_.splice(index, 1, volumeInfo);
-  else
+  } else {
     this.model_.push(volumeInfo);
+  }
 };
 
 /** @override */
 VolumeInfoListImpl.prototype.remove = function(volumeId) {
   var index = this.findIndex(volumeId);
-  if (index !== -1)
+  if (index !== -1) {
     this.model_.splice(index, 1);
+  }
 };
 
 /** @override */
@@ -59,8 +63,9 @@ VolumeInfoListImpl.prototype.item = function(index) {
  */
 VolumeInfoListImpl.prototype.findIndex = function(volumeId) {
   for (var i = 0; i < this.model_.length; i++) {
-    if (this.model_.item(i).volumeId === volumeId)
+    if (this.model_.item(i).volumeId === volumeId) {
       return i;
+    }
   }
   return -1;
 };

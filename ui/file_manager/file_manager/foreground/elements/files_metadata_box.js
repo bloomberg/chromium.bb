@@ -144,8 +144,9 @@ var FilesMetadataBox = Polymer({
    * @return {string} String representation of the given duration.
    */
   time2string_: function(time) {
-    if (!time)
+    if (!time) {
       return '';
+    }
 
     time = parseInt(time, 10);
     var seconds = time % 60;
@@ -166,8 +167,9 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   dimension_: function(imageWidth, imageHeight) {
-    if (imageWidth && imageHeight)
-      return imageWidth + " x " + imageHeight;
+    if (imageWidth && imageHeight) {
+      return imageWidth + ' x ' + imageHeight;
+    }
     return '';
   },
 
@@ -205,8 +207,9 @@ var FilesMetadataBox = Polymer({
    */
   geography_: function(ifd) {
     var gps = ifd && ifd.gps;
-    if (!gps || !gps[1] || !gps[2] || !gps[3] || !gps[4])
+    if (!gps || !gps[1] || !gps[2] || !gps[3] || !gps[4]) {
       return '';
+    }
 
     var computeCoordinate = function(value) {
       return this.parseRational_(value[0]) +
@@ -233,8 +236,9 @@ var FilesMetadataBox = Polymer({
    */
   deviceSettings_: function(ifd) {
     var exif = ifd && ifd.exif;
-    if (!exif)
+    if (!exif) {
       return '';
+    }
 
     var f = exif[33437] ? this.parseRational_(exif[33437].value) : 0;
     var fNumber = '';

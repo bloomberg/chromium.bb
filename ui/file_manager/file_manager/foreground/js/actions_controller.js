@@ -109,8 +109,9 @@ ActionsController.Context = {
 ActionsController.prototype.getContextFor_ = function(element) {
   // Element can be null, eg. when invoking a command via a keyboard shortcut.
   // By default, all actions refer to the file list, so return FILE_LIST.
-  if (element === null)
+  if (element === null) {
     return ActionsController.Context.FILE_LIST;
+  }
 
   if (this.ui_.listContainer.element.contains(element) ||
       this.ui_.toolbar.contains(element)) {
@@ -159,32 +160,35 @@ ActionsController.prototype.onSelectionChangeThrottled_ = function() {
   var selection = this.selectionHandler_.selection;
 
   var entries = selection.entries;
-  if (!entries)
+  if (!entries) {
     return;
+  }
 
   var actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, entries);
 
-  var initializeAndUpdateUI = /** @type {function(Event=)} */ (
-    function(opt_event) {
-      if (selection !== this.selectionHandler_.selection)
-        return;
-      actionsModel.initialize().then(function() {
-        if (selection !== this.selectionHandler_.selection)
+  var initializeAndUpdateUI =
+      /** @type {function(Event=)} */ (function(opt_event) {
+        if (selection !== this.selectionHandler_.selection) {
           return;
-        this.fileListActionsModel_ = actionsModel;
-        // Before updating the UI we need to ensure that this.menuContext_ has a
-        // reasonable value or nothing will happen. We will save and restore the
-        // existing value.
-        const oldMenuContext = this.menuContext_;
-        if (this.menuContext_ === ActionsController.Context.UNKNOWN) {
-          // FILE_LIST should be a reasonable default.
-          this.menuContext_ = ActionsController.Context.FILE_LIST;
         }
-        this.updateUI_();
-        this.menuContext_ = oldMenuContext;
+        actionsModel.initialize().then(function() {
+          if (selection !== this.selectionHandler_.selection) {
+            return;
+          }
+          this.fileListActionsModel_ = actionsModel;
+          // Before updating the UI we need to ensure that this.menuContext_ has
+          // a reasonable value or nothing will happen. We will save and restore
+          // the existing value.
+          const oldMenuContext = this.menuContext_;
+          if (this.menuContext_ === ActionsController.Context.UNKNOWN) {
+            // FILE_LIST should be a reasonable default.
+            this.menuContext_ = ActionsController.Context.FILE_LIST;
+          }
+          this.updateUI_();
+          this.menuContext_ = oldMenuContext;
+        }.bind(this));
       }.bind(this));
-    }.bind(this));
 
   actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
   initializeAndUpdateUI();
@@ -202,22 +206,24 @@ ActionsController.prototype.onNavigationListSelectionChanged_ = function() {
 
   var entry = this.ui_.directoryTree.selectedItem ?
       (this.ui_.directoryTree.selectedItem.entry || null) : null;
-  if (!entry)
+  if (!entry) {
     return;
+  }
 
   var sequence = ++this.navigationListSequence_;
   var actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, [entry]);
 
-  var initializeAndUpdateUI = /** @type {function(Event=)} */ (
-    function(opt_event) {
-      actionsModel.initialize().then(function() {
-        if (this.navigationListSequence_ !== sequence)
-          return;
-        this.navigationListActionsModel_ = actionsModel;
-        this.updateUI_();
+  var initializeAndUpdateUI =
+      /** @type {function(Event=)} */ (function(opt_event) {
+        actionsModel.initialize().then(function() {
+          if (this.navigationListSequence_ !== sequence) {
+            return;
+          }
+          this.navigationListActionsModel_ = actionsModel;
+          this.updateUI_();
+        }.bind(this));
       }.bind(this));
-    }.bind(this));
 
   actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
   initializeAndUpdateUI();

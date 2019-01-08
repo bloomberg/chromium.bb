@@ -61,8 +61,9 @@ console.assert = (() => {
   return (condition, ...args) => {
     const stack = new Error('original stack').stack;
     args.push(stack);
-    if (!condition)
+    if (!condition) {
       window.JSErrorCount++;
+    }
     return orig.apply(this, [condition].concat(args.join('\n')));
   };
 })();

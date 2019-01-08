@@ -74,8 +74,9 @@ function setUp() {
  * @param {string=} opt_details Optional details.
  */
 function failWithMessage(message, opt_details) {
-  if (opt_details)
+  if (opt_details) {
     message += ': '.concat(opt_details);
+  }
   throw new Error(message);
 }
 
@@ -383,10 +384,12 @@ function testOpenWithMostRecentlyExecuted(callback) {
 
   var taskHistory = /** @type {!TaskHistory} */ ({
     getLastExecutedTime: function(id) {
-      if (id == oldTaskId)
+      if (id == oldTaskId) {
         return 10000;
-      if (id == latestTaskId)
+      }
+      if (id == latestTaskId) {
         return 20000;
+      }
       return 0;
     },
     recordTaskExecuted: function(id) {},

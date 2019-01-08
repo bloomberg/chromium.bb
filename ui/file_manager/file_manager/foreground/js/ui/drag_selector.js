@@ -76,8 +76,9 @@ DragSelector.SelectionFlag_ = {
 DragSelector.getScrolledPosition = function(element, event) {
   if (!element.cachedBounds) {
     element.cachedBounds = element.getBoundingClientRect();
-    if (!element.cachedBounds)
+    if (!element.cachedBounds) {
       return null;
+    }
   }
   var rect = element.cachedBounds;
   return {
@@ -96,16 +97,18 @@ DragSelector.getScrolledPosition = function(element, event) {
  */
 DragSelector.prototype.startDragSelection = function(list, event) {
   // Precondition check
-  if (!list.selectionModel_.multiple || this.target_)
+  if (!list.selectionModel_.multiple || this.target_) {
     return;
+  }
 
   // Set the target of the drag selection
   this.target_ = list;
 
   // Save the start state.
   var startPos = DragSelector.getScrolledPosition(list, event);
-  if (!startPos)
+  if (!startPos) {
     return;
+  }
   this.startX_ = startPos.x;
   this.startY_ = startPos.y;
   this.lastSelection_ = [];

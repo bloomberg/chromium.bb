@@ -580,11 +580,13 @@ class VolumeEntry {
    */
   createReader() {
     const readers = [];
-    if (this.rootEntry_)
+    if (this.rootEntry_) {
       readers.push(this.rootEntry_.createReader());
+    }
 
-    if (this.children_.length)
+    if (this.children_.length) {
       readers.push(new StaticReader(this.children_));
+    }
 
     return new CombinedReaders(readers);
   }

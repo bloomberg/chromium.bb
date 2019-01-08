@@ -8,10 +8,12 @@
 
 // Hack for polymer, notifying that CSP is enabled here.
 // TODO(yoshiki): Find a way to remove the hack.
-if (!('securityPolicy' in document))
+if (!('securityPolicy' in document)) {
   document['securityPolicy'] = {};
-if (!('allowsEval' in document.securityPolicy))
+}
+if (!('allowsEval' in document.securityPolicy)) {
   document.securityPolicy['allowsEval'] = false;
+}
 
 (function() {
 

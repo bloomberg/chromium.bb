@@ -9,8 +9,9 @@
  */
 function LauncherSearch() {
   // Launcher search provider is restricted to dev channel at now.
-  if (!chrome.launcherSearchProvider)
+  if (!chrome.launcherSearchProvider) {
     return;
+  }
 
   /**
    * Active query id. This value is set null when there is no active query.
@@ -71,8 +72,9 @@ LauncherSearch.prototype.initializeEventListeners_ = function(
 
   // If this.enabled_ === launcherSearchEnabled, we don't need to change
   // anything here.
-  if (this.enabled_ === launcherSearchEnabled)
+  if (this.enabled_ === launcherSearchEnabled) {
     return;
+  }
 
   // Remove event listeners if it's already enabled.
   if (this.enabled_) {
@@ -126,8 +128,9 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
       })
       .then((results) => {
         const entries = results[0].concat(results[1]);
-        if (queryId !== this.queryId_ || entries.length === 0)
+        if (queryId !== this.queryId_ || entries.length === 0) {
           return;
+        }
 
         const resultEntries = this.chooseEntries_(entries, query, limit);
         const searchResults = resultEntries.map(this.createSearchResult_);
@@ -192,11 +195,10 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           if (defaultTask) {
             // Execute default task.
             chrome.fileManagerPrivate.executeTask(
-                defaultTask.taskId,
-                [entry],
-                function(result) {
-                  if (result === 'opened' || result === 'message_sent')
+                defaultTask.taskId, [entry], function(result) {
+                  if (result === 'opened' || result === 'message_sent') {
                     return;
+                  }
                   this.openFileManagerWithSelectionURL_(entry.toURL());
                 }.bind(this));
           } else {
@@ -249,8 +251,9 @@ LauncherSearch.prototype.queryDriveEntries_ = function(queryId, query, limit) {
  * @private
  */
 LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
-  if (!query)
+  if (!query) {
     return Promise.resolve([]);
+  }
 
   return this.getDownloadsEntry_()
       .then((downloadsEntry) => {
@@ -258,8 +261,9 @@ LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
             downloadsEntry, queryId, query.toLowerCase());
       })
       .catch((error) => {
-        if (error.name != 'AbortError')
+        if (error.name != 'AbortError') {
           console.error('Query local entries failed.', error);
+        }
         return [];
       });
 };
@@ -294,8 +298,9 @@ LauncherSearch.prototype.queryEntriesRecursively_ = function(
         (entries) => {
           const matchEntries = entries.filter(
               entry => entry.name.toLowerCase().indexOf(query) >= 0);
-          if (matchEntries.length > 0)
+          if (matchEntries.length > 0) {
             foundEntries = foundEntries.concat(matchEntries);
+          }
         },
         () => {
           resolve(foundEntries);
@@ -319,8 +324,9 @@ LauncherSearch.prototype.chooseEntries_ = function(entries, query, limit) {
   query = query.toLowerCase();
   const scoreEntry = (entry) => {
     // Prefer entry which has the query string as a prefix.
-    if (entry.name.toLowerCase().indexOf(query) === 0)
+    if (entry.name.toLowerCase().indexOf(query) === 0) {
       return 1;
+    }
     return 0;
   };
   const sortedEntries = entries.sort((a, b) => {
@@ -340,8 +346,9 @@ LauncherSearch.prototype.createSearchResult_ = function(entry) {
   //     folder.
   // TODO(yawano): Add archive launcher filetype icon.
   var icon = FileType.getIcon(entry);
-  if (icon === 'UNKNOWN' || icon === 'archive')
+  if (icon === 'UNKNOWN' || icon === 'archive') {
     icon = 'generic';
+  }
 
   var useHighDpiIcon = window.devicePixelRatio > 1.0;
   var iconUrl = chrome.runtime.getURL(

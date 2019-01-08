@@ -67,8 +67,9 @@ function FileSelection(indexes, entries) {
       this.iconType = FileType.getIcon(entry);
     } else if (this.iconType != 'unknown') {
       var iconType = FileType.getIcon(entry);
-      if (this.iconType != iconType)
+      if (this.iconType != iconType) {
         this.iconType = 'unknown';
+      }
     }
 
     if (entry.isFile) {
@@ -250,8 +251,9 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   var selection = this.selection;
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
-    if (this.selection === selection)
+    if (this.selection === selection) {
       this.updateFileSelectionAsync_(selection);
+    }
   }.bind(this), updateDelay);
 
   cr.dispatchSimpleEvent(this, FileSelectionHandler.EventType.CHANGE);
@@ -264,13 +266,15 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
  * @private
  */
 FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
-  if (this.selection !== selection)
+  if (this.selection !== selection) {
     return;
+  }
 
   // Calculate all additional and heavy properties.
   selection.computeAdditional(this.metadataModel_).then(() => {
-    if (this.selection !== selection)
+    if (this.selection !== selection) {
       return;
+    }
 
     cr.dispatchSimpleEvent(
         this, FileSelectionHandler.EventType.CHANGE_THROTTLED);

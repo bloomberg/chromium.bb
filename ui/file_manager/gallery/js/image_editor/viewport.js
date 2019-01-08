@@ -212,8 +212,9 @@ Viewport.prototype.zoomIn = function() {
   var zoom = Viewport.ZOOM_RATIOS[0];
   for (var i = 0; i < Viewport.ZOOM_RATIOS.length; i++) {
     zoom = Viewport.ZOOM_RATIOS[i];
-    if (zoom > this.zoom_)
+    if (zoom > this.zoom_) {
       break;
+    }
   }
   this.setZoom(zoom);
 };
@@ -225,8 +226,9 @@ Viewport.prototype.zoomOut = function() {
   var zoom = Viewport.ZOOM_RATIOS[Viewport.ZOOM_RATIOS.length - 1];
   for (var i = Viewport.ZOOM_RATIOS.length - 1; i >= 0; i--) {
     zoom = Viewport.ZOOM_RATIOS[i];
-    if (zoom < this.zoom_)
+    if (zoom < this.zoom_) {
       break;
+    }
   }
   this.setZoom(zoom);
 };
@@ -282,13 +284,17 @@ Viewport.prototype.getFittingScaleForImageSize_ = function(
  * Returns offset X.
  * @return {number} X-offset of the viewport.
  */
-Viewport.prototype.getOffsetX = function() { return this.offsetX_; };
+Viewport.prototype.getOffsetX = function() {
+  return this.offsetX_;
+};
 
 /**
  * Returns offset Y.
  * @return {number} Y-offset of the viewport.
  */
-Viewport.prototype.getOffsetY = function() { return this.offsetY_; };
+Viewport.prototype.getOffsetY = function() {
+  return this.offsetY_;
+};
 
 /**
  * Set the image offset in the viewport.
@@ -296,8 +302,9 @@ Viewport.prototype.getOffsetY = function() { return this.offsetY_; };
  * @param {number} y Y-offset.
  */
 Viewport.prototype.setOffset = function(x, y) {
-  if (this.offsetX_ == x && this.offsetY_ == y)
+  if (this.offsetX_ == x && this.offsetY_ == y) {
     return;
+  }
   this.offsetX_ = x;
   this.offsetY_ = y;
   this.update_();
@@ -307,7 +314,9 @@ Viewport.prototype.setOffset = function(x, y) {
  * Returns image bounds.
  * @return {!ImageRect} The image bounds in image coordinates.
  */
-Viewport.prototype.getImageBounds = function() { return this.imageBounds_; };
+Viewport.prototype.getImageBounds = function() {
+  return this.imageBounds_;
+};
 
 /**
  * Returns screen bounds.
@@ -337,7 +346,9 @@ Viewport.prototype.getDeviceBounds = function() {
  * track of this counter.
  * @return {number} counter.
  */
-Viewport.prototype.getCacheGeneration = function() { return this.generation_; };
+Viewport.prototype.getCacheGeneration = function() {
+  return this.generation_;
+};
 
 /**
  * Returns image bounds in screen coordinates.

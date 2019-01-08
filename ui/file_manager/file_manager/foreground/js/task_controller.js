@@ -173,8 +173,9 @@ function TaskController(
 TaskController.prototype.onTaskItemClicked_ = function(event) {
   // If the clicked target has an associated command, the click event should not
   // be handled here since it is handled as a command.
-  if (event.target && event.target.command)
+  if (event.target && event.target.command) {
     return;
+  }
 
   // 'select' event from ComboButton has the item as event.item.
   // 'activate' event from cr.ui.MenuButton has the item as event.target.data.
@@ -222,8 +223,9 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
         }
       }.bind(this))
       .catch(function(error) {
-        if (error)
+        if (error) {
           console.error(error.stack || error);
+        }
       });
 };
 
@@ -255,8 +257,9 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
             tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
           }.bind(this))
           .catch(function(error) {
-            if (error)
+            if (error) {
               console.error(error.stack || error);
+            }
           });
     }
     this.selectionHandler_.onFileSelectionChanged();
@@ -276,8 +279,9 @@ TaskController.prototype.executeDefaultTask = function() {
         tasks.execute(task);
       }.bind(this))
       .catch(function(error) {
-        if (error)
+        if (error) {
           console.error(error.stack || error);
+        }
       });
 };
 
@@ -291,18 +295,19 @@ TaskController.prototype.executeDefaultTask = function() {
  * @private
  */
 TaskController.prototype.getMimeType_ = function(entry) {
-  return this.metadataModel_.get([entry], ['contentMimeType']).then(
-      function(properties) {
-        if (properties[0].contentMimeType)
+  return this.metadataModel_.get([entry], ['contentMimeType'])
+      .then(function(properties) {
+        if (properties[0].contentMimeType) {
           return properties[0].contentMimeType;
+        }
         return new Promise(function(fulfill, reject) {
-          chrome.fileManagerPrivate.getMimeType(
-              entry, function(mimeType) {
-                if (!chrome.runtime.lastError)
-                  fulfill(mimeType);
-                else
-                  reject(chrome.runtime.lastError);
-              });
+          chrome.fileManagerPrivate.getMimeType(entry, function(mimeType) {
+            if (!chrome.runtime.lastError) {
+              fulfill(mimeType);
+            } else {
+              reject(chrome.runtime.lastError);
+            }
+          });
         });
       });
 };
@@ -344,8 +349,9 @@ TaskController.prototype.updateTasks_ = function() {
               tasks.getOpenTaskItems(), tasks.getNonOpenTaskItems());
         }.bind(this))
         .catch(function(error) {
-          if (error)
+          if (error) {
             console.error(error.stack || error);
+          }
         });
   } else {
     this.ui_.taskMenuButton.hidden = true;
@@ -359,14 +365,17 @@ TaskController.prototype.updateTasks_ = function() {
  */
 TaskController.prototype.getFileTasks = function() {
   var selection = this.selectionHandler_.selection;
-  if (this.tasks_ && util.isSameEntries(this.tasksEntries_, selection.entries))
+  if (this.tasks_ &&
+      util.isSameEntries(this.tasksEntries_, selection.entries)) {
     return this.tasks_;
+  }
   this.tasksEntries_ = selection.entries;
   this.tasks_ =
       selection.computeAdditional(this.metadataModel_).then(function() {
         if (this.selectionHandler_.selection !== selection) {
-          if (util.isSameEntries(this.tasksEntries_, selection.entries))
+          if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
             this.tasks_ = null;
+          }
           return Promise.reject();
         }
         return FileTasks
@@ -376,8 +385,9 @@ TaskController.prototype.getFileTasks = function() {
                 this.taskHistory_, this.namingController_, this.crostini_)
             .then(function(tasks) {
               if (this.selectionHandler_.selection !== selection) {
-                if (util.isSameEntries(this.tasksEntries_, selection.entries))
+                if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
                   this.tasks_ = null;
+                }
                 return Promise.reject();
               }
               return tasks;
@@ -443,11 +453,12 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
     }
 
-    if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID)
+    if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID) {
       this.ui_.fileContextMenu.defaultTaskMenuItem.label = str('TASK_OPEN');
-    else
+    } else {
       this.ui_.fileContextMenu.defaultTaskMenuItem.label =
           defaultTask.label || defaultTask.title;
+    }
 
     this.ui_.fileContextMenu.defaultTaskMenuItem.disabled =
         !!defaultTask.disabled;

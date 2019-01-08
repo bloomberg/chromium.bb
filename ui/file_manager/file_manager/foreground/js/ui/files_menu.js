@@ -74,8 +74,9 @@ cr.define('cr.ui', function() {
      */
     onActivated_: function(event) {
       // Perform ripple animation if it's activated by keyboard.
-      if (event.originalEvent instanceof KeyboardEvent)
+      if (event.originalEvent instanceof KeyboardEvent) {
         this.ripple_.simulatedRipple();
+      }
 
       // Perform fade out animation.
       var menu = assertInstanceof(this.parentNode, cr.ui.Menu);
@@ -111,8 +112,9 @@ cr.define('cr.ui', function() {
 
       for (var i = 0; i < menu.menuItems.length; i++) {
         var menuItem = menu.menuItems[i];
-        if (menuItem instanceof cr.ui.FilesMenuItem)
+        if (menuItem instanceof cr.ui.FilesMenuItem) {
           menuItem.setAnimating_(value);
+        }
       }
 
       if (!value) {
@@ -128,8 +130,9 @@ cr.define('cr.ui', function() {
     setAnimating_: function(value) {
       this.animating_ = value;
 
-      if (this.animating_)
+      if (this.animating_) {
         return;
+      }
 
       // Update hidden property if there is a pending change.
       if (this.hidden_ !== undefined) {
@@ -142,8 +145,9 @@ cr.define('cr.ui', function() {
      * @return {boolean}
      */
     get hidden() {
-      if (this.hidden_ !== undefined)
+      if (this.hidden_ !== undefined) {
         return this.hidden_;
+      }
 
       return Object.getOwnPropertyDescriptor(
           HTMLElement.prototype, 'hidden').get.call(this);

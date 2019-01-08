@@ -65,8 +65,9 @@ SpinnerController.prototype.show = function() {
 SpinnerController.prototype.showWithDelay = function(delay, callback) {
   var timerId = setTimeout(function() {
     this.activeSpinners_++;
-    if (this.activeSpinners_ === 1)
+    if (this.activeSpinners_ === 1) {
       this.element_.hidden = false;
+    }
     delete this.pendingSpinnerTimerIds_[timerId];
     callback();
   }.bind(this), delay);
@@ -94,6 +95,7 @@ SpinnerController.prototype.maybeHide_ = function(timerId) {
   }
 
   this.activeSpinners_--;
-  if (this.activeSpinners_ === 0)
+  if (this.activeSpinners_ === 0) {
     this.element_.hidden = true;
+  }
 };

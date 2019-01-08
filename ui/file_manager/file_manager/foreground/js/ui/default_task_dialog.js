@@ -68,8 +68,9 @@ cr.define('cr.filebrowser', function() {
       div.style.backgroundImage = 'url(' + item.iconUrl + ')';
     }
 
-    if (item.class)
+    if (item.class) {
       div.classList.add(item.class);
+    }
 
     result.appendChild(div);
     // A11y - make it focusable and readable.
@@ -132,8 +133,9 @@ cr.define('cr.filebrowser', function() {
    * Closes dialog and invokes callback with currently-selected item.
    */
   DefaultTaskDialog.prototype.onSelected_ = function() {
-    if (this.selectionModel_.selectedIndex !== -1)
+    if (this.selectionModel_.selectedIndex !== -1) {
       this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
+    }
   };
 
   /**
@@ -146,8 +148,9 @@ cr.define('cr.filebrowser', function() {
     var list = /** @type {cr.ui.List} */ (event.target);
     var activeItem =
         list.getListItemByIndex(list.selectionModel_.selectedIndex);
-    if (activeItem)
+    if (activeItem) {
       activeItem.focus();
+    }
   };
 
   /**

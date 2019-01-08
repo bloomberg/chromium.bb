@@ -12,8 +12,9 @@ function testRootTypeFromVolumeTypeBijection() {
     // The enum is decorated with an isNative() helper. Skip it for the purposes
     // of this test, since it is not a valid enum value. (This helper breaks the
     // ability to iterate over enum values, so should probably be removed).
-    if (volumeType === VolumeManagerCommon.VolumeType.isNative)
+    if (volumeType === VolumeManagerCommon.VolumeType.isNative) {
       return;
+    }
 
     const rootType = VolumeManagerCommon.getRootTypeFromVolumeType(volumeType);
     assertTrue(

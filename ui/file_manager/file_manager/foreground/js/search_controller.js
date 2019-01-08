@@ -124,8 +124,9 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
   // this query.
   var searchString = this.searchBox_.inputElement.value.trimLeft();
   this.lastAutocompleteQuery_ = searchString;
-  if (this.autocompleteSuggestionsBusy_)
+  if (this.autocompleteSuggestionsBusy_) {
     return;
+  }
 
   // Clear search if the query empty.
   if (!searchString) {
@@ -246,8 +247,9 @@ SearchController.prototype.search_ = function(searchString) {
     if (this.isOnDrive_) {
       var locationInfo = this.currentLocationInfo_;
       var rootEntry = locationInfo.volumeInfo.displayRoot;
-      if (rootEntry)
+      if (rootEntry) {
         this.locationLine_.show(rootEntry);
+      }
     }
   };
 

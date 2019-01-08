@@ -34,7 +34,9 @@ function MockFileSystem(volumeId, opt_rootURL) {
 }
 
 MockFileSystem.prototype = {
-  get root() { return this.entries['/']; }
+  get root() {
+    return this.entries['/'];
+  }
 };
 
 /**
@@ -50,8 +52,9 @@ MockFileSystem.prototype = {
  *     populating.
  */
 MockFileSystem.prototype.populate = function(entries, opt_clear) {
-  if (opt_clear)
+  if (opt_clear) {
     this.entries = {'/': new MockDirectoryEntry(this, '/')};
+  }
   entries.forEach(function(entry) {
     var path = entry.fullPath || entry;
     var metadata = entry.metadata || {size: 0};
@@ -59,13 +62,15 @@ MockFileSystem.prototype.populate = function(entries, opt_clear) {
     var pathElements = path.split('/');
     pathElements.forEach(function(_, i) {
       var subpath = pathElements.slice(0, i).join('/');
-      if (subpath && !(subpath in this.entries))
+      if (subpath && !(subpath in this.entries)) {
         this.entries[subpath] = new MockDirectoryEntry(this, subpath, metadata);
+      }
     }.bind(this));
 
     // If the path doesn't end in a slash, create a file.
-    if (!/\/$/.test(path))
+    if (!/\/$/.test(path)) {
       this.entries[path] = new MockFileEntry(this, path, metadata, content);
+    }
   }.bind(this));
 };
 
@@ -137,10 +142,11 @@ MockEntry.prototype = {
  * @param {function(!FileError)=} onError
  */
 MockEntry.prototype.getMetadata = function(onSuccess, onError) {
-  if (this.filesystem.entries[this.fullPath])
+  if (this.filesystem.entries[this.fullPath]) {
     onSuccess(this.metadata);
-  else
+  } else {
     onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
+  }
 };
 
 /**
@@ -167,10 +173,11 @@ MockEntry.prototype.toURL = function() {
  */
 MockEntry.prototype.getParent = function(onSuccess, onError) {
   var path = this.fullPath.replace(/\/[^\/]+$/, '') || '/';
-  if (this.filesystem.entries[path])
+  if (this.filesystem.entries[path]) {
     onSuccess(this.filesystem.entries[path]);
-  else
+  } else {
     onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
+  }
 };
 
 /**
@@ -236,8 +243,9 @@ MockEntry.prototype.removeRecursively = function(onSuccess, onError) {
   this.removed_ = true;
   Promise.resolve().then(() => {
     for (let path in this.filesystem.entries) {
-      if (path.startsWith(this.fullPath))
+      if (path.startsWith(this.fullPath)) {
         delete this.filesystem.entries[path];
+      }
     }
     onSuccess();
   });
@@ -247,8 +255,9 @@ MockEntry.prototype.removeRecursively = function(onSuccess, onError) {
  * Asserts that the entry was removed.
  */
 MockEntry.prototype.assertRemoved = function() {
-  if (!this.removed_)
+  if (!this.removed_) {
     throw new Error('expected removed for file ' + this.name);
+  }
 };
 
 /** @override */
@@ -362,13 +371,14 @@ MockDirectoryEntry.prototype.getFile = function(
   onSuccess = onSuccess || (entry => {});  // no-op
   onError = onError || (error => {});      // no-op
   var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
-  if (!this.filesystem.entries[fullPath])
+  if (!this.filesystem.entries[fullPath]) {
     onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
-  else if (!(this.filesystem.entries[fullPath] instanceof MockFileEntry))
+  } else if (!(this.filesystem.entries[fullPath] instanceof MockFileEntry)) {
     onError(
         /** @type {!FileError} */ ({name: util.FileError.TYPE_MISMATCH_ERR}));
-  else
+  } else {
     onSuccess(this.filesystem.entries[fullPath]);
+  }
 };
 
 /**
@@ -388,14 +398,15 @@ MockDirectoryEntry.prototype.getDirectory = function(
   var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
   var result = this.filesystem.entries[fullPath];
   if (result) {
-    if (!(result instanceof MockDirectoryEntry))
+    if (!(result instanceof MockDirectoryEntry)) {
       onError(
           /** @type {!FileError} */ ({name: util.FileError.TYPE_MISMATCH_ERR}));
-    else if (option['create'] && option['exclusive'])
+    } else if (option['create'] && option['exclusive']) {
       onError(
           /** @type {!FileError} */ ({name: util.FileError.PATH_EXISTS_ERR}));
-    else
+    } else {
       onSuccess(result);
+    }
   } else {
     if (!option['create']) {
       onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));

@@ -7,7 +7,9 @@
 // Although localStorage in Chrome app is not supported, but it's used in the
 // cast extension. This line prevents an exception on using localStorage.
 Object.defineProperty(window, 'localStorage', {
-  get: function() { return {}; }
+  get: function() {
+    return {};
+  }
 });
 
 /**

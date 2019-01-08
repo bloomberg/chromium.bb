@@ -106,8 +106,9 @@ function createMockMetadataModel() {
  */
 function getDirectoryTreeItemLabels(directoryTree) {
   let labels = [];
-  for (let item of directoryTree.items)
+  for (let item of directoryTree.items) {
     labels.push(item.label);
+  }
   return labels;
 }
 

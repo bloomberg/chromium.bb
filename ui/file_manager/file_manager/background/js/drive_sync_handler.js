@@ -278,8 +278,9 @@ DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
 DriveSyncHandlerImpl.prototype.onNotificationButtonClicked_ = function(
     notificationId, buttonIndex) {
   var expectedId = DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
-  if (notificationId !== expectedId)
+  if (notificationId !== expectedId) {
     return;
+  }
   chrome.notifications.clear(notificationId, function() {});
   chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
 };

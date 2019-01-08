@@ -65,8 +65,9 @@ async function setUpFileEntrySet(volume) {
       ['drive'], [ENTRIES.hello, ENTRIES.pinned, ENTRIES.testDocument]);
 
   await Promise.all([localEntryPromise, driveEntryPromise]);
-  if (volume == 'drive')
+  if (volume == 'drive') {
     return [ENTRIES.hello, ENTRIES.pinned, ENTRIES.testDocument];
+  }
   return BASIC_LOCAL_ENTRY_SET;
 }
 

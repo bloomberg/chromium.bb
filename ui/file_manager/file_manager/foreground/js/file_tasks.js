@@ -378,10 +378,11 @@ FileTasks.isOffline_ = function(volumeManager) {
 FileTasks.recordEnumWithOnlineAndOffline_ = function(
     volumeManager, name, value, values) {
   metrics.recordEnum(name, value, values);
-  if (FileTasks.isOffline_(volumeManager))
+  if (FileTasks.isOffline_(volumeManager)) {
     metrics.recordEnum(name + '.Offline', value, values);
-  else
+  } else {
     metrics.recordEnum(name + '.Online', value, values);
+  }
 };
 
 /**
@@ -523,10 +524,11 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
       } else if (taskParts[2] === 'open-hosted-generic') {
-        if (entries.length > 1)
+        if (entries.length > 1) {
           task.iconType = 'generic';
-        else // Use specific icon.
+        } else {  // Use specific icon.
           task.iconType = FileType.getIcon(entries[0]);
+        }
         task.title = loadTimeData.getString('TASK_OPEN');
       } else if (taskParts[2] === 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
@@ -542,14 +544,16 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
         task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
       } else if (taskParts[2] === 'view-swf') {
         // Do not render this task if disabled.
-        if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED'))
+        if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED')) {
           continue;
+        }
         task.iconType = 'generic';
         task.title = loadTimeData.getString('TASK_VIEW');
       } else if (taskParts[2] === 'view-pdf') {
         // Do not render this task if disabled.
-        if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
+        if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED')) {
           continue;
+        }
         task.iconType = 'pdf';
         task.title = loadTimeData.getString('TASK_VIEW');
       } else if (taskParts[2] === 'view-in-browser') {
@@ -587,8 +591,9 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
         default:
           console.error('Invalid task verb: ' + task.verb + '.');
       }
-      if (verbButtonLabel)
+      if (verbButtonLabel) {
         task.label = loadTimeData.getStringF(verbButtonLabel, task.title);
+      }
     }
 
     result.push(task);
@@ -631,8 +636,9 @@ FileTasks.taskRequiresCrostiniSharing = function(task) {
 FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
     task, callback) {
   // Check if this is a crostini task.
-  if (!FileTasks.taskRequiresCrostiniSharing(task))
+  if (!FileTasks.taskRequiresCrostiniSharing(task)) {
     return callback();
+  }
 
   let showUnableToOpen = false;
   const entriesToShare = [];
@@ -734,8 +740,9 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
 
   // We don't have tasks, so try to show a file in a browser tab.
   // We only do that for single selection to avoid confusion.
-  if (this.entries_.length !== 1)
+  if (this.entries_.length !== 1) {
     return;
+  }
 
   var filename = this.entries_[0].name;
   var extension = util.splitExtension(filename)[1] || null;
@@ -806,8 +813,9 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
         break;
       case 'message_sent':
         util.isTeleported(window).then(function(teleported) {
-          if (teleported)
+          if (teleported) {
             this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+          }
         }.bind(this));
         callback(true, this.entries_);
         break;
@@ -861,11 +869,13 @@ FileTasks.prototype.executeInternal_ = function(task) {
         FileTasks.recordZipHandlerUMA_(task.taskId);
         chrome.fileManagerPrivate.executeTask(
             task.taskId, this.entries_, (result) => {
-              if (result !== 'message_sent')
+              if (result !== 'message_sent') {
                 return;
+              }
               util.isTeleported(window).then((teleported) => {
-                if (teleported)
+                if (teleported) {
                   this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+                }
               });
             });
       }
@@ -888,8 +898,9 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
     var okEntriesNum = 0;
     for (var i = 0; i < entries.length; i++) {
       // If got no properties, we safely assume that item is available.
-      if (props[i] && (props[i][name] || entries[i].isDirectory))
+      if (props[i] && (props[i][name] || entries[i].isDirectory)) {
         okEntriesNum++;
+      }
     }
     return okEntriesNum === props.length;
   };
@@ -950,8 +961,9 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
 
           var sizeToDownload = 0;
           for (var i = 0; i !== this.entries_.length; i++) {
-            if (!props[i].availableWhenMetered)
+            if (!props[i].availableWhenMetered) {
               sizeToDownload += props[i].size;
+            }
           }
           this.ui_.confirmDialog.show(
               loadTimeData.getStringF(
@@ -1056,10 +1068,11 @@ FileTasks.prototype.display = function(openCombobutton, shareMenuButton) {
   var otherTasks = [];
   for (var i = 0; i < this.tasks_.length; i++) {
     var task = this.tasks_[i];
-    if (FileTasks.isOpenTask(task))
+    if (FileTasks.isOpenTask(task)) {
       openTasks.push(task);
-    else
+    } else {
       otherTasks.push(task);
+    }
   }
   this.updateOpenComboButton_(openCombobutton, openTasks);
   this.updateShareMenuButton_(shareMenuButton, otherTasks);
@@ -1072,8 +1085,9 @@ FileTasks.prototype.display = function(openCombobutton, shareMenuButton) {
  */
 FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
   combobutton.hidden = tasks.length == 0;
-  if (tasks.length == 0)
+  if (tasks.length == 0) {
     return;
+  }
 
   combobutton.clear();
 
@@ -1224,14 +1238,16 @@ FileTasks.prototype.createItems_ = function(tasks) {
   items.sort(function(a, b) {
     // Sort by isDefaultTask.
     var isDefault = (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0);
-    if (isDefault !== 0)
+    if (isDefault !== 0) {
       return isDefault;
+    }
 
     // Sort by last-executed time.
     var aTime = this.taskHistory_.getLastExecutedTime(a.task.taskId);
     var bTime = this.taskHistory_.getLastExecutedTime(b.task.taskId);
-    if (aTime != bTime)
+    if (aTime != bTime) {
       return bTime - aTime;
+    }
 
     // Sort by label.
     return a.label.localeCompare(b.label);
@@ -1296,13 +1312,16 @@ FileTasks.prototype.showTaskPicker = function(
       this.getNonOpenTaskItems() :
       this.getOpenTaskItems();
   var items = this.createItems_(tasks);
-  if (pickerType == FileTasks.TaskPickerType.ChangeDefault)
+  if (pickerType == FileTasks.TaskPickerType.ChangeDefault) {
     items = items.filter(item => !item.isGenericFileHandler);
+  }
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {
-    if (this.defaultTask_ && items[j].task.taskId === this.defaultTask_.taskId)
+    if (this.defaultTask_ &&
+        items[j].task.taskId === this.defaultTask_.taskId) {
       defaultIdx = j;
+    }
   }
 
   taskDialog.showDefaultTaskDialog(

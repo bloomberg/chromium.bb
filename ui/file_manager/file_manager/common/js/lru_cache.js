@@ -44,12 +44,15 @@ function LRUCacheList() {
  * @param {!LRUCacheNode} node
  */
 LRUCacheList.prototype.remove = function(node) {
-  if (node.prev)
+  if (node.prev) {
     node.prev.next = node.next;
-  if (node.next)
+  }
+  if (node.next) {
     node.next.prev = node.prev;
-  if (node === this.head_)
+  }
+  if (node === this.head_) {
     this.head_ = node.next;
+  }
   node.prev = null;
   node.next = null;
 };
@@ -105,8 +108,9 @@ function LRUCache(maxSize) {
  */
 LRUCache.prototype.get = function(key) {
   var node = this.nodes_[key];
-  if (!node)
+  if (!node) {
     return null;
+  }
 
   this.moveNodeToHead_(node);
   return node.value;
@@ -120,8 +124,9 @@ LRUCache.prototype.get = function(key) {
  */
 LRUCache.prototype.peek = function(key) {
   var node = this.nodes_[key];
-  if (!node)
+  if (!node) {
     return null;
+  }
 
   return node.value;
 };
@@ -148,8 +153,9 @@ LRUCache.prototype.hasKey = function(key) {
  */
 LRUCache.prototype.put = function(key, value, opt_size) {
   var size = opt_size ? opt_size : 1;
-  if (size > this.maxSize_)
+  if (size > this.maxSize_) {
     return;
+  }
 
   var node = this.nodes_[key];
 
@@ -174,8 +180,9 @@ LRUCache.prototype.put = function(key, value, opt_size) {
  */
 LRUCache.prototype.remove = function(key) {
   var node = this.nodes_[key];
-  if (node)
+  if (node) {
     this.removeNode_(node);
+  }
 };
 
 /**
@@ -211,8 +218,9 @@ LRUCache.prototype.getMaxSize = function() {
  */
 LRUCache.prototype.evictLastNode_ = function() {
   var lastNode = this.list_.lastNode();
-  if (!lastNode)
+  if (!lastNode) {
     throw new Error('No more nodes to evict.');
+  }
 
   this.removeNode_(lastNode);
 };

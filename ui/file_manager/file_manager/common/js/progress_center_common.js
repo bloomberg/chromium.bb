@@ -124,10 +124,11 @@ ProgressCenterItem.prototype = /** @struct */ {
    * @param {string} value New value of ID.
    */
   set id(value) {
-    if (!this.id_)
+    if (!this.id_) {
       this.id_ = value;
-    else
+    } else {
       console.error('The ID is already set. (current ID: ' + this.id_ + ')');
+    }
   },
 
   /**
@@ -148,9 +149,12 @@ ProgressCenterItem.prototype = /** @struct */ {
    */
   get progressRateInPercent() {
     switch (this.state) {
-      case ProgressItemState.CANCELED: return 0;
-      case ProgressItemState.COMPLETED: return 100;
-      default: return ~~(100 * this.progressValue / this.progressMax);
+      case ProgressItemState.CANCELED:
+        return 0;
+      case ProgressItemState.COMPLETED:
+        return 100;
+      default:
+        return ~~(100 * this.progressValue / this.progressMax);
     }
   },
 

@@ -96,10 +96,13 @@ CastVideoElement.prototype = /** @struct */ {
    */
   get currentTime() {
     if (this.castMedia_) {
-      if (this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED)
-        return this.currentMediaDuration_;  // Returns the duration.
-      else
+      if (this.castMedia_.idleReason ===
+          chrome.cast.media.IdleReason.FINISHED) {
+        // Returns the duration.
+        return this.currentMediaDuration_;
+      } else {
         return this.castMedia_.getEstimatedTime();
+      }
     } else {
       return null;
     }
@@ -117,8 +120,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @type {boolean}
    */
   get paused() {
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       return false;
+    }
 
     return !this.playInProgress_ &&
         (this.pauseInProgress_ ||
@@ -130,8 +134,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @type {boolean}
    */
   get ended() {
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       return true;
+    }
 
     return !this.playInProgress_ &&
            this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
@@ -145,8 +150,12 @@ CastVideoElement.prototype = /** @struct */ {
   get seekable() {
     return {
       length: 1,
-      start: function(index) { return 0; },
-      end: function(index) { return this.currentMediaDuration_; },
+      start: function(index) {
+        return 0;
+      },
+      end: function(index) {
+        return this.currentMediaDuration_;
+      },
     };
   },
 
@@ -164,8 +173,9 @@ CastVideoElement.prototype = /** @struct */ {
 
 
     if (this.castSession_.receiver.volume.muted) {
-      if (volume < VOLUME_EPS)
+      if (volume < VOLUME_EPS) {
         return;
+      }
 
       // Unmute before setting volume.
       this.castSession_.setReceiverMuted(false,
@@ -178,8 +188,9 @@ CastVideoElement.prototype = /** @struct */ {
     } else {
       // Ignores < 1% change.
       var diff = this.castSession_.receiver.volume.level - volume;
-      if (Math.abs(diff) < VOLUME_EPS)
+      if (Math.abs(diff) < VOLUME_EPS) {
         return;
+      }
 
       if (volume < VOLUME_EPS) {
         this.castSession_.setReceiverMuted(true,
@@ -221,8 +232,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @type {?Object}
    */
   get error() {
-    if (this.errorCode_ === 0)
+    if (this.errorCode_ === 0) {
       return null;
+    }
 
     return {code: this.errorCode_};
   },
@@ -232,8 +244,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @param {boolean=} opt_seeking True when seeking. False otherwise.
    */
   play: function(opt_seeking) {
-    if (this.playInProgress_)
+    if (this.playInProgress_) {
       return;
+    }
 
     var play = function() {
       // If the casted media is already playing and a pause request is not in
@@ -261,10 +274,11 @@ CastVideoElement.prototype = /** @struct */ {
 
     this.playInProgress_ = true;
 
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       this.load(play);
-    else
+    } else {
       play();
+    }
   },
 
   /**
@@ -272,8 +286,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @param {boolean=} opt_seeking True when seeking. False otherwise.
    */
   pause: function(opt_seeking) {
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       return;
+    }
 
     if (this.pauseInProgress_ ||
         this.castMedia_.playerState === chrome.cast.media.PlayerState.PAUSED) {
@@ -329,8 +344,9 @@ CastVideoElement.prototype = /** @struct */ {
               this.castSession_.loadMedia.bind(this.castSession_, request)).
               then(function(media) {
                 this.onMediaDiscovered_(media);
-                if (opt_callback)
+                if (opt_callback) {
                   opt_callback();
+                }
               }.bind(this));
         }.bind(this)).catch(function(error) {
           this.unloadMedia_();
@@ -380,8 +396,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @private
    */
   onMessage_: function(namespace, messageAsJson) {
-    if (namespace !== CAST_MESSAGE_NAMESPACE || !messageAsJson)
+    if (namespace !== CAST_MESSAGE_NAMESPACE || !messageAsJson) {
       return;
+    }
 
     var message = JSON.parse(messageAsJson);
     if (message['message'] === 'request-token') {
@@ -401,8 +418,9 @@ CastVideoElement.prototype = /** @struct */ {
             'New token is requested, but the previous token mismatches.');
       }
     } else if (message['message'] === 'playback-error') {
-      if (message['detail'] === 'src-not-supported')
+      if (message['detail'] === 'src-not-supported') {
         this.errorCode_ = MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED;
+      }
     }
   },
 
@@ -412,11 +430,13 @@ CastVideoElement.prototype = /** @struct */ {
    * @private
    */
   onPeriodicalUpdateTimer_: function() {
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       return;
+    }
 
-    if (this.castMedia_.playerState === chrome.cast.media.PlayerState.PLAYING)
+    if (this.castMedia_.playerState === chrome.cast.media.PlayerState.PLAYING) {
       this.onCastMediaUpdated_(true);
+    }
   },
 
   /**
@@ -459,8 +479,9 @@ CastVideoElement.prototype = /** @struct */ {
    * @private
    */
   onCastMediaUpdated_: function(alive) {
-    if (!this.castMedia_)
+    if (!this.castMedia_) {
       return;
+    }
 
     var media = this.castMedia_;
     if (this.loop_ &&
@@ -491,10 +512,12 @@ CastVideoElement.prototype = /** @struct */ {
           newState === chrome.cast.media.PlayerState.PLAYING) {
         newPlayState = true;
       }
-      if (!oldPlayState && newPlayState)
+      if (!oldPlayState && newPlayState) {
         this.dispatchEvent(new Event('play'));
-      if (oldPlayState && !newPlayState)
+      }
+      if (oldPlayState && !newPlayState) {
         this.dispatchEvent(new Event('pause'));
+      }
 
       this.currentMediaPlayerState_ = newState;
     }
@@ -507,8 +530,9 @@ CastVideoElement.prototype = /** @struct */ {
       // Since recordMediumCount which is called inside recordCastedVideoLangth
       // can take a value ranges from 1 to 10,000, we don't allow to pass 0
       // here. i.e. length 0 is not recorded.
-      if (this.currentMediaDuration_)
+      if (this.currentMediaDuration_) {
         metrics.recordCastedVideoLength(this.currentMediaDuration_);
+      }
 
       this.currentMediaDuration_ = media.media.duration;
       this.dispatchEvent(new Event('durationchange'));

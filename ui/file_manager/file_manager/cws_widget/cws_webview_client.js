@@ -57,8 +57,9 @@ Object.freeze(CWSContainerClient.Events);
  * @private
  */
 CWSContainerClient.prototype.onMessage_ = function(event) {
-  if (event.origin != this.target_)
+  if (event.origin != this.target_) {
     return;
+  }
 
   var data = event.data;
   switch (data['message']) {
@@ -123,10 +124,11 @@ CWSContainerClient.prototype.onLoadAbort_ = function(event) {
  * @param {string} itemId Item id to be installed.
  */
 CWSContainerClient.prototype.onInstallCompleted = function(result, itemId) {
-  if (result)
+  if (result) {
     this.postInstallSuccessMessage_(itemId);
-  else
+  } else {
     this.postInstallFailureMessage_(itemId);
+  }
 };
 
 /**
@@ -235,8 +237,9 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
  * @private
  */
 CWSContainerClient.prototype.postMessage_ = function(message) {
-  if (!this.webView_.contentWindow)
+  if (!this.webView_.contentWindow) {
     return;
+  }
 
   this.webView_.contentWindow.postMessage(message, this.target_);
 };
@@ -245,8 +248,9 @@ CWSContainerClient.prototype.postMessage_ = function(message) {
  * Loads the page to <webview>. Can be called only once.
  */
 CWSContainerClient.prototype.load = function() {
-  if (this.loading_ || this.loaded_)
+  if (this.loading_ || this.loaded_) {
     throw new Error('Already loaded.');
+  }
   this.loading_ = true;
   this.loaded_ = false;
 

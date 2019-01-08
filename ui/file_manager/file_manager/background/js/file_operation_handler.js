@@ -66,8 +66,9 @@ FileOperationHandler.getMessage_ = function(event) {
     switch (event.error.code) {
       case util.FileOperationErrorType.TARGET_EXISTS:
         var name = event.error.data.name;
-        if (event.error.data.isDirectory)
+        if (event.error.data.isDirectory) {
           name += '/';
+        }
         switch (event.status.operationType) {
           case 'COPY': return strf('COPY_TARGET_EXISTS_ERROR', name);
           case 'MOVE': return strf('MOVE_TARGET_EXISTS_ERROR', name);
@@ -254,8 +255,9 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
       item.message = FileOperationHandler.getDeleteMessage_(event);
       item.progressMax = event.totalBytes;
       item.progressValue = event.processedBytes;
-      if (!pending)
+      if (!pending) {
         progressCenter.updateItem(item);
+      }
       break;
 
     case EventType.SUCCESS:
@@ -282,10 +284,12 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
       }
 
       // Apply the change.
-      if (!pending || event.reason === EventType.ERROR)
+      if (!pending || event.reason === EventType.ERROR) {
         progressCenter.updateItem(item);
-      if (pending)
+      }
+      if (pending) {
         delete this.pendingItems_[event.taskId];
+      }
       break;
   }
 };
@@ -298,8 +302,9 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
  */
 FileOperationHandler.prototype.showPendingItem_ = function(item) {
   // The item is already gone.
-  if (!this.pendingItems_[item.id])
+  if (!this.pendingItems_[item.id]) {
     return;
+  }
   delete this.pendingItems_[item.id];
   this.progressCenter_.updateItem(item);
 };

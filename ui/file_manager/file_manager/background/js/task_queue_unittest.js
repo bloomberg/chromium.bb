@@ -92,8 +92,12 @@ function testRunsTasks(callback) {
   var task1 = new TestTask('task1');
 
   // Make the tasks call Task#notifyComplete when they are run.
-  task0.whenRun().then(function(task) { task.notifyComplete(); });
-  task1.whenRun().then(function(task) { task.notifyComplete(); });
+  task0.whenRun().then(function(task) {
+    task.notifyComplete();
+  });
+  task1.whenRun().then(function(task) {
+    task.notifyComplete();
+  });
 
   // Enqueue both tasks, and then verify that they were run.
   queue.queueTask(task0);
@@ -126,7 +130,9 @@ function testOnActiveCalled(callback) {
 function testOnIdleCalled(callback) {
   var task = new TestTask('task0');
 
-  task.whenRun().then(function(task) { task.notifyComplete(); });
+  task.whenRun().then(function(task) {
+    task.notifyComplete();
+  });
 
   // Make a promise that resolves when the idle callback is triggered
   // (i.e. after all queued tasks have finished running).
@@ -181,7 +187,9 @@ function testSuccessUpdate(callback) {
   var task = new TestTask('task0');
 
   // Get the task to report success when it's run.
-  task.whenRun().then(function(task) { task.notifyComplete(); });
+  task.whenRun().then(function(task) {
+    task.notifyComplete();
+  });
 
   queue.queueTask(task);
 
@@ -229,8 +237,12 @@ function testOnTaskCancelled(callback) {
   var task1 = new TestTask('task1');
 
   // Make the tasks call Task#notifyComplete when they are run.
-  task0.whenRun().then(function(task) {task.notifyCanceled(); });
-  task1.whenRun().then(function(task) {task.notifyComplete(); });
+  task0.whenRun().then(function(task) {
+    task.notifyCanceled();
+  });
+  task1.whenRun().then(function(task) {
+    task.notifyComplete();
+  });
 
   // Enqueue both tasks, and then verify that they were run.
   queue.queueTask(task0);

@@ -19,8 +19,9 @@ window.addEventListener(
       // Reload an existing <script> element.
       let reloadScript = (src) => {
         let element = document.querySelector('script[src$="' + src + '"]');
-        if (!(element instanceof HTMLScriptElement))
+        if (!(element instanceof HTMLScriptElement)) {
           return Promise.reject('reloading script: ' + src + ' not found');
+        }
         element.remove();
         return new Promise((resolve, reject) => {
           let script = document.createElement('script');
@@ -70,8 +71,12 @@ function writeDirectory_(bytes, tag) {
  */
 function parseExifData_(bytes) {
   let exifParser = new ExifParser(this);
-  exifParser.log = function(arg) { console.log(arg); };
-  exifParser.vlog = function(arg) { console.log(arg); };
+  exifParser.log = function(arg) {
+    console.log(arg);
+  };
+  exifParser.vlog = function(arg) {
+    console.log(arg);
+  };
 
   let tags = {};
   let byteReader = new ByteReader(bytes.buffer);

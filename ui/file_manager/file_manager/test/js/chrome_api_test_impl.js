@@ -135,8 +135,9 @@ chrome = {
     onMessageExternal: new test.Event(),
     sendMessage: (extensionId, message, options, opt_callback) => {
       // Returns JSON.
-      if (opt_callback)
+      if (opt_callback) {
         setTimeout(opt_callback(''), 0);
+      }
     },
   },
 
@@ -147,8 +148,9 @@ chrome = {
         var keys = keys instanceof Array ? keys : [keys];
         var result = {};
         keys.forEach(key => {
-          if (key in chrome.storage.state_)
+          if (key in chrome.storage.state_) {
             result[key] = chrome.storage.state_[key];
+          }
         });
         setTimeout(callback, 0, result);
       },
@@ -156,8 +158,9 @@ chrome = {
         for (var key in items) {
           chrome.storage.state_[key] = items[key];
         }
-        if (opt_callback)
+        if (opt_callback) {
           setTimeout(opt_callback, 0);
+        }
       },
     },
     onChanged: new test.Event(),

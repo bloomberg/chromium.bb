@@ -121,8 +121,9 @@ cr.define('cr.filebrowser', function() {
     // where they're missing gracefully.
     let description = linux_package_info.summary;
     if (linux_package_info.description) {
-      if (description)
+      if (description) {
         description += '\n\n';
+      }
       description += linux_package_info.description;
     }
     if (description) {

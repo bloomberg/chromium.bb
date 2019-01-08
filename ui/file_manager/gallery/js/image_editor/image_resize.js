@@ -78,8 +78,9 @@ ImageEditorMode.Resize.prototype.createTools = function(toolbar) {
   this.lockIcon_ = toolbar.addButton(
       'GALLERY_FIXRATIO', ImageEditorToolbar.ButtonType.ICON_TOGGLEABLE,
       this.onLockIconClicked_.bind(this), 'lockicon');
-  if(this.fixedRatio_)
+  if (this.fixedRatio_) {
     this.lockIcon_.setAttribute('locked', '');
+  }
 
   this.heightInputElement_ = toolbar.addInput('height', 'GALLERY_HEIGHT',
       this.onInputChanged_.bind(this, 'height'),
@@ -93,9 +94,9 @@ ImageEditorMode.Resize.prototype.createTools = function(toolbar) {
  * @private
  */
 ImageEditorMode.Resize.prototype.onInputChanged_ = function(name, event) {
-
-  if(name !== 'height' && name !== 'width')
+  if (name !== 'height' && name !== 'width') {
     return;
+  }
 
   this.updateInputValues_();
 
@@ -118,8 +119,9 @@ ImageEditorMode.Resize.prototype.onInputChanged_ = function(name, event) {
     }
   }
 
-  if(this.fixedRatio_ && this.isInputValidByName_(name))
+  if (this.fixedRatio_ && this.isInputValidByName_(name)) {
     adjustToRatio.call(this);
+  }
 };
 
 /**
@@ -178,10 +180,12 @@ ImageEditorMode.Resize.prototype.initializeInputValues_ = function() {
  * @private
  */
 ImageEditorMode.Resize.prototype.updateInputValues_ = function() {
-  if(this.widthInputElement_)
+  if (this.widthInputElement_) {
     this.widthInputValue_ = parseInt(this.widthInputElement_.getValue(), 10);
-  if(this.heightInputElement_)
+  }
+  if (this.heightInputElement_) {
     this.heightInputValue_ = parseInt(this.heightInputElement_.getValue(), 10);
+  }
 };
 
 /**
@@ -189,8 +193,9 @@ ImageEditorMode.Resize.prototype.updateInputValues_ = function() {
  * @private
  */
 ImageEditorMode.Resize.prototype.setWidthInputValue_ = function() {
-  if(this.widthInputElement_)
+  if (this.widthInputElement_) {
     this.widthInputElement_.setValue(this.widthInputValue_);
+  }
 };
 
 /**
@@ -198,8 +203,9 @@ ImageEditorMode.Resize.prototype.setWidthInputValue_ = function() {
  * @private
  */
 ImageEditorMode.Resize.prototype.setHeightInputValue_ = function() {
-  if(this.heightInputElement_)
+  if (this.heightInputElement_) {
     this.heightInputElement_.setValue(this.heightInputValue_);
+  }
 };
 
 /**
@@ -235,8 +241,9 @@ ImageEditorMode.Resize.prototype.isInputValid = function() {
  * Show alert dialog only if input value is invalid.
  */
 ImageEditorMode.Resize.prototype.showAlertDialog = function() {
-  if(this.isInputValid() || this.showingAlertDialog_)
+  if (this.isInputValid() || this.showingAlertDialog_) {
     return;
+  }
 
   this.alertDialog_ = this.alertDialog_ ||
       new FilesAlertDialog(/** @type {!HTMLElement} */ (document.body));
