@@ -705,7 +705,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
 void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                const char* data,
-                                               size_t data_length) {
+                                               uint64_t data_length) {
   if (IsDetached())
     return;
 

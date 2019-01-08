@@ -404,7 +404,9 @@ class ServeRequestsOnCompleteClient final
     ADD_FAILURE();
     return true;
   }
-  void DataDownloaded(Resource*, int) override { ASSERT_TRUE(false); }
+  void DataDownloaded(Resource*, unsigned long long) override {
+    ASSERT_TRUE(false);
+  }
   void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override {
     ASSERT_TRUE(false);
   }

@@ -66,7 +66,7 @@ class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
   virtual void DidFailRedirectCheck() {}
   virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}
 
-  virtual void DidDownloadData(int /*dataLength*/) {}
+  virtual void DidDownloadData(unsigned long long /*dataLength*/) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with
   // null if creating the blob failed for some reason (but the download itself
   // otherwise succeeded). Could also not be called at all if the downloaded

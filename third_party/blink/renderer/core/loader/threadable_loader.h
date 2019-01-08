@@ -162,7 +162,7 @@ class CORE_EXPORT ThreadableLoader final
                         const ResourceRequest&,
                         const ResourceResponse&) override;
   void RedirectBlocked() override;
-  void DataDownloaded(Resource*, int) override;
+  void DataDownloaded(Resource*, unsigned long long) override;
   void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
   void DidDownloadToBlob(Resource*, scoped_refptr<BlobDataHandle>) override;
 

@@ -77,7 +77,7 @@ class MockThreadableLoaderClient final
   MOCK_METHOD1(DidFail, void(const ResourceError&));
   MOCK_METHOD0(DidFailRedirectCheck, void());
   MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));
-  MOCK_METHOD1(DidDownloadData, void(int));
+  MOCK_METHOD1(DidDownloadData, void(unsigned long long));
 };
 
 bool IsCancellation(const ResourceError& error) {

@@ -737,7 +737,8 @@ void ThreadableLoader::DataSent(Resource* resource,
   client_->DidSendData(bytes_sent, total_bytes_to_be_sent);
 }
 
-void ThreadableLoader::DataDownloaded(Resource* resource, int data_length) {
+void ThreadableLoader::DataDownloaded(Resource* resource,
+                                      unsigned long long data_length) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
   DCHECK(actual_request_.IsNull());

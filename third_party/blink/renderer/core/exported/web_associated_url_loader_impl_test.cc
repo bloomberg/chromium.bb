@@ -145,7 +145,9 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     EXPECT_EQ(expected_response_.HttpStatusCode(), response.HttpStatusCode());
   }
 
-  void DidDownloadData(int data_length) override { did_download_data_ = true; }
+  void DidDownloadData(unsigned long long data_length) override {
+    did_download_data_ = true;
+  }
 
   void DidReceiveData(const char* data, int data_length) override {
     did_receive_data_ = true;

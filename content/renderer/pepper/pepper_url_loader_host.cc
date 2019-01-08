@@ -151,7 +151,7 @@ void PepperURLLoaderHost::DidReceiveResponse(const WebURLResponse& response) {
   SaveResponse(response);
 }
 
-void PepperURLLoaderHost::DidDownloadData(int data_length) {
+void PepperURLLoaderHost::DidDownloadData(unsigned long long data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 }

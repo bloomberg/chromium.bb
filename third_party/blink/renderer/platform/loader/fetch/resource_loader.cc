@@ -1207,7 +1207,7 @@ void ResourceLoader::OnProgress(uint64_t delta) {
     return;
 
   Context().DispatchDidReceiveData(resource_->Identifier(), nullptr, delta);
-  resource_->DidDownloadData(SafeCast<int>(delta));
+  resource_->DidDownloadData(delta);
 }
 
 void ResourceLoader::FinishedCreatingBlob(
