@@ -1700,16 +1700,21 @@ class VDATestSuite : public base::TestSuite {
  public:
   VDATestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
-  int Run() {
+ private:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
     // For windows the decoding thread initializes the media foundation decoder
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI
     // thread.
-    base::test::ScopedTaskEnvironment scoped_task_environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
 #else
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>();
 #endif  // OS_WIN || OS_CHROMEOS
 
     media::g_env =
@@ -1729,8 +1734,14 @@ class VDATestSuite : public base::TestSuite {
 #elif defined(OS_WIN)
     media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
-    return base::TestSuite::Run();
   }
+
+  void Shutdown() override {
+    scoped_task_environment_.reset();
+    base::TestSuite::Shutdown();
+  }
+
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 };
 
 }  // namespace
