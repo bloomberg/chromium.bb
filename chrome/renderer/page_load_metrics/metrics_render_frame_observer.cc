@@ -322,10 +322,15 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   if (perf.LargestImagePaint() > 0.0) {
     timing->paint_timing->largest_image_paint =
         ClampDelta(perf.LargestImagePaint(), start);
+    DCHECK(perf.LargestImagePaintSize() > 0);
+    timing->paint_timing->largest_image_paint_size =
+        perf.LargestImagePaintSize();
   }
   if (perf.LastImagePaint() > 0.0) {
     timing->paint_timing->last_image_paint =
         ClampDelta(perf.LastImagePaint(), start);
+    DCHECK(perf.LastImagePaintSize() > 0);
+    timing->paint_timing->last_image_paint_size = perf.LastImagePaintSize();
   }
   if (perf.LargestTextPaint() > 0.0) {
     timing->paint_timing->largest_text_paint =
