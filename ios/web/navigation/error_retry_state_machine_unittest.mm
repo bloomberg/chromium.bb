@@ -144,6 +144,17 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
     ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
               clone.state());
   }
+
+  // Simulate back/forward navigation to a restored session entry that never
+  // succeeded in loading.
+  {
+    const GURL restore_session_url =
+        wk_navigation_util::CreateRedirectUrl(test_url);
+    ErrorRetryStateMachine clone(machine);
+    ASSERT_EQ(ErrorRetryCommand::kDoNothing,
+              clone.DidFinishNavigation(restore_session_url));
+    ASSERT_EQ(ErrorRetryState::kNoNavigationError, clone.state());
+  }
 }
 
 // Tests load failure after navigation is committed.
