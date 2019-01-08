@@ -950,13 +950,18 @@ class ReportStage(generic_stages.BuilderStage,
         self.GetReportMetadata(final_status=final_status,
                                completion_instance=self._completion_instance))
 
+    src_root = self._build_root
+    # Workspace builders use a different buildroot for overlays.
+    if self._run.config.workspace_branch and self._run.options.workspace:
+      src_root = self._run.options.workspace
+
     # Add tags for the arches and statuses of the build.
     # arches requires crossdev which isn't available at the early part of the
     # build.
     arches = []
     for board in self._run.config['boards']:
       toolchains = toolchain.GetToolchainsForBoard(
-          board, buildroot=self._build_root)
+          board, buildroot=src_root)
       default = toolchain.FilterToolchains(toolchains, 'default', True).keys()
       if len(default):
         try:

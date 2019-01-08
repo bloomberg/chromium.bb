@@ -241,6 +241,7 @@ class MoblabVMTestStageTestCase(
   RELEASE_TAG = ''
 
   def setUp(self):
+    self.CreateMockOverlay('moblab-generic-vm')
     self._temp_chroot_prefix = os.path.join(self.tempdir, 'chroot')
     osutils.SafeMakedirsNonRoot(self._temp_chroot_prefix)
     self._temp_host_prefix = os.path.join(self.tempdir, 'host')

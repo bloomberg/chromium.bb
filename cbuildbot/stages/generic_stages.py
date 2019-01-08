@@ -1143,7 +1143,8 @@ class ArchivingStageMixin(object):
         (hasattr(self, '_current_board') or board)):
       board = board or self._current_board
       custom_artifacts_file = portage_util.ReadOverlayFile(
-          'scripts/artifacts.json', board=board)
+          'scripts/artifacts.json', board=board,
+          buildroot=self._build_root)
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)
         for url in json_file.get('extra_upload_urls', []):

@@ -206,6 +206,8 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase,
   """Test CPEExportStage"""
 
   def setUp(self):
+    self.CreateMockOverlay('amd64-generic')
+
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
@@ -246,6 +248,8 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   # pylint: disable=protected-access
 
   def setUp(self):
+    self.CreateMockOverlay('amd64-generic')
+
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
 
     self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')

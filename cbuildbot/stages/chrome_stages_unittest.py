@@ -37,6 +37,8 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
   # pylint: disable=protected-access
 
   def setUp(self):
+    self.CreateMockOverlay('link')
+
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     # Set up a general purpose cidb mock. Tests with more specific

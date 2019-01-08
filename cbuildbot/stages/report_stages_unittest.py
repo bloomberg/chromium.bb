@@ -248,6 +248,8 @@ class ReportStageTest(AbstractReportStageTestCase):
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
+    self.CreateMockOverlay('amd64-generic')
+
     stages = [
         {
             'name': 'stage1',

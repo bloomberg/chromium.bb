@@ -76,6 +76,22 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._model = None
     self.buildstore = FakeBuildStore()
 
+  def CreateMockOverlay(self, overlay):
+    """Helper for creating an overlay in the fake buildroot.
+
+    Args:
+      overlay: The overlay name to create. Usually the board name.
+    """
+    layout_path = os.path.join(self.build_root, 'src', 'overlays',
+                               'overlay-%s' % overlay,
+                               'metadata', 'layout.conf')
+
+    layout_content = 'repo-name = %s\n' % overlay
+
+    # Don't use osutils.WriteFile, some tests mock it out.
+    osutils.SafeMakedirs(os.path.dirname(layout_path))
+    with open(layout_path, 'w') as f:
+      f.writelines(cros_build_lib.iflatten_instance(layout_content))
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,

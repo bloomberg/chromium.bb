@@ -272,6 +272,9 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
 
     boards = ('samus', 'arm-generic')
 
+    for board in boards:
+      self.CreateMockOverlay(board)
+
     with parallel.BackgroundTaskRunner(task) as queue:
       # Test every build config on an waterfall, that builds something.
       for bot_id, cfg in site_config.iteritems():
