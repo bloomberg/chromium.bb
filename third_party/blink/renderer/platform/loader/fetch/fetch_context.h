@@ -247,16 +247,6 @@ class PLATFORM_EXPORT FetchContext
     return task_runner_;
   }
 
-  // TODO(altimin): This is used when creating a URLLoader, and
-  // FetchContext::GetLoadingTaskRunner is used whenever asynchronous tasks
-  // around resource loading are posted. Modify the code so that all
-  // the tasks related to loading a resource use the resource loader handle's
-  // task runner.
-  virtual std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle() {
-    return nullptr;
-  }
-
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
