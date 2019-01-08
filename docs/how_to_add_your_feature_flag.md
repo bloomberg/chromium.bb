@@ -47,6 +47,8 @@ __flag_descriptions.cc__ and __flag_descriptions.h__. After that, try running th
 autoninja -C out/Default unit_tests
 # Run AboutFlagsHistogramTest.CheckHistograms
 ./out/Default/unit_tests --gtest_filter=AboutFlagsHistogramTest.CheckHistograms
+# Run AboutFlagsHistogramTest.CheckHistograms on Android
+./out/Default/bin/run_unit_tests --gtest_filter=AboutFlagsHistogramTest.CheckHistograms
 ```
 
 That test will ask you to add several entries to enums.xml.
