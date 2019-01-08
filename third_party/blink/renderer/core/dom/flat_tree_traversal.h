@@ -144,6 +144,7 @@ class CORE_EXPORT FlatTreeTraversal {
   };
 
   static void AssertPrecondition(const Node& node) {
+    DCHECK(!node.GetDocument().IsFlatTreeTraversalForbidden());
     DCHECK(!node.NeedsDistributionRecalc());
     DCHECK(node.CanParticipateInFlatTree());
   }

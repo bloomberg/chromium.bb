@@ -1443,6 +1443,14 @@ class CORE_EXPORT Document : public ContainerNode,
 #else
   bool IsSlotAssignmentRecalcForbidden() { return false; }
 #endif
+
+  unsigned& FlatTreeTraversalForbiddenRecursionDepth() {
+    return flat_tree_traversal_forbidden_recursion_depth_;
+  }
+  bool IsFlatTreeTraversalForbidden() {
+    return flat_tree_traversal_forbidden_recursion_depth_ > 0;
+  }
+
   unsigned& SlotAssignmentRecalcDepth() {
     return slot_assignment_recalc_depth_;
   }
@@ -1900,6 +1908,7 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned slot_assignment_recalc_forbidden_recursion_depth_;
 #endif
   unsigned slot_assignment_recalc_depth_ = 0;
+  unsigned flat_tree_traversal_forbidden_recursion_depth_;
 
   bool needs_to_record_ukm_outlive_time_;
 

@@ -288,6 +288,8 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   const Node* item_node = layout_list_item->GetNode();
   if (item_node->GetDocument().IsSlotAssignmentOrLegacyDistributionDirty())
     return;
+  if (item_node->GetDocument().IsFlatTreeTraversalForbidden())
+    return;
 
   Node* list_node = EnclosingList(item_node);
   CHECK(list_node);
