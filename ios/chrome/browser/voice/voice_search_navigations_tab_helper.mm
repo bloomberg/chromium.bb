@@ -7,25 +7,12 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "ios/web/public/load_committed_details.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// The key under which the VoiceSearchNavigationMarkers are stored.
-const void* const kNavigationMarkerKey = &kNavigationMarkerKey;
-}
-
-#pragma mark - VoiceSearchNavigationMarker
-
-// A marker object that can be added to a NavigationItem.  Its presence
-// indicates that the navigation is the result of a voice search query.
-class VoiceSearchNavigationMarker : public base::SupportsUserData::Data {};
 
 #pragma mark - VoiceSearchNavigations
 
@@ -43,13 +30,11 @@ bool VoiceSearchNavigationTabHelper::IsExpectingVoiceSearch() const {
   return will_navigate_to_voice_search_result_;
 }
 
-void VoiceSearchNavigationTabHelper::NavigationItemCommitted(
+void VoiceSearchNavigationTabHelper::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
+    web::NavigationContext* context) {
   DCHECK_EQ(web_state_, web_state);
-  if (will_navigate_to_voice_search_result_) {
-    web_state->GetNavigationManager()->GetLastCommittedItem()->SetUserData(
-        kNavigationMarkerKey, std::make_unique<VoiceSearchNavigationMarker>());
+  if (will_navigate_to_voice_search_result_ && context->HasCommitted()) {
     will_navigate_to_voice_search_result_ = false;
   }
 }

@@ -29,9 +29,8 @@ class VoiceSearchNavigationTabHelper
   explicit VoiceSearchNavigationTabHelper(web::WebState* web_state);
 
   // WebStateObserver:
-  void NavigationItemCommitted(
-      web::WebState* web_state,
-      const web::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The WebState this instance is observing. Will be null after
