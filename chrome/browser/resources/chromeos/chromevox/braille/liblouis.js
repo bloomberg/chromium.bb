@@ -12,16 +12,15 @@ goog.provide('cvox.LibLouis.FormType');
 /**
  * Encapsulates a liblouis Native Client instance in the page.
  * @constructor
- * @param {string} wasmPath Path to .wasm file for the module.
+ * @param {string} nmfPath Path to .nmf file for the module.
  * @param {string=} opt_tablesDir Path to tables directory.
- * @param {function(cvox.LibLouis)=} opt_loadCallback
  */
-cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
+cvox.LibLouis = function(nmfPath, opt_tablesDir) {
   /**
-   * Path to .wasm file for the module.
+   * Path to .nmf file for the module.
    * @private {string}
    */
-  this.wasmPath_ = wasmPath;
+  this.nmfPath_ = nmfPath;
 
   /**
    * Path to translation tables.
@@ -29,12 +28,12 @@ cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
    */
   this.tablesDir_ = goog.isDef(opt_tablesDir) ? opt_tablesDir : null;
 
-
   /**
-   * Whether liblouis is loaded.
-   * @private {boolean}
+   * Native Client <embed> element.
+   * {@code null} when no <embed> is attached to the DOM.
+   * @private {HTMLEmbedElement}
    */
-  this.isLoaded_ = false;
+  this.embedElement_ = null;
 
   /**
    * Pending RPC callbacks. Maps from message IDs to callbacks.
@@ -47,15 +46,6 @@ cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
    * @private {number}
    */
   this.nextMessageId_ = 1;
-
-  this.worker_ = new Worker(this.wasmPath_);
-  this.worker_.addEventListener(
-      'message', goog.bind(this.onInstanceMessage_, this),
-      false /* useCapture */);
-  this.rpc_('load', {}, () => {
-    this.isLoaded_ = true;
-    opt_loadCallback && opt_loadCallback(this);
-  });
 };
 
 
@@ -79,8 +69,60 @@ cvox.LibLouis.FormType = {
  */
 cvox.LibLouis.DEBUG = false;
 
-cvox.LibLouis.prototype.isLoaded = function() {
-  return this.isLoaded_;
+
+/**
+ * Attaches the Native Client wrapper to the DOM as a child of the provided
+ * element, assumed to already be in the document.
+ * @param {!Element} elem Desired parent element of the instance.
+ */
+cvox.LibLouis.prototype.attachToElement = function(elem) {
+  if (this.isAttached()) {
+    throw Error('Instance already attached');
+  }
+
+  var embed = document.createElement('embed');
+  embed.src = this.nmfPath_;
+  embed.type = 'application/x-nacl';
+  embed.width = 0;
+  embed.height = 0;
+  if (!goog.isNull(this.tablesDir_)) {
+    embed.setAttribute('tablesdir', this.tablesDir_);
+  }
+  embed.addEventListener(
+      'load', goog.bind(this.onInstanceLoad_, this), false /* useCapture */);
+  embed.addEventListener(
+      'error', goog.bind(this.onInstanceError_, this), false /* useCapture */);
+  embed.addEventListener(
+      'message', goog.bind(this.onInstanceMessage_, this),
+      false /* useCapture */);
+  elem.appendChild(embed);
+  this.embedElement_ = /** @type {!HTMLEmbedElement} */ (embed);
+};
+
+
+/**
+ * Detaches the Native Client instance from the DOM.
+ */
+cvox.LibLouis.prototype.detach = function() {
+  if (!this.isAttached()) {
+    throw Error('cannot detach unattached instance');
+  }
+
+  this.embedElement_.parentNode.removeChild(this.embedElement_);
+  this.embedElement_ = null;
+  for (var id in this.pendingRpcCallbacks_) {
+    this.pendingRpcCallbacks_[id]({});
+  }
+  this.pendingRpcCallbacks_ = {};
+};
+
+
+/**
+ * Determines whether the Native Client instance is attached.
+ * @return {boolean} {@code true} if the <embed> element is attached to the DOM.
+ */
+cvox.LibLouis.prototype.isAttached = function() {
+  return this.embedElement_ !== null;
 };
 
 
@@ -93,8 +135,8 @@ cvox.LibLouis.prototype.isLoaded = function() {
  *     Callback which will receive the translator, or {@code null} on failure.
  */
 cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
-  if (!this.isLoaded_) {
-    // TODO: save last callback.
+  if (!this.isAttached()) {
+    callback(null /* translator */);
     return;
   }
   this.rpc_('CheckTable', {'table_names': tableNames}, function(reply) {
@@ -117,7 +159,7 @@ cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
  * @private
  */
 cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
-  if (!this.worker_) {
+  if (!this.isAttached()) {
     throw Error('Cannot send RPC: liblouis instance not loaded');
   }
   var messageId = '' + this.nextMessageId_++;
@@ -127,7 +169,7 @@ cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
   if (cvox.LibLouis.DEBUG) {
     window.console.debug('RPC -> ' + json);
   }
-  this.worker_.postMessage(json);
+  this.embedElement_.postMessage(json);
   this.pendingRpcCallbacks_[messageId] = callback;
 };
 
@@ -149,6 +191,7 @@ cvox.LibLouis.prototype.onInstanceLoad_ = function(e) {
  */
 cvox.LibLouis.prototype.onInstanceError_ = function(e) {
   window.console.error('failed to load liblouis Native Client instance');
+  this.detach();
 };
 
 
@@ -212,7 +255,7 @@ cvox.LibLouis.Translator = function(instance, tableNames) {
  */
 cvox.LibLouis.Translator.prototype.translate = function(
     text, formTypeMap, callback) {
-  if (!this.instance_.worker_) {
+  if (!this.instance_.isAttached()) {
     callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
     return;
   }
@@ -249,7 +292,7 @@ cvox.LibLouis.Translator.prototype.translate = function(
  * @param {function(?string)} callback Callback for result.
  */
 cvox.LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
-  if (!this.instance_.worker_) {
+  if (!this.instance_.isAttached()) {
     callback(null /*text*/);
     return;
   }

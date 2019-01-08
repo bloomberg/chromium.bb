@@ -24,10 +24,8 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
    */
   this.liblouis_ = opt_liblouisForTest ||
       new cvox.LibLouis(
-          chrome.extension.getURL('braille/liblouis_wrapper.js'),
-          chrome.extension.getURL('braille/tables'),
-          this.loadLiblouis_.bind(this));
-
+          chrome.extension.getURL('braille/liblouis_nacl.nmf'),
+          chrome.extension.getURL('braille/tables'));
   /**
    * @type {!Array<function()>}
    * @private
@@ -63,6 +61,11 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
    * @private
    */
   this.uncontractedTableId_ = null;
+
+  if (!opt_liblouisForTest) {
+    document.addEventListener(
+        'DOMContentLoaded', this.loadLiblouis_.bind(this), false);
+  }
 };
 
 cvox.BrailleTranslatorManager.prototype = {
@@ -200,6 +203,10 @@ cvox.BrailleTranslatorManager.prototype = {
    * @private
    */
   loadLiblouis_: function() {
+    // Cast away nullability.  When the document is loaded, it will always
+    // have a body.
+    this.liblouis_.attachToElement(
+        /** @type {!HTMLBodyElement} */ (document.body));
     this.fetchTables_();
   },
 
