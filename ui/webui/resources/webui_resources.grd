@@ -185,6 +185,9 @@ without changes to the corresponding grd file. -->
                file="images/disabled_select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_ERROR"
                file="images/error.svg" type="BINDATA" compress="gzip" />
+      <!-- Similar to IDR_WEBUI_IMAGES_ERROR except that it is white-filled instead of transparent-filled. Useful for badging images where the background may be red. -->
+      <include name="IDR_WEBUI_IMAGES_ERROR_BADGE"
+               file="images/error_badge.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_GOOGLE_LOGO"
                file="images/google_logo.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_SELECT"

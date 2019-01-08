@@ -147,7 +147,6 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
     if (!icon.IsEmpty()) {
       account.SetString("pic", webui::GetBitmapDataUrl(icon.AsBitmap()));
     } else {
-      // TODO(crbug.com/914751): Badge this icon with an exclamation mark.
       gfx::ImageSkia default_icon =
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER);
