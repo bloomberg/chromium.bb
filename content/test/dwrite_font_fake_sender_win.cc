@@ -127,9 +127,6 @@ void FakeFontCollection::MapCharacters(
                                          DWRITE_FONT_STRETCH_NORMAL)));
 }
 
-void FakeFontCollection::GetUniqueNameLookupTable(
-    GetUniqueNameLookupTableCallback callback){};
-
 FakeFontCollection::~FakeFontCollection() = default;
 
 }  // namespace content

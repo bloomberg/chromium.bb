@@ -109,7 +109,7 @@ source_set("headers") {
     deps += [ "//media" ]
   }
 
-  if (is_android || is_win) {
+  if (is_android) {
     sources += [
       "font_unique_name_lookup/font_table_matcher.h",
       "font_unique_name_lookup/icu_fold_case_util.h",
@@ -130,7 +130,7 @@ source_set("headers") {
   public = sources - [ "common_export.h" ]
 }
 
-if (is_android || is_win) {
+if (is_android) {
   proto_library("font_unique_name_table_proto") {
     sources = [
       "font_unique_name_lookup/font_unique_name_table.proto",
