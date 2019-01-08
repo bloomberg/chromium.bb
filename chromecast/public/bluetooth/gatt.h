@@ -131,6 +131,11 @@ class CHROMECAST_EXPORT Gatt {
                                     bool status,
                                     bool connected) = 0;
 
+      // Called when the bonding state changes.
+      virtual void OnBondChanged(const Addr& addr,
+                                 bool status,
+                                 bool bonded) = 0;
+
       // Called on a Characteristic value notification.
       virtual void OnNotification(const Addr& addr,
                                   uint16_t handle,
@@ -193,6 +198,12 @@ class CHROMECAST_EXPORT Gatt {
 
     // Remove connection to remote device |addr|.
     static bool Disconnect(const Addr& addr);
+
+    // Create bond to remote device |addr|.
+    static bool CreateBond(const Addr& addr);
+
+    // Remove bond to remote device |addr|.
+    static bool RemoveBond(const Addr& addr);
 
     // Read |characteristic| from remote device |addr|. If |auth_req| is
     // AUTH_REQ_INVALID, this function will automatically retry stronger

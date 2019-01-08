@@ -41,6 +41,14 @@ class RemoteDevice : public base::RefCountedThreadSafe<RemoteDevice> {
   // TODO(bcf): Deprecated. Replace usage with async version.
   virtual bool DisconnectSync() = 0;
 
+  // Create bond to this device. Callback will return |true| if
+  // bonded successfully, otherwise false. Device must be connected.
+  virtual void CreateBond(StatusCallback cb) = 0;
+
+  // Remove bond to this device. Callback will return |true| if
+  // bond is removed, otherwise false.
+  virtual void RemoveBond(StatusCallback cb) = 0;
+
   // Read this device's RSSI. The result will be sent in |callback|. Only one
   // pending call is allowed at a time.
   using RssiCallback = base::OnceCallback<void(bool success, int rssi)>;
@@ -60,6 +68,9 @@ class RemoteDevice : public base::RefCountedThreadSafe<RemoteDevice> {
 
   // Returns true if this device is connected.
   virtual bool IsConnected() = 0;
+
+  // Returns true if this device is bonded.
+  virtual bool IsBonded() = 0;
 
   // Returns the current MTU of the connection with this device.
   virtual int GetMtu() = 0;

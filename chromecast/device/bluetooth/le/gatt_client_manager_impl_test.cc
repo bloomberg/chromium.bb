@@ -203,6 +203,9 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   EXPECT_CALL(cb_, Run(false));
   device->Disconnect(cb_.Get());
 
+  EXPECT_CALL(cb_, Run(false));
+  device->CreateBond(cb_.Get());
+
   base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
   EXPECT_CALL(rssi_cb, Run(false, _));
   device->ReadRemoteRssi(rssi_cb.Get());
@@ -242,6 +245,94 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
                              false /* connected */);
   EXPECT_FALSE(device->IsConnected());
+  fake_task_runner_->RunUntilIdle();
+}
+
+TEST_F(GattClientManagerTest, RemoteDeviceBond) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  Connect(kTestAddr1);
+  EXPECT_FALSE(device->IsBonded());
+
+  // CreateBond fails in the initial request.
+  EXPECT_CALL(*gatt_client_, CreateBond(kTestAddr1)).WillOnce(Return(false));
+  EXPECT_CALL(cb_, Run(false));
+  device->CreateBond(cb_.Get());
+  EXPECT_FALSE(device->IsBonded());
+
+  // CreateBond fails in the callback.
+  EXPECT_CALL(*gatt_client_, CreateBond(kTestAddr1)).WillOnce(Return(true));
+  EXPECT_CALL(cb_, Run(false));
+  device->CreateBond(cb_.Get());
+  delegate->OnBondChanged(kTestAddr1, false /* status */, false /* bonded */);
+  EXPECT_FALSE(device->IsBonded());
+
+  // CreateBond succeeds.
+  EXPECT_CALL(*gatt_client_, CreateBond(kTestAddr1)).WillOnce(Return(true));
+  device->CreateBond(cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
+  delegate->OnBondChanged(kTestAddr1, true /* status */, true /* bonded */);
+  EXPECT_TRUE(device->IsBonded());
+
+  // Bond with an already bonded device should fail.
+  EXPECT_CALL(cb_, Run(false));
+  device->CreateBond(cb_.Get());
+  EXPECT_TRUE(device->IsBonded());
+
+  // RemoveBond succeeds.
+  EXPECT_CALL(*gatt_client_, RemoveBond(kTestAddr1)).WillOnce(Return(true));
+  device->RemoveBond(cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
+  delegate->OnBondChanged(kTestAddr1, false /* status */, false /* bonded */);
+  EXPECT_FALSE(device->IsBonded());
+
+  // RemoveBond from an unbonded device succeeds.
+  EXPECT_CALL(*gatt_client_, RemoveBond(kTestAddr1)).WillOnce(Return(true));
+  device->RemoveBond(cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
+  delegate->OnBondChanged(kTestAddr1, false /* status */, false /* bonded */);
+  EXPECT_FALSE(device->IsBonded());
+
+  // CreateBond again succeeds.
+  EXPECT_CALL(*gatt_client_, CreateBond(kTestAddr1)).WillOnce(Return(true));
+  device->CreateBond(cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
+  delegate->OnBondChanged(kTestAddr1, true /* status */, true /* bonded */);
+  EXPECT_TRUE(device->IsBonded());
+
+  // Device should remain bonded when it disconnects.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
+  device->Disconnect({});
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             false /* connected */);
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_TRUE(device->IsBonded());
+
+  // RemoveBond from a disconnected but bonded device.
+  EXPECT_CALL(*gatt_client_, RemoveBond(kTestAddr1)).WillOnce(Return(true));
+  device->RemoveBond(cb_.Get());
+  EXPECT_CALL(cb_, Run(true));
+  delegate->OnBondChanged(kTestAddr1, false /* status */, false /* bonded */);
+  EXPECT_FALSE(device->IsBonded());
+
+  fake_task_runner_->RunUntilIdle();
+}
+
+TEST_F(GattClientManagerTest, RemoteDeviceBondedOnInitialization) {
+  // NotifyBonded at initialization.
+  gatt_client_manager_->NotifyBonded(kTestAddr1);
+
+  // Device should have updated the bonding state.
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_TRUE(device->IsBonded());
+
+  Connect(kTestAddr1);
+  EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(device->IsBonded());
+
   fake_task_runner_->RunUntilIdle();
 }
 

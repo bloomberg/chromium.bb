@@ -30,6 +30,16 @@ class MockRemoteDevice : public RemoteDevice {
 
   MOCK_METHOD0(DisconnectSync, bool());
 
+  MOCK_METHOD0(CreateBond, bool());
+  void CreateBond(StatusCallback cb) override {
+    std::move(cb).Run(CreateBond());
+  }
+
+  MOCK_METHOD0(RemoveBond, bool());
+  void RemoveBond(StatusCallback cb) override {
+    std::move(cb).Run(RemoveBond());
+  }
+
   MOCK_METHOD1(ReadRemoteRssi, void(RssiCallback cb));
 
   MOCK_METHOD1(RequestMtu, bool(int mtu));
@@ -50,6 +60,8 @@ class MockRemoteDevice : public RemoteDevice {
   }
 
   MOCK_METHOD0(IsConnected, bool());
+
+  MOCK_METHOD0(IsBonded, bool());
 
   MOCK_METHOD0(GetMtu, int());
 
