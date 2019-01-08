@@ -4,11 +4,22 @@
 
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 
+#include "base/files/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/values.h"
+#include "content/browser/indexed_db/indexed_db_data_format_version.h"
+#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "storage/common/database/database_identifier.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 using base::StringPiece;
 using blink::IndexedDBKeyPath;
@@ -16,20 +27,61 @@ using leveldb::Status;
 
 namespace content {
 namespace indexed_db {
-
-leveldb::Status InternalInconsistencyStatus() {
-  return leveldb::Status::Corruption("Internal inconsistency");
-}
-
-leveldb::Status InvalidDBKeyStatus() {
-  return leveldb::Status::InvalidArgument("Invalid database key ID");
-}
-
-leveldb::Status IOErrorStatus() {
-  return leveldb::Status::IOError("IO Error");
-}
-
 namespace {
+
+class IDBComparator : public LevelDBComparator {
+ public:
+  IDBComparator() = default;
+  ~IDBComparator() override = default;
+  int Compare(const base::StringPiece& a,
+              const base::StringPiece& b) const override {
+    return content::Compare(a, b, false /*index_keys*/);
+  }
+  const char* Name() const override { return "idb_cmp1"; }
+};
+
+class LDBComparator : public leveldb::Comparator {
+ public:
+  LDBComparator() = default;
+  ~LDBComparator() override = default;
+  int Compare(const leveldb::Slice& a, const leveldb::Slice& b) const override {
+    return content::Compare(leveldb_env::MakeStringPiece(a),
+                            leveldb_env::MakeStringPiece(b),
+                            false /*index_keys*/);
+  }
+  const char* Name() const override { return "idb_cmp1"; }
+  void FindShortestSeparator(std::string* start,
+                             const leveldb::Slice& limit) const override {}
+  void FindShortSuccessor(std::string* key) const override {}
+};
+
+bool IsPathTooLong(const base::FilePath& leveldb_dir) {
+  int limit = base::GetMaximumPathComponentLength(leveldb_dir.DirName());
+  if (limit == -1) {
+    DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
+// In limited testing, ChromeOS returns 143, other OSes 255.
+#if defined(OS_CHROMEOS)
+    limit = 143;
+#else
+    limit = 255;
+#endif
+  }
+  size_t component_length = leveldb_dir.BaseName().value().length();
+  if (component_length > static_cast<uint32_t>(limit)) {
+    DLOG(WARNING) << "Path component length (" << component_length
+                  << ") exceeds maximum (" << limit
+                  << ") allowed by this filesystem.";
+    const int min = 140;
+    const int max = 300;
+    const int num_buckets = 12;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
+        component_length, min, max, num_buckets);
+    return true;
+  }
+  return false;
+}
+
 template <typename DBOrTransaction>
 Status GetIntInternal(DBOrTransaction* db,
                       const StringPiece& key,
@@ -46,7 +98,160 @@ Status GetIntInternal(DBOrTransaction* db,
     return s;
   return InternalInconsistencyStatus();
 }
+
+WARN_UNUSED_RESULT bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
+  int64_t db_schema_version = 0;
+  bool found = false;
+  Status s = GetInt(db, SchemaVersionKey::Encode(), &db_schema_version, &found);
+  if (!s.ok())
+    return false;
+  if (!found) {
+    *known = true;
+    return true;
+  }
+  if (db_schema_version < 0)
+    return false;  // Only corruption should cause this.
+  if (db_schema_version > indexed_db::kLatestKnownSchemaVersion) {
+    *known = false;
+    return true;
+  }
+
+  int64_t raw_db_data_version = 0;
+  s = GetInt(db, DataVersionKey::Encode(), &raw_db_data_version, &found);
+  if (!s.ok())
+    return false;
+  if (!found) {
+    *known = true;
+    return true;
+  }
+  if (raw_db_data_version < 0)
+    return false;  // Only corruption should cause this.
+
+  *known = IndexedDBDataFormatVersion::GetCurrent().IsAtLeast(
+      IndexedDBDataFormatVersion::Decode(raw_db_data_version));
+  return true;
+}
+std::tuple<std::unique_ptr<LevelDBDatabase>,
+           leveldb::Status,
+           bool /* is_disk_full */>
+DeleteAndRecreateDatabase(
+    const url::Origin& origin,
+    base::FilePath database_path,
+    LevelDBFactory* ldb_factory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  scoped_refptr<LevelDBState> state;
+  DCHECK(!database_path.empty())
+      << "Opening an in-memory database should not have failed.";
+  LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
+  state.reset();
+  leveldb::Status status = ldb_factory->DestroyLevelDB(database_path);
+  if (!status.ok()) {
+    LOG(ERROR) << "IndexedDB backing store cleanup failed";
+    ReportOpenStatus(
+        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED,
+        origin);
+    return {nullptr, status, false};
+  }
+
+  LOG(ERROR) << "IndexedDB backing store cleanup succeeded, reopening";
+  state.reset();
+  bool is_disk_full;
+  std::tie(state, status, is_disk_full) =
+      ldb_factory->OpenLevelDB(database_path, GetDefaultIndexedDBComparator(),
+                               GetDefaultLevelDBComparator());
+  if (!status.ok()) {
+    LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
+    ReportOpenStatus(
+        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED,
+        origin);
+    return {nullptr, status, is_disk_full};
+  }
+  std::unique_ptr<LevelDBDatabase> database = std::make_unique<LevelDBDatabase>(
+      std::move(state), std::move(task_runner),
+      LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
+  ReportOpenStatus(
+      indexed_db::INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS, origin);
+
+  return {std::move(database), status, is_disk_full};
+}
+
 }  // namespace
+
+const base::FilePath::CharType kBlobExtension[] = FILE_PATH_LITERAL(".blob");
+const base::FilePath::CharType kIndexedDBExtension[] =
+    FILE_PATH_LITERAL(".indexeddb");
+const base::FilePath::CharType kLevelDBExtension[] =
+    FILE_PATH_LITERAL(".leveldb");
+
+// static
+base::FilePath GetBlobStoreFileName(const url::Origin& origin) {
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
+  return base::FilePath()
+      .AppendASCII(origin_id)
+      .AddExtension(kIndexedDBExtension)
+      .AddExtension(kBlobExtension);
+}
+
+// static
+base::FilePath GetLevelDBFileName(const url::Origin& origin) {
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
+  return base::FilePath()
+      .AppendASCII(origin_id)
+      .AddExtension(kIndexedDBExtension)
+      .AddExtension(kLevelDBExtension);
+}
+
+base::FilePath ComputeCorruptionFileName(const url::Origin& origin) {
+  return GetLevelDBFileName(origin).Append(
+      FILE_PATH_LITERAL("corruption_info.json"));
+}
+
+std::string ReadCorruptionInfo(const base::FilePath& path_base,
+                               const url::Origin& origin) {
+  const base::FilePath info_path =
+      path_base.Append(ComputeCorruptionFileName(origin));
+  std::string message;
+  if (IsPathTooLong(info_path))
+    return message;
+
+  const int64_t kMaxJsonLength = 4096;
+  int64_t file_size = 0;
+  if (!base::GetFileSize(info_path, &file_size))
+    return message;
+  if (!file_size || file_size > kMaxJsonLength) {
+    base::DeleteFile(info_path, false);
+    return message;
+  }
+
+  base::File file(info_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (file.IsValid()) {
+    std::string input_js(file_size, '\0');
+    if (file_size == file.Read(0, base::data(input_js), file_size)) {
+      base::JSONReader reader;
+      std::unique_ptr<base::DictionaryValue> val(
+          base::DictionaryValue::From(reader.ReadToValue(input_js)));
+      if (val)
+        val->GetString("message", &message);
+    }
+    file.Close();
+  }
+
+  base::DeleteFile(info_path, false);
+
+  return message;
+}
+
+leveldb::Status InternalInconsistencyStatus() {
+  return leveldb::Status::Corruption("Internal inconsistency");
+}
+
+leveldb::Status InvalidDBKeyStatus() {
+  return leveldb::Status::InvalidArgument("Invalid database key ID");
+}
+
+leveldb::Status IOErrorStatus() {
+  return leveldb::Status::IOError("IO Error");
+}
 
 Status GetInt(LevelDBTransaction* txn,
               const StringPiece& key,
@@ -415,7 +620,7 @@ bool UpdateBlobKeyGeneratorCurrentNumber(
     LevelDBTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   int64_t old_number;
   if (!GetBlobKeyGeneratorCurrentNumber(leveldb_transaction, database_id,
                                         &old_number))
@@ -453,6 +658,143 @@ void SetEarliestSweepTime(LevelDBTransaction* txn, base::Time earliest_sweep) {
   const std::string earliest_sweep_time_key = EarliestSweepKey::Encode();
   int64_t time_micros = (earliest_sweep - base::Time()).InMicroseconds();
   indexed_db::PutInt(txn, earliest_sweep_time_key, time_micros);
+}
+
+const LevelDBComparator* GetDefaultIndexedDBComparator() {
+  static const base::NoDestructor<IDBComparator> kIDBComparator;
+  return kIDBComparator.get();
+}
+
+const leveldb::Comparator* GetDefaultLevelDBComparator() {
+  static const base::NoDestructor<LDBComparator> ldb_comparator;
+  return ldb_comparator.get();
+}
+
+std::tuple<base::FilePath /*leveldb_path*/,
+           base::FilePath /*blob_path*/,
+           leveldb::Status>
+CreateDatabaseDirectories(const base::FilePath& path_base,
+                          const url::Origin& origin) {
+  leveldb::Status status;
+  if (!base::CreateDirectoryAndGetError(path_base, nullptr)) {
+    status = Status::IOError("Unable to create IndexedDB database path");
+    LOG(ERROR) << status.ToString() << ": \"" << path_base.AsUTF8Unsafe()
+               << "\"";
+    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,
+                     origin);
+    return {base::FilePath(), base::FilePath(), status};
+  }
+
+  base::FilePath leveldb_path = path_base.Append(GetLevelDBFileName(origin));
+  base::FilePath blob_path = path_base.Append(GetBlobStoreFileName(origin));
+  if (IsPathTooLong(leveldb_path)) {
+    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
+                     origin);
+    status = Status::IOError("File path too long");
+    return {base::FilePath(), base::FilePath(), status};
+  }
+  return {leveldb_path, blob_path, status};
+}
+
+std::tuple<std::unique_ptr<LevelDBDatabase>,
+           leveldb::Status,
+           IndexedDBDataLossInfo,
+           bool /* is_disk_full */>
+OpenAndVerifyLevelDBDatabase(
+    const url::Origin& origin,
+    base::FilePath path_base,
+    base::FilePath database_path,
+    LevelDBFactory* ldb_factory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  // Please see docs/open_and_verify_leveldb_database.code2flow, and the
+  // generated pdf (from https://code2flow.com).
+  // The intended strategy here is to have this function match that flowchart,
+  // where the flowchart should be seen as the 'master' logic template. Please
+  // check the git history of both to make sure they are supposed to be in sync.
+  DCHECK_EQ(database_path.empty(), path_base.empty());
+  IDB_TRACE("indexed_db::OpenAndVerifyLevelDBDatabase");
+  bool is_disk_full;
+  std::unique_ptr<LevelDBDatabase> database;
+  leveldb::Status status;
+  scoped_refptr<LevelDBState> state;
+  std::tie(state, status, is_disk_full) =
+      ldb_factory->OpenLevelDB(database_path, GetDefaultIndexedDBComparator(),
+                               GetDefaultLevelDBComparator());
+  bool is_schema_known = false;
+  // On I/O error the database isn't deleted, in case the issue is temporary.
+  if (status.IsIOError()) {
+    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
+                     origin);
+    return {std::move(database), status, IndexedDBDataLossInfo(), is_disk_full};
+  }
+
+  IndexedDBDataLossInfo data_loss_info;
+  data_loss_info.status = blink::mojom::IDBDataLoss::None;
+  if (status.IsCorruption()) {
+    // On corruption, recovery will happen in the next section.
+    data_loss_info.status = blink::mojom::IDBDataLoss::Total;
+    data_loss_info.message = leveldb_env::GetCorruptionMessage(status);
+    std::tie(database, status, is_disk_full) = DeleteAndRecreateDatabase(
+        origin, database_path, ldb_factory, task_runner);
+    // If successful, then the database should be empty and doesn't need any of
+    // the corruption or schema checks below.
+    if (status.ok()) {
+      ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_SUCCESS,
+                       origin);
+    }
+    return {std::move(database), status, data_loss_info, is_disk_full};
+  }
+  // The leveldb database is successfully opened.
+  DCHECK(status.ok());
+  database = std::make_unique<LevelDBDatabase>(
+      std::move(state), std::move(task_runner),
+      LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
+
+  // Check for previous corruption or invalid schemas.
+  std::string corruption_message;
+  if (!path_base.empty())
+    corruption_message = ReadCorruptionInfo(path_base, origin);
+  if (!corruption_message.empty()) {
+    LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
+                  "database.";
+    ReportOpenStatus(
+        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
+        origin);
+    status = leveldb::Status::Corruption(corruption_message);
+    database.reset();
+    data_loss_info.status = blink::mojom::IDBDataLoss::Total;
+    data_loss_info.message =
+        "IndexedDB (database was corrupt): " + corruption_message;
+  } else if (!IsSchemaKnown(database.get(), &is_schema_known)) {
+    LOG(ERROR) << "IndexedDB had IO error checking schema, treating it as "
+                  "failure to open";
+    ReportOpenStatus(
+        indexed_db::
+            INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
+        origin);
+    database.reset();
+    data_loss_info.status = blink::mojom::IDBDataLoss::Total;
+    data_loss_info.message = "I/O error checking schema";
+  } else if (!is_schema_known) {
+    LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
+                  "as failure to open";
+    ReportOpenStatus(
+        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
+        origin);
+    database.reset();
+    data_loss_info.status = blink::mojom::IDBDataLoss::Total;
+    data_loss_info.message = "Unknown schema";
+  }
+  // Try to delete & recreate the database for any of the above issues.
+  if (!database.get()) {
+    DCHECK(!is_schema_known || status.IsCorruption());
+    std::tie(database, status, is_disk_full) = DeleteAndRecreateDatabase(
+        origin, database_path, ldb_factory, task_runner);
+  }
+
+  if (status.ok())
+    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin);
+  return {std::move(database), status, data_loss_info, is_disk_full};
 }
 
 }  // namespace indexed_db

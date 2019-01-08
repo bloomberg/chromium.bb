@@ -20,7 +20,6 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<LevelDBDatabase>(),
-                            std::unique_ptr<LevelDBComparator>(),
                             base::SequencedTaskRunnerHandle::Get().get()) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
@@ -29,7 +28,6 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<LevelDBDatabase>(),
-                            std::unique_ptr<LevelDBComparator>(),
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 

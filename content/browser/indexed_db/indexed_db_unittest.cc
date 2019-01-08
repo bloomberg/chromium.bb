@@ -14,6 +14,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_partition.h"
@@ -31,6 +32,37 @@ using blink::IndexedDBDatabaseMetadata;
 using url::Origin;
 
 namespace content {
+namespace {
+
+class LevelDBLock {
+ public:
+  LevelDBLock() : env_(nullptr), lock_(nullptr) {}
+  LevelDBLock(leveldb::Env* env, leveldb::FileLock* lock)
+      : env_(env), lock_(lock) {}
+  ~LevelDBLock() {
+    if (env_)
+      env_->UnlockFile(lock_);
+  }
+
+ private:
+  leveldb::Env* env_;
+  leveldb::FileLock* lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
+};
+
+std::unique_ptr<LevelDBLock> LockForTesting(const base::FilePath& file_name) {
+  leveldb::Env* env = LevelDBEnv::Get();
+  base::FilePath lock_path = file_name.AppendASCII("LOCK");
+  leveldb::FileLock* lock = nullptr;
+  leveldb::Status status = env->LockFile(lock_path.AsUTF8Unsafe(), &lock);
+  if (!status.ok())
+    return std::unique_ptr<LevelDBLock>();
+  DCHECK(lock);
+  return std::make_unique<LevelDBLock>(env, lock);
+}
+
+}  // namespace
 
 class IndexedDBTest : public testing::Test {
  public:
@@ -69,7 +101,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
 
   auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       temp_dir.GetPath(), special_storage_policy_.get(),
-      quota_manager_proxy_.get());
+      quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
   session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
@@ -99,7 +131,7 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   // With the levelDB backend, these are directories.
   auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       temp_dir.GetPath(), special_storage_policy_.get(),
-      quota_manager_proxy_.get());
+      quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   // Save session state. This should bypass the destruction-time deletion.
   idb_context->SetForceKeepSessionState();
@@ -153,7 +185,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
   auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       temp_dir.GetPath(), special_storage_policy_.get(),
-      quota_manager_proxy_.get());
+      quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
@@ -210,12 +242,12 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
 
   auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       temp_dir.GetPath(), special_storage_policy_.get(),
-      quota_manager_proxy_.get());
+      quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   base::FilePath test_path = idb_context->GetFilePathForTesting(kTestOrigin);
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
-  auto lock = LevelDBDatabase::LockForTesting(test_path);
+  auto lock = LockForTesting(test_path);
   ASSERT_TRUE(lock);
 
   base::RunLoop loop;
@@ -235,7 +267,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
 
   auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       temp_dir.GetPath(), special_storage_policy_.get(),
-      quota_manager_proxy_.get());
+      quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
 
   auto temp_path = temp_dir.GetPath();
   auto callbacks = base::MakeRefCounted<MockIndexedDBCallbacks>();

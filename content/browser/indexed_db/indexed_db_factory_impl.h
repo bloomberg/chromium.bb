@@ -10,12 +10,15 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <tuple>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 
 namespace base {
 struct Feature;
@@ -47,7 +50,9 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   static constexpr const base::TimeDelta kMaxEarliestOriginSweepFromNow =
       base::TimeDelta::FromDays(7);
 
-  IndexedDBFactoryImpl(IndexedDBContextImpl* context, base::Clock* clock);
+  IndexedDBFactoryImpl(IndexedDBContextImpl* context,
+                       indexed_db::LevelDBFactory* leveldb_factory,
+                       base::Clock* clock);
 
   // content::IndexedDBFactory overrides:
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
@@ -118,20 +123,19 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
  protected:
   ~IndexedDBFactoryImpl() override;
 
-  scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const url::Origin& origin,
-      const base::FilePath& data_directory,
-      IndexedDBDataLossInfo* data_loss_info,
-      bool* disk_full,
-      leveldb::Status* s) override;
+  std::tuple<scoped_refptr<IndexedDBBackingStore>,
+             leveldb::Status,
+             IndexedDBDataLossInfo,
+             bool /* disk_full */>
+  OpenBackingStore(const url::Origin& origin,
+                   const base::FilePath& data_directory) override;
 
-  scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
+  // Used by unittests to allow subclassing of IndexedDBBackingStore.
+  virtual scoped_refptr<IndexedDBBackingStore> CreateBackingStore(
       const url::Origin& origin,
-      const base::FilePath& data_directory,
-      IndexedDBDataLossInfo* data_loss_info,
-      bool* disk_full,
-      bool first_time,
-      leveldb::Status* s) override;
+      const base::FilePath& blob_path,
+      std::unique_ptr<LevelDBDatabase> db,
+      base::SequencedTaskRunner* task_runner);
 
   void ReleaseBackingStore(const url::Origin& origin, bool immediate);
   void CloseBackingStore(const url::Origin& origin);
@@ -174,6 +178,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   void RemoveDatabaseFromMaps(const IndexedDBDatabase::Identifier& identifier);
 
   IndexedDBContextImpl* context_;
+  indexed_db::LevelDBFactory* leveldb_factory_;
 
   std::map<IndexedDBDatabase::Identifier, IndexedDBDatabase*> database_map_;
   OriginDBMap origin_dbs_;
@@ -186,7 +191,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   std::set<scoped_refptr<IndexedDBBackingStore>> in_memory_backing_stores_;
   std::map<url::Origin, scoped_refptr<IndexedDBBackingStore>>
       backing_stores_with_active_blobs_;
-  std::set<url::Origin> backends_opened_since_boot_;
+  std::set<url::Origin> backends_opened_since_startup_;
 
   base::Clock* clock_;
   base::Time earliest_sweep_;

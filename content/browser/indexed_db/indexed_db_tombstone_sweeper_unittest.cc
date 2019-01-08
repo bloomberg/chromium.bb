@@ -5,14 +5,17 @@
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/tick_clock.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/mock_level_db.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,15 +80,6 @@ class MockTickClock : public base::TickClock {
   MOCK_CONST_METHOD0(NowTicks, base::TimeTicks());
 };
 
-class Comparator : public LevelDBComparator {
- public:
-  int Compare(const base::StringPiece& a,
-              const base::StringPiece& b) const override {
-    return content::Compare(a, b, false /*index_keys*/);
-  }
-  const char* Name() const override { return "idb_cmp1"; }
-};
-
 class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
  public:
   IndexedDBTombstoneSweeperTest() {}
@@ -143,8 +137,16 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   }
 
   void SetupRealDB() {
-    comparator_.reset(new Comparator());
-    in_memory_db_ = LevelDBDatabase::OpenInMemory(comparator_.get());
+    scoped_refptr<LevelDBState> level_db_state;
+    leveldb::Status s;
+    std::tie(level_db_state, s, std::ignore) =
+        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDB(
+            base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
+            indexed_db::GetDefaultLevelDBComparator());
+    ASSERT_TRUE(s.ok());
+    in_memory_db_ = std::make_unique<LevelDBDatabase>(
+        std::move(level_db_state), nullptr,
+        LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         GetParam(), kRoundIterations, kMaxIterations, in_memory_db_->db());
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
@@ -239,7 +241,6 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   }
 
  protected:
-  std::unique_ptr<Comparator> comparator_;
   std::unique_ptr<LevelDBDatabase> in_memory_db_;
   leveldb::MockLevelDB mock_db_;
 

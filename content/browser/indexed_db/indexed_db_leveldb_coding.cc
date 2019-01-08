@@ -21,58 +21,61 @@ using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
 
 namespace content {
+namespace {
 
 // As most of the IndexedDBKeys and encoded values are short, we
 // initialize some std::vectors with a default inline buffer size to reduce
 // the memory re-allocations when the std::vectors are appended.
-static const size_t kDefaultInlineBufferSize = 32;
+const size_t kDefaultInlineBufferSize = 32;
 
-static const unsigned char kIndexedDBKeyNullTypeByte = 0;
-static const unsigned char kIndexedDBKeyStringTypeByte = 1;
-static const unsigned char kIndexedDBKeyDateTypeByte = 2;
-static const unsigned char kIndexedDBKeyNumberTypeByte = 3;
-static const unsigned char kIndexedDBKeyArrayTypeByte = 4;
-static const unsigned char kIndexedDBKeyMinKeyTypeByte = 5;
-static const unsigned char kIndexedDBKeyBinaryTypeByte = 6;
+constexpr unsigned char kIndexedDBKeyNullTypeByte = 0;
+constexpr unsigned char kIndexedDBKeyStringTypeByte = 1;
+constexpr unsigned char kIndexedDBKeyDateTypeByte = 2;
+constexpr unsigned char kIndexedDBKeyNumberTypeByte = 3;
+constexpr unsigned char kIndexedDBKeyArrayTypeByte = 4;
+constexpr unsigned char kIndexedDBKeyMinKeyTypeByte = 5;
+constexpr unsigned char kIndexedDBKeyBinaryTypeByte = 6;
 
-static const unsigned char kIndexedDBKeyPathTypeCodedByte1 = 0;
-static const unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
+constexpr unsigned char kIndexedDBKeyPathTypeCodedByte1 = 0;
+constexpr unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
 
-static const unsigned char kIndexedDBKeyPathNullTypeByte = 0;
-static const unsigned char kIndexedDBKeyPathStringTypeByte = 1;
-static const unsigned char kIndexedDBKeyPathArrayTypeByte = 2;
+constexpr unsigned char kIndexedDBKeyPathNullTypeByte = 0;
+constexpr unsigned char kIndexedDBKeyPathStringTypeByte = 1;
+constexpr unsigned char kIndexedDBKeyPathArrayTypeByte = 2;
 
-static const unsigned char kObjectStoreDataIndexId = 1;
-static const unsigned char kExistsEntryIndexId = 2;
-static const unsigned char kBlobEntryIndexId = 3;
+constexpr unsigned char kObjectStoreDataIndexId = 1;
+constexpr unsigned char kExistsEntryIndexId = 2;
+constexpr unsigned char kBlobEntryIndexId = 3;
 
-static const unsigned char kSchemaVersionTypeByte = 0;
-static const unsigned char kMaxDatabaseIdTypeByte = 1;
-static const unsigned char kDataVersionTypeByte = 2;
-static const unsigned char kBlobJournalTypeByte = 3;
-static const unsigned char kLiveBlobJournalTypeByte = 4;
-static const unsigned char kEarliestSweepTimeTypeByte = 5;
-static const unsigned char kMaxSimpleGlobalMetaDataTypeByte =
+constexpr unsigned char kSchemaVersionTypeByte = 0;
+constexpr unsigned char kMaxDatabaseIdTypeByte = 1;
+constexpr unsigned char kDataVersionTypeByte = 2;
+constexpr unsigned char kBlobJournalTypeByte = 3;
+constexpr unsigned char kLiveBlobJournalTypeByte = 4;
+constexpr unsigned char kEarliestSweepTimeTypeByte = 5;
+constexpr unsigned char kMaxSimpleGlobalMetaDataTypeByte =
     6;  // Insert before this and increment.
-static const unsigned char kDatabaseFreeListTypeByte = 100;
-static const unsigned char kDatabaseNameTypeByte = 201;
+constexpr unsigned char kDatabaseFreeListTypeByte = 100;
+constexpr unsigned char kDatabaseNameTypeByte = 201;
 
-static const unsigned char kObjectStoreMetaDataTypeByte = 50;
-static const unsigned char kIndexMetaDataTypeByte = 100;
-static const unsigned char kObjectStoreFreeListTypeByte = 150;
-static const unsigned char kIndexFreeListTypeByte = 151;
-static const unsigned char kObjectStoreNamesTypeByte = 200;
-static const unsigned char kIndexNamesKeyTypeByte = 201;
+constexpr unsigned char kObjectStoreMetaDataTypeByte = 50;
+constexpr unsigned char kIndexMetaDataTypeByte = 100;
+constexpr unsigned char kObjectStoreFreeListTypeByte = 150;
+constexpr unsigned char kIndexFreeListTypeByte = 151;
+constexpr unsigned char kObjectStoreNamesTypeByte = 200;
+constexpr unsigned char kIndexNamesKeyTypeByte = 201;
 
-static const unsigned char kObjectMetaDataTypeMaximum = 255;
-static const unsigned char kIndexMetaDataTypeMaximum = 255;
-
-const unsigned char kMinimumIndexId = 30;
+constexpr unsigned char kObjectMetaDataTypeMaximum = 255;
+constexpr unsigned char kIndexMetaDataTypeMaximum = 255;
 
 inline void EncodeIntSafely(int64_t value, int64_t max, std::string* into) {
   DCHECK_LE(value, max);
   return EncodeInt(value, into);
 }
+
+}  // namespace
+
+const unsigned char kMinimumIndexId = 30;
 
 std::string MaxIDBKey() {
   std::string ret;
@@ -986,6 +989,7 @@ int Compare(const StringPiece& a,
             bool only_compare_index_keys) {
   bool ok;
   int result = Compare(a, b, only_compare_index_keys, &ok);
+  // TODO(dmurph): Report this somehow. https://crbug.com/913121
   DCHECK(ok);
   if (!ok)
     return 0;

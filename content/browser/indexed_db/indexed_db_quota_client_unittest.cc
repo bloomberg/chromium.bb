@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -56,7 +57,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
     idb_context_ = new IndexedDBContextImpl(
         browser_context_->GetPath(),
-        browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy());
+        browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
+        indexed_db::GetDefaultLevelDBFactory());
     base::RunLoop().RunUntilIdle();
     setup_temp_dir();
   }

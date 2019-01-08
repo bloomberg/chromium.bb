@@ -34,6 +34,7 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -643,7 +644,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
   partition->indexed_db_context_ = new IndexedDBContextImpl(
-      path, context->GetSpecialStoragePolicy(), quota_manager_proxy);
+      path, context->GetSpecialStoragePolicy(), quota_manager_proxy,
+      indexed_db::GetDefaultLevelDBFactory());
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
   partition->cache_storage_context_->Init(path, quota_manager_proxy);
