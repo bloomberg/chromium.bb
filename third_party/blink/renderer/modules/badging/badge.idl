@@ -10,7 +10,7 @@
     // TODO(estevenson): Expose the Badge interface to Worker.
     Exposed=Window
 ] interface Badge {
-  [CallWith=ScriptState, RaisesException]
+  [CallWith=ScriptState, RaisesException, MeasureAs=BadgeSet]
   static void set(optional [EnforceRange] unsigned long long contents);
-  [CallWith=ScriptState] static void clear();
+  [CallWith=ScriptState, MeasureAs=BadgeClear] static void clear();
 };
