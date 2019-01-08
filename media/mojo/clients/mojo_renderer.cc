@@ -244,9 +244,14 @@ void MojoRenderer::OnEnded() {
 
 void MojoRenderer::InitiateScopedSurfaceRequest(
     const ReceiveSurfaceRequestTokenCB& receive_request_token_cb) {
+  DCHECK(remote_renderer_.is_bound());
   DVLOG(1) << __func__;
 
-  remote_renderer_->InitiateScopedSurfaceRequest(receive_request_token_cb);
+  if (encountered_error_) {
+    receive_request_token_cb.Run(base::UnguessableToken::Null());
+  } else {
+    remote_renderer_->InitiateScopedSurfaceRequest(receive_request_token_cb);
+  }
 }
 
 void MojoRenderer::OnError() {
