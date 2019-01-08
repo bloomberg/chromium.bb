@@ -6,6 +6,8 @@ const StateType = chrome.automation.StateType;
 const RoleType = chrome.automation.RoleType;
 const DefaultActionVerb = chrome.automation.DefaultActionVerb;
 
+const GROUP_INTERESTING_CHILD_THRESHOLD = 2;
+
 /**
  * Contains predicates for the chrome automation API. The following basic
  * predicates are available:
@@ -81,10 +83,8 @@ const SwitchAccessPredicate = {
     // Focusable items should be surfaced as either groups or actionable.
     // Current heuristic is to show as actionble any focusable item where no
     // child is an interesting subtree.
-    if (state[StateType.FOCUSABLE]) {
-      return !node.children ||
-          !node.children.some(SwitchAccessPredicate.isInterestingSubtree);
-    }
+    if (state[StateType.FOCUSABLE])
+      return !node.children.some(SwitchAccessPredicate.isInterestingSubtree);
 
     return false;
   },
@@ -107,20 +107,13 @@ const SwitchAccessPredicate = {
     if (node.state[StateType.INVISIBLE])
       return false;
 
-    // Work around for client nested in client. No need to have user select both
-    // clients for a window. Once locations for outer client updates correctly,
-    // this won't be needed.
-    if (node.role === RoleType.CLIENT && node.role === scope.role &&
-        node !== scope)
-      return false;
-
     let interestingBranchesCount =
         SwitchAccessPredicate.isActionable(node) ? 1 : 0;
     let child = node.firstChild;
     while (child) {
       if (SwitchAccessPredicate.isInterestingSubtree(child))
         interestingBranchesCount += 1;
-      if (interestingBranchesCount > 1)
+      if (interestingBranchesCount >= GROUP_INTERESTING_CHILD_THRESHOLD)
         return true;
       child = child.nextSibling;
     }
