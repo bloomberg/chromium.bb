@@ -34,7 +34,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
-    web_view_helper_->Initialize(nullptr, &web_view_client_,
+    web_view_helper_->Initialize(nullptr, nullptr, &web_widget_client_,
                                  &ConfigureCompositingWebView);
     web_view_helper_->Resize(WebSize(200, 200));
 
@@ -87,7 +87,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
-    return web_view_client_.layer_tree_view()->layer_tree_host();
+    return web_widget_client_.layer_tree_view()->layer_tree_host();
   }
 
   Element* GetElementById(const AtomicString& id) {
@@ -105,7 +105,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
     return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
   }
 
-  frame_test_helpers::TestWebViewClient web_view_client_;
+  frame_test_helpers::TestWebWidgetClient web_widget_client_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 

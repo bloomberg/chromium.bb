@@ -81,7 +81,7 @@ class BrowserControlsTest : public testing::Test {
   WebViewImpl* Initialize(const std::string& page_name = "large-div.html") {
     // Load a page with large body and set viewport size to 400x400 to ensure
     // main frame is scrollable.
-    helper_.InitializeAndLoad(base_url_ + page_name, nullptr, nullptr,
+    helper_.InitializeAndLoad(base_url_ + page_name, nullptr, nullptr, nullptr,
                               &ConfigureSettings);
 
     GetWebView()->MainFrameWidget()->Resize(IntSize(400, 400));

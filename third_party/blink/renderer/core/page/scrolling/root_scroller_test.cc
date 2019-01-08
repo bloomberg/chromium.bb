@@ -179,13 +179,7 @@ class RootScrollerTest : public testing::Test,
   WebViewImpl* InitializeInternal(
       const std::string& url,
       frame_test_helpers::TestWebWidgetClient* client) {
-    if (client) {
-      view_client_ =
-          std::make_unique<frame_test_helpers::TestWebViewClient>(client);
-    } else {
-      view_client_.reset();
-    }
-    helper_.InitializeAndLoad(url, nullptr, view_client_.get(),
+    helper_.InitializeAndLoad(url, nullptr, nullptr, client,
                               &ConfigureSettings);
 
     // Initialize browser controls to be shown.

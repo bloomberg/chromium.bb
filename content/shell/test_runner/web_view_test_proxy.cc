@@ -188,16 +188,15 @@ void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
   // On WebViewTestProxyBase.
   set_delegate(delegate);
 
-  auto test_widget_client =
+  auto widget_client_impl =
       std::make_unique<WebWidgetTestClient>(web_widget_test_proxy_base());
   // This passes calls through to the the |test_widget_client| as well as the
   // production client pulled from RenderViewImpl as needed.
-  auto proxy_widget_client = std::make_unique<ProxyWebWidgetClient>(
-      RenderViewImpl::WidgetClient(), test_widget_client.get(),
+  widget_client_ = std::make_unique<ProxyWebWidgetClient>(
+      RenderViewImpl::WidgetClient(), widget_client_impl.get(),
       RenderViewImpl::GetWidget());
   // This returns the |proxy_widget_client| as the WebWidgetClient.
-  view_test_client_ =
-      std::make_unique<WebViewTestClient>(this, std::move(proxy_widget_client));
+  view_test_client_ = std::make_unique<WebViewTestClient>(this);
 
   // On WebWidgetTestProxyBase.
   // It's weird that the WebView has the proxy client, but the
@@ -205,7 +204,7 @@ void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
   // WebWidgetTestProxyBase does not itself use the WebWidgetClient, only its
   // subclasses do.
   web_widget_test_proxy_base()->set_widget_test_client(
-      std::move(test_widget_client));
+      std::move(widget_client_impl));
 
   // On WebViewTestProxyBase.
   set_test_interfaces(interfaces->GetTestInterfaces());
@@ -254,7 +253,7 @@ blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
 }
 
 blink::WebWidgetClient* WebViewTestProxy::WidgetClient() {
-  return view_test_client_->WidgetClient();
+  return widget_client_.get();
 }
 
 WebViewTestProxy::~WebViewTestProxy() = default;

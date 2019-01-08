@@ -489,8 +489,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // Note: this test doesn't use WebViewHelper since it intentionally runs
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;
+  frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(&web_view_client, web_view_client.WidgetClient(),
+      WebView::Create(&web_view_client, &web_widget_client,
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
@@ -2534,9 +2535,8 @@ IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
 
 TEST_F(WebViewTest, ClientTapHandling) {
   TapHandlingWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
-  WebView* web_view =
-      web_view_helper_.InitializeAndLoad("about:blank", nullptr, &view_client);
+  WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank", nullptr,
+                                                         nullptr, &client);
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         kWebGestureDeviceTouchscreen);
@@ -3169,12 +3169,11 @@ class MiddleClickAutoscrollWebWidgetClient
 
 TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   MiddleClickAutoscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   ScopedMiddleClickAutoscrollForTest middle_click_autoscroll(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "content-width-1000.html", nullptr, &view_client);
+      base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
@@ -3227,7 +3226,7 @@ static void ConfigueCompositingWebView(WebSettings* settings) {
 TEST_F(WebViewTest, ShowPressOnTransformedLink) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
-      web_view_helper.Initialize(nullptr, nullptr, &ConfigueCompositingWebView);
+      web_view_helper.InitializeWithSettings(&ConfigueCompositingWebView);
 
   int page_width = 640;
   int page_height = 480;
@@ -3792,10 +3791,9 @@ class TouchEventHandlerWebWidgetClient
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(url, nullptr, &view_client);
+      web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
 

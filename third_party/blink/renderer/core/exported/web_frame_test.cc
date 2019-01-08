@@ -1300,7 +1300,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
 
   Document* document =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
@@ -1331,7 +1331,7 @@ TEST_F(WebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + html_file, nullptr, &client,
-                                    ConfigureAndroid);
+                                    nullptr, ConfigureAndroid);
 
   Document* document =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
@@ -1356,7 +1356,7 @@ TEST_F(WebFrameTest,
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "iframe_reload.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
 
   LocalFrame* main_frame =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
@@ -1400,7 +1400,7 @@ TEST_F(WebFrameTest, ZeroHeightPositiveWidthNotIgnored) {
   int viewport_height = 0;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
@@ -1426,7 +1426,7 @@ TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "no_viewport_tag.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
 
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -1455,7 +1455,7 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale) {
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "fixed_layout.html");
@@ -1498,7 +1498,7 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale) {
   // Make sure we initialize to minimum scale, even if the window size
   // only becomes available after the load begins.
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "wide_document.html");
@@ -1539,7 +1539,7 @@ TEST_F(WebFrameTest, DelayedViewportInitialScale) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client,
+      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -1566,7 +1566,7 @@ TEST_F(WebFrameTest, setLoadWithOverviewModeToFalse) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client,
+      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -1587,7 +1587,7 @@ TEST_F(WebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "large-div.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(false);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -1609,7 +1609,7 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client,
+      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -1641,7 +1641,7 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-wide-2x-initial-scale.html", nullptr, &client,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(false);
@@ -1672,7 +1672,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithoutViewportTag) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "no_viewport_tag.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
@@ -1702,7 +1702,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithXhtmlMp) {
   int viewport_height = 480;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
@@ -1733,7 +1733,8 @@ TEST_F(WebFrameTest, NoWideViewportAndHeightInMeta) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "viewport-height-1000.html",
-                                    nullptr, &client, ConfigureAndroid);
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(false);
@@ -1756,7 +1757,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-2x-initial-scale.html", nullptr, &client,
+      base_url_ + "viewport-2x-initial-scale.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -1787,7 +1788,7 @@ TEST_F(WebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-wide-2x-initial-scale.html", nullptr, &client,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(false);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -1805,7 +1806,7 @@ TEST_F(WebFrameTest, setInitialPageScaleFactorPermanently) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(false);
@@ -1840,7 +1841,7 @@ TEST_F(WebFrameTest,
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client,
+      base_url_ + "viewport-auto-initial-scale.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(false);
   web_view_helper.GetWebView()->SetInitialPageScaleOverride(
@@ -1864,7 +1865,7 @@ TEST_F(WebFrameTest,
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-wide-2x-initial-scale.html", nullptr, &client,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetInitialPageScaleOverride(
       enforced_page_scale_factor);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
@@ -1896,7 +1897,7 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered) {
     for (int quirk_enabled = 0; quirk_enabled <= 1; ++quirk_enabled) {
       frame_test_helpers::WebViewHelper web_view_helper;
       web_view_helper.InitializeAndLoad(base_url_ + pages[i], nullptr, &client,
-                                        ConfigureAndroid);
+                                        nullptr, ConfigureAndroid);
       web_view_helper.GetWebView()
           ->GetSettings()
           ->SetClobberUserAgentInitialScaleQuirk(quirk_enabled);
@@ -1922,7 +1923,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth) {
   float enforced_page_scale_factor = 0.5;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client,
+  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
                                     ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -1953,7 +1954,7 @@ TEST_F(WebFrameTest, DocumentElementClientHeightWorksWithWrapContentMode) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "0-by-0.html", nullptr, &client,
-                                    ConfigureAndroid);
+                                    nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -1974,7 +1975,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "0-by-0.html", nullptr, &client,
-                                    ConfigureAndroid);
+                                    nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
@@ -2048,7 +2049,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeight) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "200-by-300.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   EXPECT_LE(viewport_height, web_view_helper.GetWebView()
@@ -2143,7 +2144,7 @@ TEST_F(WebFrameTest,
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "button.html", nullptr, &client,
-                                    ConfigureAndroid);
+                                    nullptr, ConfigureAndroid);
   // set view height to zero so that if the height of the view is not
   // successfully updated during later resizes touch events will fail
   // (as in not hit content included in the view)
@@ -2247,7 +2248,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "200-by-300.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -2273,7 +2274,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk) {
   frame_test_helpers::WebViewHelper web_view_helper;
 
   web_view_helper.InitializeAndLoad(base_url_ + "200-by-300.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
@@ -2297,7 +2298,7 @@ TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale) {
   int viewport_height = 800;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client,
+  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
                                     ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -2328,7 +2329,7 @@ TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
   int viewport_height = 800;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client,
+  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
                                     ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -2358,7 +2359,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
   int viewport_height = 800;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client,
+  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
                                     ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -2439,7 +2440,7 @@ TEST_F(WebFrameTest, ZeroValuesQuirk) {
   int viewport_height = 480;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetViewportMetaZeroValuesQuirk(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
@@ -2543,7 +2544,7 @@ TEST_F(WebFrameTest, NonZeroValuesNoQuirk) {
   float expected_page_scale_factor = 0.5f;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetViewportMetaZeroValuesQuirk(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
@@ -2584,7 +2585,7 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   unsigned prev_layout_count =
@@ -2610,7 +2611,7 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   unsigned prev_layout_count =
@@ -2636,7 +2637,7 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   web_view_helper.GetWebView()->SetPageScaleFactor(3);
@@ -2658,7 +2659,7 @@ TEST_F(WebFrameTest, initialScaleWrittenToHistoryItem) {
   int viewport_height = 480;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "fixed_layout.html");
@@ -2687,7 +2688,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesntShrinkFrameView) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "large-div.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
@@ -2729,7 +2730,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
@@ -2765,7 +2766,7 @@ TEST_F(WebFrameTest, targetDensityDpiHigh) {
     frame_test_helpers::WebViewHelper web_view_helper;
     web_view_helper.InitializeAndLoad(
         base_url_ + "viewport-target-densitydpi-high.html", nullptr, &client,
-        ConfigureAndroid);
+        nullptr, ConfigureAndroid);
     web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
         true);
     web_view_helper.GetWebView()
@@ -2811,7 +2812,7 @@ TEST_F(WebFrameTest, targetDensityDpiDevice) {
     frame_test_helpers::WebViewHelper web_view_helper;
     web_view_helper.InitializeAndLoad(
         base_url_ + "viewport-target-densitydpi-device.html", nullptr, &client,
-        ConfigureAndroid);
+        nullptr, ConfigureAndroid);
     web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
         true);
     web_view_helper.GetWebView()
@@ -2854,7 +2855,7 @@ TEST_F(WebFrameTest, targetDensityDpiDeviceAndFixedWidth) {
     frame_test_helpers::WebViewHelper web_view_helper;
     web_view_helper.InitializeAndLoad(
         base_url_ + "viewport-target-densitydpi-device-and-fixed-width.html",
-        nullptr, &client, ConfigureAndroid);
+        nullptr, &client, nullptr, ConfigureAndroid);
     web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
         true);
     web_view_helper.GetWebView()
@@ -2892,7 +2893,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-initial-scale-less-than-1.html", nullptr, &client,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetSettings()
       ->SetSupportDeprecatedTargetDensityDPI(true);
@@ -2931,7 +2932,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-initial-scale-less-than-1-device-width.html",
-      nullptr, &client, ConfigureAndroid);
+      nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetSettings()
       ->SetSupportDeprecatedTargetDensityDPI(true);
@@ -2971,7 +2972,7 @@ TEST_F(WebFrameTest, NoWideViewportAndNoViewportWithInitialPageScaleOverride) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "large-div.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -3008,7 +3009,7 @@ TEST_F(WebFrameTest, NoUserScalableQuirkIgnoresViewportScale) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-initial-scale-and-user-scalable-no.html", nullptr,
-      &client, ConfigureAndroid);
+      &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetSettings()
       ->SetViewportMetaNonUserScalableQuirk(true);
@@ -3043,7 +3044,7 @@ TEST_F(WebFrameTest,
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-initial-scale-and-user-scalable-no.html", nullptr,
-      &client, ConfigureAndroid);
+      &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetSettings()
       ->SetSupportDeprecatedTargetDensityDPI(true);
@@ -3083,7 +3084,7 @@ TEST_F(WebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-2x-initial-scale-non-user-scalable.html", nullptr,
-      &client, ConfigureAndroid);
+      &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetSettings()
       ->SetViewportMetaNonUserScalableQuirk(true);
@@ -3118,7 +3119,7 @@ TEST_F(WebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "no_viewport_tag.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -3138,7 +3139,8 @@ TEST_F(WebFrameTest, AtViewportInsideAtMediaInitialViewport) {
   FixedLayoutTestWebViewClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "viewport-inside-media.html",
-                                    nullptr, &client, ConfigureAndroid);
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
   web_view_helper.Resize(WebSize(640, 480));
 
   EXPECT_EQ(2000, web_view_helper.GetWebView()
@@ -3161,7 +3163,7 @@ TEST_F(WebFrameTest, AtViewportAffectingAtMediaRecalcCount) {
 
   FixedLayoutTestWebViewClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(640, 480));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "viewport-and-media.html");
@@ -3187,7 +3189,7 @@ TEST_F(WebFrameTest, AtViewportWithViewportLengths) {
 
   FixedLayoutTestWebViewClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(800, 600));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "viewport-lengths.html");
@@ -3225,7 +3227,7 @@ class WebFrameResizeTest : public WebFrameTest {
 
     frame_test_helpers::WebViewHelper web_view_helper;
     web_view_helper.InitializeAndLoad(base_url_ + url, nullptr, nullptr,
-                                      ConfigureAndroid);
+                                      nullptr, ConfigureAndroid);
     web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
 
     // Origin scrollOffsets preserved under resize.
@@ -3344,7 +3346,7 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fixed_layout.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
@@ -3372,7 +3374,8 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "no_scale_for_you.html",
-                                    nullptr, &client, ConfigureAndroid);
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
@@ -3407,7 +3410,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
   FakeCompositingWebViewClient fake_compositing_web_view_client;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(nullptr, &fake_compositing_web_view_client,
-                             &ConfigureCompositingWebView);
+                             nullptr, &ConfigureCompositingWebView);
 
   web_view_helper.Resize(WebSize(view_width, view_height));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -3471,7 +3474,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_scale_for_auto_zoom_into_div_test.html", nullptr,
-      nullptr, ConfigureAndroid);
+      nullptr, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.01f, 4);
   web_view_helper.GetWebView()->SetPageScaleFactor(0.5f);
@@ -3536,7 +3539,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_wide_div_for_auto_zoom_test.html", nullptr, nullptr,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetPageScaleFactor(1.0f);
@@ -3574,7 +3577,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest) {
   int viewport_height = 1280 / kDeviceScaleFactor;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "very_tall_div.html", nullptr,
-                                    nullptr, ConfigureAndroid);
+                                    nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetPageScaleFactor(1.0f);
@@ -3603,7 +3606,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_multiple_divs_for_auto_zoom_test.html", nullptr, nullptr,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.5f, 4);
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
@@ -3670,7 +3673,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_scale_bounds_check_for_auto_zoom_test.html", nullptr,
-      nullptr, ConfigureAndroid);
+      nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(1.5f);
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
@@ -3756,7 +3759,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_scale_bounds_check_for_auto_zoom_test.html", nullptr,
-      nullptr, ConfigureAndroid);
+      nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(
       maximum_legible_scale_factor);
@@ -3873,7 +3876,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_scale_bounds_check_for_auto_zoom_test.html", nullptr,
-      nullptr, ConfigureAndroid);
+      nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
@@ -3988,7 +3991,7 @@ TEST_F(WebFrameTest, BlockBoundTest) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "block_bound.html", nullptr,
-                                    nullptr, ConfigureAndroid);
+                                    nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(300, 300));
 
   IntRect rect_back = IntRect(0, 0, 200, 200);
@@ -4370,7 +4373,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestWithDeviceScaleFactor) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "get_scale_for_zoom_into_editable_test.html", nullptr,
-      nullptr, ConfigureAndroid);
+      nullptr, nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()
       ->GetPage()
       ->GetSettings()
@@ -6400,7 +6403,7 @@ class CompositedSelectionBoundsTest
       : ScopedCompositedSelectionUpdateForTest(true) {
     RegisterMockedHttpURLLoad("Ahem.ttf");
 
-    web_view_helper_.Initialize(nullptr, &web_view_client_);
+    web_view_helper_.Initialize(nullptr, nullptr, &web_widget_client_);
     web_view_helper_.GetWebView()->GetSettings()->SetDefaultFontSize(12);
     web_view_helper_.GetWebView()->SetDefaultPageScaleLimits(1, 1);
     web_view_helper_.Resize(WebSize(640, 480));
@@ -6414,7 +6417,7 @@ class CompositedSelectionBoundsTest
     UpdateAllLifecyclePhases(web_view_helper_.GetWebView());
 
     cc::LayerTreeHost* layer_tree_host =
-        web_view_client_.layer_tree_view()->layer_tree_host();
+        web_widget_client_.layer_tree_view()->layer_tree_host();
     const cc::LayerSelection& selection = layer_tree_host->selection();
 
     ASSERT_EQ(selection, cc::LayerSelection());
@@ -6514,7 +6517,7 @@ class CompositedSelectionBoundsTest
         .HandleGestureEvent(gesture_event);
 
     cc::LayerTreeHost* layer_tree_host =
-        web_view_client_.layer_tree_view()->layer_tree_host();
+        web_widget_client_.layer_tree_view()->layer_tree_host();
     const cc::LayerSelection& selection = layer_tree_host->selection();
 
     ASSERT_NE(selection, cc::LayerSelection());
@@ -6601,7 +6604,7 @@ class CompositedSelectionBoundsTest
                                          : clm->MainGraphicsLayer();
   }
 
-  frame_test_helpers::TestWebViewClient web_view_client_;
+  frame_test_helpers::TestWebWidgetClient web_widget_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -7723,7 +7726,7 @@ TEST_F(WebFrameTest, NavigateToSameNoConditionalRequestForSubresource) {
   TestSameDocumentWithImageWebFrameClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "foo_with_image.html", &client,
-                                    nullptr,
+                                    nullptr, nullptr,
                                     &ConfigureLoadsImagesAutomatically);
 
   WebCache::Clear();
@@ -8001,7 +8004,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
           std::make_unique<FakeCompositingWebViewClient>();
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(nullptr, fake_compositing_web_view_client.get(),
-                             &ConfigureCompositingWebView);
+                             nullptr, &ConfigureCompositingWebView);
 
   web_view_helper.Resize(WebSize(100, 100));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -8095,7 +8098,7 @@ TEST_F(WebFrameTest, fixedPositionInFixedViewport) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "fixed-position-in-fixed-viewport.html", nullptr, nullptr,
-      ConfigureAndroid);
+      nullptr, ConfigureAndroid);
 
   WebViewImpl* web_view = web_view_helper.GetWebView();
   web_view_helper.Resize(WebSize(100, 100));
@@ -8136,7 +8139,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   RegisterMockedHttpURLLoad("long_scroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html", nullptr,
-                                    &client, ConfigureAndroid);
+                                    &client, nullptr, ConfigureAndroid);
 
   WebViewImpl* web_view = web_view_helper.GetWebView();
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
@@ -8230,7 +8233,8 @@ TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "rtl-overview-mode.html",
-                                    nullptr, &client, ConfigureAndroid);
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
   web_view_helper.GetWebView()->SetInitialPageScaleOverride(-1);
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
@@ -8253,7 +8257,8 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "fullscreen_div.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   UpdateAllLifecyclePhases(web_view_impl);
 
@@ -8291,7 +8296,8 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   int viewport_width = 640;
   int viewport_height = 480;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "fullscreen_div.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   UpdateAllLifecyclePhases(web_view_impl);
 
@@ -8349,7 +8355,8 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   int viewport_width = 640;
   int viewport_height = 480;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "fullscreen_div.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   UpdateAllLifecyclePhases(web_view_impl);
 
@@ -8401,7 +8408,8 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   RegisterMockedHttpURLLoad("fullscreen_div.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "fullscreen_iframe.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "fullscreen_iframe.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   int viewport_width = 640;
   int viewport_height = 480;
   client.screen_info_.rect.width = viewport_width;
@@ -8490,7 +8498,8 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   RegisterMockedHttpURLLoad("viewport-tiny.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-tiny.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "viewport-tiny.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   int viewport_width = 384;
   int viewport_height = 640;
   client.screen_info_.rect.width = viewport_width;
@@ -8534,7 +8543,8 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   RegisterMockedHttpURLLoad("viewport-tiny.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-tiny.html", nullptr, &client, ConfigureAndroid);
+      base_url_ + "viewport-tiny.html", nullptr, &client, nullptr,
+      ConfigureAndroid);
   int viewport_width = 384;
   int viewport_height = 640;
   client.screen_info_.rect.width = viewport_width;
@@ -8593,7 +8603,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_restore_scale_factor.html", nullptr, &client,
-      &ConfigureAndroid);
+      nullptr, &ConfigureAndroid);
   client.screen_info_.rect.width =
       screen_size_minus_status_bars_minus_url_bar.width;
   client.screen_info_.rect.height =
@@ -8660,7 +8670,8 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   int viewport_height = 200;
 
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport-tiny.html", nullptr, nullptr, ConfigureAndroid);
+      base_url_ + "viewport-tiny.html", nullptr, nullptr, nullptr,
+      ConfigureAndroid);
 
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   UpdateAllLifecyclePhases(web_view_impl);
@@ -8710,13 +8721,14 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
 TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   ScopedForceOverlayFullscreenVideoForTest force_overlay_fullscreen_video(true);
   RegisterMockedHttpURLLoad("fullscreen_video.html");
-  frame_test_helpers::TestWebViewClient web_view_client;
+  frame_test_helpers::TestWebWidgetClient web_widget_client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "fullscreen_video.html", nullptr, &web_view_client);
+  WebViewImpl* web_view_impl =
+      web_view_helper.InitializeAndLoad(base_url_ + "fullscreen_video.html",
+                                        nullptr, nullptr, &web_widget_client);
 
   const cc::LayerTreeHost* layer_tree_host =
-      web_view_client.layer_tree_view()->layer_tree_host();
+      web_widget_client.layer_tree_view()->layer_tree_host();
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
@@ -9755,9 +9767,8 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose) {
 
   // Create a remote window that will be closed later in the test.
   RemoteWindowCloseClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   frame_test_helpers::WebViewHelper popup;
-  popup.InitializeRemote(nullptr, nullptr, &view_client);
+  popup.InitializeRemote(nullptr, nullptr, nullptr, &client);
   popup.RemoteMainFrame()->SetOpener(main_web_view.LocalMainFrame());
 
   LocalFrame* local_frame = main_web_view.LocalMainFrame()->GetFrame();
@@ -9968,7 +9979,8 @@ TEST_F(WebFrameTest, ResizeInvalidatesDeviceMediaQueries) {
   FixedLayoutTestWebViewClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "device_media_queries.html",
-                                    nullptr, &client, ConfigureAndroid);
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
   LocalFrame* frame =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Element* element = frame->GetDocument()->getElementById("test");
@@ -10260,11 +10272,11 @@ INSTANTIATE_TEST_CASE_P(All,
 TEST_P(WebFrameOverscrollTest,
        AccumulatedRootOverscrollAndUnsedDeltaValuesOnOverscroll) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
-                                    nullptr, &view_client, ConfigureAndroid);
+                                    nullptr, nullptr, &client,
+                                    ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
   // Calculation of accumulatedRootOverscroll and unusedDelta on multiple
@@ -10314,11 +10326,10 @@ TEST_P(WebFrameOverscrollTest,
 TEST_P(WebFrameOverscrollTest,
        AccumulatedOverscrollAndUnusedDeltaValuesOnDifferentAxesOverscroll) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/div-overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "overscroll/div-overscroll.html", nullptr, &view_client,
+      base_url_ + "overscroll/div-overscroll.html", nullptr, nullptr, &client,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
@@ -10364,11 +10375,10 @@ TEST_P(WebFrameOverscrollTest,
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/div-overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "overscroll/div-overscroll.html", nullptr, &view_client,
+      base_url_ + "overscroll/div-overscroll.html", nullptr, nullptr, &client,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
@@ -10392,13 +10402,12 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "overscroll/iframe-overscroll.html", nullptr, &view_client,
-      ConfigureAndroid);
+      base_url_ + "overscroll/iframe-overscroll.html", nullptr, nullptr,
+      &client, ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
   ScrollBegin(&web_view_helper, 0, -320);
@@ -10429,11 +10438,10 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
 
 TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
-      base_url_ + "overscroll/overscroll.html", nullptr, &view_client,
+      base_url_ + "overscroll/overscroll.html", nullptr, nullptr, &client,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
   web_view_impl->SetPageScaleFactor(3.0);
@@ -10476,11 +10484,11 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
 
 TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
-                                    nullptr, &view_client, ConfigureAndroid);
+                                    nullptr, nullptr, &client,
+                                    ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
   ScrollBegin(&web_view_helper, 10, 10);
@@ -10538,11 +10546,11 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
 
 TEST_P(WebFrameOverscrollTest, OverscrollBehaviorAffectsDidOverscroll) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
-                                    nullptr, &view_client, ConfigureAndroid);
+                                    nullptr, nullptr, &client,
+                                    ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
   WebLocalFrame* mainFrame =
@@ -10592,13 +10600,12 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorAffectsDidOverscroll) {
 
 TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
   OverscrollWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
-      base_url_ + "overscroll/iframe-overscroll.html", nullptr, &view_client,
-      ConfigureAndroid);
+      base_url_ + "overscroll/iframe-overscroll.html", nullptr, nullptr,
+      &client, ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
   WebLocalFrame* mainFrame =
@@ -10848,7 +10855,8 @@ TEST(WebFrameGlobalReuseTest, MainFrameWithNoOpener) {
 // injected script before the initial navigation.
 TEST(WebFrameGlobalReuseTest, ChildFrame) {
   frame_test_helpers::WebViewHelper helper;
-  helper.Initialize(nullptr, nullptr, EnableGlobalReuseForUnownedMainFrames);
+  helper.Initialize(nullptr, nullptr, nullptr,
+                    EnableGlobalReuseForUnownedMainFrames);
 
   WebLocalFrame* main_frame = helper.LocalMainFrame();
   frame_test_helpers::LoadFrame(main_frame, "data:text/html,<iframe></iframe>");
@@ -10870,7 +10878,8 @@ TEST(WebFrameGlobalReuseTest, MainFrameWithOpener) {
   opener_helper.Initialize();
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeWithOpener(opener_helper.GetWebView()->MainFrame(), nullptr,
-                              nullptr, EnableGlobalReuseForUnownedMainFrames);
+                              nullptr, nullptr,
+                              EnableGlobalReuseForUnownedMainFrames);
 
   WebLocalFrame* main_frame = helper.LocalMainFrame();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
@@ -10888,7 +10897,8 @@ TEST(WebFrameGlobalReuseTest, MainFrameWithOpener) {
 // to persist on the first navigation away from the initial empty document.
 TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled) {
   frame_test_helpers::WebViewHelper helper;
-  helper.Initialize(nullptr, nullptr, EnableGlobalReuseForUnownedMainFrames);
+  helper.Initialize(nullptr, nullptr, nullptr,
+                    EnableGlobalReuseForUnownedMainFrames);
 
   WebLocalFrame* main_frame = helper.LocalMainFrame();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
@@ -11194,7 +11204,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   constexpr int kBrowserControlsHeight = 100;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, nullptr, ConfigureAndroid);
+  web_view_helper.Initialize(nullptr, nullptr, nullptr, ConfigureAndroid);
   WebViewImpl* web_view = web_view_helper.GetWebView();
   web_view->ResizeWithBrowserControls(
       WebSize(kViewportWidth, kViewportHeight - kBrowserControlsHeight),

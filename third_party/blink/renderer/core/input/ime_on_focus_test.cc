@@ -93,11 +93,11 @@ void ImeOnFocusTest::RunImeOnFocusTest(
     const AtomicString& focus_element,
     std::string frame) {
   ImeRequestTrackingWebWidgetClient client;
-  frame_test_helpers::TestWebViewClient view_client(&client);
   RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
                                 test::CoreTestDataPath(),
                                 WebString::FromUTF8(file_name));
-  WebViewImpl* web_view = web_view_helper_.Initialize(nullptr, &view_client);
+  WebViewImpl* web_view =
+      web_view_helper_.Initialize(nullptr, nullptr, &client);
   web_view->MainFrameWidget()->Resize(WebSize(800, 1200));
   LoadFrame(web_view->MainFrameImpl(), base_url_ + file_name);
   document_ = web_view_helper_.GetWebView()

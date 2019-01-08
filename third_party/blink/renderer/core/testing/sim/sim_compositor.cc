@@ -29,14 +29,18 @@ SimCompositor::~SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(false);
 }
 
-void SimCompositor::SetWebView(WebViewImpl& web_view,
-                               content::LayerTreeView& layer_tree_view,
-                               frame_test_helpers::TestWebViewClient& client) {
+void SimCompositor::SetWebView(
+    WebViewImpl& web_view,
+    content::LayerTreeView& layer_tree_view,
+    frame_test_helpers::TestWebViewClient& view_client,
+    frame_test_helpers::TestWebWidgetClient& widget_client) {
   web_view_ = &web_view;
   layer_tree_view_ = &layer_tree_view;
   DCHECK_EQ(&layer_tree_view, web_view_->LayerTreeView());
-  test_web_view_client_ = &client;
+  test_web_view_client_ = &view_client;
   DCHECK_EQ(test_web_view_client_, web_view_->Client());
+  test_web_widget_client_ = &widget_client;
+  DCHECK_EQ(test_web_widget_client_, web_view_->WidgetClient());
 
   // SimCompositor starts with defer commits enabled, but uses synchronous
   // compositing which does not use defer commits anyhow, it only uses it for
@@ -52,7 +56,7 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK(NeedsBeginFrame());
   DCHECK_GT(time_delta_in_seconds, 0);
 
-  test_web_view_client_->TestWidgetClient()->ClearAnimationScheduled();
+  test_web_widget_client_->ClearAnimationScheduled();
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 

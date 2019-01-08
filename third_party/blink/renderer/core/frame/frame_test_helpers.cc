@@ -219,8 +219,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   if (!frame->Parent()) {
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    WebWidgetClient* widget_client =
-        frame->ViewImpl()->Client()->WidgetClient();
+    WebWidgetClient* widget_client = frame->ViewImpl()->WidgetClient();
     WebFrameWidget::CreateForMainFrame(widget_client, frame);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     auto widget_client = std::make_unique<TestWebWidgetClient>();
@@ -304,10 +303,12 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
+    TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
   Reset();
 
-  InitializeWebView(web_view_client, opener ? opener->View() : nullptr);
+  InitializeWebView(web_view_client, web_widget_client,
+                    opener ? opener->View() : nullptr);
   if (update_settings_func)
     update_settings_func(web_view_->GetSettings());
 
@@ -322,8 +323,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  blink::WebFrameWidget::CreateForMainFrame(
-      test_web_view_client_->WidgetClient(), frame);
+  blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -334,8 +334,15 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 WebViewImpl* WebViewHelper::Initialize(
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
+    TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
   return InitializeWithOpener(nullptr, web_frame_client, web_view_client,
+                              web_widget_client, update_settings_func);
+}
+
+WebViewImpl* WebViewHelper::InitializeWithSettings(
+    void (*update_settings_func)(WebSettings*)) {
+  return InitializeWithOpener(nullptr, nullptr, nullptr, nullptr,
                               update_settings_func);
 }
 
@@ -343,8 +350,10 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
     const std::string& url,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
+    TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
-  Initialize(web_frame_client, web_view_client, update_settings_func);
+  Initialize(web_frame_client, web_view_client, web_widget_client,
+             update_settings_func);
 
   LoadFrame(GetWebView()->MainFrameImpl(), url);
 
@@ -354,10 +363,11 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
 WebViewImpl* WebViewHelper::InitializeRemote(
     TestWebRemoteFrameClient* web_remote_frame_client,
     scoped_refptr<SecurityOrigin> security_origin,
-    TestWebViewClient* web_view_client) {
+    TestWebViewClient* web_view_client,
+    TestWebWidgetClient* web_widget_client) {
   Reset();
 
-  InitializeWebView(web_view_client, nullptr);
+  InitializeWebView(web_view_client, web_widget_client, nullptr);
 
   std::unique_ptr<TestWebRemoteFrameClient> owned_web_remote_frame_client;
   web_remote_frame_client = CreateDefaultClientIfNeeded(
@@ -405,12 +415,14 @@ void WebViewHelper::Resize(WebSize size) {
 }
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
+                                      TestWebWidgetClient* widget_client,
                                       class WebView* opener) {
   test_web_view_client_ =
       CreateDefaultClientIfNeeded(web_view_client, owned_test_web_view_client_);
+  test_web_widget_client_ =
+      CreateDefaultClientIfNeeded(widget_client, owned_test_web_widget_client_);
   web_view_ = static_cast<WebViewImpl*>(WebView::Create(
-      test_web_view_client_, test_web_view_client_->WidgetClient(),
-      /*is_hidden=*/false,
+      test_web_view_client_, test_web_widget_client_, /*is_hidden=*/false,
       /*compositing_enabled=*/true, opener));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
@@ -422,7 +434,7 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   web_view_->GetSettings()->SetLoadsImagesAutomatically(true);
 
   web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_view_client_->layer_tree_view());
+      test_web_widget_client_->layer_tree_view());
   web_view_->SetDeviceScaleFactor(
       test_web_view_client_->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);
@@ -554,8 +566,9 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   return layer_tree_view_.get();
 }
 
-TestWebWidgetClient::TestWebWidgetClient() {
-  layer_tree_view_ = layer_tree_view_factory_.Initialize();
+TestWebWidgetClient::TestWebWidgetClient(
+    content::LayerTreeViewDelegate* delegate) {
+  layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 
 void TestWebWidgetClient::DidMeaningfulLayout(
@@ -571,15 +584,6 @@ void TestWebWidgetClient::DidMeaningfulLayout(
       finished_loading_layout_count_++;
       break;
   }
-}
-
-TestWebViewClient::TestWebViewClient(TestWebWidgetClient* widget_client,
-                                     content::LayerTreeViewDelegate* delegate) {
-  // NOTE: The WebWidgetClient* could possibly be |this|, so do not call any
-  // virtual methods on it here!
-  test_web_widget_client_ =
-      CreateDefaultClientIfNeeded(widget_client, owned_test_web_widget_client_);
-  layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 
 void TestWebViewClient::DestroyChildViews() {

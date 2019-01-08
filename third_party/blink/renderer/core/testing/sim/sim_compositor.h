@@ -47,7 +47,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // available on the WebViewImpl as well.
   void SetWebView(WebViewImpl&,
                   content::LayerTreeView&,
-                  frame_test_helpers::TestWebViewClient&);
+                  frame_test_helpers::TestWebViewClient&,
+                  frame_test_helpers::TestWebWidgetClient&);
 
   // Executes the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
@@ -70,7 +71,7 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // to the compositor's state.
   bool NeedsBeginFrame() const {
     cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
-    return test_web_view_client_->TestWidgetClient()->AnimationScheduled() ||
+    return test_web_widget_client_->AnimationScheduled() ||
            layer_tree_host->RequestedMainFramePendingForTesting();
   }
   // Returns true if commits are deferred in the compositor. Since these tests
@@ -101,6 +102,7 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   WebViewImpl* web_view_ = nullptr;
   content::LayerTreeView* layer_tree_view_ = nullptr;
   frame_test_helpers::TestWebViewClient* test_web_view_client_ = nullptr;
+  frame_test_helpers::TestWebWidgetClient* test_web_widget_client_ = nullptr;
 
   base::TimeTicks last_frame_time_;
 

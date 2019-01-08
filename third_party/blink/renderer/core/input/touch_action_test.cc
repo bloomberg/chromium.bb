@@ -121,7 +121,6 @@ class TouchActionTest : public testing::Test {
                      TouchActionTrackingWebWidgetClient&);
 
   std::string base_url_;
-  std::unique_ptr<frame_test_helpers::TestWebViewClient> web_view_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -198,18 +197,12 @@ void TouchActionTest::RunIFrameTest(std::string file) {
 WebViewImpl* TouchActionTest::SetupTest(
     std::string file,
     TouchActionTrackingWebWidgetClient* client) {
-  if (client) {
-    web_view_client_ =
-        std::make_unique<frame_test_helpers::TestWebViewClient>(client);
-  } else {
-    web_view_client_.reset();
-  }
   url_test_helpers::RegisterMockedURLLoadFromBase(
       WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
       WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + file, nullptr, web_view_client_.get());
+      base_url_ + file, nullptr, nullptr, client);
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
   // with browser.

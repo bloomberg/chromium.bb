@@ -183,7 +183,8 @@ class LayerTreeViewFactory {
 
 class TestWebWidgetClient : public WebWidgetClient {
  public:
-  TestWebWidgetClient();
+  // If no delegate is given, a stub is used.
+  explicit TestWebWidgetClient(content::LayerTreeViewDelegate* = nullptr);
   ~TestWebWidgetClient() override = default;
 
   // WebWidgetClient:
@@ -217,20 +218,14 @@ class TestWebWidgetClient : public WebWidgetClient {
 
 class TestWebViewClient : public WebViewClient {
  public:
-  // If no delegate is given, a stub is used. If no TestWebWidgetClient is
-  // given, an instance of TestWebWidgetClient is created and used.
-  explicit TestWebViewClient(TestWebWidgetClient* = nullptr,
-                             content::LayerTreeViewDelegate* = nullptr);
+  TestWebViewClient() = default;
   ~TestWebViewClient() override = default;
 
-  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
-  TestWebWidgetClient* TestWidgetClient() { return test_web_widget_client_; }
   void DestroyChildViews();
 
   // WebViewClient overrides.
   bool CanHandleGestureEvent() override { return true; }
   bool CanUpdateLayout() override { return true; }
-  WebWidgetClient* WidgetClient() override { return test_web_widget_client_; }
   blink::WebScreenInfo GetScreenInfo() override { return {}; }
   WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
@@ -242,9 +237,6 @@ class TestWebViewClient : public WebViewClient {
                       const SessionStorageNamespaceId&) override;
 
  private:
-  std::unique_ptr<TestWebWidgetClient> owned_test_web_widget_client_;
-  TestWebWidgetClient* test_web_widget_client_;
-  content::LayerTreeView* layer_tree_view_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;
   WTF::Vector<std::unique_ptr<WebViewHelper>> child_web_views_;
 };
@@ -267,12 +259,19 @@ class WebViewHelper {
       WebFrame* opener,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
+      TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as InitializeWithOpener(), but always sets the opener to null.
   WebViewImpl* Initialize(TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
+                          TestWebWidgetClient* = nullptr,
                           void (*update_settings_func)(WebSettings*) = nullptr);
+
+  // Same as InitializeWithOpener(), but passes null for everything but the
+  // settings function.
+  WebViewImpl* InitializeWithSettings(
+      void (*update_settings_func)(WebSettings*));
 
   // Same as Initialize() but also performs the initial load of the url. Only
   // returns once the load is complete.
@@ -280,6 +279,7 @@ class WebViewHelper {
       const std::string& url,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
+      TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Creates and initializes the WebView with a main WebRemoteFrame. Passing
@@ -287,7 +287,8 @@ class WebViewHelper {
   // origin.
   WebViewImpl* InitializeRemote(TestWebRemoteFrameClient* = nullptr,
                                 scoped_refptr<SecurityOrigin> = nullptr,
-                                TestWebViewClient* = nullptr);
+                                TestWebViewClient* = nullptr,
+                                TestWebWidgetClient* = nullptr);
 
   // Load the 'Ahem' font to this WebView.
   // The 'Ahem' font is the only font whose font metrics is consistent across
@@ -301,19 +302,24 @@ class WebViewHelper {
 
   WebViewImpl* GetWebView() const { return web_view_; }
   content::LayerTreeView* GetLayerTreeView() const {
-    return test_web_view_client_->layer_tree_view();
+    return test_web_widget_client_->layer_tree_view();
   }
 
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
 
  private:
-  void InitializeWebView(TestWebViewClient*, class WebView* opener);
+  void InitializeWebView(TestWebViewClient*,
+                         TestWebWidgetClient*,
+                         class WebView* opener);
 
   WebViewImpl* web_view_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
+
   std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;
   TestWebViewClient* test_web_view_client_ = nullptr;
+  std::unique_ptr<TestWebWidgetClient> owned_test_web_widget_client_;
+  TestWebWidgetClient* test_web_widget_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewHelper);
 };
