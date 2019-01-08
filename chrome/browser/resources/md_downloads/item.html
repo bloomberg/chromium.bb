@@ -252,8 +252,7 @@
         right: initial;
       }
 
-      paper-button.action-button,
-      paper-button.pause-button {
+      #pauseOrResume {
         margin-inline-end: 8px;
       }
     </style>
@@ -308,8 +307,7 @@
             </paper-button>
           </template>
           <template is="dom-if" if="[[pauseOrResumeText_]]">
-            <paper-button class$="[[pauseOrResumeClass_]]"
-                on-click="onPauseOrResumeTap_">
+            <paper-button on-click="onPauseOrResumeTap_" id="pauseOrResume">
               [[pauseOrResumeText_]]
             </paper-button>
           </template>

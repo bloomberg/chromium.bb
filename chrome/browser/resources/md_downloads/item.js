@@ -61,15 +61,10 @@ cr.define('downloads', function() {
       },
 
       /** @private */
-      pauseOrResumeClass_: {
-        computed: 'computePauseOrResumeClass_(isInProgress_, data.resume)',
-        type: String,
-      },
-
-      /** @private */
       pauseOrResumeText_: {
         computed: 'computePauseOrResumeText_(isInProgress_, data.resume)',
         type: String,
+        observer: 'updatePauseOrResumeClass_',
       },
 
       /** @private */
@@ -269,18 +264,31 @@ cr.define('downloads', function() {
            this.data.dangerType == downloads.DangerType.POTENTIALLY_UNWANTED);
     },
 
-    /**
-     * @return {string} 'action-button' for a resume button, 'pause-button'
-     *     otherwise.
-     * @private
-     */
-    computePauseOrResumeClass_: function() {
-      if (this.data === undefined) {
-        return '';
+    /** @private */
+    toggleButtonClass_: function() {
+      this.$$('#pauseOrResume')
+          .classList.toggle(
+              'action-button',
+              this.pauseOrResumeText_ ===
+                  loadTimeData.getString('controlResume'));
+    },
+
+    /** @private */
+    updatePauseOrResumeClass_: function() {
+      if (!this.pauseOrResumeText_) {
+        return;
       }
 
-      return !this.isInProgress_ && this.data.resume ? 'action-button' :
-                                                       'pause-button';
+      // Wait for dom-if to switch to true, in case the text has just changed
+      // from empty.
+      // TODO (rbpotter): Remove this conditional when Polymer 2 migration is
+      // complete.
+      if (Polymer.DomIf) {
+        Polymer.RenderStatus.beforeNextRender(
+            this, () => this.toggleButtonClass_());
+      } else {
+        this.async(() => this.toggleButtonClass_());
+      }
     },
 
     /**
