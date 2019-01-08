@@ -259,7 +259,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
-  blink::WebWidgetClient* WidgetClient() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement
@@ -293,6 +292,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
+
+  // Can be overridden by web tests to inject their own WebWidgetClient instead
+  // of RenderWidget.
+  virtual blink::WebWidgetClient* WidgetClient();
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions

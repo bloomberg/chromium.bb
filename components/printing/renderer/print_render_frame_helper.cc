@@ -775,7 +775,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // blink::WebViewClient:
   void DidStopLoading() override;
   blink::WebScreenInfo GetScreenInfo() override;
-  WebWidgetClient* WidgetClient() override { return this; }
 
   // blink::WebLocalFrameClient:
   void BindToFrame(blink::WebNavigationControl* frame) override;

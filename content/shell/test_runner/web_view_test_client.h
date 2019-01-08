@@ -25,8 +25,7 @@ class WebViewTestProxyBase;
 class WebViewTestClient : public blink::WebViewClient {
  public:
   // Caller has to ensure |web_view_test_proxy_base| lives longer than |this|.
-  WebViewTestClient(WebViewTestProxyBase* web_view_test_proxy_base,
-                    std::unique_ptr<blink::WebWidgetClient> web_widget_client);
+  explicit WebViewTestClient(WebViewTestProxyBase* web_view_test_proxy_base);
 
   ~WebViewTestClient() override;
 
@@ -45,7 +44,6 @@ class WebViewTestClient : public blink::WebViewClient {
   bool CanHandleGestureEvent() override;
   bool CanUpdateLayout() override;
   blink::WebScreenInfo GetScreenInfo() override;
-  blink::WebWidgetClient* WidgetClient() override;
 
  private:
   WebTestDelegate* delegate();
@@ -53,7 +51,6 @@ class WebViewTestClient : public blink::WebViewClient {
 
   // Borrowed pointer to WebViewTestProxyBase.
   WebViewTestProxyBase* web_view_test_proxy_base_;
-  std::unique_ptr<blink::WebWidgetClient> web_widget_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestClient);
 };

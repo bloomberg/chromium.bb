@@ -293,10 +293,6 @@ blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
   return blink::WebScreenInfo();
 }
 
-blink::WebWidgetClient* WebViewPlugin::WebViewHelper::WidgetClient() {
-  return this;
-}
-
 void WebViewPlugin::WebViewHelper::SetToolTipText(
     const WebString& text,
     blink::WebTextDirection hint) {

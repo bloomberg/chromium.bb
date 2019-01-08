@@ -207,6 +207,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
   ~WebViewTestProxy() override;
 
   std::unique_ptr<WebViewTestClient> view_test_client_;
+  std::unique_ptr<blink::WebWidgetClient> widget_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);
 };

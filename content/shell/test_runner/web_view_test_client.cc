@@ -30,10 +30,8 @@
 namespace test_runner {
 
 WebViewTestClient::WebViewTestClient(
-    WebViewTestProxyBase* web_view_test_proxy_base,
-    std::unique_ptr<blink::WebWidgetClient> web_widget_client)
-    : web_view_test_proxy_base_(web_view_test_proxy_base),
-      web_widget_client_(std::move(web_widget_client)) {
+    WebViewTestProxyBase* web_view_test_proxy_base)
+    : web_view_test_proxy_base_(web_view_test_proxy_base) {
   DCHECK(web_view_test_proxy_base);
 }
 
@@ -117,10 +115,6 @@ blink::WebScreenInfo WebViewTestClient::GetScreenInfo() {
     screen_info.orientation_angle = mock_client->CurrentOrientationAngle();
   }
   return screen_info;
-}
-
-blink::WebWidgetClient* WebViewTestClient::WidgetClient() {
-  return web_widget_client_.get();
 }
 
 }  // namespace test_runner
