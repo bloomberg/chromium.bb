@@ -179,6 +179,35 @@ testcase.fileDisplayUsb = async function() {
 };
 
 /**
+ * Tests files display for partitions on a removable USB volume.
+ */
+testcase.fileDisplayUsbPartition = async function() {
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount USB volume.
+  await sendTestMessage({name: 'mountFakePartitions'});
+
+  // Wait for removable partition-1 to appear in the directory tree.
+  const partitionOne = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="partition-1"]');
+  chrome.test.assertEq(
+      'removable', partitionOne.attributes['volume-type-for-testing']);
+
+  // Wait for removable partition-2 to appear in the directory tree.
+  const partitionTwo = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="partition-2"]');
+  chrome.test.assertEq(
+      'removable', partitionTwo.attributes['volume-type-for-testing']);
+
+  // Wait for removable volume to appear in the directory tree.
+  const singleUSB = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="singleUSB"]');
+  chrome.test.assertEq(
+      'removable', singleUSB.attributes['volume-type-for-testing']);
+};
+
+/**
  * Searches for a string in Downloads and checks that the correct results
  * are displayed.
  *

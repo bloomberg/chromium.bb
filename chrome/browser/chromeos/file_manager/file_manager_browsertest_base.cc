@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/containers/circular_deque.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
@@ -585,6 +586,79 @@ class LocalTestVolume : public TestVolume {
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
+};
+
+// Removable TestVolume: local test volume for external media devices.
+class RemovableTestVolume : public LocalTestVolume {
+ public:
+  RemovableTestVolume(const std::string& name,
+                      VolumeType volume_type,
+                      chromeos::DeviceType device_type,
+                      const base::FilePath& device_path)
+      : LocalTestVolume(name),
+        volume_type_(volume_type),
+        device_type_(device_type),
+        device_path_(device_path) {}
+  ~RemovableTestVolume() override = default;
+
+  bool PreparePartitionTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Create fake file on the removable volume.
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "hello.txt")
+                    .SetMimeType("text/plain"));
+
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  bool PrepareUsbTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Create fake file on the removable volume.
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "hello.txt")
+                    .SetMimeType("text/plain"));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
+                                                 "", "Folder"));
+
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  bool Mount(Profile* profile) override {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Revoke name() mount point first, then re-add its mount point.
+    GetMountPoints()->RevokeFileSystem(name());
+    const bool added = GetMountPoints()->RegisterFileSystem(
+        name(), storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(), root_path());
+    if (!added)
+      return false;
+
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_);
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+ private:
+  storage::ExternalMountPoints* GetMountPoints() {
+    return storage::ExternalMountPoints::GetSystemInstance();
+  }
+
+  const VolumeType volume_type_;
+  const chromeos::DeviceType device_type_;
+  const base::FilePath& device_path_;
+  const bool read_only_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
 
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
@@ -1531,6 +1605,43 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(usb_volume_->PrepareDcimTestEntries(profile()));
 
     ASSERT_TRUE(usb_volume_->Mount(profile()));
+    return;
+  }
+
+  if (name == "mountFakePartitions") {
+    // Create a device path to mimic a realistic device path.
+    constexpr char kMultiPartitionDevicePath[] =
+        "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/host0/"
+        "target0:0:0/0:0:0:0";
+    const base::FilePath partition_device_path(kMultiPartitionDevicePath);
+
+    constexpr char kSingleUsbDevicePath[] =
+        "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.4/1-2.4:1.0/host1/"
+        "target1:0:0/1:0:0:0";
+    const base::FilePath usb_device_path(kSingleUsbDevicePath);
+
+    // Create partition volumes with the same device path.
+    partition_1_ = std::make_unique<RemovableTestVolume>(
+        "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, partition_device_path);
+    partition_2_ = std::make_unique<RemovableTestVolume>(
+        "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, partition_device_path);
+
+    // Create an unpartitioned usb volume with a unique device path.
+    single_usb_volume_ = std::make_unique<RemovableTestVolume>(
+        "singleUSB", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, usb_device_path);
+
+    // Create fake entries on partitions.
+    ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));
+    ASSERT_TRUE(partition_2_->PreparePartitionTestEntries(profile()));
+    ASSERT_TRUE(single_usb_volume_->PrepareUsbTestEntries(profile()));
+
+    ASSERT_TRUE(partition_1_->Mount(profile()));
+    ASSERT_TRUE(partition_2_->Mount(profile()));
+    ASSERT_TRUE(single_usb_volume_->Mount(profile()));
+
     return;
   }
 
