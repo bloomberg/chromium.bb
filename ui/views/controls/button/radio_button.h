@@ -42,6 +42,8 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   SkPath GetFocusRingPath() const override;
 
  private:
+  void GetViewsInGroupFromParent(int group, Views* views);
+
   DISALLOW_COPY_AND_ASSIGN(RadioButton);
 };
 
