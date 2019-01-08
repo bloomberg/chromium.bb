@@ -3357,12 +3357,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   struct rdcost_block_args *args = arg;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int is_inter = is_inter_block(xd->mi[0]);
   const AV1_COMP *cpi = args->cpi;
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
   const AV1_COMMON *cm = &cpi->common;
-  int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
 
   av1_init_rd_stats(&this_rd_stats);
@@ -3372,7 +3371,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 
-  if (!is_inter_block(mbmi)) {
+  if (!is_inter) {
     av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
@@ -3383,7 +3382,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                   args->best_rd - args->this_rd, &this_rd_stats);
 
   if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
-    assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
+    assert(!is_inter || plane_bsize < BLOCK_8X8);
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
 
@@ -3402,17 +3401,17 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   else
     set_blk_skip(x, plane, blk_idx, 0);
 
-  rd1 = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
-  rd2 = RDCOST(x->rdmult, 0, this_rd_stats.sse);
+  const int64_t rd1 = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
+  const int64_t rd2 = RDCOST(x->rdmult, 0, this_rd_stats.sse);
 
   // TODO(jingning): temporarily enabled only for luma component
-  rd = AOMMIN(rd1, rd2);
+  const int64_t rd = AOMMIN(rd1, rd2);
 
   this_rd_stats.skip &= !x->plane[plane].eobs[block];
 
 #if CONFIG_ONE_PASS_SVM
   if (plane == AOM_PLANE_Y && plane_bsize >= BLOCK_8X8) {
-    int eob = x->plane[plane].eobs[block];
+    const int eob = x->plane[plane].eobs[block];
     av1_add_reg_stat(&this_rd_stats, eob, rd, this_rd_stats.sse, blk_row,
                      blk_col, plane_bsize, txsize_to_bsize[tx_size]);
   }
@@ -3422,10 +3421,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
   args->this_rd += rd;
 
-  if (args->this_rd > args->best_rd) {
-    args->exit_early = 1;
-    return;
-  }
+  if (args->this_rd > args->best_rd) args->exit_early = 1;
 }
 
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
