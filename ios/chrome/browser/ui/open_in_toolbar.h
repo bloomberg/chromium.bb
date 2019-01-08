@@ -11,8 +11,8 @@
 
 - (instancetype)initWithTarget:(id)target action:(SEL)action;
 
-// Constraint to have the open in toolbar be displayed above the bottom toolbar.
-@property(nonatomic, strong) NSLayoutConstraint* bottomMarginConstraint;
+// Updates the constraint managing the bottom margin height using NamedGuides.
+- (void)updateBottomMarginHeight;
 
 @end
 

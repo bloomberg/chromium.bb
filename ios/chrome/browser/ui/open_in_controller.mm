@@ -311,7 +311,7 @@ class OpenInControllerBridge
 
   OpenInToolbar* openInToolbar = [self openInToolbar];
   if (!isOpenInToolbarDisplayed_) {
-    openInToolbar.bottomMarginConstraint.active = YES;
+    [openInToolbar updateBottomMarginHeight];
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
                        [openInToolbar setAlpha:1.0];
