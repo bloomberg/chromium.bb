@@ -40814,19 +40814,18 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordManagerFirstRendererFillingResult">
   <int value="0" label="Success"/>
   <int value="1" label="No password element">
-    Filling only happens in iframes, if all parent frames PSL match the security
-    origin of the iframe containing the password field.
+    The password element to be filled has not been found.
   </int>
   <int value="2" label="Blocked by frame hierarchy">
-    Passwords are not filled into fields that are not editable.
+    Filling only happens in iframes if all parent frames PSL-match the security
+    origin of the iframe containing the password field.
   </int>
   <int value="3" label="Password element is not autocompleteable">
-    The username field contains a string that does not match the username of any
-    available credential
+    Passwords are not filled into fields that are not editable.
   </int>
   <int value="4" label="Username prefilled with incompatible value">
-    The site had no password for the presented username (e.g. username field is
-    empty and readonly).
+    The username field contains a string that does not match the username of any
+    available credential. This typically indicates placeholder values.
   </int>
   <int value="5" label="Found no password for username">
     No credential was filled due to mismatches with the username. This can
