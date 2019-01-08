@@ -43,7 +43,6 @@ component("chromeos") {
     "//base/third_party/dynamic_annotations",
     "//chromeos/cryptohome",
     "//chromeos/dbus:authpolicy_proto",
-    "//chromeos/dbus:cryptohome_proto",
     "//chromeos/dbus:vm_applications_apps_proto",
     "//chromeos/login/auth",
     "//chromeos/login/login_state",
@@ -148,12 +147,6 @@ component("chromeos") {
     "timezone/timezone_request.h",
     "timezone/timezone_resolver.cc",
     "timezone/timezone_resolver.h",
-    "tpm/tpm_password_fetcher.cc",
-    "tpm/tpm_password_fetcher.h",
-    "tpm/tpm_token_info_getter.cc",
-    "tpm/tpm_token_info_getter.h",
-    "tpm/tpm_token_loader.cc",
-    "tpm/tpm_token_loader.h",
   ]
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines = [ "BINDER_IPC_32BIT" ]
@@ -303,6 +296,7 @@ test("chromeos_unittests") {
     "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",
+    "//chromeos/tpm:unit_tests",
     "//components/account_id",
     "//components/onc",
     "//components/policy:generated",
@@ -350,7 +344,6 @@ test("chromeos_unittests") {
     "test/run_all_unittests.cc",
     "timezone/timezone_unittest.cc",
     "tools/variable_expander_unittest.cc",
-    "tpm/tpm_token_info_getter_unittest.cc",
   ]
 
   data = [

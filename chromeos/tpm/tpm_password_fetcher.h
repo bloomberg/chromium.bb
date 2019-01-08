@@ -7,23 +7,23 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Interface which TpmPasswordFetcher uses to notify that password has been
 // fetched.
-class CHROMEOS_EXPORT TpmPasswordFetcherDelegate {
+class COMPONENT_EXPORT(CHROMEOS_TPM) TpmPasswordFetcherDelegate {
  public:
   virtual ~TpmPasswordFetcherDelegate() {}
   virtual void OnPasswordFetched(const std::string& tpm_password) = 0;
 };
 
 // Class for fetching TPM password from the Cryptohome.
-class CHROMEOS_EXPORT TpmPasswordFetcher {
+class COMPONENT_EXPORT(CHROMEOS_TPM) TpmPasswordFetcher {
  public:
   // Creates fetcher with the given delegate to be notified every time fetching
   // is done.

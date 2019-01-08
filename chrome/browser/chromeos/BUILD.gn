@@ -111,6 +111,7 @@ source_set("chromeos") {
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/secure_channel/public/cpp/client",
+    "//chromeos/tpm",
     "//components/arc",
     "//components/arc/common:struct_traits",
     "//components/arc/media_session",
