@@ -118,6 +118,10 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
 #endif
 }
 
+void ChromeDataUseMeasurement::ReportUserTrafficDataUse(int64_t recv_bytes) {
+  RecordTrafficSizeMetric(true, true, recv_bytes);
+}
+
 void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
     int64_t total_bytes,
     bool is_cellular,
