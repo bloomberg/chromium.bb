@@ -452,10 +452,10 @@
       Loudest
     </message>
     <message name="IDS_SETTINGS_PERCENTAGE" desc="A number displayed as a percentage">
-      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph>
+      <ph name="PERCENTAGE">$1<ex>120</ex></ph>%
     </message>
     <message name="IDS_SETTINGS_DEFAULT_PERCENTAGE" desc="A number displayed as a percentage, which is the normal or default.">
-      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph> (default)
+      <ph name="PERCENTAGE">$1<ex>120</ex></ph>% (default)
     </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING" desc="The heading for a section of the text-to-speech settings page where a user can preview text to speech">
       Preview
@@ -4133,7 +4133,7 @@
       Make items on your screen smaller or larger
     </message>
     <message name="IDS_SETTINGS_DISPLAY_ZOOM_VALUE" desc="The currently selected display zoom percentage.">
-      <ph name="DISPLAY_ZOOM">$1<ex>120</ex>%</ph>
+      <ph name="DISPLAY_ZOOM">$1<ex>120</ex></ph>%
     </message>
     <message name="IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MINIMUM" desc="In Device Settings > Displays, the label of the minimum value for the display size slider">
       Tiny
