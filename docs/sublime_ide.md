@@ -280,8 +280,8 @@ In this case, we're going to add C/C++ support.
    with this). You'll need to run this periodically to keep it up to date.
 
     ```shell 
-    ninja -C out -t compdb cxx > compile_commands.json mv
-    compile_commands.json <path_to_src>
+    ninja -C out -t compdb cxx > compile_commands.json
+    mv compile_commands.json <path_to_src>
     ```
 
 1. Install the LSP package in sublime-text
