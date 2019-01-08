@@ -12,6 +12,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
+#include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -616,7 +618,138 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   run_loop.RunUntilIdle();
 }
 
-// TODO(https://crbug.com/835712): Cookie Tree Model Data fetching calculation.
+// TODO(https://crbug.com/835712): Currently only set up the cookies and local
+// storage nodes, will update all other nodes in the future.
+TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
+  scoped_refptr<MockBrowsingDataCookieHelper> mock_browsing_data_cookie_helper;
+  scoped_refptr<MockBrowsingDataLocalStorageHelper>
+      mock_browsing_data_local_storage_helper;
+
+  mock_browsing_data_cookie_helper =
+      new MockBrowsingDataCookieHelper(profile());
+  mock_browsing_data_local_storage_helper =
+      new MockBrowsingDataLocalStorageHelper(profile());
+
+  auto container = std::make_unique<LocalDataContainer>(
+      mock_browsing_data_cookie_helper,
+      /*database_helper=*/nullptr, mock_browsing_data_local_storage_helper,
+      /*session_storage_helper=*/nullptr,
+      /*appcache_helper=*/nullptr,
+      /*indexed_db_helper=*/nullptr,
+      /*file_system_helper=*/nullptr,
+      /*quota_helper=*/nullptr,
+      /*service_worker_helper=*/nullptr,
+      /*data_shared_worker_helper=*/nullptr,
+      /*cache_storage_helper=*/nullptr,
+      /*flash_lso_helper=*/nullptr,
+      /*media_license_helper=*/nullptr);
+  auto mock_cookies_tree_model = std::make_unique<CookiesTreeModel>(
+      std::move(container), profile()->GetExtensionSpecialStoragePolicy());
+
+  mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
+      GURL("https://www.example.com/"), 2);
+  mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
+      GURL("https://www.google.com/"), 5);
+  mock_browsing_data_local_storage_helper->Notify();
+
+  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://example.com"),
+                                                     "A=1");
+  mock_browsing_data_cookie_helper->AddCookieSamples(
+      GURL("http://www.example.com/"), "B=1");
+  mock_browsing_data_cookie_helper->AddCookieSamples(
+      GURL("http://abc.example.com"), "C=1");
+  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://google.com"),
+                                                     "A=1");
+  mock_browsing_data_cookie_helper->AddCookieSamples(GURL("http://google.com"),
+                                                     "B=1");
+  mock_browsing_data_cookie_helper->AddCookieSamples(
+      GURL("http://google.com.au"), "A=1");
+  mock_browsing_data_cookie_helper->Notify();
+
+  handler()->SetCookiesTreeModelForTesting(std::move(mock_cookies_tree_model));
+  handler()->ClearAllSitesMapForTesting();
+
+  handler()->OnStorageFetched();
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+  std::string callback_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+  EXPECT_EQ("onStorageListFetched", callback_id);
+
+  const base::ListValue* storage_and_cookie_list;
+  ASSERT_TRUE(data.arg2()->GetAsList(&storage_and_cookie_list));
+  EXPECT_EQ(3U, storage_and_cookie_list->GetSize());
+
+  const base::DictionaryValue* site_group;
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+
+  std::string etld_plus1_string;
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("example.com", etld_plus1_string);
+
+  EXPECT_EQ(3, site_group->FindKey("numCookies")->GetDouble());
+
+  const base::ListValue* origin_list;
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  // There will be 2 origins in this case. Cookie node with url
+  // http://www.example.com/ will be treat as https://www.example.com/ because
+  // this url existed in the storage nodes.
+  EXPECT_EQ(2U, origin_list->GetSize());
+
+  const base::DictionaryValue* origin_info;
+
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("http://abc.example.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
+  EXPECT_EQ(0, origin_info->FindKey("usage")->GetDouble());
+  EXPECT_EQ(1, origin_info->FindKey("numCookies")->GetDouble());
+
+  ASSERT_TRUE(origin_list->GetDictionary(1, &origin_info));
+  // Even though in the cookies the scheme is http, it still stored as https
+  // because there is https data stored.
+  EXPECT_EQ("https://www.example.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
+  EXPECT_EQ(2, origin_info->FindKey("usage")->GetDouble());
+  EXPECT_EQ(1, origin_info->FindKey("numCookies")->GetDouble());
+
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(1, &site_group));
+
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com", etld_plus1_string);
+
+  EXPECT_EQ(2, site_group->FindKey("numCookies")->GetDouble());
+
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+
+  EXPECT_EQ(1U, origin_list->GetSize());
+
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("https://www.google.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
+  EXPECT_EQ(5, origin_info->FindKey("usage")->GetDouble());
+  EXPECT_EQ(0, origin_info->FindKey("numCookies")->GetDouble());
+
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(2, &site_group));
+
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com.au", etld_plus1_string);
+
+  EXPECT_EQ(1, site_group->FindKey("numCookies")->GetDouble());
+
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  EXPECT_EQ(1U, origin_list->GetSize());
+
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("http://google.com.au/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
+  EXPECT_EQ(0, origin_info->FindKey("usage")->GetDouble());
+  EXPECT_EQ(0, origin_info->FindKey("numCookies")->GetDouble());
+}
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
   const std::string google("https://www.google.com:443");

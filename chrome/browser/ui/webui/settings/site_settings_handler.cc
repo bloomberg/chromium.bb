@@ -1452,4 +1452,14 @@ BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
     local_storage_helper_ = new BrowsingDataLocalStorageHelper(profile_);
   return local_storage_helper_.get();
 }
+
+void SiteSettingsHandler::SetCookiesTreeModelForTesting(
+    std::unique_ptr<CookiesTreeModel> cookies_tree_model) {
+  cookies_tree_model_ = std::move(cookies_tree_model);
+}
+
+void SiteSettingsHandler::ClearAllSitesMapForTesting() {
+  all_sites_map_.clear();
+}
+
 }  // namespace settings

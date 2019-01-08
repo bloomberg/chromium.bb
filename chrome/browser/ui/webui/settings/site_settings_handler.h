@@ -107,7 +107,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSites);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSitesLocalStorage);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, OnStorageFetched);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
@@ -222,6 +222,11 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void HandleSetBlockAutoplayEnabled(const base::ListValue* args);
 
   BrowsingDataLocalStorageHelper* GetLocalStorageHelper();
+
+  void SetCookiesTreeModelForTesting(
+      std::unique_ptr<CookiesTreeModel> cookies_tree_model);
+
+  void ClearAllSitesMapForTesting();
 
   Profile* profile_;
 
