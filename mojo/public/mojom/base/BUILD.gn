@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom_component("base") {
   sources = [
+    "application_state.mojom",
     "big_buffer.mojom",
     "big_string.mojom",
     "file.mojom",
@@ -13,6 +14,7 @@ mojom_component("base") {
     "file_info.mojom",
     "file_path.mojom",
     "memory_allocator_dump_cross_process_uid.mojom",
+    "memory_pressure_level.mojom",
     "process_id.mojom",
     "ref_counted_memory.mojom",
     "shared_memory.mojom",
