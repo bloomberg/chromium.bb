@@ -7,7 +7,9 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "device.mojom",
+    "device_enumeration_options.mojom",
     "device_manager.mojom",
+    "device_manager_client.mojom",
   ]
 
   public_deps = [
