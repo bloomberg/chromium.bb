@@ -30,6 +30,7 @@ source_set("location_bar") {
     "//base",
     "//components/google/core/browser",
     "//components/omnibox/browser",
+    "//components/open_from_clipboard:",
     "//components/search_engines",
     "//components/strings",
     "//components/variations/net",
