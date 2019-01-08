@@ -21,11 +21,11 @@ class AssociatedThreadId;
 
 // TaskQueueSelector is used by the SchedulerHelper to enable prioritization
 // of particular task queues.
-class BASE_EXPORT TaskQueueSelector {
+class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
  public:
   explicit TaskQueueSelector(
       scoped_refptr<AssociatedThreadId> associated_thread);
-  ~TaskQueueSelector();
+  ~TaskQueueSelector() override;
 
   // Called to register a queue that can be selected. This function is called
   // on the main thread.
@@ -70,6 +70,10 @@ class BASE_EXPORT TaskQueueSelector {
   // otherwise.
   bool AllEnabledWorkQueuesAreEmpty() const;
 
+  // WorkQueueSets::Observer implementation:
+  void WorkQueueSetBecameEmpty(size_t set_index) override;
+  void WorkQueueSetBecameNonEmpty(size_t set_index) override;
+
  protected:
   WorkQueue* ChooseOldestWithPriority(
       TaskQueue::QueuePriority priority,
@@ -93,47 +97,49 @@ class BASE_EXPORT TaskQueueSelector {
   // the presence of highest priority tasks.
   static const size_t kMaxHighPriorityStarvationScore = 3;
 
-  // Increment to be applied to the high priority starvation score when a task
-  // should have only a small effect on the score. E.g. A number of highest
-  // priority tasks must run before the high priority queue is considered
-  // starved.
-  static const size_t kSmallScoreIncrementForHighPriorityStarvation = 1;
-
   // Maximum score to accumulate before normal priority tasks are run even in
   // the presence of higher priority tasks i.e. highest and high priority tasks.
   static const size_t kMaxNormalPriorityStarvationScore = 5;
-
-  // Increment to be applied to the normal priority starvation score when a task
-  // should have a large effect on the score. E.g Only a few high priority
-  // priority tasks must run before the normal priority queue is considered
-  // starved.
-  static const size_t kLargeScoreIncrementForNormalPriorityStarvation = 2;
-
-  // Increment to be applied to the normal priority starvation score when a task
-  // should have only a small effect on the score. E.g. A number of highest
-  // priority tasks must run before the normal priority queue is considered
-  // starved.
-  static const size_t kSmallScoreIncrementForNormalPriorityStarvation = 1;
 
   // Maximum score to accumulate before low priority tasks are run even in the
   // presence of highest, high, or normal priority tasks.
   static const size_t kMaxLowPriorityStarvationScore = 25;
 
-  // Increment to be applied to the low priority starvation score when a task
-  // should have a large effect on the score. E.g. Only a few normal/high
-  // priority tasks must run before the low priority queue is considered
-  // starved.
-  static const size_t kLargeScoreIncrementForLowPriorityStarvation = 5;
-
-  // Increment to be applied to the low priority starvation score when a task
-  // should have only a small effect on the score. E.g. A lot of highest
-  // priority tasks must run before the low priority queue is considered
-  // starved.
-  static const size_t kSmallScoreIncrementForLowPriorityStarvation = 1;
-
   // Maximum number of delayed tasks tasks which can be run while there's a
   // waiting non-delayed task.
   static const size_t kMaxDelayedStarvationTasks = 3;
+
+  // Because there are only a handful of priorities, we can get away with using
+  // a very simple priority queue. This queue has a stable sorting order.
+  // Note IDs must be in the range [0..TaskQueue::kQueuePriorityCount)
+  class BASE_EXPORT SmallPriorityQueue {
+   public:
+    SmallPriorityQueue();
+
+    bool empty() const { return size_ == 0; }
+
+    int min_id() const { return index_to_id_[0]; };
+
+    void insert(int64_t key, uint8_t id);
+
+    void erase(uint8_t id);
+
+    void ChangeMinKey(int64_t new_key);
+
+    bool IsInQueue(uint8_t id) const {
+      return id_to_index_[id] != kInvalidIndex;
+    }
+
+   private:
+    static constexpr uint8_t kInvalidIndex = 255;
+
+    size_t size_ = 0;
+
+    // These are sorted in ascending order.
+    int64_t keys_[TaskQueue::kQueuePriorityCount];
+    uint8_t id_to_index_[TaskQueue::kQueuePriorityCount];
+    uint8_t index_to_id_[TaskQueue::kQueuePriorityCount];
+  };
 
  private:
   void ChangeSetIndex(internal::TaskQueueImpl* queue,
@@ -141,10 +147,6 @@ class BASE_EXPORT TaskQueueSelector {
   void AddQueueImpl(internal::TaskQueueImpl* queue,
                     TaskQueue::QueuePriority priority);
   void RemoveQueueImpl(internal::TaskQueueImpl* queue);
-
-  WorkQueue* SelectWorkQueueToServiceImpl(
-      TaskQueue::QueuePriority max_priority,
-      bool* out_chose_delayed_over_immediate);
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)
   bool CheckContainsQueueForTest(const internal::TaskQueueImpl* queue) const;
@@ -164,22 +166,61 @@ class BASE_EXPORT TaskQueueSelector {
   static TaskQueue::QueuePriority NextPriority(
       TaskQueue::QueuePriority priority);
 
-  // Called whenever the selector chooses a task queue for execution with the
-  // priority |priority|.
-  void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
-                                  bool chose_delayed_over_immediate);
-
   // Returns true if there are pending tasks with priority |priority|.
   bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
+  // Count of the number of sets (delayed or immediate) for each priority.
+  // Should only contain 0, 1 or 2.
+  std::array<int, TaskQueue::kQueuePriorityCount> non_empty_set_counts_ = {{0}};
+
+  // The Priority sort key is adjusted based on these values. The idea being the
+  // larger the adjustment, the more the queue can be starved before being
+  // selected. The kControlPriority queues should run immediately so it always
+  // has the lowest possible value. Conversely kBestEffortPriority queues should
+  // only run if there's nothing else to do so they always have the highest
+  // possible value.
+  static constexpr const int64_t
+      per_priority_starvation_tolerance_[TaskQueue::kQueuePriorityCount] = {
+          // kControlPriority (unused)
+          std::numeric_limits<int64_t>::min(),
+
+          // kHighestPriority
+          0,
+
+          // kHighPriority
+          TaskQueueSelector::per_priority_starvation_tolerance_[1] +
+              kMaxHighPriorityStarvationScore,
+
+          // kNormalPriority
+          TaskQueueSelector::per_priority_starvation_tolerance_[2] +
+              kMaxNormalPriorityStarvationScore,
+
+          // kLowPriority
+          TaskQueueSelector::per_priority_starvation_tolerance_[3] +
+              kMaxLowPriorityStarvationScore,
+
+          // kBestEffortPriority (unused)
+          std::numeric_limits<int64_t>::max()};
+
+  int64_t GetSortKeyForPriorty(size_t set_index) const;
+
+  // Min priority queue of priorities, which is used to work out which priority
+  // to run next.
+  SmallPriorityQueue active_priorities_;
+
+  // Each time we select a queue this is incremented. This forms the basis of
+  // the |active_priorities_| sort key. I.e. when a priority becomes selectable
+  // it's inserted into |active_priorities_| with a sort key of
+  // |selection_count_| plus an adjustment from
+  // |per_priority_starvation_tolerance_|. In theory this could wrap around and
+  // start misbehaving but in typical usage that would take a great many years.
+  int64_t selection_count_ = 0;
+
   WorkQueueSets delayed_work_queue_sets_;
   WorkQueueSets immediate_work_queue_sets_;
   size_t immediate_starvation_count_ = 0;
-  size_t high_priority_starvation_score_ = 0;
-  size_t normal_priority_starvation_score_ = 0;
-  size_t low_priority_starvation_score_ = 0;
 
   Observer* task_queue_selector_observer_ = nullptr;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSelector);
