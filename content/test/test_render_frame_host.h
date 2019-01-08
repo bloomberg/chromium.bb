@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -166,8 +167,20 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void PrepareForCommitIfNecessary();
 
   // Used to simulate the commit of a navigation having been processed in the
-  // renderer.
+  // renderer. If parameters required to commit are not provided, they will be
+  // set to default null values.
   void SimulateCommitProcessed(int64_t navigation_id, bool was_successful);
+  void SimulateCommitProcessed(
+      int64_t navigation_id,
+      bool was_successful,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request,
+      blink::mojom::DocumentInterfaceBrokerRequest
+          document_interface_broker_content_request,
+      blink::mojom::DocumentInterfaceBrokerRequest
+          document_interface_broker_blink_request,
+      bool same_document);
 
   // Send a message with the sandbox flags and feature policy
   void SendFramePolicy(blink::WebSandboxFlags sandbox_flags,

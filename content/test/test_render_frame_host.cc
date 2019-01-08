@@ -514,40 +514,55 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
 
 void TestRenderFrameHost::SimulateCommitProcessed(int64_t navigation_id,
                                                   bool was_successful) {
+  SimulateCommitProcessed(navigation_id, was_successful, nullptr, nullptr,
+                          nullptr, nullptr, false);
+}
+
+void TestRenderFrameHost::SimulateCommitProcessed(
+    int64_t navigation_id,
+    bool was_successful,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_content_request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_blink_request,
+    bool same_document) {
   blink::mojom::CommitResult result = was_successful
                                           ? blink::mojom::CommitResult::Ok
                                           : blink::mojom::CommitResult::Aborted;
-  {
-    auto callback_it = commit_callback_.find(navigation_id);
-    if (callback_it != commit_callback_.end()) {
-      std::move(callback_it->second).Run(result);
-      return;
+  if (!same_document) {
+    // Note: Although the code does not prohibit the running of multiple
+    // callbacks, no more than 1 callback will ever run, because navigation_id
+    // is unique across all callback storages.
+    {
+      auto callback_it = commit_callback_.find(navigation_id);
+      if (callback_it != commit_callback_.end())
+        std::move(callback_it->second).Run(result);
+    }
+    {
+      auto callback_it = navigation_client_commit_callback_.find(navigation_id);
+      if (callback_it != navigation_client_commit_callback_.end())
+        std::move(callback_it->second).Run(result);
+    }
+    {
+      auto callback_it = commit_failed_callback_.find(navigation_id);
+      if (callback_it != commit_failed_callback_.end())
+        std::move(callback_it->second).Run(result);
+    }
+    {
+      auto callback_it =
+          navigation_client_commit_failed_callback_.find(navigation_id);
+      if (callback_it != navigation_client_commit_failed_callback_.end())
+        std::move(callback_it->second).Run(result);
     }
   }
 
-  {
-    auto callback_it = navigation_client_commit_callback_.find(navigation_id);
-    if (callback_it != navigation_client_commit_callback_.end()) {
-      std::move(callback_it->second).Run(result);
-      return;
-    }
-  }
-
-  {
-    auto callback_it = commit_failed_callback_.find(navigation_id);
-    if (callback_it != commit_failed_callback_.end()) {
-      std::move(callback_it->second).Run(result);
-      return;
-    }
-  }
-
-  {
-    auto callback_it =
-        navigation_client_commit_failed_callback_.find(navigation_id);
-    if (callback_it != navigation_client_commit_failed_callback_.end()) {
-      std::move(callback_it->second).Run(result);
-      return;
-    }
+  if (params) {
+    SendNavigateWithParamsAndInterfaceProvider(
+        params.release(), std::move(interface_provider_request),
+        std::move(document_interface_broker_content_request),
+        std::move(document_interface_broker_blink_request), same_document);
   }
 }
 

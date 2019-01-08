@@ -509,45 +509,17 @@ void NavigationSimulator::Commit() {
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
 
-  if (!same_document_) {
-    render_frame_host_->SimulateCommitProcessed(handle_->GetNavigationId(),
-                                                true /* was_successful */);
-  }
-
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = handle_->pending_nav_entry_id();
-  params.url = navigation_url_;
-  params.origin = url::Origin::Create(navigation_url_);
-  params.referrer = referrer_;
-  params.transition = transition_;
-  params.redirects.push_back(navigation_url_);
-  params.should_update_history = true;
-  params.did_create_new_entry = DidCreateNewEntry();
-  params.gesture =
-      has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
-  params.contents_mime_type = contents_mime_type_;
-  params.method = handle_->IsPost() ? "POST" : "GET";
-  params.http_status_code = 200;
-  params.history_list_was_cleared = false;
-  params.original_request_url = navigation_url_;
-
-  // Simulate Blink assigning an item and document sequence number to the
-  // navigation.
-  params.item_sequence_number = ++g_unique_identifier;
-  params.document_sequence_number = ++g_unique_identifier;
-
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-      navigation_url_, params.item_sequence_number,
-      params.document_sequence_number);
-
   if (same_document_) {
     interface_provider_request_ = nullptr;
     document_interface_broker_content_request_ = nullptr;
     document_interface_broker_blink_request_ = nullptr;
   }
 
-  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, std::move(interface_provider_request_),
+  auto params = BuildDidCommitProvisionalLoadParams(
+      false /* same_document */, false /* failed_navigation */);
+  render_frame_host_->SimulateCommitProcessed(
+      handle_->GetNavigationId(), true /* was_successful */, std::move(params),
+      std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
       std::move(document_interface_broker_blink_request_), same_document_);
 
@@ -661,31 +633,14 @@ void NavigationSimulator::CommitErrorPage() {
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
 
-  render_frame_host_->SimulateCommitProcessed(handle_->GetNavigationId(),
-                                              true /* was_successful */);
-
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = handle_->pending_nav_entry_id();
-  params.did_create_new_entry = DidCreateNewEntry();
-  params.url = navigation_url_;
-  params.referrer = referrer_;
-  params.transition = transition_;
-  params.url_is_unreachable = true;
-
-  // Simulate Blink assigning an item and document sequence number to the
-  // navigation.
-  params.item_sequence_number = ++g_unique_identifier;
-  params.document_sequence_number = ++g_unique_identifier;
-
-  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
-      navigation_url_, params.item_sequence_number,
-      params.document_sequence_number);
-
-  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params, std::move(interface_provider_request_),
+  auto params = BuildDidCommitProvisionalLoadParams(
+      false /* same_document */, true /* failed_navigation */);
+  render_frame_host_->SimulateCommitProcessed(
+      handle_->GetNavigationId(), true /* was_successful */, std::move(params),
+      std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
       std::move(document_interface_broker_blink_request_),
-      false /* was_same_document */);
+      false /* same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -709,35 +664,19 @@ void NavigationSimulator::CommitSameDocument() {
     CHECK_EQ(STARTED, state_);
   }
 
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.url = navigation_url_;
-  params.origin = url::Origin::Create(navigation_url_);
-  params.referrer = referrer_;
-  params.transition = transition_;
-  params.should_update_history = true;
-  params.did_create_new_entry = false;
-  params.gesture =
-      has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
-  params.contents_mime_type = contents_mime_type_;
-  params.method = "GET";
-  params.http_status_code = 200;
-  params.history_list_was_cleared = false;
-  params.original_request_url = navigation_url_;
-  params.page_state =
-      PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
+  auto params = BuildDidCommitProvisionalLoadParams(
+      true /* same_document */, false /* failed_navigation */);
 
   interface_provider_request_ = nullptr;
   document_interface_broker_content_request_ = nullptr;
   document_interface_broker_blink_request_ = nullptr;
-  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
-      &params,
-      // interface_provider_request
-      nullptr,
-      // document_interface_broker_content_handle
-      nullptr,
-      // document_interface_broker_blink_handle
-      nullptr, true);
+
+  render_frame_host_->SimulateCommitProcessed(
+      handle_ ? handle_->GetNavigationId() : -1, true /* was_successful */,
+      std::move(params), nullptr /* interface_provider_request_ */,
+      nullptr /* document_interface_broker_content_handle */,
+      nullptr /* document_interface_broker_blink_handle */,
+      true /* same_document */);
 
   // Same-document commits should never hit network-related stages of committing
   // a navigation.
@@ -1116,6 +1055,56 @@ void NavigationSimulator::SetSessionHistoryOffset(int session_history_offset) {
   session_history_offset_ = session_history_offset;
   transition_ =
       ui::PageTransitionFromInt(transition_ | ui::PAGE_TRANSITION_FORWARD_BACK);
+}
+
+std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+NavigationSimulator::BuildDidCommitProvisionalLoadParams(
+    bool same_document,
+    bool failed_navigation) {
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
+      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+  params->url = navigation_url_;
+  params->original_request_url = navigation_url_;
+  params->referrer = referrer_;
+  params->contents_mime_type = contents_mime_type_;
+  params->transition = transition_;
+  params->gesture =
+      has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
+
+  if (failed_navigation) {
+    // Note: Error pages must commit in a unique origin. So it is left unset.
+    params->url_is_unreachable = true;
+  } else {
+    params->origin = url::Origin::Create(navigation_url_);
+    params->redirects.push_back(navigation_url_);
+    params->method = "GET";
+    if (handle_ && handle_->IsPost())
+      params->method = "POST";
+    params->http_status_code = 200;
+    params->should_update_history = true;
+    params->history_list_was_cleared = false;
+  }
+
+  if (same_document) {
+    params->nav_entry_id = 0;
+    params->did_create_new_entry = false;
+
+    params->page_state =
+        PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
+  } else {
+    params->nav_entry_id = handle_->pending_nav_entry_id();
+    params->did_create_new_entry = DidCreateNewEntry();
+
+    // Simulate Blink assigning an item and document sequence number to the
+    // navigation.
+    params->item_sequence_number = ++g_unique_identifier;
+    params->document_sequence_number = ++g_unique_identifier;
+    params->page_state = PageState::CreateForTestingWithSequenceNumbers(
+        navigation_url_, params->item_sequence_number,
+        params->document_sequence_number);
+  }
+
+  return params;
 }
 
 }  // namespace content
