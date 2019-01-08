@@ -120,14 +120,14 @@ public class ForeignSessionHelper {
      * Initialize this class with the given profile.
      * @param profile Profile that will be used for syncing.
      */
-    ForeignSessionHelper(Profile profile) {
+    public ForeignSessionHelper(Profile profile) {
         mNativeForeignSessionHelper = nativeInit(profile);
     }
 
     /**
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
-    void destroy() {
+    public void destroy() {
         assert mNativeForeignSessionHelper != 0;
         nativeDestroy(mNativeForeignSessionHelper);
         mNativeForeignSessionHelper = 0;

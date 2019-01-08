@@ -120,7 +120,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         if (ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
-            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageOpened();
+            SessionsInvalidationManager.get(mProfile).onRecentTabsPageOpened();
         } else {
             InvalidationController.get().onRecentTabsPageOpened();
         }
@@ -153,7 +153,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         if (ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
-            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageClosed();
+            SessionsInvalidationManager.get(mProfile).onRecentTabsPageClosed();
         } else {
             InvalidationController.get().onRecentTabsPageClosed();
         }
