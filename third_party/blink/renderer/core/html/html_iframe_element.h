@@ -92,7 +92,7 @@ class CORE_EXPORT HTMLIFrameElement final
   bool allow_fullscreen_;
   bool allow_payment_request_;
   bool collapsed_by_client_;
-  Member<HTMLIFrameElementSandbox> sandbox_;
+  TraceWrapperMember<HTMLIFrameElementSandbox> sandbox_;
   Member<DOMFeaturePolicy> policy_;
 
   network::mojom::ReferrerPolicy referrer_policy_;

@@ -64,10 +64,10 @@ PASS: document.body.childNodes.myCustomProperty should be 1 and is.
 PASS: document.body.dataset.myCustomProperty should be 1 and is.
 PASS: document.body.classList.myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('link')[0].relList.myCustomProperty should be 1 and is.
-FAIL: document.getElementsByTagName('link')[0].sizes.myCustomProperty should be 1 but instead is undefined.
-FAIL: document.getElementsByTagName('output')[0].htmlFor.myCustomProperty should be 1 but instead is undefined.
+PASS: document.getElementsByTagName('link')[0].sizes.myCustomProperty should be 1 and is.
+PASS: document.getElementsByTagName('output')[0].htmlFor.myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('output')[0].labels.myCustomProperty should be 1 and is.
-FAIL: document.getElementsByTagName('iframe')[0].sandbox.myCustomProperty should be 1 but instead is undefined.
+PASS: document.getElementsByTagName('iframe')[0].sandbox.myCustomProperty should be 1 and is.
 PASS: document.all.myCustomProperty should be 1 and is.
 PASS: document.images.myCustomProperty should be 1 and is.
 PASS: document.embeds.myCustomProperty should be 1 and is.
