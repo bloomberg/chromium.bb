@@ -1326,7 +1326,6 @@ jumbo_component("base") {
       "android/sys_utils.h",
       "android/task_scheduler/post_task_android.cc",
       "android/task_scheduler/post_task_android.h",
-      "android/task_scheduler/sequenced_task_runner_android.cc",
       "android/task_scheduler/single_thread_task_runner_android.cc",
       "android/task_scheduler/task_runner_android.cc",
       "android/task_scheduler/task_runner_android.h",
@@ -2906,7 +2905,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
       "android/java/src/org/chromium/base/task/PostTask.java",
-      "android/java/src/org/chromium/base/task/SequencedTaskRunnerImpl.java",
       "android/java/src/org/chromium/base/task/SingleThreadTaskRunnerImpl.java",
       "android/java/src/org/chromium/base/task/TaskRunnerImpl.java",
     ]
@@ -3041,7 +3039,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/task/DefaultTaskExecutor.java",
       "android/java/src/org/chromium/base/task/ChromeThreadPoolExecutor.java",
       "android/java/src/org/chromium/base/task/PostTask.java",
-      "android/java/src/org/chromium/base/task/PreNativeSequence.java",
       "android/java/src/org/chromium/base/task/SequencedTaskRunner.java",
       "android/java/src/org/chromium/base/task/SequencedTaskRunnerImpl.java",
       "android/java/src/org/chromium/base/task/SerialExecutor.java",

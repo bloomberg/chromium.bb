@@ -9,8 +9,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 /**
  * Implementation of the abstract class {@link TaskRunnerImpl}. Uses AsyncTasks until
@@ -21,16 +20,27 @@ public class TaskRunnerImpl implements TaskRunner {
     @Nullable
     private final TaskTraits mTaskTraits;
     private final Object mLock = new Object();
-    private long mNativeTaskRunnerAndroid;
+    protected long mNativeTaskRunnerAndroid;
+    private final String mTraceEvent;
+    protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
 
     @Nullable
-    private List<PreNativeTask> mPreNativeTasks = new ArrayList<>();
+    protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
 
     /**
      * @param traits The TaskTraits associated with this TaskRunnerImpl.
      */
     TaskRunnerImpl(TaskTraits traits) {
+        this(traits, "TaskRunnerImpl");
+    }
+
+    /**
+     * @param traits The TaskTraits associated with this TaskRunnerImpl.
+     * @param traceCategory Specifies which subclass is this instance for logging purposes.
+     */
+    protected TaskRunnerImpl(TaskTraits traits, String traceCategory) {
         mTaskTraits = traits;
+        mTraceEvent = traceCategory + ".PreNativeTask.run";
     }
 
     @Override
@@ -45,43 +55,46 @@ public class TaskRunnerImpl implements TaskRunner {
                 nativePostTask(mNativeTaskRunnerAndroid, task);
                 return;
             }
-
             // We don't expect a whole lot of these, if that changes consider pooling them.
-            PreNativeTask preNativeTask = new PreNativeTask(task);
-            mPreNativeTasks.add(preNativeTask);
-            AsyncTask.THREAD_POOL_EXECUTOR.execute(preNativeTask);
+            mPreNativeTasks.add(task);
+            schedulePreNativeTask();
         }
     }
 
-    private class PreNativeTask implements Runnable {
-        PreNativeTask(Runnable task) {
-            this.mTask = task;
-        }
+    /**
+     * Must be overridden in subclasses, schedules a call to runPreNativeTask() at an appropriate
+     * time.
+     */
+    protected void schedulePreNativeTask() {
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(mRunPreNativeTaskClosure);
+    }
 
-        @Override
-        public void run() {
-            try (TraceEvent te = TraceEvent.scoped("TaskRunnerImpl.PreNativeTask.run")) {
-                synchronized (mLock) {
-                    if (mPreNativeTasks == null) return;
-
-                    mPreNativeTasks.remove(this);
-                }
-
-                mTask.run();
+    /**
+     * Runs a single task and returns when its finished.
+     */
+    protected void runPreNativeTask() {
+        try (TraceEvent te = TraceEvent.scoped(mTraceEvent)) {
+            Runnable task;
+            synchronized (mLock) {
+                if (mPreNativeTasks == null) return;
+                task = mPreNativeTasks.poll();
             }
+            task.run();
         }
-
-        final Runnable mTask;
     }
 
+    /**
+     * Instructs the TaskRunner to initialize the native TaskRunner and migrate any tasks over to
+     * it.
+     */
     @Override
     public void initNativeTaskRunner() {
         synchronized (mLock) {
             mNativeTaskRunnerAndroid = nativeInit(mTaskTraits.mPrioritySetExplicitly,
                     mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mExtensionId,
                     mTaskTraits.mExtensionData);
-            for (PreNativeTask task : mPreNativeTasks) {
-                nativePostTask(mNativeTaskRunnerAndroid, task.mTask);
+            for (Runnable task : mPreNativeTasks) {
+                nativePostTask(mNativeTaskRunnerAndroid, task);
             }
             mPreNativeTasks = null;
         }
