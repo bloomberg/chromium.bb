@@ -10,6 +10,8 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,30 +45,13 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
     if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url, nullptr))
       headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy, "0");
 
-    // Except for url and headers (which are determined by the test case)
-    // all parameters below are cargo-culted from
-    // NavigationHandleImplTest::CreateNavigationHandle.
-    nav_handle_ = NavigationHandleImpl::Create(
-        url,                  // url, as requested by caller
-        base::nullopt,        // initiator_origin
-        std::vector<GURL>(),  // redirect chain
-        static_cast<WebContentsImpl*>(web_contents())
-            ->GetFrameTree()
-            ->root(),            // render_tree_node
-        true,                    // is_renderer_initialized
-        false,                   // is_same_document
-        base::TimeTicks::Now(),  // navigation_start
-        0,                       // pending_nav_entry_id
-        false,                   // started_from_context_menu
-        CSPDisposition::CHECK,   // should_check_main_world_csp
-        false,                   // is_form_submission
-        nullptr,                 // navigation_ui_data
-        "GET",                   // HTTP method
-        headers);                // headers, as created above
+    nav_handle_ = std::make_unique<MockNavigationHandle>(web_contents());
+    nav_handle_->set_url(url);
+    nav_handle_->set_request_headers(headers);
   }
 
  protected:
-  std::unique_ptr<NavigationHandleImpl> nav_handle_;
+  std::unique_ptr<MockNavigationHandle> nav_handle_;
   base::test::ScopedFeatureList features_;
 };
 
@@ -124,34 +109,37 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
   if (!enabled())
     return;
 
-  // Create a handle and start the request.
-  CreateHandleFor(GURL("https://example.org/bla"));
+  // Start the navigation.
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(
+      GURL("https://example.org/bla"), web_contents());
+  navigation->SetAutoAdvance(false);
+  navigation->Start();
+  EXPECT_FALSE(navigation->IsDeferred());
   EXPECT_EQ(NavigationThrottle::PROCEED,
-            nav_handle_->CallWillStartRequestForTesting().action());
+            navigation->GetLastThrottleCheckResult().action());
 
   // Fake a response with a policy header. Check whether the navigation
   // is deferred.
-  const char* headers = "HTTP/1.1 200 OK\nSec-Origin-Policy: policy-1\n\n";
-  EXPECT_EQ(NavigationThrottle::DEFER,
-            nav_handle_
-                ->CallWillProcessResponseForTesting(
-                    main_rfh(),
-                    net::HttpUtil::AssembleRawHeaders(headers, strlen(headers)),
-                    false, net::ProxyServer::Direct())
-                .action());
-  EXPECT_EQ(NavigationHandleImpl::DEFERRING_RESPONSE,
-            nav_handle_->state_for_testing());
+  const char* raw_headers = "HTTP/1.1 200 OK\nSec-Origin-Policy: policy-1\n\n";
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
+  NavigationHandleImpl* nav_handle =
+      static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
+  nav_handle->set_response_headers_for_testing(headers);
+  navigation->ReadyToCommit();
+  EXPECT_TRUE(navigation->IsDeferred());
 
   // For the purpose of this unit test we don't care about policy content,
   // only that it's non-empty. We check whether the throttle will pass it on.
   const char* policy = "{}";
   static_cast<OriginPolicyThrottle*>(
-      nav_handle_->GetDeferringThrottleForTesting())
+      nav_handle->GetDeferringThrottleForTesting())
       ->InjectPolicyForTesting(policy);
 
   // At the end of the navigation, the navigation handle should have a copy
   // of the origin policy.
-  EXPECT_EQ(policy, nav_handle_->origin_policy());
+  EXPECT_EQ(policy, nav_handle->origin_policy());
 }
 
 }  // namespace content

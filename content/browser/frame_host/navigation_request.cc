@@ -737,7 +737,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   headers.AddHeadersFromString(begin_params_->headers);
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      NavigationHandleImpl::Create(
+      base::WrapUnique(new NavigationHandleImpl(
           common_params_.url, common_params_.initiator_origin, redirect_chain,
           frame_tree_node_, !browser_initiated_,
           FrameMsg_Navigate_Type::IsSameDocument(
@@ -754,7 +754,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
           common_params_.has_user_gesture, common_params_.transition,
           is_external_protocol, begin_params_->request_context_type,
           begin_params_->mixed_content_context_type,
-          common_params_.href_translate, common_params_.input_start);
+          common_params_.href_translate, common_params_.input_start));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case

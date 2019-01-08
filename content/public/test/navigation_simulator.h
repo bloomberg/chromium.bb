@@ -249,6 +249,9 @@ class NavigationSimulator : public WebContentsObserver {
   // Sets the HTTP method for the navigation.
   void SetMethod(const std::string& method);
 
+  // Sets whether this navigation originated as the result of a form submission.
+  void SetIsFormSubmission(bool is_form_submission);
+
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
   // the original url. Otherwise, they should be specified before calling
@@ -402,6 +405,7 @@ class NavigationSimulator : public WebContentsObserver {
   net::HostPortPair socket_address_;
   bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
+  bool is_form_submission_ = false;
   bool browser_initiated_;
   bool same_document_ = false;
   Referrer referrer_;
