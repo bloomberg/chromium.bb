@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
@@ -128,6 +129,12 @@ void SuggestionChipContainerView::DisableFocusForShowingActiveFolder(
     bool disabled) {
   for (auto* chip : suggestion_chip_views_)
     chip->suggestion_chip_view()->SetEnabled(!disabled);
+
+  // Ignore the container view in accessibility tree so that suggestion chips
+  // will not be accessed by ChromeVox.
+  GetViewAccessibility().OverrideIsIgnored(disabled);
+  GetViewAccessibility().NotifyAccessibilityEvent(
+      ax::mojom::Event::kTreeChanged);
 }
 
 void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
