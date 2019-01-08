@@ -85,9 +85,9 @@ class CustomFakeProfileOAuth2TokenService
 
 class AccountTrackerServiceForTest : public AccountTrackerService {
  public:
-  void SetAccountStateFromUserInfo(const std::string& account_id,
-                                   const base::DictionaryValue* user_info) {
-    AccountTrackerService::SetAccountStateFromUserInfo(account_id, user_info);
+  void SetAccountInfoFromUserInfo(const std::string& account_id,
+                                  const base::DictionaryValue* user_info) {
+    AccountTrackerService::SetAccountInfoFromUserInfo(account_id, user_info);
   }
 };
 
@@ -1449,8 +1449,8 @@ TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
   base::DictionaryValue user_info;
   user_info.SetString("id", kTestGaiaId);
   user_info.SetString("email", kTestEmailWithPeriod);
-  account_tracker()->SetAccountStateFromUserInfo(
-      primary_account_info.account_id, &user_info);
+  account_tracker()->SetAccountInfoFromUserInfo(primary_account_info.account_id,
+                                                &user_info);
 
   // Verify that IdentityManager reflects the update.
   primary_account_info = identity_manager()->GetPrimaryAccountInfo();

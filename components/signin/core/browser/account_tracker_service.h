@@ -146,8 +146,8 @@ class AccountTrackerService : public KeyedService {
 
  protected:
   // Available to be called in tests.
-  void SetAccountStateFromUserInfo(const std::string& account_id,
-                                   const base::DictionaryValue* user_info);
+  void SetAccountInfoFromUserInfo(const std::string& account_id,
+                                  const base::DictionaryValue* user_info);
 
   // Updates the account image. Does nothing if |account_id| does not exist in
   // |accounts_|.
@@ -156,24 +156,20 @@ class AccountTrackerService : public KeyedService {
  private:
   friend class AccountFetcherService;
   friend class FakeAccountFetcherService;
-  struct AccountState {
-    AccountInfo info;
-    gfx::Image image;
-  };
 
-  void NotifyAccountUpdated(const AccountState& state);
+  void NotifyAccountUpdated(const AccountInfo& account_info);
   void NotifyAccountImageUpdated(const std::string& account_id,
                                  const gfx::Image& image);
   void NotifyAccountUpdateFailed(const std::string& account_id);
-  void NotifyAccountRemoved(const AccountState& state);
+  void NotifyAccountRemoved(const AccountInfo& accoint_info);
 
   void StartTrackingAccount(const std::string& account_id);
   void StopTrackingAccount(const std::string& account_id);
 
   // Load the current state of the account info from the preferences file.
   void LoadFromPrefs();
-  void SaveToPrefs(const AccountState& account);
-  void RemoveFromPrefs(const AccountState& account);
+  void SaveToPrefs(const AccountInfo& account);
+  void RemoveFromPrefs(const AccountInfo& account);
 
   // Used to load/save account images from/to disc.
   base::FilePath GetImagePathFor(const std::string& account_id);
@@ -204,7 +200,7 @@ class AccountTrackerService : public KeyedService {
       const PrefService* pref_service);
 
   PrefService* pref_service_ = nullptr;  // Not owned.
-  std::map<std::string, AccountState> accounts_;
+  std::map<std::string, AccountInfo> accounts_;
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::FilePath user_data_dir_;
