@@ -49,7 +49,7 @@ void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query) {
 
 GLboolean EXTDisjointTimerQuery::isQueryEXT(WebGLTimerQueryEXT* query) {
   WebGLExtensionScopedContext scoped(this);
-  if (!query || scoped.IsLost() || query->IsDeleted() ||
+  if (!query || scoped.IsLost() || query->MarkedForDeletion() ||
       !query->Validate(nullptr, scoped.Context())) {
     return false;
   }
@@ -63,12 +63,8 @@ void EXTDisjointTimerQuery::beginQueryEXT(GLenum target,
   if (scoped.IsLost())
     return;
 
-  DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context())) {
-    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
-                                        "invalid query");
+  if (!scoped.Context()->ValidateWebGLObject("beginQueryEXT", query))
     return;
-  }
 
   if (target != GL_TIME_ELAPSED_EXT) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "beginQueryEXT",
@@ -121,12 +117,8 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query,
   if (scoped.IsLost())
     return;
 
-  DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context())) {
-    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
-                                        "invalid query");
+  if (!scoped.Context()->ValidateWebGLObject("queryCounterEXT", query))
     return;
-  }
 
   if (target != GL_TIMESTAMP_EXT) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",
@@ -186,11 +178,12 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* script_state,
   if (scoped.IsLost())
     return ScriptValue::CreateNull(script_state);
 
-  DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context()) ||
-      current_elapsed_query_ == query) {
-    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION,
-                                        "getQueryObjectEXT", "invalid query");
+  if (!scoped.Context()->ValidateWebGLObject("getQueryObjectEXT", query))
+    return ScriptValue::CreateNull(script_state);
+
+  if (current_elapsed_query_ == query) {
+    scoped.Context()->SynthesizeGLError(
+        GL_INVALID_OPERATION, "getQueryObjectEXT", "query is currently active");
     return ScriptValue::CreateNull(script_state);
   }
 

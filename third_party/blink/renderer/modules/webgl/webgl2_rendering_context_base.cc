@@ -439,14 +439,11 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target,
                                                          WebGLTexture* texture,
                                                          GLint level,
                                                          GLint layer) {
-  if (isContextLost() || !ValidateFramebufferFuncParameters(
-                             "framebufferTextureLayer", target, attachment))
+  if (isContextLost() ||
+      !ValidateFramebufferFuncParameters("framebufferTextureLayer", target,
+                                         attachment) ||
+      !ValidateNullableWebGLObject("framebufferTextureLayer", texture))
     return;
-  if (texture && !texture->Validate(ContextGroup(), this)) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "framebufferTextureLayer",
-                      "texture does not belong to this context");
-    return;
-  }
   GLenum textarget = texture ? texture->GetTarget() : 0;
   if (texture) {
     if (textarget != GL_TEXTURE_3D && textarget != GL_TEXTURE_2D_ARRAY) {
@@ -2422,7 +2419,7 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target,
 
 GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program,
                                                       const String& name) {
-  if (isContextLost() || !ValidateWebGLObject("getFragDataLocation", program))
+  if (!ValidateWebGLProgramOrShader("getFragDataLocation", program))
     return -1;
 
   return ContextGL()->GetFragDataLocation(ObjectOrZero(program),
@@ -3817,22 +3814,18 @@ void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query) {
 }
 
 GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query) {
-  if (isContextLost() || !query)
+  if (!query || isContextLost() || !query->Validate(ContextGroup(), this))
+    return 0;
+
+  if (query->MarkedForDeletion())
     return 0;
 
   return ContextGL()->IsQueryEXT(query->Object());
 }
 
 void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query) {
-  bool deleted;
-  DCHECK(query);
-  if (!CheckObjectToBeBound("beginQuery", query, deleted))
+  if (!ValidateWebGLObject("beginQuery", query))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "beginQuery",
-                      "attempted to begin a deleted query object");
-    return;
-  }
 
   if (query->GetTarget() && query->GetTarget() != target) {
     SynthesizeGLError(GL_INVALID_OPERATION, "beginQuery",
@@ -3986,15 +3979,8 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
     ScriptState* script_state,
     WebGLQuery* query,
     GLenum pname) {
-  DCHECK(query);
-  bool deleted;
-  if (!CheckObjectToBeBound("getQueryParameter", query, deleted))
+  if (!ValidateWebGLObject("getQueryParameter", query))
     return ScriptValue::CreateNull(script_state);
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter",
-                      "attempted to access to a deleted query object");
-    return ScriptValue::CreateNull(script_state);
-  }
 
   // Query is non-null at this point.
   if (!query->GetTarget()) {
@@ -4048,7 +4034,10 @@ void WebGL2RenderingContextBase::deleteSampler(WebGLSampler* sampler) {
 }
 
 GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler) {
-  if (isContextLost() || !sampler)
+  if (!sampler || isContextLost() || !sampler->Validate(ContextGroup(), this))
+    return 0;
+
+  if (sampler->MarkedForDeletion())
     return 0;
 
   return ContextGL()->IsSampler(sampler->Object());
@@ -4056,14 +4045,8 @@ GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler) {
 
 void WebGL2RenderingContextBase::bindSampler(GLuint unit,
                                              WebGLSampler* sampler) {
-  bool deleted;
-  if (!CheckObjectToBeBound("bindSampler", sampler, deleted))
+  if (!ValidateNullableWebGLObject("bindSampler", sampler))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindSampler",
-                      "attempted to bind a deleted sampler");
-    return;
-  }
 
   if (unit >= sampler_units_.size()) {
     SynthesizeGLError(GL_INVALID_VALUE, "bindSampler",
@@ -4081,7 +4064,7 @@ void WebGL2RenderingContextBase::SamplerParameter(WebGLSampler* sampler,
                                                   GLfloat paramf,
                                                   GLint parami,
                                                   bool is_float) {
-  if (isContextLost() || !ValidateWebGLObject("samplerParameter", sampler))
+  if (!ValidateWebGLObject("samplerParameter", sampler))
     return;
 
   GLint param;
@@ -4191,7 +4174,7 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(
     ScriptState* script_state,
     WebGLSampler* sampler,
     GLenum pname) {
-  if (isContextLost() || !ValidateWebGLObject("getSamplerParameter", sampler))
+  if (!ValidateWebGLObject("getSamplerParameter", sampler))
     return ScriptValue::CreateNull(script_state);
 
   switch (pname) {
@@ -4237,7 +4220,10 @@ WebGLSync* WebGL2RenderingContextBase::fenceSync(GLenum condition,
 }
 
 GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync) {
-  if (isContextLost() || !sync || !sync->Validate(ContextGroup(), this))
+  if (!sync || isContextLost() || !sync->Validate(ContextGroup(), this))
+    return 0;
+
+  if (sync->MarkedForDeletion())
     return 0;
 
   return sync->Object() != 0;
@@ -4250,7 +4236,7 @@ void WebGL2RenderingContextBase::deleteSync(WebGLSync* sync) {
 GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync,
                                                   GLbitfield flags,
                                                   GLuint64 timeout) {
-  if (isContextLost() || !ValidateWebGLObject("clientWaitSync", sync))
+  if (!ValidateWebGLObject("clientWaitSync", sync))
     return GL_WAIT_FAILED;
 
   if (timeout > kMaxClientWaitTimeout) {
@@ -4283,7 +4269,7 @@ GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync,
 void WebGL2RenderingContextBase::waitSync(WebGLSync* sync,
                                           GLbitfield flags,
                                           GLint64 timeout) {
-  if (isContextLost() || !ValidateWebGLObject("waitSync", sync))
+  if (!ValidateWebGLObject("waitSync", sync))
     return;
 
   if (flags) {
@@ -4303,7 +4289,7 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
     ScriptState* script_state,
     WebGLSync* sync,
     GLenum pname) {
-  if (isContextLost() || !ValidateWebGLObject("getSyncParameter", sync))
+  if (!ValidateWebGLObject("getSyncParameter", sync))
     return ScriptValue::CreateNull(script_state);
 
   switch (pname) {
@@ -4330,18 +4316,34 @@ WebGLTransformFeedback* WebGL2RenderingContextBase::createTransformFeedback() {
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(
     WebGLTransformFeedback* feedback) {
+  // We have to short-circuit the deletion process if the transform feedback is
+  // active. This requires duplication of some validation logic.
+  if (!isContextLost() && feedback &&
+      feedback->Validate(ContextGroup(), this)) {
+    if (feedback->active()) {
+      SynthesizeGLError(
+          GL_INVALID_OPERATION, "deleteTransformFeedback",
+          "attempt to delete an active transform feedback object");
+      return;
+    }
+  }
+
+  if (!DeleteObject(feedback))
+    return;
+
   if (feedback == transform_feedback_binding_)
     transform_feedback_binding_ = default_transform_feedback_;
-
-  DeleteObject(feedback);
 }
 
 GLboolean WebGL2RenderingContextBase::isTransformFeedback(
     WebGLTransformFeedback* feedback) {
-  if (isContextLost() || !feedback || !feedback->Validate(ContextGroup(), this))
+  if (!feedback || isContextLost() || !feedback->Validate(ContextGroup(), this))
     return 0;
 
   if (!feedback->HasEverBeenBound())
+    return 0;
+
+  if (feedback->MarkedForDeletion())
     return 0;
 
   return ContextGL()->IsTransformFeedback(feedback->Object());
@@ -4350,14 +4352,8 @@ GLboolean WebGL2RenderingContextBase::isTransformFeedback(
 void WebGL2RenderingContextBase::bindTransformFeedback(
     GLenum target,
     WebGLTransformFeedback* feedback) {
-  bool deleted;
-  if (!CheckObjectToBeBound("bindTransformFeedback", feedback, deleted))
+  if (!ValidateNullableWebGLObject("bindTransformFeedback", feedback))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindTransformFeedback",
-                      "attempted to bind a deleted transform feedback object");
-    return;
-  }
 
   if (target != GL_TRANSFORM_FEEDBACK) {
     SynthesizeGLError(GL_INVALID_ENUM, "bindTransformFeedback",
@@ -4443,8 +4439,7 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
     WebGLProgram* program,
     const Vector<String>& varyings,
     GLenum buffer_mode) {
-  if (isContextLost() ||
-      !ValidateWebGLObject("transformFeedbackVaryings", program))
+  if (!ValidateWebGLProgramOrShader("transformFeedbackVaryings", program))
     return;
 
   switch (buffer_mode) {
@@ -4482,8 +4477,7 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
 WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(
     WebGLProgram* program,
     GLuint index) {
-  if (isContextLost() ||
-      !ValidateWebGLObject("getTransformFeedbackVarying", program))
+  if (!ValidateWebGLProgramOrShader("getTransformFeedbackVarying", program))
     return nullptr;
 
   if (!program->LinkStatus(this)) {
@@ -4600,14 +4594,8 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target,
                                                 WebGLBuffer* buffer) {
   if (isContextLost())
     return;
-  bool deleted;
-  if (!CheckObjectToBeBound("bindBufferBase", buffer, deleted))
+  if (!ValidateNullableWebGLObject("bindBufferBase", buffer))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase",
-                      "attempt to bind a deleted buffer");
-    return;
-  }
   if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
       transform_feedback_binding_->active()) {
     SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase",
@@ -4628,14 +4616,8 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target,
                                                  long long size) {
   if (isContextLost())
     return;
-  bool deleted;
-  if (!CheckObjectToBeBound("bindBufferRange", buffer, deleted))
+  if (!ValidateNullableWebGLObject("bindBufferRange", buffer))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferRange",
-                      "attempt to bind a deleted buffer");
-    return;
-  }
   if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
       transform_feedback_binding_->active()) {
     SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase",
@@ -4742,7 +4724,7 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
     WebGLProgram* program,
     const Vector<String>& uniform_names) {
   Vector<GLuint> result;
-  if (isContextLost() || !ValidateWebGLObject("getUniformIndices", program))
+  if (!ValidateWebGLProgramOrShader("getUniformIndices", program))
     return result;
 
   Vector<CString> keep_alive;  // Must keep these instances alive while looking
@@ -4764,7 +4746,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
     WebGLProgram* program,
     const Vector<GLuint>& uniform_indices,
     GLenum pname) {
-  if (isContextLost() || !ValidateWebGLObject("getActiveUniforms", program))
+  if (!ValidateWebGLProgramOrShader("getActiveUniforms", program))
     return ScriptValue::CreateNull(script_state);
 
   enum ReturnType { kEnumType, kUnsignedIntType, kIntType, kBoolType };
@@ -4841,7 +4823,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
 GLuint WebGL2RenderingContextBase::getUniformBlockIndex(
     WebGLProgram* program,
     const String& uniform_block_name) {
-  if (isContextLost() || !ValidateWebGLObject("getUniformBlockIndex", program))
+  if (!ValidateWebGLProgramOrShader("getUniformBlockIndex", program))
     return 0;
   if (!ValidateString("getUniformBlockIndex", uniform_block_name))
     return 0;
@@ -4876,8 +4858,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(
     WebGLProgram* program,
     GLuint uniform_block_index,
     GLenum pname) {
-  if (isContextLost() ||
-      !ValidateWebGLObject("getActiveUniformBlockParameter", program))
+  if (!ValidateWebGLProgramOrShader("getActiveUniformBlockParameter", program))
     return ScriptValue::CreateNull(script_state);
 
   if (!ValidateUniformBlockIndex("getActiveUniformBlockParameter", program,
@@ -4924,8 +4905,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(
 String WebGL2RenderingContextBase::getActiveUniformBlockName(
     WebGLProgram* program,
     GLuint uniform_block_index) {
-  if (isContextLost() ||
-      !ValidateWebGLObject("getActiveUniformBlockName", program))
+  if (!ValidateWebGLProgramOrShader("getActiveUniformBlockName", program))
     return String();
 
   if (!ValidateUniformBlockIndex("getActiveUniformBlockName", program,
@@ -4958,7 +4938,7 @@ void WebGL2RenderingContextBase::uniformBlockBinding(
     WebGLProgram* program,
     GLuint uniform_block_index,
     GLuint uniform_block_binding) {
-  if (isContextLost() || !ValidateWebGLObject("uniformBlockBinding", program))
+  if (!ValidateWebGLProgramOrShader("uniformBlockBinding", program))
     return;
 
   if (!ValidateUniformBlockIndex("uniformBlockBinding", program,
@@ -4979,8 +4959,16 @@ WebGLVertexArrayObject* WebGL2RenderingContextBase::createVertexArray() {
 
 void WebGL2RenderingContextBase::deleteVertexArray(
     WebGLVertexArrayObject* vertex_array) {
-  if (isContextLost() || !vertex_array ||
-      !ValidateWebGLObject("deleteVertexArray", vertex_array))
+  // ValidateWebGLObject generates an error if the object has already been
+  // deleted, so we must replicate most of its checks here.
+  if (isContextLost() || !vertex_array)
+    return;
+  if (!vertex_array->Validate(ContextGroup(), this)) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "deleteVertexArray",
+                      "object does not belong to this context");
+    return;
+  }
+  if (vertex_array->MarkedForDeletion())
     return;
 
   if (!vertex_array->IsDefaultObject() &&
@@ -4998,20 +4986,16 @@ GLboolean WebGL2RenderingContextBase::isVertexArray(
 
   if (!vertex_array->HasEverBeenBound())
     return 0;
+  if (vertex_array->MarkedForDeletion())
+    return 0;
 
   return ContextGL()->IsVertexArrayOES(vertex_array->Object());
 }
 
 void WebGL2RenderingContextBase::bindVertexArray(
     WebGLVertexArrayObject* vertex_array) {
-  bool deleted;
-  if (!CheckObjectToBeBound("bindVertexArray", vertex_array, deleted))
+  if (!ValidateNullableWebGLObject("bindVertexArray", vertex_array))
     return;
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindVertexArray",
-                      "attempt to bind a deleted vertex array");
-    return;
-  }
 
   if (vertex_array && !vertex_array->IsDefaultObject() &&
       vertex_array->Object()) {
@@ -5027,15 +5011,8 @@ void WebGL2RenderingContextBase::bindVertexArray(
 
 void WebGL2RenderingContextBase::bindFramebuffer(GLenum target,
                                                  WebGLFramebuffer* buffer) {
-  bool deleted;
-  if (!CheckObjectToBeBound("bindFramebuffer", buffer, deleted))
+  if (!ValidateNullableWebGLObject("bindFramebuffer", buffer))
     return;
-
-  if (deleted) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "bindFramebuffer",
-                      "attempt to bind a deleted framebuffer");
-    return;
-  }
 
   switch (target) {
     case GL_DRAW_FRAMEBUFFER:
