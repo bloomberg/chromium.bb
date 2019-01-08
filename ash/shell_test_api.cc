@@ -117,4 +117,8 @@ void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
   std::move(cb).Run();
 }
 
+void ShellTestApi::AddRemoveDisplay() {
+  shell_->display_manager()->AddRemoveDisplay();
+}
+
 }  // namespace ash

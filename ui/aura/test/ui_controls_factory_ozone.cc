@@ -234,25 +234,18 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
       return false;
     bool has_move = action & ui_controls::MOVE;
     bool has_release = action & ui_controls::RELEASE;
-    ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
-                               1.0f, 1.0f, 0.0f);
     if (action & ui_controls::PRESS) {
-      ui::TouchEvent event(ui::ET_TOUCH_PRESSED, host_location,
-                           ui::EventTimeForNow(), details);
-      SendEventToSink(
-          &event, display_id,
+      PostTouchEvent(
+          ui::ET_TOUCH_PRESSED, host_location, id, display_id,
           (has_move || has_release) ? base::OnceClosure() : std::move(task));
     }
     if (has_move) {
-      ui::TouchEvent event(ui::ET_TOUCH_MOVED, host_location,
-                           ui::EventTimeForNow(), details);
-      SendEventToSink(&event, display_id,
-                      has_release ? base::OnceClosure() : std::move(task));
+      PostTouchEvent(ui::ET_TOUCH_MOVED, host_location, id, display_id,
+                     has_release ? base::OnceClosure() : std::move(task));
     }
     if (has_release) {
-      ui::TouchEvent event(ui::ET_TOUCH_RELEASED, host_location,
-                           ui::EventTimeForNow(), details);
-      SendEventToSink(&event, display_id, std::move(task));
+      PostTouchEvent(ui::ET_TOUCH_RELEASED, host_location, id, display_id,
+                     std::move(task));
     }
     return true;
   }
@@ -337,6 +330,29 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
     ui::MouseEvent mouse_event2(&mouse_event);
 
     SendEventToSink(&mouse_event2, display_id, std::move(closure));
+  }
+
+  void PostTouchEvent(ui::EventType type,
+                      const gfx::Point& host_location,
+                      int id,
+                      int64_t display_id,
+                      base::OnceClosure closure) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&UIControlsOzone::PostTouchEventTask,
+                                  base::Unretained(this), type, host_location,
+                                  id, display_id, std::move(closure)));
+  }
+
+  void PostTouchEventTask(ui::EventType type,
+                          const gfx::Point& host_location,
+                          int id,
+                          int64_t display_id,
+                          base::OnceClosure closure) {
+    ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
+                               1.0f, 1.0f, 0.0f);
+    ui::TouchEvent touch_event(type, host_location, ui::EventTimeForNow(),
+                               details);
+    SendEventToSink(&touch_event, display_id, std::move(closure));
   }
 
   // Initializes EventInjector when Mus. Otherwise do nothing.

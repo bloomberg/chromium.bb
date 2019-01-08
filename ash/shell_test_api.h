@@ -61,6 +61,7 @@ class ShellTestApi : public mojom::ShellTestApi {
                              SnapWindowInSplitViewCallback cb) override;
   void ToggleFullscreen(ToggleFullscreenCallback cb) override;
   void ToggleOverviewMode(ToggleOverviewModeCallback cb) override;
+  void AddRemoveDisplay() override;
 
  private:
   Shell* shell_;  // not owned

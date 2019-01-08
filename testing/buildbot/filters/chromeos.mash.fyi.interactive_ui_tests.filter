@@ -44,10 +44,6 @@
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
 
-# TabDragging: https://crbug.com/890071
--TabDragging/DetachToBrowserTabDragControllerTest.*
--TabDragging/DetachToBrowserTabDragControllerTestTouch.*
-
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen
 

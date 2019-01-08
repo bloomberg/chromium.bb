@@ -26,4 +26,8 @@ interface ShellTestApi {
 
   // Enters or exits overview mode.
   ToggleOverviewMode() => ();
+
+  // Used to emulate display change when run in a desktop environment instead
+  // of on a device.
+  AddRemoveDisplay();
 };
