@@ -194,8 +194,23 @@ P2PQuicTransportFactoryImpl::CreateQuicTransport(
   packet_writer->InitializeWithQuicConnection(quic_connection.get());
 
   // QUIC configurations for the session are specified here.
+  // TODO(shampson): Consider setting larger initial flow control window sizes
+  // so that the default limit doesn't cause initial undersending.
   quic::QuicConfig quic_config;
   quic_config.SetMaxIncomingDynamicStreamsToSend(kMaxIncomingDynamicStreams);
+  // The handshake network timeouts are configured to large values to prevent
+  // the QUIC connection from being closed on a slow connection. This can occur
+  // if signaling is slow and one side begins the handshake early.
+  // See ICE related bug: bugs.webrtc.org/9869.
+  //
+  // This timeout is from time of creation of the quic::QuicConnection object to
+  // the completion of the handshake. It must be larger than the idle time.
+  quic_config.set_max_time_before_crypto_handshake(
+      quic::QuicTime::Delta::FromSeconds(50));
+  // This is the timeout for idle time in the handshake. This value allows
+  // time for slow signaling to complete.
+  quic_config.set_max_idle_time_before_crypto_handshake(
+      quic::QuicTime::Delta::FromSeconds(30));
   return std::make_unique<P2PQuicTransportImpl>(
       delegate, packet_transport, std::move(config), std::move(helper),
       std::move(quic_connection), quic_config, clock_);
