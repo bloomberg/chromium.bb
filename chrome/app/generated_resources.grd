@@ -6653,22 +6653,22 @@ the Bookmarks menu.">
         Sync your bookmarks, passwords, history, and more on all your devices
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_DESC" desc="Description in the information about sync on the sync confirmation dialog when Unity is enabled">
-        Google may use your history to personalize Search, ads, and other Google services.
+        Google may use your history to personalize Search, ads, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_TITLE" desc="Title in the information about spellcheck on the sync confirmation dialog when Unity is enabled">
         Fix spelling errors with enhanced spell check
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_DESC" desc="Description in the information about spellcheck on the sync confirmation dialog when Unity is enabled">
-        The text you type in text fields will be sent to Google.
+        The text you type in text fields will be sent to Google
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_TITLE" desc="Title in the information about improving Chrome on the sync confirmation dialog when Unity is enabled">
         Help improve Chrome and its security
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_DESC" desc="Description in the information about improving Chrome on the sync confirmation dialog when Unity is enabled">
-        Sends some system information and page content to Google anonymously.
+        Sends some system information and page content to Google anonymously
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO" desc="Information about customizing Sync settings in the sync confirmation dialog when Unity is enabled">
-        You can customize these settings anytime.
+        You can customize these settings anytime
       </message>
 
       <!-- "Chrome sync" is the Google Cloud Based service used for sync. Thus this string resource is set to "Chrome sync" even for Chromium builds. -->
