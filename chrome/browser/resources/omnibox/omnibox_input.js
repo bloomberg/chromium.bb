@@ -69,6 +69,15 @@ class OmniboxInput extends OmniboxElement {
 
     this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));
+
+    // Set text of .arrow-padding to substring of #input-text text, from
+    // beginning until cursor position, in order to correctly align .arrow-up.
+    this.$$('#input-text')
+        .addEventListener(
+            'input',
+            () => this.$$('.arrow-padding').textContent =
+                this.$$('#input-text')
+                    .value.substring(0, this.cursorPosition_));
   }
 
   /** @private */
