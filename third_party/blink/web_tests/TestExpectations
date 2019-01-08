@@ -394,10 +394,6 @@ crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-i
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
-crbug.com/911664 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
-crbug.com/911664 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
-crbug.com/911664 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
-crbug.com/911664 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
 # Subpixel rounding differences that are incorrect.
