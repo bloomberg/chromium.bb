@@ -66,9 +66,6 @@
     newTabWillOpen:(Tab*)tab
       inBackground:(BOOL)background;
 
-// |tab| stopped being the active tab.
-- (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_MODEL_OBSERVER_H_

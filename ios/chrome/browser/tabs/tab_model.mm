@@ -585,10 +585,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self newTabWillOpen:tab inBackground:background];
 }
 
-- (void)notifyTabWasDeselected:(Tab*)tab {
-  [_observers tabModel:self didDeselectTab:tab];
-}
-
 - (void)addObserver:(id<TabModelObserver>)observer {
   [_observers addObserver:observer];
 }

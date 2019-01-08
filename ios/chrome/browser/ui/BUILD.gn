@@ -443,6 +443,7 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:ntp_controller",

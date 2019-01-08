@@ -157,9 +157,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // |background| is YES, NO otherwise.
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
 
-// Notifies observers that |tab| was deselected.
-- (void)notifyTabWasDeselected:(Tab*)tab;
-
 // Adds |observer| to the list of observers. |observer| is not retained. Does
 // nothing if |observer| is already in the list. Any added observers must be
 // explicitly removed before the TabModel is destroyed.

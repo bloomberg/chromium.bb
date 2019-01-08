@@ -36,12 +36,6 @@
     // Save state, such as scroll position, ... of the old selected Tab.
     Tab* oldTab = LegacyTabHelper::GetTabForWebState(oldWebState);
     DCHECK(oldTab);
-
-    // Avoid artificially extending the lifetime of oldTab until the global
-    // autoreleasepool is purged.
-    @autoreleasepool {
-      [_tabModel notifyTabWasDeselected:oldTab];
-    }
   }
 
   if (newWebState && !newWebState->IsLoading()) {
