@@ -98,6 +98,7 @@ ArCoreDevice::ArCoreDevice()
                    std::make_unique<ArCorePermissionHelper>()) {}
 
 ArCoreDevice::~ArCoreDevice() {
+  CallDeferredRequestSessionCallbacks(/*success=*/false);
   // The GL thread must be terminated since it uses our members. For example,
   // there might still be a posted Initialize() call in flight that uses
   // arcore_install_utils_ and arcore_factory_. Ensure that the thread is
@@ -298,8 +299,7 @@ void ArCoreDevice::OnRequestInstallSupportedArCoreCanceled() {
 
 void ArCoreDevice::CallDeferredRequestSessionCallbacks(bool success) {
   DCHECK(IsOnMainThread());
-  DCHECK(is_arcore_gl_thread_initialized_);
-  DCHECK(!deferred_request_session_callbacks_.empty());
+  DCHECK(!success || is_arcore_gl_thread_initialized_);
 
   for (auto& deferred_callback : deferred_request_session_callbacks_) {
     mojom::XRSessionControllerPtr controller;
