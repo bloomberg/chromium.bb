@@ -32,13 +32,13 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
       base::RepeatingCallback<std::unique_ptr<browser_sync::ChromeSyncClient>(
           Profile*)>;
 
+  // Returns the SyncService for the given profile. Prefer this over
+  // GetForProfile where possible.
+  static syncer::SyncService* GetSyncServiceForProfile(Profile* profile);
+  // Returns the ProfileSyncService for the given profile. DO NOT USE unless
+  // absolutely necessary! Prefer GetSyncServiceForProfile instead.
   static browser_sync::ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);
-
-  // Convenience method that returns the ProfileSyncService as a
-  // syncer::SyncService.
-  static syncer::SyncService* GetSyncServiceForBrowserContext(
-      content::BrowserContext* context);
 
   static ProfileSyncServiceFactory* GetInstance();
 

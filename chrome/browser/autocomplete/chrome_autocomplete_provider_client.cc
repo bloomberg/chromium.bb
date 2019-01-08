@@ -88,7 +88,7 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedDataCollectionConsentHelper(
-                  ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+                  ProfileSyncServiceFactory::GetSyncServiceForProfile(
                       profile_))),
       storage_partition_(nullptr) {
   if (OmniboxFieldTrial::GetPedalSuggestionMode() !=
@@ -290,8 +290,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
-          profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   return sync && sync->IsSyncFeatureActive();
 }
 

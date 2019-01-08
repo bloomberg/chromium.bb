@@ -931,7 +931,7 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   ObserveServiceForDeletions(history_service);
 
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   if (!sync) {
     return false;
   }

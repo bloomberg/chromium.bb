@@ -71,7 +71,7 @@ AvatarButtonErrorController::SyncErrorObserver::SyncErrorObserver(
       avatar_button_error_controller_(avatar_button_error_controller),
       sync_observer_(this) {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   if (sync_service)
     sync_observer_.Add(sync_service);
 }
@@ -85,7 +85,7 @@ void AvatarButtonErrorController::SyncErrorObserver::OnStateChanged(
 
 bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   if (sync_service) {
     syncer::SyncStatus status;
     sync_service->QueryDetailedSyncStatus(&status);

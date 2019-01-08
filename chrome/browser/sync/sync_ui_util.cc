@@ -337,7 +337,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     int* content_string_id,
     int* button_string_id) {
   const syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.

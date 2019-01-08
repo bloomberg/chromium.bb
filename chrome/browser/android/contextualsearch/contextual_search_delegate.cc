@@ -376,7 +376,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
     return false;
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   if (!sync_service)
     return false;
 

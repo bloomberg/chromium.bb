@@ -303,7 +303,7 @@ void PeopleHandler::OnJavascriptAllowed() {
   // This is intentionally not using GetSyncService(), to go around the
   // Profile::IsSyncAllowed() check.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   if (sync_service)
     sync_service_observer_.Add(sync_service);
 
@@ -456,8 +456,7 @@ void PeopleHandler::SyncStartupCompleted() {
 
 syncer::SyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                   profile_)
+             ? ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_)
              : nullptr;
 }
 
@@ -952,7 +951,7 @@ PeopleHandler::GetSyncStatusDictionary() {
   // nuanced information, since GetSyncService() returns nullptr if anything
   // makes Profile::IsSyncAllowed() false.
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);

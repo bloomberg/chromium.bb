@@ -42,5 +42,5 @@ std::unique_ptr<KeyedService> BuildUnifiedConsentServiceForTesting(
   return std::make_unique<unified_consent::UnifiedConsentService>(
       std::make_unique<FakeUnifiedConsentServiceClient>(), profile->GetPrefs(),
       IdentityManagerFactory::GetForProfile(profile),
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile));
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile));
 }
