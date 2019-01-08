@@ -870,6 +870,11 @@ typedef struct AV1_COMP {
 // EncodeFrameParams contains per-frame encoding parameters decided upon by
 // av1_encode_strategy() and passed down to av1_encode()
 typedef struct {
+  int error_resilient_mode;
+
+  // This is a bitmask of which reference slots can be used in this frame
+  int ref_frame_flags;
+
   unsigned int *frame_flags;
 } EncodeFrameParams;
 

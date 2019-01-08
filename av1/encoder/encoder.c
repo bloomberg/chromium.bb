@@ -4936,109 +4936,6 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   return AOM_CODEC_OK;
 }
 
-static int get_ref_frame_flags(const AV1_COMP *cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const RefCntBuffer *last_buf = get_ref_frame_buf(cm, LAST_FRAME);
-  const RefCntBuffer *last2_buf = get_ref_frame_buf(cm, LAST2_FRAME);
-  const RefCntBuffer *last3_buf = get_ref_frame_buf(cm, LAST3_FRAME);
-  const RefCntBuffer *golden_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
-  const RefCntBuffer *bwd_buf = get_ref_frame_buf(cm, BWDREF_FRAME);
-  const RefCntBuffer *alt2_buf = get_ref_frame_buf(cm, ALTREF2_FRAME);
-  const RefCntBuffer *alt_buf = get_ref_frame_buf(cm, ALTREF_FRAME);
-
-  // No.1 Priority: LAST_FRAME
-
-  const int last2_is_last = (last2_buf == last_buf);
-  const int last3_is_last = (last3_buf == last_buf);
-  const int gld_is_last = (golden_buf == last_buf);
-  const int bwd_is_last = (bwd_buf == last_buf);
-  const int alt2_is_last = (alt2_buf == last_buf);
-  const int alt_is_last = (alt_buf == last_buf);
-  // No.2 Priority: ALTREF_FRAME
-
-  const int last2_is_alt = (last2_buf == alt_buf);
-  const int last3_is_alt = (last3_buf == alt_buf);
-  const int gld_is_alt = (golden_buf == alt_buf);
-  const int bwd_is_alt = (bwd_buf == alt_buf);
-  const int alt2_is_alt = (alt2_buf == alt_buf);
-
-  // No.3 Priority: LAST2_FRAME
-  const int last3_is_last2 = (last3_buf == last2_buf);
-  const int gld_is_last2 = (golden_buf == last2_buf);
-  const int bwd_is_last2 = (bwd_buf == last2_buf);
-  const int alt2_is_last2 = (alt2_buf == last2_buf);
-
-  // No.4 Priority: LAST3_FRAME
-  const int gld_is_last3 = (golden_buf == last3_buf);
-  const int bwd_is_last3 = (bwd_buf == last3_buf);
-  const int alt2_is_last3 = (alt2_buf == last3_buf);
-
-  // No.5 Priority: GOLDEN_FRAME
-  const int bwd_is_gld = (bwd_buf == golden_buf);
-  const int alt2_is_gld = (alt2_buf == golden_buf);
-
-  // No.6 Priority: BWDREF_FRAME
-  const int alt2_is_bwd = (alt2_buf == bwd_buf);
-
-  // No.7 Priority: ALTREF2_FRAME
-
-  // After av1_apply_encoding_flags() is called, cpi->ref_frame_flags might be
-  // adjusted according to external encoder flags.
-  int flags = cpi->ext_ref_frame_flags;
-
-  if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~AOM_GOLD_FLAG;
-
-  if (alt_is_last) flags &= ~AOM_ALT_FLAG;
-
-  if (last2_is_last || last2_is_alt) flags &= ~AOM_LAST2_FLAG;
-
-  if (last3_is_last || last3_is_alt || last3_is_last2) flags &= ~AOM_LAST3_FLAG;
-
-  if (gld_is_last || gld_is_alt || gld_is_last2 || gld_is_last3)
-    flags &= ~AOM_GOLD_FLAG;
-
-  if ((bwd_is_last || bwd_is_alt || bwd_is_last2 || bwd_is_last3 ||
-       bwd_is_gld) &&
-      (flags & AOM_BWD_FLAG))
-    flags &= ~AOM_BWD_FLAG;
-
-  if ((alt2_is_last || alt2_is_alt || alt2_is_last2 || alt2_is_last3 ||
-       alt2_is_gld || alt2_is_bwd) &&
-      (flags & AOM_ALT2_FLAG))
-    flags &= ~AOM_ALT2_FLAG;
-
-  return flags;
-}
-
-static void set_ext_overrides(AV1_COMP *cpi) {
-  // Overrides the defaults with the externally supplied values with
-  // av1_update_reference() and av1_update_entropy() calls
-  // Note: The overrides are valid only for the next frame passed
-  // to encode_frame_to_data_rate() function
-  if (cpi->ext_use_s_frame) cpi->common.current_frame.frame_type = S_FRAME;
-  cpi->common.force_primary_ref_none = cpi->ext_use_primary_ref_none;
-
-  if (cpi->ext_refresh_frame_context_pending) {
-    cpi->common.refresh_frame_context = cpi->ext_refresh_frame_context;
-    cpi->ext_refresh_frame_context_pending = 0;
-  }
-  if (cpi->ext_refresh_frame_flags_pending) {
-    cpi->refresh_last_frame = cpi->ext_refresh_last_frame;
-    cpi->refresh_golden_frame = cpi->ext_refresh_golden_frame;
-    cpi->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
-    cpi->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
-    cpi->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
-    cpi->ext_refresh_frame_flags_pending = 0;
-  }
-  cpi->common.allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;
-  // A keyframe is already error resilient and keyframes with
-  // error_resilient_mode interferes with the use of show_existing_frame
-  // when forward reference keyframes are enabled.
-  cpi->common.error_resilient_mode =
-      cpi->ext_use_error_resilient &&
-      cpi->common.current_frame.frame_type != KEY_FRAME;
-}
-
 #define DUMP_RECON_FRAMES 0
 
 #if DUMP_RECON_FRAMES == 1
@@ -5181,14 +5078,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
 
-  set_ext_overrides(cpi);
   aom_clear_system_state();
 
   // frame type has been decided outside of this function call
   cm->cur_frame->frame_type = current_frame->frame_type;
-
-  // S_FRAMEs are always error resilient
-  cm->error_resilient_mode |= frame_is_sframe(cm);
 
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
@@ -5209,15 +5102,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->last_frame_type = current_frame->frame_type;
   if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
     cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
-
-  // NOTE:
-  // (1) Move the setup of the ref_frame_flags upfront as it would be
-  //     determined by the current frame properties;
-  // (2) The setup of the ref_frame_flags applies to both
-  // show_existing_frame's
-  //     and the other cases.
-  if (current_frame->frame_number > 0)
-    cpi->ref_frame_flags = get_ref_frame_flags(cpi);
 
   if (encode_show_existing_frame(cm)) {
     // NOTE(zoeliu): In BIDIR_PRED, the existing frame to show is the current
@@ -5540,8 +5424,13 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
                const EncodeFrameParams *const frame_params,
                EncodeFrameResults *const frame_results) {
+  AV1_COMMON *const cm = &cpi->common;
+
   // TODO(david.turner@argondesign.com): Copy data from frame_params to cpi and
   // cm as appropriate
+
+  cm->error_resilient_mode = frame_params->error_resilient_mode;
+  cpi->ref_frame_flags = frame_params->ref_frame_flags;
 
   if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
                                 frame_params->frame_flags) != AOM_CODEC_OK) {
