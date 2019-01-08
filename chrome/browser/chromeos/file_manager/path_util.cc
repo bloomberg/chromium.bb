@@ -365,7 +365,8 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
 
   // Convert paths under /special.
   GURL external_file_url =
-      chromeos::CreateExternalFileURLFromPath(primary_profile, path);
+      chromeos::CreateExternalFileURLFromPath(primary_profile, path,
+                                              /* allow_drivefs = */ true);
   if (!external_file_url.is_empty()) {
     *arc_url_out = arc::EncodeToChromeContentProviderUrl(external_file_url);
     return true;
