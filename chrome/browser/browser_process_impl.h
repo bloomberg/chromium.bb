@@ -231,9 +231,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
-#if !defined(OS_ANDROID)
-  void ApplyMetricsReportingPolicy();
-#endif
 
   void CacheDefaultWebClientState();
 
