@@ -487,10 +487,6 @@ class SystemTokenCertDBInitializer {
         crypto::ScopedPK11Slot() /* private_slot */);
     database->SetSystemSlot(std::move(system_slot_copy));
 
-    // TODO(https://crbug.com/844537): Remove this after we've collected logs
-    // that show device-wide certificates disappearing.
-    database->LogUserCertificates("SystemTokenInitiallyLoaded");
-
     system_token_cert_database_ = std::move(database);
 
     VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
