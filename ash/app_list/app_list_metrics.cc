@@ -41,6 +41,16 @@ constexpr char kPaginationTransitionAnimationSmoothness[] =
 constexpr char kAppListSearchResultOpenSourceHistogram[] =
     "Apps.AppListSearchResultOpenedSource";
 
+// The UMA hisotogram that logs the action user performs on zero state
+// search result.
+constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
+    "Apps.AppListZeroStateSearchResultUserActionType";
+
+// The UMA histogram that logs user's decision(remove or cancel) for zero state
+// search result removal confirmation.
+constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
+    "Apps.ZeroStateSearchResutRemovalDecision";
+
 // The different sources from which a search result is displayed. These values
 // are written to logs.  New enum values can be added, but existing enums must
 // never be renumbered or deleted and reused.
@@ -88,6 +98,18 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
   UMA_HISTOGRAM_ENUMERATION(
       kAppListSearchResultOpenSourceHistogram, source,
       ApplistSearchResultOpenedSource::kMaxApplistSearchResultOpenedSource);
+}
+
+void RecordZeroStateSearchResultUserActionHistogram(
+    ZeroStateSearchResultUserActionType action) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSearchResultUserActionHistogram,
+                            action);
+}
+
+void RecordZeroStateSearchResultRemovalHistogram(
+    ZeroStateSearchResutRemovalConfirmation removal_decision) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSearchResultRemovalHistogram,
+                            removal_decision);
 }
 
 }  // namespace app_list

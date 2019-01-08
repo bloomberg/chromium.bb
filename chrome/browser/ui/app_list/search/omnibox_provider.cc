@@ -51,8 +51,12 @@ void OmniboxProvider::Start(const base::string16& query) {
 
   // Sets the |from_omnibox_focus| flag to enable ZeroSuggestProvider to process
   // the requests from app_list.
-  if (is_zero_state_enabled_ && input.text().empty())
+  if (is_zero_state_enabled_ && input.text().empty()) {
     input.set_from_omnibox_focus(true);
+    is_zero_state_input_ = true;
+  } else {
+    is_zero_state_input_ = false;
+  }
   controller_->Start(input);
 }
 
@@ -62,9 +66,9 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   for (const AutocompleteMatch& match : result) {
     if (!match.destination_url.is_valid())
       continue;
-
     new_results.emplace_back(std::make_unique<OmniboxResult>(
-        profile_, list_controller_, controller_.get(), match));
+        profile_, list_controller_, controller_.get(), match,
+        is_zero_state_input_));
   }
   SwapResults(&new_results);
 }

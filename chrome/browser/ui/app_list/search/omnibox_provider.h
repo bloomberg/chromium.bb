@@ -37,7 +37,9 @@ class OmniboxProvider : public SearchProvider,
   void OnResultChanged(bool default_match_changed) override;
 
   Profile* profile_;
-  bool is_zero_state_enabled_;
+  bool is_zero_state_enabled_ = false;
+  // True if the input is empty for zero state suggestion.
+  bool is_zero_state_input_ = false;
   AppListControllerDelegate* list_controller_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-

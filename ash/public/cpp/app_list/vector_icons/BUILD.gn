@@ -21,6 +21,8 @@ aggregate_vector_icons("app_list_vector_icons") {
     "mic_black.icon",
     "search.icon",
     "search_engine_not_google.icon",
+    "search_result_append.icon",
+    "search_result_remove.icon",
   ]
 }
 

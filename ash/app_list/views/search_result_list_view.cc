@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_view.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -128,8 +129,14 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        size_t action_index,
                                                        int event_flags) {
   if (view_delegate_ && view->result()) {
-    view_delegate_->InvokeSearchResultAction(view->result()->id(), action_index,
-                                             event_flags);
+    ash::OmniBoxZeroStateAction action =
+        ash::GetOmniBoxZeroStateAction(action_index);
+    if (action == ash::OmniBoxZeroStateAction::kRemoveSuggestion) {
+      view_delegate_->InvokeSearchResultAction(view->result()->id(),
+                                               action_index, event_flags);
+    } else if (action == ash::OmniBoxZeroStateAction::kAppendSuggestion) {
+      main_view_->search_box_view()->UpdateQuery(view->result()->title());
+    }
   }
 }
 

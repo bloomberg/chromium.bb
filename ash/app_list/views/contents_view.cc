@@ -582,6 +582,8 @@ bool ContentsView::ShouldLayoutPage(AppListPage* page,
     return (current_state == ash::AppListState::kStateStart &&
             target_state == ash::AppListState::kStateApps) ||
            (current_state == ash::AppListState::kStateApps &&
+            target_state == ash::AppListState::kStateStart) ||
+           (current_state == ash::AppListState::kStateSearchResults &&
             target_state == ash::AppListState::kStateStart);
   }
 

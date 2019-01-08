@@ -8290,6 +8290,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_APP_ACTION_SHORTCUT_ACCESSIBILITY_NAME" desc="Hint text for the search result that performs a specific action with an app.">
           <ph name="ACTION_NAME">$1<ex>Compose</ex></ph> with <ph name="APP_NAME">$2<ex>GMail</ex></ph>.
         </message>
+        <message name="IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for removing suggestion button">
+          Remove this suggestion
+        </message>
+        <message name="IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for appending suggestion button">
+           Append this suggestion to search box
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
             New tab

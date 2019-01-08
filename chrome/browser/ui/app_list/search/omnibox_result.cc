@@ -9,16 +9,20 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -31,6 +35,9 @@ namespace {
 
 // #000 at 87% opacity.
 constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
+
+constexpr int kImageButtonIconSize = 20;
+constexpr SkColor kImageButtonColor = gfx::kGoogleGrey700;
 
 int ACMatchStyleToTagStyle(int styles) {
   int tag_styles = 0;
@@ -123,11 +130,13 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
 OmniboxResult::OmniboxResult(Profile* profile,
                              AppListControllerDelegate* list_controller,
                              AutocompleteController* autocomplete_controller,
-                             const AutocompleteMatch& match)
+                             const AutocompleteMatch& match,
+                             bool is_zero_suggestion)
     : profile_(profile),
       list_controller_(list_controller),
       autocomplete_controller_(autocomplete_controller),
-      match_(match) {
+      match_(match),
+      is_zero_suggestion_(is_zero_suggestion) {
   if (match_.search_terms_args && autocomplete_controller_) {
     match_.search_terms_args->from_app_list = true;
     autocomplete_controller_->UpdateMatchDestinationURL(
@@ -143,17 +152,36 @@ OmniboxResult::OmniboxResult(Profile* profile,
 
   if (AutocompleteMatch::IsSearchType(match_.type))
     SetIsOmniboxSearch(true);
-
   UpdateIcon();
   UpdateTitleAndDetails();
+
+  if (is_zero_suggestion_)
+    SetZeroSuggestionActions();
 }
 
 OmniboxResult::~OmniboxResult() = default;
 
 void OmniboxResult::Open(int event_flags) {
   RecordHistogram(OMNIBOX_SEARCH_RESULT);
+  RecordOmniboxResultHistogram();
   list_controller_->OpenURL(profile_, match_.destination_url, match_.transition,
                             ui::DispositionFromEventFlags(event_flags));
+}
+
+void OmniboxResult::Remove() {
+  // TODO(jennyz): add RecordHistogram.
+  autocomplete_controller_->DeleteMatch(match_);
+}
+
+void OmniboxResult::InvokeAction(int action_index, int event_flags) {
+  DCHECK(is_zero_suggestion_);
+  switch (ash::GetOmniBoxZeroStateAction(action_index)) {
+    case ash::OmniBoxZeroStateAction::kRemoveSuggestion:
+      Remove();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void OmniboxResult::UpdateIcon() {
@@ -202,6 +230,49 @@ void OmniboxResult::UpdateTitleAndDetails() {
 bool OmniboxResult::IsUrlResultWithDescription() const {
   return !AutocompleteMatch::IsSearchType(match_.type) &&
          !match_.description.empty();
+}
+
+void OmniboxResult::SetZeroSuggestionActions() {
+  Actions zero_suggestion_actions;
+
+  constexpr int kMaxButtons = ash::OmniBoxZeroStateAction::kZeroStateActionMax;
+  for (int i = 0; i < kMaxButtons; ++i) {
+    ash::OmniBoxZeroStateAction button_action =
+        ash::GetOmniBoxZeroStateAction(i);
+    gfx::ImageSkia button_image;
+    base::string16 button_tooltip;
+    bool visible_on_hover = false;
+
+    switch (button_action) {
+      case ash::OmniBoxZeroStateAction::kRemoveSuggestion:
+        button_image = gfx::CreateVectorIcon(
+            kSearchResultRemoveIcon, kImageButtonIconSize, kImageButtonColor);
+        button_tooltip = l10n_util::GetStringUTF16(
+            IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME);
+        visible_on_hover = true;  // visible upon hovering
+        break;
+      case ash::OmniBoxZeroStateAction::kAppendSuggestion:
+        button_image = gfx::CreateVectorIcon(
+            kSearchResultAppendIcon, kImageButtonIconSize, kImageButtonColor);
+        button_tooltip = l10n_util::GetStringUTF16(
+            IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME);
+        visible_on_hover = false;  // always visible
+        break;
+      default:
+        NOTREACHED();
+    }
+    Action search_action(button_image, button_tooltip, visible_on_hover);
+    zero_suggestion_actions.emplace_back(search_action);
+  }
+
+  SetActions(zero_suggestion_actions);
+}
+
+void OmniboxResult::RecordOmniboxResultHistogram() {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchOmniboxResultOpenType",
+                            is_zero_suggestion_
+                                ? OmniboxResultType::kZeroStateSuggestion
+                                : OmniboxResultType::kQuerySuggestion);
 }
 
 }  // namespace app_list

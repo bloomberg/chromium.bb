@@ -23,46 +23,6 @@ bool StructTraits<ash::mojom::SearchResultTagDataView, ash::SearchResultTag>::
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SearchResultActionLabel:
-
-// static
-ash::mojom::SearchResultActionLabelDataView::Tag UnionTraits<
-    ash::mojom::SearchResultActionLabelDataView,
-    ash::SearchResultAction>::GetTag(const ash::SearchResultAction& action) {
-  if (action.label_text.empty())
-    return ash::mojom::SearchResultActionLabelDataView::Tag::IMAGE_LABEL;
-  else
-    return ash::mojom::SearchResultActionLabelDataView::Tag::TEXT_LABEL;
-}
-
-// static
-bool UnionTraits<ash::mojom::SearchResultActionLabelDataView,
-                 ash::SearchResultAction>::
-    Read(ash::mojom::SearchResultActionLabelDataView data,
-         ash::SearchResultAction* out) {
-  switch (data.tag()) {
-    case ash::mojom::SearchResultActionLabelDataView::Tag::IMAGE_LABEL: {
-      ash::mojom::SearchResultActionImageLabelDataView image_label_data_view;
-      data.GetImageLabelDataView(&image_label_data_view);
-      if (!image_label_data_view.ReadBaseImage(&out->base_image))
-        return false;
-      if (!image_label_data_view.ReadHoverImage(&out->hover_image))
-        return false;
-      if (!image_label_data_view.ReadPressedImage(&out->pressed_image))
-        return false;
-      return true;
-    }
-    case ash::mojom::SearchResultActionLabelDataView::Tag::TEXT_LABEL: {
-      if (!data.ReadTextLabel(&out->label_text))
-        return false;
-      return true;
-    }
-  }
-  NOTREACHED();
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // SearchResultAction:
 
 // static
@@ -72,8 +32,9 @@ bool StructTraits<
                                    ash::SearchResultAction* out) {
   if (!data.ReadTooltipText(&out->tooltip_text))
     return false;
-  if (!data.ReadLabel(out))
+  if (!data.ReadImage(&out->image))
     return false;
+  out->visible_on_hover = data.visible_on_hover();
   return true;
 }
 

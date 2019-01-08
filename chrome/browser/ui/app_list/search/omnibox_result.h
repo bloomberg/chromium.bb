@@ -15,6 +15,15 @@ class AppListControllerDelegate;
 class AutocompleteController;
 class Profile;
 
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppListOmniboxResult enum listing in tools/metrics/histograms/enums.xml.
+enum class OmniboxResultType {
+  kQuerySuggestion = 0,
+  kZeroStateSuggestion = 1,
+  kMaxValue = kZeroStateSuggestion,
+};
+
 namespace app_list {
 
 class OmniboxResult : public ChromeSearchResult {
@@ -22,25 +31,33 @@ class OmniboxResult : public ChromeSearchResult {
   OmniboxResult(Profile* profile,
                 AppListControllerDelegate* list_controller,
                 AutocompleteController* autocomplete_controller,
-                const AutocompleteMatch& match);
+                const AutocompleteMatch& match,
+                bool is_zero_suggestion);
   ~OmniboxResult() override;
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
+  void InvokeAction(int action_index, int event_flags) override;
 
  private:
   void UpdateIcon();
-
   void UpdateTitleAndDetails();
+
+  void Remove();
 
   // Returns true if |match_| indicates a url search result with non-empty
   // description.
   bool IsUrlResultWithDescription() const;
 
+  void SetZeroSuggestionActions();
+
+  void RecordOmniboxResultHistogram();
+
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;
   AutocompleteMatch match_;
+  const bool is_zero_suggestion_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResult);
 };
