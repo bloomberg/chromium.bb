@@ -70,15 +70,16 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
-#include "ash/wm/cursor_manager_test_api.h"
-#include "ash/wm/root_window_finder.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -138,19 +139,25 @@ class QuitDraggingObserver : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
                    content::NotificationService::AllSources());
   }
+  ~QuitDraggingObserver() override {}
 
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE, type);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    delete this;
+    run_loop_.QuitWhenIdle();
+  }
+
+  void Wait() {
+    run_loop_.Run();
+#if defined(OS_CHROMEOS)
+    aura::test::WaitForAllChangesToComplete();
+#endif
   }
 
  private:
-  ~QuitDraggingObserver() override {}
-
   content::NotificationRegistrar registrar_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(QuitDraggingObserver);
 };
@@ -182,11 +189,6 @@ std::string IDString(TabStripModel* model) {
       result += "?";
   }
   return result;
-}
-
-// Creates a listener that quits the message loop when no longer dragging.
-void QuitWhenNotDraggingImpl() {
-  new QuitDraggingObserver();  // QuitDraggingObserver deletes itself.
 }
 
 TabStrip* GetTabStripForBrowser(Browser* browser) {
@@ -283,11 +285,13 @@ int GetDetachY(TabStrip* tab_strip) {
 
 bool GetIsDragged(Browser* browser) {
 #if defined(OS_CHROMEOS)
-  return ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
-      is_dragged();
-#else
-  return false;
+  if (!features::IsUsingWindowService()) {
+    return ash::wm::GetWindowState(browser->window()->GetNativeWindow())
+        ->is_dragged();
+  }
+  // TODO(mukai): support for Mash.
 #endif
+  return false;
 }
 
 }  // namespace
@@ -412,6 +416,7 @@ class DetachToBrowserTabDragControllerTest
     // tests' touch events.
     ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
         std::numeric_limits<float>::max());
+    aura::test::WaitForAllChangesToComplete();
 #endif
 #if defined(OS_MACOSX)
     // Currently MacViews' browser windows are shown in the background and could
@@ -536,21 +541,6 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
-  void QuitWhenNotDragging() {
-    if (input_source() == INPUT_SOURCE_MOUSE) {
-      // Schedule observer to quit message loop when done dragging. This has to
-      // be async so the message loop can run.
-      test::QuitWhenNotDraggingImpl();
-      base::RunLoop().Run();
-    } else {
-      // Touch events are sync, so we know we're not in a drag session. But some
-      // tests rely on the browser fully closing, which is async. So, run all
-      // pending tasks.
-      base::RunLoop run_loop;
-      run_loop.RunUntilIdle();
-    }
-  }
-
   void AddBlankTabAndShow(Browser* browser) {
     InProcessBrowserTest::AddBlankTabAndShow(browser);
   }
@@ -601,7 +591,7 @@ class DetachToBrowserTabDragControllerTest
     ASSERT_TRUE(DragInputToNotifyWhenDone(
         tab_0_center + gfx::Vector2d(drag_x_offset, GetDetachY(tab_strip)),
         std::move(task)));
-    QuitWhenNotDragging();
+    test::QuitDraggingObserver().Wait();
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
@@ -831,7 +821,10 @@ bool IsWindowPositionManaged(aura::Window* window) {
       ash::kWindowPositionManagedTypeKey);
 }
 bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
-  return ash::wm::GetWindowState(window)->bounds_changed_by_user();
+  if (!features::IsUsingWindowService())
+    return ash::wm::GetWindowState(window)->bounds_changed_by_user();
+  // TODO(mukai): support Mash.
+  return false;
 }
 #else
 bool IsWindowPositionManaged(gfx::NativeWindow window) {
@@ -2539,9 +2532,10 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   }
 
   float GetCursorDeviceScaleFactor() const {
-    ash::CursorManagerTestApi cursor_test_api(
-        ash::Shell::Get()->cursor_manager());
-    return cursor_test_api.GetCurrentCursor().device_scale_factor();
+    return aura::client::GetCursorClient(
+               browser()->window()->GetNativeWindow()->GetRootWindow())
+        ->GetCursor()
+        .device_scale_factor();
   }
 
  private:
@@ -2578,7 +2572,7 @@ void CursorDeviceScaleFactorStep(
 
   if (index > 0) {
     EXPECT_EQ(kDragPoints[index - 1],
-              ash::Shell::Get()->aura_env()->last_mouse_location());
+              aura::Env::GetInstance()->last_mouse_location());
     EXPECT_EQ(kDeviceScaleFactorExpectations[index - 1],
               test->GetCursorDeviceScaleFactor());
   }
@@ -2645,9 +2639,11 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
   ASSERT_EQ(2u, browser_list->size());
 
   // Switching display mode should cancel the drag operation.
-  display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-  display_manager->AddRemoveDisplay();
+  ash::mojom::ShellTestApiPtr shell_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+  shell_test_api->AddRemoveDisplay();
 }
 
 // Invoked from the nested run loop.
@@ -2944,7 +2940,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
               ASSERT_TRUE(ReleaseInput());
             })));
       })));
-  QuitWhenNotDragging();
+  test::QuitDraggingObserver().Wait();
 
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
