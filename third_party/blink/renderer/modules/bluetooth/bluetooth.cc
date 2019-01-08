@@ -122,7 +122,7 @@ static void ConvertRequestDeviceOptions(
       if (exception_state.HadException())
         return;
 
-      result->filters.value().push_back(std::move(canonicalized_filter));
+      result->filters->push_back(std::move(canonicalized_filter));
     }
   }
 
@@ -220,6 +220,41 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   return promise;
 }
 
+static void ConvertRequestLEScanOptions(
+    const BluetoothLEScanOptions* options,
+    mojom::blink::WebBluetoothRequestLEScanOptionsPtr& result,
+    ExceptionState& exception_state) {
+  if (!(options->hasFilters() ^ options->acceptAllAdvertisements())) {
+    exception_state.ThrowTypeError(
+        "Either 'filters' should be present or 'acceptAllAdvertisements' "
+        "should be true, but not both.");
+    return;
+  }
+
+  result->accept_all_advertisements = options->acceptAllAdvertisements();
+
+  if (options->hasFilters()) {
+    if (options->filters().IsEmpty()) {
+      exception_state.ThrowTypeError(
+          "'filters' member must be non-empty to find any devices.");
+      return;
+    }
+
+    result->filters.emplace();
+
+    for (const BluetoothLEScanFilterInit* filter : options->filters()) {
+      auto canonicalized_filter = mojom::blink::WebBluetoothLeScanFilter::New();
+
+      CanonicalizeFilter(filter, canonicalized_filter, exception_state);
+
+      if (exception_state.HadException())
+        return;
+
+      result->filters->push_back(std::move(canonicalized_filter));
+    }
+  }
+}
+
 void Bluetooth::RequestScanningCallback(
     ScriptPromiseResolver* resolver,
     mojo::BindingId id,
@@ -280,7 +315,11 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
         &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
 
-  // TODO(dougt) deal with |options| here.
+  auto scan_options = mojom::blink::WebBluetoothRequestLEScanOptions::New();
+  ConvertRequestLEScanOptions(options, scan_options, exception_state);
+
+  if (exception_state.HadException())
+    return ScriptPromise();
 
   // Record the eTLD+1 of the frame using the API.
   Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin", doc.Url());
@@ -294,7 +333,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
       client_bindings_.AddBinding(this, mojo::MakeRequest(&client));
 
   service_->RequestScanningStart(
-      std::move(client),
+      std::move(client), std::move(scan_options),
       WTF::Bind(&Bluetooth::RequestScanningCallback, WrapPersistent(this),
                 WrapPersistent(resolver), id));
 

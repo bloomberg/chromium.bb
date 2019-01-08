@@ -109,6 +109,12 @@ struct WebBluetoothRequestDeviceOptions {
   bool accept_all_devices;
 };
 
+struct WebBluetoothRequestLEScanOptions {
+  array<WebBluetoothLeScanFilter>? filters;
+  bool keep_repeated_devices;
+  bool accept_all_advertisements;
+};
+
 // Indicates if the function will return a single or multiple
 // GATT objects.
 enum WebBluetoothGATTQueryQuantity {
@@ -266,7 +272,8 @@ interface WebBluetoothService {
     array<uint8> value) => (WebBluetoothResult result);
 
   // Starts scanning for low energy devices.
-  RequestScanningStart(associated WebBluetoothScanClient client) => (
+  RequestScanningStart(associated WebBluetoothScanClient client,
+                       WebBluetoothRequestLEScanOptions options) => (
       WebBluetoothResult result);
 };
 
