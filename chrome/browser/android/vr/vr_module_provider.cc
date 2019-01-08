@@ -41,6 +41,11 @@ void VrModuleProvider::InstallModule(
                                       j_vr_module_provider_);
 }
 
+void VrModuleProvider::ShowInstallResult(bool success) {
+  Java_VrModuleProvider_showInstallResult(base::android::AttachCurrentThread(),
+                                          success);
+}
+
 void VrModuleProvider::OnInstalledModule(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
