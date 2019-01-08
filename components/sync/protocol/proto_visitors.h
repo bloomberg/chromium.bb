@@ -739,9 +739,11 @@ VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfSpecifics& proto) {
+  VISIT(guid);
   VISIT(title);
   VISIT(url);
   VISIT(shared_time_usec);
+  VISIT(navigation_time_usec);
   VISIT(device_name);
 }
 
