@@ -85,6 +85,8 @@ jumbo_split_static_library("browser") {
   sources = [
     "about_flags.cc",
     "about_flags.h",
+    "accessibility/accessibility_labels_prefs.cc",
+    "accessibility/accessibility_labels_prefs.h",
     "accessibility/accessibility_permission_context.cc",
     "accessibility/accessibility_permission_context.h",
     "accessibility/accessibility_ui.cc",

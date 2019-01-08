@@ -43,6 +43,17 @@ Polymer({
       },
     },
 
+    /**
+     * Whether to show experimental accessibility label features.
+     * @private {boolean}
+     */
+    showExperimentalAccessibilityLabels_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showExperimentalA11yLabels');
+      },
+    },
+
     // <if expr="chromeos">
     /**
      * Whether to show experimental accessibility features.

@@ -174,6 +174,12 @@
   <message name="IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION" desc="Description for the link about additional accessibility features.">
     Enable accessibility features
   </message>
+  <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE" desc="Description for screen reader image labels feature. Text WIP, marking not translatable until strings are finalized" translateable="false">
+    Enable image labels for accessibility
+  </message>
+  <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE" desc="Subtitle for screen reader image labels feature. Text WIP, marking not translatable until strings are finalized" translateable="false">
+    Enables image labels when a screen reader is running
+  </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
       Always show accessibility options in the system menu

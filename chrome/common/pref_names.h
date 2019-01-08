@@ -168,6 +168,7 @@ extern const char kContextualSearchDisabledValue[];
 extern const char kContextualSearchEnabledValue[];
 #endif  // defined(OS_ANDROID)
 extern const char kShowInternalAccessibilityTree[];
+extern const char kAccessibilityImageLabelsEnabled[];
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
