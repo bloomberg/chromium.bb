@@ -2100,30 +2100,6 @@
             ]
         }
     ],
-    "HTMLParsingYieldTime": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_50ms",
-                    "params": {
-                        "limit": "0.05"
-                    },
-                    "enable_features": [
-                        "HTMLParsingYieldTime"
-                    ]
-                }
-            ]
-        }
-    ],
     "HTTPReallyBadFinal": [
         {
             "platforms": [
