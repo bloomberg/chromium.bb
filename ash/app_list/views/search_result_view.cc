@@ -7,8 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/remove_query_confirmation_dialog.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -79,6 +83,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   AddChildView(actions_view_);
   AddChildView(progress_bar_);
   set_context_menu_controller(this);
+  set_notify_enter_exit_on_child(true);
 }
 
 SearchResultView::~SearchResultView() {
@@ -123,7 +128,6 @@ void SearchResultView::UpdateDetailsText() {
   if (!result_ || result_->details().empty())
     details_text_.reset();
   else
-
     CreateDetailsRenderText();
 
   UpdateAccessibleName();
@@ -187,6 +191,22 @@ void SearchResultView::CreateDetailsRenderText() {
       render_text->ApplyColor(kUrlColor, tag.range);
   }
   details_text_ = std::move(render_text);
+}
+
+void SearchResultView::OnQueryRemovalAccepted(bool accepted, int event_flags) {
+  if (accepted) {
+    list_view_->SearchResultActionActivated(
+        this, ash::OmniBoxZeroStateAction::kRemoveSuggestion, event_flags);
+  }
+
+  if (confirm_remove_by_long_press_) {
+    confirm_remove_by_long_press_ = false;
+    SetBackgroundHighlighted(false);
+  }
+
+  RecordZeroStateSearchResultRemovalHistogram(
+      accepted ? ZeroStateSearchResutRemovalConfirmation::kRemovalConfirmed
+               : ZeroStateSearchResutRemovalConfirmation::kRemovalCanceled);
 }
 
 const char* SearchResultView::GetClassName() const {
@@ -329,16 +349,45 @@ void SearchResultView::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   SetBackgroundHighlighted(true);
+  selected_ = true;
+  actions_view_->UpdateButtonsOnStateChanged();
 }
 
 void SearchResultView::OnBlur() {
   SetBackgroundHighlighted(false);
+  selected_ = false;
+  actions_view_->UpdateButtonsOnStateChanged();
+}
+
+void SearchResultView::OnMouseEntered(const ui::MouseEvent& event) {
+  actions_view_->UpdateButtonsOnStateChanged();
+}
+
+void SearchResultView::OnMouseExited(const ui::MouseEvent& event) {
+  actions_view_->UpdateButtonsOnStateChanged();
+}
+
+void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_LONG_PRESS:
+      ScrollRectToVisible(GetLocalBounds());
+      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+      SetBackgroundHighlighted(true);
+      confirm_remove_by_long_press_ = true;
+      OnSearchResultActionActivated(
+          ash::OmniBoxZeroStateAction::kRemoveSuggestion, event->flags());
+      event->SetHandled();
+      break;
+    default:
+      break;
+  }
+  if (!event->handled())
+    Button::OnGestureEvent(event);
 }
 
 void SearchResultView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender == this);
-
   list_view_->SearchResultActivated(this, event.flags());
 }
 
@@ -406,7 +455,34 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
 
   DCHECK_LT(index, result_->actions().size());
 
-  list_view_->SearchResultActionActivated(this, index, event_flags);
+  if (result_->is_omnibox_search()) {
+    ash::OmniBoxZeroStateAction button_action =
+        ash::GetOmniBoxZeroStateAction(index);
+
+    if (button_action == ash::OmniBoxZeroStateAction::kRemoveSuggestion) {
+      RecordZeroStateSearchResultUserActionHistogram(
+          ZeroStateSearchResultUserActionType::kRemoveResult);
+      RemoveQueryConfirmationDialog* dialog = new RemoveQueryConfirmationDialog(
+          base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                         weak_ptr_factory_.GetWeakPtr()),
+          event_flags);
+
+      // Calculate confirmation dialog's origin in screen coordinates.
+      gfx::Rect search_box_rect = list_view_->app_list_main_view()
+                                      ->search_box_view()
+                                      ->GetBoundsInScreen();
+      dialog->Show(GetWidget()->GetNativeWindow(), search_box_rect);
+    } else if (button_action ==
+               ash::OmniBoxZeroStateAction::kAppendSuggestion) {
+      RecordZeroStateSearchResultUserActionHistogram(
+          ZeroStateSearchResultUserActionType::kAppendResult);
+      list_view_->SearchResultActionActivated(this, index, event_flags);
+    }
+  }
+}
+
+bool SearchResultView::IsSearchResultHoveredOrSelected() {
+  return IsMouseHovered() || selected();
 }
 
 void SearchResultView::ShowContextMenuForView(views::View* source,

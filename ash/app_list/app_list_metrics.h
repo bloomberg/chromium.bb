@@ -23,6 +23,26 @@ constexpr char kAppListShowInputLatencyHistogram[] =
 constexpr char kAppListHideInputLatencyHistogram[] =
     "Apps.AppListHide.InputLatency";
 
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppListZeroStateSearchResultUserActionType enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class ZeroStateSearchResultUserActionType {
+  kRemoveResult = 0,
+  kAppendResult = 1,
+  kMaxValue = kAppendResult,
+};
+
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppListZeroStateResultRemovalConfirmation enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class ZeroStateSearchResutRemovalConfirmation {
+  kRemovalConfirmed = 0,
+  kRemovalCanceled = 1,
+  kMaxValue = kRemovalCanceled,
+};
+
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);
@@ -30,6 +50,12 @@ void RecordFolderShowHideAnimationSmoothness(int actual_frames,
 void RecordPaginationAnimationSmoothness(int actual_frames,
                                          int ideal_duration_ms,
                                          float refresh_rate);
+
+void RecordZeroStateSearchResultUserActionHistogram(
+    ZeroStateSearchResultUserActionType action);
+
+void RecordZeroStateSearchResultRemovalHistogram(
+    ZeroStateSearchResutRemovalConfirmation removal_decision);
 
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,

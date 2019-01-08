@@ -497,6 +497,11 @@ void SearchBoxView::SetAutocompleteText(
   search_box()->set_controller(this);
 }
 
+void SearchBoxView::UpdateQuery(const base::string16& new_query) {
+  search_box()->SetText(new_query);
+  ContentsChanged(search_box(), new_query);
+}
+
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (search_box()->HasFocus() && is_search_box_active() &&

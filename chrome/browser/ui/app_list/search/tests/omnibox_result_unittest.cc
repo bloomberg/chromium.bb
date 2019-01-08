@@ -63,8 +63,9 @@ class OmniboxResultTest : public AppListTestBase {
     match.type = type;
     match.keyword = base::UTF8ToUTF16(keyword);
 
-    return std::make_unique<OmniboxResult>(
-        profile_.get(), app_list_controller_delegate_.get(), nullptr, match);
+    return std::make_unique<OmniboxResult>(profile_.get(),
+                                           app_list_controller_delegate_.get(),
+                                           nullptr, match, false);
   }
 
   const GURL& GetLastOpenedUrl() const {

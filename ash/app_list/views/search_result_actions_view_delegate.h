@@ -15,6 +15,10 @@ class SearchResultActionsViewDelegate {
   // in SearchResultActionsView.
   virtual void OnSearchResultActionActivated(size_t index, int event_flags) = 0;
 
+  // Returns true if the associated search result is hovered by mouse, or
+  // or selected by keyboard.
+  virtual bool IsSearchResultHoveredOrSelected() = 0;
+
  protected:
   virtual ~SearchResultActionsViewDelegate() {}
 };

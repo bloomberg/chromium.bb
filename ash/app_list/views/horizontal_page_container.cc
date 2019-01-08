@@ -76,6 +76,11 @@ void HorizontalPageContainer::OnAnimationUpdated(double progress,
     gfx::Rect to_rect = page->GetPageBoundsForState(to_state);
     gfx::Rect from_rect = page->GetPageBoundsForState(from_state);
 
+    // Invalidate layout when the state changes to ensure that SetBoundsRect
+    // below also triggers a layout.
+    if (from_state != to_state)
+      page->InvalidateLayout();
+
     // Animate linearly (the PaginationModel handles easing).
     gfx::Rect bounds(
         gfx::Tween::RectValueBetween(progress, from_rect, to_rect));

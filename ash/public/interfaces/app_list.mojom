@@ -130,21 +130,13 @@ struct SearchResultTag {
 };
 
 // Data representing an action that can be performed on a search result.
-// An action could be represented as an icon set or as a blue button with
-// a label. Icon set is chosen if label text is empty. Otherwise, a blue
-// button with the label text will be used.
-struct SearchResultActionImageLabel {
-  gfx.mojom.ImageSkia base_image;
-  gfx.mojom.ImageSkia hover_image;
-  gfx.mojom.ImageSkia pressed_image;
-};
-union SearchResultActionLabel {
-  SearchResultActionImageLabel image_label;
-  mojo_base.mojom.String16 text_label;
-};
+// An action could be represented as an image button, it will be always visibe
+// if |visible_on_hover| is false; otherwise how it is visible only when
+// when its associated search result is hovered.
 struct SearchResultAction {
   mojo_base.mojom.String16 tooltip_text;
-  SearchResultActionLabel label;
+  gfx.mojom.ImageSkia image;
+  bool visible_on_hover;
 };
 
 // The Chrome app list (aka Launcher), is the place where user can find and

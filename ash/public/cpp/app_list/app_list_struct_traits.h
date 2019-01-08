@@ -216,58 +216,7 @@ struct StructTraits<ash::mojom::SearchResultTagDataView, ash::SearchResultTag> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// SearchResultActionLabel:
-
-template <>
-struct UnionTraits<ash::mojom::SearchResultActionLabelDataView,
-                   ash::SearchResultAction> {
-  static ash::mojom::SearchResultActionLabelDataView::Tag GetTag(
-      const ash::SearchResultAction& action);
-
-  static bool Read(ash::mojom::SearchResultActionLabelDataView data,
-                   ash::SearchResultAction* out);
-
-  static const ash::SearchResultAction& image_label(
-      const ash::SearchResultAction& action) {
-    return action;
-  }
-
-  static const ash::SearchResultAction& text_label(
-      const ash::SearchResultAction& action) {
-    return action;
-  }
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // SearchResultAction:
-
-template <>
-struct StructTraits<ash::mojom::SearchResultActionImageLabelDataView,
-                    ash::SearchResultAction> {
-  static const gfx::ImageSkia& base_image(
-      const ash::SearchResultAction& action) {
-    return action.base_image;
-  }
-  static const gfx::ImageSkia& hover_image(
-      const ash::SearchResultAction& action) {
-    return action.hover_image;
-  }
-  static const gfx::ImageSkia& pressed_image(
-      const ash::SearchResultAction& action) {
-    return action.pressed_image;
-  }
-};
-
-template <>
-struct StructTraits<mojo_base::mojom::String16DataView,
-                    ash::SearchResultAction> {
-  static base::span<const uint16_t> data(
-      const ash::SearchResultAction& action) {
-    return base::make_span(
-        reinterpret_cast<const uint16_t*>(action.label_text.data()),
-        action.label_text.size());
-  }
-};
 
 template <>
 struct StructTraits<ash::mojom::SearchResultActionDataView,
@@ -280,9 +229,12 @@ struct StructTraits<ash::mojom::SearchResultActionDataView,
     return action.tooltip_text;
   }
 
-  static const ash::SearchResultAction& label(
-      const ash::SearchResultAction& action) {
-    return action;
+  static const gfx::ImageSkia& image(const ash::SearchResultAction& action) {
+    return action.image;
+  }
+
+  static bool visible_on_hover(const ash::SearchResultAction& action) {
+    return action.visible_on_hover;
   }
 };
 
