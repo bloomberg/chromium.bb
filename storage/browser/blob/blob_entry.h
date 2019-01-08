@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobEntry {
   // 1. Waiting for quota to be granted for transport data (PENDING_QUOTA)
   // 2. Waiting for user population of data after quota (PENDING_TRANSPORT)
   // 3. Waiting for blobs we reference to complete & quota granted for possible
-  //    copies. (PENDING_INTERNALS)
+  //    copies. (PENDING_REFERENCED_BLOBS)
   struct COMPONENT_EXPORT(STORAGE_BROWSER) BuildingState {
     // |transport_allowed_callback| is not null when data needs population. See
     // BlobStorageContext::BuildBlob for when the callback is called.
@@ -110,8 +110,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobEntry {
 
   // Returns if we're a pending blob that can finish building.
   bool CanFinishBuilding() const {
-    // PENDING_INTERNALS means transport is finished.
-    return status_ == BlobStatus::PENDING_INTERNALS && building_state_ &&
+    // PENDING_REFERENCED_BLOBS means transport is finished.
+    return status_ == BlobStatus::PENDING_REFERENCED_BLOBS && building_state_ &&
            !building_state_->copy_quota_request &&
            building_state_->num_building_dependent_blobs == 0;
   }

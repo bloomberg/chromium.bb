@@ -227,7 +227,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
   } else if (content->transport_quota_needed()) {
     entry->set_status(BlobStatus::PENDING_QUOTA);
   } else {
-    entry->set_status(BlobStatus::PENDING_INTERNALS);
+    entry->set_status(BlobStatus::PENDING_REFERENCED_BLOBS);
   }
 
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(content->uuid_, entry);
@@ -459,7 +459,7 @@ void BlobStorageContext::NotifyTransportCompleteInternal(BlobEntry* entry) {
     DCHECK(shareable_item->state() == ShareableBlobDataItem::QUOTA_GRANTED);
     shareable_item->set_state(ShareableBlobDataItem::POPULATED_WITH_QUOTA);
   }
-  entry->set_status(BlobStatus::PENDING_INTERNALS);
+  entry->set_status(BlobStatus::PENDING_REFERENCED_BLOBS);
   if (entry->CanFinishBuilding())
     FinishBuilding(entry);
 }

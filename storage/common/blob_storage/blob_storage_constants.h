@@ -140,8 +140,7 @@ enum class BlobStatus {
   PENDING_TRANSPORT = 202,
   // Waiting for any operations involving dependent blobs after transport data
   // has been populated. See BlobEntry::BuildingState for more info.
-  // TODO(dmurph): Change to PENDING_REFERENCED_BLOBS (crbug.com/670398).
-  PENDING_INTERNALS = 203,
+  PENDING_REFERENCED_BLOBS = 203,
   // Waiting for construction to begin.
   PENDING_CONSTRUCTION = 204,
   LAST_PENDING = PENDING_CONSTRUCTION,
