@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <vector>
 
 #include "base/test/fuzzed_data_provider.h"
@@ -22,10 +23,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   http2::HpackDecoder decoder(http2::HpackDecoderNoOpListener::NoOpListener(),
                               max_string_size);
   decoder.StartDecodingBlock();
+
+  // Store all chunks in a function scope list, as the API requires the caller
+  // to make sure the fragment chunks data is accessible during the whole
+  // decoding process. |http2::DecodeBuffer| does not copy the data, it is just
+  // a wrapper for the chunk provided in its constructor.
+  std::list<std::vector<char>> all_chunks;
   while (fuzzed_data_provider.remaining_bytes() > 0) {
     size_t chunk_size = fuzzed_data_provider.ConsumeIntegralInRange(1, 32);
-    std::vector<char> chunk =
-        fuzzed_data_provider.ConsumeBytes<char>(chunk_size);
+    all_chunks.emplace_back(
+        fuzzed_data_provider.ConsumeBytes<char>(chunk_size));
+    const auto& chunk = all_chunks.back();
 
     // http2::DecodeBuffer constructor does not accept nullptr buffer.
     if (chunk.data() == nullptr)
