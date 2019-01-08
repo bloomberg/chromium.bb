@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_access_authenticator.h"
+#include "chrome/browser/ui/passwords/settings/password_access_authenticator.h"
 
 #include <utility>
 

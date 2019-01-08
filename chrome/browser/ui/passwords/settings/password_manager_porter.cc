@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_manager_porter.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_porter.h"
 
 #include <memory>
 #include <string>
