@@ -104,7 +104,10 @@ def collect_test_results(cmd_list, plist_path, return_code, output):
 
   for action in root['Actions']:
     action_result = action['ActionResult']
-    if action_result['TestsCount'] == 0 and action_result['ErrorCount'] != 0:
+    if ((action_result['TestsCount'] == 0 and
+         action_result['TestsFailedCount'] == 0 and
+         action_result['ErrorCount'] != 0)
+        or 'TestSummaryPath' not in action_result):
       test_results['failed']['TESTS_DID_NOT_START'] = []
     else:
       summary_plist = os.path.join(os.path.dirname(plist_path),
@@ -186,8 +189,9 @@ class EgtestsApp(object):
     Returns:
       A node with filled required fields about egtests.
     """
+    module = self.module_name + '_module'
     xctestrun_data = {
-        self.module_name + '_module': {
+        module: {
             'IsAppHostedTestBundle': True,
             'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
             'TestHostPath': '%s' % self.egtests_path,
@@ -203,10 +207,10 @@ class EgtestsApp(object):
     }
     if self.filter:
       if self.invert:
-        xctestrun_data[self.module_name + '_module'].update(
+        xctestrun_data[module].update(
             {'SkipTestIdentifiers': self.filter})
       else:
-        xctestrun_data[self.module_name + '_module'].update(
+        xctestrun_data[module].update(
             {'OnlyTestIdentifiers': self.filter})
     return xctestrun_data
 
@@ -383,6 +387,10 @@ class LaunchCommand(object):
         cmd_list = self._make_cmd_list_for_failed_tests(
             self.test_results['attempts'][-1]['failed'],
             outdir_attempt)
+      else:
+        # If tests did not start, re-run the same command
+        # but with different output folder.
+        cmd_list = cmd_list[:-2] + ['-resultBundlePath', outdir_attempt]
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       print 'Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list))

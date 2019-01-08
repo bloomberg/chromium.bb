@@ -116,12 +116,12 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
                                  destination=destination,
                                  shards=3))
 
-  @mock.patch('tempfile.mkstemp', autospec=True)
   @mock.patch('plistlib.writePlist', autospec=True)
   @mock.patch('os.path.exists', autospec=True)
-  def testFill_xctest_run(self, mock_path_exists, _, mock_tmpfile):
+  @mock.patch('os.path.join', autospec=True)
+  def testFill_xctest_run(self, mock_path_join, mock_path_exists, _):
+    mock_path_join.return_value = _XTEST_RUN
     mock_path_exists.return_value = True
-    mock_tmpfile.return_value = (1, _XTEST_RUN)
     destination = 'platform=iOS Simulator,OS=12.0,name=iPhone X'
     mock_egtest = mock.MagicMock(spec=xcodebuild_runner.EgtestsApp)
     launch_command = xcodebuild_runner.LaunchCommand(
