@@ -202,6 +202,10 @@ class CORE_EXPORT NGLineBreaker {
 
   bool ignore_floats_ = false;
 
+  // Set in quirks mode when we're not supposed to break inside table cells
+  // between images, and between text and images.
+  bool sticky_images_quirk_ = false;
+
   const NGInlineItemsData& items_data_;
 
   NGLineBreakerMode mode_;

@@ -83,6 +83,10 @@ class LayoutNGMixin : public Base {
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
+  void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const override;
+
   void ComputeVisualOverflow(bool recompute_floats) final;
 
   void AddVisualOverflowFromChildren();

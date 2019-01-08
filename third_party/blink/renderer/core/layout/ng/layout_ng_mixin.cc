@@ -72,8 +72,40 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::ComputeVisualOverflow(
-    bool recompute_floats) {
+void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  NGBlockNode node(const_cast<LayoutNGMixin<Base>*>(this));
+  if (!node.CanUseNewLayout()) {
+    Base::ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
+    return;
+  }
+  MinMaxSizeInput input;
+  // This function returns content-box plus scrollbar.
+  input.size_type = NGMinMaxSizeType::kContentBoxSize;
+  MinMaxSize sizes =
+      node.ComputeMinMaxSize(node.Style().GetWritingMode(), input);
+
+  if (Base::IsTableCell()) {
+    // If a table cell, or the column that it belongs to, has a specified fixed
+    // positive inline-size, and the measured intrinsic max size is less than
+    // that, use specified size as max size.
+    LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
+    Length table_cell_width = cell->StyleOrColLogicalWidth();
+    if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
+      sizes.max_size = std::max(sizes.min_size,
+                                Base::AdjustContentBoxLogicalWidthForBoxSizing(
+                                    LayoutUnit(table_cell_width.Value())));
+    }
+  }
+
+  sizes += LayoutUnit(Base::ScrollbarLogicalWidth());
+  min_logical_width = sizes.min_size;
+  max_logical_width = sizes.max_size;
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::ComputeVisualOverflow(bool recompute_floats) {
   LayoutRect previous_visual_overflow_rect = Base::VisualOverflowRect();
   Base::ClearVisualOverflow();
   Base::ComputeVisualOverflow(recompute_floats);

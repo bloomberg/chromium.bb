@@ -30,24 +30,6 @@ bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);
 }
 
-void LayoutNGBlockFlow::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  NGBlockNode node(const_cast<LayoutNGBlockFlow*>(this));
-  if (!node.CanUseNewLayout()) {
-    LayoutBlockFlow::ComputeIntrinsicLogicalWidths(min_logical_width,
-                                                   max_logical_width);
-    return;
-  }
-  MinMaxSizeInput input;
-  // This function returns content-box plus scrollbar.
-  input.size_type = NGMinMaxSizeType::kContentBoxSize;
-  MinMaxSize sizes = node.ComputeMinMaxSize(StyleRef().GetWritingMode(), input);
-  sizes += LayoutUnit(ScrollbarLogicalWidth());
-  min_logical_width = sizes.min_size;
-  max_logical_width = sizes.max_size;
-}
-
 void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 

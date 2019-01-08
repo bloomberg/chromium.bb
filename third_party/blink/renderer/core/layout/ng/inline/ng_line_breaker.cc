@@ -45,6 +45,13 @@ inline bool HasUnpositionedFloats(const NGInlineItemResults& item_results) {
   return !item_results.IsEmpty() && item_results.back().has_unpositioned_floats;
 }
 
+bool IsImage(const NGInlineItem& item) {
+  if (!item.GetLayoutObject() || !item.GetLayoutObject()->IsLayoutImage())
+    return false;
+  DCHECK(item.Type() == NGInlineItem::kAtomicInline);
+  return true;
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
@@ -86,6 +93,19 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     items_data_.AssertOffset(item_index_, offset_);
     ignore_floats_ = break_token->IgnoreFloats();
   }
+
+  // There's a special intrinsic size measure quirk for images that are direct
+  // children of table cells that have auto inline-size: When measuring
+  // intrinsic min/max inline sizes, we pretend that it's not possible to break
+  // between images, or between text and images. Note that this only applies
+  // when measuring. During actual layout, on the other hand, standard breaking
+  // rules are to be followed.
+  // See https://quirks.spec.whatwg.org/#the-table-cell-width-calculation-quirk
+  if (node.GetDocument().InQuirksMode() &&
+      node.Style().Display() == EDisplay::kTableCell &&
+      node.Style().LogicalWidth().IsIntrinsicOrAuto() &&
+      mode != NGLineBreakerMode::kContent)
+    sticky_images_quirk_ = true;
 }
 
 // Define the destructor here, so that we can forward-declare more in the
@@ -277,6 +297,15 @@ void NGLineBreaker::BreakLine() {
     // opportunity if we're trailing.
     if (state_ == LineBreakState::kTrailing &&
         CanBreakAfterLast(*item_results_)) {
+      if (sticky_images_quirk_ && IsImage(item) &&
+          (trailing_whitespace_ == WhitespaceState::kNone ||
+           trailing_whitespace_ == WhitespaceState::kUnknown)) {
+        // If this is an image that follows text that doesn't end with something
+        // breakable, we cannot break between the two items.
+        HandleAtomicInline(item);
+        continue;
+      }
+
       line_info_->SetIsLastLine(false);
       return;
     }
@@ -878,6 +907,19 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
   trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result);
+
+  if (sticky_images_quirk_ && IsImage(item)) {
+    const auto& items = Items();
+    if (item_index_ + 1 < items.size()) {
+      DCHECK_EQ(&item, &items[item_index_]);
+      const auto& next_item = items[item_index_ + 1];
+      // This is an image, and we don't want to break after it, unless what
+      // comes after provides a break opportunity. Look ahead. We only want to
+      // break if the next item is an atomic inline that's not an image.
+      if (next_item.Type() != NGInlineItem::kAtomicInline || IsImage(next_item))
+        item_result->can_break_after = false;
+    }
+  }
   MoveToNextOf(item);
 }
 
