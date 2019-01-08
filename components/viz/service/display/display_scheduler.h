@@ -132,11 +132,11 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   base::SingleThreadTaskRunner* task_runner_;
 
   BeginFrameArgs current_begin_frame_args_;
-  base::Closure begin_frame_deadline_closure_;
-  base::CancelableClosure begin_frame_deadline_task_;
+  base::RepeatingClosure begin_frame_deadline_closure_;
+  base::CancelableOnceClosure begin_frame_deadline_task_;
   base::TimeTicks begin_frame_deadline_task_time_;
 
-  base::CancelableClosure missed_begin_frame_task_;
+  base::CancelableOnceClosure missed_begin_frame_task_;
   bool inside_surface_damaged_;
 
   bool visible_;

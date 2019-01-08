@@ -21,16 +21,17 @@ class ExternalBeginFrameSourceAndroidTest : public ::testing::Test,
 
     thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ExternalBeginFrameSourceAndroidTest::InitOnThread,
-                   base::Unretained(this)));
+        base::BindOnce(&ExternalBeginFrameSourceAndroidTest::InitOnThread,
+                       base::Unretained(this)));
   }
 
   void WaitForFrames(uint32_t frame_count) {
     frames_done_event_.Reset();
     thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ExternalBeginFrameSourceAndroidTest::AddObserverOnThread,
-                   base::Unretained(this), frame_count));
+        base::BindOnce(
+            &ExternalBeginFrameSourceAndroidTest::AddObserverOnThread,
+            base::Unretained(this), frame_count));
     frames_done_event_.Wait();
   }
 
