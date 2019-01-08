@@ -11,17 +11,18 @@ frequency, naming conventions, etc.
 
 from __future__ import print_function
 
+import os
+import re
+
 from chromite.cbuildbot import manifest_version
 from chromite.cli import command
+from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import repo_manifest
 from chromite.lib import repo_util
-
-import os
-import re
 
 
 class BranchError(Exception):
@@ -80,6 +81,91 @@ def BranchableProjects(manifest):
   return filter(CanBranchProject, manifest.Projects())
 
 
+class ManifestRepo(object):
+  """Represents a git repository of manifest XML files."""
+
+  def __init__(self, path):
+    self._path = path
+
+  def ManifestPath(self, name):
+    """Returns the full path to the manifest.
+
+    Args:
+      name: Name of the manifest.
+
+    Returns:
+      Full path to the manifest.
+    """
+    return os.path.join(self._path, name)
+
+  def ReadManifest(self, path):
+    """Read the manifest at the given path.
+
+    Args:
+      path: Path to the manifest.
+
+    Returns:
+      repo_manifest.Manifest object.
+    """
+    return repo_manifest.Manifest.FromFile(
+        path, allow_unsupported_features=True)
+
+  def ListManifests(self, root_manifests):
+    """Finds all manifests included directly or indirectly by root manifests.
+
+    For convenience, the returned set includes the root manifests.
+
+    Args:
+      root_manifests: Manifests whose includes will be traversed.
+
+    Returns:
+      Set of paths to included manifests.
+    """
+    pending = list(root_manifests)
+    found = set()
+    while pending:
+      path = self.ManifestPath(pending.pop())
+      if path in found:
+        continue
+      found.add(path)
+      pending.extend([inc.name for inc in self.ReadManifest(path).Includes()])
+    return found
+
+  def RepairManifest(self, path, ref):
+    """Reads the manifest at the given path and repairs it in memory.
+
+    Args:
+      path: Path to the manifest.
+      ref: New ref for branchable projects.
+
+    Returns:
+      The repaired repo_manifest.Manifest object.
+    """
+    manifest = self.ReadManifest(path)
+    ref = git.NormalizeRef(ref)
+
+    # TODO(evanhernandez): Repair defaults, pinned projects, etc.
+    for project in BranchableProjects(manifest):
+      project.revision = ref
+
+    return manifest
+
+  def RepairManifestsOnDisk(self, ref):
+    """Sets the ref for branchable projects in given manifests.
+
+    This method is "deep" because it processes includes.
+
+    Args:
+      ref: The new ref for branchable projects.
+    """
+    logging.info('Repairing %s to use branch %s', self._path, ref)
+    manifest_paths = self.ListManifests(
+        [constants.DEFAULT_MANIFEST, constants.OFFICIAL_MANIFEST])
+    for path in manifest_paths:
+      logging.info('Repairing manifest file %s', path)
+      self.RepairManifest(path, ref).Write(path)
+
+
 class Branch(object):
   """Represents a branch of chromiumos, which may or may not exist yet."""
 
@@ -128,6 +214,15 @@ class Branch(object):
     for project in BranchableProjects(self._repo.Manifest()):
       git.CreateBranch(
           AbsoluteProjectPath(project.Path()), self._name, project.Revision())
+
+    # Modify manifests so that all branchable projects point to new branch.
+    for repo_name in ('manifest', 'manifest-internal'):
+      manifest_repo_path = AbsoluteProjectPath(repo_name)
+      ManifestRepo(manifest_repo_path).RepairManifestsOnDisk(self._name)
+      git.RunGit(
+          manifest_repo_path,
+          ['commit', '-a', '-m',
+           'Manifests point to branch %s.' % self._name])
 
 
 class ReleaseBranch(Branch):

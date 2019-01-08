@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.cbuildbot.manifest_version import VersionInfo
 from chromite.cli import command_unittest
 from chromite.cli.cros.cros_branch import Branch
@@ -14,6 +16,7 @@ from chromite.cli.cros.cros_branch import BranchableProjects
 from chromite.cli.cros.cros_branch import BranchCommand
 from chromite.cli.cros.cros_branch import FactoryBranch
 from chromite.cli.cros.cros_branch import FirmwareBranch
+from chromite.cli.cros.cros_branch import ManifestRepo
 from chromite.cli.cros.cros_branch import ReleaseBranch
 from chromite.cli.cros.cros_branch import StabilizeBranch
 from chromite.lib import cros_test_lib
@@ -95,6 +98,81 @@ class BranchableProjectsTest(cros_test_lib.TestCase):
     self.assertIn('src/special-new', projects)
 
 
+class ManifestRepoTest(cros_test_lib.MockTestCase):
+  """Tests for ManifestRepo functions."""
+  PATH = 'path/'
+  MANIFEST_FILE = 'manifest.xml'
+  MANIFEST_PATH = os.path.join(PATH, MANIFEST_FILE)
+  MANIFEST_CONTENT = '''\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote fetch="https://chromium.googlesource.com"
+          name="cros"
+          review="chromium-review.googlesource.com"/>
+  <default remote="cros" revision="refs/heads/master"/>
+  <include name="included.xml"/>
+  <project name="chromiumos/branchable"/>
+  <project name="chromiumos/not-branchable">
+    <annotation name="branch-mode" value="tot"/>
+  </project>
+</manifest>
+  '''
+  INCLUDED_FILE = 'included.xml'
+  INCLUDED_PATH = os.path.join(PATH, INCLUDED_FILE)
+  INCLUDED_CONTENT = '''\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote fetch="https://chrome-internal.googlesource.com"
+          name="cros-internal"
+          review="chrome-internal-review.googlesource.com"/>
+  <default remote="cros-internal" revision="refs/heads/master"/>
+  <project name="chromeos/included-branchable"/>
+  <project name="chromeos/included-not-branchable">
+    <annotation name="branch-mode" value="pin"/>
+  </project>
+</manifest>
+  '''
+  NEW_REF = 'you-must-be-new-around-here'
+  MANIFESTS = {MANIFEST_PATH: MANIFEST_CONTENT, INCLUDED_PATH: INCLUDED_CONTENT}
+
+  def FromFileMock(self, source, allow_unsupported_features):
+    return repo_manifest.Manifest.FromString(self.MANIFESTS[source],
+                                             allow_unsupported_features)
+
+  def setUp(self):
+    self.manifest_repo = ManifestRepo(self.PATH)
+    self.PatchObject(repo_manifest.Manifest, 'FromFile', self.FromFileMock)
+
+  def testManifestPath(self):
+    self.assertEqual(
+        self.manifest_repo.ManifestPath(self.MANIFEST_FILE), self.MANIFEST_PATH)
+    self.assertEqual(
+        self.manifest_repo.ManifestPath(self.INCLUDED_FILE), self.INCLUDED_PATH)
+
+  def testListManifests(self):
+    found = self.manifest_repo.ListManifests([self.MANIFEST_FILE])
+    self.assertIn(self.MANIFEST_PATH, found)
+    self.assertIn(self.INCLUDED_PATH, found)
+
+    found = self.manifest_repo.ListManifests([self.INCLUDED_FILE])
+    self.assertIn(self.INCLUDED_PATH, found)
+
+    found = self.manifest_repo.ListManifests(
+        [self.MANIFEST_FILE, self.INCLUDED_FILE])
+    self.assertIn(self.MANIFEST_PATH, found)
+    self.assertIn(self.INCLUDED_PATH, found)
+
+  def testRepairManifest(self):
+    manifest = self.manifest_repo.RepairManifest(self.MANIFEST_PATH,
+                                                 self.NEW_REF)
+    self.assertEqual(
+        manifest.GetUniqueProject('chromiumos/branchable').Revision(),
+        'refs/heads/' + self.NEW_REF)
+    self.assertEqual(
+        manifest.GetUniqueProject('chromiumos/not-branchable').Revision(),
+        'refs/heads/master')
+
+
 class BranchTest(cros_test_lib.MockTestCase):
   """Establishes environment for testing sublcasses of Branch."""
 
@@ -139,6 +217,9 @@ class BranchTest(cros_test_lib.MockTestCase):
         'from_repo',
         return_value=VersionInfo(self.VERSION, self.MILESTONE))
 
+    # ManifestRepo is tested separately, so mock it out.
+    self.PatchObject(ManifestRepo, 'RepairManifestsOnDisk')
+
     # Instance must be created last for patches to be applied.
     self.inst = self.CreateInstance()
 
@@ -159,6 +240,12 @@ class BranchTest(cros_test_lib.MockTestCase):
               'refs/heads/%s-branch' % project
           ],
           cwd=partial_mock.ListRegex('.*/path/%s' % project))
+
+    # Assuming ManifestRepo did its job, make sure repairs were committed.
+    for manifest_project in ('manifest', 'manifest-internal'):
+      self.rc_mock.assertCommandContains(
+          ['git', 'commit', '-a'],
+          cwd=partial_mock.ListRegex('.*/%s' % manifest_project))
 
 
 class ReleaseBranchTest(BranchTest):
