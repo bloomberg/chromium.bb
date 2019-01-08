@@ -43,8 +43,8 @@ const GLuint64 kMaxClientWaitTimeout = 0u;
 // TODO(kainino): Change outByteLength to GLuint and change the associated
 // range checking (and all uses) - overflow becomes possible in cases below
 bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
-                                 GLuint sub_offset,
-                                 GLuint sub_length,
+                                 long long sub_offset,
+                                 long long sub_length,
                                  void** out_base_address,
                                  long long* out_byte_length) {
   // This is guaranteed to be non-null by DOM.
@@ -245,7 +245,8 @@ void WebGL2RenderingContextBase::bufferData(
                       "srcOffset + length too large");
     return;
   }
-  BufferDataImpl(target, sub_byte_length, sub_base_address, usage);
+  BufferDataImpl(target, static_cast<GLsizeiptr>(sub_byte_length),
+                 sub_base_address, usage);
 }
 
 void WebGL2RenderingContextBase::bufferData(GLenum target,
@@ -269,7 +270,7 @@ void WebGL2RenderingContextBase::bufferData(
 
 void WebGL2RenderingContextBase::bufferSubData(
     GLenum target,
-    GLintptr dst_byte_offset,
+    long long dst_byte_offset,
     MaybeShared<DOMArrayBufferView> src_data,
     GLuint src_offset,
     GLuint length) {
@@ -283,7 +284,8 @@ void WebGL2RenderingContextBase::bufferSubData(
                       "srcOffset + length too large");
     return;
   }
-  BufferSubDataImpl(target, dst_byte_offset, sub_byte_length, sub_base_address);
+  BufferSubDataImpl(target, dst_byte_offset,
+                    static_cast<GLsizeiptr>(sub_byte_length), sub_base_address);
 }
 
 void WebGL2RenderingContextBase::bufferSubData(GLenum target,
@@ -373,13 +375,14 @@ void WebGL2RenderingContextBase::getBufferSubData(
   }
 
   void* mapped_data = ContextGL()->MapBufferRange(
-      target, static_cast<GLintptr>(src_byte_offset), destination_byte_length,
-      GL_MAP_READ_BIT);
+      target, static_cast<GLintptr>(src_byte_offset),
+      static_cast<GLsizeiptr>(destination_byte_length), GL_MAP_READ_BIT);
 
   if (!mapped_data)
     return;
 
-  memcpy(destination_data_ptr, mapped_data, destination_byte_length);
+  memcpy(destination_data_ptr, mapped_data,
+         static_cast<size_t>(destination_byte_length));
 
   ContextGL()->UnmapBuffer(target);
 }
@@ -1057,7 +1060,7 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                                             GLint border,
                                             GLenum format,
                                             GLenum type,
-                                            GLintptr offset) {
+                                            long long offset) {
   if (isContextLost())
     return;
   if (!ValidateTexture2DBinding("texImage2D", target))
@@ -1093,7 +1096,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
                                                GLsizei height,
                                                GLenum format,
                                                GLenum type,
-                                               GLintptr offset) {
+                                               long long offset) {
   if (isContextLost())
     return;
   if (!ValidateTexture2DBinding("texSubImage2D", target))
@@ -1742,7 +1745,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                                             GLint border,
                                             GLenum format,
                                             GLenum type,
-                                            GLintptr offset) {
+                                            long long offset) {
   if (isContextLost())
     return;
   if (!ValidateTexture3DBinding("texImage3D", target))
@@ -1939,7 +1942,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
                                                GLsizei depth,
                                                GLenum format,
                                                GLenum type,
-                                               GLintptr offset) {
+                                               long long offset) {
   if (isContextLost())
     return;
   if (!ValidateTexture3DBinding("texSubImage3D", target))
@@ -2194,7 +2197,7 @@ void WebGL2RenderingContextBase::compressedTexImage2D(GLenum target,
                                                       GLsizei height,
                                                       GLint border,
                                                       GLsizei image_size,
-                                                      GLintptr offset) {
+                                                      long long offset) {
   if (isContextLost())
     return;
   if (!bound_pixel_unpack_buffer_) {
@@ -2276,7 +2279,7 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(GLenum target,
                                                          GLsizei height,
                                                          GLenum format,
                                                          GLsizei image_size,
-                                                         GLintptr offset) {
+                                                         long long offset) {
   if (isContextLost())
     return;
   if (!bound_pixel_unpack_buffer_) {
@@ -2338,7 +2341,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target,
                                                       GLsizei depth,
                                                       GLint border,
                                                       GLsizei image_size,
-                                                      GLintptr offset) {
+                                                      long long offset) {
   if (isContextLost())
     return;
   if (!bound_pixel_unpack_buffer_) {
@@ -2404,7 +2407,7 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target,
                                                          GLsizei depth,
                                                          GLenum format,
                                                          GLsizei image_size,
-                                                         GLintptr offset) {
+                                                         long long offset) {
   if (isContextLost())
     return;
   if (!bound_pixel_unpack_buffer_) {
@@ -5969,7 +5972,7 @@ bool WebGL2RenderingContextBase::ValidateBufferDataUsage(
 const char* WebGL2RenderingContextBase::ValidateGetBufferSubData(
     const char* function_name,
     GLenum target,
-    GLintptr source_byte_offset,
+    long long source_byte_offset,
     DOMArrayBufferView* destination_array_buffer_view,
     GLuint destination_offset,
     GLuint length,
