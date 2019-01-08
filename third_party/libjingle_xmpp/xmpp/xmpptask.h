@@ -15,10 +15,10 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/constructormagic.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace buzz {
@@ -70,7 +70,7 @@ class XmppClientInterface {
   virtual void RemoveXmppTask(XmppTask* task) = 0;
   sigslot::signal0<> SignalDisconnected;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppClientInterface);
+  DISALLOW_COPY_AND_ASSIGN(XmppClientInterface);
 };
 
 // XmppTaskParentInterface is the interface require for any parent of
@@ -89,7 +89,7 @@ class XmppTaskParentInterface : public rtc::Task {
 
   virtual XmppClientInterface* GetClient() = 0;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppTaskParentInterface);
+  DISALLOW_COPY_AND_ASSIGN(XmppTaskParentInterface);
 };
 
 class XmppTaskBase : public XmppTaskParentInterface {
@@ -107,7 +107,7 @@ class XmppTaskBase : public XmppTaskParentInterface {
  protected:
   XmppTaskParentInterface* parent_;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppTaskBase);
+  DISALLOW_COPY_AND_ASSIGN(XmppTaskBase);
 };
 
 class XmppTask : public XmppTaskBase,

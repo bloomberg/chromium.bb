@@ -9,8 +9,9 @@
  */
 
 #include "third_party/libjingle_xmpp/task_runner/task.h"
+
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace rtc {
 
@@ -31,16 +32,16 @@ Task::Task(TaskParent *parent)
   unique_id_ = unique_id_seed_++;
 
   // sanity check that we didn't roll-over our id seed
-  RTC_DCHECK(unique_id_ < unique_id_seed_);
+  DCHECK(unique_id_ < unique_id_seed_);
 }
 
 Task::~Task() {
   // Is this task being deleted in the correct manner?
-#if RTC_DCHECK_IS_ON
-  RTC_DCHECK(!done_ || GetRunner()->is_ok_to_delete(this));
+#if DCHECK_IS_ON
+  DCHECK(!done_ || GetRunner()->is_ok_to_delete(this));
 #endif
-  RTC_DCHECK(state_ == STATE_INIT || done_);
-  RTC_DCHECK(state_ == STATE_INIT || blocked_);
+  DCHECK(state_ == STATE_INIT || done_);
+  DCHECK(state_ == STATE_INIT || blocked_);
 
   // If the task is being deleted without being done, it
   // means that it hasn't been removed from its parent.
@@ -70,11 +71,11 @@ void Task::Start() {
 
 void Task::Step() {
   if (done_) {
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // we do not know how !blocked_ happens when done_ - should be impossible.
     // But it causes problems, so in retail build, we force blocked_, and
     // under debug we assert.
-    RTC_DCHECK(blocked_);
+    DCHECK(blocked_);
 #else
     blocked_ = true;
 #endif
@@ -90,9 +91,9 @@ void Task::Step() {
 //   SignalDone();
 
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     return;
   }
@@ -127,9 +128,9 @@ void Task::Step() {
 //    SignalDone();
 
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     blocked_ = true;
   }
@@ -152,9 +153,9 @@ void Task::Abort(bool nowake) {
     // "done_" is set before calling "Stop()" to ensure that this code
     // doesn't execute more than once (recursively) for the same task.
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     if (!nowake) {
       // WakeTasks to self-delete.

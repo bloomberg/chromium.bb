@@ -16,11 +16,11 @@
 #include "third_party/webrtc/rtc_base/win32.h"
 #endif  // LIBJINGLE_XMPP_WIN
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/webrtc/rtc_base/arraysize.h"
-#include "third_party/webrtc/rtc_base/constructormagic.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
@@ -305,7 +305,7 @@ class AbortTask : public Task {
     return STATE_NEXT;
   }
  private:
-  RTC_DISALLOW_COPY_AND_ASSIGN(AbortTask);
+  DISALLOW_COPY_AND_ASSIGN(AbortTask);
 };
 
 class TaskAbortTest : public sigslot::has_slots<> {
@@ -330,7 +330,7 @@ class TaskAbortTest : public sigslot::has_slots<> {
   }
 
   MyTaskRunner task_runner_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(TaskAbortTest);
+  DISALLOW_COPY_AND_ASSIGN(TaskAbortTest);
 };
 
 TEST(start_task_test, Abort) {
@@ -360,7 +360,7 @@ class SetBoolOnDeleteTask : public Task {
 
  private:
   bool* set_when_deleted_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(SetBoolOnDeleteTask);
+  DISALLOW_COPY_AND_ASSIGN(SetBoolOnDeleteTask);
 };
 
 class AbortShouldWakeTest : public sigslot::has_slots<> {
@@ -393,7 +393,7 @@ class AbortShouldWakeTest : public sigslot::has_slots<> {
   }
 
   MyTaskRunner task_runner_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(AbortShouldWakeTest);
+  DISALLOW_COPY_AND_ASSIGN(AbortShouldWakeTest);
 };
 
 TEST(start_task_test, AbortShouldWake) {
@@ -474,7 +474,7 @@ class TimeoutChangeTest : public sigslot::has_slots<> {
   MyTaskRunner task_runner_;
   StuckTask* (stuck_tasks_[3]);
   int task_count_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(TimeoutChangeTest);
+  DISALLOW_COPY_AND_ASSIGN(TimeoutChangeTest);
 };
 
 TEST(start_task_test, TimeoutChange) {
@@ -489,7 +489,7 @@ class DeleteTestTaskRunner : public TaskRunner {
   virtual void WakeTasks() { }
   virtual int64_t CurrentTime() { return GetCurrentTime(); }
  private:
-  RTC_DISALLOW_COPY_AND_ASSIGN(DeleteTestTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(DeleteTestTaskRunner);
 };
 
 TEST(unstarted_task_test, DeleteTask) {

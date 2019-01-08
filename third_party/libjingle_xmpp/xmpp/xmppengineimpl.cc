@@ -14,12 +14,12 @@
 #include <sstream>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlprinter.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpplogintask.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace buzz {
 
@@ -347,7 +347,7 @@ void XmppEngineImpl::InternalSendStanza(const XmlElement* element) {
   // It should really never be necessary to set a FROM attribute on a stanza.
   // It is implied by the bind on the stream and if you get it wrong
   // (by flipping from/to on a message?) the server will close the stream.
-  RTC_DCHECK(!element->HasAttr(QN_FROM));
+  DCHECK(!element->HasAttr(QN_FROM));
 
   XmlPrinter::PrintXml(output_.get(), element, &xmlns_stack_);
 }
