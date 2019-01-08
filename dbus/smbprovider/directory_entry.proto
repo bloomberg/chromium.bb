@@ -255,3 +255,12 @@ message UpdateMountCredentialsOptionsProto {
   // Updated username.
   optional string username = 3;
 }
+
+// Used for passing inputs into Smbprovider.Premount().
+message PremountOptionsProto {
+  // Share path URL of the mount.
+  optional string path = 1;
+
+  // Mount options set by the client.
+  optional MountConfigProto mount_config = 2;
+}
