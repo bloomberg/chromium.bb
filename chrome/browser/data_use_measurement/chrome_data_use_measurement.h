@@ -36,6 +36,7 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
                                    int64_t recv_bytes,
                                    int64_t sent_bytes);
+  void ReportUserTrafficDataUse(int64_t recv_bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseMeasurement);

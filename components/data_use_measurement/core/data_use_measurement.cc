@@ -208,6 +208,17 @@ DataUseMeasurement::GetContentTypeForRequest(const net::URLRequest& request) {
                             : DataUseUserData::OTHER;
 }
 
+void DataUseMeasurement::RecordTrafficSizeMetric(bool is_user_traffic,
+                                                 bool is_downstream,
+                                                 int64_t bytes) {
+  RecordUMAHistogramCount(
+      GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
+                                       : "DataUse.TrafficSize.System",
+                       is_downstream ? DOWNSTREAM : UPSTREAM, CurrentAppState(),
+                       IsCurrentNetworkCellular()),
+      bytes);
+}
+
 void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
                                           TrafficDirection dir,
                                           int64_t bytes) {
@@ -228,11 +239,7 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
   if (attached_service_data && old_app_state != new_app_state)
     attached_service_data->set_app_state(CurrentAppState());
 
-  RecordUMAHistogramCount(
-      GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
-                                       : "DataUse.TrafficSize.System",
-                       dir, new_app_state, IsCurrentNetworkCellular()),
-      bytes);
+  RecordTrafficSizeMetric(is_user_traffic, dir == DOWNSTREAM, bytes);
 
 #if defined(OS_ANDROID)
   if (dir == DOWNSTREAM && CurrentAppState() == DataUseUserData::BACKGROUND) {
