@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 
@@ -26,7 +26,7 @@ namespace chromeos {
 
 // Class for getting a user or the system TPM token info from cryptohome during
 // TPM token loading.
-class CHROMEOS_EXPORT TPMTokenInfoGetter {
+class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
  public:
   using TpmTokenInfoCallback = base::OnceCallback<void(
       base::Optional<CryptohomeClient::TpmTokenInfo> token_info)>;

@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
@@ -34,7 +34,8 @@ namespace chromeos {
 // session, the observers are notified using |OnTPMTokenReady|.
 // Note: This currently initializes the token with the hard coded default id 0.
 // See CryptohomeClient::OnPkcs11GetTpmTokenInfo.
-class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
+class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
+    : public LoginState::Observer {
  public:
   enum TPMTokenStatus {
     TPM_TOKEN_STATUS_UNDETERMINED,

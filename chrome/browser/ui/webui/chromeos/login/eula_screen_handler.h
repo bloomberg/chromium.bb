@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/eula_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chromeos/tpm/tpm_password_fetcher.h"
 #include "components/login/secure_module_util_chromeos.h"
 #include "content/public/browser/web_ui.h"
 
@@ -25,9 +24,7 @@ class HelpAppLauncher;
 
 // WebUI implementation of EulaScreenView. It is used to interact
 // with the eula part of the JS page.
-class EulaScreenHandler : public EulaView,
-                          public BaseScreenHandler,
-                          public TpmPasswordFetcherDelegate {
+class EulaScreenHandler : public EulaView, public BaseScreenHandler {
  public:
   explicit EulaScreenHandler(CoreOobeView* core_oobe_view);
   ~EulaScreenHandler() override;
