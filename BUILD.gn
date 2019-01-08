@@ -188,7 +188,7 @@ group("gn_all") {
       "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
-      "//components/ui_devtools/viz_views",
+      "//components/ui_devtools/viz",
       "//components/viz:viz_perftests",
       "//components/viz:viz_unittests",
       "//components/viz/common:viz_benchmark",

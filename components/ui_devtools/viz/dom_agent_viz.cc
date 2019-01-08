@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/viz_views/dom_agent_viz.h"
+#include "components/ui_devtools/viz/dom_agent_viz.h"
 
 #include "base/stl_util.h"
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"
-#include "components/ui_devtools/viz_views/frame_sink_element.h"
-#include "components/ui_devtools/viz_views/surface_element.h"
+#include "components/ui_devtools/viz/frame_sink_element.h"
+#include "components/ui_devtools/viz/surface_element.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
