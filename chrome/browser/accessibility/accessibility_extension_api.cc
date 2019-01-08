@@ -408,4 +408,18 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
+  std::unique_ptr<accessibility_private::ForwardKeyEventsToSwitchAccess::Params>
+      params =
+          accessibility_private::ForwardKeyEventsToSwitchAccess::Params::Create(
+              *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetAccessibilityController()->ForwardKeyEventsToSwitchAccess(
+      params->should_forward);
+
+  return RespondNow(NoArguments());
+}
+
 #endif  // defined (OS_CHROMEOS)

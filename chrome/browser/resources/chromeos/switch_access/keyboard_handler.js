@@ -11,12 +11,32 @@ class KeyboardHandler {
    */
   constructor(switchAccess) {
     /**
-     * SwitchAccess reference.
+     * Switch Access reference.
      * @private {!SwitchAccessInterface}
      */
     this.switchAccess_ = switchAccess;
 
+    /** @private {function(number)|undefined} */
+    this.keycodeCallback_;
+
     this.init_();
+  }
+
+  /**
+   * Listens for keycodes. When they're received, they are passed to |callback|.
+   * @param {function(number)} callback
+   */
+  listenForKeycodes(callback) {
+    this.keycodeCallback_ = callback;
+    chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess(true);
+  }
+
+  /**
+   * Stop listening for keycodes.
+   */
+  stopListeningForKeycodes() {
+    this.keycodeCallback_ = undefined;
+    chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess(false);
   }
 
   /**
@@ -35,12 +55,22 @@ class KeyboardHandler {
   }
 
   /**
+   * Forwards the current key code to the callback.
+   * @param {!Event} event
+   * @private
+   */
+  forwardKeyCode_(event) {
+    if (this.keycodeCallback_)
+      this.keycodeCallback_(event.keyCode);
+  }
+
+  /**
    * Run the command associated with the passed keyboard event.
    *
    * @param {!Event} event
    * @private
    */
-  handleKeyEvent_(event) {
+  handleSwitchActivated_(event) {
     for (const command of this.switchAccess_.getCommands()) {
       if (this.keyCodeFor_(command) === event.keyCode) {
         this.switchAccess_.runCommand(command);
@@ -56,7 +86,8 @@ class KeyboardHandler {
    */
   init_() {
     this.updateSwitchAccessKeys();
-    document.addEventListener('keyup', this.handleKeyEvent_.bind(this));
+    document.addEventListener('keyup', this.handleSwitchActivated_.bind(this));
+    document.addEventListener('keydown', this.forwardKeyCode_.bind(this));
   }
 
   /**

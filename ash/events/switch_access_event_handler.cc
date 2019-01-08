@@ -27,7 +27,7 @@ void CancelEvent(ui::Event* event) {
 
 SwitchAccessEventHandler::SwitchAccessEventHandler(
     mojom::SwitchAccessEventHandlerDelegatePtr delegate_ptr)
-    : delegate_ptr_(std::move(delegate_ptr)), ignore_virtual_key_events_(true) {
+    : delegate_ptr_(std::move(delegate_ptr)) {
   DCHECK(delegate_ptr_.is_bound());
   Shell::Get()->AddPreTargetHandler(this,
                                     ui::EventTarget::Priority::kAccessibility);
@@ -45,15 +45,22 @@ void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(IsSwitchAccessEnabled());
   DCHECK(event);
 
-  // Ignore virtual key events so users can type with the onscreen keyboard.
-  if (ignore_virtual_key_events_ && !event->HasNativeEvent())
-    return;
-
-  ui::KeyboardCode key_code = event->key_code();
-  if (keys_to_capture_.find(key_code) != keys_to_capture_.end()) {
+  if (ShouldForwardEvent(*event)) {
     CancelEvent(event);
     delegate_ptr_->DispatchKeyEvent(ui::Event::Clone(*event));
   }
+}
+
+bool SwitchAccessEventHandler::ShouldForwardEvent(
+    const ui::KeyEvent& event) const {
+  // Ignore virtual key events so users can type with the onscreen keyboard.
+  if (ignore_virtual_key_events_ && !event.HasNativeEvent())
+    return false;
+
+  if (forward_key_events_)
+    return true;
+
+  return keys_to_capture_.find(event.key_code()) != keys_to_capture_.end();
 }
 
 }  // namespace ash

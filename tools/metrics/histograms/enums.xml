@@ -17625,6 +17625,8 @@ Called by update_net_error_codes.py.-->
   <int value="1305" label="AUTOTESTPRIVATE_SENDASSISTANTTEXTQUERY"/>
   <int value="1306" label="AUTOTESTPRIVATE_SETCROSTINIAPPSCALED"/>
   <int value="1307" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIESBYEXTENSION"/>
+  <int value="1308"
+      label="ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS"/>
 </enum>
 
 <enum name="ExtensionIconState">

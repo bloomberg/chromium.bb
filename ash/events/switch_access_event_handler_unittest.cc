@@ -205,5 +205,43 @@ TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
+TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
+  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
+      {ui::VKEY_1, ui::VKEY_2, ui::VKEY_3});
+
+  EXPECT_FALSE(event_capturer_.last_key_event());
+
+  // Tell the Switch Access Event Handler to forward key events.
+  Shell::Get()->accessibility_controller()->ForwardKeyEventsToSwitchAccess(
+      true);
+
+  // Press the "T" key.
+  generator_->PressKey(ui::VKEY_T, ui::EF_NONE);
+
+  // The event should be handled by SwitchAccessEventHandler.
+  EXPECT_FALSE(event_capturer_.last_key_event());
+  EXPECT_TRUE(GetDelegate()->last_key_event());
+
+  // Release the "T" key.
+  generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
+
+  // The event should be handled by SwitchAccessEventHandler.
+  EXPECT_FALSE(event_capturer_.last_key_event());
+  EXPECT_TRUE(GetDelegate()->last_key_event());
+
+  // Tell the Switch Access Event Handler to stop forwarding key events.
+  Shell::Get()->accessibility_controller()->ForwardKeyEventsToSwitchAccess(
+      false);
+
+  // Press the "T" key.
+  generator_->PressKey(ui::VKEY_T, ui::EF_NONE);
+
+  // The release event is not handled by SwitchAccessEventHandler.
+  EXPECT_TRUE(event_capturer_.last_key_event());
+
+  // Release the "T" key.
+  generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
+}
+
 }  // namespace
 }  // namespace ash

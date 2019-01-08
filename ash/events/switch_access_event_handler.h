@@ -30,6 +30,12 @@ class ASH_EXPORT SwitchAccessEventHandler : public ui::EventHandler {
     ignore_virtual_key_events_ = should_ignore;
   }
 
+  // Tells the handler whether to forward all incoming key events to the Switch
+  // Access extension.
+  void set_forward_key_events(bool should_forward) {
+    forward_key_events_ = should_forward;
+  }
+
   // For testing usage only.
   void FlushMojoForTest();
 
@@ -37,11 +43,14 @@ class ASH_EXPORT SwitchAccessEventHandler : public ui::EventHandler {
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
+  bool ShouldForwardEvent(const ui::KeyEvent& event) const;
+
   // The delegate used to send key events to the Switch Access extension.
   mojom::SwitchAccessEventHandlerDelegatePtr delegate_ptr_;
 
   std::set<int> keys_to_capture_;
-  bool ignore_virtual_key_events_;
+  bool forward_key_events_ = false;
+  bool ignore_virtual_key_events_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessEventHandler);
 };

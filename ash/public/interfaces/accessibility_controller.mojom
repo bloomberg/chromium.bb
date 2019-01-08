@@ -169,6 +169,10 @@ interface AccessibilityController {
 
   // Starts or stops dictation. Records metrics for toggling via SwitchAccess.
   ToggleDictationFromSource(DictationToggleSource source);
+
+  // Tells the Switch Access Event Handler whether to forward all key events to
+  // the Switch Access extension.
+  ForwardKeyEventsToSwitchAccess(bool should_forward);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.

@@ -134,6 +134,21 @@ class SwitchAccess {
   }
 
   /**
+   * Forwards the keycodes received from keyPressed events to |callback|.
+   * @param {function(number)} callback
+   */
+  listenForKeycodes(callback) {
+    this.keyboardHandler_.listenForKeycodes(callback);
+  }
+
+  /**
+   * Stops forwarding keycodes.
+   */
+  stopListeningForKeycodes() {
+    this.keyboardHandler_.stopListeningForKeycodes();
+  }
+
+  /**
    * Run the function binding for the specified command.
    * @override
    * @param {string} command

@@ -47,6 +47,17 @@ class SwitchAccessInterface {
   getDefaultKeyCodeFor(command) {}
 
   /**
+   * Forwards keycodes received from keyPress events to |callback|.
+   * @param {function(number)} callback
+   */
+  listenForKeycodes(callback) {}
+
+  /**
+   * Stops forwarding keycodes.
+   */
+  stopListeningForKeycodes() {}
+
+  /**
    * Run the function binding for the specified command.
    * @param {string} command
    */
