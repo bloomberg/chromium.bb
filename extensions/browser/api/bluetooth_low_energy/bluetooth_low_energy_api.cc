@@ -141,9 +141,9 @@ extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
 }
 
 template <typename T>
-void DoWorkCallback(const base::Callback<T()>& callback) {
+void DoWorkCallback(base::OnceCallback<T()> callback) {
   DCHECK(!callback.is_null());
-  callback.Run();
+  std::move(callback).Run();
 }
 
 std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
@@ -374,9 +374,10 @@ ExtensionFunction::ResponseAction BluetoothLowEnergyExtensionFunction::Run() {
     return RespondNow(Error(kErrorPlatformNotSupported));
 
   // It is safe to pass |this| here as ExtensionFunction is refcounted.
-  if (!event_router_->InitializeAdapterAndInvokeCallback(base::Bind(
+  if (!event_router_->InitializeAdapterAndInvokeCallback(base::BindOnce(
           &DoWorkCallback<void>,
-          base::Bind(&BluetoothLowEnergyExtensionFunction::PreDoWork, this)))) {
+          base::BindOnce(&BluetoothLowEnergyExtensionFunction::PreDoWork,
+                         this)))) {
     // DoWork will respond when the adapter gets initialized.
     return RespondNow(Error(kErrorAdapterNotInitialized));
   }

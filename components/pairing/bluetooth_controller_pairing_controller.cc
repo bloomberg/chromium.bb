@@ -250,9 +250,8 @@ void BluetoothControllerPairingController::StartPairing() {
   }
 
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothControllerPairingController::OnGetAdapter,
-                 ptr_factory_.GetWeakPtr()));
-
+      base::BindOnce(&BluetoothControllerPairingController::OnGetAdapter,
+                     ptr_factory_.GetWeakPtr()));
 }
 
 ControllerPairingController::DeviceIdList

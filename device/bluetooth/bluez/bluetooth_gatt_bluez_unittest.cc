@@ -138,7 +138,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   }
 
   void GetAdapter() {
-    device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+    device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
         &BluetoothGattBlueZTest::AdapterCallback, base::Unretained(this)));
     base::RunLoop().Run();
     ASSERT_TRUE(adapter_.get() != NULL);

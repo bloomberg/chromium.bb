@@ -206,8 +206,8 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient())),
       weak_ptr_factory_(this) {
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {}

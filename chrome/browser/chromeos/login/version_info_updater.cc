@@ -97,7 +97,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   }
 
   // Update device bluetooth info.
-  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
 }
 

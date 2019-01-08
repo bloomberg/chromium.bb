@@ -186,8 +186,8 @@ void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
 void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
     const base::Closure& callback) {
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&ChromeOSMetricsProvider::SetBluetoothAdapter,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&ChromeOSMetricsProvider::SetBluetoothAdapter,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(

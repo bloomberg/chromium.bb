@@ -126,8 +126,8 @@ UnlockManagerImpl::UnlockManagerImpl(
 
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&UnlockManagerImpl::OnBluetoothAdapterInitialized,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&UnlockManagerImpl::OnBluetoothAdapterInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

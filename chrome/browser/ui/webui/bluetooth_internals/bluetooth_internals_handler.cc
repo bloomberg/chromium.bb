@@ -21,8 +21,8 @@ BluetoothInternalsHandler::~BluetoothInternalsHandler() {}
 void BluetoothInternalsHandler::GetAdapter(GetAdapterCallback callback) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothInternalsHandler::OnGetAdapter,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+        base::BindOnce(&BluetoothInternalsHandler::OnGetAdapter,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
     std::move(callback).Run(nullptr /* AdapterPtr */);
   }

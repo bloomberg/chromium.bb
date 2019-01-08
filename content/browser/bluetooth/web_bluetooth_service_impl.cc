@@ -354,9 +354,9 @@ void WebBluetoothServiceImpl::RequestDevice(
   if (!GetAdapter()) {
     if (BluetoothAdapterFactoryWrapper::Get().IsLowEnergySupported()) {
       BluetoothAdapterFactoryWrapper::Get().AcquireAdapter(
-          this, base::Bind(&WebBluetoothServiceImpl::RequestDeviceImpl,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(&options), base::Passed(&callback)));
+          this, base::BindOnce(&WebBluetoothServiceImpl::RequestDeviceImpl,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               std::move(options), std::move(callback)));
       return;
     }
     RecordRequestDeviceOutcome(

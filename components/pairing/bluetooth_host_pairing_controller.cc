@@ -471,8 +471,8 @@ void BluetoothHostPairingController::StartPairing() {
   }
 
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothHostPairingController::OnGetAdapter,
-                 ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothHostPairingController::OnGetAdapter,
+                     ptr_factory_.GetWeakPtr()));
 }
 
 std::string BluetoothHostPairingController::GetDeviceName() {

@@ -32,10 +32,10 @@ bool IsBluetoothSupported(content::BrowserContext* context) {
   return GetEventRouter(context)->IsBluetoothSupported();
 }
 
-void GetAdapter(const device::BluetoothAdapterFactory::AdapterCallback callback,
+void GetAdapter(device::BluetoothAdapterFactory::AdapterCallback callback,
                 content::BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetEventRouter(context)->GetAdapter(callback);
+  GetEventRouter(context)->GetAdapter(std::move(callback));
 }
 
 }  // namespace
@@ -57,8 +57,9 @@ ExtensionFunction::ResponseAction BluetoothExtensionFunction::Run() {
   if (!IsBluetoothSupported(browser_context()))
     return RespondNow(Error(kPlatformNotSupported));
 
-  GetAdapter(base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady, this),
-             browser_context());
+  GetAdapter(
+      base::BindOnce(&BluetoothExtensionFunction::RunOnAdapterReady, this),
+      browser_context());
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 

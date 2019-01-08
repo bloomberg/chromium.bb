@@ -449,7 +449,7 @@ ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
 
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
-    BluetoothAdapterFactory::GetAdapter(base::Bind(
+    BluetoothAdapterFactory::GetAdapter(base::BindOnce(
         &ArcBluetoothBridge::OnAdapterInitialized, weak_factory_.GetWeakPtr()));
   } else {
     VLOG(1) << "Bluetooth not supported.";
