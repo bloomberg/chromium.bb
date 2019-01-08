@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -86,6 +88,24 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   EXPECT_TRUE(is_correct_app_browser);
 
   return is_correct_app_browser ? browser : nullptr;
+}
+
+Browser* LaunchBrowserForAppInTab(Profile* profile,
+                                  const Extension* extension_app) {
+  content::WebContents* web_contents = OpenApplication(
+      AppLaunchParams(profile, extension_app, LAUNCH_CONTAINER_TAB,
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB, SOURCE_TEST));
+  DCHECK(web_contents);
+
+  web_app::WebAppTabHelperBase* tab_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  DCHECK_EQ(extension_app->id(), tab_helper->app_id());
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  DCHECK_EQ(browser, chrome::FindLastActive());
+  DCHECK_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
+  return browser;
 }
 
 }  // namespace browsertest_util

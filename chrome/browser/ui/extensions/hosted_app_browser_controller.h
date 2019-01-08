@@ -30,6 +30,7 @@ bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile);
 
+// TODO(loyso): Erase this histogram. crbug.com/918089.
 extern const char kPwaWindowEngagementTypeHistogram[];
 
 class Extension;

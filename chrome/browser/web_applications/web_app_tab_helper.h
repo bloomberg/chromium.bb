@@ -26,11 +26,13 @@ class WebAppTabHelper : public WebAppTabHelperBase {
   static WebAppTabHelper* CreateForWebContents(
       content::WebContents* web_contents);
 
-  // TabHelper:
+  // WebAppTabHelperBase:
   WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
   AppId GetAppId(const GURL& url) override;
   bool IsInAppWindow() const override;
+  bool IsUserInstalled() const override;
+  bool IsFromInstallButton() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppTabHelper);

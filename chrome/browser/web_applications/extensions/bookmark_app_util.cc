@@ -104,4 +104,24 @@ const Extension* GetInstalledShortcutForUrl(
   return nullptr;
 }
 
+int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
+  // TODO(loyso): Maybe wait for ExtensionSystem to be ready to avoid data races
+  // and inaccurate counting. (Implies an async callback API for this function).
+  // Use extensions::ExtensionSystem::Get(browser_context)->ready().Post().
+  int num_user_installed = 0;
+
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
+  for (scoped_refptr<const Extension> app :
+       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
+    if (!app->from_bookmark())
+      continue;
+    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
+      continue;
+    if (!app->was_installed_by_default())
+      ++num_user_installed;
+  }
+
+  return num_user_installed;
+}
+
 }  // namespace extensions

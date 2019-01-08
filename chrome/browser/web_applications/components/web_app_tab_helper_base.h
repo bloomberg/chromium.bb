@@ -46,6 +46,15 @@ class WebAppTabHelperBase
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
 
+  // These methods require an app associated with the tab (valid app_id()).
+  //
+  // Returns true if the app was installed by user, false if default installed.
+  virtual bool IsUserInstalled() const = 0;
+  // For user-installed apps:
+  // Returns true if the app was installed through the install button.
+  // Returns false if the app was installed through the create shortcut button.
+  virtual bool IsFromInstallButton() const = 0;
+
  protected:
   // See documentation in WebContentsUserData class comment.
   explicit WebAppTabHelperBase(content::WebContents* web_contents);

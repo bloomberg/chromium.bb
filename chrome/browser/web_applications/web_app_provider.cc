@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
@@ -51,7 +52,7 @@ WebAppProvider* WebAppProvider::GetForWebContents(
   return WebAppProvider::Get(profile);
 }
 
-WebAppProvider::WebAppProvider(Profile* profile) {
+WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
@@ -181,6 +182,14 @@ void WebAppProvider::Observe(int type,
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
   Reset();
+}
+
+int WebAppProvider::CountUserInstalledApps() const {
+  // TODO: Implement for new Web Apps system. crbug.com/918986.
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+    return 0;
+
+  return extensions::CountUserInstalledBookmarkApps(profile_);
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

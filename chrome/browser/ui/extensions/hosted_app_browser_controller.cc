@@ -112,6 +112,7 @@ bool IsSameScope(const GURL& app_url,
              profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
+// TODO(loyso): Erase this histogram. crbug.com/918089.
 const char kPwaWindowEngagementTypeHistogram[] =
     "Webapp.Engagement.EngagementType";
 
