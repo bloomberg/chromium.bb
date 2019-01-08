@@ -152,27 +152,25 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     // reason of adding ScrollOrigin().
     auto contents_paint_offset =
         snapped_paint_offset + ToLayoutBox(object).ScrollOrigin();
-    auto SetContentsLayerState = [&fragment_data, &contents_paint_offset](
-                                     GraphicsLayer* graphics_layer) {
+    auto SetScrollingContentsLayerState = [&fragment_data,
+                                           &contents_paint_offset](
+                                              GraphicsLayer* graphics_layer) {
       if (graphics_layer) {
         graphics_layer->SetLayerState(
             fragment_data.ContentsProperties(),
             contents_paint_offset + graphics_layer->OffsetFromLayoutObject());
       }
     };
-    SetContentsLayerState(mapping->ScrollingContentsLayer());
-    SetContentsLayerState(mapping->ForegroundLayer());
+    SetScrollingContentsLayerState(mapping->ScrollingContentsLayer());
+    SetScrollingContentsLayerState(mapping->ForegroundLayer());
   } else {
     SetContainerLayerState(mapping->ForegroundLayer());
   }
 
   auto* main_graphics_layer = mapping->MainGraphicsLayer();
-  if (const auto* contents_layer = main_graphics_layer->ContentsLayer()) {
-    auto position = contents_layer->position();
-    main_graphics_layer->SetContentsLayerState(
-        fragment_data.ContentsProperties(),
-        snapped_paint_offset + main_graphics_layer->OffsetFromLayoutObject() +
-            IntSize(position.x(), position.y()));
+  if (main_graphics_layer->ContentsLayer()) {
+    main_graphics_layer->SetContentsPropertyTreeState(
+        fragment_data.ContentsProperties());
   }
 
   if (auto* squashing_layer = mapping->SquashingLayer()) {

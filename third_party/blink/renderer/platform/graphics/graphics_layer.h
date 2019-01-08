@@ -289,15 +289,16 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   }
   IntPoint GetOffsetFromTransformNode() const { return layer_state_->offset; }
 
-  void SetContentsLayerState(const PropertyTreeState&,
-                             const IntPoint& layer_offset);
+  void SetContentsPropertyTreeState(const PropertyTreeState&);
   const PropertyTreeState& GetContentsPropertyTreeState() const {
-    return contents_layer_state_ ? contents_layer_state_->state
-                                 : GetPropertyTreeState();
+    return contents_property_tree_state_ ? *contents_property_tree_state_
+                                         : GetPropertyTreeState();
   }
   IntPoint GetContentsOffsetFromTransformNode() const {
-    return contents_layer_state_ ? contents_layer_state_->offset
-                                 : GetOffsetFromTransformNode();
+    auto offset = contents_rect_.Location();
+    if (layer_state_)
+      offset = offset + GetOffsetFromTransformNode();
+    return offset;
   }
 
   // Capture the last painted result into a PaintRecord. This GraphicsLayer
@@ -422,7 +423,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     IntPoint offset;
   };
   std::unique_ptr<LayerState> layer_state_;
-  std::unique_ptr<LayerState> contents_layer_state_;
+  std::unique_ptr<PropertyTreeState> contents_property_tree_state_;
 
   std::unique_ptr<RasterInvalidator> raster_invalidator_;
 

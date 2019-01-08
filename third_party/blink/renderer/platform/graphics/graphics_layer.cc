@@ -433,8 +433,14 @@ void GraphicsLayer::UpdateContentsRect() {
   if (!contents_layer)
     return;
 
-  contents_layer->SetPosition(
-      FloatPoint(contents_rect_.X(), contents_rect_.Y()));
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    const auto& offset = GetContentsOffsetFromTransformNode();
+    contents_layer->SetOffsetToTransformParent(
+        gfx::Vector2dF(offset.X(), offset.Y()));
+  } else {
+    contents_layer->SetPosition(
+        FloatPoint(contents_rect_.X(), contents_rect_.Y()));
+  }
   if (!image_layer_) {
     contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
   } else {
@@ -1032,29 +1038,24 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
     CcLayer()->SetOffsetToTransformParent(
         gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
 
-    if (!contents_layer_state_ && ContentsLayer()) {
+    if (ContentsLayer()) {
+      const auto& offset = GetContentsOffsetFromTransformNode();
       ContentsLayer()->SetOffsetToTransformParent(
-          gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+          gfx::Vector2dF(offset.X(), offset.Y()));
     }
   }
 }
 
-void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
-                                          const IntPoint& layer_offset) {
+void GraphicsLayer::SetContentsPropertyTreeState(
+    const PropertyTreeState& layer_state) {
   DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
   DCHECK(ContentsLayer());
 
-  if (contents_layer_state_) {
-    contents_layer_state_->state = layer_state;
-    contents_layer_state_->offset = layer_offset;
+  if (contents_property_tree_state_) {
+    *contents_property_tree_state_ = layer_state;
   } else {
-    contents_layer_state_ =
-        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
-  }
-
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    ContentsLayer()->SetOffsetToTransformParent(
-        gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+    contents_property_tree_state_ =
+        std::make_unique<PropertyTreeState>(layer_state);
   }
 }
 
