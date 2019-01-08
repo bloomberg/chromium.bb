@@ -102,6 +102,7 @@ SearchResultTileItemView::SearchResultTileItemView(
   title_->SetLineHeight(kTileTextLineHeight);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetHandlesTooltips(false);
+  title_->SetAllowCharacterBreak(true);
   AddChildView(title_);
 
   if (is_play_store_app_search_enabled_) {
