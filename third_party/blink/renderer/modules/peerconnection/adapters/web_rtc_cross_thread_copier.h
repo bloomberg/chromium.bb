@@ -26,6 +26,10 @@ class RTCCertificate;
 class SocketAddress;
 }
 
+namespace webrtc {
+class DtlsTransportInformation;
+}
+
 namespace blink {
 
 struct P2PQuicTransportConfig;
@@ -91,6 +95,12 @@ struct CrossThreadCopier<std::pair<cricket::Candidate, cricket::Candidate>>
 template <>
 struct CrossThreadCopier<P2PQuicTransportConfig>
     : public CrossThreadCopierPassThrough<P2PQuicTransportConfig> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<webrtc::DtlsTransportInformation>
+    : public CrossThreadCopierPassThrough<webrtc::DtlsTransportInformation> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
