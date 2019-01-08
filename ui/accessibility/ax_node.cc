@@ -519,12 +519,21 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
   }
 }
 
+// Uses function in ax_role_properties to check if node is item-like.
+bool AXNode::IsOrderedSetItem() const {
+  return ui::IsItemLike(data().role);
+}
+// Uses function in ax_role_properties to check if node is oredered-set-like.
+bool AXNode::IsOrderedSet() const {
+  return ui::IsSetLike(data().role);
+}
+
 // pos_in_set and set_size related functions.
 // Uses AXTree's cache to calculate node's pos_in_set.
 int32_t AXNode::GetPosInSet() {
   // Only allow this to be called on nodes that can hold pos_in_set values,
   // which are defined in the ARIA spec.
-  if (!IsItemLike(data().role)) {
+  if (!IsOrderedSetItem()) {
     return 0;
   }
 
@@ -541,7 +550,7 @@ int32_t AXNode::GetPosInSet() {
 int32_t AXNode::GetSetSize() {
   // Only allow this to be called on nodes that can hold set_size values, which
   // are defined in the ARIA spec.
-  if (!(IsItemLike(data().role) || IsSetLike(data().role)))
+  if (!(IsOrderedSetItem() || IsOrderedSet()))
     return 0;
 
   // If node is item-like, find its outerlying ordered set. Otherwise,

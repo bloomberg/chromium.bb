@@ -146,7 +146,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
 
-  // Only called on ordered-set-like elements and item-like elements.
+  // Ordered-set-like and item-like nodes.
+  virtual bool IsOrderedSetItem() const = 0;
+  virtual bool IsOrderedSet() const = 0;
   virtual int32_t GetPosInSet() const = 0;
   virtual int32_t GetSetSize() const = 0;
 

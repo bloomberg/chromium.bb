@@ -1,5 +1,5 @@
 rootWebArea
-++list display='block'
+++list display='block' setSize=3
 ++++listItem display='list-item' setSize=3 posInSet=1
 ++++++listMarker name='• '
 ++++++staticText display='list-item' name='Item 1'

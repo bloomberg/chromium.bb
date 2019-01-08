@@ -307,6 +307,14 @@ TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
       platform_node_(AXPlatformNode::Create(this)) {
 }
 
+bool TestAXNodeWrapper::IsOrderedSetItem() const {
+  return node_->IsOrderedSetItem();
+}
+
+bool TestAXNodeWrapper::IsOrderedSet() const {
+  return node_->IsOrderedSet();
+}
+
 int32_t TestAXNodeWrapper::GetPosInSet() const {
   return node_->GetPosInSet();
 }

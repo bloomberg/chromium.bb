@@ -1187,6 +1187,14 @@ bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
   return accessibility_state->disable_hot_tracking_for_testing();
 }
 
+bool BrowserAccessibility::IsOrderedSetItem() const {
+  return node()->IsOrderedSetItem();
+}
+
+bool BrowserAccessibility::IsOrderedSet() const {
+  return node()->IsOrderedSet();
+}
+
 int32_t BrowserAccessibility::GetPosInSet() const {
   return node()->GetPosInSet();
 }

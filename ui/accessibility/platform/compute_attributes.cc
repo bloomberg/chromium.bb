@@ -61,6 +61,35 @@ base::Optional<int32_t> GetTableAttribute(
   }
 }
 
+base::Optional<int32_t> GetOrderedSetItemAttribute(
+    const ui::AXPlatformNodeDelegate* delegate,
+    ax::mojom::IntAttribute attribute) {
+  int value = 0;
+  switch (attribute) {
+    case ax::mojom::IntAttribute::kPosInSet:
+      value = delegate->GetPosInSet();
+      return value;
+    case ax::mojom::IntAttribute::kSetSize:
+      value = delegate->GetSetSize();
+      return value;
+    default:
+      return base::nullopt;
+  }
+}
+
+base::Optional<int32_t> GetOrderedSetAttribute(
+    const ui::AXPlatformNodeDelegate* delegate,
+    ax::mojom::IntAttribute attribute) {
+  int value = 0;
+  switch (attribute) {
+    case ax::mojom::IntAttribute::kSetSize:
+      value = delegate->GetSetSize();
+      return value;
+    default:
+      return base::nullopt;
+  }
+}
+
 base::Optional<int32_t> GetFromData(const ui::AXPlatformNodeDelegate* delegate,
                                     ax::mojom::IntAttribute attribute) {
   int32_t value;
@@ -76,12 +105,18 @@ base::Optional<int32_t> ComputeAttribute(
     const ui::AXPlatformNodeDelegate* delegate,
     ax::mojom::IntAttribute attribute) {
   base::Optional<int32_t> maybe_value = base::nullopt;
+  // Table-related nodes.
   if (delegate->IsTableCellOrHeader())
     maybe_value = GetCellAttribute(delegate, attribute);
   else if (delegate->IsTableRow())
     maybe_value = GetRowAttribute(delegate, attribute);
   else if (delegate->IsTable())
     maybe_value = GetTableAttribute(delegate, attribute);
+  // Ordered-set-related nodes.
+  else if (delegate->IsOrderedSetItem())
+    maybe_value = GetOrderedSetItemAttribute(delegate, attribute);
+  else if (delegate->IsOrderedSet())
+    maybe_value = GetOrderedSetAttribute(delegate, attribute);
 
   if (!maybe_value.has_value()) {
     return GetFromData(delegate, attribute);
