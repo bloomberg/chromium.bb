@@ -132,6 +132,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   // Launches |extension| as a window and returns the browser.
   Browser* LaunchAppBrowser(const Extension* extension);
+  // Launches |extension| as a tab and returns the browser.
+  Browser* LaunchBrowserForAppInTab(const Extension* extension);
 
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.

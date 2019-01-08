@@ -14,6 +14,8 @@ class WebContents;
 
 namespace extensions {
 
+class Extension;
+
 // Allows to associate a tab with bookmark app.
 class BookmarkAppTabHelper : public web_app::WebAppTabHelperBase {
  public:
@@ -26,13 +28,20 @@ class BookmarkAppTabHelper : public web_app::WebAppTabHelperBase {
   static BookmarkAppTabHelper* CreateForWebContents(
       content::WebContents* web_contents);
 
-  // TabHelper:
+  // WebAppTabHelperBase:
   web_app::WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
   web_app::AppId GetAppId(const GURL& url) override;
   bool IsInAppWindow() const override;
+  bool IsUserInstalled() const override;
+  bool IsFromInstallButton() const override;
 
  private:
+  // Get a pointer from app_id_. Semantically, we use app_id_ as a weak
+  // reference. It might become nullptr in unforeseen circumstances (Uninstall).
+  // TODO(loyso): Provide guarantees for app_id_. crbug.com/915034
+  const Extension* GetExtension() const;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppTabHelper);
 };
 

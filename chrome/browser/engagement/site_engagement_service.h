@@ -179,6 +179,7 @@ class SiteEngagementService : public KeyedService,
   void AddPointsForTesting(const GURL& url, double points);
 
  private:
+  friend class BookmarkAppTest;
   friend class SiteEngagementObserver;
   friend class SiteEngagementServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);

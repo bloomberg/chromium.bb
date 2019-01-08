@@ -41,4 +41,14 @@ bool WebAppTabHelper::IsInAppWindow() const {
   return false;
 }
 
+bool WebAppTabHelper::IsUserInstalled() const {
+  // TODO(loyso): Implement it.
+  return false;
+}
+
+bool WebAppTabHelper::IsFromInstallButton() const {
+  // TODO(loyso): Implement it. Plumb |force_shortcut_app| into Registry.
+  return true;
+}
+
 }  // namespace web_app

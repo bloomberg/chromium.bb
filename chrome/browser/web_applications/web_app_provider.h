@@ -79,6 +79,9 @@ class WebAppProvider : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Count a number of all apps which are installed by user (non-default).
+  int CountUserInstalledApps() const;
+
  private:
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
@@ -104,6 +107,8 @@ class WebAppProvider : public KeyedService,
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  Profile* profile_;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 

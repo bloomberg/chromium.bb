@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -336,6 +337,8 @@ offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper::CreateForWebContents(web_contents);
   web_app::WebAppProvider::CreateTabHelper(web_contents);
+  if (SiteEngagementService::IsEnabled())
+    web_app::WebAppMetrics::Get(profile);
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

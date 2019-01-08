@@ -27,6 +27,10 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info);
 // Launches a new app window for |app| in |profile|.
 Browser* LaunchAppBrowser(Profile* profile, const Extension* app);
 
+// Launches a new tab for |app| in |profile|.
+Browser* LaunchBrowserForAppInTab(Profile* profile,
+                                  const Extension* extension_app);
+
 }  // namespace browsertest_util
 }  // namespace extensions
 

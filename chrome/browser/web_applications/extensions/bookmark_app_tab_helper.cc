@@ -9,6 +9,8 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -58,6 +60,31 @@ web_app::AppId BookmarkAppTabHelper::GetAppId(const GURL& url) {
 
 bool BookmarkAppTabHelper::IsInAppWindow() const {
   return util::IsWebContentsInAppWindow(web_contents());
+}
+
+bool BookmarkAppTabHelper::IsUserInstalled() const {
+  const Extension* app = GetExtension();
+  return app && !app->was_installed_by_default();
+}
+
+bool BookmarkAppTabHelper::IsFromInstallButton() const {
+  const bool pwa_windowing =
+      base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+  const Extension* app = GetExtension();
+  // TODO(loyso): Use something better to record apps installed from promoted
+  // UIs. crbug.com/774918.
+  return app && app->is_hosted_app() && pwa_windowing &&
+         UrlHandlers::GetUrlHandlers(app);
+}
+
+const Extension* BookmarkAppTabHelper::GetExtension() const {
+  DCHECK(!app_id().empty());
+  content::BrowserContext* browser_context =
+      web_contents()->GetBrowserContext();
+  const Extension* app =
+      ExtensionRegistry::Get(browser_context)
+          ->GetExtensionById(app_id(), ExtensionRegistry::EVERYTHING);
+  return app;
 }
 
 }  // namespace extensions

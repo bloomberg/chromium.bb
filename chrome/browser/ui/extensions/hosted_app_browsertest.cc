@@ -1541,6 +1541,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShouldShowToolbarForSystemApp) {
   NavigateAndCheckForToolbar(app_browser_, app_url, false);
 }
 
+// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
+// BookmarkAppTest.EngagementHistogramForAppInWindow and
+// BookmarkAppTest.EngagementHistogramForAppInTab.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
   base::HistogramTester histograms;
   WebApplicationInfo web_app_info;
@@ -1585,6 +1588,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
                                SiteEngagementService::ENGAGEMENT_MOUSE, 1);
 }
 
+// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
+// BookmarkAppTest.EngagementHistogramAppWithoutScope and
+// BookmarkAppTest.EngagementHistogramRecordedForNonApps.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        EngagementHistogramNotRecordedIfNoScope) {
   base::HistogramTester histograms;
@@ -1601,6 +1607,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   histograms.ExpectTotalCount(extensions::kPwaWindowEngagementTypeHistogram, 0);
 }
 
+// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
+// BookmarkAppTest.EngagementHistogramTwoApps.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogramTwoApps) {
   base::HistogramTester histograms;
   const extensions::Extension *app1, *app2;

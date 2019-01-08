@@ -304,6 +304,11 @@ Browser* ExtensionBrowserTest::LaunchAppBrowser(const Extension* extension) {
   return browsertest_util::LaunchAppBrowser(profile(), extension);
 }
 
+Browser* ExtensionBrowserTest::LaunchBrowserForAppInTab(
+    const Extension* extension) {
+  return browsertest_util::LaunchBrowserForAppInTab(profile(), extension);
+}
+
 base::FilePath ExtensionBrowserTest::PackExtension(
     const base::FilePath& dir_path,
     int extra_run_flags) {

@@ -49,6 +49,10 @@ const Extension* GetInstalledShortcutForUrl(
     content::BrowserContext* browser_context,
     const GURL& url);
 
+// Count a number of all bookmark apps which are installed by user
+// (non default-installed apps).
+int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UTIL_H_
