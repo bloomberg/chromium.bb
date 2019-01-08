@@ -27,6 +27,7 @@ EntityMetadataMap MetadataBatch::TakeAllMetadata() {
 
 void MetadataBatch::AddMetadata(const std::string& storage_key,
                                 const sync_pb::EntityMetadata& metadata) {
+  // TODO(crbug.com/914396): protos are movable. avoid unnecessary copy here.
   metadata_map_.insert(std::make_pair(storage_key, metadata));
 }
 
