@@ -81,8 +81,9 @@ function DriveShareAction(entry, metadataModel, volumeManager, ui) {
  * @return {DriveShareAction}
  */
 DriveShareAction.create = function(entries, metadataModel, volumeManager, ui) {
-  if (entries.length !== 1)
+  if (entries.length !== 1) {
     return null;
+  }
   return new DriveShareAction(entries[0], metadataModel, volumeManager, ui);
 };
 
@@ -200,19 +201,23 @@ DriveToggleOfflineAction.create = function(
   }
 
   var actionableEntries = entries.filter(function(entry) {
-    if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED'))
+    if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
       return false;
+    }
     var metadata = metadataModel.getCache(
         [entry], ['hosted', 'pinned'])[0];
-    if (metadata.hosted)
+    if (metadata.hosted) {
       return false;
-    if (metadata.pinned === value)
+    }
+    if (metadata.pinned === value) {
       return false;
+    }
     return true;
   });
 
-  if (actionableEntries.length === 0)
+  if (actionableEntries.length === 0) {
     return null;
+  }
 
   return new DriveToggleOfflineAction(actionableEntries, metadataModel,
       driveSyncHandler, ui, value, onExecute);
@@ -223,8 +228,9 @@ DriveToggleOfflineAction.create = function(
  */
 DriveToggleOfflineAction.prototype.execute = function() {
   var entries = this.entries_;
-  if (entries.length == 0)
+  if (entries.length == 0) {
     return;
+  }
 
   var currentEntry;
   var error = false;
@@ -262,8 +268,9 @@ DriveToggleOfflineAction.prototype.execute = function() {
     updateUI: function() {
       this.ui_.listContainer.currentView.updateListItemsMetadata(
           'external', [currentEntry]);
-      if (!error)
+      if (!error) {
         steps.start();
+      }
     }.bind(this),
 
     // Show an error.
@@ -278,8 +285,9 @@ DriveToggleOfflineAction.prototype.execute = function() {
   };
   steps.start();
 
-  if (this.value_ && this.driveSyncHandler_.isSyncSuppressed())
+  if (this.value_ && this.driveSyncHandler_.isSyncSuppressed()) {
     this.driveSyncHandler_.showDisabledMobileSyncNotification();
+  }
 };
 
 /**
@@ -331,10 +339,11 @@ function DriveCreateFolderShortcutAction(entry, shortcutsModel, onExecute) {
  * @param {function()} onExecute
  * @return {DriveCreateFolderShortcutAction}
  */
-DriveCreateFolderShortcutAction.create = function(entries, volumeManager,
-    shortcutsModel, onExecute) {
-  if (entries.length !== 1 || entries[0].isFile)
+DriveCreateFolderShortcutAction.create = function(
+    entries, volumeManager, shortcutsModel, onExecute) {
+  if (entries.length !== 1 || entries[0].isFile) {
     return null;
+  }
   var locationInfo = volumeManager.getLocationInfo(entries[0]);
   if (!locationInfo || locationInfo.isSpecialSearchRoot ||
       locationInfo.isRootEntry) {
@@ -475,8 +484,9 @@ function DriveManageAction(entry, volumeManager, ui) {
  * @return {DriveManageAction}
  */
 DriveManageAction.create = function(entries, volumeManager, ui) {
-  if (entries.length !== 1)
+  if (entries.length !== 1) {
     return null;
+  }
 
   return new DriveManageAction(entries[0], volumeManager, ui);
 };
@@ -692,8 +702,9 @@ ActionsModel.InternalActionId = {
  * @return {!Promise}
  */
 ActionsModel.prototype.initialize = function() {
-  if (this.initializePromise_)
+  if (this.initializePromise_) {
     return this.initializePromise_;
+  }
 
   this.initializePromise_ = new Promise(function(fulfill, reject) {
     if (this.destroyed_) {
@@ -727,8 +738,9 @@ ActionsModel.prototype.initialize = function() {
       case VolumeManagerCommon.VolumeType.DRIVE:
         var shareAction = DriveShareAction.create(
             this.entries_, this.metadataModel_, this.volumeManager_, this.ui_);
-        if (shareAction)
+        if (shareAction) {
           actions[ActionsModel.CommonActionId.SHARE] = shareAction;
+        }
 
         var saveForOfflineAction = DriveToggleOfflineAction.create(
             this.entries_, this.metadataModel_, this.driveSyncHandler_,

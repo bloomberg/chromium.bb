@@ -33,15 +33,17 @@ var FilesToggleRipple = Polymer({
    * @private
    */
   activatedChanged_: function(newValue, oldValue) {
-    if (newValue === oldValue)
+    if (newValue === oldValue) {
       return;
+    }
 
     // Perform animation when it's not initial value change.
     if (oldValue !== undefined) {
-      if (newValue)
+      if (newValue) {
         this.performActivateAnimation_();
-      else
+      } else {
         this.performDeactivateAnimation_();
+      }
     }
 
     this.$.ripple.classList.toggle('activated', !!newValue);

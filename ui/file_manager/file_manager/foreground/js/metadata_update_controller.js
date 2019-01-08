@@ -69,8 +69,9 @@ MetadataUpdateController.prototype.refreshCurrentDirectoryMetadata =
     function() {
   var entries = this.directoryModel_.getFileList().slice();
   var directoryEntry = this.directoryModel_.getCurrentDirEntry();
-  if (!directoryEntry)
+  if (!directoryEntry) {
     return;
+  }
 
   // TODO(dgozman): refresh content metadata only when modificationTime
   // changed.

@@ -62,8 +62,9 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
 
   this.fallbackUrl_ = null;
   this.thumbnailUrl_ = null;
-  if (opt_metadata.external && opt_metadata.external.customIconUrl)
+  if (opt_metadata.external && opt_metadata.external.customIconUrl) {
     this.fallbackUrl_ = opt_metadata.external.customIconUrl;
+  }
   var mimeType = opt_metadata && opt_metadata.contentMimeType;
 
   for (var i = 0; i < loadTargets.length; i++) {
@@ -98,8 +99,9 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
       default:
         assertNotReached('Unkonwn load type: ' + loadTargets[i]);
     }
-    if (this.thumbnailUrl_)
+    if (this.thumbnailUrl_) {
       break;
+    }
   }
 
   if (!this.thumbnailUrl_ && this.fallbackUrl_) {
@@ -285,10 +287,11 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
     }
 
     ImageLoaderClient.getInstance().load(request, function(result) {
-      if (result.status === LoadImageResponseStatus.SUCCESS)
+      if (result.status === LoadImageResponseStatus.SUCCESS) {
         resolve(result);
-      else
+      } else {
         reject(result);
+      }
     });
   }.bind(this));
 };
@@ -370,11 +373,13 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
  * @private
  */
 ThumbnailLoader.prototype.renderMedia_ = function() {
-  if (this.loaderType_ !== ThumbnailLoader.LoaderType.CANVAS)
+  if (this.loaderType_ !== ThumbnailLoader.LoaderType.CANVAS) {
     return;
+  }
 
-  if (!this.canvas_)
+  if (!this.canvas_) {
     this.canvas_ = document.createElement('canvas');
+  }
 
   // Copy the image to a canvas if the canvas is outdated.
   // At this point, image transformation is not applied because we attach style
@@ -417,8 +422,9 @@ ThumbnailLoader.prototype.attachImage_ = function(
     box.appendChild(attachableMedia);
   }
 
-  if (!this.taskId_)
+  if (!this.taskId_) {
     attachableMedia.classList.add('cached');
+  }
 };
 
 /**
@@ -468,8 +474,9 @@ ThumbnailLoader.centerImage_ = function(
     case ThumbnailLoader.FillMode.AUTO:
       var imageRatio = imageWidth / imageHeight;
       var boxRatio = 1.0;
-      if (boxWidth && boxHeight)
+      if (boxWidth && boxHeight) {
         boxRatio = boxWidth / boxHeight;
+      }
       // Cropped area in percents.
       var ratioFactor = boxRatio / imageRatio;
       fill = (ratioFactor >= 1.0 - autoFillThreshold) &&
@@ -487,8 +494,9 @@ ThumbnailLoader.centerImage_ = function(
         Math.max(fitScaleX, fitScaleY) :
         Math.min(fitScaleX, fitScaleY);
 
-    if (fillMode !== ThumbnailLoader.FillMode.OVER_FILL)
+    if (fillMode !== ThumbnailLoader.FillMode.OVER_FILL) {
       scale = Math.min(scale, 1);  // Never overscale.
+    }
 
     fractionX = imageWidth * scale / boxWidth;
     fractionY = imageHeight * scale / boxHeight;

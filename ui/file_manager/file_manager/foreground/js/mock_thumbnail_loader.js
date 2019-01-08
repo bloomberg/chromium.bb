@@ -49,8 +49,9 @@ MockThumbnailLoader.errorUrls = [];
  *     promise which is resolved with data url.
  */
 MockThumbnailLoader.prototype.loadAsDataUrl = function() {
-  if (MockThumbnailLoader.errorUrls.indexOf(this.entry_.toURL()) !== -1)
+  if (MockThumbnailLoader.errorUrls.indexOf(this.entry_.toURL()) !== -1) {
     throw new Error('Failed to load thumbnail.');
+  }
 
   return Promise.resolve({
     data: MockThumbnailLoader.testImageDataUrl,

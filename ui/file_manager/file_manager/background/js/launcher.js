@@ -86,11 +86,13 @@ launcher.launchFileManager = function(
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
       if (opt_appState) {
         for (var key in window.appWindows) {
-          if (!key.match(FILES_ID_PATTERN))
+          if (!key.match(FILES_ID_PATTERN)) {
             continue;
+          }
           var contentWindow = window.appWindows[key].contentWindow;
-          if (!contentWindow.appState)
+          if (!contentWindow.appState) {
             continue;
+          }
           // Different current directories.
           if (opt_appState.currentDirectoryURL !==
                   contentWindow.appState.currentDirectoryURL) {
@@ -103,8 +105,9 @@ launcher.launchFileManager = function(
             continue;
           }
           window.appWindows[key].focus();
-          if (opt_callback)
+          if (opt_callback) {
             opt_callback(key);
+          }
           onTaskCompleted();
           return;
         }
@@ -115,15 +118,17 @@ launcher.launchFileManager = function(
     if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
       // If there is already a focused window, then finish.
       for (var key in window.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
+        if (!key.match(FILES_ID_PATTERN)) {
           continue;
+        }
 
         // The isFocused() method should always be available, but in case
         // the Files app's failed on some error, wrap it with try catch.
         try {
           if (window.appWindows[key].contentWindow.isFocused()) {
-            if (opt_callback)
+            if (opt_callback) {
               opt_callback(key);
+            }
             onTaskCompleted();
             return;
           }
@@ -133,25 +138,29 @@ launcher.launchFileManager = function(
       }
       // Try to focus the first non-minimized window.
       for (var key in window.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
+        if (!key.match(FILES_ID_PATTERN)) {
           continue;
+        }
 
         if (!window.appWindows[key].isMinimized()) {
           window.appWindows[key].focus();
-          if (opt_callback)
+          if (opt_callback) {
             opt_callback(key);
+          }
           onTaskCompleted();
           return;
         }
       }
       // Restore and focus any window.
       for (var key in window.appWindows) {
-        if (!key.match(FILES_ID_PATTERN))
+        if (!key.match(FILES_ID_PATTERN)) {
           continue;
+        }
 
         window.appWindows[key].focus();
-        if (opt_callback)
+        if (opt_callback) {
           opt_callback(key);
+        }
         onTaskCompleted();
         return;
       }
@@ -170,8 +179,9 @@ launcher.launchFileManager = function(
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);
     appWindow.launch(opt_appState || {}, false, function() {
       appWindow.rawAppWindow.focus();
-      if (opt_callback)
+      if (opt_callback) {
         opt_callback(appId);
+      }
       onTaskCompleted();
     });
   });

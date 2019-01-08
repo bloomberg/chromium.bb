@@ -34,8 +34,9 @@ function FolderShortcutsDataModel(volumeManager) {
 
   // Listening for changes in the storage.
   chrome.storage.onChanged.addListener(function(changes, namespace) {
-    if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync')
+    if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync') {
       return;
+    }
     this.reload_();  // Runs within the queue.
   }.bind(this));
 
@@ -71,12 +72,14 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   rememberLastDriveURL_: function() {
-    if (this.lastDriveRootURL_)
+    if (this.lastDriveRootURL_) {
       return;
+    }
     var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
-    if (volumeInfo)
+    if (volumeInfo) {
       this.lastDriveRootURL_ = volumeInfo.fileSystem.root.toURL();
+    }
   },
 
   /**
@@ -102,8 +105,9 @@ FolderShortcutsDataModel.prototype = {
       this.rememberLastDriveURL_();  // Required for conversions.
 
       var onResolveSuccess = function(path, entry) {
-        if (path in this.pendingPaths_)
+        if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
+        }
         if (path in this.unresolvablePaths_) {
           changed = true;
           delete this.unresolvablePaths_[path];
@@ -116,8 +120,9 @@ FolderShortcutsDataModel.prototype = {
       }.bind(this);
 
       var onResolveFailure = function(path, url) {
-        if (path in this.pendingPaths_)
+        if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
+        }
         var existingIndex = this.getIndexByURL_(url);
         if (existingIndex !== -1) {
           changed = true;
@@ -177,8 +182,9 @@ FolderShortcutsDataModel.prototype = {
           }
         }
         // If something changed, then save.
-        if (changed)
+        if (changed) {
           this.save_();
+        }
         queueCallback();
       }.bind(this));
     }.bind(this));
@@ -252,8 +258,9 @@ FolderShortcutsDataModel.prototype = {
   getIndexByURL_: function(value) {
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (this.array_[i].toURL() === value)
+      if (this.array_[i].toURL() === value) {
         return i;
+      }
     }
     return -1;
   },
@@ -265,8 +272,9 @@ FolderShortcutsDataModel.prototype = {
   getIndex: function(value) {
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (util.isSameEntry(this.array_[i], value))
+      if (util.isSameEntry(this.array_[i], value)) {
         return i;
+      }
     }
     return -1;
   },
@@ -315,8 +323,9 @@ FolderShortcutsDataModel.prototype = {
     var addedIndex = -1;
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (util.isSameEntry(this.array_[i], value))
+      if (util.isSameEntry(this.array_[i], value)) {
         return i;
+      }
 
       // Since the array is sorted, new item will be added just before the first
       // larger item.
@@ -396,15 +405,18 @@ FolderShortcutsDataModel.prototype = {
    */
   save_: function() {
     this.rememberLastDriveURL_();
-    if (!this.lastDriveRootURL_)
+    if (!this.lastDriveRootURL_) {
       return;
+    }
 
     // TODO(mtomasz): Migrate to URL.
-    var paths = this.array_.
-                map(function(entry) { return entry.toURL(); }).
-                map(this.convertUrlToStoredPath_.bind(this)).
-                concat(Object.keys(this.pendingPaths_)).
-                concat(Object.keys(this.unresolvablePaths_));
+    var paths = this.array_
+                    .map(function(entry) {
+                      return entry.toURL();
+                    })
+                    .map(this.convertUrlToStoredPath_.bind(this))
+                    .concat(Object.keys(this.pendingPaths_))
+                    .concat(Object.keys(this.unresolvablePaths_));
 
     var prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;

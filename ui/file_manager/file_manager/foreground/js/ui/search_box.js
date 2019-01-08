@@ -136,8 +136,9 @@ SearchBox.AutocompleteList.prototype.handleSelectedSuggestion = function() {};
  * @private
  */
 SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
-  if (event.target.itemInfo)
+  if (event.target.itemInfo) {
     this.selectedItem = event.target.itemInfo;
+  }
 };
 
 /**
@@ -233,8 +234,9 @@ SearchBox.prototype.onBlur_ = function() {
 SearchBox.prototype.onKeyDown_ = function(event) {
   event = /** @type {KeyboardEvent} */ (event);
   // Handle only Esc key now.
-  if (event.key != 'Escape' || this.inputElement.value)
+  if (event.key != 'Escape' || this.inputElement.value) {
     return;
+  }
 
   this.inputElement.tabIndex = -1;  // Focus to default element after blur.
   this.inputElement.blur();
@@ -250,8 +252,9 @@ SearchBox.prototype.onDragEnter_ = function(event) {
   // For normal elements, they does not accept drag drop by default, and accept
   // it by using event.preventDefault. But input elements accept drag drop
   // by default. So disable the input element here to prohibit drag drop.
-  if (event.dataTransfer.types.indexOf('text/plain') === -1)
+  if (event.dataTransfer.types.indexOf('text/plain') === -1) {
     this.inputElement.style.pointerEvents = 'none';
+  }
 };
 
 /**

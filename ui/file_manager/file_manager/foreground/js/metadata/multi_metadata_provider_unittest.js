@@ -61,8 +61,9 @@ function testMultiMetadataProviderBasic(callback) {
       }),
       /** @type {!ContentMetadataProvider} */ ({
         get: function(requests) {
-          if (requests.length === 0)
+          if (requests.length === 0) {
             return Promise.resolve([]);
+          }
           assertEquals(2, requests.length);
           assertEquals('filesystem://A', requests[0].entry.toURL());
           assertEquals('filesystem://B', requests[1].entry.toURL());

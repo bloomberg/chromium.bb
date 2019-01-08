@@ -300,11 +300,12 @@ FileTransferController.PastePlan.prototype.getConfirmationType = function(
   if (this.isMove) {
     if (source.isTeamDrive) {
       if (destination.isTeamDrive) {
-        if (source.teamDriveName == destination.teamDriveName)
+        if (source.teamDriveName == destination.teamDriveName) {
           return FileTransferController.ConfirmationType.NONE;
-        else
+        } else {
           return FileTransferController.ConfirmationType
               .MOVE_BETWEEN_TEAM_DRIVES;
+        }
       } else {
         return FileTransferController.ConfirmationType
             .MOVE_FROM_TEAM_DRIVE_TO_OTHER;
@@ -315,8 +316,9 @@ FileTransferController.PastePlan.prototype.getConfirmationType = function(
     }
     return FileTransferController.ConfirmationType.NONE;
   } else {
-    if (!destination.isTeamDrive)
+    if (!destination.isTeamDrive) {
       return FileTransferController.ConfirmationType.NONE;
+    }
     // Copying to Team Drive.
     if (!(source.isTeamDrive &&
           source.teamDriveName == destination.teamDriveName)) {
@@ -457,14 +459,16 @@ FileTransferController.prototype.attachCopyPasteHandlers_ = function() {
 FileTransferController.prototype.cutOrCopy_ = function(
     clipboardData, effectAllowed) {
   var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
-  if (!currentDirEntry)
+  if (!currentDirEntry) {
     return;
+  }
   var volumeInfo = this.volumeManager_.getVolumeInfo(
       util.isRecentRoot(currentDirEntry) ?
           this.selectionHandler_.selection.entries[0] :
           currentDirEntry);
-  if (!volumeInfo)
+  if (!volumeInfo) {
     return;
+  }
 
   this.appendCutOrCopyInfo_(clipboardData, effectAllowed, volumeInfo,
       this.selectionHandler_.selection.entries,
@@ -513,16 +517,20 @@ FileTransferController.prototype.appendUriList_ = function(
 
   for (var i = 0; i < entries.length; i++) {
     var url = entries[i].toURL();
-    if (!this.selectedAsyncData_[url])
+    if (!this.selectedAsyncData_[url]) {
       continue;
-    if (this.selectedAsyncData_[url].file)
+    }
+    if (this.selectedAsyncData_[url].file) {
       clipboardData.items.add(this.selectedAsyncData_[url].file);
-    if (!externalFileUrl)
+    }
+    if (!externalFileUrl) {
       externalFileUrl = this.selectedAsyncData_[url].externalFileUrl;
+    }
   }
 
-  if (externalFileUrl)
+  if (externalFileUrl) {
     clipboardData.setData('text/uri-list', externalFileUrl);
+  }
 };
 
 /**
@@ -530,14 +538,16 @@ FileTransferController.prototype.appendUriList_ = function(
  * @private
  */
 FileTransferController.prototype.getDragAndDropGlobalData_ = function() {
-  if (window[DRAG_AND_DROP_GLOBAL_DATA])
+  if (window[DRAG_AND_DROP_GLOBAL_DATA]) {
     return window[DRAG_AND_DROP_GLOBAL_DATA];
+  }
 
   // Dragging from other tabs/windows.
   var views = chrome && chrome.extension ? chrome.extension.getViews() : [];
   for (var i = 0; i < views.length; i++) {
-    if (views[i][DRAG_AND_DROP_GLOBAL_DATA])
+    if (views[i][DRAG_AND_DROP_GLOBAL_DATA]) {
       return views[i][DRAG_AND_DROP_GLOBAL_DATA];
+    }
   }
   return null;
 };
@@ -555,12 +565,14 @@ FileTransferController.prototype.getDragAndDropGlobalData_ = function() {
 FileTransferController.prototype.getSourceRootURL_ = function(
     clipboardData, dragAndDropData) {
   var sourceRootURL = clipboardData.getData('fs/sourceRootURL');
-  if (sourceRootURL)
+  if (sourceRootURL) {
     return sourceRootURL;
+  }
 
   // |clipboardData| in protected mode.
-  if (dragAndDropData)
+  if (dragAndDropData) {
     return dragAndDropData.sourceRootURL;
+  }
 
   // Unknown source.
   return '';
@@ -577,8 +589,9 @@ FileTransferController.prototype.isMissingFileContents_ =
   if (!data) {
     // |clipboardData| in protected mode.
     var globalData = this.getDragAndDropGlobalData_();
-    if (globalData)
+    if (globalData) {
       data = globalData.missingFileContents;
+    }
   }
   return data === 'true';
 };
@@ -600,11 +613,16 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
 
   // Call processEntry for each item of entries.
   var processEntries = function(entries) {
-    var files = entries.filter(function(entry) {return entry.isFile;});
-    var dirs = entries.filter(function(entry) {return !entry.isFile;});
+    var files = entries.filter(function(entry) {
+      return entry.isFile;
+    });
+    var dirs = entries.filter(function(entry) {
+      return !entry.isFile;
+    });
     var promises = dirs.map(processDirectoryEntry);
-    if (files.length > 0)
+    if (files.length > 0) {
       promises.push(processFileEntries(files));
+    }
     return Promise.all(promises).then(concatArrays);
   };
 
@@ -678,10 +696,11 @@ FileTransferController.prototype.preparePaste = function(
 
   var destinationLocationInfo =
       this.volumeManager_.getLocationInfo(destinationEntry);
-  if (!destinationLocationInfo)
+  if (!destinationLocationInfo) {
     console.log(
         'Failed to get destination location for ' + destinationEntry.title() +
         ' while attempting to paste files.');
+  }
   return new FileTransferController.PastePlan(
       sourceURLs, destinationEntry, assert(destinationLocationInfo), toMove);
 };
@@ -780,123 +799,128 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
   this.progressCenter_.updateItem(item);
 
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
-      .then(
-          (/**
-           * @param {Object} result
-           * @this {FileTransferController}
-           */
-          function(result) {
-            failureUrls = result.failureUrls;
-            // The promise is not rejected, so it's safe to not remove the early
-            // progress center item here.
-            return this.fileOperationManager_.filterSameDirectoryEntry(
-                result.entries, destinationEntry, toMove);
-          }).bind(this))
-      .then(
-          (/**
-           * @param {!Array<Entry>} filteredEntries
-           * @this {FileTransferController}
-           * @return {!Promise<Array<Entry>>}
-           */
-          function(filteredEntries) {
-            entries = filteredEntries;
-            if (entries.length === 0) {
-              // Remove the early progress center item.
-              var item = new ProgressCenterItem();
-              item.id = taskId;
-              item.state = ProgressItemState.CANCELED;
-              this.progressCenter_.updateItem(item);
-              return Promise.reject('ABORT');
-            }
+      .then((/**
+              * @param {Object} result
+              * @this {FileTransferController}
+              */
+             function(result) {
+               failureUrls = result.failureUrls;
+               // The promise is not rejected, so it's safe to not remove the
+               // early progress center item here.
+               return this.fileOperationManager_.filterSameDirectoryEntry(
+                   result.entries, destinationEntry, toMove);
+             }).bind(this))
+      .then((/**
+              * @param {!Array<Entry>} filteredEntries
+              * @this {FileTransferController}
+              * @return {!Promise<Array<Entry>>}
+              */
+             function(filteredEntries) {
+               entries = filteredEntries;
+               if (entries.length === 0) {
+                 // Remove the early progress center item.
+                 var item = new ProgressCenterItem();
+                 item.id = taskId;
+                 item.state = ProgressItemState.CANCELED;
+                 this.progressCenter_.updateItem(item);
+                 return Promise.reject('ABORT');
+               }
 
-            this.pendingTaskIds.push(taskId);
-            var item = new ProgressCenterItem();
-            item.id = taskId;
-            if (toMove) {
-              item.type = ProgressItemType.MOVE;
-              if (entries.length === 1)
-                item.message = strf('MOVE_FILE_NAME', entries[0].name);
-              else
-                item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
-            } else {
-              item.type = ProgressItemType.COPY;
-              if (entries.length === 1)
-                item.message = strf('COPY_FILE_NAME', entries[0].name);
-              else
-                item.message = strf('COPY_ITEMS_REMAINING', entries.length);
-            }
-            this.progressCenter_.updateItem(item);
-            // Check if cross share is needed or not.
-            return this.getMultiProfileShareEntries_(entries);
-          }).bind(this))
-      .then(
-          (/**
-           * @param {Array<Entry>} inShareEntries
-           * @this {FileTransferController}
-           * @return {!Promise<Array<Entry>>|!Promise<null>}
-           */
-          function(inShareEntries) {
-            shareEntries = inShareEntries;
-            if (shareEntries.length === 0)
-              return Promise.resolve(null);
-            return this.multiProfileShareDialog_.
-                showMultiProfileShareDialog(shareEntries.length > 1);
-          }).bind(this))
+               this.pendingTaskIds.push(taskId);
+               var item = new ProgressCenterItem();
+               item.id = taskId;
+               if (toMove) {
+                 item.type = ProgressItemType.MOVE;
+                 if (entries.length === 1) {
+                   item.message = strf('MOVE_FILE_NAME', entries[0].name);
+                 } else {
+                   item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
+                 }
+               } else {
+                 item.type = ProgressItemType.COPY;
+                 if (entries.length === 1) {
+                   item.message = strf('COPY_FILE_NAME', entries[0].name);
+                 } else {
+                   item.message = strf('COPY_ITEMS_REMAINING', entries.length);
+                 }
+               }
+               this.progressCenter_.updateItem(item);
+               // Check if cross share is needed or not.
+               return this.getMultiProfileShareEntries_(entries);
+             }).bind(this))
+      .then((/**
+              * @param {Array<Entry>} inShareEntries
+              * @this {FileTransferController}
+              * @return {!Promise<Array<Entry>>|!Promise<null>}
+              */
+             function(inShareEntries) {
+               shareEntries = inShareEntries;
+               if (shareEntries.length === 0) {
+                 return Promise.resolve(null);
+               }
+               return this.multiProfileShareDialog_.showMultiProfileShareDialog(
+                   shareEntries.length > 1);
+             }).bind(this))
       .then(
           /**
            * @param {?string} dialogResult
            * @return {!Promise<undefined>|undefined}
            */
-           function(dialogResult) {
-              if (dialogResult === null)
-                return;  // No dialog was shown, skip this step.
-              if (dialogResult === 'cancel')
-                return Promise.reject('ABORT');
-              // Do cross share.
-              // TODO(hirono): Make the loop cancellable.
-              var requestDriveShare = function(index) {
-                if (index >= shareEntries.length)
-                  return;
-                return new Promise(function(fulfill) {
-                  chrome.fileManagerPrivate.requestDriveShare(
-                      shareEntries[index],
-                      assert(dialogResult),
-                      function() {
-                        // TODO(hirono): Check chrome.runtime.lastError here.
-                        fulfill();
-                      });
-                }).then(requestDriveShare.bind(null, index + 1));
-              };
-              return requestDriveShare(0);
-            })
-      .then(
-          (/** @this {FileTransferController} */
-          function() {
-            // Start the pasting operation.
-            this.fileOperationManager_.paste(
-                entries, destinationEntry, toMove, taskId);
-            this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
-
-            // Publish source not found error item.
-            for (var i = 0; i < failureUrls.length; i++) {
-              var fileName =
-                  decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
-              var item = new ProgressCenterItem();
-              item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
-              if (toMove)
-                item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
-              else
-                item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
-              item.state = ProgressItemState.ERROR;
-              this.progressCenter_.updateItem(item);
-              this.sourceNotFoundErrorCount_++;
+          function(dialogResult) {
+            if (dialogResult === null) {
+              return;
+            }  // No dialog was shown, skip this step.
+            if (dialogResult === 'cancel') {
+              return Promise.reject('ABORT');
             }
-          }).bind(this))
-      .catch(
-          function(error) {
-            if (error !== 'ABORT')
-              console.error(error.stack ? error.stack : error);
-          });
+            // Do cross share.
+            // TODO(hirono): Make the loop cancellable.
+            var requestDriveShare = function(index) {
+              if (index >= shareEntries.length) {
+                return;
+              }
+              return new Promise(function(fulfill) {
+                       chrome.fileManagerPrivate.requestDriveShare(
+                           shareEntries[index], assert(dialogResult),
+                           function() {
+                             // TODO(hirono): Check chrome.runtime.lastError
+                             // here.
+                             fulfill();
+                           });
+                     })
+                  .then(requestDriveShare.bind(null, index + 1));
+            };
+            return requestDriveShare(0);
+          })
+      .then((/** @this {FileTransferController} */
+             function() {
+               // Start the pasting operation.
+               this.fileOperationManager_.paste(
+                   entries, destinationEntry, toMove, taskId);
+               this.pendingTaskIds.splice(
+                   this.pendingTaskIds.indexOf(taskId), 1);
+
+               // Publish source not found error item.
+               for (var i = 0; i < failureUrls.length; i++) {
+                 var fileName =
+                     decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
+                 var item = new ProgressCenterItem();
+                 item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
+                 if (toMove) {
+                   item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
+                 } else {
+                   item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
+                 }
+                 item.state = ProgressItemState.ERROR;
+                 this.progressCenter_.updateItem(item);
+                 this.sourceNotFoundErrorCount_++;
+               }
+             }).bind(this))
+      .catch(function(error) {
+        if (error !== 'ABORT') {
+          console.error(error.stack ? error.stack : error);
+        }
+      });
   return toMove ? 'move' : 'copy';
 };
 
@@ -912,8 +936,9 @@ FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
       var loader = new ThumbnailLoader(
           entry, ThumbnailLoader.LoaderType.IMAGE, metadata[0]);
       loader.loadDetachedImage(function(result) {
-        if (result)
+        if (result) {
           fulfill(loader.getImage());
+        }
       });
     });
   });
@@ -1097,8 +1122,9 @@ FileTransferController.prototype.onDragOver_ =
     function(onlyIntoDirectories, list, event) {
   event.preventDefault();
   var entry = this.destinationEntry_;
-  if (!entry && !onlyIntoDirectories)
+  if (!entry && !onlyIntoDirectories) {
     entry = this.directoryModel_.getCurrentDirEntry();
+  }
   var effectAndLabel =
       this.selectDropEffect_(event, this.getDragAndDropGlobalData_(), entry);
   event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
@@ -1129,14 +1155,16 @@ FileTransferController.prototype.onDragEnterFileList_ = function(list, event) {
   var item = list.getListItemAncestor(
       /** @type {HTMLElement} */ (event.target));
   item = item && list.isItem(item) ? item : null;
-  if (item === this.dropTarget_)
+  if (item === this.dropTarget_) {
     return;
+  }
 
   var entry = item && list.dataModel.item(item.listIndex);
-  if (entry)
+  if (entry) {
     this.setDropTarget_(item, event.dataTransfer, entry);
-  else
+  } else {
     this.clearDropTarget_();
+  }
 };
 
 /**
@@ -1152,8 +1180,9 @@ FileTransferController.prototype.onDragEnterTree_ = function(tree, event) {
     item = item.parentNode;
   }
 
-  if (item === this.dropTarget_)
+  if (item === this.dropTarget_) {
     return;
+  }
 
   var entry = item && item.entry;
   if (entry) {
@@ -1190,14 +1219,16 @@ FileTransferController.prototype.onDragLeave_ = function(list, event) {
  * @param {!Event} event A dragleave event of DOM.
  * @private
  */
-FileTransferController.prototype.onDrop_ =
-    function(onlyIntoDirectories, event) {
-  if (onlyIntoDirectories && !this.dropTarget_)
+FileTransferController.prototype.onDrop_ = function(
+    onlyIntoDirectories, event) {
+  if (onlyIntoDirectories && !this.dropTarget_) {
     return;
+  }
   var destinationEntry = this.destinationEntry_ ||
                          this.directoryModel_.getCurrentDirEntry();
-  if (!this.canPasteOrDrop_(event.dataTransfer, destinationEntry))
+  if (!this.canPasteOrDrop_(event.dataTransfer, destinationEntry)) {
     return;
+  }
   event.preventDefault();
   this.paste(
       event.dataTransfer,
@@ -1214,8 +1245,9 @@ FileTransferController.prototype.onDrop_ =
  */
 FileTransferController.prototype.changeToDropTargetDirectory_ = function() {
   // Do custom action.
-  if (this.dropTarget_ instanceof DirectoryItem)
+  if (this.dropTarget_ instanceof DirectoryItem) {
     /** @type {DirectoryItem} */ (this.dropTarget_).doDropTargetAction();
+  }
   this.directoryModel_.changeDirectoryEntry(assert(this.destinationEntry_));
 };
 
@@ -1227,10 +1259,11 @@ FileTransferController.prototype.changeToDropTargetDirectory_ = function() {
  * @param {!DirectoryEntry|!FakeEntry} destinationEntry Destination entry.
  * @private
  */
-FileTransferController.prototype.setDropTarget_ =
-    function(domElement, clipboardData, destinationEntry) {
-  if (this.dropTarget_ === domElement)
+FileTransferController.prototype.setDropTarget_ = function(
+    domElement, clipboardData, destinationEntry) {
+  if (this.dropTarget_ === domElement) {
     return;
+  }
 
   // Remove the old drop target.
   this.clearDropTarget_();
@@ -1286,8 +1319,9 @@ FileTransferController.prototype.onTouchEnd_ = function() {
  * @private
  */
 FileTransferController.prototype.clearDropTarget_ = function() {
-  if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts'))
+  if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
     this.dropTarget_.classList.remove('accepts');
+  }
   this.dropTarget_ = null;
   this.destinationEntry_ = null;
   if (this.navigateTimer_ !== undefined) {
@@ -1358,14 +1392,16 @@ FileTransferController.prototype.onCutOrCopy_ = function(isMove, event) {
 FileTransferController.prototype.cutOrCopyFromDirectoryTree = function(
     directoryTree, clipboardData, effectAllowed) {
   var selectedItem = document.activeElement.selectedItem;
-  if (selectedItem === null)
+  if (selectedItem === null) {
     return;
+  }
 
   var entry = selectedItem.entry;
 
   var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-  if (!volumeInfo)
+  if (!volumeInfo) {
     return;
+  }
 
   // When this value is false, we cannot copy between different sources.
   var missingFileContents =
@@ -1383,12 +1419,14 @@ FileTransferController.prototype.cutOrCopyFromDirectoryTree = function(
  * @private
  */
 FileTransferController.prototype.onBeforeCutOrCopy_ = function(isMove, event) {
-  if (!this.isDocumentWideEvent_())
+  if (!this.isDocumentWideEvent_()) {
     return;
+  }
 
   // queryCommandEnabled returns true if event.defaultPrevented is true.
-  if (this.canCutOrCopy_(isMove))
+  if (this.canCutOrCopy_(isMove)) {
     event.preventDefault();
+  }
 };
 
 /**
@@ -1402,8 +1440,9 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
 
   if (document.activeElement instanceof DirectoryTree) {
     var selectedItem = document.activeElement.selectedItem;
-    if (!selectedItem)
+    if (!selectedItem) {
       return false;
+    }
 
     if (!this.shouldShowCommandFor_(selectedItem.entry)) {
       command.setHidden(true);
@@ -1442,18 +1481,22 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
  * @private
  */
 FileTransferController.prototype.canCopyOrDrag_ = function() {
-  if (!this.selectionHandler_.isAvailable())
+  if (!this.selectionHandler_.isAvailable()) {
     return false;
-  if (this.selectionHandler_.selection.entries.length <= 0)
+  }
+  if (this.selectionHandler_.selection.entries.length <= 0) {
     return false;
+  }
   var entries = this.selectionHandler_.selection.entries;
   for (var i = 0; i < entries.length; i++) {
-    if (util.isTeamDriveRoot(entries[i]))
+    if (util.isTeamDriveRoot(entries[i])) {
       return false;
+    }
     // If selected entries are not in the same directory, we can't copy them by
     // a single operation at this moment.
-    if (i > 0 && !util.isSiblingEntry(entries[0], entries[i]))
+    if (i > 0 && !util.isSiblingEntry(entries[0], entries[i])) {
       return false;
+    }
   }
   // Check if canCopy is true or undefined, but not false (see
   // https://crbug.com/849999).
@@ -1513,8 +1556,9 @@ FileTransferController.prototype.onPaste_ = function(event) {
  * @private
  */
 FileTransferController.prototype.onBeforePaste_ = function(event) {
-  if (!this.isDocumentWideEvent_())
+  if (!this.isDocumentWideEvent_()) {
     return;
+  }
   // queryCommandEnabled returns true if event.defaultPrevented is true.
   if (this.canPasteOrDrop_(assert(event.clipboardData),
                            this.directoryModel_.getCurrentDirEntry())) {
@@ -1530,26 +1574,31 @@ FileTransferController.prototype.onBeforePaste_ = function(event) {
  *     be pasted to {@code destinationEntry}. Otherwise, returns false.
  * @private
  */
-FileTransferController.prototype.canPasteOrDrop_ =
-    function(clipboardData, destinationEntry) {
-  if (!destinationEntry)
+FileTransferController.prototype.canPasteOrDrop_ = function(
+    clipboardData, destinationEntry) {
+  if (!destinationEntry) {
     return false;
+  }
   var destinationLocationInfo =
       this.volumeManager_.getLocationInfo(destinationEntry);
-  if (!destinationLocationInfo || destinationLocationInfo.isReadOnly)
+  if (!destinationLocationInfo || destinationLocationInfo.isReadOnly) {
     return false;
+  }
   if (destinationLocationInfo.volumeInfo &&
-      destinationLocationInfo.volumeInfo.error)
+      destinationLocationInfo.volumeInfo.error) {
     return false;
-  if (!clipboardData.types || clipboardData.types.indexOf('fs/tag') === -1)
+  }
+  if (!clipboardData.types || clipboardData.types.indexOf('fs/tag') === -1) {
     return false;  // Unsupported type of content.
+  }
 
   // Copying between different sources requires all files to be available.
   if (this.getSourceRootURL_(
           clipboardData, this.getDragAndDropGlobalData_()) !==
           destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
-      this.isMissingFileContents_(clipboardData))
+      this.isMissingFileContents_(clipboardData)) {
     return false;
+  }
 
   // Destination entry needs the 'canAddChildren' permission.
   var metadata =
@@ -1622,8 +1671,9 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
 
   var fileEntries = [];
   for (var i = 0; i < entries.length; i++) {
-    if (entries[i].isFile)
+    if (entries[i].isFile) {
       fileEntries.push(entries[i]);
+    }
     if (!(entries[i].toURL() in asyncData)) {
       asyncData[entries[i].toURL()] = {externalFileUrl: '', file: null};
     }
@@ -1688,15 +1738,18 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
  */
 FileTransferController.prototype.selectDropEffect_ = function(
     event, dragAndDropData, destinationEntry) {
-  if (!destinationEntry)
+  if (!destinationEntry) {
     return new DropEffectAndLabel(DropEffectType.NONE, null);
+  }
   var destinationLocationInfo =
       this.volumeManager_.getLocationInfo(destinationEntry);
-  if (!destinationLocationInfo)
+  if (!destinationLocationInfo) {
     return new DropEffectAndLabel(DropEffectType.NONE, null);
+  }
   if (destinationLocationInfo.volumeInfo &&
-      destinationLocationInfo.volumeInfo.error)
+      destinationLocationInfo.volumeInfo.error) {
     return new DropEffectAndLabel(DropEffectType.NONE, null);
+  }
   if (destinationLocationInfo.isReadOnly) {
     if (destinationLocationInfo.isSpecialSearchRoot) {
       // The location is a fake entry that corresponds to special search.
@@ -1729,8 +1782,9 @@ FileTransferController.prototype.selectDropEffect_ = function(
         strf('DROP_TARGET_FOLDER_NO_MOVE_PERMISSION', destinationEntry.name));
   }
   if (util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
-    if (!util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy'))
+    if (!util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy')) {
       return new DropEffectAndLabel(DropEffectType.MOVE, null);
+    }
     // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
     // volumeId gets unique.
     if (this.getSourceRootURL_(event.dataTransfer, dragAndDropData) ===
@@ -1752,8 +1806,9 @@ FileTransferController.prototype.selectDropEffect_ = function(
  */
 FileTransferController.prototype.blinkSelection_ = function() {
   var selection = this.selectionHandler_.selection;
-  if (!selection || selection.totalCount == 0)
+  if (!selection || selection.totalCount == 0) {
     return;
+  }
 
   var listItems = [];
   for (var i = 0; i < selection.entries.length; i++) {

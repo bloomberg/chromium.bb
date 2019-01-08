@@ -20,7 +20,9 @@ function MockNavigationListModel(volumeManager) {
 MockNavigationListModel.prototype = {
   __proto__: cr.EventTarget.prototype,
 
-  get length() { return this.length_(); }
+  get length() {
+    return this.length_();
+  }
 };
 
 /**

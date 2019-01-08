@@ -69,13 +69,15 @@ PngParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.BIG_ENDIAN);
 
   var signature = br.readString(8);
-  if (signature != '\x89PNG\x0D\x0A\x1A\x0A')
+  if (signature != '\x89PNG\x0D\x0A\x1A\x0A') {
     throw new Error('Invalid PNG signature: ' + signature);
+  }
 
   br.seek(12);
   var ihdr = br.readString(4);
-  if (ihdr != 'IHDR')
+  if (ihdr != 'IHDR') {
     throw new Error('Missing IHDR chunk');
+  }
 
   metadata.width = br.readScalar(4);
   metadata.height = br.readScalar(4);
@@ -103,8 +105,9 @@ BmpParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   var signature = br.readString(2);
-  if (signature != 'BM')
+  if (signature != 'BM') {
     throw new Error('Invalid BMP signature: ' + signature);
+  }
 
   br.seek(18);
   metadata.width = br.readScalar(4);
@@ -133,8 +136,9 @@ GifParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   var signature = br.readString(6);
-  if (!signature.match(/GIF8(7|9)a/))
+  if (!signature.match(/GIF8(7|9)a/)) {
     throw new Error('Invalid GIF signature: ' + signature);
+  }
 
   metadata.width = br.readScalar(2);
   metadata.height = br.readScalar(2);
@@ -162,13 +166,15 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   var riffSignature = br.readString(4);
-  if (riffSignature != 'RIFF')
+  if (riffSignature != 'RIFF') {
     throw new Error('Invalid RIFF signature: ' + riffSignature);
+  }
 
   br.seek(8);
   var webpSignature = br.readString(4);
-  if (webpSignature != 'WEBP')
+  if (webpSignature != 'WEBP') {
     throw new Error('Invalid WEBP signature: ' + webpSignature);
+  }
 
   var chunkFormat = br.readString(4);
   switch (chunkFormat) {
@@ -232,8 +238,9 @@ IcoParser.prototype.parseHeader = function(metadata, byteReader) {
   byteReader.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   var signature = byteReader.readString(4);
-  if (signature !== '\x00\x00\x00\x01')
+  if (signature !== '\x00\x00\x00\x01') {
     throw new Error('Invalid ICO signature: ' + signature);
+  }
 
   byteReader.seek(2);
   metadata.width = byteReader.readScalar(1);

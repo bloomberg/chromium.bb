@@ -42,8 +42,9 @@ class LoadImageResponse {
     /** @type {?number} */
     this.taskId = taskId;
 
-    if (status === LoadImageResponseStatus.ERROR)
+    if (status === LoadImageResponseStatus.ERROR) {
       return;
+    }
 
     assert(opt_result);
 
@@ -74,8 +75,9 @@ class LoadImageResponse {
    *            data:!string}}
    */
   static cacheValue(response, timestamp) {
-    if (response.status === LoadImageResponseStatus.ERROR)
+    if (response.status === LoadImageResponseStatus.ERROR) {
       return null;
+    }
 
     assert(response.width);
     assert(response.height);
@@ -148,8 +150,9 @@ class LoadImageRequest {
    *     the request. e.g. Data URI.
    */
   static cacheKey(request) {
-    if (/^data:/i.test(request.url))
+    if (/^data:/i.test(request.url)) {
       return null;
+    }
     return JSON.stringify({
       url: request.url,
       orientation: request.orientation,

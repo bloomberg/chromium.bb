@@ -37,11 +37,13 @@ MpegParser.readAtomSize = function(br, opt_end) {
 
   var size = br.readScalar(4, false, opt_end);
 
-  if (size < MpegParser.HEADER_SIZE)
+  if (size < MpegParser.HEADER_SIZE) {
     throw 'atom too short (' + size + ') @' + pos;
+  }
 
-  if (opt_end && pos + size > opt_end)
+  if (opt_end && pos + size > opt_end) {
     throw 'atom too long (' + size + '>' + (opt_end - pos) + ') @' + pos;
+  }
 
   return size;
 };
@@ -207,8 +209,9 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
     parser, br, parentAtom, filePos) {
   var count = 0;
   for (var offset = parentAtom.start; offset != parentAtom.end;) {
-    if (count++ > 100) // Most likely we are looping through a corrupt file.
+    if (count++ > 100) {  // Most likely we are looping through a corrupt file.
       throw 'too many child atoms in ' + parentAtom.name + ' @' + offset;
+    }
 
     br.seek(offset);
     var size = MpegParser.readAtomSize(br, parentAtom.end);

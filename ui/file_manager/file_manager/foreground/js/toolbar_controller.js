@@ -129,17 +129,19 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
   if (selection.totalCount === 0) {
     text = '';
   } else if (selection.totalCount === 1) {
-    if (selection.directoryCount == 0)
+    if (selection.directoryCount == 0) {
       text = str('ONE_FILE_SELECTED');
-    else if (selection.fileCount == 0)
+    } else if (selection.fileCount == 0) {
       text = str('ONE_DIRECTORY_SELECTED');
+    }
   } else {
-    if (selection.directoryCount == 0)
+    if (selection.directoryCount == 0) {
       text = strf('MANY_FILES_SELECTED', selection.fileCount);
-    else if (selection.fileCount == 0)
+    } else if (selection.fileCount == 0) {
       text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
-    else
+    } else {
       text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
+    }
   }
   this.filesSelectedLabel_.textContent = text;
 

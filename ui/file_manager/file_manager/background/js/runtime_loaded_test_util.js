@@ -37,8 +37,9 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
 
   const styleNames = opt_styleNames || [];
   assert(Array.isArray(styleNames));
-  if (!styleNames.length)
+  if (!styleNames.length) {
     return result;
+  }
 
   const styles = {};
   const size = element.getBoundingClientRect();
@@ -108,8 +109,9 @@ test.util.sync.getErrorCount = function() {
   var totalCount = window.JSErrorCount;
   for (var appId in window.appWindows) {
     var contentWindow = window.appWindows[appId].contentWindow;
-    if (contentWindow.JSErrorCount)
+    if (contentWindow.JSErrorCount) {
       totalCount += contentWindow.JSErrorCount;
+    }
   }
   return totalCount;
 };
@@ -190,10 +192,12 @@ test.util.sync.queryAllElements = function(
  */
 test.util.sync.deepQueryAllElements = function(
     contentWindow, targetQuery, opt_styleNames) {
-  if (!contentWindow.document)
+  if (!contentWindow.document) {
     return [];
-  if (typeof targetQuery === 'string')
+  }
+  if (typeof targetQuery === 'string') {
     targetQuery = [targetQuery];
+  }
 
   var elems =
       test.util.sync.deepQuerySelectorAll_(contentWindow.document, targetQuery);
@@ -216,8 +220,9 @@ test.util.sync.deepQueryAllElements = function(
 test.util.sync.deepQuerySelectorAll_ = function(root, targetQuery) {
   var elems = Array.prototype.slice.call(root.querySelectorAll(targetQuery[0]));
   var remaining = targetQuery.slice(1);
-  if (remaining.length === 0)
+  if (remaining.length === 0) {
     return elems;
+  }
 
   var res = [];
   for (var i = 0; i < elems.length; i++) {
@@ -247,8 +252,9 @@ test.util.async.deepExecuteScriptInWebView = function(
     contentWindow, targetQuery, script, callback) {
   const webviews =
       test.util.sync.deepQuerySelectorAll_(contentWindow.document, targetQuery);
-  if (!webviews || webviews.length !== 1)
+  if (!webviews || webviews.length !== 1) {
     throw new Error('<webview> not found: [' + targetQuery.join(',') + ']');
+  }
   const webview = /** @type {WebView} */ (webviews[0]);
   webview.executeScript({code: script}, callback);
 };
@@ -266,8 +272,9 @@ test.util.async.deepExecuteScriptInWebView = function(
  *     active element, returns null.
  */
 test.util.sync.getActiveElement = function(contentWindow, opt_styleNames) {
-  if (!contentWindow.document || !contentWindow.document.activeElement)
+  if (!contentWindow.document || !contentWindow.document.activeElement) {
     return null;
+  }
 
   return extractElementInfo(
       contentWindow.document.activeElement, contentWindow, opt_styleNames);
@@ -298,8 +305,9 @@ test.util.sync.inputText = function(contentWindow, query, text) {
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.sendEvent = function(contentWindow, targetQuery, event) {
-  if (!contentWindow.document)
+  if (!contentWindow.document) {
     return false;
+  }
 
   let target;
   if (targetQuery === null) {
@@ -309,12 +317,14 @@ test.util.sync.sendEvent = function(contentWindow, targetQuery, event) {
   } else if (Array.isArray(targetQuery)) {
     let elems = test.util.sync.deepQuerySelectorAll_(
         contentWindow.document, targetQuery);
-    if (elems.length > 0)
+    if (elems.length > 0) {
       target = elems[0];
+    }
   }
 
-  if (!target)
+  if (!target) {
     return false;
+  }
 
   target.dispatchEvent(event);
   return true;
@@ -531,8 +541,9 @@ test.util.sync.focus = function(contentWindow, targetQuery) {
   var target = contentWindow.document &&
       contentWindow.document.querySelector(targetQuery);
 
-  if (!target)
+  if (!target) {
     return false;
+  }
 
   target.focus();
   return true;
@@ -623,8 +634,9 @@ test.util.executeTestMessage = function(request, sendResponse) {
     request.func = '';
   }
   // Prepare arguments.
-  if (!('args' in request))
+  if (!('args' in request)) {
     throw new Error('Invalid request.');
+  }
 
   var args = request.args.slice();  // shallow copy
   if (request.appId) {
@@ -673,8 +685,9 @@ test.util.sync.getMetadataStats = function(contentWindow) {
  */
 test.util.sync.isFileManagerLoaded = function(contentWindow) {
   if (contentWindow && contentWindow.fileManager &&
-      contentWindow.fileManager.ui)
+      contentWindow.fileManager.ui) {
     return contentWindow.fileManager.ui.element.hasAttribute('loaded');
+  }
 
   return false;
 };
@@ -686,8 +699,9 @@ test.util.sync.isFileManagerLoaded = function(contentWindow) {
  */
 test.util.sync.getA11yAnnounces = function(contentWindow) {
   if (contentWindow && contentWindow.fileManager &&
-      contentWindow.fileManager.ui)
+      contentWindow.fileManager.ui) {
     return contentWindow.fileManager.ui.a11yAnnounces;
+  }
 
   return null;
 };

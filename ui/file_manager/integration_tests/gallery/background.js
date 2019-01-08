@@ -29,8 +29,9 @@ var gallery = new RemoteCallGallery(GALLERY_APP_ID);
 function launch(testVolumeName, volumeType, entries, opt_selected) {
   var entriesPromise = addEntries([testVolumeName], entries).then(function() {
     var selectedEntries = opt_selected || entries;
-    var selectedEntryNames =
-        selectedEntries.map(function(entry) { return entry.nameText; });
+    var selectedEntryNames = selectedEntries.map(function(entry) {
+      return entry.nameText;
+    });
     return gallery.callRemoteTestUtil(
         'getFilesUnderVolume', null, [volumeType, selectedEntryNames]);
   });
@@ -72,8 +73,9 @@ window.addEventListener('load', function() {
     },
     // Request the root entry paths.
     function(mode) {
-      if (JSON.parse(mode) != chrome.extension.inIncognitoContext)
+      if (JSON.parse(mode) != chrome.extension.inIncognitoContext) {
         return;
+      }
       sendBrowserTestCommand({name: 'getRootPaths'}, steps.shift());
     },
     // Request the test case name.

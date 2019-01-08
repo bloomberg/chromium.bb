@@ -205,8 +205,9 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
  * @private
  */
 Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
-  if (reader.eof())
+  if (reader.eof()) {
     return null;
+  }
 
   var frame = {};
 
@@ -217,8 +218,9 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
   frame.name = (majorVersion == 2) ? reader.readNullTerminatedString(3) :
                                      reader.readNullTerminatedString(4);
 
-  if (frame.name == '')
+  if (frame.name == '') {
     return null;
+  }
 
   this.vlog('Found frame ' + (frame.name) + ' at position ' + position);
 
@@ -393,10 +395,11 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
         function prepareDescription() {
           var id3v2 = metadata.id3v2;
 
-          if (id3v2['APIC'])
+          if (id3v2['APIC']) {
             metadata.thumbnailURL = id3v2['APIC'].imageUrl;
-          else if (id3v2['PIC'])
+          } else if (id3v2['PIC']) {
             metadata.thumbnailURL = id3v2['PIC'].imageUrl;
+          }
 
           metadata.description = [];
 

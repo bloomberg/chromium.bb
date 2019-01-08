@@ -29,8 +29,9 @@ CommandButton.prototype.command_ = null;
  */
 CommandButton.prototype.decorate = function() {
   var commandId;
-  if ((commandId = this.getAttribute('command')))
+  if ((commandId = this.getAttribute('command'))) {
     this.setCommand(commandId);
+  }
 
   this.addEventListener('click', this.handleClick_.bind(this));
 };
@@ -67,8 +68,9 @@ CommandButton.prototype.setCommand = function(command) {
 
   this.command_ = command;
   if (command) {
-    if (command.id)
+    if (command.id) {
       this.setAttribute('command', '#' + command.id);
+    }
 
     this.setLabel(command.label);
     this.disabled = command.disabled;
@@ -104,8 +106,9 @@ CommandButton.prototype.setLabel = function(label) {
   // Updating the label in customized button content should be done
   // automatically by specifying an element which should be synced with the
   // command label using class name or polymer's template binding.
-  if (!this.firstElementChild)
+  if (!this.firstElementChild) {
     this.textContent = label;
+  }
 };
 
 /**
@@ -114,8 +117,9 @@ CommandButton.prototype.setLabel = function(label) {
  * @private
  */
 CommandButton.prototype.handleClick_ = function(e) {
-  if (!this.disabled && this.command_)
+  if (!this.disabled && this.command_) {
     this.command_.execute(this);
+  }
 };
 
 /**

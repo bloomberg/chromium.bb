@@ -34,8 +34,9 @@ async function openTwoWindows(rootPath1, rootPath2) {
  */
 async function copyBetweenWindows(
     window1, window2, file, alreadyPresentFile = null) {
-  if (!file || !file.nameText)
+  if (!file || !file.nameText) {
     chrome.test.assertTrue(false, 'copyBetweenWindows invalid file name');
+  }
 
   const flag = {ignoreLastModifiedTime: true};
   const name = file.nameText;

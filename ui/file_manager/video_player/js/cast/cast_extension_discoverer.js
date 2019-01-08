@@ -67,7 +67,9 @@ CastExtensionDiscoverer.isExtensionInstalled_ =
   var xhr = new XMLHttpRequest();
   var url = 'chrome-extension://' + extensionId + '/cast_sender.js';
   xhr.open('GET', url, true);
-  xhr.onerror = function() { callback(false); };
+  xhr.onerror = function() {
+    callback(false);
+  };
   /** @param {*} event */
   xhr.onreadystatechange = function(event) {
     if (xhr.readyState == 4 && xhr.status === 200) {

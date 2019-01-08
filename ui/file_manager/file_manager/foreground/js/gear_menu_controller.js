@@ -112,8 +112,9 @@ GearMenuController.prototype.onHideGearMenu_ = function() {
  */
 GearMenuController.prototype.onDirectoryChanged_ = function(event) {
   event = /** @type {DirectoryChangeEvent} */ (event);
-  if (event.volumeChanged)
-    this.refreshRemainingSpace_(true);  // Show loading caption.
+  if (event.volumeChanged) {
+    this.refreshRemainingSpace_(true);
+  }  // Show loading caption.
 };
 
 /**
@@ -130,8 +131,9 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
   }
 
   var currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
-  if (!currentVolumeInfo)
+  if (!currentVolumeInfo) {
     return;
+  }
 
   // TODO(mtomasz): Add support for remaining space indication for provided
   // file systems.
@@ -154,12 +156,14 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
  */
 GearMenuController.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(prefs) {
-    if (chrome.runtime.lastError)
+    if (chrome.runtime.lastError) {
       return;
+    }
 
-    if (prefs.cellularDisabled)
+    if (prefs.cellularDisabled) {
       this.gearMenu_.syncButton.setAttribute('checked', '');
-    else
+    } else {
       this.gearMenu_.syncButton.removeAttribute('checked');
+    }
   }.bind(this));
 };

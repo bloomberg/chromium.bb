@@ -666,8 +666,9 @@ importer.RuntimeCommandWidget.ensureTransitionEndEvent =
   });
   // Use a timeout of 400 ms.
   window.setTimeout(function() {
-    if (!fired)
+    if (!fired) {
       cr.dispatchSimpleEvent(element, 'transitionend', true);
+    }
   }, timeout);
 };
 
@@ -687,8 +688,9 @@ importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
   console.assert(!!this.clickListener_, 'Listener not set.');
 
   // Clear focus from the toolbar button after it is clicked.
-  if (source === importer.ClickSource.MAIN)
+  if (source === importer.ClickSource.MAIN) {
     this.mainButton_.blur();
+  }
 
   switch (source) {
     case importer.ClickSource.MAIN:
@@ -741,13 +743,15 @@ importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
     // Align the detail panel horizontally to the dropdown button.
     if (document.documentElement.getAttribute('dir') === 'rtl') {
       var anchorLeft = this.comboButton_.getBoundingClientRect().left;
-      if (anchorLeft)
+      if (anchorLeft) {
         this.detailsPanel_.style.left = anchorLeft + 'px';
+      }
     } else {
       var availableWidth = document.body.getBoundingClientRect().width;
       var anchorRight = this.comboButton_.getBoundingClientRect().right;
-      if (anchorRight)
+      if (anchorRight) {
         this.detailsPanel_.style.right = (availableWidth - anchorRight) + 'px';
+      }
     }
 
     this.detailsPanel_.hidden = false;
@@ -794,7 +798,9 @@ importer.RuntimeCommandWidget.prototype.onDetailsFocusLost_ =
 importer.RuntimeCommandWidget.prototype.updateTabindexOfAnchors_ =
     function(root, newTabIndex) {
   var anchors = root.querySelectorAll('a');
-  anchors.forEach(element => { element.tabIndex = newTabIndex; });
+  anchors.forEach(element => {
+    element.tabIndex = newTabIndex;
+  });
 };
 
 /** @override */
@@ -927,9 +933,10 @@ importer.RuntimeCommandWidget.prototype.update = function(
       assertNotReached('Unrecognized response id: ' + activityState);
   }
   // Make all anchors synthesized from the localized text focusable.
-  if (this.cloudImportButtonTabIndex_)
-    this.updateTabindexOfAnchors_(this.statusContent_,
-                                  this.cloudImportButtonTabIndex_);
+  if (this.cloudImportButtonTabIndex_) {
+    this.updateTabindexOfAnchors_(
+        this.statusContent_, this.cloudImportButtonTabIndex_);
+  }
 };
 
 /**

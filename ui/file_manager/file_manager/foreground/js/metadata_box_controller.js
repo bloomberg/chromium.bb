@@ -105,8 +105,9 @@ MetadataBoxController.prototype.updateView_ = function() {
   this.previousEntry_ = entry;
   // Do not clear isSizeLoading and size fields when the entry is not changed.
   this.metadataBox_.clear(isSameEntry);
-  if (!entry)
+  if (!entry) {
     return;
+  }
   this.metadataModel_
       .get([entry], MetadataBoxController.GENERAL_METADATA_NAME.concat([
         'alternateUrl', 'externalFileUrl', 'hosted'
@@ -211,12 +212,14 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
  */
 MetadataBoxController.prototype.setDirectorySize_ = function(
     entry, isSameEntry) {
-  if (!entry.isDirectory)
+  if (!entry.isDirectory) {
     return;
+  }
 
   if (this.isDirectorySizeLoading_) {
-    if (!isSameEntry)
+    if (!isSameEntry) {
       this.metadataBox_.isSizeLoading = true;
+    }
 
     // Only retain the last setDirectorySize_ request.
     this.onDirectorySizeLoaded_ = function(lastEntry) {
@@ -235,8 +238,9 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
       this.onDirectorySizeLoaded_ = null;
     }
 
-    if (this.quickViewModel_.getSelectedEntry() != entry)
+    if (this.quickViewModel_.getSelectedEntry() != entry) {
       return;
+    }
 
     if (chrome.runtime.lastError) {
       this.metadataBox_.isSizeLoading = false;

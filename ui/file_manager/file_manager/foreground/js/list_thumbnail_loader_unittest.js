@@ -133,7 +133,9 @@ function getKeyOfGetCallback_(entries) {
 function resolveGetLatestCallback(entries) {
   var key = getKeyOfGetCallback_(entries);
   assert(getCallbacks[key]);
-  getCallbacks[key](entries.map(function() { return { thumbnail: {} }; }));
+  getCallbacks[key](entries.map(function() {
+    return {thumbnail: {}};
+  }));
   delete getCallbacks[key];
 }
 
@@ -143,8 +145,9 @@ function hasPendingGetLatestCallback(entries) {
 
 function areEntriesInCache(entries) {
   for (var i = 0; i < entries.length; i++) {
-    if (null === listThumbnailLoader.getThumbnailFromCache(entries[i]))
+    if (null === listThumbnailLoader.getThumbnailFromCache(entries[i])) {
       return false;
+    }
   }
   return true;
 }

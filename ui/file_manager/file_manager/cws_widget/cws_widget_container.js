@@ -436,8 +436,9 @@ CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
  * @private
  */
 CWSWidgetContainer.prototype.onWebstoreLinkActivated_ = function(e) {
-  if (!this.webStoreUrl_)
+  if (!this.webStoreUrl_) {
     return;
+  }
   window.open(this.webStoreUrl_);
   this.state_ = CWSWidgetContainer.State.OPENING_WEBSTORE_CLOSING;
   this.reportDone_();
@@ -450,8 +451,9 @@ CWSWidgetContainer.prototype.onWebstoreLinkActivated_ = function(e) {
  * @private
  */
 CWSWidgetContainer.prototype.onWebstoreLinkKeyDown_ = function(e) {
-  if (e.keyCode !== 13 /* Enter */)
+  if (e.keyCode !== 13 /* Enter */) {
     return;
+  }
   this.onWebstoreLinkActivated_(e);
 };
 
@@ -536,8 +538,9 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
 
   // If install succeeded, the spinner will be removed once
   // |this.webviewClient_| dispatched INSTALL_DONE event.
-  if (!success)
+  if (!success) {
     this.spinnerLayerController_.setVisible(false);
+  }
 
   this.state_ = success ?
       CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :
@@ -572,8 +575,9 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
  * @private
  */
 CWSWidgetContainer.prototype.reportDone_ = function() {
-  if (this.resolveStart_)
+  if (this.resolveStart_) {
     this.resolveStart_(CWSWidgetContainer.ResolveReason.DONE);
+  }
   this.resolveStart_ = null;
 };
 
@@ -589,8 +593,9 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
     case CWSWidgetContainer.State.INSTALLING:
       // Install is being aborted. Send the failure result.
       // Cancels the install.
-      if (this.webviewClient_)
+      if (this.webviewClient_) {
         this.webviewClient_.onInstallCompleted(false, this.installingItemId_);
+      }
       this.installingItemId_ = null;
 
       // Assumes closing the dialog as canceling the install.
@@ -661,8 +666,9 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
  * @private
  */
 CWSWidgetContainer.prototype.reset_ = function() {
-  if (this.state_ !== CWSWidgetContainer.State.UNINITIALIZED)
+  if (this.state_ !== CWSWidgetContainer.State.UNINITIALIZED) {
     console.error('Widget reset before its state was finalized.');
+  }
 
   if (this.resolveStart_) {
     this.resolveStart_(CWSWidgetContainer.ResolveReason.RESET);
@@ -688,8 +694,9 @@ CWSWidgetContainer.prototype.reset_ = function() {
 
   this.options_ = null;
 
-  if (this.errorDialog_.shown())
+  if (this.errorDialog_.shown()) {
     this.errorDialog_.hide();
+  }
 };
 
 /**
@@ -755,10 +762,12 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setElementToFocusOnHide =
  */
 CWSWidgetContainer.SpinnerLayerController.prototype.handleKeyDown_ = function(
     e) {
-  if (!this.visible_)
+  if (!this.visible_) {
     return;
-  if (e.keyCode === 9 /* Tab */)
+  }
+  if (e.keyCode === 9 /* Tab */) {
     e.preventDefault();
+  }
 };
 
 /**
@@ -768,8 +777,9 @@ CWSWidgetContainer.SpinnerLayerController.prototype.handleKeyDown_ = function(
 CWSWidgetContainer.SpinnerLayerController.prototype.reset = function() {
   this.visible_ = false;
   this.focusOnHide_ = null;
-  if (this.clearTransision_)
+  if (this.clearTransision_) {
     this.clearTransition_();
+  }
 };
 
 /**
@@ -787,11 +797,13 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setAltText = function(
  */
 CWSWidgetContainer.SpinnerLayerController.prototype.setVisible = function(
     visible) {
-  if (this.visible_ === visible)
+  if (this.visible_ === visible) {
     return;
+  }
 
-  if (this.clearTransition_)
+  if (this.clearTransition_) {
     this.clearTransition_();
+  }
 
   this.visible_ = visible;
 
@@ -804,12 +816,14 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setVisible = function(
     this.focusOnHide_.focus();
   }
 
-  if (!this.visible_)
+  if (!this.visible_) {
     this.spinnerLayer_.classList.add('cws-widget-hiding-spinner');
+  }
 
   this.clearTransition_ = function() {
-    if (this.clearTransitionTimeout_)
+    if (this.clearTransitionTimeout_) {
       clearTimeout(this.clearTransitionTimeout_);
+    }
     this.clearTransitionTimeout_ = null;
 
     this.spinnerLayer_.removeEventListener(
@@ -878,8 +892,9 @@ CWSWidgetContainer.MetricsRecorder.INSTALL = {
  *     CWSWidgetContainer.MetricsRecorder.LOAD.
  */
 CWSWidgetContainer.MetricsRecorder.prototype.recordLoad = function(result) {
-  if (0 <= result && result < 3)
+  if (0 <= result && result < 3) {
     this.metricsImpl_.recordEnum('Load', result, 3);
+  }
 };
 
 /**
@@ -888,8 +903,9 @@ CWSWidgetContainer.MetricsRecorder.prototype.recordLoad = function(result) {
  */
 CWSWidgetContainer.MetricsRecorder.prototype.recordCloseDialog = function(
     reason) {
-  if (0 <= reason && reason < 4)
+  if (0 <= reason && reason < 4) {
     this.metricsImpl_.recordEnum('CloseDialog', reason, 4);
+  }
 };
 
 /**
@@ -897,8 +913,9 @@ CWSWidgetContainer.MetricsRecorder.prototype.recordCloseDialog = function(
  *     CWSWidgetContainer.MetricsRecorder.INSTALL.
  */
 CWSWidgetContainer.MetricsRecorder.prototype.recordInstall = function(result) {
-  if (0 <= result && result < 3)
+  if (0 <= result && result < 3) {
     this.metricsImpl_.recordEnum('Install', result, 3);
+  }
 };
 
 CWSWidgetContainer.MetricsRecorder.prototype.recordShowDialog = function() {

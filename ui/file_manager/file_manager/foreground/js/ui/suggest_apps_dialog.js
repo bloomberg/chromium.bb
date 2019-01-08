@@ -97,8 +97,9 @@ SuggestAppsDialog.prototype.showByExtensionAndMime =
     function(extension, mime, onDialogClosed) {
   assert(extension && extension[0] === '.');
   var options = {file_extension: extension.substr(1)};
-  if (mime)
+  if (mime) {
     options.mime_type = mime;
+  }
   this.showInternal_(
       options, str('SUGGEST_DIALOG_TITLE'),
       webStoreUtils.createWebStoreLink(extension, mime), onDialogClosed);
@@ -257,8 +258,9 @@ SuggestAppsDialog.prototype.showInternal_ =
              }).bind(this))
       .then((/** @param {CWSWidgetContainer.ResolveReason} reason */
              function(reason) {
-               if (reason !== CWSWidgetContainer.ResolveReason.RESET)
+               if (reason !== CWSWidgetContainer.ResolveReason.RESET) {
                  this.hide();
+               }
              }).bind(this))
       .catch(
           function(error) {
@@ -313,10 +315,11 @@ SuggestAppsDialog.prototype.showDialog_ = function(title) {
  * @param {VolumeManagerCommon.DriveConnectionType} connectionType Current
  *     connection type.
  */
-SuggestAppsDialog.prototype.onDriveConnectionChanged =
-    function(connectionType) {
-  if (connectionType === VolumeManagerCommon.DriveConnectionType.OFFLINE)
+SuggestAppsDialog.prototype.onDriveConnectionChanged = function(
+    connectionType) {
+  if (connectionType === VolumeManagerCommon.DriveConnectionType.OFFLINE) {
     this.widget_.onConnectionLost();
+  }
 };
 
 /**
@@ -353,8 +356,9 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
  */
 SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
   // Calls the callback after the dialog hides.
-  if (opt_originalOnHide)
+  if (opt_originalOnHide) {
     opt_originalOnHide();
+  }
 
   this.onDialogClosed_(this.result_, this.installedItemId_);
 };

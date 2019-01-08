@@ -151,7 +151,7 @@ DialogFooter.prototype.initFileTypeFilter = function(
       for (var j = 0; j !== fileType.extensions.length; j++) {
         var currentDescription = FileListModel.getFileTypeString(
             FileType.getTypeForName('.' + fileType.extensions[j]));
-        if (!description)  {
+        if (!description) {
           // Set the first time.
           description = currentDescription;
         } else if (description != currentDescription) {
@@ -171,8 +171,9 @@ DialogFooter.prototype.initFileTypeFilter = function(
     option.innerText = description;
     option.value = i + 1;
 
-    if (fileType.selected)
+    if (fileType.selected) {
       option.selected = true;
+    }
 
     this.fileTypeSelector.appendChild(option);
   }
@@ -209,8 +210,9 @@ DialogFooter.prototype.onFilenameInputFocus_ = function(event) {
  * @private
  */
 DialogFooter.prototype.onFilenameInputKeyDown_ = function(event) {
-  if ((util.getKeyModifiers(event) + event.keyCode) === '13' /* Enter */)
+  if ((util.getKeyModifiers(event) + event.keyCode) === '13' /* Enter */) {
     this.okButton.click();
+  }
 };
 
 DialogFooter.prototype.selectTargetNameInFilenameInput = function() {

@@ -162,8 +162,9 @@ function MainWindowComponent(
  * @private
  */
 MainWindowComponent.prototype.handleTouchEvents_ = function(event) {
-  if (!this.enableTouchMode_)
+  if (!this.enableTouchMode_) {
     return false;
+  }
   // We only need to know that a tap is happend somewhere in the list.
   // Also the 2nd parameter of handleTouchEvents is just passed back to the
   // callback. Therefore we can pass a dummy value to it.
@@ -205,8 +206,9 @@ MainWindowComponent.prototype.onFileListFocus_ = function() {
   // is selected.
   if (this.pressingTab_) {
     var selection = this.selectionHandler_.selection;
-    if (selection && selection.totalCount == 0)
+    if (selection && selection.totalCount == 0) {
       this.directoryModel_.selectIndex(0);
+    }
   }
 };
 
@@ -274,8 +276,9 @@ MainWindowComponent.prototype.acceptSelection_ = function(
           }
         }.bind(this))
         .catch(function(error) {
-          if (error)
+          if (error) {
             console.error(error.stack || error);
+          }
         });
     return true;
   }
@@ -310,8 +313,9 @@ MainWindowComponent.prototype.onToggleViewButtonClick_ = function(event) {
  * @private
  */
 MainWindowComponent.prototype.onKeyDown_ = function(event) {
-  if (event.keyCode === 9)  // Tab
+  if (event.keyCode === 9) {  // Tab
     this.pressingTab_ = true;
+  }
 
   if (event.srcElement === this.ui_.listContainer.renameInput) {
     // Ignore keydown handler in the rename input box.
@@ -336,8 +340,9 @@ MainWindowComponent.prototype.onKeyDown_ = function(event) {
  * @private
  */
 MainWindowComponent.prototype.onKeyUp_ = function(event) {
-  if (event.keyCode === 9)  // Tab
+  if (event.keyCode === 9) {  // Tab
     this.pressingTab_ = false;
+  }
 };
 
 /**
@@ -349,8 +354,9 @@ MainWindowComponent.prototype.onDirectoryTreeKeyDown_ = function(event) {
   // Enter => Change directory or perform default action.
   if (util.getKeyModifiers(event) + event.key === 'Enter') {
     var selectedItem = this.ui_.directoryTree.selectedItem;
-    if (!selectedItem)
+    if (!selectedItem) {
       return;
+    }
     selectedItem.activate();
     if (this.dialogType_ !== DialogType.FULL_PAGE &&
         !selectedItem.hasAttribute('renaming') &&
@@ -372,8 +378,9 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
     case 'Backspace':  // Backspace => Up one directory.
       event.preventDefault();
       const components = this.ui_.locationLine.getCurrentPathComponents();
-      if (components.length < 2)
+      if (components.length < 2) {
         break;
+      }
       const parentPathComponent = components[components.length - 2];
       parentPathComponent.resolveEntry().then((parentEntry) => {
         this.directoryModel_.changeDirectoryEntry(

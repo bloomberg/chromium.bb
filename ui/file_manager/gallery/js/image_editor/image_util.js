@@ -46,8 +46,9 @@ ImageUtil.trace = (function() {
   };
 
   PerformanceTrace.prototype.dump = function() {
-    for (var key in this.lines_)
+    for (var key in this.lines_) {
       this.dumpLine(key);
+    }
   };
 
   PerformanceTrace.prototype.dumpLine = function(key) {
@@ -293,8 +294,9 @@ ImageRect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
   opt_dstRect = opt_dstRect ||
       ImageRect.createFromImage(assert(context.canvas));
   opt_srcRect = opt_srcRect || ImageRect.createFromImage(image);
-  if (opt_dstRect.isEmpty() || opt_srcRect.isEmpty())
+  if (opt_dstRect.isEmpty() || opt_srcRect.isEmpty()) {
     return;
+  }
   context.drawImage(image,
       opt_srcRect.left, opt_srcRect.top, opt_srcRect.width, opt_srcRect.height,
       opt_dstRect.left, opt_dstRect.top, opt_dstRect.width, opt_dstRect.height);
@@ -399,10 +401,11 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
  * @param {boolean} on True if add, false if remove.
  */
 ImageUtil.setAttribute = function(element, attribute, on) {
-  if (on)
+  if (on) {
     element.setAttribute(attribute, '');
-  else
+  } else {
     element.removeAttribute(attribute);
+  }
 };
 
 /**
@@ -413,10 +416,11 @@ ImageUtil.setAttribute = function(element, attribute, on) {
  */
 ImageUtil.setClass = function(element, className, on) {
   var cl = element.classList;
-  if (on)
+  if (on) {
     cl.add(className);
-  else
+  } else {
     cl.remove(className);
+  }
 };
 
 /**
@@ -432,10 +436,11 @@ ImageUtil.removeChildren = function(element) {
  */
 ImageUtil.getDisplayNameFromName = function(name) {
   var index = name.lastIndexOf('.');
-  if (index !== -1)
+  if (index !== -1) {
     return name.substr(0, index);
-  else
+  } else {
     return name;
+  }
 };
 
 /**
@@ -444,10 +449,11 @@ ImageUtil.getDisplayNameFromName = function(name) {
  */
 ImageUtil.getExtensionFromFullName = function(name) {
   var index = name.lastIndexOf('.');
-  if (index !== -1)
+  if (index !== -1) {
     return name.substring(index);
-  else
+  } else {
     return '';
+  }
 };
 
 /**

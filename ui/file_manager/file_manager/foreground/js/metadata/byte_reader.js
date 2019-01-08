@@ -61,11 +61,13 @@ ByteReader.SEEK_END = 2;
  * @param {number} end Maximum position to read from.
  */
 ByteReader.validateRead = function(pos, size, end) {
-  if (pos < 0 || pos >= end)
+  if (pos < 0 || pos >= end) {
     throw new Error('Invalid read position');
+  }
 
-  if (pos + size > end)
+  if (pos + size > end) {
     throw new Error('Read past end of buffer');
+  }
 };
 
 /**
@@ -85,8 +87,9 @@ ByteReader.readString = function(dataView, pos, size, opt_end) {
 
   var codes = [];
 
-  for (var i = 0; i < size; ++i)
+  for (var i = 0; i < size; ++i) {
     codes.push(dataView.getUint8(pos + i));
+  }
 
   return String.fromCharCode.apply(null, codes);
 };
@@ -205,10 +208,12 @@ ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
     rv.push.apply(rv, chars);
   }
 
-  if (padding > 0)
+  if (padding > 0) {
     rv[rv.length - 1] = '=';
-  if (padding > 1)
+  }
+  if (padding > 1) {
     rv[rv.length - 2] = '=';
+  }
 
   return rv.join('');
 };
@@ -300,8 +305,9 @@ ByteReader.prototype.setByteOrder = function(order) {
  * @param {number=} opt_end Maximum position to read from.
  */
 ByteReader.prototype.validateRead = function(size, opt_end) {
-  if (typeof opt_end == 'undefined')
+  if (typeof opt_end == 'undefined') {
     opt_end = this.view_.byteLength;
+  }
 
   ByteReader.validateRead(this.pos_, size, opt_end);
 };
@@ -495,8 +501,9 @@ ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
     newPos = pos;
   }
 
-  if (newPos < 0 || newPos > this.view_.byteLength)
+  if (newPos < 0 || newPos > this.view_.byteLength) {
     throw new Error('Seek outside of buffer: ' + (newPos - opt_end));
+  }
 
   this.pos_ = newPos;
 };

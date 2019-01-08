@@ -94,7 +94,9 @@ function NavigationModelShortcutItem(label, entry) {
 
 NavigationModelShortcutItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get entry() { return this.entry_; }
+  get entry() {
+    return this.entry_;
+  }
 };
 
 /**
@@ -116,7 +118,9 @@ function NavigationModelVolumeItem(label, volumeInfo) {
 
 NavigationModelVolumeItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get volumeInfo() { return this.volumeInfo_; }
+  get volumeInfo() {
+    return this.volumeInfo_;
+  }
 };
 
 /**
@@ -263,8 +267,9 @@ function NavigationListModel(
 
       // Use the old instances if they just move.
       for (var i = 0; i < event.permutation.length; i++) {
-        if (event.permutation[i] >= 0)
+        if (event.permutation[i] >= 0) {
           newList[event.permutation[i]] = this.volumeList_[i];
+        }
       }
 
       // Create missing instances.
@@ -329,8 +334,9 @@ function NavigationListModel(
       }
 
       // Fill remaining permutation if necessary.
-      for (; oldListIndex < this.shortcutList_.length; oldListIndex++)
+      for (; oldListIndex < this.shortcutList_.length; oldListIndex++) {
         permutation.push(-1);
+      }
 
       this.shortcutList_ = newList;
     }
@@ -452,8 +458,9 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
         // splitting them apart from PROVIDED.
         volumeId = volumeList[i].volumeInfo.volumeId;
         providedType = VolumeManagerCommon.VolumeType.PROVIDED;
-        if (volumeId.includes(NavigationListModel.ZIP_EXTENSION_ID))
+        if (volumeId.includes(NavigationListModel.ZIP_EXTENSION_ID)) {
           providedType = NavigationListModel.ZIP_VOLUME_TYPE;
+        }
         if (!volumeIndexes[providedType]) {
           volumeIndexes[providedType] = [i];
         } else {
@@ -499,8 +506,9 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   // Items as per required order.
   this.navigationItems_ = [];
 
-  if (this.recentModelItem_)
+  if (this.recentModelItem_) {
     this.navigationItems_.push(this.recentModelItem_);
+  }
 
   // Media View (Images, Videos and Audio).
   for (const mediaView of getVolumes(
@@ -509,8 +517,9 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     mediaView.section = NavigationSection.TOP;
   }
   // Shortcuts.
-  for (const shortcut of this.shortcutList_)
+  for (const shortcut of this.shortcutList_) {
     this.navigationItems_.push(shortcut);
+  }
 
   let myFilesEntry, myFilesModel;
   if (!this.myFilesModel_) {
@@ -637,8 +646,9 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     volume.section = NavigationSection.REMOVABLE;
   }
 
-  if (this.addNewServicesItem_)
+  if (this.addNewServicesItem_) {
     this.navigationItems_.push(this.addNewServicesItem_);
+  }
 };
 
 /**
@@ -668,8 +678,9 @@ NavigationListModel.prototype.length_ = function() {
  */
 NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
   for (var i = opt_fromIndex || 0; i < this.length; i++) {
-    if (modelItem === this.item(i))
+    if (modelItem === this.item(i)) {
       return i;
+    }
   }
   return -1;
 };
@@ -679,9 +690,10 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
  * @param {!NavigationModelItem} modelItem The entry which is not found.
  */
 NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
-  if (modelItem.type ===  NavigationModelItemType.SHORTCUT)
+  if (modelItem.type === NavigationModelItemType.SHORTCUT) {
     this.shortcutListModel_.onItemNotFoundError(
-        /** @type {!NavigationModelShortcutItem} */(modelItem).entry);
+        /** @type {!NavigationModelShortcutItem} */ (modelItem).entry);
+  }
 };
 
 /**

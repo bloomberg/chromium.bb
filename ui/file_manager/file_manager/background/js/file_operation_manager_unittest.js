@@ -223,8 +223,9 @@ function waitForEvents(fileOperationManager) {
     fileOperationManager.addEventListener('copy-progress', function(event) {
       event = /** @type {FileOperationProgressEvent} */ (event);
       events.push(event);
-      if (event.reason === 'SUCCESS')
+      if (event.reason === 'SUCCESS') {
         fulfill(events);
+      }
     });
     fileOperationManager.addEventListener('entries-changed', function(event) {
       event = /** @type {FileOperationProgressEvent} */ (event);
@@ -233,8 +234,9 @@ function waitForEvents(fileOperationManager) {
     fileOperationManager.addEventListener('delete', function(event) {
       event = /** @type {FileOperationProgressEvent} */ (event);
       events.push(event);
-      if (event.reason === 'SUCCESS')
+      if (event.reason === 'SUCCESS') {
         fulfill(events);
+      }
     });
   });
 }
@@ -284,9 +286,15 @@ function testResolvePath(callback) {
   var rootPromise = fileOperationUtil.resolvePath(root, '/');
   var filePromise = fileOperationUtil.resolvePath(root, '/file');
   var directoryPromise = fileOperationUtil.resolvePath(root, '/directory');
-  var errorPromise = fileOperationUtil.resolvePath(root, '/not_found').then(
-      function() { assertTrue(false, 'The NOT_FOUND error is not reported.'); },
-      function(error) { return error.name; });
+  var errorPromise =
+      fileOperationUtil.resolvePath(root, '/not_found')
+          .then(
+              function() {
+                assertTrue(false, 'The NOT_FOUND error is not reported.');
+              },
+              function(error) {
+                return error.name;
+              });
   reportPromise(Promise.all([
     rootPromise,
     filePromise,

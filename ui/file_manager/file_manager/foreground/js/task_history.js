@@ -21,7 +21,7 @@ function TaskHistory() {
 
   chrome.storage.onChanged.addListener(this.onLocalStorageChanged_.bind(this));
   this.load_();
-};
+}
 
 /**
  * @enum {string}
@@ -95,8 +95,9 @@ TaskHistory.prototype = {
    * @private
    */
   onLocalStorageChanged_: function(changes, areaName) {
-    if (areaName != 'local')
+    if (areaName != 'local') {
       return;
+    }
 
     for (var key in changes) {
       if (key == TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME) {
@@ -113,19 +114,22 @@ TaskHistory.prototype = {
    */
   truncate_: function() {
     var keys = Object.keys(this.lastExecutedTime_);
-    if (keys.length <= TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX)
+    if (keys.length <= TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX) {
       return;
+    }
 
     var items = [];
-    for (var i = 0; i < keys.length; i++)
+    for (var i = 0; i < keys.length; i++) {
       items.push({id: keys[i], timestamp: this.lastExecutedTime_[keys[i]]});
+    }
 
     items.sort((a, b) => b.timestamp - a.timestamp);
     items = items.slice(0, TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX);
 
     var newObject = {};
-    for (var i = 0; i < items.length; i++)
+    for (var i = 0; i < items.length; i++) {
       newObject[items[i].id] = items[i].timestamp;
+    }
 
     this.lastExecutedTime_ = newObject;
   }

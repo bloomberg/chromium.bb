@@ -142,19 +142,22 @@ FileTableColumnModel.prototype.getHitColumn = function(x) {
   for (var i = 0; x >= this.columns_[i].width; i++) {
     x -= this.columns_[i].width;
   }
-  if (i >= this.columns_.length)
+  if (i >= this.columns_.length) {
     return null;
+  }
   return {index: i, hitPosition: x, width: this.columns_[i].width};
 };
 
 /** @override */
 FileTableColumnModel.prototype.setVisible = function(index, visible) {
-  if (index < 0 || index > this.columns_.length - 1)
+  if (index < 0 || index > this.columns_.length - 1) {
     return;
+  }
 
   var column = this.columns_[index];
-  if (column.visible === visible)
+  if (column.visible === visible) {
     return;
+  }
 
   // Re-layout the table.  This overrides the default column layout code in the
   // parent class.
@@ -227,8 +230,9 @@ FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
     if (column) {
       // Set column width.  Ignore invalid widths.
       var width = ~~config[columnId].width;
-      if (width > 0)
+      if (width > 0) {
         column.width = width;
+      }
     }
   }
 
@@ -450,8 +454,9 @@ FileTable.decorate = function(
     // Extend table splitters
     var splitters = this.querySelectorAll('.table-header-splitter');
     for (var i = 0; i < splitters.length; i++) {
-      if (splitters[i] instanceof FileTableSplitter)
+      if (splitters[i] instanceof FileTableSplitter) {
         continue;
+      }
       FileTableSplitter.decorate(splitters[i]);
     }
   };
@@ -483,8 +488,10 @@ FileTable.decorate = function(
     var bottom = y + (opt_height || 0);
     for (var i = 0; i < this.selectionModel_.length; i++) {
       var itemMetrics = this.getHeightsForIndex(i);
-      if (itemMetrics.top < bottom && itemMetrics.top + itemMetrics.height >= y)
+      if (itemMetrics.top < bottom &&
+          itemMetrics.top + itemMetrics.height >= y) {
         currentSelection.push(i);
+      }
     }
     return currentSelection;
   };
@@ -503,8 +510,9 @@ FileTable.prototype.updateHighPriorityRange_ = function(beginIndex, endIndex) {
   this.beginIndex_ = beginIndex;
   this.endIndex_ = endIndex;
 
-  if (this.listThumbnailLoader_ !== null)
+  if (this.listThumbnailLoader_ !== null) {
     this.listThumbnailLoader_.setHighPriorityRange(beginIndex, endIndex);
+  }
 };
 
 /**
@@ -660,51 +668,60 @@ FileTable.prototype.hasDragHitElement_ = function(event) {
  */
 FileTable.prototype.shouldStartDragSelection_ = function(event) {
   // If the shift key is pressed, it should starts drag selection.
-  if (event.shiftKey)
+  if (event.shiftKey) {
     return true;
+  }
 
   // If we're outside of the element list, start the drag selection.
-  if (!this.list.hasDragHitElement(event))
+  if (!this.list.hasDragHitElement(event)) {
     return true;
+  }
 
   // If the position values are negative, it points the out of list.
   var pos = DragSelector.getScrolledPosition(this.list, event);
-  if (!pos)
+  if (!pos) {
     return false;
-  if (pos.x < 0 || pos.y < 0)
+  }
+  if (pos.x < 0 || pos.y < 0) {
     return true;
+  }
 
   // If the item index is out of range, it should start the drag selection.
   var itemHeight = this.list.measureItem().height;
   // Faster alternative to Math.floor for non-negative numbers.
   var itemIndex = ~~(pos.y / itemHeight);
-  if (itemIndex >= this.list.dataModel.length)
+  if (itemIndex >= this.list.dataModel.length) {
     return true;
+  }
 
   // If the pointed item is already selected, it should not start the drag
   // selection.
-  if (this.lastSelection_ && this.lastSelection_.indexOf(itemIndex) !== -1)
+  if (this.lastSelection_ && this.lastSelection_.indexOf(itemIndex) !== -1) {
     return false;
+  }
 
   // If the horizontal value is not hit to column, it should start the drag
   // selection.
   var hitColumn = this.columnModel.getHitColumn(pos.x);
-  if (!hitColumn)
+  if (!hitColumn) {
     return true;
+  }
 
   // Check if the point is on the column contents or not.
   switch (this.columnModel.columns_[hitColumn.index].id) {
     case 'name':
       var item = this.list.getListItemByIndex(itemIndex);
-      if (!item)
+      if (!item) {
         return false;
+      }
 
       var spanElement = item.querySelector('.filename-label span');
       var spanRect = spanElement.getBoundingClientRect();
       // The this.list.cachedBounds_ object is set by
       // DragSelector.getScrolledPosition.
-      if (!this.list.cachedBounds)
+      if (!this.list.cachedBounds) {
         return true;
+      }
       var textRight =
           spanRect.left - this.list.cachedBounds.left + spanRect.width;
       return textRight <= hitColumn.hitPosition;
@@ -946,8 +963,9 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       var cell = cells[i];
       var listItem = this.list_.getListItemAncestor(cell);
       var entry = this.dataModel.item(listItem.listIndex);
-      if (entry && urls.indexOf(entry.toURL()) !== -1)
+      if (entry && urls.indexOf(entry.toURL()) !== -1) {
         callback.call(this, cell, entry, listItem);
+      }
     }
   }.bind(this);
   if (type === 'filesystem') {
@@ -1041,13 +1059,15 @@ FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
     thumbnail.classList.remove('animate');
 
     for (var i = 0; i < oldThumbnails.length; i++) {
-      if (box.contains(oldThumbnails[i]))
+      if (box.contains(oldThumbnails[i])) {
         box.removeChild(oldThumbnails[i]);
+      }
     }
   });
 
-  if (shouldAnimate)
+  if (shouldAnimate) {
     thumbnail.classList.add('animate');
+  }
 
   box.appendChild(thumbnail);
 };
@@ -1089,8 +1109,9 @@ FileTable.prototype.relayout = function() {
  * @private
  */
 FileTable.prototype.relayoutImmediately_ = function() {
-  if (this.clientWidth > 0)
+  if (this.clientWidth > 0) {
     this.normalizeColumns();
+  }
   this.redraw();
   cr.dispatchSimpleEvent(this.list, 'relayout');
 };

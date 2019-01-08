@@ -125,16 +125,18 @@ importer.TaskQueue.prototype.runPending_ = function() {
   if (this.tasks_.length === 0) {
     // All done - go back to idle.
     this.active_ = false;
-    if (this.idleCallback_)
+    if (this.idleCallback_) {
       this.idleCallback_();
+    }
     return;
   }
 
   if (!this.active_) {
     // If the queue is currently idle, transition to active state.
     this.active_ = true;
-    if (this.activeCallback_)
+    if (this.activeCallback_) {
       this.activeCallback_();
+    }
   }
 
   var nextTask = this.tasks_[0];
@@ -192,11 +194,17 @@ importer.TaskQueue.BaseTask = function(taskId) {
 /** @struct */
 importer.TaskQueue.BaseTask.prototype = {
   /** @return {string} The task ID. */
-  get taskId() { return this.taskId_; },
+  get taskId() {
+    return this.taskId_;
+  },
 
-  /** @return {!Promise<!importer.TaskQueue.UpdateType>} Resolves when task
-      is complete, or cancelled, rejects on error. */
-  get whenFinished() { return this.finishedResolver_.promise; }
+  /**
+   * @return {!Promise<!importer.TaskQueue.UpdateType>} Resolves when task
+   *     is complete, or cancelled, rejects on error.
+   */
+  get whenFinished() {
+    return this.finishedResolver_.promise;
+  }
 };
 
 /** @override */

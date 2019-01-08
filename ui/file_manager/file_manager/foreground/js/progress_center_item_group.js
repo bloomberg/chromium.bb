@@ -111,15 +111,18 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
   for (var i = 0; i < groups.length; i++) {
     for (var id in groups[i].items_) {
       var item = groups[i].items_[id];
-      if (item.state === ProgressItemState.ERROR)
+      if (item.state === ProgressItemState.ERROR) {
         errorItems.push(item);
+      }
     }
   }
-  if (errorItems.length === 0)
+  if (errorItems.length === 0) {
     return null;
+  }
 
-  if (errorItems.length === 1)
+  if (errorItems.length === 1) {
     return errorItems[0].clone();
+  }
 
   var item = new ProgressCenterItem();
   item.state = ProgressItemState.ERROR;
@@ -148,13 +151,16 @@ ProgressCenterItemGroup.shouldAnimate_ = function(
       item && (!summarized || !item.quiet);
   // If previous or current item does not show progress bar, we should not
   // animate.
-  if (!previousShow || !currentShow)
+  if (!previousShow || !currentShow) {
     return false;
-  if (previousItem.progressRateInPercent < item.progressRateInPercent)
+  }
+  if (previousItem.progressRateInPercent < item.progressRateInPercent) {
     return true;
+  }
   if (previousAnimated &&
-      previousItem.progressRateInPercent === item.progressRateInPercent)
+      previousItem.progressRateInPercent === item.progressRateInPercent) {
     return true;
+  }
   return false;
 };
 
@@ -172,8 +178,9 @@ ProgressCenterItemGroup.prototype = /** @struct */ {
   get numErrors() {
     var result = 0;
     for (var id in this.items_) {
-      if (this.items_[id].state === ProgressItemState.ERROR)
+      if (this.items_[id].state === ProgressItemState.ERROR) {
         result++;
+      }
     }
     return result;
   }
@@ -213,8 +220,9 @@ ProgressCenterItemGroup.prototype.isSummarizedAnimated = function() {
 ProgressCenterItemGroup.prototype.dismissErrorItem = function(id) {
   var errorItem = this.items_[id];
 
-  if (!errorItem || errorItem.state !== ProgressItemState.ERROR)
+  if (!errorItem || errorItem.state !== ProgressItemState.ERROR) {
     return;
+  }
 
   delete this.items_[id];
 
@@ -232,10 +240,13 @@ ProgressCenterItemGroup.prototype.update = function(item) {
   var previousItem = this.items_[item.id];
   switch (item.state) {
     case ProgressItemState.ERROR:
-      if (previousItem && previousItem.state !== ProgressItemState.PROGRESSING)
+      if (previousItem &&
+          previousItem.state !== ProgressItemState.PROGRESSING) {
         return;
-      if (this.state_ === ProgressCenterItemGroup.State.EMPTY)
+      }
+      if (this.state_ === ProgressCenterItemGroup.State.EMPTY) {
         this.state_ = ProgressCenterItemGroup.State.INACTIVE;
+      }
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = false;
       this.summarizedItem_ = null;
@@ -245,25 +256,29 @@ ProgressCenterItemGroup.prototype.update = function(item) {
     case ProgressItemState.COMPLETED:
       if ((!previousItem && item.state === ProgressItemState.COMPLETED) ||
           (previousItem &&
-           previousItem.state !== ProgressItemState.PROGRESSING))
+           previousItem.state !== ProgressItemState.PROGRESSING)) {
         return;
+      }
       if (this.state_ === ProgressCenterItemGroup.State.EMPTY ||
-          this.state_ === ProgressCenterItemGroup.State.INACTIVE)
+          this.state_ === ProgressCenterItemGroup.State.INACTIVE) {
         this.state_ = ProgressCenterItemGroup.State.ACTIVE;
+      }
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = ProgressCenterItemGroup.shouldAnimate_(
           !!this.animated_[item.id],
           previousItem,
           item,
           /* summarized */ false);
-      if (!this.animated_[item.id])
+      if (!this.animated_[item.id]) {
         this.completeItemAnimation(item.id);
+      }
       break;
 
     case ProgressItemState.CANCELED:
       if (!previousItem ||
-          previousItem.state !== ProgressItemState.PROGRESSING)
+          previousItem.state !== ProgressItemState.PROGRESSING) {
         return;
+      }
       delete this.items_[item.id];
       this.animated_[item.id] = false;
       this.summarizedItem_ = null;
@@ -277,8 +292,9 @@ ProgressCenterItemGroup.prototype.update = function(item) {
       previousSummarizedItem,
       this.summarizedItem_,
       /* summarized */ true);
-  if (!this.summarizedItemAnimated_)
+  if (!this.summarizedItemAnimated_) {
     this.completeSummarizedItemAnimation();
+  }
 };
 
 /**
@@ -311,11 +327,11 @@ ProgressCenterItemGroup.prototype.completeSummarizedItemAnimation = function() {
  * @param {number} numOtherErrors Number of errors contained by other groups.
  * @return {ProgressCenterItem} Item.
  */
-ProgressCenterItemGroup.prototype.getSummarizedItem =
-    function(numOtherErrors) {
+ProgressCenterItemGroup.prototype.getSummarizedItem = function(numOtherErrors) {
   if (this.state_ === ProgressCenterItemGroup.State.EMPTY ||
-      this.state_ === ProgressCenterItemGroup.State.INACTIVE)
+      this.state_ === ProgressCenterItemGroup.State.INACTIVE) {
     return null;
+  }
 
   var summarizedItem = new ProgressCenterItem();
   summarizedItem.quiet = this.quiet_;
@@ -342,10 +358,11 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
 
     // If all of the progressing items have the same type, then use
     // it. Otherwise use TRANSFER, since it is the most generic.
-    if (summarizedItem.type === null)
+    if (summarizedItem.type === null) {
       summarizedItem.type = item.type;
-    else if (summarizedItem.type !== item.type)
+    } else if (summarizedItem.type !== item.type) {
       summarizedItem.type = ProgressItemType.TRANSFER;
+    }
 
     // Sum up the progress values.
     summarizedItem.progressMax += item.progressMax;
@@ -386,10 +403,11 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
         messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
         break;
     }
-    if (numErrors === 1)
+    if (numErrors === 1) {
       messages.push(str('ERROR_PROGRESS_SUMMARY'));
-    else if (numErrors > 1)
+    } else if (numErrors > 1) {
       messages.push(strf('ERROR_PROGRESS_SUMMARY_PLURAL', numErrors));
+    }
     summarizedItem.single = false;
     summarizedItem.message = messages.join(' ');
     summarizedItem.state = ProgressItemState.PROGRESSING;
@@ -406,16 +424,18 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
  * @private
  */
 ProgressCenterItemGroup.prototype.tryToGoToNextState_ = function() {
-  if (this.summarizedItemAnimated_)
+  if (this.summarizedItemAnimated_) {
     return;
+  }
 
   // If there is no item except for error items, go to INACTIVE state.
   var hasError = false;
   for (var id in this.items_) {
     // If there is non-error item (progressing, or completed but still
     // animated), we should stay the active state.
-    if (this.items_[id].state !== ProgressItemState.ERROR)
+    if (this.items_[id].state !== ProgressItemState.ERROR) {
       return;
+    }
     hasError = true;
   }
 
@@ -424,8 +444,9 @@ ProgressCenterItemGroup.prototype.tryToGoToNextState_ = function() {
   this.state_ = ProgressCenterItemGroup.State.INACTIVE;
 
   // If there is no item, go to EMPTY state.
-  if (hasError)
+  if (hasError) {
     return;
+  }
 
   this.items_ = {};
   this.animated_ = {};

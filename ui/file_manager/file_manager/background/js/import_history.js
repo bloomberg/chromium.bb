@@ -882,37 +882,38 @@ importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
  */
 importer.DriveSyncWatcher.prototype.getSyncStatus_ = function(url) {
   return util.URLsToEntries([url])
-    .then(
-        function(results) {
-          if (results.entries.length !== 1)
-            return Promise.reject();
-          return new Promise(
-              (/** @this {importer.DriveSyncWatcher} */
-              function(resolve, reject) {
-                // TODO(smckay): User Metadata Cache...once it is available
-                // in the background.
-                chrome.fileManagerPrivate.getEntryProperties(
-                    [results.entries[0]], ['dirty'],
-                    (/**
-                      * @param
-                      * {!Array<!chrome.fileManagerPrivate.EntryProperties>|undefined}
-                      * propertiesList
-                      * @this {importer.DriveSyncWatcher}
-                      */
-                     function(propertiesList) {
-                       console.assert(
-                           propertiesList.length === 1,
-                           'Got an unexpected number of results.');
-                       if (chrome.runtime.lastError) {
-                         reject(chrome.runtime.lastError);
-                       } else {
-                         var data = propertiesList[0];
-                         resolve(!data['dirty']);
-                       }
-                     }).bind(this));
-              }).bind(this));
-        })
-    .catch(importer.getLogger().catcher('drive-sync-watcher-get-sync-status'));
+      .then(function(results) {
+        if (results.entries.length !== 1) {
+          return Promise.reject();
+        }
+        return new Promise(
+            (/** @this {importer.DriveSyncWatcher} */
+             function(resolve, reject) {
+               // TODO(smckay): User Metadata Cache...once it is available
+               // in the background.
+               chrome.fileManagerPrivate.getEntryProperties(
+                   [results.entries[0]], ['dirty'],
+                   (/**
+                     * @param
+                     * {!Array<!chrome.fileManagerPrivate.EntryProperties>|undefined}
+                     * propertiesList
+                     * @this {importer.DriveSyncWatcher}
+                     */
+                    function(propertiesList) {
+                      console.assert(
+                          propertiesList.length === 1,
+                          'Got an unexpected number of results.');
+                      if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                      } else {
+                        var data = propertiesList[0];
+                        resolve(!data['dirty']);
+                      }
+                    }).bind(this));
+             }).bind(this));
+      })
+      .catch(
+          importer.getLogger().catcher('drive-sync-watcher-get-sync-status'));
 };
 
 /**

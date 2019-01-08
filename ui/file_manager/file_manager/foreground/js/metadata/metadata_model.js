@@ -51,8 +51,9 @@ function MetadataModel(rawProvider) {
 
   /** @private {?MetadataStats} record stats about Metadata when in tests. */
   this.stats_ = null;
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_ = new MetadataStats();
+  }
 }
 
 /**
@@ -86,13 +87,15 @@ MetadataModel.prototype.get = function(entries, names) {
 
   // Check if the results are cached or not.
   if (this.cache_.hasFreshCache(entries, names)) {
-    if (window.IN_TEST)
+    if (window.IN_TEST) {
       this.stats_.fromCache += entries.length;
+    }
     return Promise.resolve(this.getCache(entries, names));
   }
 
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_.fullFetch += entries.length;
+  }
 
   // The LRU cache may be cached out when the callback is completed.
   // To hold cached values, create snapshot of the cache for entries.
@@ -118,8 +121,9 @@ MetadataModel.prototype.get = function(entries, names) {
         requestedEntries.push(requests[i].entry);
         for (var j = 0; j < requests[i].names.length; j++) {
           var name = requests[i].names[j];
-          if (!(name in list[i]))
+          if (!(name in list[i])) {
             list[i][name] = undefined;
+          }
         }
       }
 
@@ -161,8 +165,9 @@ MetadataModel.prototype.getCache = function(entries, names) {
  */
 MetadataModel.prototype.notifyEntriesCreated = function(entries) {
   this.cache_.clear(util.entriesToURLs(entries));
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_.clearCacheCount += entries.length;
+  }
 };
 
 /**
@@ -172,8 +177,9 @@ MetadataModel.prototype.notifyEntriesCreated = function(entries) {
  */
 MetadataModel.prototype.notifyEntriesRemoved = function(urls) {
   this.cache_.clear(urls);
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_.clearCacheCount += urls.length;
+  }
 };
 
 /**
@@ -182,8 +188,9 @@ MetadataModel.prototype.notifyEntriesRemoved = function(urls) {
  */
 MetadataModel.prototype.notifyEntriesChanged = function(entries) {
   this.cache_.invalidate(this.cache_.generateRequestId(), entries);
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_.invalidateCount += entries.length;
+  }
 };
 
 /**
@@ -191,8 +198,9 @@ MetadataModel.prototype.notifyEntriesChanged = function(entries) {
  */
 MetadataModel.prototype.clearAllCache = function() {
   this.cache_.clearAll();
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     this.stats_.clearAllCount++;
+  }
 };
 
 /** @return {MetadataStats} */

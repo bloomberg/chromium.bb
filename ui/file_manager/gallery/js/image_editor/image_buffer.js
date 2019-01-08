@@ -94,8 +94,9 @@ ImageBuffer.prototype.onClick = function(x, y) {
 ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
     var handler = this.overlays_[i].getDragHandler(x, y, touch);
-    if (handler)
+    if (handler) {
       return handler;
+    }
   }
   return null;
 };
@@ -110,8 +111,9 @@ ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
 ImageBuffer.prototype.getDoubleTapAction = function(x, y) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
     var action = this.overlays_[i].getDoubleTapAction(x, y);
-    if (action != ImageBuffer.DoubleTapAction.NOTHING)
+    if (action != ImageBuffer.DoubleTapAction.NOTHING) {
       return action;
+    }
   }
   return ImageBuffer.DoubleTapAction.NOTHING;
 };
@@ -138,7 +140,9 @@ ImageBuffer.Overlay = function() {};
  * Get Z index of this overlay.
  * @return {number} Z index of this overlay.
  */
-ImageBuffer.Overlay.prototype.getZIndex = function() { return 0; };
+ImageBuffer.Overlay.prototype.getZIndex = function() {
+  return 0;
+};
 
 /**
  * Draw an overlay.

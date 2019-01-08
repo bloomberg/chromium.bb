@@ -199,15 +199,17 @@ Banners.prototype.onDriveConnectionChanged_ = function() {
  * @private
  */
 Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
-  if (!this.showWelcome_)
+  if (!this.showWelcome_) {
     return;
+  }
 
   this.showWelcomeBanner_(type);
 
   var container = queryRequiredElement(
       '.drive-welcome.' + type, this.document_);
-  if (container.firstElementChild)
-    return;  // Do not re-create.
+  if (container.firstElementChild) {
+    return;
+  }  // Do not re-create.
 
   if (!this.document_.querySelector('link[drive-welcome-style]')) {
     var style = this.document_.createElement('link');
@@ -284,11 +286,13 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
 
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.
-  if (show)
+  if (show) {
     this.cleanupWelcomeBanner_();
+  }
 
-  if (box.hidden == !show)
+  if (box.hidden == !show) {
     return;
+  }
 
   if (this.warningDismissedCounter_) {
     if (opt_sizeStats &&
@@ -396,8 +400,9 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
     group.add(function(onCompleted) {
       chrome.echoPrivate.getOfferInfo(offerServiceId, function(offerInfo) {
         // If the offer has not been checked, then an error is raised.
-        if (!chrome.runtime.lastError)
+        if (!chrome.runtime.lastError) {
           this.usePromoWelcomeBanner_ = false;
+        }
         onCompleted();
       }.bind(this));
     }.bind(this));
@@ -410,10 +415,11 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
         // Current directory must be set, since this code is called after
         // scanning is completed. However, the volumeInfo may be gone.
         chrome.fileManagerPrivate.getSizeStats(
-            driveVolume.volumeId,
-            function(result) {
-              if (result && result.totalSize >= offerSize * 1024 * 1024 * 1024)
+            driveVolume.volumeId, function(result) {
+              if (result &&
+                  result.totalSize >= offerSize * 1024 * 1024 * 1024) {
                 this.usePromoWelcomeBanner_ = false;
+              }
               onCompleted();
             }.bind(this));
       }
@@ -460,11 +466,13 @@ Banners.prototype.maybeShowWelcomeBanner_ = function() {
  */
 Banners.prototype.isOnCurrentProfileDrive = function() {
   var entry = this.directoryModel_.getCurrentDirEntry();
-  if (!entry || util.isFakeEntry(entry))
+  if (!entry || util.isFakeEntry(entry)) {
     return false;
+  }
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  if (!locationInfo)
+  if (!locationInfo) {
     return false;
+  }
   return locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE &&
          locationInfo.volumeInfo.profile.isCurrentProfile;
 };
@@ -490,8 +498,9 @@ Banners.prototype.showWelcomeBanner_ = function(type) {
  */
 Banners.prototype.onDirectoryChanged_ = function(event) {
   var rootVolume = this.volumeManager_.getVolumeInfo(event.newDirEntry);
-  if (!rootVolume)
+  if (!rootVolume) {
     return;
+  }
   var previousRootVolume = event.previousDirEntry ?
       this.volumeManager_.getVolumeInfo(event.previousDirEntry) :
       null;
@@ -531,8 +540,9 @@ Banners.prototype.onDirectoryChanged_ = function(event) {
  * @private
  */
 Banners.prototype.isLowSpaceWarningTarget_ = function(volumeInfo) {
-  if (!volumeInfo)
+  if (!volumeInfo) {
     return false;
+  }
   return volumeInfo.profile.isCurrentProfile &&
          (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
           volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
@@ -545,11 +555,13 @@ Banners.prototype.isLowSpaceWarningTarget_ = function(volumeInfo) {
  */
 Banners.prototype.privateOnDirectoryChanged_ = function(event) {
   var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
-  if (!currentDirEntry)
+  if (!currentDirEntry) {
     return;
+  }
   var currentVolume = this.volumeManager_.getVolumeInfo(currentDirEntry);
-  if (!currentVolume)
+  if (!currentVolume) {
     return;
+  }
   var eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
   if (currentVolume === eventVolume) {
     // The file system we are currently on is changed.
@@ -581,8 +593,9 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
   }
 
   // If not mounted correctly, then do not continue.
-  if (!volume.fileSystem)
+  if (!volume.fileSystem) {
     return;
+  }
 
   chrome.fileManagerPrivate.getSizeStats(
       volume.volumeId, function(sizeStats) {
@@ -594,8 +607,9 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
           return;
         }
         // sizeStats is undefined, if some error occurs.
-        if (!sizeStats || sizeStats.totalSize == 0)
+        if (!sizeStats || sizeStats.totalSize == 0) {
           return;
+        }
 
         if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS) {
           // Show the warning banner when the available space is less than 1GB.
@@ -638,8 +652,9 @@ Banners.prototype.requestRelayout_ = function(delay) {
 Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
   var box = this.document_.querySelector('.downloads-warning');
 
-  if (box.hidden == !show)
+  if (box.hidden == !show) {
     return;
+  }
 
   if (this.downloadsWarningDismissedTime_) {
     if (Date.now() - this.downloadsWarningDismissedTime_ <
@@ -689,8 +704,9 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
  */
 Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
   var panel = this.unmountedPanel_;
-  if (panel.firstElementChild)
+  if (panel.firstElementChild) {
     return;
+  }
 
   /**
    * Creates an element using given parameters.
@@ -725,8 +741,9 @@ Banners.prototype.onVolumeInfoListSplice_ = function(event) {
   var isDriveVolume = function(volumeInfo) {
     return volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
   };
-  if (event.removed.some(isDriveVolume) || event.added.some(isDriveVolume))
+  if (event.removed.some(isDriveVolume) || event.added.some(isDriveVolume)) {
     this.updateDriveUnmountedPanel_();
+  }
 };
 
 /**

@@ -179,12 +179,14 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
 
     return repeatUntil(async function() {
       const windowCount = await sendTestMessage(passphraseWindowCountCommand);
-      if (windowCount == 0)
+      if (windowCount == 0) {
         return true;
+      }
 
       const windowId = await sendTestMessage(getPassphraseWindowIdCommand);
-      if (windowId == 'none')
+      if (windowId == 'none') {
         return true;
+      }
 
       await cancelPassphraseDialog(windowId);
       return pending(caller, 'waitForAllPassphraseWindowsClosed');

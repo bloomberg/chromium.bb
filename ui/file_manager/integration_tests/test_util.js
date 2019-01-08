@@ -178,20 +178,25 @@ function repeatUntil(checkFunction) {
  */
 function sendBrowserTestCommand(command, callback, opt_debug) {
   const caller = getCaller();
-  if (typeof command.name !== 'string')
+  if (typeof command.name !== 'string') {
     chrome.test.fail('Invalid test command: ' + JSON.stringify(command));
+  }
   repeatUntil(function sendTestCommand() {
     const tryAgain = pending(caller, 'Sent BrowserTest ' + command.name);
-    return sendTestMessage(command).then((result) => {
-      if (typeof result !== 'string')
-        return tryAgain;
-      if (opt_debug)
-        console.log('BrowserTest ' + command.name + ': ' + result);
-      callback(result);
-    }).catch((error) => {
-      console.log(error.stack || error);
-      return tryAgain;
-    });
+    return sendTestMessage(command)
+        .then((result) => {
+          if (typeof result !== 'string') {
+            return tryAgain;
+          }
+          if (opt_debug) {
+            console.log('BrowserTest ' + command.name + ': ' + result);
+          }
+          callback(result);
+        })
+        .catch((error) => {
+          console.log(error.stack || error);
+          return tryAgain;
+        });
   });
 }
 
@@ -206,8 +211,9 @@ function waitForAppWindow(windowUrl) {
   const command = {'name': 'getAppWindowId', 'windowUrl': windowUrl};
   return repeatUntil(function() {
     return sendTestMessage(command).then((result) => {
-      if (result == 'none')
+      if (result == 'none') {
         return pending(caller, 'getAppWindowId ' + windowUrl);
+      }
       return result;
     });
   });
@@ -225,8 +231,9 @@ function waitForAppWindowCount(appId, expectedCount) {
   const command = {'name': 'countAppWindows', 'appId': appId};
   return repeatUntil(function() {
     return sendTestMessage(command).then((result) => {
-      if (result != expectedCount)
+      if (result != expectedCount) {
         return pending(caller, 'waitForAppWindowCount ' + appId + ' ' + result);
+      }
       return true;
     });
   });
@@ -450,7 +457,9 @@ function TestEntryInfo(options) {
 }
 
 TestEntryInfo.getExpectedRows = function(entries) {
-  return entries.map(function(entry) { return entry.getExpectedRow(); });
+  return entries.map(function(entry) {
+    return entry.getExpectedRow();
+  });
 };
 
 /**

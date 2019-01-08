@@ -33,9 +33,12 @@ function testSaveItemOverwrite(callback) {
   };
   model.push(item);
   reportPromise(
-      model.saveItem({}, item, document.createElement('canvas'),
-          true /* overwrite */).
-          then(function() { assertEquals(1, model.length); }),
+      model
+          .saveItem(
+              {}, item, document.createElement('canvas'), true /* overwrite */)
+          .then(function() {
+            assertEquals(1, model.length);
+          }),
       callback);
 }
 

@@ -17,8 +17,9 @@ var fileOperationUtil = {};
  *     FileError.
  */
 fileOperationUtil.resolvePath = function(root, path) {
-  if (path === '' || path === '/')
+  if (path === '' || path === '/') {
     return Promise.resolve(root);
+  }
   return new Promise(root.getFile.bind(root, path, {create: false})).
       catch(function(error) {
         if (error.name === util.FileError.TYPE_MISMATCH_ERR) {
@@ -66,21 +67,24 @@ fileOperationUtil.deduplicatePath = function(
       // We expect to be unable to resolve the target file, since we're
       // going to create it during the copy.  However, if the resolve fails
       // with anything other than NOT_FOUND, that's trouble.
-      if (error.name === util.FileError.NOT_FOUND_ERR)
+      if (error.name === util.FileError.NOT_FOUND_ERR) {
         return trialPath;
-      else
+      } else {
         return Promise.reject(error);
+      }
     });
   };
 
   var promise = resolvePath(relativePath, 1).catch(function(error) {
-    if (error instanceof Error)
+    if (error instanceof Error) {
       return Promise.reject(error);
+    }
     return Promise.reject(new fileOperationUtil.Error(
       util.FileOperationErrorType.FILESYSTEM_ERROR, error));
   });
-  if (opt_successCallback)
+  if (opt_successCallback) {
     promise.then(opt_successCallback, opt_errorCallback);
+  }
   return promise;
 };
 
@@ -104,20 +108,23 @@ fileOperationUtil.resolveRecursively_ = function(
 
   var maybeInvokeCallback = function() {
     // If there still remain some running tasks, wait their finishing.
-    if (numRunningTasks > 0)
+    if (numRunningTasks > 0) {
       return;
+    }
 
-    if (error)
+    if (error) {
       errorCallback(error);
-    else
+    } else {
       successCallback(result);
+    }
   };
 
   // The error handling can be shared.
   var onError = function(fileError) {
     // If this is the first error, remember it.
-    if (!error)
+    if (!error) {
       error = fileError;
+    }
     --numRunningTasks;
     maybeInvokeCallback();
   };
@@ -143,8 +150,9 @@ fileOperationUtil.resolveRecursively_ = function(
               return;
             }
 
-            for (var i = 0; i < subEntries.length; i++)
+            for (var i = 0; i < subEntries.length; i++) {
               process(subEntries[i]);
+            }
 
             // Continue to read remaining children.
             reader.readEntries(processSubEntries, onError);
@@ -205,8 +213,9 @@ fileOperationUtil.findFilesRecursively = function(entry, onResultCallback) {
       entry,
       /** @param {!Entry} entry */
       function(entry) {
-        if (entry.isFile)
+        if (entry.isFile) {
           onResultCallback(/** @type {!FileEntry} */ (entry));
+        }
       });
 };
 
@@ -242,16 +251,18 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
           }
 
           // If there still remain some running tasks, wait their finishing.
-          if (numRunningTasks === 0)
+          if (numRunningTasks === 0) {
             // Closure compiler currently requires an argument to resolve.
             resolve(undefined);
+          }
         };
 
         /** @param {!Entry} entry */
         var processEntry = function(entry) {
           // All scanning stops when an error is encountered.
-          if (scanError)
+          if (scanError) {
             return;
+          }
 
           onResultCallback(entry);
           if (entry.isDirectory) {
@@ -262,8 +273,9 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
         /** @param {!DirectoryEntry} directory */
         var processDirectory = function(directory) {
           // All scanning stops when an error is encountered.
-          if (scanError)
+          if (scanError) {
             return;
+          }
 
           numRunningTasks++;
 
@@ -639,8 +651,9 @@ fileOperationUtil.Task.prototype.calcProcessedBytes_ = function() {
   var bytes = 0;
   for (var i = 0; i < this.processingSourceIndex_ + 1; i++) {
     var entryMap = this.processingEntries[i];
-    if (!entryMap)
+    if (!entryMap) {
       break;
+    }
     for (var name in entryMap) {
       bytes += i < this.processingSourceIndex_ ?
           entryMap[name].size : entryMap[name].processedBytes;
@@ -658,8 +671,9 @@ fileOperationUtil.Task.prototype.calcNumRemainingItems_ = function() {
   var numRemainingItems = 0;
 
   var resolvedEntryMap;
-  if (this.processingEntries && this.processingEntries.length > 0)
+  if (this.processingEntries && this.processingEntries.length > 0) {
     resolvedEntryMap = this.processingEntries[this.processingSourceIndex_];
+  }
 
   if (resolvedEntryMap) {
     for (var key in resolvedEntryMap) {
@@ -758,8 +772,9 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
     // Fill totalBytes.
     this.totalBytes = 0;
     for (var i = 0; i < this.processingEntries.length; i++) {
-      for (var entryURL in this.processingEntries[i])
+      for (var entryURL in this.processingEntries[i]) {
         this.totalBytes += this.processingEntries[i][entryURL].size;
+      }
     }
 
     callback();
@@ -796,8 +811,9 @@ fileOperationUtil.CopyTask.prototype.run = function(
     var onEntryDeleted = function(entry) {
       entryChangedCallback(util.EntryChangedKind.DELETED, entry);
       count--;
-      if (!count)
+      if (!count) {
         successCallback();
+      }
     };
 
     var onFilesystemError = function(err) {
@@ -821,12 +837,14 @@ fileOperationUtil.CopyTask.prototype.run = function(
    *     dropped, all bytes of the entry are considered to be processed.
    */
   var updateProgress = function(index, sourceEntryUrl, opt_size) {
-    if (!sourceEntryUrl)
+    if (!sourceEntryUrl) {
       return;
+    }
 
     var processedEntry = this.processingEntries[index][sourceEntryUrl];
-    if (!processedEntry)
+    if (!processedEntry) {
       return;
+    }
 
     var alreadyCompleted =
         processedEntry.processedBytes === processedEntry.size;
@@ -1137,13 +1155,12 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
   for (var i = 0; i < this.sourceEntries.length; i++) {
     group.add(function(index, callback) {
       fileOperationUtil.resolveRecursively_(
-          this.sourceEntries[index],
-          function(entries) {
-            for (var j = 0; j < entries.length; j++)
+          this.sourceEntries[index], function(entries) {
+            for (var j = 0; j < entries.length; j++) {
               resolvedEntryMap[entries[j].toURL()] = entries[j];
+            }
             callback();
-          },
-          callback);
+          }, callback);
     }.bind(this, i));
   }
 
@@ -1152,8 +1169,9 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
     this.processingEntries = [resolvedEntryMap];
 
     this.totalBytes = 0;
-    for (var url in resolvedEntryMap)
+    for (var url in resolvedEntryMap) {
       this.totalBytes += resolvedEntryMap[url].size;
+    }
 
     callback();
   }.bind(this));
@@ -1192,8 +1210,9 @@ fileOperationUtil.ZipTask.prototype.run = function(
         // The number of elements in processingEntries is 1. See also
         // initialize().
         var entries = [];
-        for (var url in this.processingEntries[0])
+        for (var url in this.processingEntries[0]) {
           entries.push(this.processingEntries[0][url]);
+        }
 
         fileOperationUtil.zipSelection(
             entries,
@@ -1287,16 +1306,18 @@ fileOperationUtil.EventRouter.prototype.sendProgressEvent = function(
     type, status, taskId, opt_error) {
   var EventType = fileOperationUtil.EventRouter.EventType;
   // Before finishing operation, dispatch pending entries-changed events.
-  if (type === EventType.SUCCESS || type === EventType.CANCELED)
+  if (type === EventType.SUCCESS || type === EventType.CANCELED) {
     this.entryChangedEventRateLimiter_.runImmediately();
+  }
 
   var event = /** @type {FileOperationProgressEvent} */
       (new Event('copy-progress'));
   event.reason = type;
   event.status = status;
   event.taskId = taskId;
-  if (opt_error)
+  if (opt_error) {
     event.error = opt_error;
+  }
   this.dispatchEvent(event);
 };
 
@@ -1309,10 +1330,12 @@ fileOperationUtil.EventRouter.prototype.sendProgressEvent = function(
  */
 fileOperationUtil.EventRouter.prototype.sendEntryChangedEvent = function(
     kind, entry) {
-  if (kind === util.EntryChangedKind.DELETED)
+  if (kind === util.EntryChangedKind.DELETED) {
     this.pendingDeletedEntries_[entry.toURL()] = entry;
-  if (kind === util.EntryChangedKind.CREATED)
+  }
+  if (kind === util.EntryChangedKind.CREATED) {
     this.pendingCreatedEntries_[entry.toURL()] = entry;
+  }
 
   this.entryChangedEventRateLimiter_.run();
 };

@@ -28,16 +28,14 @@ function ThumbnailModel(metadataModel) {
  */
 ThumbnailModel.prototype.get = function(entries) {
   var results = {};
-  return this.metadataModel_.get(
-      entries,
-      [
-        'modificationTime',
-        'customIconUrl',
-        'contentMimeType',
-        'thumbnailUrl',
-        'croppedThumbnailUrl',
-        'present'
-      ]).then(function(metadataList) {
+  return this.metadataModel_
+      .get(
+          entries,
+          [
+            'modificationTime', 'customIconUrl', 'contentMimeType',
+            'thumbnailUrl', 'croppedThumbnailUrl', 'present'
+          ])
+      .then(function(metadataList) {
         var contentRequestEntries = [];
         for (var i = 0; i < entries.length; i++) {
           var url = entries[i].toURL();
@@ -66,8 +64,9 @@ ThumbnailModel.prototype.get = function(entries) {
               metadataList[i].present &&
               (FileType.isImage(entries[i], metadataList[i].contentMimeType) ||
                FileType.isAudio(entries[i], metadataList[i].contentMimeType));
-          if (canUseContentThumbnail)
+          if (canUseContentThumbnail) {
             contentRequestEntries.push(entries[i]);
+          }
         }
         if (contentRequestEntries.length) {
           return this.metadataModel_.get(
@@ -94,7 +93,10 @@ ThumbnailModel.prototype.get = function(entries) {
                 }
               });
         }
-      }.bind(this)).then(function() {
-        return entries.map(function(entry) { return results[entry.toURL()]; });
+      }.bind(this))
+      .then(function() {
+        return entries.map(function(entry) {
+          return results[entry.toURL()];
+        });
       });
 };

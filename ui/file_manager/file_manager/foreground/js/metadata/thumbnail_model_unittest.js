@@ -4,12 +4,16 @@
 
 var imageEntry = {
   name: 'image.jpg',
-  toURL: function() { return 'filesystem://A'; }
+  toURL: function() {
+    return 'filesystem://A';
+  }
 };
 
 var nonImageEntry = {
   name: 'note.txt',
-  toURL: function() { return 'filesystem://B'; }
+  toURL: function() {
+    return 'filesystem://B';
+  }
 };
 
 const contentThumbnailTransform = {

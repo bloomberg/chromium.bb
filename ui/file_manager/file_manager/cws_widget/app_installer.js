@@ -68,8 +68,9 @@ AppInstaller.prototype.cancel = function() {
  * @private
  */
 AppInstaller.prototype.onInstallCompleted_ = function(error) {
-  if (!this.callback_)
+  if (!this.callback_) {
     return;
+  }
 
   var installerResult = AppInstaller.Result.SUCCESS;
   if (error !== null) {

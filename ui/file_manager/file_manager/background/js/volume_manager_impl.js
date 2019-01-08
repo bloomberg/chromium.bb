@@ -95,8 +95,9 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
             shouldShow = !!volumeInfo.fileSystem;
             break;
         }
-        if (!shouldShow)
-            return volumeInfo;
+        if (!shouldShow) {
+          return volumeInfo;
+        }
         if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
           this.volumeInfoList.add(volumeInfo);
 
@@ -213,8 +214,9 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         }
 
         this.finishRequest_(requestKey, status);
-        if (event.status === 'success')
+        if (event.status === 'success') {
           this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+        }
         console.debug('unmounted volume: ' + volumeId);
         callback();
         break;
@@ -258,14 +260,13 @@ VolumeManagerImpl.prototype.unmount = function(volumeInfo,
 /** @override */
 VolumeManagerImpl.prototype.configure = function(volumeInfo) {
   return new Promise(function(fulfill, reject) {
-    chrome.fileManagerPrivate.configureVolume(
-        volumeInfo.volumeId,
-        function() {
-          if (chrome.runtime.lastError)
-            reject(chrome.runtime.lastError.message);
-          else
-            fulfill();
-        });
+    chrome.fileManagerPrivate.configureVolume(volumeInfo.volumeId, function() {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError.message);
+      } else {
+        fulfill();
+      }
+    });
   });
 };
 
@@ -280,8 +281,9 @@ VolumeManagerImpl.prototype.getVolumeInfo = function(entry) {
     // Additionally, check fake entries.
     for (let key in volumeInfo.fakeEntries_) {
       const fakeEntry = volumeInfo.fakeEntries_[key];
-      if (util.isSameEntry(fakeEntry, entry))
+      if (util.isSameEntry(fakeEntry, entry)) {
         return volumeInfo;
+      }
     }
   }
   return null;
@@ -292,8 +294,9 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
     var volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.profile.isCurrentProfile &&
-        volumeInfo.volumeType === volumeType)
+        volumeInfo.volumeType === volumeType) {
       return volumeInfo;
+    }
   }
   return null;
 };
@@ -309,8 +312,9 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
         true /* fake entries are read only. */);
   }
 
-  if (!volumeInfo)
+  if (!volumeInfo) {
     return null;
+  }
 
   var rootType;
   var isReadOnly;
@@ -402,8 +406,9 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
 VolumeManagerImpl.prototype.findByDevicePath = function(devicePath) {
   for (let i = 0; i < this.volumeInfoList.length; i++) {
     const volumeInfo = this.volumeInfoList.item(i);
-    if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath)
+    if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath) {
       return volumeInfo;
+    }
   }
   return null;
 };
@@ -475,8 +480,9 @@ VolumeManagerImpl.prototype.onTimeout_ = function(key) {
 VolumeManagerImpl.prototype.finishRequest_ =
     function(key, status, opt_volumeInfo) {
   var request = this.requests_[key];
-  if (!request)
+  if (!request) {
     return;
+  }
 
   clearTimeout(request.timeout);
   this.invokeRequestCallbacks_(request, status, opt_volumeInfo);

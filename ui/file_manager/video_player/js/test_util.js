@@ -15,8 +15,9 @@ function testElement(filename, testFunction) {
     if (contentWindow &&
         contentWindow.document.title === filename) {
       var element = contentWindow.document.querySelector('video');
-      if (element && testFunction(element))
+      if (element && testFunction(element)) {
         return true;
+      }
     }
   }
   return false;

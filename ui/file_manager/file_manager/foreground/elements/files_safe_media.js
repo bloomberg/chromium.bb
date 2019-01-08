@@ -82,11 +82,13 @@ var FilesSafeMedia = Polymer({
 
   ready: function() {
     this.addEventListener('focus', (event) => {
-      if (this.type === 'audio' || this.type === 'video')
+      if (this.type === 'audio' || this.type === 'video') {
         // Avoid setting the focus on the files-safe-media itself, rather sends
         // it down to its webview element.
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.focus();
+        }
+      }
     });
     window.addEventListener('message', function(event) {
       if (event.origin !== FILES_APP_ORIGIN) {
@@ -98,11 +100,13 @@ var FilesSafeMedia = Polymer({
       } else if (event.data === 'tap-outside') {
         this.fire('files-safe-media-tap-outside');
       } else if (event.data === 'webview-loaded') {
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.setAttribute('loaded', '');
+        }
       } else if (event.data === 'webview-cleared') {
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.removeAttribute('loaded');
+        }
       }
     }.bind(this));
   }

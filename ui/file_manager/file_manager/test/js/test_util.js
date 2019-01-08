@@ -100,7 +100,9 @@ test.TestEntryInfo = function(type,
 };
 
 test.TestEntryInfo.getExpectedRows = function(entries) {
-  return entries.map(function(entry) { return entry.getExpectedRow(); });
+  return entries.map(function(entry) {
+    return entry.getExpectedRow();
+  });
 };
 
 /**
@@ -379,8 +381,9 @@ test.repeatUntil = function(checkFunction) {
 test.waitForElement = function(query) {
   return test.repeatUntil(() => {
     let element = document.querySelector(query);
-    if (element)
+    if (element) {
       return element;
+    }
     return test.pending('Element %s is not found.', query);
   });
 };
@@ -393,8 +396,9 @@ test.waitForElement = function(query) {
 test.waitForElementLost = function(query) {
   return test.repeatUntil(() => {
     var element = document.querySelector(query);
-    if (element)
+    if (element) {
       return test.pending('Elements %s still exists.', query);
+    }
     return true;
   });
 };
@@ -502,15 +506,17 @@ test.waitForFiles = function(expected, opt_options) {
     }
 
     if (((a, b) => {
-          if (a.length != b.length)
+          if (a.length != b.length) {
             return false;
+          }
           for (var i = 0; i < files.length; i++) {
             // Each row is [name, size, type, date].
             if ((!options.ignoreName && a[i][0] != b[i][0]) ||
                 (!options.ignoreSize && a[i][1] != b[i][1]) ||
                 (!options.ignoreType && a[i][2] != b[i][2]) ||
-                (!options.ignoreDate && a[i][3] != b[i][3]))
+                (!options.ignoreDate && a[i][3] != b[i][3])) {
               return false;
+            }
           }
           return true;
         })(expected, files)) {
@@ -580,8 +586,9 @@ test.done = function(opt_failed) {
  */
 test.maxListItemId = function() {
   var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems)
+  if (!listItems) {
     return 0;
+  }
   return Math.max(...Array.from(listItems).map(e => {
     return e.id.replace('listitem-', '');
   }));
@@ -592,8 +599,9 @@ test.maxListItemId = function() {
  */
 test.minListItemId = function() {
   var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems)
+  if (!listItems) {
     return 0;
+  }
   return Math.min(...Array.from(listItems).map(e => {
     return e.id.replace('listitem-', '');
   }));

@@ -177,11 +177,12 @@ FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
                 console.error('Got view event with invalid volume id.');
               }
             } else if (event.volumeId) {
-              if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED)
+              if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED) {
                 this.navigateToVolumeInFocusedWindowWhenReady_(
                     event.volumeId, event.filePath);
-              else
+              } else {
                 this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
+              }
             } else {
               console.error('Got view event with no actionable destination.');
             }
@@ -293,11 +294,12 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindow_ = function(
     volume, opt_directoryPath) {
   this.retrieveEntryInVolume_(volume, opt_directoryPath)
       .then(function(directoryEntry) {
-        if (directoryEntry)
+        if (directoryEntry) {
           volumeManagerFactory.getInstance().then(function(volumeManager) {
             volumeManager.dispatchEvent(
                 VolumeManagerCommon.createArchiveOpenedEvent(directoryEntry));
           }.bind(this));
+        }
       });
 };
 
@@ -322,8 +324,9 @@ var nextFileManagerDialogID = 0;
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
   window.background.dialogs[id] = dialogWindow;
-  if (window.IN_TEST)
+  if (window.IN_TEST) {
     dialogWindow.IN_TEST = true;
+  }
   dialogWindow.addEventListener('pagehide', function() {
     delete window.background.dialogs[id];
   });
@@ -369,15 +372,17 @@ FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
       chrome.storage.local.get(function(items) {
         for (var key in items) {
           if (items.hasOwnProperty(key)) {
-            if (key.match(FILES_ID_PATTERN))
+            if (key.match(FILES_ID_PATTERN)) {
               chrome.storage.local.remove(key);
+            }
           }
         }
       });
     }
     launcher.launchFileManager(
-        null, undefined, LaunchType.FOCUS_ANY_OR_CREATE,
-        function() { metrics.recordInterval('Load.BackgroundLaunch'); });
+        null, undefined, LaunchType.FOCUS_ANY_OR_CREATE, function() {
+          metrics.recordInterval('Load.BackgroundLaunch');
+        });
   });
 };
 

@@ -31,10 +31,11 @@ function waitUntil(testFunction) {
 
   return new Promise((resolve) => {
     let tryTestFunction = () => {
-      if (testFunction())
+      if (testFunction()) {
         resolve();
-      else
+      } else {
         setTimeout(tryTestFunction, INTERVAL_FOR_WAIT_UNTIL);
+      }
     };
 
     tryTestFunction();

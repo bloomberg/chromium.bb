@@ -54,8 +54,9 @@ ExternalMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
  * @override
  */
 ExternalMetadataProvider.prototype.get = function(requests) {
-  if (!requests.length)
+  if (!requests.length) {
     return Promise.resolve([]);
+  }
   return new Promise(function(fulfill) {
     var entries = requests.map(function(request) {
       return request.entry;
@@ -67,13 +68,14 @@ ExternalMetadataProvider.prototype.get = function(requests) {
       }
     }
     chrome.fileManagerPrivate.getEntryProperties(
-        entries,
-        Object.keys(nameMap),
-        function(results) {
-          if (!chrome.runtime.lastError)
+        entries, Object.keys(nameMap), function(results) {
+          if (!chrome.runtime.lastError) {
             fulfill(this.convertResults_(requests, nameMap, results));
-          else
-            fulfill(requests.map(function() { return new MetadataItem(); }));
+          } else {
+            fulfill(requests.map(function() {
+              return new MetadataItem();
+            }));
+          }
         }.bind(this));
   }.bind(this));
 };
@@ -91,66 +93,94 @@ ExternalMetadataProvider.prototype.convertResults_ =
   for (var i = 0; i < propertiesList.length; i++) {
     var prop = propertiesList[i];
     var item = new MetadataItem();
-    if (prop.alternateUrl !== undefined || nameMap['alternateUrl'])
+    if (prop.alternateUrl !== undefined || nameMap['alternateUrl']) {
       item.alternateUrl = prop.alternateUrl;
-    if (prop.availableOffline !== undefined || nameMap['availableOffline'])
+    }
+    if (prop.availableOffline !== undefined || nameMap['availableOffline']) {
       item.availableOffline = prop.availableOffline;
+    }
     if (prop.availableWhenMetered !== undefined ||
-        nameMap['availableWhenMetered'])
+        nameMap['availableWhenMetered']) {
       item.availableWhenMetered = prop.availableWhenMetered;
-    if (prop.contentMimeType !== undefined || nameMap['contentMimeType'])
+    }
+    if (prop.contentMimeType !== undefined || nameMap['contentMimeType']) {
       item.contentMimeType = prop.contentMimeType || '';
+    }
     if (prop.croppedThumbnailUrl !== undefined ||
-        nameMap['croppedThumbnailUrl'])
+        nameMap['croppedThumbnailUrl']) {
       item.croppedThumbnailUrl = prop.croppedThumbnailUrl;
-    if (prop.customIconUrl !== undefined || nameMap['customIconUrl'])
+    }
+    if (prop.customIconUrl !== undefined || nameMap['customIconUrl']) {
       item.customIconUrl = prop.customIconUrl || '';
-    if (prop.dirty !== undefined || nameMap['dirty'])
+    }
+    if (prop.dirty !== undefined || nameMap['dirty']) {
       item.dirty = prop.dirty;
-    if (prop.externalFileUrl !== undefined || nameMap['externalFileUrl'])
+    }
+    if (prop.externalFileUrl !== undefined || nameMap['externalFileUrl']) {
       item.externalFileUrl = prop.externalFileUrl;
-    if (prop.hosted !== undefined || nameMap['hosted'])
+    }
+    if (prop.hosted !== undefined || nameMap['hosted']) {
       item.hosted = prop.hosted;
-    if (prop.imageHeight !== undefined || nameMap['imageHeight'])
+    }
+    if (prop.imageHeight !== undefined || nameMap['imageHeight']) {
       item.imageHeight = prop.imageHeight;
-    if (prop.imageRotation !== undefined || nameMap['imageRotation'])
+    }
+    if (prop.imageRotation !== undefined || nameMap['imageRotation']) {
       item.imageRotation = prop.imageRotation;
-    if (prop.imageWidth !== undefined || nameMap['imageWidth'])
+    }
+    if (prop.imageWidth !== undefined || nameMap['imageWidth']) {
       item.imageWidth = prop.imageWidth;
-    if (prop.modificationTime !== undefined || nameMap['modificationTime'])
+    }
+    if (prop.modificationTime !== undefined || nameMap['modificationTime']) {
       item.modificationTime = new Date(prop.modificationTime);
+    }
     if (prop.modificationByMeTime !== undefined ||
-        nameMap['modificationByMeTime'])
+        nameMap['modificationByMeTime']) {
       item.modificationByMeTime = new Date(prop.modificationByMeTime);
-    if (prop.pinned !== undefined || nameMap['pinned'])
+    }
+    if (prop.pinned !== undefined || nameMap['pinned']) {
       item.pinned = prop.pinned;
-    if (prop.present !== undefined || nameMap['present'])
+    }
+    if (prop.present !== undefined || nameMap['present']) {
       item.present = prop.present;
-    if (prop.shared !== undefined || nameMap['shared'])
+    }
+    if (prop.shared !== undefined || nameMap['shared']) {
       item.shared = prop.shared;
-    if (prop.sharedWithMe !== undefined || nameMap['sharedWithMe'])
+    }
+    if (prop.sharedWithMe !== undefined || nameMap['sharedWithMe']) {
       item.sharedWithMe = prop.sharedWithMe;
-    if (prop.size !== undefined || nameMap['size'])
+    }
+    if (prop.size !== undefined || nameMap['size']) {
       item.size = requests[i].entry.isFile ? (prop.size || 0) : -1;
-    if (prop.thumbnailUrl !== undefined || nameMap['thumbnailUrl'])
+    }
+    if (prop.thumbnailUrl !== undefined || nameMap['thumbnailUrl']) {
       item.thumbnailUrl = prop.thumbnailUrl;
-    if (prop.canCopy !== undefined || nameMap['canCopy'])
+    }
+    if (prop.canCopy !== undefined || nameMap['canCopy']) {
       item.canCopy = prop.canCopy;
-    if (prop.canDelete !== undefined || nameMap['canDelete'])
+    }
+    if (prop.canDelete !== undefined || nameMap['canDelete']) {
       item.canDelete = prop.canDelete;
-    if (prop.canRename !== undefined || nameMap['canRename'])
+    }
+    if (prop.canRename !== undefined || nameMap['canRename']) {
       item.canRename = prop.canRename;
-    if (prop.canAddChildren !== undefined || nameMap['canAddChildren'])
+    }
+    if (prop.canAddChildren !== undefined || nameMap['canAddChildren']) {
       item.canAddChildren = prop.canAddChildren;
-    if (prop.canShare !== undefined || nameMap['canShare'])
+    }
+    if (prop.canShare !== undefined || nameMap['canShare']) {
       item.canShare = prop.canShare;
-    if (prop.isMachineRoot !== undefined || nameMap['isMachineRoot'])
+    }
+    if (prop.isMachineRoot !== undefined || nameMap['isMachineRoot']) {
       item.isMachineRoot = prop.isMachineRoot;
-    if (prop.isExternalMedia !== undefined || nameMap['isExternalMedia'])
+    }
+    if (prop.isExternalMedia !== undefined || nameMap['isExternalMedia']) {
       item.isExternalMedia = prop.isExternalMedia;
+    }
     if (prop.isArbitrarySyncFolder !== undefined ||
-        nameMap['isArbitrarySyncFolder'])
+        nameMap['isArbitrarySyncFolder']) {
       item.isArbitrarySyncFolder = prop.isArbitrarySyncFolder;
+    }
     results.push(item);
   }
   return results;

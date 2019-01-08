@@ -137,8 +137,9 @@ MetadataDispatcher.prototype.log = function(var_args) {
  * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.vlog = function(var_args) {
-  if (this.verbose)
+  if (this.verbose) {
     this.log.apply(this, arguments);
+  }
 };
 
 /**
@@ -209,15 +210,16 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
     // Step two, turn the url into an entry.
     function getEntry(parser) {
-      webkitResolveLocalFileSystemURL(
-          fileURL,
-          function(entry) { nextStep(entry, parser); },
-          onError);
+      webkitResolveLocalFileSystemURL(fileURL, function(entry) {
+        nextStep(entry, parser);
+      }, onError);
     },
 
     // Step three, turn the entry into a file.
     function getFile(entry, parser) {
-      entry.file(function(file) { nextStep(file, parser); }, onError);
+      entry.file(function(file) {
+        nextStep(file, parser);
+      }, onError);
     },
 
     // Step four, parse the file content.

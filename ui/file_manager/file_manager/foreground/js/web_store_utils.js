@@ -34,19 +34,22 @@ webStoreUtils.WEB_STORE_HANDLER_BASE_URL =
  * @return {string} URL
  */
 webStoreUtils.createWebStoreLink = function(extension, mimeType) {
-  if (!extension || constants.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1)
+  if (!extension || constants.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
     return webStoreUtils.CHROME_WEB_STORE_URL;
+  }
 
-  if (extension[0] === '.')
+  if (extension[0] === '.') {
     extension = extension.substr(1);
-  else
+  } else {
     console.warn('Please pass an extension with a dot to createWebStoreLink.');
+  }
 
   var url = webStoreUtils.WEB_STORE_HANDLER_BASE_URL;
   url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
 
   // If a mime is given, add it into the URL.
-  if (mimeType)
+  if (mimeType) {
     url += '&_fmt=' + mimeType.replace(/[^-\w\/]/g, '');
+  }
   return url;
 };

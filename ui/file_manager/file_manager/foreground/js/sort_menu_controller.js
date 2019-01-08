@@ -31,7 +31,7 @@ function SortMenuController(sortButton, toggleRipple, fileListModel) {
 
   sortButton.addEventListener('menushow', this.updateCheckmark_.bind(this));
   sortButton.addEventListener('menuhide', this.onHideSortMenu_.bind(this));
-};
+}
 
 /**
  * Update checkmarks for each sort options.
@@ -63,8 +63,9 @@ SortMenuController.prototype.onHideSortMenu_ = function() {
  * @private
  */
 SortMenuController.prototype.setCheckStatus_ = function(menuItem, checked) {
-  if (checked)
+  if (checked) {
     menuItem.setAttribute('checked', '');
-  else
+  } else {
     menuItem.removeAttribute('checked');
+  }
 };

@@ -13,14 +13,18 @@
  * @return {string} Testing provider name.
  */
 function getProviderNameForTest(manifest) {
-  if (manifest === 'manifest.json')
+  if (manifest === 'manifest.json') {
     return 'Files Testing Provider test extension';
-  if (manifest === 'manifest_multiple_mounts.json')
+  }
+  if (manifest === 'manifest_multiple_mounts.json') {
     return 'Files Testing Provider multiple mounts test extension';
-  if (manifest === 'manifest_source_device.json')
+  }
+  if (manifest === 'manifest_source_device.json') {
     return 'Files Testing Provider device test extension';
-  if (manifest === 'manifest_source_file.json')
+  }
+  if (manifest === 'manifest_source_file.json') {
     return 'Files Testing Provider file test extension';
+  }
 
   throw new Error('unknown mainfest: '.concat(manifest));
 }
@@ -144,8 +148,9 @@ async function requestMountInternal(multipleMounts, manifest) {
       '#gear-menu:not([hidden]) ' +
           'cr-menu-item[command="#install-new-extension"]';
   result = await remoteCall.waitForElement(appId, selector);
-  if (multipleMounts)
+  if (multipleMounts) {
     chrome.test.assertEq(providerName, result.text);
+  }
 }
 
 /**

@@ -27,9 +27,10 @@ function NavigationUma(volumeManager) {
  */
 NavigationUma.prototype.exportRootType_ = function(entry, name) {
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  if (locationInfo)
+  if (locationInfo) {
     metrics.recordEnum(
         name, locationInfo.rootType, VolumeManagerCommon.RootTypesForUMA);
+  }
 };
 
 /**

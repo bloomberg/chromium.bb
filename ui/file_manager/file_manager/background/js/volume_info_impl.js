@@ -302,12 +302,13 @@ VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
     // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
     // remove this if logic. Call opt_onSuccess() always, instead.
     if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
-      if (this.fileSystem_)
+      if (this.fileSystem_) {
         this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
             Promise.resolve(this.fileSystem_.root));
-      else
+      } else {
         this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
             Promise.reject(this.error));
+      }
     } else {
       // For Drive, we need to resolve.
       var displayRootURL = this.fileSystem_.root.toURL() + 'root';
@@ -328,7 +329,8 @@ VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
       this.displayRoot_ = displayRoot;
     }.bind(this));
   }
-  if (opt_onSuccess)
+  if (opt_onSuccess) {
     this.displayRootPromise_.then(opt_onSuccess, opt_onFailure);
+  }
   return this.displayRootPromise_;
 };

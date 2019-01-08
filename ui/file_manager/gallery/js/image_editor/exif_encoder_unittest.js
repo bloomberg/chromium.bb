@@ -51,8 +51,12 @@ function testExifEncodeAndDecode() {
   var exifParser = new ExifParser(this);
 
   // Redirect .log and .vlog to console.log for debugging.
-  exifParser.log = function(arg) { console.log(arg); };
-  exifParser.vlog = function(arg) { console.log(arg); };
+  exifParser.log = function(arg) {
+    console.log(arg);
+  };
+  exifParser.vlog = function(arg) {
+    console.log(arg);
+  };
 
   var parsedMetadata = {};
   var byteReader = new ByteReader(encodedResult);

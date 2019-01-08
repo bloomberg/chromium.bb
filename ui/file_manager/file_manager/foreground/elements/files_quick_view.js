@@ -85,8 +85,9 @@ var FilesQuickView = Polymer({
 
   // Closes the dialog.
   close: function() {
-    if (this.isOpened())
+    if (this.isOpened()) {
       this.$.dialog.close();
+    }
   },
 
   /**
@@ -125,8 +126,9 @@ var FilesQuickView = Polymer({
   onContentPanelTap_: function(event) {
     var target = event.detail.sourceEvent.target;
     while (target) {
-      if (target.classList.contains('no-close-on-click'))
+      if (target.classList.contains('no-close-on-click')) {
         return;
+      }
       target = target.parentElement;
     }
     this.close();

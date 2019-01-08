@@ -40,8 +40,9 @@ ImageLoaderClient.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
  * @return {ImageLoaderClient} Client instance.
  */
 ImageLoaderClient.getInstance = function() {
-  if (!ImageLoaderClient.instance_)
+  if (!ImageLoaderClient.instance_) {
     ImageLoaderClient.instance_ = new ImageLoaderClient();
+  }
   return ImageLoaderClient.instance_;
 };
 
@@ -142,8 +143,9 @@ ImageLoaderClient.prototype.load = function(request, callback) {
     // Save to cache.
     if (cacheKey && request.cache) {
       const value = LoadImageResponse.cacheValue(result, request.timestamp);
-      if (value)
+      if (value) {
         this.cache_.put(cacheKey, value, value.data.length);
+      }
     }
     callback(result);
   }.bind(this));
