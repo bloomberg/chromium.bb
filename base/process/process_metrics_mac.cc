@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <sys/sysctl.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"

@@ -594,7 +594,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   // Contains task runners for the threads that have had at least one event
   // added into the local event buffer.
-  hash_map<int, scoped_refptr<SingleThreadTaskRunner>> thread_task_runners_;
+  std::unordered_map<int, scoped_refptr<SingleThreadTaskRunner>>
+      thread_task_runners_;
 
   // For events which can't be added into the thread local buffer, e.g. events
   // from threads without a message loop.
