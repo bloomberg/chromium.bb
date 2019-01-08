@@ -1152,11 +1152,6 @@
     'media_win': {
       'filepath': 'media/gpu/windows/'
     },
-    'memory_coordinator': {
-      'filepath': 'base/memory/memory_|' \
-                  'content/browser/memory/|' \
-                  'content/child/memory/'
-    },
     'message_loop': {
       'filepath': 'base/message_'
     },
@@ -2313,7 +2308,6 @@
                      'pthatcher+watch@chromium.org',
                      'takumif+watch@chromium.org'],
     'media_win': ['media-win-reviews@chromium.org'],
-    'memory_coordinator': ['chrome-grc-reviews+memory@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],

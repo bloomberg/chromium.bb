@@ -179,7 +179,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("layer-element"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("lighthouse"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("loading"))                                \
-  X(TRACE_DISABLED_BY_DEFAULT("memory_coordinator"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("memory-infra"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("memory-infra.v8.code_stats"))             \
   X(TRACE_DISABLED_BY_DEFAULT("net"))                                    \
