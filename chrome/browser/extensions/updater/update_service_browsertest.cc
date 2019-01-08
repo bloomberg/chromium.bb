@@ -331,9 +331,6 @@ IN_PROC_BROWSER_TEST_P(UpdateServiceTest, SuccessfulUpdate) {
   run_loop.Run();
 
   content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.ExtensionUpdaterRawUpdateCalls"),
-              testing::ElementsAre(base::Bucket(1, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
       testing::ElementsAre(base::Bucket(1, 1)));
