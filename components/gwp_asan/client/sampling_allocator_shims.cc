@@ -20,6 +20,10 @@
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
+#if defined(OS_POSIX)
+#include "components/gwp_asan/client/sampling_allocator_shims_posix.h"
+#endif
+
 #if defined(OS_WIN)
 #include "components/gwp_asan/client/sampling_allocator_shims_win.h"
 #endif
@@ -172,9 +176,8 @@ unsigned BatchMallocFn(const AllocatorDispatch* self,
                        void** results,
                        unsigned num_requested,
                        void* context) {
-#if defined(OS_MACOSX) || defined(OS_IOS)
-#error "Implement batch_malloc() support."
-#endif
+  // The batch_malloc() routine is esoteric and only accessible for the system
+  // allocator's zone, GWP-ASan interception is not provided.
 
   return self->next->batch_malloc_function(self->next, size, results,
                                            num_requested, context);
@@ -184,9 +187,18 @@ void BatchFreeFn(const AllocatorDispatch* self,
                  void** to_be_freed,
                  unsigned num_to_be_freed,
                  void* context) {
-#if defined(OS_MACOSX) || defined(OS_IOS)
-#error "Implement batch_free() support."
-#endif
+  // A batch_free() hook is implemented because it is imperative that we never
+  // call free() with a GWP-ASan allocation.
+  for (size_t i = 0; i < num_to_be_freed; i++) {
+    if (UNLIKELY(gpa->PointerIsMine(to_be_freed[i]))) {
+      // If this batch includes guarded allocations, call free() on all of the
+      // individual allocations to ensure the guarded allocations are handled
+      // correctly.
+      for (size_t j = 0; j < num_to_be_freed; j++)
+        FreeFn(self, to_be_freed[j], context);
+      return;
+    }
+  }
 
   self->next->batch_free_function(self->next, to_be_freed, num_to_be_freed,
                                   context);
