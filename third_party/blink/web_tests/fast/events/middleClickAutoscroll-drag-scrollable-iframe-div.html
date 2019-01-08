@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"> </script>
+<script src="../../resources/run-after-layout-and-paint.js"> </script>
 <script>
 var button_was_clicked = false;
 
@@ -7,14 +8,14 @@ function test() {
     if (window.testRunner) {
         testRunner.waitUntilDone();
         testRunner.dumpAsText();
-        testRunner.layoutAndPaintAsyncThen(
+        runAfterLayoutAndPaint(
             function() {
                 var iframe = document.getElementById('ScrollIFrame');
                 var iframeDocument = iframe.contentDocument;
                 var textInIFrame = iframeDocument.getElementById('textInFrame');
                 if (window.eventSender) {
                     debug("Starting Autoscroll test on iframe");
-                    testRunner.layoutAndPaintAsyncThen(
+                    runAfterLayoutAndPaint(
                         function() {
                             var x = iframe.offsetLeft + textInIFrame.offsetLeft + 7;
                             var y = iframe.offsetTop + textInIFrame.offsetTop + 7;
@@ -23,7 +24,7 @@ function test() {
                             eventSender.mouseDown(1);
                             eventSender.mouseMoveTo(x + 220, y + 220);
                             eventSender.mouseUp(1);
-                            testRunner.layoutAndPaintAsyncThen(autoscrollTestPart2);                            
+                            runAfterLayoutAndPaint(autoscrollTestPart2);
                         });
                 }
             });
@@ -43,7 +44,7 @@ function autoscrollTestPart2() {
     // This click actually clicks the button.
     eventSender.mouseDown();
     eventSender.mouseUp();
-    testRunner.runAfterLayoutAndPaint(checkButtonClicked);
+    runAfterLayoutAndPaint(checkButtonClicked);
 }
 
 function checkButtonClicked() {

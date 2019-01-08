@@ -1610,11 +1610,6 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
                                    *page_->DeprecatedLocalMainFrame());
 }
 
-void WebViewImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
-  if (layer_tree_view_)
-    layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
-}
-
 void WebViewImpl::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   if (layer_tree_view_)

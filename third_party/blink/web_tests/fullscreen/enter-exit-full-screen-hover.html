@@ -7,6 +7,7 @@ body {
 }
 </style>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script src="full-screen-test.js"></script>
 <script src="../fast/events/touch/resources/touch-hover-active-tests.js"></script>
 <link rel="stylesheet" href="../fast/events/touch/resources/touch-hover-active-tests.css">
@@ -32,13 +33,13 @@ function runTest() {
     // After entering fullscreen + layout, the button should lose hover.
     waitForEventOnce(document, 'webkitfullscreenchange', function() {
         shouldBeTrue("document.webkitIsFullScreen");
-        testRunner.layoutAndPaintAsyncThen(function() {
+        runAfterLayoutAndPaint(function() {
             shouldBeDefault("getHoverActiveState(enterButton)");
 
             // After exiting fullscreen + layout, the button should lose hover.
             waitForEventOnce(document, 'webkitfullscreenchange', function() {
                 shouldBeFalse("document.webkitIsFullScreen");
-                testRunner.layoutAndPaintAsyncThen(function() {
+                runAfterLayoutAndPaint(function() {
                     shouldBeDefault("getHoverActiveState(exitButton)");
                     endTest();
                 });

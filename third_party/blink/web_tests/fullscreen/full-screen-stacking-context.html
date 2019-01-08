@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script src="../resources/run-after-layout-and-paint.js"></script>
         <script>
             var runPixelTests = true;
 
             function init() {
                 waitForEventOnce(document, 'webkitfullscreenchange', function() {
-                    testRunner.layoutAndPaintAsyncThen(endTest);
+                    runAfterLayoutAndPaint(endTest);
                 });
                 runWithKeyDown(goFullScreen);
             }

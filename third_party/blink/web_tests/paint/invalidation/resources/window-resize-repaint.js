@@ -21,7 +21,7 @@ function doTest() {
     if (sizeIndex < testSizes.length) {
         internals.startTrackingRepaints(document);
         window.resizeTo(testSizes[sizeIndex].width, testSizes[sizeIndex].height);
-        testRunner.layoutAndPaintAsyncThen(doTest);
+        runAfterLayoutAndPaint(doTest);
     } else if (window.testRunner) {
         testRunner.setCustomTextOutput(repaintRects);
         testRunner.notifyDone();
@@ -33,6 +33,6 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
     onload = function() {
         window.resizeTo(testSizes[0].width, testSizes[0].height);
-        testRunner.layoutAndPaintAsyncThen(doTest);
+        runAfterLayoutAndPaint(doTest);
     };
 }

@@ -7,6 +7,7 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
+      <script src="../../../resources/run-after-layout-and-paint.js"></script>
       <style>
       .layer {
           position: absolute;
@@ -23,7 +24,7 @@
           var layer = document.createElement("div");
           layer.classList.add("layer");
           document.getElementById("parent-layer").appendChild(layer);
-          return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
+          return new Promise((fulfill) => runAfterLayoutAndPaint(fulfill));
       }
   `);
 

@@ -24,7 +24,7 @@ def _CheckTestharnessResults(input_api, output_api):
         return []
 
     checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-        '..', '..', 'blink', 'tools', 'check_testharness_expected_pass.py')
+        '..', 'tools', 'check_testharness_expected_pass.py')
 
     args = [input_api.python_executable, checker_path]
     args.extend(baseline_files)
@@ -75,7 +75,7 @@ def _CheckFilesUsingEventSender(input_api, output_api):
 
 def _CheckTestExpectations(input_api, output_api):
     lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-        '..', '..', 'blink', 'tools', 'lint_test_expectations.py')
+        '..', 'tools', 'lint_test_expectations.py')
     _, errs = input_api.subprocess.Popen(
         [input_api.python_executable, lint_path],
         stdout=input_api.subprocess.PIPE,
@@ -125,6 +125,22 @@ def _CheckForInvalidPreferenceError(input_api, output_api):
                 results.append(output_api.PresubmitError('Found an invalid preference %s in expected result %s:%s' % (error.group(1), f, line_num)))
     return results
 
+def _CheckRunAfterLayoutAndPaintJS(input_api, output_api):
+    """Checks if resources/run-after-layout-and-paint.js and
+       http/tests/resources/run-after-layout-and-paint.js are the same."""
+    js_file = input_api.os_path.join(input_api.PresubmitLocalPath(),
+        'resources', 'run-after-layout-and-paint.js')
+    http_tests_js_file = input_api.os_path.join(input_api.PresubmitLocalPath(),
+        'http', 'tests', 'resources', 'run-after-layout-and-paint.js')
+    for f in input_api.AffectedFiles():
+        path = f.AbsoluteLocalPath()
+        if path == js_file or path == http_tests_js_file:
+            if not filecmp.cmp(js_file, http_tests_js_file):
+                return [output_api.PresubmitError(
+                    '%s and %s must be kept exactly the same' %
+                    (js_file, http_tests_js_file))]
+            break
+    return []
 
 def CheckChangeOnUpload(input_api, output_api):
     results = []
@@ -133,6 +149,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CheckTestExpectations(input_api, output_api))
     results.extend(_CheckForJSTest(input_api, output_api))
     results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
+    results.extend(_CheckRunAfterLayoutAndPaintJS(input_api, output_api))
     return results
 
 

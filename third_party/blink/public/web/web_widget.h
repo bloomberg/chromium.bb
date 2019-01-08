@@ -139,9 +139,6 @@ class WebWidget {
   // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
   virtual void PaintContent(cc::PaintCanvas*, const WebRect& view_port) {}
 
-  // Run layout and paint of all pending document changes asynchronously.
-  virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
-
   // This should only be called when isAcceleratedCompositingActive() is true.
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}

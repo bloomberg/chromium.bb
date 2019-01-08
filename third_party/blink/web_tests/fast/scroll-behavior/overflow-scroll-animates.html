@@ -15,6 +15,7 @@
 
 </style>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <div id="container">
   <div id="content"></div>
 </div>
@@ -32,7 +33,7 @@ function runTest() {
 
     element.addEventListener("scroll", onElementScroll);
 
-    testRunner.layoutAndPaintAsyncThen(function() {
+    runAfterLayoutAndPaint(function() {
         // Give the container focus.
         eventSender.mouseMoveTo(100, 100);
         eventSender.mouseDown();

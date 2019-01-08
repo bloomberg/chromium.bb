@@ -1,16 +1,17 @@
 <!DOCTYPE HTML>
 <body>
 <div id="div">This test passes if it does not crash.</div>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
   testRunner.waitUntilDone();
   testRunner.dumpAsText();
 
   var div = document.getElementById('div');
-  testRunner.layoutAndPaintAsyncThen(function() {
+  runAfterLayoutAndPaint(function() {
     div.style.position = 'relative';
     div.style.backgroundColor = 'blue';
-    testRunner.layoutAndPaintAsyncThen(function() {
+    runAfterLayoutAndPaint(function() {
       div.textContent += ' PASS';
       testRunner.notifyDone();
     });

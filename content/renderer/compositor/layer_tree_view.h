@@ -145,7 +145,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
                                double duration_sec) override;
   bool HasPendingPageScaleAnimation() const override;
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
-  void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   // Synchronously performs the complete set of document lifecycle phases,
@@ -242,7 +241,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
  private:
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
-  void InvokeLayoutAndPaintCallback();
   bool CompositeIsSynchronous() const;
   void SynchronouslyComposite(bool raster,
                               std::unique_ptr<cc::SwapPromise> swap_promise);
@@ -259,7 +257,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
   bool in_synchronous_compositor_update_ = false;
-  base::OnceClosure layout_and_paint_async_callback_;
 
   viz::FrameSinkId frame_sink_id_;
   base::circular_deque<

@@ -19,9 +19,6 @@
   <div id="spanner"></div>
 </div>
 <script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-
 runAfterLayoutAndPaint(function() {
   document.body.appendChild(document.createElement('div'));
   document.body.offsetLeft;
@@ -29,8 +26,5 @@ runAfterLayoutAndPaint(function() {
   var c = document.querySelector('rect');
   c.setAttribute('height', '100%');
   c.getScreenCTM();
-
-  if (window.testRunner)
-    testRunner.layoutAndPaintAsyncThen(function() { testRunner.notifyDone(); });
-});
+}, true);
 </script>

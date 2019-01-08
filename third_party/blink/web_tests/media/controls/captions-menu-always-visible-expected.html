@@ -28,8 +28,7 @@
     // :hover sometimes applying.
     textTrackMenu(video).style = 'pointer-events: none;';
 
-    testRunner.layoutAndPaintAsyncThen(() => {
+    if (window.testRunner)
       testRunner.notifyDone();
-    });
   });
 </script>

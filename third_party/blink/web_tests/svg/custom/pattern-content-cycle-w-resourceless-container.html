@@ -1,12 +1,7 @@
 <!DOCTYPE html>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
   testRunner.dumpAsText();
-  testRunner.waitUntilDone();
-  window.onload = function() {
-    testRunner.layoutAndPaintAsyncThen(function() { testRunner.notifyDone(); });
-  };
-}
 </script>
 <p>PASS if no crash (stack overflow).</p>
 <svg width="100" height="100">

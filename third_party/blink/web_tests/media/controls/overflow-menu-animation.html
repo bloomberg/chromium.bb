@@ -2,6 +2,7 @@
 <title>Media Controls: overflow menu item list animation.</title>
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src='../media-controls.js'></script>
 <video controls width=400></video>
 <script>
@@ -18,7 +19,7 @@ async_test(t => {
 
     function runTestCase(index) {
       video.width = testCasesWidth[index];
-      testRunner.layoutAndPaintAsyncThen(t.step_func(() => {
+      runAfterLayoutAndPaint(t.step_func(() => {
 
         // Go through item list, check 'animated-##' class is presented if item is displayed
         // and check if the items' classes are in sequential order

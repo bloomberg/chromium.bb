@@ -428,22 +428,6 @@ bool LayerTreeView::CompositeIsSynchronous() const {
   return false;
 }
 
-void LayerTreeView::LayoutAndPaintAsync(base::OnceClosure callback) {
-  DCHECK(layout_and_paint_async_callback_.is_null());
-  layout_and_paint_async_callback_ = std::move(callback);
-
-  if (CompositeIsSynchronous()) {
-    // The LayoutAndPaintAsyncCallback is invoked in WillCommit, which is
-    // dispatched after layout and paint for all compositing modes.
-    const bool raster = false;
-    layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                                  weak_factory_.GetWeakPtr(), raster, nullptr));
-  } else {
-    layer_tree_host_->SetNeedsCommit();
-  }
-}
-
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   if (!layer_tree_frame_sink) {
@@ -453,14 +437,8 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void LayerTreeView::InvokeLayoutAndPaintCallback() {
-  if (!layout_and_paint_async_callback_.is_null())
-    std::move(layout_and_paint_async_callback_).Run();
-}
-
 void LayerTreeView::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  DCHECK(layout_and_paint_async_callback_.is_null());
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   std::unique_ptr<viz::CopyOutputRequest> request =
@@ -712,9 +690,7 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void LayerTreeView::WillCommit() {
-  InvokeLayoutAndPaintCallback();
-}
+void LayerTreeView::WillCommit() {}
 
 void LayerTreeView::DidCommit() {
   delegate_->DidCommitCompositorFrame();

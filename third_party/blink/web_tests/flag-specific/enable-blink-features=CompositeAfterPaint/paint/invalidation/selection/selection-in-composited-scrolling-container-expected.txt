@@ -21,6 +21,11 @@
           "object": "InlineTextBox 'test test test'",
           "rect": [0, 0, 74, 16],
           "reason": "subtree"
+        },
+        {
+          "object": "InlineTextBox 'test test test'",
+          "rect": [26, 0, 26, 16],
+          "reason": "selection"
         }
       ],
       "transform": 2

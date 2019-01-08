@@ -575,10 +575,6 @@ LocalDOMWindow* WebPagePopupImpl::Window() {
   return MainFrame().DomWindow();
 }
 
-void WebPagePopupImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
-  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
-}
-
 void WebPagePopupImpl::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(IsAcceleratedCompositingActive());

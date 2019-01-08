@@ -8,6 +8,7 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
+      <script src="../../resources/run-after-layout-and-paint.js"></script>
       <style>
       div.marker::before {
           content: url(resources/test.bmp);
@@ -26,7 +27,7 @@
           img.addEventListener("load", onImageLoaded, false);
           function onImageLoaded()
           {
-              testRunner.layoutAndPaintAsyncThen(callback);
+              runAfterLayoutAndPaint(callback);
           }
           return promise;
       }

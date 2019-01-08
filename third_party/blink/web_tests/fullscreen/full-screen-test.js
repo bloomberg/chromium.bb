@@ -142,7 +142,7 @@ function endTest()
     consoleWrite("END OF TEST");
     testEnded = true;
     if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(() => testRunner.notifyDone());
+        testRunner.notifyDone();
 }
 
 function logResult(success, text)

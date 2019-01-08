@@ -2,6 +2,7 @@
 <html>
 <title>Test that resetting the controls after load is a no-op.</title>
 <script src="../media-controls.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <video controls width=400>
   <track kind=subtitles src=fake-en-sub.vtt srclang=en label=English>
   <track kind=subtitles src=fake-fr-sub.vtt srclang=fr label=French>
@@ -15,10 +16,10 @@
   video.src = '../content/test.ogv';
   video.addEventListener('loadedmetadata', () => {
     video.controls = false;
-    testRunner.layoutAndPaintAsyncThen(() => {
+    runAfterLayoutAndPaint(() => {
       video.controls = true;
 
-      testRunner.layoutAndPaintAsyncThen(() => {
+      runAfterLayoutAndPaint(() => {
         testRunner.notifyDone();
       });
     });

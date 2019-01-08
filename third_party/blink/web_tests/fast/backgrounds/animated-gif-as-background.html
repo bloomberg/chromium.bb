@@ -8,13 +8,14 @@
       width: 200px;
     }
   </style>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner)
       testRunner.waitUntilDone();
     
     function pageLoaded() 
     {
-      testRunner.layoutAndPaintAsyncThen(function () {
+      runAfterLayoutAndPaint(function () {
         window.setTimeout(function() {
           if (window.testRunner)
             testRunner.notifyDone();
