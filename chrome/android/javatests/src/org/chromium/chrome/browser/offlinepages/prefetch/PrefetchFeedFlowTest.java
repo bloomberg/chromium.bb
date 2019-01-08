@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -202,20 +203,12 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     }
 
     private OfflineItem findItemByUrl(String url) throws InterruptedException, TimeoutException {
-        CallbackHelper finished = new CallbackHelper();
-        final AtomicReference<OfflineItem> result = new AtomicReference<OfflineItem>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            offlineContentProvider().getAllItems(items -> {
-                for (OfflineItem item : items) {
-                    if (item.pageUrl.equals(URL1)) {
-                        result.set(item);
-                    }
-                }
-                finished.notifyCalled();
-            });
-        });
-        finished.waitForCallback(0);
-        return result.get();
+        for (OfflineItem item : OfflineTestUtil.getOfflineItems()) {
+            if (item.pageUrl.equals(URL1)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     private Bitmap findVisuals(ContentId id) throws InterruptedException, TimeoutException {

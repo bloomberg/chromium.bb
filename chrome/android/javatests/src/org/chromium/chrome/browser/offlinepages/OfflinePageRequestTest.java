@@ -18,9 +18,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -50,7 +48,6 @@ public class OfflinePageRequestTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -58,23 +55,9 @@ public class OfflinePageRequestTest {
                     NetworkChangeNotifier.init();
                 }
                 NetworkChangeNotifier.forceConnectivityState(true);
-
-                Profile profile = Profile.getLastUsedProfile();
-                mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
-                if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
-                    semaphore.release();
-                } else {
-                    mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
-                        @Override
-                        public void offlinePageModelLoaded() {
-                            semaphore.release();
-                            mOfflinePageBridge.removeObserver(this);
-                        }
-                    });
-                }
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mOfflinePageBridge = OfflineTestUtil.getOfflinePageBridge();
     }
 
     @Test
