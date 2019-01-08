@@ -11,6 +11,7 @@
 #include <ostream>
 #include <vector>
 
+#include "build/build_config.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -250,6 +251,12 @@ class AX_EXPORT AXNode final {
   // Table row-like nodes.
   bool IsTableRow() const;
   int32_t GetTableRowRowIndex() const;
+
+#if defined(OS_MACOSX)
+  // Table column-like nodes. These nodes are only present on macOS.
+  bool IsTableColumn() const;
+  int32_t GetTableColColIndex() const;
+#endif  // defined(OS_MACOSX)
 
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const;

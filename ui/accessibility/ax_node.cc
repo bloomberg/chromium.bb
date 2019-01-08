@@ -357,6 +357,33 @@ int32_t AXNode::GetTableRowRowIndex() const {
   return 0;
 }
 
+#if defined(OS_MACOSX)
+//
+// Table column-like nodes. These nodes are only present on macOS.
+//
+
+bool AXNode::IsTableColumn() const {
+  return data().role == ax::mojom::Role::kColumn;
+}
+
+int32_t AXNode::GetTableColColIndex() const {
+  if (!IsTableColumn())
+    return 0;
+
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return 0;
+
+  int32_t index = 0;
+  for (const AXNode* node : table_info->extra_mac_nodes) {
+    if (node == this)
+      break;
+    index++;
+  }
+  return index;
+}
+#endif  // defined(OS_MACOSX)
+
 //
 // Table cell-like nodes.
 //
