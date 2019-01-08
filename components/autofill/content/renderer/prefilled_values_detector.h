@@ -23,8 +23,14 @@ const base::flat_set<std::string, std::less<>>& KnownUsernamePlaceholders();
 // If |username_value| is in KnownUsernamePlaceholder(), the password manager
 // takes the liberty to override the contents of the username field.
 //
+// The |possible_email_domain| is supposed to be the eTLD+1 for which the
+// credential was saved. So if the credential was saved for
+// https://www.example.com, there is a chance that the website prefills
+// the username field with "@example.com".
+//
 // TODO(crbug.com/832622): Remove this once a stable solution is in place.
-bool PossiblePrefilledUsernameValue(const std::string& username_value);
+bool PossiblePrefilledUsernameValue(const std::string& username_value,
+                                    const std::string& possible_email_domain);
 
 }  // namespace autofill
 

@@ -1746,9 +1746,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   bool prefilled_placeholder_username = false;
 
   if (!username_element->IsNull()) {
+    // This is a heuristic guess. If the credential is stored for
+    // www.example.com, the username may be prefilled with "@example.com".
+    std::string possible_email_domain =
+        GetRegistryControlledDomain(fill_data.origin);
+
     prefilled_placeholder_username =
         !username_element->Value().IsEmpty() &&
-        (PossiblePrefilledUsernameValue(username_element->Value().Utf8()) ||
+        (PossiblePrefilledUsernameValue(username_element->Value().Utf8(),
+                                        possible_email_domain) ||
          username_may_use_prefilled_placeholder);
     if (!username_element->Value().IsEmpty() &&
         !prefilled_placeholder_username) {
