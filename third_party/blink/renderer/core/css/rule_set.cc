@@ -41,8 +41,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
-#include "third_party/blink/renderer/platform/wtf/terminated_array_builder.h"
-
 namespace blink {
 
 static inline PropertyWhitelistType DeterminePropertyWhitelistType(
