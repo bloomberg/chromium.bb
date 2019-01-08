@@ -100,14 +100,20 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // SiteInstances) belongs.
   virtual content::BrowserContext* GetBrowserContext() const = 0;
 
-  // Get the web site that this SiteInstance is rendering pages for.  This
+  // Get the web site that this SiteInstance is rendering pages for. This
   // includes the scheme and registered domain, but not the port.
   //
-  // NOTE: In most cases, this value should not be considered authoritative
-  // because a SiteInstance can usually host pages from multiple sites.  It is
-  // only an accurate representation of the pages within the SiteInstance in
-  // the "site per process" process model, or for sites that require process
-  // isolation (e.g., WebUI, extensions).
+  // NOTE: In most cases, code should be performing checks against the origin
+  // returned by |RenderFrameHost::GetLastCommittedOrigin()|. In contrast, the
+  // GURL returned by |GetSiteURL()| should not be considered authoritative
+  // because:
+  // - a SiteInstance can host pages from multiple sites if "site per process"
+  //   is not enabled and the SiteInstance isn't hosting pages that require
+  //   process isolation (e.g. WebUI or extensions)
+  // - even with site per process, the site URL is not an origin: while often
+  //   derived from the origin, it only contains the scheme and the eTLD + 1,
+  //   i.e. an origin with the host "deeply.nested.subdomain.example.com"
+  //   corresponds to a site URL with the host "example.com".
   virtual const GURL& GetSiteURL() const = 0;
 
   // Gets a SiteInstance for the given URL that shares the current
