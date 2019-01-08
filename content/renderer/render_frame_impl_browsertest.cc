@@ -990,9 +990,10 @@ class ScopedNewFrameInterfaceProviderExerciser {
  public:
   explicit ScopedNewFrameInterfaceProviderExerciser(
       FrameCreationObservingRendererClient* frame_creation_observer,
-      const base::Optional<GURL>& url_override_for_first_load = base::nullopt)
+      const base::Optional<std::string>& html_override_for_first_load =
+          base::nullopt)
       : frame_creation_observer_(frame_creation_observer),
-        url_override_for_first_load_(url_override_for_first_load) {
+        html_override_for_first_load_(html_override_for_first_load) {
     frame_creation_observer_->set_callback(base::BindRepeating(
         &ScopedNewFrameInterfaceProviderExerciser::OnFrameCreated,
         base::Unretained(this)));
@@ -1045,9 +1046,9 @@ class ScopedNewFrameInterfaceProviderExerciser {
     frame_ = frame;
     frame_commit_waiter_.emplace(frame);
 
-    if (url_override_for_first_load_.has_value()) {
-      frame_->SetURLOverrideForNextWebURLRequest(
-          std::move(url_override_for_first_load_).value());
+    if (html_override_for_first_load_.has_value()) {
+      frame_->SetHTMLOverrideForNextNavigation(
+          std::move(html_override_for_first_load_).value());
     }
 
     // The FrameHostTestInterfaceRequestIssuer needs to stay alive even after
@@ -1066,7 +1067,7 @@ class ScopedNewFrameInterfaceProviderExerciser {
 
   FrameCreationObservingRendererClient* frame_creation_observer_;
   TestRenderFrame* frame_ = nullptr;
-  base::Optional<GURL> url_override_for_first_load_;
+  base::Optional<std::string> html_override_for_first_load_;
   GURL first_committed_url_;
 
   base::Optional<FrameCommitWaiter> frame_commit_waiter_;
@@ -1244,7 +1245,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 
     const GURL new_window_url(test_case.new_window_url);
     ScopedNewFrameInterfaceProviderExerciser main_frame_exerciser(
-        frame_creation_observer(), new_window_url);
+        frame_creation_observer(), std::string("foo"));
     const std::string html =
         base::StringPrintf("<script>window.open(\"%s\", \"_blank\")</script>",
                            test_case.new_window_url);
@@ -1315,10 +1316,10 @@ TEST_F(RenderFrameRemoteInterfacesTest,
   // Override the URL for the first navigation in the newly created frame to
   // |child_frame_url|.
   ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
-      frame_creation_observer(), child_frame_url);
+      frame_creation_observer(), std::string("foo"));
 
-  constexpr char kHTML[] = "<iframe srcdoc=\"Foo\"></iframe>";
-  LoadHTMLWithUrlOverride(kHTML, main_frame_url.spec().c_str());
+  std::string html = "<iframe src='" + child_frame_url.spec() + "'></iframe>";
+  LoadHTMLWithUrlOverride(html.c_str(), main_frame_url.spec().c_str());
 
   ASSERT_NO_FATAL_FAILURE(
       child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));

@@ -180,14 +180,9 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
 
 TestRenderFrame::~TestRenderFrame() {}
 
-void TestRenderFrame::SetURLOverrideForNextWebURLRequest(const GURL& url) {
-  next_request_url_override_ = url;
-}
-
-void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
-  if (next_request_url_override_.has_value())
-    request.SetURL(std::move(next_request_url_override_).value());
-  RenderFrameImpl::WillSendRequest(request);
+void TestRenderFrame::SetHTMLOverrideForNextNavigation(
+    const std::string& html) {
+  next_navigation_html_override_ = html;
 }
 
 void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
@@ -205,6 +200,16 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const CommitNavigationParams& commit_params) {
   Navigate(network::ResourceResponseHead(), common_params, commit_params);
+}
+
+void TestRenderFrame::NavigateWithError(
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params,
+    int error_code,
+    const base::Optional<std::string>& error_page_content) {
+  CommitFailedNavigation(common_params, commit_params,
+                         false /* has_stale_copy_in_cache */, error_code,
+                         error_page_content, nullptr, base::DoNothing());
 }
 
 void TestRenderFrame::SwapOut(
@@ -248,9 +253,16 @@ void TestRenderFrame::SetCompositionFromExistingText(
 
 void TestRenderFrame::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
+  if (next_navigation_html_override_.has_value()) {
+    auto navigation_params = blink::WebNavigationParams::CreateWithHTMLString(
+        next_navigation_html_override_.value(), info->url_request.Url());
+    next_navigation_html_override_ = base::nullopt;
+    frame_->CommitNavigation(std::move(navigation_params),
+                             nullptr /* extra_data */);
+    return;
+  }
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
-      ((GetWebFrame()->Parent() && info->form.IsNull()) ||
-       next_request_url_override_.has_value())) {
+      GetWebFrame()->Parent() && info->form.IsNull()) {
     // RenderViewTest::LoadHTML immediately commits navigation for the main
     // frame. However if the loaded html has an empty or data subframe,
     // BeginNavigation will be called from Blink and we should avoid

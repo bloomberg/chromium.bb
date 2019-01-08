@@ -6655,71 +6655,6 @@ TEST_F(CompositedSelectionBoundsTest, InputScrolled) {
 #endif
 #endif
 
-class TestSubstituteDataWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  TestSubstituteDataWebFrameClient() : commit_called_(false) {}
-  ~TestSubstituteDataWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidFailProvisionalLoad(const WebURLError& error,
-                              WebHistoryCommitType) override {
-    const char kData[] = "This should appear";
-    auto navigation_params = WebNavigationParams::CreateWithHTMLString(
-        kData, KURL("chrome-error://chromewebdata/"));
-    navigation_params->unreachable_url = error.url();
-    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-    Frame()->CommitNavigation(std::move(navigation_params),
-                              nullptr /* extra_data */);
-  }
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType,
-                                WebGlobalObjectReusePolicy,
-                                mojo::ScopedMessagePipeHandle) override {
-    if (Frame()->GetDocumentLoader()->GetResponse().CurrentRequestUrl() !=
-        WebURL(url_test_helpers::ToKURL("about:blank")))
-      commit_called_ = true;
-  }
-
-  bool CommitCalled() const { return commit_called_; }
-
- private:
-  bool commit_called_;
-};
-
-TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
-  TestSubstituteDataWebFrameClient web_frame_client;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", &web_frame_client);
-  WebLocalFrame* frame = web_view_helper.GetWebView()->MainFrameImpl();
-
-  // Load a url as a history navigation that will return an error.
-  // TestSubstituteDataWebFrameClient will start a SubstituteData load in
-  // response to the load failure, which should get fully committed.  Due to
-  // https://bugs.webkit.org/show_bug.cgi?id=91685,
-  // FrameLoader::didReceiveData() wasn't getting called in this case, which
-  // resulted in the SubstituteData document not getting displayed.
-  std::string error_url = "http://0.0.0.0";
-  ResourceError error = ResourceError::Failure(ToKURL(error_url));
-  WebURLResponse response;
-  response.SetCurrentRequestUrl(url_test_helpers::ToKURL(error_url));
-  response.SetMIMEType("text/html");
-  response.SetHTTPStatusCode(500);
-  WebHistoryItem error_history_item;
-  error_history_item.Initialize();
-  error_history_item.SetURLString(
-      WebString::FromUTF8(error_url.c_str(), error_url.length()));
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      url_test_helpers::ToKURL(error_url), response, error);
-  frame_test_helpers::LoadHistoryItem(frame, error_history_item,
-                                      mojom::FetchCacheMode::kDefault);
-  WebString text = WebFrameContentDumper::DumpWebViewAsText(
-      web_view_helper.GetWebView(), std::numeric_limits<size_t>::max());
-  EXPECT_EQ("This should appear", text.Utf8());
-  EXPECT_TRUE(web_frame_client.CommitCalled());
-}
-
 class TestWillInsertBodyWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
@@ -7493,40 +7428,6 @@ TEST_F(WebFrameTest, BackToReload) {
             frame->GetDocumentLoader()->GetCacheMode());
 }
 
-TEST_F(WebFrameTest, BackDuringChildFrameReload) {
-  RegisterMockedHttpURLLoad("page_with_blank_iframe.html");
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "page_with_blank_iframe.html");
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  const FrameLoader& main_frame_loader = main_frame->GetFrame()->Loader();
-  WebLocalFrame* child_frame = main_frame->FirstChild()->ToWebLocalFrame();
-  ASSERT_TRUE(child_frame);
-
-  // Start a history navigation, then have a different frame commit a
-  // navigation.  In this case, reload an about:blank frame, which will commit
-  // synchronously.  After the history navigation completes, both the
-  // appropriate document url and the current history item should reflect the
-  // history navigation.
-  RegisterMockedHttpURLLoad("white-1x1.png");
-  WebHistoryItem item;
-  item.Initialize();
-  WebURL history_url(ToKURL(base_url_ + "white-1x1.png"));
-  item.SetURLString(history_url.GetString());
-  HistoryItem* history_item = item;
-  auto params = std::make_unique<WebNavigationParams>();
-  params->request = WrappedResourceRequest(
-      history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault));
-  params->frame_load_type = WebFrameLoadType::kBackForward;
-  params->history_item = item;
-  main_frame->CommitNavigation(std::move(params), nullptr /* extra_data */);
-
-  frame_test_helpers::ReloadFrame(child_frame);
-  EXPECT_EQ(item.UrlString(), main_frame->GetDocument().Url().GetString());
-  EXPECT_EQ(item.UrlString(), WebString(main_frame_loader.GetDocumentLoader()
-                                            ->GetHistoryItem()
-                                            ->UrlString()));
-}
-
 TEST_F(WebFrameTest, ReloadPost) {
   RegisterMockedHttpURLLoad("reload_post.html");
   frame_test_helpers::WebViewHelper web_view_helper;
@@ -7549,41 +7450,16 @@ TEST_F(WebFrameTest, ReloadPost) {
             frame->GetDocumentLoader()->GetNavigationType());
 }
 
-TEST_F(WebFrameTest, LoadHistoryItemReload) {
-  RegisterMockedHttpURLLoad("fragment_middle_click.html");
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html");
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
-  const FrameLoader& main_frame_loader =
-      web_view_helper.LocalMainFrame()->GetFrame()->Loader();
-  Persistent<HistoryItem> first_item =
-      main_frame_loader.GetDocumentLoader()->GetHistoryItem();
-  EXPECT_TRUE(first_item);
-
-  RegisterMockedHttpURLLoad("white-1x1.png");
-  frame_test_helpers::LoadFrame(frame, base_url_ + "white-1x1.png");
-  EXPECT_NE(first_item.Get(),
-            main_frame_loader.GetDocumentLoader()->GetHistoryItem());
-
-  // Cache policy overrides should take.
-  frame_test_helpers::LoadHistoryItem(frame, WebHistoryItem(first_item),
-                                      mojom::FetchCacheMode::kValidateCache);
-  EXPECT_EQ(first_item.Get(),
-            main_frame_loader.GetDocumentLoader()->GetHistoryItem());
-  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetCacheMode());
-}
-
 class TestCachePolicyWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
   TestCachePolicyWebFrameClient()
       : cache_mode_(mojom::FetchCacheMode::kDefault),
-        will_send_request_call_count_(0) {}
+        begin_navigation_call_count_(0) {}
   ~TestCachePolicyWebFrameClient() override = default;
 
   mojom::FetchCacheMode GetCacheMode() const { return cache_mode_; }
-  int WillSendRequestCallCount() const { return will_send_request_call_count_; }
+  int BeginNavigationCallCount() const { return begin_navigation_call_count_; }
   TestCachePolicyWebFrameClient& ChildClient(size_t i) {
     return *child_clients_[i].get();
   }
@@ -7604,15 +7480,16 @@ class TestCachePolicyWebFrameClient
     child_clients_.push_back(std::move(child));
     return CreateLocalChild(*parent, scope, child_ptr);
   }
-  void WillSendRequest(WebURLRequest& request) override {
-    cache_mode_ = request.GetCacheMode();
-    will_send_request_call_count_++;
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    cache_mode_ = info->url_request.GetCacheMode();
+    begin_navigation_call_count_++;
+    TestWebFrameClient::BeginNavigation(std::move(info));
   }
 
  private:
   mojom::FetchCacheMode cache_mode_;
   Vector<std::unique_ptr<TestCachePolicyWebFrameClient>> child_clients_;
-  int will_send_request_call_count_;
+  int begin_navigation_call_count_;
 };
 
 TEST_F(WebFrameTest, ReloadIframe) {
@@ -7632,7 +7509,7 @@ TEST_F(WebFrameTest, ReloadIframe) {
       ToWebLocalFrameImpl(main_frame->FirstChild());
   EXPECT_EQ(child_client, child_frame->Client());
   EXPECT_EQ(1u, main_frame->GetFrame()->Tree().ScopedChildCount());
-  EXPECT_EQ(1, child_client->WillSendRequestCallCount());
+  EXPECT_EQ(1, child_client->BeginNavigationCallCount());
   EXPECT_EQ(mojom::FetchCacheMode::kDefault, child_client->GetCacheMode());
 
   frame_test_helpers::ReloadFrame(main_frame);
@@ -7649,7 +7526,7 @@ TEST_F(WebFrameTest, ReloadIframe) {
   // But there should still only be one subframe.
   EXPECT_EQ(1u, main_frame->GetFrame()->Tree().ScopedChildCount());
 
-  EXPECT_EQ(1, new_child_client->WillSendRequestCallCount());
+  EXPECT_EQ(1, new_child_client->BeginNavigationCallCount());
   // Sub-frames should not be forcibly revalidated.
   // TODO(toyoshim): Will consider to revalidate main resources in sub-frames
   // on reloads. Or will do only for bypassingCache.
@@ -7663,12 +7540,10 @@ class TestSameDocumentWebFrameClient
   ~TestSameDocumentWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void WillSendRequest(WebURLRequest&) override {
-    FrameLoader& frame_loader =
-        ToWebLocalFrameImpl(Frame())->GetFrame()->Loader();
-    if (frame_loader.GetProvisionalDocumentLoader()->LoadType() ==
-        WebFrameLoadType::kReload)
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    if (info->frame_load_type == WebFrameLoadType::kReload)
       frame_load_type_reload_seen_ = true;
+    TestWebFrameClient::BeginNavigation(std::move(info));
   }
 
   bool FrameLoadTypeReloadSeen() const { return frame_load_type_reload_seen_; }
@@ -8043,15 +7918,15 @@ TEST_F(WebFrameTest, CurrentHistoryItem) {
   const FrameLoader& main_frame_loader =
       web_view_helper.LocalMainFrame()->GetFrame()->Loader();
   WebURLRequest request(ToKURL(url));
-  frame->StartNavigation(request);
 
-  // Before commit, there is no history item.
+  // Before navigation, there is no history item.
   EXPECT_FALSE(main_frame_loader.GetDocumentLoader()->GetHistoryItem());
 
+  frame->StartNavigation(request);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
 
-  // After commit, there is.
+  // After navigation, there is.
   HistoryItem* item = main_frame_loader.GetDocumentLoader()->GetHistoryItem();
   ASSERT_TRUE(item);
   EXPECT_EQ(WTF::String(url.data()), item->UrlString());

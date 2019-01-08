@@ -67,9 +67,12 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
                                      const GURL& url) {
   DCHECK(url.is_valid()) << "Blink requires the WebView to have a valid URL.";
   WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
-  plugin->web_view_helper_.main_frame()->CommitNavigation(
-      blink::WebNavigationParams::CreateWithHTMLString(html_data, url),
-      nullptr /* extra_data */);
+  // Loading may synchronously access |delegate| which could be
+  // uninitialized just yet, so load in another task.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebViewPlugin::LoadHTML,
+                     plugin->weak_factory_.GetWeakPtr(), html_data, url));
   return plugin;
 }
 
@@ -377,6 +380,12 @@ void WebViewPlugin::OnZoomLevelChanged() {
     web_view()->SetZoomLevel(
         blink::WebView::ZoomFactorToZoomLevel(container_->PageZoomFactor()));
   }
+}
+
+void WebViewPlugin::LoadHTML(const std::string& html_data, const GURL& url) {
+  web_view_helper_.main_frame()->CommitNavigation(
+      blink::WebNavigationParams::CreateWithHTMLString(html_data, url),
+      nullptr /* extra_data */);
 }
 
 void WebViewPlugin::UpdatePluginForNewGeometry(

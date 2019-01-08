@@ -122,10 +122,8 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
 
   // Tests that a data page with an HTTPS anchor is not reported when the anchor
   // is clicked.
-  SimRequest data_resource("data://example.com/", "text/html");
-  LoadURL("data://example.com/");
-  data_resource.Complete(
-      "<a id='anchor' href='https://google.com/'>google</a>");
+  LoadURL(
+      "data:text/html,<a id='anchor' href='https://google.com/'>google</a>");
   anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);

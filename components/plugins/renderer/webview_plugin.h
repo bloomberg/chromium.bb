@@ -126,6 +126,7 @@ class WebViewPlugin : public blink::WebPlugin,
   void OnDestruct() override {}
   void OnZoomLevelChanged() override;
 
+  void LoadHTML(const std::string& html_data, const GURL& url);
   void UpdatePluginForNewGeometry(const blink::WebRect& window_rect,
                                   const blink::WebRect& unobscured_rect);
 
