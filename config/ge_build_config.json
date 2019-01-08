@@ -2205,6 +2205,12 @@
           "release_builder_test_pool": "bvt"
         },
         {
+          "board_name": "octopus",
+          "name": "laser14",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
           "board_name": "meep",
           "name": "meep",
           "test_suites": [
