@@ -48,16 +48,16 @@ CompositorOverlayCandidateValidatorOzone::
                               base::SPLIT_WANT_NONEMPTY)) {
     if (strategy_name == "single-fullscreen") {
       strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategyFullscreen>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategyFullscreen>));
     } else if (strategy_name == "single-on-top") {
       strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategySingleOnTop>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategySingleOnTop>));
     } else if (strategy_name == "underlay") {
       strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategyUnderlay>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategyUnderlay>));
     } else if (strategy_name == "cast") {
-      strategies_instantiators_.push_back(base::BindRepeating(
-          MakeOverlayStrategy<OverlayStrategyUnderlayCast>));
+      strategies_instantiators_.push_back(
+          base::Bind(MakeOverlayStrategy<OverlayStrategyUnderlayCast>));
     } else {
       LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
     }

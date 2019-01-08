@@ -96,8 +96,8 @@ size_t FrameEvictionManager::GetMaxNumberOfSavedFrames() const {
 
 FrameEvictionManager::FrameEvictionManager()
     : memory_pressure_listener_(new base::MemoryPressureListener(
-          base::BindRepeating(&FrameEvictionManager::OnMemoryPressure,
-                              base::Unretained(this)))) {
+          base::Bind(&FrameEvictionManager::OnMemoryPressure,
+                     base::Unretained(this)))) {
   max_number_of_saved_frames_ =
 #if defined(OS_ANDROID)
       // If the amount of memory on the device is >= 3.5 GB, save up to 5

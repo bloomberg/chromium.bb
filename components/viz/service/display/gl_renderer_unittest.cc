@@ -2399,7 +2399,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   provider->BindToCurrentThread();
 
   MockOverlayScheduler overlay_scheduler;
-  provider->support()->SetScheduleOverlayPlaneCallback(base::BindRepeating(
+  provider->support()->SetScheduleOverlayPlaneCallback(base::Bind(
       &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
 
   cc::FakeOutputSurfaceClient output_surface_client;

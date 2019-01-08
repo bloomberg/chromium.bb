@@ -84,7 +84,7 @@ namespace viz {
 
 namespace {
 
-static base::LazyInstance<base::RepeatingCallback<
+static base::LazyInstance<base::Callback<
     void(int severity, size_t message_start, const std::string& message)>>::
     Leaky g_log_callback = LAZY_INSTANCE_INITIALIZER;
 
@@ -171,7 +171,8 @@ GpuServiceImpl::~GpuServiceImpl() {
   DCHECK(main_runner_->BelongsToCurrentThread());
   bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
-  g_log_callback.Get().Reset();
+  g_log_callback.Get() =
+      base::Callback<void(int, size_t, const std::string&)>();
   base::WaitableEvent wait;
   if (io_runner_->PostTask(
           FROM_HERE, base::BindOnce(&DestroyBinding, bindings_.get(), &wait))) {
@@ -231,8 +232,8 @@ void GpuServiceImpl::InitializeWithHost(
     // The global callback is reset from the dtor. So Unretained() here is safe.
     // Note that the callback can be called from any thread. Consequently, the
     // callback cannot use a WeakPtr.
-    g_log_callback.Get() = base::BindRepeating(
-        &GpuServiceImpl::RecordLogMessage, base::Unretained(this));
+    g_log_callback.Get() =
+        base::Bind(&GpuServiceImpl::RecordLogMessage, base::Unretained(this));
     logging::SetLogMessageHandler(GpuLogMessageHandler);
   }
 
@@ -421,7 +422,7 @@ void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::MojoVideoEncodeAcceleratorProvider::Create(
       std::move(vea_provider_request),
-      base::BindRepeating(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
+      base::Bind(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
       gpu_preferences_);
 }
 

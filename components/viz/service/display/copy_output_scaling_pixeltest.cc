@@ -155,7 +155,7 @@ class CopyOutputScalingPixelTest
           base::BindOnce(
               [](bool* dummy_ran,
                  std::unique_ptr<CopyOutputResult>* test_result,
-                 const base::RepeatingClosure& quit_closure,
+                 const base::Closure& quit_closure,
                  std::unique_ptr<CopyOutputResult> result_from_renderer) {
                 EXPECT_TRUE(*dummy_ran);
                 *test_result = std::move(result_from_renderer);
