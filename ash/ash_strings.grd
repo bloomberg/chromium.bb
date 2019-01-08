@@ -877,6 +877,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP" desc="label used for screen capture stop button">
         Stop
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_CHANGE_SOURCE" desc="label used for screen capture change source button">
+        Change source
+      </message>
 
       <!-- Status tray media recording state strings. -->
       <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO" desc="label used to indicate that the microphone is used by a background user">

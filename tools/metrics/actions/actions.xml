@@ -19279,6 +19279,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StatusArea_ScreenCapture_Change_Source">
+  <owner>braveyao@chromium.org</owner>
+  <owner>niklase@chromium.org</owner>
+  <description>
+    Counts the number of times the user changes screen capture source via the
+    Screen Capture notification. Note these notifications are managed by the
+    system menu and not the general notification center.
+  </description>
+</action>
+
 <action name="StatusArea_ScreenCapture_Default_Stop">
   <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>

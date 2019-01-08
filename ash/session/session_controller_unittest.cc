@@ -601,7 +601,7 @@ class CanSwitchUserTest : public AshTestBase {
     Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
         base::BindRepeating(&CanSwitchUserTest::StopCaptureCallback,
                             base::Unretained(this)),
-        base::string16());
+        base::RepeatingClosure(), base::string16());
   }
 
   // The callback which gets called when the screen capture gets stopped.
