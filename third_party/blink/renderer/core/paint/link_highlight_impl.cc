@@ -386,10 +386,9 @@ void LinkHighlightImpl::UpdateGeometry() {
     Layer()->SetNeedsDisplay();
 
     if (current_graphics_layer_) {
-      gfx::Rect rect = gfx::ToEnclosingRect(
-          gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
+      IntRect rect = IntRect(IntPoint(), IntSize(Layer()->bounds()));
       current_graphics_layer_->TrackRasterInvalidation(
-          *this, IntRect(rect), PaintInvalidationReason::kFullLayer);
+          *this, rect, PaintInvalidationReason::kFullLayer);
     }
   }
 }
