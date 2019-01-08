@@ -223,6 +223,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayComputers").EnableDriveFs(),
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
+        TestCase("fileDisplayUsbPartition"),
         TestCase("fileSearch"),
         TestCase("fileSearch").EnableMyFilesVolume(),
         TestCase("fileDisplayWithoutDownloadsVolume"),
