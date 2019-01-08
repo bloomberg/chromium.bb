@@ -11,28 +11,6 @@ import {
 
 export const group = new TestGroup();
 
-group.test("test_fail", {}, (log) => {
-  log.fail();
-});
-
-group.test("test_sync", {}, (log) => {
-});
-
-group.test("test_async", {}, async (log) => {
-});
-
-group.test("ptest_sync", {
-  cases: [{}],
-}, (log, p) => {
-  log.log(JSON.stringify(p));
-});
-
-group.test("ptest_async", {
-  cases: [{}],
-}, async (log, p) => {
-  log.log(JSON.stringify(p));
-});
-
 function print(log: CaseRecorder, p: object) {
   log.log(JSON.stringify(p));
 }

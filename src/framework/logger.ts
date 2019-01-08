@@ -85,13 +85,7 @@ export class CaseRecorder {
   }
 
   public warn(msg?: string) {
-    this.warned = true;
-    if (msg) {
-      this.log("WARN: " + msg);
-    } else {
-      this.log("WARN");
-    }
-    this.log(getStackTrace());
+    this.warnImpl(msg);
   }
 
   public ok(msg?: string) {
@@ -108,6 +102,16 @@ export class CaseRecorder {
     } else {
       this.failImpl(msg);
     }
+  }
+
+  private warnImpl(msg?: string) {
+    this.warned = true;
+    let m = "WARN";
+    if (msg) {
+      m += ": " + msg;
+    }
+    m += " " + getStackTrace();
+    this.log(m);
   }
 
   private failImpl(msg?: string) {
