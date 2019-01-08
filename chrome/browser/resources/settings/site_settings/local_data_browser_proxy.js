@@ -78,15 +78,6 @@ cr.define('settings', function() {
     getCookieDetails(site) {}
 
     /**
-     * Gets a list containing the number of cookies for each domain (eTLD+1
-     * names) given in |siteList|. This will always return a result array the
-     * same length and in the same order as |siteList|.
-     * @param {!Array<string>} siteList The list of sites to count cookies for.
-     * @return {!Promise<!Array<!EtldPlus1CookieNumber>>}
-     */
-    getNumCookiesList(siteList) {}
-
-    /**
      * Gets the plural string for a given number of cookies.
      * @param {number} numCookies The number of cookies.
      * @return {!Promise<string>}
@@ -135,11 +126,6 @@ cr.define('settings', function() {
     /** @override */
     getCookieDetails(site) {
       return cr.sendWithPromise('localData.getCookieDetails', site);
-    }
-
-    /** @override */
-    getNumCookiesList(siteList) {
-      return cr.sendWithPromise('localData.getNumCookiesList', siteList);
     }
 
     /** @override */

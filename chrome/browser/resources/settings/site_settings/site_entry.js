@@ -60,6 +60,19 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * An array containing the strings to display showing the individual cookies
+     * number for each origin in |siteGroup|.
+     * @type {!Array<string>}
+     * @private
+     */
+    cookiesNum_: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    }
   },
 
   listeners: {
@@ -153,39 +166,12 @@ Polymer({
       if (this.$.collapseChild.opened) {
         this.toggleCollapsible_();
       }
-      // Ungrouped site-entries should not show cookies.
-      if (this.cookieString_) {
-        this.cookieString_ = '';
-      }
     }
     if (!siteGroup) {
       return;
     }
     this.calculateUsageInfo_(siteGroup);
-
-    if (!this.grouped_(siteGroup)) {
-      return;
-    }
-
-    const siteList = [this.displayName_];
-    this.localDataBrowserProxy_.getNumCookiesList(siteList)
-        .then(numCookiesList => {
-          assert(siteList.length == numCookiesList.length);
-
-          const numCookies = numCookiesList[0].numCookies;
-          if (siteGroup.numCookies != numCookies) {
-            this.fire('site-entry-storage-updated');
-          }
-          siteGroup.numCookies = numCookies;
-          this.notifyPath('siteGroup.numCookies');
-
-          return numCookies == 0 ?
-              Promise.resolve('') :
-              this.localDataBrowserProxy_.getNumCookiesString(numCookies);
-        })
-        .then(string => {
-          this.cookieString_ = string;
-        });
+    this.calculateNumberOfCookies_(siteGroup);
   },
 
   /**
@@ -258,6 +244,34 @@ Polymer({
   },
 
   /**
+   * Calculates the number of cookies set on the given group of origins
+   * and eTLD+1. Also updates the corresponding display strings.
+   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @private
+   */
+  calculateNumberOfCookies_: function(siteGroup) {
+    const getCookieNumString = (numCookies) => {
+      if (numCookies == 0) {
+        return Promise.resolve('');
+      }
+      return this.localDataBrowserProxy_.getNumCookiesString(numCookies);
+    };
+
+    this.cookiesNum_ = new Array(siteGroup.origins.length);
+    siteGroup.origins.forEach((originInfo, i) => {
+      if (this.grouped_(siteGroup)) {
+        getCookieNumString(originInfo.numCookies).then((string) => {
+          this.set(`cookiesNum_.${i}`, string);
+        });
+      }
+    });
+
+    getCookieNumString(siteGroup.numCookies).then(string => {
+      this.cookieString_ = string;
+    });
+  },
+
+  /**
    * Array binding for the |originUsages_| array for use in the HTML.
    * @param {!{base: !Array<string>}} change The change record for the array.
    * @param {number} index The index of the array item.
@@ -265,6 +279,17 @@ Polymer({
    * @private
    */
   originUsagesItem_: function(change, index) {
+    return change.base[index];
+  },
+
+  /**
+   * Array binding for the |cookiesNum_| array for use in the HTML.
+   * @param {!{base: !Array<string>}} change The change record for the array.
+   * @param {number} index The index of the array item.
+   * @return {string}
+   * @private
+   */
+  originCookiesItem_: function(change, index) {
     return change.base[index];
   },
 
