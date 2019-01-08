@@ -366,6 +366,20 @@ var GetTableCellColumnHeaders = natives.GetTableCellColumnHeaders;
  */
 var GetTableCellRowHeaders = natives.GetTableCellRowHeaders;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} Column index for this cell.
+ */
+var GetTableCellColumnIndex = natives.GetTableCellColumnIndex;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} Row index for this cell.
+ */
+var GetTableCellRowIndex = natives.GetTableCellRowIndex;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -580,6 +594,14 @@ AutomationNodeImpl.prototype = {
         result.push(this.rootImpl.get(ids[i]));
       return result;
     }
+  },
+
+  get tableCellColumnIndex() {
+    return GetTableCellColumnIndex(this.treeID, this.id);
+  },
+
+  get tableCellRowIndex() {
+    return GetTableCellRowIndex(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -1012,10 +1034,8 @@ var intAttributes = [
     'scrollYMax',
     'scrollYMin',
     'setSize',
-    'tableCellColumnIndex',
     'ariaCellColumnIndex',
     'tableCellColumnSpan',
-    'tableCellRowIndex',
     'ariaCellRowIndex',
     'tableCellRowSpan',
     'tableColumnCount',
@@ -1536,6 +1556,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'unclippedLocation',
         'tableCellColumnHeaders',
         'tableCellRowHeaders',
+        'tableCellColumnIndex',
+        'tableCellRowIndex',
       ]),
 });
 
