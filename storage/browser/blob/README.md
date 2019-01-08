@@ -322,7 +322,7 @@ performed, and we set the status of the blob.
 
 The BlobStatus tracks the construction procedure (specifically the transport
 process), and the copy memory quota and dependent blob process is encompassed
-in `PENDING_INTERNALS`.
+in `PENDING_REFERENCED_BLOBS`.
 
 Once a blob is finished constructing, the status is set to `DONE` or any of
 the `ERR_*` values.

@@ -483,7 +483,8 @@ TEST_F(BlobTransportHostTest, WaitOnReferencedBlob) {
   PopulateBytes(response1.allocate_mutable_data(2), 2);
   std::vector<storage::BlobItemBytesResponse> responses = {response1};
   host_.OnMemoryResponses(kBlob3, responses, &context_);
-  EXPECT_EQ(storage::BlobStatus::PENDING_INTERNALS, handle3->GetBlobStatus());
+  EXPECT_EQ(storage::BlobStatus::PENDING_REFERENCED_BLOBS,
+            handle3->GetBlobStatus());
   EXPECT_FALSE(request_called_);
   EXPECT_FALSE(host_.IsBeingBuilt(kBlob3));
   EXPECT_TRUE(IsBeingBuiltInContext(kBlob3));
