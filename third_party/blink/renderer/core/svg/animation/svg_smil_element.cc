@@ -716,9 +716,15 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
   SMILTime elapsed = this->Elapsed();
   if (elapsed.IsUnresolved())
     return;
+  SMILTimeWithOrigin time_with_origin(time, origin);
+  // Ignore new instance times for 'end' if the element is not active
+  // and the origin is script.
+  if (begin_or_end == kEnd && GetActiveState() == kInactive &&
+      time_with_origin.OriginIsScript())
+    return;
   Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  list.push_back(SMILTimeWithOrigin(time, origin));
+  list.push_back(time_with_origin);
   SortTimeList(list);
   if (begin_or_end == kBegin)
     BeginListChanged(elapsed);
