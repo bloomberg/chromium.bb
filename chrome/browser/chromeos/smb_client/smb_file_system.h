@@ -55,7 +55,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   SmbFileSystem(
       const file_system_provider::ProvidedFileSystemInfo& file_system_info,
-      UnmountCallback unmount_callback);
+      UnmountCallback unmount_callback,
+      RequestCredentialsCallback request_creds_callback);
   ~SmbFileSystem() override;
 
   // ProvidedFileSystemInterface overrides.
@@ -335,6 +336,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   const file_system_provider::OpenedFiles opened_files_;
 
   UnmountCallback unmount_callback_;
+  RequestCredentialsCallback request_creds_callback_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
   mutable SmbTaskQueue task_queue_;
 

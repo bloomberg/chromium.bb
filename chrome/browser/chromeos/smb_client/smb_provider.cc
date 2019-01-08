@@ -42,7 +42,8 @@ SmbProvider::CreateProvidedFileSystem(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {
   DCHECK(profile);
-  return std::make_unique<SmbFileSystem>(file_system_info, unmount_callback_);
+  return std::make_unique<SmbFileSystem>(file_system_info, unmount_callback_,
+                                         request_creds_callback_);
 }
 
 const Capabilities& SmbProvider::GetCapabilities() const {
