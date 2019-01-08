@@ -1198,13 +1198,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
   if ([self internalRole] == ax::mojom::Role::kColumn) {
-    int columnIndex =
-        owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableColumnIndex);
-    return [NSNumber numberWithInt:columnIndex];
+    DCHECK(owner_->node());
+    return @(owner_->node()->GetTableColColIndex());
   } else if ([self internalRole] == ax::mojom::Role::kRow) {
-    int rowIndex =
-        owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex);
-    return [NSNumber numberWithInt:rowIndex];
+    DCHECK(owner_->node());
+    return @(owner_->node()->GetTableRowRowIndex());
   }
 
   return nil;
