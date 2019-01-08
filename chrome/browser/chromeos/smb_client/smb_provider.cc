@@ -18,14 +18,17 @@
 namespace chromeos {
 namespace smb_client {
 
-SmbProvider::SmbProvider(UnmountCallback unmount_callback)
+SmbProvider::SmbProvider(
+    UnmountCallback unmount_callback,
+    SmbFileSystem::RequestCredentialsCallback request_creds_callback)
     : provider_id_(ProviderId::CreateFromNativeId("smb")),
       capabilities_(false /* configurable */,
                     false /* watchable */,
                     true /* multiple_mounts */,
                     extensions::SOURCE_NETWORK),
       name_(l10n_util::GetStringUTF8(IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION)),
-      unmount_callback_(std::move(unmount_callback)) {
+      unmount_callback_(std::move(unmount_callback)),
+      request_creds_callback_(std::move(request_creds_callback)) {
   icon_set_.SetIcon(IconSet::IconSize::SIZE_16x16,
                     GURL("chrome://theme/IDR_SMB_ICON"));
   icon_set_.SetIcon(IconSet::IconSize::SIZE_32x32,

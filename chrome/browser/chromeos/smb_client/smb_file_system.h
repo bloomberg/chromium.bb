@@ -48,6 +48,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   using UnmountCallback = base::OnceCallback<base::File::Error(
       const std::string&,
       file_system_provider::Service::UnmountReason)>;
+  using RequestCredentialsCallback =
+      base::RepeatingCallback<void(const std::string& /* share_path */,
+                                   int32_t /* mount_id */,
+                                   base::OnceClosure /* reply */)>;
 
   SmbFileSystem(
       const file_system_provider::ProvidedFileSystemInfo& file_system_info,

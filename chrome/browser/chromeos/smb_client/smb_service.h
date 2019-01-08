@@ -162,6 +162,12 @@ class SmbService : public KeyedService,
   // discovery drop down.
   std::vector<SmbUrl> GetPreconfiguredSharePathsForDropDown() const;
 
+  // Requests new credentials for the |share_path|. |reply| is stored. Once the
+  // credentials have been successfully updated, |reply| is run.
+  void RequestCredentials(const std::string& share_path,
+                          int32_t mount_id,
+                          base::OnceClosure reply);
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
