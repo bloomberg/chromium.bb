@@ -35,9 +35,6 @@ const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
 
-const char kExtensionPagesKey[] = "extension_pages";
-const char kExtensionPagesPath[] = "content_security_policy.extension_pages";
-
 #define PLATFORM_APP_LOCAL_CSP_SOURCES \
     "'self' blob: filesystem: data: chrome-extension-resource:"
 
@@ -153,19 +150,35 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
       extension->GetType() == Manifest::TYPE_EXTENSION &&
       GetCurrentChannel() == version_info::Channel::UNKNOWN;
   if (csp_dictionary_supported && csp && csp->is_dict())
-    return ParseCSPDictionary(extension, error, *csp);
+    return ParseCSPDictionary(extension, error);
 
+  // TODO(crbug.com/914224) Disallow the usages below in manifest v3 for
+  // extensions.
   return ParseExtensionPagesCSP(extension, error, key, csp) &&
          ParseSandboxCSP(extension, error, keys::kSandboxedPagesCSP,
                          GetManifestPath(extension, keys::kSandboxedPagesCSP));
 }
 
 bool CSPHandler::ParseCSPDictionary(Extension* extension,
-                                    base::string16* error,
-                                    const base::Value& csp_dict) {
-  DCHECK(csp_dict.is_dict());
-  return ParseExtensionPagesCSP(extension, error, kExtensionPagesPath,
-                                csp_dict.FindKey(kExtensionPagesKey));
+                                    base::string16* error) {
+  if (!ParseExtensionPagesCSP(
+          extension, error, keys::kContentSecurityPolicy_ExtensionPagesPath,
+          GetManifestPath(extension,
+                          keys::kContentSecurityPolicy_ExtensionPagesPath))) {
+    return false;
+  }
+
+  // keys::kSandboxedPagesCSP shouldn't be used when using
+  // keys::kContentSecurityPolicy as a dictionary.
+  if (extension->manifest()->HasPath(keys::kSandboxedPagesCSP)) {
+    *error = base::ASCIIToUTF16(errors::kSandboxPagesCSPKeyNotAllowed);
+    return false;
+  }
+
+  return ParseSandboxCSP(
+      extension, error, keys::kContentSecurityPolicy_SandboxedPagesPath,
+      GetManifestPath(extension,
+                      keys::kContentSecurityPolicy_SandboxedPagesPath));
 }
 
 bool CSPHandler::ParseExtensionPagesCSP(
