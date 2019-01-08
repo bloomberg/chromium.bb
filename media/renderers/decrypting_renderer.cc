@@ -143,8 +143,11 @@ void DecryptingRenderer::CreateAndInitializeDecryptingMediaResource() {
 
   decrypting_media_resource_ = std::make_unique<DecryptingMediaResource>(
       media_resource_, cdm_context_, media_log_, media_task_runner_);
-  decrypting_media_resource_->Initialize(base::BindOnce(
-      &DecryptingRenderer::InitializeRenderer, weak_factory_.GetWeakPtr()));
+  decrypting_media_resource_->Initialize(
+      base::BindOnce(&DecryptingRenderer::InitializeRenderer,
+                     weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&DecryptingRenderer::OnWaiting,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void DecryptingRenderer::InitializeRenderer(bool success) {
@@ -179,6 +182,11 @@ bool DecryptingRenderer::HasEncryptedStream() {
 
 bool DecryptingRenderer::HasDecryptingMediaResourceForTesting() const {
   return decrypting_media_resource_ != nullptr;
+}
+
+void DecryptingRenderer::OnWaiting(WaitingReason reason) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  client_->OnWaiting(reason);
 }
 
 }  // namespace media

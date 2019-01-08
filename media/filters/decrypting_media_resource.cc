@@ -53,7 +53,7 @@ MediaUrlParams DecryptingMediaResource::GetMediaUrlParams() const {
   return media_resource_->GetMediaUrlParams();
 }
 
-void DecryptingMediaResource::Initialize(InitCB init_cb) {
+void DecryptingMediaResource::Initialize(InitCB init_cb, WaitingCB waiting_cb) {
   DCHECK(init_cb);
 
   auto streams = media_resource_->GetAllStreams();
@@ -64,11 +64,8 @@ void DecryptingMediaResource::Initialize(InitCB init_cb) {
   num_dds_pending_init_ = streams.size();
 
   for (auto* stream : streams) {
-    // TODO(chadduffin): Implement proper handling of the media::WaitingCB such
-    // that when the DecryptingDemuxerStream is waiting for a decryption key
-    // the firing of the callback will be bubbled up to the media pipeline.
     auto decrypting_demuxer_stream = std::make_unique<DecryptingDemuxerStream>(
-        task_runner_, media_log_, base::DoNothing());
+        task_runner_, media_log_, waiting_cb);
 
     // DecryptingDemuxerStream always invokes the callback asynchronously so
     // that we have no reentrancy issues. "All public APIs and callbacks are
