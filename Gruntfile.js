@@ -35,6 +35,13 @@ module.exports = function(grunt) {
     },
 
     ts: {
+      "check": {
+        tsconfig: {
+          tsconfig: "tsconfig.json",
+          passThrough: true,
+        },
+      },
+
       "out/": {
         tsconfig: {
           tsconfig: "tsconfig.json",
@@ -68,6 +75,9 @@ module.exports = function(grunt) {
     publishedTasks.push({name, desc});
   }
 
+  publishTask("check", "Check Typescript build", [
+    "ts:check",
+  ]);
   publishTask("build", "Build out/", [
     "ts:out/",
     "run:list-cts",

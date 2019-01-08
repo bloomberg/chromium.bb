@@ -108,7 +108,7 @@ if (shouldRun) {
       }
 
       const [tres, trec] = log.record(path);
-      for (const {name, params, run} of modules[path].test.iterate(trec)) {
+      for (const {name, params, run} of modules[path].group.iterate(trec)) {
         const res = await run();
         if (res.status === "fail") {
           failed.push(res);

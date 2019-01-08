@@ -4,11 +4,11 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { Logger, Test } from "../framework/index.js";
+import { Logger, TestGroup } from "../framework/index.js";
 
-export const test = new Test();
+export const group = new TestGroup();
 
-test.case("construct", (log) => {
+group.test("construct", {}, (log) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("foo/bar");
   const [res1, rec1] = testrec.record("baz");
@@ -31,7 +31,7 @@ test.case("construct", (log) => {
   log.expect(res2.timems < 0);
 });
 
-test.case("empty", (log) => {
+group.test("empty", {}, (log) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -43,7 +43,7 @@ test.case("empty", (log) => {
   log.expect(res.timems >= 0);
 });
 
-test.case("pass", (log) => {
+group.test("pass", {}, (log) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -57,7 +57,7 @@ test.case("pass", (log) => {
   log.expect(res.timems >= 0);
 });
 
-test.case("warn", (log) => {
+group.test("warn", {}, (log) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
@@ -70,7 +70,7 @@ test.case("warn", (log) => {
   log.expect(res.timems >= 0);
 });
 
-test.case("fail", (log) => {
+group.test("fail", {}, (log) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");

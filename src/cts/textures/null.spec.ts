@@ -2,8 +2,8 @@ export const description = `
 Placeholder file.
 `;
 
-import { Test } from "../../framework/index.js";
+import { TestGroup } from "../../framework/index.js";
 
-export const test = new Test();
+export const group = new TestGroup();
 
-test.case("null", (log) => {});
+group.test("null", {}, (log) => {});

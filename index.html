@@ -127,7 +127,7 @@ function mkCase(testcases, {name, params, run}) {
     .html("&#9654;")
     .appendTo(casehead);
   let s = name;
-  if (params) {
+  if (params && Object.keys(params).length) {
     s += " " + JSON.stringify(params);
   }
   $("<div>")
@@ -191,7 +191,7 @@ function basepath(path) {
     const mod = await import(base + path + ".spec.js")
 
     const [tres, trec] = log.record(path);
-    for (const t of mod.test.iterate(trec)) {
+    for (const t of mod.group.iterate(trec)) {
       mkCase(testcasesVis, t);
     }
   }

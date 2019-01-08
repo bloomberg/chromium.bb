@@ -6,7 +6,7 @@
     /* Output options */
     "sourceMap": true,
     "module": "esnext",
-    //"noEmit": true,
+    "noEmit": true,
 
     /* Strict type-checking options */
     "strict": true,

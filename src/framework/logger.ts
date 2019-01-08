@@ -21,15 +21,15 @@ export class Logger {
   constructor() {
   }
 
-  public record(path: string): [ITestLog, TestRecorder] {
+  public record(path: string): [ITestLog, GroupRecorder] {
     const cases: IResult[] = [];
     const test: ITestLog = { path, cases };
     this.results.push(test);
-    return [test, new TestRecorder(test)];
+    return [test, new GroupRecorder(test)];
   }
 }
 
-export class TestRecorder {
+export class GroupRecorder {
   private test: ITestLog;
 
   constructor(test: ITestLog) {
@@ -122,41 +122,3 @@ export class CaseRecorder {
     this.log(m);
   }
 }
-
-/*
-function applyIndent(indent: string, s: string) {
-  const lines = s.split("\n");
-  return indent + lines.join("\n" + indent);
-}
-
-abstract class TextLogger extends Logger {
-  public log(s: string) {
-    this.out(applyIndent(this.mkIndent() + "| ", s));
-  }
-
-  protected abstract out(s: string): void;
-
-  private mkIndent(): string {
-    return "  ".repeat(this.namespacePath.length);
-  }
-}
-
-export class StringLogger extends TextLogger {
-  private contents = "";
-
-  public getContents(): string {
-    return this.contents;
-  }
-
-  protected out(s: string) {
-    this.contents += (this.contents ? "\n" : "") + s;
-  }
-}
-
-export class ConsoleLogger extends TextLogger {
-  protected out(s: string) {
-    // tslint:disable-next-line:no-console
-    console.log(s);
-  }
-}
-*/
