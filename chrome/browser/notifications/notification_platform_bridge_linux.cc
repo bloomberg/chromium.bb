@@ -243,8 +243,9 @@ std::unique_ptr<ResourceFile> WriteDataToTmpFile(
 }  // namespace
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeLinux();
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
+  return std::make_unique<NotificationPlatformBridgeLinux>();
 }
 
 // static

@@ -123,8 +123,9 @@ void ForwardNotificationOperationOnUiThread(
 }  // namespace
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeWin();
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
+  return std::make_unique<NotificationPlatformBridgeWin>();
 }
 
 // static

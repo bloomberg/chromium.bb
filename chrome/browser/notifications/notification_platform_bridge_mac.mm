@@ -200,10 +200,11 @@ NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
 }
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
   base::scoped_nsobject<AlertDispatcherImpl> alert_dispatcher(
       [[AlertDispatcherImpl alloc] init]);
-  return new NotificationPlatformBridgeMac(
+  return std::make_unique<NotificationPlatformBridgeMac>(
       [NSUserNotificationCenter defaultUserNotificationCenter],
       alert_dispatcher.get());
 }

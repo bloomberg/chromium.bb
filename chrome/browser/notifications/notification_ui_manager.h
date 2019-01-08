@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -45,7 +46,7 @@ class NotificationUIManager {
   virtual ~NotificationUIManager() {}
 
   // Creates an initialized UI manager.
-  static NotificationUIManager* Create();
+  static std::unique_ptr<NotificationUIManager> Create();
 
   // Adds a notification to be displayed.
   virtual void Add(const message_center::Notification& notification,

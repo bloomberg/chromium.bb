@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_linux.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 
 #if !defined(OS_CHROMEOS)
@@ -23,16 +25,16 @@ std::unique_ptr<StatusIcon> StatusTrayLinux::CreatePlatformStatusIcon(
   return StatusIconLinuxWrapper::CreateWrappedStatusIcon(image, tool_tip);
 }
 
-StatusTray* StatusTray::Create() {
+std::unique_ptr<StatusTray> StatusTray::Create() {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
 
   // Only create a status tray if we can actually create status icons.
   if (linux_ui && linux_ui->IsStatusIconSupported())
-    return new StatusTrayLinux();
+    return std::make_unique<StatusTrayLinux>();
   return nullptr;
 }
 #else  // defined(OS_CHROMEOS)
-StatusTray* StatusTray::Create() {
+std::unique_ptr<StatusTray> StatusTray::Create() {
   return nullptr;
 }
 #endif
