@@ -2055,7 +2055,6 @@ test("content_unittests") {
   if (is_win) {
     deps += [
       "//third_party/blink/public/common",
-      "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
     ]
     libs = [
