@@ -47,7 +47,8 @@ class ASH_EXPORT SystemTrayNotifier {
   // Screen capture.
   void AddScreenCaptureObserver(ScreenCaptureObserver* observer);
   void RemoveScreenCaptureObserver(ScreenCaptureObserver* observer);
-  void NotifyScreenCaptureStart(const base::Closure& stop_callback,
+  void NotifyScreenCaptureStart(base::RepeatingClosure stop_callback,
+                                base::RepeatingClosure source_callback,
                                 const base::string16& sharing_app_name);
   void NotifyScreenCaptureStop();
 

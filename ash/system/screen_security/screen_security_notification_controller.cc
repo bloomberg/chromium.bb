@@ -45,6 +45,13 @@ void ScreenSecurityNotificationController::CreateNotification(
   data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
       is_capture ? IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP
                  : IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
+  // Only add "Change source" button when there is one session, since there
+  // isn't a good UI to distinguish between the different sessions.
+  if (is_capture && change_source_callback_ &&
+      capture_stop_callbacks_.size() == 1) {
+    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_CHANGE_SOURCE)));
+  }
 
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
@@ -54,12 +61,20 @@ void ScreenSecurityNotificationController::CreateNotification(
                 if (!button_index)
                   return;
 
-                DCHECK_EQ(0, *button_index);
-
-                controller->StopAllSessions(is_capture);
-                if (is_capture) {
-                  Shell::Get()->metrics()->RecordUserMetricsAction(
-                      UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
+                if (*button_index == 0) {
+                  controller->StopAllSessions(is_capture);
+                  if (is_capture) {
+                    Shell::Get()->metrics()->RecordUserMetricsAction(
+                        UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
+                  }
+                } else if (*button_index == 1) {
+                  controller->ChangeSource();
+                  if (is_capture) {
+                    Shell::Get()->metrics()->RecordUserMetricsAction(
+                        UMA_STATUS_AREA_SCREEN_CAPTURE_CHANGE_SOURCE);
+                  }
+                } else {
+                  NOTREACHED();
                 }
               },
               weak_ptr_factory_.GetWeakPtr(), is_capture));
@@ -92,12 +107,21 @@ void ScreenSecurityNotificationController::StopAllSessions(bool is_capture) {
     if (callback)
       std::move(callback).Run();
   }
+
+  change_source_callback_.Reset();
+}
+
+void ScreenSecurityNotificationController::ChangeSource() {
+  if (change_source_callback_ && capture_stop_callbacks_.size() == 1)
+    change_source_callback_.Run();
 }
 
 void ScreenSecurityNotificationController::OnScreenCaptureStart(
-    const base::Closure& stop_callback,
+    base::RepeatingClosure stop_callback,
+    base::RepeatingClosure source_callback,
     const base::string16& screen_capture_status) {
   capture_stop_callbacks_.emplace_back(std::move(stop_callback));
+  change_source_callback_ = std::move(source_callback);
 
   // We do not want to show the screen capture notification and the chromecast
   // casting tray notification at the same time.

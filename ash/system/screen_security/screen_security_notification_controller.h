@@ -33,10 +33,14 @@ class ASH_EXPORT ScreenSecurityNotificationController
   // |capture_stop_callbacks_| or |share_stop_callbacks_|, depending on
   // |is_capture| argument.
   void StopAllSessions(bool is_capture);
+  // Change the source of current capture session by bringing up the picker
+  // again, only if there is only one screen capture session.
+  void ChangeSource();
 
   // ScreenCaptureObserver:
   void OnScreenCaptureStart(
-      const base::Closure& stop_callback,
+      base::RepeatingClosure stop_callback,
+      base::RepeatingClosure source_callback,
       const base::string16& screen_capture_status) override;
   void OnScreenCaptureStop() override;
 
@@ -55,6 +59,7 @@ class ASH_EXPORT ScreenSecurityNotificationController
   // between the different sessions.
   std::vector<base::OnceClosure> capture_stop_callbacks_;
   std::vector<base::OnceClosure> share_stop_callbacks_;
+  base::RepeatingClosure change_source_callback_;
 
   base::WeakPtrFactory<ScreenSecurityNotificationController> weak_ptr_factory_{
       this};

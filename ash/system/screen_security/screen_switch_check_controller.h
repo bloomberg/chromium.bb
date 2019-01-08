@@ -26,7 +26,8 @@ class ScreenSwitchCheckController : public ScreenCaptureObserver,
  private:
   // ScreenCaptureObserver:
   void OnScreenCaptureStart(
-      const base::Closure& stop_callback,
+      base::RepeatingClosure stop_callback,
+      base::RepeatingClosure source_callback,
       const base::string16& screen_capture_status) override;
   void OnScreenCaptureStop() override;
 

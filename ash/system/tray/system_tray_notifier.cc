@@ -59,10 +59,12 @@ void SystemTrayNotifier::RemoveScreenCaptureObserver(
 }
 
 void SystemTrayNotifier::NotifyScreenCaptureStart(
-    const base::Closure& stop_callback,
+    base::RepeatingClosure stop_callback,
+    base::RepeatingClosure source_callback,
     const base::string16& sharing_app_name) {
   for (auto& observer : screen_capture_observers_)
-    observer.OnScreenCaptureStart(stop_callback, sharing_app_name);
+    observer.OnScreenCaptureStart(stop_callback, source_callback,
+                                  sharing_app_name);
 }
 
 void SystemTrayNotifier::NotifyScreenCaptureStop() {

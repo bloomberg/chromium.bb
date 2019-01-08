@@ -371,6 +371,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED:
       RecordAction(UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
       break;
+    case UMA_STATUS_AREA_SCREEN_CAPTURE_CHANGE_SOURCE:
+      RecordAction(UserMetricsAction("StatusArea_ScreenCapture_Change_Source"));
+      break;
     case UMA_STATUS_AREA_SCREEN_CAPTURE_DEFAULT_STOP:
       RecordAction(UserMetricsAction("StatusArea_ScreenCapture_Default_Stop"));
       break;
