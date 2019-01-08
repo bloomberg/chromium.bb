@@ -159,8 +159,12 @@ void HistoryTabHelper::DidFinishNavigation(
 
   // Navigations originating from New Tab Page or Reading List should not
   // contribute to Most Visited.
+  const bool content_suggestions_navigation =
+      referrer_url == ntp_snippets::GetContentSuggestionsReferrerURL() &&
+      ui::PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   const bool consider_for_ntp_most_visited =
-      referrer_url != ntp_snippets::GetContentSuggestionsReferrerURL() &&
+      !content_suggestions_navigation &&
       referrer_url != kReadingListReferrerURL;
 
   // Top-level frame navigations are visible; everything else is hidden.

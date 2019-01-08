@@ -16,6 +16,7 @@
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/ntp_snippets/features.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -39,14 +40,6 @@ using chrome::android::BackgroundTabManager;
 using content::NavigationEntry;
 using content::WebContents;
 
-namespace {
-
-// Referrer used for clicks on article suggestions on the NTP.
-const char kChromeContentSuggestionsReferrer[] =
-    "https://www.googleapis.com/auth/chrome-content-suggestions";
-
-}  // namespace
-
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
@@ -68,8 +61,11 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     content::NavigationHandle* navigation_handle) {
   // Clicks on content suggestions on the NTP should not contribute to the
   // Most Visited tiles in the NTP.
-  const bool consider_for_ntp_most_visited =
-      navigation_handle->GetReferrer().url != kChromeContentSuggestionsReferrer;
+  const GURL& referrer_url = navigation_handle->GetReferrer().url;
+  const bool content_suggestions_navigation =
+      referrer_url == ntp_snippets::GetContentSuggestionsReferrerURL() &&
+      ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   const bool status_code_is_error =
       navigation_handle->GetResponseHeaders() &&
@@ -90,7 +86,7 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
       navigation_handle->GetReferrer().url,
       navigation_handle->GetRedirectChain(),
       navigation_handle->GetPageTransition(), hidden, history::SOURCE_BROWSED,
-      navigation_handle->DidReplaceEntry(), consider_for_ntp_most_visited,
+      navigation_handle->DidReplaceEntry(), !content_suggestions_navigation,
       navigation_handle->IsSameDocument()
           ? base::Optional<base::string16>(
                 navigation_handle->GetWebContents()->GetTitle())
