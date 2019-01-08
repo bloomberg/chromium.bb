@@ -225,4 +225,24 @@ struct Cronet_UrlRequest {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequest);
 };
 
+struct Cronet_RequestFinishedInfoListener {
+  Cronet_RequestFinishedInfoListener() = default;
+  virtual ~Cronet_RequestFinishedInfoListener() = default;
+
+  void set_client_context(Cronet_ClientContext client_context) {
+    client_context_ = client_context;
+  }
+  Cronet_ClientContext client_context() const { return client_context_; }
+
+  virtual Cronet_RESULT InitWithParams(Cronet_ExecutorPtr executor) = 0;
+  virtual void OnRequestFinished(
+      Cronet_RequestFinishedInfoPtr request_info) = 0;
+  virtual Cronet_ExecutorPtr GetExecutor() = 0;
+
+ private:
+  Cronet_ClientContext client_context_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListener);
+};
+
 #endif  // COMPONENTS_CRONET_NATIVE_GENERATED_CRONET_IDL_IMPL_INTERFACE_H_

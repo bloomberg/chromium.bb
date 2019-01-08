@@ -758,3 +758,80 @@ TEST_F(Cronet_UrlRequestTest, TestCreate) {
 
   Cronet_UrlRequest_Destroy(test);
 }
+
+// Test of Cronet_RequestFinishedInfoListener interface.
+class Cronet_RequestFinishedInfoListenerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {}
+
+  void TearDown() override {}
+
+  Cronet_RequestFinishedInfoListenerTest() = default;
+  ~Cronet_RequestFinishedInfoListenerTest() override = default;
+
+ public:
+  bool InitWithParams_called_ = false;
+  bool OnRequestFinished_called_ = false;
+  bool GetExecutor_called_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListenerTest);
+};
+
+namespace {
+// Implementation of Cronet_RequestFinishedInfoListener methods for testing.
+Cronet_RESULT TestCronet_RequestFinishedInfoListener_InitWithParams(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ExecutorPtr executor) {
+  CHECK(self);
+  Cronet_ClientContext client_context =
+      Cronet_RequestFinishedInfoListener_GetClientContext(self);
+  auto* test =
+      static_cast<Cronet_RequestFinishedInfoListenerTest*>(client_context);
+  CHECK(test);
+  test->InitWithParams_called_ = true;
+
+  return static_cast<Cronet_RESULT>(0);
+}
+void TestCronet_RequestFinishedInfoListener_OnRequestFinished(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info) {
+  CHECK(self);
+  Cronet_ClientContext client_context =
+      Cronet_RequestFinishedInfoListener_GetClientContext(self);
+  auto* test =
+      static_cast<Cronet_RequestFinishedInfoListenerTest*>(client_context);
+  CHECK(test);
+  test->OnRequestFinished_called_ = true;
+}
+Cronet_ExecutorPtr TestCronet_RequestFinishedInfoListener_GetExecutor(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  CHECK(self);
+  Cronet_ClientContext client_context =
+      Cronet_RequestFinishedInfoListener_GetClientContext(self);
+  auto* test =
+      static_cast<Cronet_RequestFinishedInfoListenerTest*>(client_context);
+  CHECK(test);
+  test->GetExecutor_called_ = true;
+
+  return static_cast<Cronet_ExecutorPtr>(0);
+}
+}  // namespace
+
+// Test that Cronet_RequestFinishedInfoListener stub forwards function calls as
+// expected.
+TEST_F(Cronet_RequestFinishedInfoListenerTest, TestCreate) {
+  Cronet_RequestFinishedInfoListenerPtr test =
+      Cronet_RequestFinishedInfoListener_CreateWith(
+          TestCronet_RequestFinishedInfoListener_InitWithParams,
+          TestCronet_RequestFinishedInfoListener_OnRequestFinished,
+          TestCronet_RequestFinishedInfoListener_GetExecutor);
+  CHECK(test);
+  Cronet_RequestFinishedInfoListener_SetClientContext(test, this);
+  CHECK(!InitWithParams_called_);
+  CHECK(!OnRequestFinished_called_);
+  Cronet_RequestFinishedInfoListener_GetExecutor(test);
+  CHECK(GetExecutor_called_);
+
+  Cronet_RequestFinishedInfoListener_Destroy(test);
+}

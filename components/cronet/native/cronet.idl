@@ -1125,7 +1125,7 @@ struct UrlRequestParams {
 
   /**
    * Associates the annotation object with this request. May add more than one.
-   * Passed through to a RequestFinishedInfo.Listener.
+   * Passed through to a RequestFinishedInfoListener.
    */
   array<handle> annotations;
 };
@@ -1310,4 +1310,20 @@ struct RequestFinishedInfo {
    * collected. Number of bytes does not include any previous redirects.
    */
   int64 received_byte_count = -1;
+};
+
+/**
+ * Listens for finished requests for the purpose of collecting metrics.
+ */
+[Abstract]
+interface RequestFinishedInfoListener {
+  /**
+   * Invoked with request info after OnSucceeded(), OnFailed() or OnCanceled()
+   * in UrlRequestCallback. Will be called in a task submitted to the Executor
+   * passed with this RequestFinishedInfoListener.
+   *
+   * @param request_info {@link RequestFinishedInfo} for finished request.
+   * **Not** owned -- this will be destroyed after the call.
+   */
+  OnRequestFinished(RequestFinishedInfo request_info);
 };
