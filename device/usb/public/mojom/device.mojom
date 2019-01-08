@@ -81,6 +81,8 @@ struct UsbDeviceInfo {
   uint8 class_code;
   uint8 subclass_code;
   uint8 protocol_code;
+  uint32 bus_number;
+  uint32 port_number;
   uint16 vendor_id;
   uint16 product_id;
   uint8 device_version_major;

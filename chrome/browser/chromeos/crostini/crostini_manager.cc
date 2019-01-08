@@ -42,10 +42,13 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 namespace crostini {
@@ -523,10 +526,12 @@ CrostiniManager* CrostiniManager::GetForProfile(Profile* profile) {
 CrostiniManager::CrostiniManager(Profile* profile)
     : profile_(profile),
       owner_id_(CryptohomeIdForProfile(profile)),
+      binding_(this),
       weak_ptr_factory_(this) {
   DCHECK(!profile_->IsOffTheRecord());
   GetCiceroneClient()->AddObserver(this);
   GetConciergeClient()->AddObserver(this);
+  InitializeUsbDeviceManager();
 }
 
 CrostiniManager::~CrostiniManager() {
@@ -1084,6 +1089,227 @@ void CrostiniManager::GetContainerSshKeys(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnGetContainerSshKeys,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrostiniManager::AttachUsbDevice(const std::string& vm_name,
+                                      device::mojom::UsbDeviceInfoPtr device,
+                                      AttachUsbDeviceCallback callback) {
+  usb_manager_->OpenFileDescriptor(
+      device->guid,
+      base::BindOnce(&CrostiniManager::OnUsbDeviceOpened,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(device), vm_name));
+}
+
+void CrostiniManager::OnUsbDeviceOpened(AttachUsbDeviceCallback callback,
+                                        device::mojom::UsbDeviceInfoPtr device,
+                                        const std::string& vm_name,
+                                        base::File file) {
+  if (!file.IsValid()) {
+    LOG(ERROR) << "Permission broker refused to allow access to USB device";
+    std::move(callback).Run(CrostiniResult::PERMISSION_BROKER_ERROR);
+    return;
+  }
+
+  base::ScopedFD fd(file.TakePlatformFile());
+
+  vm_tools::concierge::AttachUsbDeviceRequest request;
+  request.set_vm_name(vm_name);
+  request.set_owner_id(CryptohomeIdForProfile(profile_));
+  request.set_bus_number(device->bus_number);
+  request.set_port_number(device->port_number);
+  request.set_vendor_id(device->vendor_id);
+  request.set_product_id(device->product_id);
+
+  GetConciergeClient()->AttachUsbDevice(
+      std::move(fd), std::move(request),
+      base::BindOnce(&CrostiniManager::OnAttachUsbDevice,
+                     weak_ptr_factory_.GetWeakPtr(), vm_name, std::move(device),
+                     std::move(callback)));
+}
+
+void CrostiniManager::OnAttachUsbDevice(
+    const std::string& vm_name,
+    device::mojom::UsbDeviceInfoPtr device,
+    AttachUsbDeviceCallback callback,
+    base::Optional<vm_tools::concierge::AttachUsbDeviceResponse> reply) {
+  if (reply.has_value()) {
+    vm_tools::concierge::AttachUsbDeviceResponse response = reply.value();
+    if (response.success()) {
+      attached_usb_devices_.emplace(
+          device->guid, std::make_pair(vm_name, response.guest_port()));
+      attached_usb_devices_reverse_.emplace(
+          std::make_pair(vm_name, response.guest_port()), device->guid);
+
+      std::move(callback).Run(CrostiniResult::SUCCESS);
+    } else {
+      LOG(ERROR) << "Failed to attach USB device, " << response.reason();
+      std::move(callback).Run(CrostiniResult::ATTACH_USB_FAILED);
+    }
+  } else {
+    LOG(ERROR) << "Failed to attach USB device, empty dbus response";
+    std::move(callback).Run(CrostiniResult::DBUS_ERROR);
+  }
+}
+
+void CrostiniManager::DetachUsbDevice(const std::string& vm_name,
+                                      device::mojom::UsbDeviceInfoPtr device,
+                                      DetachUsbDeviceCallback callback) {
+  auto it = attached_usb_devices_.find(device->guid);
+  uint8_t guest_port = 0;
+  if (it != attached_usb_devices_.end() && it->second.first == vm_name) {
+    guest_port = it->second.second;
+  } else {
+    // If there wasn't an existing attachment, then removal is a no-op and
+    // always succeeds
+    std::move(callback).Run(CrostiniResult::SUCCESS);
+    return;
+  }
+
+  vm_tools::concierge::DetachUsbDeviceRequest request;
+  request.set_vm_name(vm_name);
+  request.set_owner_id(CryptohomeIdForProfile(profile_));
+  request.set_guest_port(guest_port);
+
+  GetConciergeClient()->DetachUsbDevice(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnDetachUsbDevice,
+                     weak_ptr_factory_.GetWeakPtr(), vm_name, guest_port,
+                     std::move(device), std::move(callback)));
+}
+
+void CrostiniManager::OnDetachUsbDevice(
+    const std::string& vm_name,
+    uint8_t guest_port,
+    device::mojom::UsbDeviceInfoPtr device,
+    DetachUsbDeviceCallback callback,
+    base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> reply) {
+  if (reply.has_value()) {
+    vm_tools::concierge::DetachUsbDeviceResponse response = reply.value();
+    if (response.success()) {
+      attached_usb_devices_.erase(device->guid);
+      attached_usb_devices_reverse_.erase(std::make_pair(vm_name, guest_port));
+      std::move(callback).Run(CrostiniResult::SUCCESS);
+    } else {
+      LOG(ERROR) << "Failed to detach USB device, " << response.reason();
+      std::move(callback).Run(CrostiniResult::DETACH_USB_FAILED);
+    }
+  } else {
+    LOG(ERROR) << "Failed to detach USB device, empty dbus response";
+    std::move(callback).Run(CrostiniResult::DBUS_ERROR);
+  }
+}
+
+void CrostiniManager::OnDeviceAdded(
+    device::mojom::UsbDeviceInfoPtr device_info) {}
+
+void CrostiniManager::OnDeviceRemoved(
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  auto it = attached_usb_devices_.find(device_info->guid);
+  if (it != attached_usb_devices_.end()) {
+    DetachUsbDevice(it->second.first, std::move(device_info),
+                    base::DoNothing());
+  }
+}
+
+void CrostiniManager::SetUsbManagerForTesting(
+    device::mojom::UsbDeviceManagerPtr usb_manager) {
+  DCHECK(!usb_manager_);
+  usb_manager_ = std::move(usb_manager);
+  InitializeUsbDeviceManagerClient();
+}
+
+void CrostiniManager::InitializeUsbDeviceManager() {
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  if (connection) {
+    connection->GetConnector()->BindInterface(device::mojom::kServiceName,
+                                              mojo::MakeRequest(&usb_manager_));
+    usb_manager_.set_connection_error_handler(
+        base::BindOnce(&CrostiniManager::InitializeUsbDeviceManager,
+                       weak_ptr_factory_.GetWeakPtr()));
+    InitializeUsbDeviceManagerClient();
+  } else {
+    LOG(ERROR) << "ServiceManagerConnection not found";
+  }
+}
+
+void CrostiniManager::InitializeUsbDeviceManagerClient() {
+  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo ptr;
+  auto request = mojo::MakeRequest(&ptr);
+
+  usb_manager_->SetClient(std::move(ptr));
+
+  if (binding_.is_bound()) {
+    binding_.Close();
+  }
+  binding_.Bind(std::move(request));
+}
+
+void CrostiniManager::ListUsbDevices(const std::string& vm_name,
+                                     ListUsbDevicesCallback callback) {
+  vm_tools::concierge::ListUsbDeviceRequest request;
+  request.set_vm_name(vm_name);
+  request.set_owner_id(CryptohomeIdForProfile(profile_));
+
+  GetConciergeClient()->ListUsbDevices(
+      std::move(request), base::BindOnce(&CrostiniManager::OnListUsbDevices,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         vm_name, std::move(callback)));
+}
+
+void CrostiniManager::OnListUsbDevices(
+    const std::string& vm_name,
+    ListUsbDevicesCallback callback,
+    base::Optional<vm_tools::concierge::ListUsbDeviceResponse> reply) {
+  if (reply.has_value()) {
+    vm_tools::concierge::ListUsbDeviceResponse response = reply.value();
+    if (response.success()) {
+      usb_manager_->GetDevices(
+          nullptr, base::BindOnce(&CrostiniManager::OnListUsbDeviceInfoPtrs,
+                                  weak_ptr_factory_.GetWeakPtr(), vm_name,
+                                  std::move(response), std::move(callback)));
+    } else {
+      LOG(ERROR) << "Failed to list USB devices";
+      std::move(callback).Run(CrostiniResult::LIST_USB_FAILED,
+                              std::vector<device::mojom::UsbDeviceInfoPtr>());
+    }
+  } else {
+    LOG(ERROR) << "Failed to list USB devices, empty dbus response";
+    std::move(callback).Run(CrostiniResult::DBUS_ERROR,
+                            std::vector<device::mojom::UsbDeviceInfoPtr>());
+  }
+}
+
+void CrostiniManager::OnListUsbDeviceInfoPtrs(
+    const std::string& vm_name,
+    vm_tools::concierge::ListUsbDeviceResponse response,
+    ListUsbDevicesCallback callback,
+    std::vector<device::mojom::UsbDeviceInfoPtr> device_info) {
+  auto result = CrostiniResult::SUCCESS;
+  std::set<std::string> guids;
+  for (auto dev : response.usb_devices()) {
+    auto key = std::make_pair(vm_name, dev.guest_port());
+    auto iter = attached_usb_devices_reverse_.find(key);
+    if (iter != attached_usb_devices_reverse_.end()) {
+      guids.insert(iter->second);
+    } else {
+      // This shouldn't happen normally, but could as a result of a user
+      // manually adding a USB device from the commandline. In this case, we
+      // make a best effort and return the UsbDeviceInfoPtr objects we do know
+      // about and ignore the rest. In the future, we may be able to update
+      // our internal registry and handle this case properly.
+      result = CrostiniResult::UNKNOWN_USB_DEVICE;
+    }
+  }
+
+  std::vector<device::mojom::UsbDeviceInfoPtr> filtered_devices;
+  for (auto& dev : device_info) {
+    if (guids.find(dev->guid) != guids.end()) {
+      filtered_devices.push_back(std::move(dev));
+    }
+  }
+
+  std::move(callback).Run(result, std::move(filtered_devices));
 }
 
 // static

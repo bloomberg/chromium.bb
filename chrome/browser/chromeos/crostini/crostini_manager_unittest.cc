@@ -15,6 +15,7 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -130,6 +131,36 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void AttachUsbDeviceCallback(base::OnceClosure closure,
+                               CrostiniResult expected_result,
+                               CrostiniResult result) {
+    EXPECT_TRUE(fake_concierge_client_->attach_usb_device_called());
+    EXPECT_EQ(expected_result, result);
+    std::move(closure).Run();
+  }
+
+  void DetachUsbDeviceCallback(base::OnceClosure closure,
+                               bool expected_called,
+                               CrostiniResult expected_result,
+                               CrostiniResult result) {
+    EXPECT_EQ(fake_concierge_client_->detach_usb_device_called(),
+              expected_called);
+    EXPECT_EQ(expected_result, result);
+    std::move(closure).Run();
+  }
+
+  void ListUsbDevicesCallback(
+      base::OnceClosure closure,
+      CrostiniResult expected_result,
+      size_t expected_size,
+      CrostiniResult result,
+      std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
+    EXPECT_TRUE(fake_concierge_client_->list_usb_devices_called());
+    EXPECT_EQ(expected_result, result);
+    EXPECT_EQ(devices.size(), expected_size);
+    std::move(closure).Run();
+  }
+
   CrostiniManagerTest()
       : test_browser_thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
@@ -148,6 +179,11 @@ class CrostiniManagerTest : public testing::Test {
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
+
+    device::mojom::UsbDeviceManagerPtr fake_usb_manager_ptr_;
+    fake_usb_manager_.AddBinding(mojo::MakeRequest(&fake_usb_manager_ptr_));
+    crostini_manager_->SetUsbManagerForTesting(
+        std::move(fake_usb_manager_ptr_));
   }
 
   void TearDown() override {
@@ -170,6 +206,7 @@ class CrostiniManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniManager> crostini_manager_;
   bool create_container_fails_callback_called_ = false;
+  device::FakeUsbDeviceManager fake_usb_manager_;
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -407,6 +444,199 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
   run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, AttachUsbDeviceSuccess) {
+  vm_tools::concierge::AttachUsbDeviceResponse response;
+  response.set_success(true);
+  fake_concierge_client_->set_attach_usb_device_response(response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, AttachUsbDeviceFailure) {
+  vm_tools::concierge::AttachUsbDeviceResponse response;
+  response.set_success(false);
+  fake_concierge_client_->set_attach_usb_device_response(response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::ATTACH_USB_FAILED));
+  run_loop()->Run();
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, DetachUsbDeviceNoop) {
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  crostini_manager()->DetachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(), false,
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, DetachUsbDeviceSuccess) {
+  vm_tools::concierge::AttachUsbDeviceResponse attach_response;
+  attach_response.set_success(true);
+  fake_concierge_client_->set_attach_usb_device_response(attach_response);
+
+  vm_tools::concierge::DetachUsbDeviceResponse detach_response;
+  detach_response.set_success(true);
+  fake_concierge_client_->set_detach_usb_device_response(detach_response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  auto detach_usb = base::BindOnce(
+      &CrostiniManager::DetachUsbDevice, base::Unretained(crostini_manager()),
+      kVmName, fake_usb.Clone(),
+      base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(), true,
+                     CrostiniResult::SUCCESS));
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), std::move(detach_usb),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, DetachUsbDeviceFailure) {
+  vm_tools::concierge::AttachUsbDeviceResponse attach_response;
+  attach_response.set_success(true);
+  fake_concierge_client_->set_attach_usb_device_response(attach_response);
+
+  vm_tools::concierge::DetachUsbDeviceResponse detach_response;
+  detach_response.set_success(false);
+  fake_concierge_client_->set_detach_usb_device_response(detach_response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  auto detach_usb = base::BindOnce(
+      &CrostiniManager::DetachUsbDevice, base::Unretained(crostini_manager()),
+      kVmName, fake_usb.Clone(),
+      base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(), true,
+                     CrostiniResult::DETACH_USB_FAILED));
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), std::move(detach_usb),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, ListUsbDeviceFailure) {
+  vm_tools::concierge::ListUsbDeviceResponse response;
+  response.set_success(false);
+  fake_concierge_client_->set_list_usb_devices_response(response);
+
+  crostini_manager()->ListUsbDevices(
+      kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
+                              base::Unretained(this), run_loop()->QuitClosure(),
+                              CrostiniResult::LIST_USB_FAILED, 0));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ListUsbDeviceEmptySuccess) {
+  vm_tools::concierge::ListUsbDeviceResponse response;
+  response.set_success(true);
+  fake_concierge_client_->set_list_usb_devices_response(response);
+
+  crostini_manager()->ListUsbDevices(
+      kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
+                              base::Unretained(this), run_loop()->QuitClosure(),
+                              CrostiniResult::SUCCESS, 0));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ListUsbDeviceOne) {
+  vm_tools::concierge::AttachUsbDeviceResponse attach_response;
+  attach_response.set_success(true);
+  attach_response.set_guest_port(1);
+  fake_concierge_client_->set_attach_usb_device_response(attach_response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+
+  vm_tools::concierge::ListUsbDeviceResponse response;
+  response.set_success(true);
+  auto* msg = response.add_usb_devices();
+  msg->set_guest_port(1);
+  fake_concierge_client_->set_list_usb_devices_response(response);
+
+  base::RunLoop run_loop2;
+  crostini_manager()->ListUsbDevices(
+      kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
+                              base::Unretained(this), run_loop2.QuitClosure(),
+                              CrostiniResult::SUCCESS, 1));
+  run_loop2.Run();
+
+  fake_usb_manager_.RemoveDevice(guid);
+}
+
+TEST_F(CrostiniManagerTest, ListUsbDeviceExtra) {
+  vm_tools::concierge::AttachUsbDeviceResponse attach_response;
+  attach_response.set_success(true);
+  attach_response.set_guest_port(1);
+  fake_concierge_client_->set_attach_usb_device_response(attach_response);
+
+  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
+  auto guid = fake_usb->guid;
+
+  crostini_manager()->AttachUsbDevice(
+      kVmName, std::move(fake_usb),
+      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+
+  vm_tools::concierge::ListUsbDeviceResponse response;
+  response.set_success(true);
+  auto* msg = response.add_usb_devices();
+  msg->set_guest_port(1);
+  msg = response.add_usb_devices();
+  msg->set_guest_port(2);
+  fake_concierge_client_->set_list_usb_devices_response(response);
+
+  base::RunLoop run_loop2;
+  crostini_manager()->ListUsbDevices(
+      kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
+                              base::Unretained(this), run_loop2.QuitClosure(),
+                              CrostiniResult::UNKNOWN_USB_DEVICE, 1));
+  run_loop2.Run();
+
+  fake_usb_manager_.RemoveDevice(guid);
 }
 
 class CrostiniManagerRestartTest : public CrostiniManagerTest,

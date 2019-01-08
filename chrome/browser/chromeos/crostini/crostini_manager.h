@@ -23,6 +23,8 @@
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 class Profile;
 
@@ -53,6 +55,11 @@ enum class CrostiniResult {
   SSHFS_MOUNT_ERROR,
   OFFLINE_WHEN_UPGRADE_REQUIRED,
   LOAD_COMPONENT_FAILED,
+  PERMISSION_BROKER_ERROR,
+  ATTACH_USB_FAILED,
+  DETACH_USB_FAILED,
+  LIST_USB_FAILED,
+  UNKNOWN_USB_DEVICE,
   UNKNOWN_ERROR,
 };
 
@@ -143,7 +150,8 @@ class LinuxPackageOperationProgressObserver {
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
                         public chromeos::ConciergeClient::Observer,
-                        public chromeos::CiceroneClient::Observer {
+                        public chromeos::CiceroneClient::Observer,
+                        public device::mojom::UsbDeviceManagerClient {
  public:
   using CrostiniResultCallback =
       base::OnceCallback<void(CrostiniResult result)>;
@@ -194,6 +202,14 @@ class CrostiniManager : public KeyedService,
   using RestartCrostiniCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::RemoveCrostini.
   using RemoveCrostiniCallback = CrostiniResultCallback;
+  // The type of the callback for CrostiniManager::AttachUsbDevice
+  using AttachUsbDeviceCallback = CrostiniResultCallback;
+  // The type of the callback for CrostiniManager::DetachUsbDevice
+  using DetachUsbDeviceCallback = CrostiniResultCallback;
+  // The type of the callback for CrostiniManager::ListUsbDevices
+  using ListUsbDevicesCallback = base::OnceCallback<void(
+      CrostiniResult result,
+      std::vector<device::mojom::UsbDeviceInfoPtr> devices)>;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -369,6 +385,17 @@ class CrostiniManager : public KeyedService,
                            std::string container_name,
                            GetContainerSshKeysCallback callback);
 
+  void AttachUsbDevice(const std::string& vm_name,
+                       device::mojom::UsbDeviceInfoPtr device,
+                       AttachUsbDeviceCallback callback);
+
+  void DetachUsbDevice(const std::string& vm_name,
+                       device::mojom::UsbDeviceInfoPtr device,
+                       DetachUsbDeviceCallback callback);
+
+  void ListUsbDevices(const std::string& vm_name,
+                      ListUsbDevicesCallback callback);
+
   // Create the crosh-in-a-window that displays a shell in an container on a VM.
   static Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
                                           const GURL& vsh_in_crosh_url);
@@ -471,6 +498,12 @@ class CrostiniManager : public KeyedService,
       component_updater::CrOSComponentManager::Error error) {
     component_manager_load_error_for_testing_ = error;
   }
+
+  // device::mojom::UsbDeviceManagerClient::
+  void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
+  void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
+
+  void SetUsbManagerForTesting(device::mojom::UsbDeviceManagerPtr usb_manager);
 
  private:
   class CrostiniRestarter;
@@ -588,6 +621,39 @@ class CrostiniManager : public KeyedService,
       GetContainerSshKeysCallback callback,
       base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply);
 
+  void OnUsbDeviceOpened(AttachUsbDeviceCallback callback,
+                         device::mojom::UsbDeviceInfoPtr device,
+                         const std::string& vm_name,
+                         base::File file);
+
+  // Callback for CrostiniManager::OnAttachUsbDeviceOpen
+  void OnAttachUsbDevice(
+      const std::string& vm_name,
+      device::mojom::UsbDeviceInfoPtr device,
+      AttachUsbDeviceCallback callback,
+      base::Optional<vm_tools::concierge::AttachUsbDeviceResponse> reply);
+
+  // Callback for CrostiniManager::DetachUsbDevice
+  void OnDetachUsbDevice(
+      const std::string& vm_name,
+      uint8_t guest_port,
+      device::mojom::UsbDeviceInfoPtr device,
+      DetachUsbDeviceCallback callback,
+      base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> reply);
+
+  // Callback for CrostiniManager::ListUsbDevices
+  void OnListUsbDevices(
+      const std::string& vm_name,
+      ListUsbDevicesCallback callback,
+      base::Optional<vm_tools::concierge::ListUsbDeviceResponse> reply);
+
+  // Callback for CrostiniManager::OnListUsbDevices
+  void OnListUsbDeviceInfoPtrs(
+      const std::string& vm_name,
+      vm_tools::concierge::ListUsbDeviceResponse response,
+      ListUsbDevicesCallback callback,
+      std::vector<device::mojom::UsbDeviceInfoPtr> device_info);
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();
@@ -601,6 +667,9 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);
+
+  void InitializeUsbDeviceManager();
+  void InitializeUsbDeviceManagerClient();
 
   Profile* profile_;
   std::string owner_id_;
@@ -659,6 +728,16 @@ class CrostiniManager : public KeyedService,
 
   std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
       restarters_by_id_;
+
+  // A mapping from GUID -> (VM name, guest port) for each attached USB device
+  std::map<std::string, std::pair<std::string, uint8_t>> attached_usb_devices_;
+  // A mapping from (VM name, guest port) -> GUID for each attached USB device
+  std::map<std::pair<std::string, uint8_t>, std::string>
+      attached_usb_devices_reverse_;
+
+  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient> binding_;
+
+  device::mojom::UsbDeviceManagerPtr usb_manager_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

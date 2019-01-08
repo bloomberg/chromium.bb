@@ -105,6 +105,8 @@ TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
   info->class_code = device.device_class();
   info->subclass_code = device.device_subclass();
   info->protocol_code = device.device_protocol();
+  info->bus_number = device.bus_number();
+  info->port_number = device.port_number();
   info->vendor_id = device.vendor_id();
   info->product_id = device.product_id();
   info->device_version_major = device.device_version() >> 8;

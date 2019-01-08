@@ -62,6 +62,15 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   void GetDevice(const std::string& guid,
                  mojom::UsbDeviceRequest device_request,
                  mojom::UsbDeviceClientPtr device_client) override;
+
+#if defined(OS_CHROMEOS)
+  void CheckAccess(const std::string& guid,
+                   CheckAccessCallback callback) override;
+
+  void OpenFileDescriptor(const std::string& guid,
+                          OpenFileDescriptorCallback callback) override;
+#endif  // defined(OS_CHROMEOS)
+
   void SetClient(
       mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
 

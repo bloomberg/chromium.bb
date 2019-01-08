@@ -115,6 +115,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool get_container_ssh_keys_called() const {
     return get_container_ssh_keys_called_;
   }
+  // Indicates whether AttachUsbDevice has been called
+  bool attach_usb_device_called() const { return attach_usb_device_called_; }
+  // Indicates whether DetachUsbDevice has been called
+  bool detach_usb_device_called() const { return detach_usb_device_called_; }
+  // Indicates whether ListUsbDevices has been called
+  bool list_usb_devices_called() const { return list_usb_devices_called_; }
   // Set ContainerStartupFailedSignalConnected state
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
@@ -178,9 +184,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool get_container_ssh_keys_called_ = false;
-  bool attach_usb_device_called = false;
-  bool detach_usb_device_called = false;
-  bool list_usb_devices_called = false;
+  bool attach_usb_device_called_ = false;
+  bool detach_usb_device_called_ = false;
+  bool list_usb_devices_called_ = false;
   bool is_container_startup_failed_signal_connected_ = true;
 
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
