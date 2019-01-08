@@ -276,7 +276,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
       client_task_runner_(client_task_runner),
       waiting_for_reply_(false),
       weak_ptr_factory_(this) {
-  child_process_host_.reset(ChildProcessHost::Create(this));
+  child_process_host_ = ChildProcessHost::Create(this);
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
