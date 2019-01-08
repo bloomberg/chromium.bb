@@ -23,7 +23,7 @@ namespace syncer {
 
 class FCMSyncNetworkChannel;
 
-// This class inplements the Invalidator interface and serves as a
+// This class implements the Invalidator interface and serves as a
 // bridge betwen invalidation Listener and invalidationr Service.
 class FCMInvalidator : public Invalidator,
                        public FCMInvalidationListener::Delegate {
