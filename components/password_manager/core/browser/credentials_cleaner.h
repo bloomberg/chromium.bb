@@ -35,6 +35,11 @@ class CredentialsCleaner {
 
   virtual ~CredentialsCleaner() = default;
 
+  // Returns whether the clean-up associated with this CredentialsCleaner
+  // instance needs to be executed. For example, this might return false, if the
+  // clean-up only needs to happen once and has been executed in the past.
+  virtual bool NeedsCleaning() = 0;
+
   // Calling this initiates the clean-up. The function should only be called
   // once in the lifetime of this class. The clean-up may consist of
   // asynchronous tasks, so exiting from StartCleaning does not mean the

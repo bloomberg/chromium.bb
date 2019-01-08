@@ -10,9 +10,16 @@ namespace password_manager {
 
 CredentialsCleanerRunner::CredentialsCleanerRunner() = default;
 
-void CredentialsCleanerRunner::AddCleaningTask(
+CredentialsCleanerRunner::~CredentialsCleanerRunner() = default;
+
+void CredentialsCleanerRunner::MaybeAddCleaningTask(
     std::unique_ptr<CredentialsCleaner> cleaning_task) {
-  cleaning_tasks_queue_.push(std::move(cleaning_task));
+  if (cleaning_task->NeedsCleaning())
+    cleaning_tasks_queue_.push(std::move(cleaning_task));
+}
+
+bool CredentialsCleanerRunner::HasPendingTasks() const {
+  return !cleaning_tasks_queue_.empty();
 }
 
 void CredentialsCleanerRunner::StartCleaning() {
@@ -28,14 +35,13 @@ void CredentialsCleanerRunner::CleaningCompleted() {
   StartCleaningTask();
 }
 
-CredentialsCleanerRunner::~CredentialsCleanerRunner() = default;
-
 void CredentialsCleanerRunner::StartCleaningTask() {
-  if (cleaning_tasks_queue_.empty()) {
+  if (!HasPendingTasks()) {
     // Delete the runner if no more clean-up is scheduled.
     delete this;
     return;
   }
+
   cleaning_tasks_queue_.front()->StartCleaning(this);
 }
 

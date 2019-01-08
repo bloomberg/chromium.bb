@@ -18,6 +18,7 @@ class MockCredentialsCleaner : public CredentialsCleaner {
  public:
   MockCredentialsCleaner() = default;
   ~MockCredentialsCleaner() override = default;
+  MOCK_METHOD0(NeedsCleaning, bool());
   MOCK_METHOD1(StartCleaning, void(Observer* observer));
 
  private:
@@ -72,7 +73,8 @@ TEST_F(CredentialsCleanerRunnerTest, NonEmptyTasks) {
   for (int i = 0; i < kCleanersCount; ++i) {
     auto cleaner = std::make_unique<MockCredentialsCleaner>();
     raw_cleaners.push_back(cleaner.get());
-    cleaning_tasks_runner->AddCleaningTask(std::move(cleaner));
+    EXPECT_CALL(*cleaner, NeedsCleaning).WillOnce(::testing::Return(true));
+    cleaning_tasks_runner->MaybeAddCleaningTask(std::move(cleaner));
   }
 
   ::testing::InSequence dummy;

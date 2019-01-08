@@ -27,16 +27,18 @@ namespace password_manager {
 class CredentialsCleanerRunner : public CredentialsCleaner::Observer {
  public:
   CredentialsCleanerRunner();
+  ~CredentialsCleanerRunner() override;
 
-  void AddCleaningTask(std::unique_ptr<CredentialsCleaner> cleaning_task);
+  // Adds |cleaning_task| to the |cleaning_task_queue_| if the corresponding
+  // cleaning task still needs to be done.
+  void MaybeAddCleaningTask(std::unique_ptr<CredentialsCleaner> cleaning_task);
+
+  bool HasPendingTasks() const;
 
   void StartCleaning();
 
   // CredentialsCleaner::Observer:
   void CleaningCompleted() override;
-
- protected:
-  ~CredentialsCleanerRunner() override;
 
  private:
   void StartCleaningTask();
