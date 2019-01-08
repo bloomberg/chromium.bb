@@ -347,6 +347,8 @@ Still reading?
     <!-- 2 resource sets used by clank widgets for each channel -->
     <ignore regexp="The resource `R.string.bookmark_widget_title.*` appears to be unused"/>
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
+    <!-- 1 resource used by android tv to generate resources.zip file -->
+    <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">
