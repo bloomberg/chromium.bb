@@ -34,7 +34,7 @@ cloud_devices::printer::DuplexType ToCloudDuplexType(
 
 }  // namespace
 
-std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
+base::Value PrinterSemanticCapsAndDefaultsToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   using namespace cloud_devices::printer;
   cloud_devices::CloudDeviceDescription description;
@@ -140,7 +140,7 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   orientation.AddOption(AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
-  return base::WrapUnique(description.root().DeepCopy());
+  return std::move(description).ToValue();
 }
 
 }  // namespace cloud_print

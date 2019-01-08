@@ -69,8 +69,7 @@ gfx::Size GetDefaultPdfMediaSizeMicrons() {
                    pdf_media_size.height() * device_microns_per_device_unit);
 }
 
-std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
-    const std::string& locale) {
+base::Value GetPdfCapabilities(const std::string& locale) {
   cloud_devices::CloudDeviceDescription description;
   using namespace cloud_devices::printer;
 
@@ -106,7 +105,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
   }
   media.SaveTo(&description);
 
-  return std::unique_ptr<base::DictionaryValue>(description.root().DeepCopy());
+  return std::move(description).ToValue();
 }
 
 // Callback that stores a PDF file on disk.
@@ -171,9 +170,9 @@ void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
   base::Value printer_info(base::Value::Type::DICTIONARY);
   printer_info.SetKey(kSettingDeviceName, base::Value(destination_id));
-  printer_info.SetKey(kSettingCapabilities,
-                      std::move(*GetPdfCapabilities(
-                          g_browser_process->GetApplicationLocale())));
+  printer_info.SetKey(
+      kSettingCapabilities,
+      GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
   std::move(callback).Run(std::move(printer_info));
 }
 

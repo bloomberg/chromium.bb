@@ -64,16 +64,15 @@ void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
   }
 }
 
-void CapabilitiesFetched(base::DictionaryValue policies,
+void CapabilitiesFetched(base::Value policies,
                          LocalPrinterHandlerChromeos::GetCapabilityCallback cb,
-                         std::unique_ptr<base::DictionaryValue> printer_info) {
-  printer_info->FindKey(kPrinter)->SetKey(kSettingPolicies,
-                                          std::move(policies));
-  std::move(cb).Run(std::move(*printer_info));
+                         base::Value printer_info) {
+  printer_info.FindKey(kPrinter)->SetKey(kSettingPolicies, std::move(policies));
+  std::move(cb).Run(std::move(printer_info));
 }
 
 void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
-                       base::DictionaryValue policies,
+                       base::Value policies,
                        LocalPrinterHandlerChromeos::GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -185,17 +184,18 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
 
       // populate |policies| with policies for native printers.
-      auto* prefs = profile_->GetPrefs();
-      base::DictionaryValue policies;
-      policies.SetInteger(kAllowedColorModes,
-                          prefs->GetInteger(prefs::kPrintingAllowedColorModes));
-      policies.SetInteger(
+      base::Value policies;
+      const PrefService* prefs = profile_->GetPrefs();
+      policies.SetKey(
+          kAllowedColorModes,
+          base::Value(prefs->GetInteger(prefs::kPrintingAllowedColorModes)));
+      policies.SetKey(
           kAllowedDuplexModes,
-          prefs->GetInteger(prefs::kPrintingAllowedDuplexModes));
-      policies.SetInteger(kDefaultColorMode,
-                          prefs->GetInteger(prefs::kPrintingColorDefault));
-      policies.SetInteger(kDefaultDuplexMode,
-                          prefs->GetInteger(prefs::kPrintingDuplexDefault));
+          base::Value(prefs->GetInteger(prefs::kPrintingAllowedDuplexModes)));
+      policies.SetKey(kDefaultColorMode,
+                      base::Value(prefs->Get(prefs::kPrintingColorDefault)));
+      policies.SetKey(kDefaultDuplexMode,
+                      base::Value(prefs->Get(prefs::kPrintingDuplexDefault)));
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(std::move(printer), std::move(policies), std::move(cb));
       return;

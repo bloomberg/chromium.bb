@@ -36,8 +36,7 @@ namespace {
 
 // Returns a dictionary representing printer capabilities as CDD.  Returns
 // an empty dictionary if a dictionary could not be generated.
-std::unique_ptr<base::DictionaryValue>
-GetPrinterCapabilitiesOnBlockingPoolThread(
+base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend) {
@@ -51,17 +50,15 @@ GetPrinterCapabilitiesOnBlockingPoolThread(
   crash_keys::ScopedPrinterInfo crash_key(
       backend->GetPrinterDriverInfo(device_name));
 
-  auto empty_capabilities = std::make_unique<base::DictionaryValue>();
-  std::unique_ptr<base::DictionaryValue> printer_info;
   if (!backend->IsValidPrinter(device_name)) {
     LOG(WARNING) << "Invalid printer " << device_name;
-    return empty_capabilities;
+    return base::Value(base::Value::Type::DICTIONARY);
   }
 
   PrinterSemanticCapsAndDefaults info;
   if (!backend->GetPrinterSemanticCapsAndDefaults(device_name, &info)) {
     LOG(WARNING) << "Failed to get capabilities for " << device_name;
-    return empty_capabilities;
+    return base::Value(base::Value::Type::DICTIONARY);
   }
 
   info.papers.insert(info.papers.end(), additional_papers.begin(),
@@ -112,7 +109,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 #endif
 }
 
-std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
+base::Value GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
@@ -121,21 +118,22 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
 
   const auto printer_name_description =
       GetPrinterNameAndDescription(basic_info);
-  const std::string& printer_name = printer_name_description.first;
-  const std::string& printer_description = printer_name_description.second;
 
-  auto printer_info = std::make_unique<base::DictionaryValue>();
-  printer_info->SetString(kSettingDeviceName, device_name);
-  printer_info->SetString(kSettingPrinterName, printer_name);
-  printer_info->SetString(kSettingPrinterDescription, printer_description);
-  printer_info->SetBoolean(
+  base::Value printer_info(base::Value::Type::DICTIONARY);
+  printer_info.SetKey(kSettingDeviceName, base::Value(device_name));
+  printer_info.SetKey(kSettingPrinterName,
+                      base::Value(printer_name_description.first));
+  printer_info.SetKey(kSettingPrinterDescription,
+                      base::Value(printer_name_description.second));
+  printer_info.SetKey(
       kCUPSEnterprisePrinter,
-      base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
-          basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue);
+      base::Value(
+          base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
+          basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
 
-  auto printer_info_capabilities = std::make_unique<base::DictionaryValue>();
-  printer_info_capabilities->SetDictionary(kPrinter, std::move(printer_info));
-  printer_info_capabilities->Set(
+  base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
+  printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));
+  printer_info_capabilities.SetKey(
       kSettingCapabilities, GetPrinterCapabilitiesOnBlockingPoolThread(
                                 device_name, additional_papers, print_backend));
   return printer_info_capabilities;

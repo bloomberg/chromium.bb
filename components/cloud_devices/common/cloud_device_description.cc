@@ -38,6 +38,10 @@ std::string CloudDeviceDescription::ToString() const {
   return json;
 }
 
+base::Value CloudDeviceDescription::ToValue() && {
+  return base::Value::FromUniquePtrValue(std::move(root_));
+}
+
 const base::DictionaryValue* CloudDeviceDescription::GetItem(
     const std::string& path) const {
   const base::DictionaryValue* value = nullptr;
