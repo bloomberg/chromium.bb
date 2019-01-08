@@ -29,7 +29,8 @@ let IsValid;
  * Stores origin information.
  * @typedef {{origin: string,
  *            engagement: number,
- *            usage: number}}
+ *            usage: number,
+              numCookies: number}}
  */
 let OriginInfo;
 

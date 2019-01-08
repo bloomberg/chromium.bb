@@ -15,12 +15,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
@@ -297,6 +300,8 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
   return nullptr;
 }
 
+void CookieTreeNode::RetrieveSize(const SizeRetrievalCallback& callback) {}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookieNode, public:
 
@@ -346,6 +351,12 @@ CookieTreeNode::DetailedInfo CookieTreeAppCacheNode::GetDetailedInfo() const {
   return DetailedInfo().InitAppCache(origin_.GetURL(), &*appcache_info_);
 }
 
+void CookieTreeAppCacheNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().appcache_info->size);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeDatabaseNode, public:
 
@@ -371,6 +382,12 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 
 CookieTreeNode::DetailedInfo CookieTreeDatabaseNode::GetDetailedInfo() const {
   return DetailedInfo().InitDatabase(&*database_info_);
+}
+
+void CookieTreeDatabaseNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().database_info->size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -399,6 +416,12 @@ CookieTreeNode::DetailedInfo
 CookieTreeLocalStorageNode::GetDetailedInfo() const {
   return DetailedInfo().InitLocalStorage(
       &*local_storage_info_);
+}
+
+void CookieTreeLocalStorageNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().local_storage_info->size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -455,6 +478,12 @@ CookieTreeNode::DetailedInfo CookieTreeIndexedDBNode::GetDetailedInfo() const {
   return DetailedInfo().InitIndexedDB(&*indexed_db_info_);
 }
 
+void CookieTreeIndexedDBNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().indexed_db_info->total_size_bytes);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeFileSystemNode, public:
 
@@ -480,6 +509,16 @@ void CookieTreeFileSystemNode::DeleteStoredObjects() {
 
 CookieTreeNode::DetailedInfo CookieTreeFileSystemNode::GetDetailedInfo() const {
   return DetailedInfo().InitFileSystem(&*file_system_info_);
+}
+
+void CookieTreeFileSystemNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  int64_t size = 0;
+  for (auto const& usage :
+       this->GetDetailedInfo().file_system_info->usage_map) {
+    size += usage.second;
+  }
+  callback.Run(this->GetDetailedInfo().origin, size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -535,6 +574,12 @@ CookieTreeNode::DetailedInfo CookieTreeServiceWorkerNode::GetDetailedInfo()
   return DetailedInfo().InitServiceWorker(&*service_worker_info_);
 }
 
+void CookieTreeServiceWorkerNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().service_worker_info->total_size_bytes);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeSharedWorkerNode, public:
 
@@ -587,6 +632,12 @@ CookieTreeNode::DetailedInfo CookieTreeCacheStorageNode::GetDetailedInfo()
   return DetailedInfo().InitCacheStorage(&*cache_storage_info_);
 }
 
+void CookieTreeCacheStorageNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().cache_storage_info->total_size_bytes);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeMediaLicenseNode, public:
 
@@ -611,6 +662,12 @@ void CookieTreeMediaLicenseNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeMediaLicenseNode::GetDetailedInfo()
     const {
   return DetailedInfo().InitMediaLicense(&*media_license_info_);
+}
+
+void CookieTreeMediaLicenseNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  callback.Run(this->GetDetailedInfo().origin,
+               this->GetDetailedInfo().media_license_info->size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -645,6 +702,12 @@ CookiesTreeModel* CookieTreeRootNode::GetModel() const {
 
 CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_ROOT);
+}
+
+void CookieTreeRootNode::RetrieveSize(const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -805,6 +868,12 @@ bool CookieTreeHostNode::CanCreateContentException() const {
   return !url_.SchemeIsFile();
 }
 
+void CookieTreeHostNode::RetrieveSize(const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookiesNode, public:
 
@@ -833,6 +902,13 @@ CookieTreeNode::DetailedInfo CookieTreeAppCachesNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_APPCACHES);
 }
 
+void CookieTreeAppCachesNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeDatabasesNode, public:
 
@@ -844,6 +920,13 @@ CookieTreeDatabasesNode::~CookieTreeDatabasesNode() {}
 
 CookieTreeNode::DetailedInfo CookieTreeDatabasesNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_DATABASES);
+}
+
+void CookieTreeDatabasesNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -858,6 +941,13 @@ CookieTreeLocalStoragesNode::~CookieTreeLocalStoragesNode() {}
 CookieTreeNode::DetailedInfo
 CookieTreeLocalStoragesNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_LOCAL_STORAGES);
+}
+
+void CookieTreeLocalStoragesNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -888,6 +978,13 @@ CookieTreeIndexedDBsNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_INDEXED_DBS);
 }
 
+void CookieTreeIndexedDBsNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeFileSystemsNode, public:
 
@@ -900,6 +997,13 @@ CookieTreeFileSystemsNode::~CookieTreeFileSystemsNode() {}
 CookieTreeNode::DetailedInfo
 CookieTreeFileSystemsNode::GetDetailedInfo() const {
   return DetailedInfo().Init(DetailedInfo::TYPE_FILE_SYSTEMS);
+}
+
+void CookieTreeFileSystemsNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 void CookieTreeNode::AddChildSortedByTitle(
@@ -923,6 +1027,13 @@ CookieTreeServiceWorkersNode::~CookieTreeServiceWorkersNode() {
 CookieTreeNode::DetailedInfo CookieTreeServiceWorkersNode::GetDetailedInfo()
     const {
   return DetailedInfo().Init(DetailedInfo::TYPE_SERVICE_WORKERS);
+}
+
+void CookieTreeServiceWorkersNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -949,6 +1060,13 @@ CookieTreeCacheStoragesNode::~CookieTreeCacheStoragesNode() {}
 CookieTreeNode::DetailedInfo CookieTreeCacheStoragesNode::GetDetailedInfo()
     const {
   return DetailedInfo().Init(DetailedInfo::TYPE_CACHE_STORAGES);
+}
+
+void CookieTreeCacheStoragesNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -985,6 +1103,13 @@ CookieTreeMediaLicensesNode::~CookieTreeMediaLicensesNode() {}
 CookieTreeNode::DetailedInfo CookieTreeMediaLicensesNode::GetDetailedInfo()
     const {
   return DetailedInfo().Init(DetailedInfo::TYPE_MEDIA_LICENSES);
+}
+
+void CookieTreeMediaLicensesNode::RetrieveSize(
+    const SizeRetrievalCallback& callback) {
+  for (int i = 0; i < this->child_count(); ++i) {
+    this->GetChild(i)->RetrieveSize(callback);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1609,4 +1734,41 @@ void CookiesTreeModel::MaybeNotifyBatchesEnded() {
       observer.TreeModelEndBatch(this);
     SetBatchExpectation(0, true);
   }
+}
+// static
+std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
+    Profile* profile) {
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  content::IndexedDBContext* indexed_db_context =
+      storage_partition->GetIndexedDBContext();
+  content::ServiceWorkerContext* service_worker_context =
+      storage_partition->GetServiceWorkerContext();
+  content::CacheStorageContext* cache_storage_context =
+      storage_partition->GetCacheStorageContext();
+  storage::FileSystemContext* file_system_context =
+      storage_partition->GetFileSystemContext();
+  auto container = std::make_unique<LocalDataContainer>(
+      new BrowsingDataCookieHelper(storage_partition),
+      new BrowsingDataDatabaseHelper(profile),
+      new BrowsingDataLocalStorageHelper(profile),
+      /*session_storage_helper=*/nullptr,
+      new BrowsingDataAppCacheHelper(profile),
+      new BrowsingDataIndexedDBHelper(indexed_db_context),
+      BrowsingDataFileSystemHelper::Create(file_system_context),
+      BrowsingDataQuotaHelper::Create(profile),
+      new BrowsingDataServiceWorkerHelper(service_worker_context),
+      new BrowsingDataSharedWorkerHelper(storage_partition,
+                                         profile->GetResourceContext()),
+      new BrowsingDataCacheStorageHelper(cache_storage_context),
+#if defined(OS_ANDROID)
+      // Android doesn't have flash LSO hence it cannot be created for
+      // android build.
+      nullptr,
+#else
+      BrowsingDataFlashLSOHelper::Create(profile),
+#endif
+      BrowsingDataMediaLicenseHelper::Create(file_system_context));
+  return std::make_unique<CookiesTreeModel>(
+      std::move(container), profile->GetExtensionSpecialStoragePolicy());
 }

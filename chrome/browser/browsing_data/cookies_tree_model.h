@@ -172,10 +172,17 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         nullptr;
   };
 
+  using SizeRetrievalCallback =
+      base::RepeatingCallback<void(const url::Origin& origin, int64_t size)>;
+
   CookieTreeNode() {}
   explicit CookieTreeNode(const base::string16& title)
       : ui::TreeNode<CookieTreeNode>(title) {}
   ~CookieTreeNode() override {}
+
+  // Recursively traverse the child nodes of this node and synchronously run
+  // |callback| on each one that has storage data size.
+  virtual void RetrieveSize(const SizeRetrievalCallback& callback);
 
   // Delete backend storage for this node, and any children nodes. (E.g. delete
   // the cookie from CookieMonster, clear the database, and so forth.)
@@ -207,6 +214,7 @@ class CookieTreeRootNode : public CookieTreeNode {
   // CookieTreeNode methods:
   CookiesTreeModel* GetModel() const override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   CookiesTreeModel* model_;
@@ -225,6 +233,7 @@ class CookieTreeHostNode : public CookieTreeNode {
 
   // CookieTreeNode methods:
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   // CookieTreeHostNode methods:
   CookieTreeCookiesNode* GetOrCreateCookiesNode();
@@ -334,6 +343,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
 
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   url::Origin origin_;
@@ -347,6 +357,7 @@ class CookieTreeAppCachesNode : public CookieTreeNode {
   ~CookieTreeAppCachesNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddAppCacheNode(std::unique_ptr<CookieTreeAppCacheNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -370,6 +381,7 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
 
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // database_info_ is expected to remain valid as long as the
@@ -386,6 +398,7 @@ class CookieTreeDatabasesNode : public CookieTreeNode {
   ~CookieTreeDatabasesNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddDatabaseNode(std::unique_ptr<CookieTreeDatabaseNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -409,6 +422,7 @@ class CookieTreeFileSystemNode : public CookieTreeNode {
 
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // file_system_info_ expected to remain valid as long as the
@@ -425,6 +439,7 @@ class CookieTreeFileSystemsNode : public CookieTreeNode {
   ~CookieTreeFileSystemsNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddFileSystemNode(std::unique_ptr<CookieTreeFileSystemNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -447,6 +462,7 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
   // CookieTreeNode methods:
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // local_storage_info_ is expected to remain valid as long as the
@@ -463,6 +479,7 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
   ~CookieTreeLocalStoragesNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddLocalStorageNode(std::unique_ptr<CookieTreeLocalStorageNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -524,6 +541,7 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
   // CookieTreeNode methods:
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // indexed_db_info_ is expected to remain valid as long as the
@@ -539,6 +557,7 @@ class CookieTreeIndexedDBsNode : public CookieTreeNode {
   ~CookieTreeIndexedDBsNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddIndexedDBNode(std::unique_ptr<CookieTreeIndexedDBNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -580,6 +599,7 @@ class CookieTreeServiceWorkerNode : public CookieTreeNode {
   // CookieTreeNode methods:
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // service_worker_info_ is expected to remain valid as long as the
@@ -595,6 +615,7 @@ class CookieTreeServiceWorkersNode : public CookieTreeNode {
   ~CookieTreeServiceWorkersNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddServiceWorkerNode(
       std::unique_ptr<CookieTreeServiceWorkerNode> child) {
@@ -655,6 +676,7 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
   // CookieTreeNode methods:
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // cache_storage_info_ is expected to remain valid as long as the
@@ -670,6 +692,7 @@ class CookieTreeCacheStoragesNode : public CookieTreeNode {
   ~CookieTreeCacheStoragesNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddCacheStorageNode(std::unique_ptr<CookieTreeCacheStorageNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -709,6 +732,7 @@ class CookieTreeMediaLicenseNode : public CookieTreeNode {
 
   void DeleteStoredObjects() override;
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
  private:
   // |media_license_info_| is expected to remain valid as long as the
@@ -725,6 +749,7 @@ class CookieTreeMediaLicensesNode : public CookieTreeNode {
   ~CookieTreeMediaLicensesNode() override;
 
   DetailedInfo GetDetailedInfo() const override;
+  void RetrieveSize(const SizeRetrievalCallback& callback) override;
 
   void AddMediaLicenseNode(std::unique_ptr<CookieTreeMediaLicenseNode> child) {
     AddChildSortedByTitle(std::move(child));
@@ -835,6 +860,9 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // this is a revised number (batches originally counted should no longer be
   // expected).
   void SetBatchExpectation(int batches_expected, bool reset);
+
+  // Create CookiesTreeModel by profile info.
+  static std::unique_ptr<CookiesTreeModel> CreateForProfile(Profile* profile);
 
  private:
   enum CookieIconIndex {

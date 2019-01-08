@@ -16,6 +16,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -46,6 +47,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/origin_util.h"
@@ -142,7 +144,7 @@ bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
 
 // Groups |url| into sets of eTLD+1s in |site_group_map|, assuming |url| is an
 // origin.
-void CreateOrAppendSiteGroupEntry(
+void CreateOrAppendSiteGroupEntryForUrl(
     std::map<std::string, std::set<std::string>>* site_group_map,
     const GURL& url) {
   std::string etld_plus1_string =
@@ -152,9 +154,65 @@ void CreateOrAppendSiteGroupEntry(
   if (entry == site_group_map->end()) {
     site_group_map->emplace(etld_plus1_string,
                             std::set<std::string>({url.spec()}));
-  } else {
-    entry->second.insert(url.spec());
+    return;
   }
+  entry->second.insert(url.spec());
+}
+
+// Update the storage data in |origin_size_map|.
+void UpdateDataForOrigin(const GURL& url,
+                         const int size,
+                         std::map<std::string, int>* origin_size_map) {
+  if (size > 0)
+    (*origin_size_map)[url.spec()] += size;
+}
+
+// Groups |host| into sets of eTLD+1s in |site_group_map|, |host| can either
+// be an eTLD+1 or an origin.
+// There are three cases:
+// 1. The ETLD+1 of |host| is not yet in |site_group_map|. We add the ETLD+1
+//    to |site_group_map|
+// 2. The ETLD+1 of |host| is in |site_group_map|, and is equal to |host|.
+//    This means case 1 has already happened and nothing more needs to be
+//    done.
+// 3. The ETLD+1 of |host| is in |site_group_map| and is different to |host|.
+// In case 3, we try to add |host| to the set of origins for the ETLD+1.
+// This requires adding a scheme. We initially check if a HTTPS scheme has
+// been added for the host, and fall back to HTTP if not.
+void CreateOrAppendSiteGroupEntryForCookieHost(
+    const std::string& host,
+    std::map<std::string, std::set<std::string>>* site_group_map) {
+  std::string etld_plus1_string =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  auto entry = site_group_map->find(etld_plus1_string);
+  if (entry == site_group_map->end()) {
+    site_group_map->emplace(
+        etld_plus1_string,
+        // Add etld+1 origin as place holder.
+        std::set<std::string>({std::string(url::kHttpScheme) +
+                               url::kStandardSchemeSeparator + host + "/"}));
+    return;
+  }
+  // If |host| equals to etld_plus1_string that is already exists in
+  // |site_group_map|, nothing need to be done.
+  if (host == etld_plus1_string)
+    return;
+  // Cookies ignore schemes, so try and see if a https schemed version
+  // already exists in the origin list, if not, then add the http schemed
+  // version into the map.
+  std::string https_url = std::string(url::kHttpsScheme) +
+                          url::kStandardSchemeSeparator + host + "/";
+  if (entry->second.find(https_url) != entry->second.end())
+    return;
+  entry->second.insert(std::string(url::kHttpScheme) +
+                       url::kStandardSchemeSeparator + host + "/");
+  // Check if we have an etld_plus1 url place holder, if there is, delete
+  // that entry.
+  std::string etld_plus1_url = std::string(url::kHttpScheme) +
+                               url::kStandardSchemeSeparator +
+                               etld_plus1_string + "/";
+  entry->second.erase(etld_plus1_url);
 }
 
 // Converts a given |site_group_map| to a list of base::DictionaryValues, adding
@@ -180,6 +238,7 @@ void ConvertSiteGroupMapToListValue(
           "engagement",
           base::Value(engagement_service->GetScore(GURL(origin))));
       origin_object.SetKey("usage", base::Value(0));
+      origin_object.SetKey(kNumCookies, base::Value(0));
       origin_list.GetList().emplace_back(std::move(origin_object));
     }
     site_group.SetKey(kNumCookies, base::Value(0));
@@ -222,18 +281,29 @@ bool IsPatternValidForType(const std::string& pattern_string,
   return true;
 }
 
+void UpdateDataFromCookiesTree(
+    std::map<std::string, std::set<std::string>>* all_sites_map,
+    std::map<std::string, int>* origin_size_map,
+    const url::Origin& origin,
+    int64_t size) {
+  GURL origin_gurl = origin.GetURL();
+  UpdateDataForOrigin(origin_gurl, size, origin_size_map);
+  CreateOrAppendSiteGroupEntryForUrl(all_sites_map, origin_gurl);
+}
+
 }  // namespace
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
-    : profile_(profile),
-      observer_(this),
-      pref_change_registrar_(nullptr),
-      local_storage_helper_(nullptr) {}
+    : profile_(profile), observer_(this), pref_change_registrar_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
+  if (cookies_tree_model_)
+    cookies_tree_model_->RemoveCookiesTreeObserver(this);
 }
 
 void SiteSettingsHandler::RegisterMessages() {
+  EnsureCookiesTreeModelCreated();
+
   web_ui()->RegisterMessageCallback(
       "fetchUsageTotal",
       base::BindRepeating(&SiteSettingsHandler::HandleFetchUsageTotal,
@@ -645,6 +715,8 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   const base::ListValue* types;
   CHECK(args->GetList(1, &types));
 
+  all_sites_map_.clear();
+
   // Convert |types| to a list of ContentSettingsTypes.
   std::vector<ContentSettingsType> content_types;
   for (size_t i = 0; i < types->GetSize(); ++i) {
@@ -664,14 +736,6 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   DCHECK(profile);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  std::map<std::string, std::set<std::string>> all_sites_map;
-
-  // TODO(https://crbug.com/835712): Assess performance of this method for
-  // unusually large numbers of stored content settings.
-
-  // Add sites that are using any local storage to the list.
-  GetLocalStorageHelper()->StartFetching(base::BindRepeating(
-      &SiteSettingsHandler::OnLocalStorageFetched, base::Unretained(this)));
 
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
@@ -688,7 +752,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
             permission_manager->GetPermissionStatus(content_type, url, url);
         if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
             result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
-          CreateOrAppendSiteGroupEntry(&all_sites_map, url);
+          CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_, url);
           break;
         }
       }
@@ -701,43 +765,74 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
     map->GetSettingsForOneType(content_type, std::string(), &entries);
     for (const ContentSettingPatternSource& e : entries) {
       if (PatternAppliesToSingleOrigin(e))
-        CreateOrAppendSiteGroupEntry(&all_sites_map,
-                                     GURL(e.primary_pattern.ToString()));
+        CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_,
+                                           GURL(e.primary_pattern.ToString()));
     }
   }
 
+  // Recreate the cookies tree model to refresh the usage information.
+  // This happens in the background and will call TreeModelEndBatch() when
+  // finished. At that point we send usage data to the page.
+  if (cookies_tree_model_)
+    cookies_tree_model_->RemoveCookiesTreeObserver(this);
+  cookies_tree_model_.reset();
+  EnsureCookiesTreeModelCreated();
+
   base::Value result(base::Value::Type::LIST);
-  ConvertSiteGroupMapToListValue(all_sites_map, &result, profile);
+
+  // Respond with currently available data.
+  ConvertSiteGroupMapToListValue(all_sites_map_, &result, profile);
+  should_send_list_ = true;
+
   ResolveJavascriptCallback(*callback_id, result);
 }
 
-void SiteSettingsHandler::OnLocalStorageFetched(
-    const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
-        local_storage_info) {
+base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
   std::map<std::string, int> origin_size_map;
-  std::map<std::string, std::set<std::string>> all_sites_map;
-  for (const BrowsingDataLocalStorageHelper::LocalStorageInfo& info :
-       local_storage_info) {
-    origin_size_map.emplace(info.origin_url.spec(), info.size);
-    CreateOrAppendSiteGroupEntry(&all_sites_map, info.origin_url);
-  }
-  base::Value result(base::Value::Type::LIST);
-  ConvertSiteGroupMapToListValue(all_sites_map, &result, profile_);
+  std::map<std::string, int> origin_cookie_map;
+  base::Value list_value(base::Value::Type::LIST);
 
-  // Merge the origin usage number into |result|.
-  for (size_t i = 0; i < result.GetList().size(); ++i) {
-    base::Value* site_group = &result.GetList()[i];
-    base::Value* origin_list = site_group->FindKey(kOriginList);
+  GetOriginStorage(&all_sites_map_, &origin_size_map);
+  GetOriginCookies(&all_sites_map_, &origin_cookie_map);
+  ConvertSiteGroupMapToListValue(all_sites_map_, &list_value, profile);
 
-    for (size_t i = 0; i < origin_list->GetList().size(); ++i) {
-      base::Value* origin_info = &origin_list->GetList()[i];
-      const std::string& origin = origin_info->FindKey("origin")->GetString();
-      const auto& size_info = origin_size_map.find(origin);
-      if (size_info != origin_size_map.end())
-        origin_info->SetKey("usage", base::Value(size_info->second));
+  // Merge the origin usage and cookies number into |list_value|.
+  for (base::Value& site_group : list_value.GetList()) {
+    base::Value* origin_list = site_group.FindKey(kOriginList);
+    int cookie_num = 0;
+
+    const std::string& etld_plus1 =
+        site_group.FindKey(kEffectiveTopLevelDomainPlus1Name)->GetString();
+    const auto& etld_plus1_cookie_num_it = origin_cookie_map.find(etld_plus1);
+    // Add the number of eTLD+1 scoped cookies.
+    if (etld_plus1_cookie_num_it != origin_cookie_map.end())
+      cookie_num = etld_plus1_cookie_num_it->second;
+    // Iterate over the origins for the ETLD+1, and set their usage and cookie
+    // numbers.
+    for (base::Value& origin_info : origin_list->GetList()) {
+      const std::string& origin = origin_info.FindKey("origin")->GetString();
+      const auto& size_info_it = origin_size_map.find(origin);
+      if (size_info_it != origin_size_map.end())
+        origin_info.SetKey("usage", base::Value(size_info_it->second));
+      const auto& origin_cookie_num_it =
+          origin_cookie_map.find(GURL(origin).host());
+      // Add cookies numbers for origins that isn't an eTLD+1.
+      if (GURL(origin).host() != etld_plus1 &&
+          origin_cookie_num_it != origin_cookie_map.end()) {
+        origin_info.SetKey(kNumCookies,
+                           base::Value(origin_cookie_num_it->second));
+        cookie_num += origin_cookie_num_it->second;
+      }
     }
+    site_group.SetKey(kNumCookies, base::Value(cookie_num));
   }
-  FireWebUIListener("onLocalStorageListFetched", result);
+  return list_value;
+}
+
+void SiteSettingsHandler::OnStorageFetched() {
+  AllowJavascript();
+  FireWebUIListener("onStorageListFetched",
+                    PopulateCookiesAndUsageData(profile_));
 }
 
 void SiteSettingsHandler::HandleGetFormattedBytes(const base::ListValue* args) {
@@ -1286,10 +1381,70 @@ void SiteSettingsHandler::HandleSetBlockAutoplayEnabled(
   profile_->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, value);
 }
 
-void SiteSettingsHandler::SetBrowsingDataLocalStorageHelperForTesting(
-    scoped_refptr<BrowsingDataLocalStorageHelper> helper) {
-  DCHECK(!local_storage_helper_);
-  local_storage_helper_ = helper;
+void SiteSettingsHandler::EnsureCookiesTreeModelCreated() {
+  if (cookies_tree_model_.get())
+    return;
+  cookies_tree_model_ = CookiesTreeModel::CreateForProfile(profile_);
+  cookies_tree_model_->AddCookiesTreeObserver(this);
+}
+
+void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
+                                         ui::TreeModelNode* parent,
+                                         int start,
+                                         int count) {}
+
+void SiteSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
+                                           ui::TreeModelNode* parent,
+                                           int start,
+                                           int count) {}
+
+void SiteSettingsHandler::TreeNodeChanged(ui::TreeModel* model,
+                                          ui::TreeModelNode* node) {}
+
+void SiteSettingsHandler::TreeModelEndBatch(CookiesTreeModel* model) {
+  if (!should_send_list_)
+    return;
+  should_send_list_ = false;
+  // The WebUI may have shut down before we get the data.
+  if (IsJavascriptAllowed())
+    OnStorageFetched();
+}
+
+void SiteSettingsHandler::GetOriginStorage(
+    std::map<std::string, std::set<std::string>>* all_sites_map,
+    std::map<std::string, int>* origin_size_map) {
+  CHECK(cookies_tree_model_.get());
+
+  // RetrieveSize runs its callback synchronously so binding pointers to members
+  // is safe.
+  cookies_tree_model_->GetRoot()->RetrieveSize(base::BindRepeating(
+      &UpdateDataFromCookiesTree, all_sites_map, origin_size_map));
+}
+
+void SiteSettingsHandler::GetOriginCookies(
+    std::map<std::string, std::set<std::string>>* all_sites_map,
+    std::map<std::string, int>* origin_cookie_map) {
+  CHECK(cookies_tree_model_.get());
+  // Get sites that don't have data but have cookies.
+  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  for (int i = 0; i < root->child_count(); ++i) {
+    const CookieTreeNode* site = root->GetChild(i);
+    std::string title = base::UTF16ToUTF8(site->GetTitle());
+    for (int j = 0; j < site->child_count(); ++j) {
+      const CookieTreeNode* category = site->GetChild(j);
+      if (category->GetDetailedInfo().node_type !=
+          CookieTreeNode::DetailedInfo::TYPE_COOKIES)
+        continue;
+      for (int k = 0; k < category->child_count(); ++k) {
+        const CookieTreeNode::DetailedInfo& detailedInfo =
+            category->GetChild(k)->GetDetailedInfo();
+        if (detailedInfo.node_type != CookieTreeNode::DetailedInfo::TYPE_COOKIE)
+          continue;
+        (*origin_cookie_map)[title] += 1;
+        CreateOrAppendSiteGroupEntryForCookieHost(title, all_sites_map);
+      }
+    }
+  }
 }
 
 BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
@@ -1297,5 +1452,4 @@ BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
     local_storage_helper_ = new BrowsingDataLocalStorageHelper(profile_);
   return local_storage_helper_.get();
 }
-
 }  // namespace settings

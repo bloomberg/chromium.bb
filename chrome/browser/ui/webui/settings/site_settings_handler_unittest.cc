@@ -616,60 +616,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   run_loop.RunUntilIdle();
 }
 
-TEST_F(SiteSettingsHandlerTest, GetAllSitesLocalStorage) {
-  scoped_refptr<MockBrowsingDataLocalStorageHelper>
-      mock_browsing_data_local_storage_helper =
-          new MockBrowsingDataLocalStorageHelper(profile());
-  handler()->SetBrowsingDataLocalStorageHelperForTesting(
-      mock_browsing_data_local_storage_helper);
-
-  // Add local storage for |origin|.
-  const GURL origin("https://example.com:12378");
-  mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(origin, 1);
-
-  // Check these sites are included in the callback.
-  base::ListValue get_all_sites_args;
-  get_all_sites_args.AppendString(kCallbackId);
-  base::Value category_list(base::Value::Type::LIST);
-  get_all_sites_args.GetList().push_back(std::move(category_list));
-
-  // Wait for the fetch handler to finish, then check it includes |origin| in
-  // its result.
-  handler()->HandleGetAllSites(&get_all_sites_args);
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-  mock_browsing_data_local_storage_helper->Notify();
-  EXPECT_EQ(2U, web_ui()->call_data().size());
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-
-  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
-
-  std::string callback_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-  EXPECT_EQ("onLocalStorageListFetched", callback_id);
-
-  const base::ListValue* local_storage_list;
-  ASSERT_TRUE(data.arg2()->GetAsList(&local_storage_list));
-  EXPECT_EQ(1U, local_storage_list->GetSize());
-
-  const base::DictionaryValue* site_group;
-  ASSERT_TRUE(local_storage_list->GetDictionary(0, &site_group));
-
-  std::string etld_plus1_string;
-  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
-  ASSERT_EQ("example.com", etld_plus1_string);
-
-  const base::ListValue* origin_list;
-  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
-  EXPECT_EQ(1U, origin_list->GetSize());
-
-  const base::DictionaryValue* origin_info;
-  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
-  EXPECT_EQ(origin.spec(), origin_info->FindKey("origin")->GetString());
-  EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
-  EXPECT_EQ(1, origin_info->FindKey("usage")->GetDouble());
-}
+// TODO(https://crbug.com/835712): Cookie Tree Model Data fetching calculation.
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
   const std::string google("https://www.google.com:443");

@@ -105,7 +105,7 @@ Polymer({
   /** @override */
   ready: function() {
     this.addWebUIListener(
-        'onLocalStorageListFetched', this.onLocalStorageListFetched.bind(this));
+        'onStorageListFetched', this.onStorageListFetched.bind(this));
     this.addWebUIListener(
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
@@ -158,11 +158,11 @@ Polymer({
   },
 
   /**
-   * Integrate sites using local storage into the existing sites map, as there
+   * Integrate sites using storage into the existing sites map, as there
    * may be overlap between the existing sites.
-   * @param {!Array<!SiteGroup>} list The list of sites using local storage.
+   * @param {!Array<!SiteGroup>} list The list of sites using storage.
    */
-  onLocalStorageListFetched: function(list) {
+  onStorageListFetched: function(list) {
     // Create a new map to make an observable change.
     const newMap = /** @type {!Map<string, !SiteGroup>} */
                     (new Map(this.siteGroupMap));
@@ -170,6 +170,8 @@ Polymer({
       if (newMap.has(storageSiteGroup.etldPlus1)) {
         const siteGroup = newMap.get(storageSiteGroup.etldPlus1);
         const storageOriginInfoMap = new Map();
+
+        siteGroup.numCookies = storageSiteGroup.numCookies;
         storageSiteGroup.origins.forEach(
             originInfo =>
                 storageOriginInfoMap.set(originInfo.origin, originInfo));
@@ -177,11 +179,11 @@ Polymer({
         // If there is an overlapping origin, update the original
         // |originInfo|.
         siteGroup.origins.forEach(originInfo => {
-          if (!storageOriginInfoMap.has(originInfo.origin)) {
-            return;
+          if (storageOriginInfoMap.has(originInfo.origin)) {
+            Object.assign(
+                originInfo, storageOriginInfoMap.get(originInfo.origin));
+            storageOriginInfoMap.delete(originInfo.origin);
           }
-          Object.apply(originInfo, storageOriginInfoMap.get(originInfo.origin));
-          storageOriginInfoMap.delete(originInfo.origin);
         });
         // Otherwise, add it to the list.
         storageOriginInfoMap.forEach(
@@ -226,29 +228,7 @@ Polymer({
     if (sortMethod == this.sortMethods_.mostVisited) {
       siteGroupList.sort(this.mostVisitedComparator_);
     } else if (sortMethod == this.sortMethods_.storage) {
-      // Storage is loaded asynchronously, so make sure it's updated for every
-      // item in the list to ensure the sorting is correct.
-      const etldPlus1List = siteGroupList.reduce((list, siteGroup) => {
-        if (siteGroup.origins.length > 1 && siteGroup.etldPlus1.length > 0) {
-          list.push(siteGroup.etldPlus1);
-        }
-        return list;
-      }, []);
-
-      this.localDataBrowserProxy_.getNumCookiesList(etldPlus1List)
-          .then(numCookiesList => {
-            assert(etldPlus1List.length == numCookiesList.length);
-            numCookiesList.forEach(cookiesPerEtldPlus1 => {
-              this.siteGroupMap.get(cookiesPerEtldPlus1.etldPlus1).numCookies =
-                  cookiesPerEtldPlus1.numCookies;
-            });
-
-            // |siteGroupList| by this point should have already been provided
-            // to the iron list, so just sort in-place here and make sure to
-            // re-render the item order.
-            siteGroupList.sort(this.storageComparator_);
-            this.$.allSitesList.fire('iron-resize');
-          });
+      siteGroupList.sort(this.storageComparator_);
     } else if (sortMethod == this.sortMethods_.name) {
       siteGroupList.sort(this.nameComparator_);
     }

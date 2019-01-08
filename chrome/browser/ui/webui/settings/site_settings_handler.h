@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -35,13 +35,15 @@ namespace settings {
 // Chrome "ContentSettings" settings page UI handler.
 class SiteSettingsHandler : public SettingsPageUIHandler,
                             public content_settings::Observer,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public CookiesTreeModel::Observer {
  public:
   explicit SiteSettingsHandler(Profile* profile);
   ~SiteSettingsHandler() override;
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
+
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
@@ -50,6 +52,20 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void OnStorageCleared(base::OnceClosure callback,
                         blink::mojom::QuotaStatusCode code);
   void OnUsageCleared();
+
+  // CookiesTreeModel::Observer:
+  // TODO(https://crbug.com/835712): Listen for backend data changes and notify
+  // WebUI
+  void TreeNodesAdded(ui::TreeModel* model,
+                      ui::TreeModelNode* parent,
+                      int start,
+                      int count) override;
+  void TreeNodesRemoved(ui::TreeModel* model,
+                        ui::TreeModelNode* parent,
+                        int start,
+                        int count) override;
+  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override;
+  void TreeModelEndBatch(CookiesTreeModel* model) override;
 
 #if defined(OS_CHROMEOS)
   // Alert the Javascript that the |kEnableDRM| pref has changed.
@@ -102,6 +118,21 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, SessionOnlyException);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
 
+  // Creates the CookiesTreeModel if necessary.
+  void EnsureCookiesTreeModelCreated();
+
+  // Calculates the data storage that has been used for each origin, and
+  // stores the information in the |all_sites_map| and |origin_size_map|.
+  void GetOriginStorage(
+      std::map<std::string, std::set<std::string>>* all_sites_map,
+      std::map<std::string, int>* origin_size_map);
+
+  // Calculates the number of cookies for each etld+1 and each origin, and
+  // stores the information in the |all_sites_map| and |origin_cookie_map|.
+  void GetOriginCookies(
+      std::map<std::string, std::set<std::string>>* all_sites_map,
+      std::map<std::string, int>* origin_cookie_map);
+
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
   void HandleFetchUsageTotal(const base::ListValue* args);
@@ -119,15 +150,19 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void HandleSetDefaultValueForContentType(const base::ListValue* args);
   void HandleGetDefaultValueForContentType(const base::ListValue* args);
 
-  // Returns a list of sites, grouped by their effective top level domain plus
-  // 1, affected by any of the content settings specified in |args|.
+  // Returns a list of sites with permissions settings, grouped by their
+  // eTLD+1. Recreates the cookies tree model to fetch the cookie and usage
+  // data, which will send the list of sites with cookies or usage data to
+  // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
 
-  // Called when the list of origins using local storage has been fetched, and
-  // sends this list back to the front end.
-  void OnLocalStorageFetched(
-      const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
-          local_storage_info);
+  // Called when the list of origins using storage has been fetched, and sends
+  // this list back to the front end.
+  void OnStorageFetched();
+
+  // Returns a list of sites, grouped by their effective top level domain plus
+  // 1, with their cookies number and data usage information.
+  base::Value PopulateCookiesAndUsageData(Profile* profile);
 
   // Converts a given number of bytes into a human-readable format, with data
   // units.
@@ -186,9 +221,6 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Updates the block autoplay enabled pref when the UI is toggled.
   void HandleSetBlockAutoplayEnabled(const base::ListValue* args);
 
-  void SetBrowsingDataLocalStorageHelperForTesting(
-      scoped_refptr<BrowsingDataLocalStorageHelper> helper);
-
   BrowsingDataLocalStorageHelper* GetLocalStorageHelper();
 
   Profile* profile_;
@@ -212,6 +244,14 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
+
+  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
+
+  // Whether to send all sites list on cookie tree model update.
+  bool should_send_list_ = false;
+
+  // Populated every time the user reloads the All Sites page.
+  std::map<std::string, std::set<std::string>> all_sites_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };

@@ -196,21 +196,21 @@ suite('SiteEntry', function() {
         assertFalse(testElement.$.collapseChild.opened);
       });
 
-  test('cookies only show when non-zero for grouped entries', function() {
+  test('cookies show correctly for grouped entries', function() {
     localDataBrowserProxy.setCookieDetails(TEST_COOKIE_LIST);
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
     const cookiesLabel = testElement.$.cookies;
     assertTrue(cookiesLabel.hidden);
-
     // When the number of cookies is more than zero, the label appears.
-    testElement.onSiteGroupChanged_(TEST_MULTIPLE_SITE_GROUP);
-    return localDataBrowserProxy.whenCalled('getNumCookiesList')
-        .then((args) => {
-          assertEquals(1, args.length);
-          assertEquals('example.com', args[0]);
-          return localDataBrowserProxy.whenCalled('getNumCookiesString');
-        })
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const numCookies = 3;
+    testSiteGroup.numCookies = numCookies;
+
+    testElement.siteGroup = testSiteGroup;
+
+    Polymer.dom.flush();
+    return localDataBrowserProxy.whenCalled('getNumCookiesString')
         .then((args) => {
           assertEquals(3, args);
           assertFalse(cookiesLabel.hidden);
@@ -218,19 +218,30 @@ suite('SiteEntry', function() {
         });
   });
 
-  test('cookies do not show for ungrouped entries', function() {
+  test('cookies show for ungrouped entries', function() {
     testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
     Polymer.dom.flush();
     const cookiesLabel = testElement.$.cookies;
     assertTrue(cookiesLabel.hidden);
 
-    testElement.onSiteGroupChanged_(TEST_SINGLE_SITE_GROUP);
-    // Make sure there was never any call to the back end to retrieve cookies.
-    assertEquals(0, localDataBrowserProxy.getCallCount('getNumCookiesList'));
-    assertTrue(cookiesLabel.hidden);
+
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
+    const numCookies = 3;
+
+    testSiteGroup.numCookies = numCookies;
+
+    testElement.siteGroup = testSiteGroup;
+
+    Polymer.dom.flush();
+    return localDataBrowserProxy.whenCalled('getNumCookiesString')
+        .then((args) => {
+          assertEquals(3, args);
+          assertFalse(cookiesLabel.hidden);
+          assertEquals('· 3 cookies', cookiesLabel.textContent.trim());
+        });
   });
 
-  test.only('data usage shown correctly for grouped entries', function() {
+  test('data usage shown correctly for grouped entries', function() {
     // Clone this object to avoid propogating changes made in this test.
     const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     const numBytes1 = 74622;

@@ -214,7 +214,7 @@ suite('AllSites', function() {
               testElement.$.listContainer.querySelectorAll('site-entry');
           // Add additional origins to SiteGroups with cookies to simulate their
           // being grouped entries, plus add local storage.
-          siteEntries[0].siteGroup.origins[0].usage = 1000;
+          siteEntries[0].siteGroup.origins[0].usage = 900;
           siteEntries[1].siteGroup.origins.push(
               test_util.createOriginInfo('http://bar.com'));
           siteEntries[1].siteGroup.origins[0].usage = 500;
@@ -238,11 +238,10 @@ suite('AllSites', function() {
           // name.
           testElement.root.querySelector('select').value = 'data-stored';
           testElement.onSortMethodChanged_();
-          return localDataBrowserProxy.whenCalled('getNumCookiesList');
-        })
-        .then(() => {
+
+
           Polymer.dom.flush();
-          let siteEntries =
+          siteEntries =
               testElement.$.listContainer.querySelectorAll('site-entry');
           assertEquals(
               'bar.com',
@@ -301,7 +300,7 @@ suite('AllSites', function() {
       const addEtldPlus1 = 'additional-site.net';
       const fooOrigin = 'https://login.foo.com';
       const addOrigin = 'http://www.additional-site.net';
-      const LOCAL_STORAGE_SITE_GROUP_LIST = /** @type {!Array{!SiteGroup}} */ ([
+      const STORAGE_SITE_GROUP_LIST = /** @type {!Array{!SiteGroup}}*/ ([
         {
           // Test merging an existing site works, with overlapping origin lists.
           'etldPlus1': fooEtldPlus1,
@@ -316,7 +315,7 @@ suite('AllSites', function() {
           'origins': [test_util.createOriginInfo(addOrigin)],
         }
       ]);
-      testElement.onLocalStorageListFetched(LOCAL_STORAGE_SITE_GROUP_LIST);
+      testElement.onStorageListFetched(STORAGE_SITE_GROUP_LIST);
 
       Polymer.dom.flush();
       siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
