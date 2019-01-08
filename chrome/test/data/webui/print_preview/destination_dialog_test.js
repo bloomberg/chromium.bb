@@ -18,9 +18,6 @@ cr.define('destination_dialog_test', function() {
     /** @type {?print_preview.DestinationStore} */
     let destinationStore = null;
 
-    /** @type {?print_preview.UserInfo} */
-    let userInfo = null;
-
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
 
@@ -43,9 +40,7 @@ cr.define('destination_dialog_test', function() {
       // Create data classes
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      userInfo = new print_preview.UserInfo();
-      destinationStore =
-          print_preview_test_utils.createDestinationStore(userInfo);
+      destinationStore = print_preview_test_utils.createDestinationStore();
       destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);
       recentDestinations =
@@ -58,9 +53,10 @@ cr.define('destination_dialog_test', function() {
 
       // Set up dialog
       dialog = document.createElement('print-preview-destination-dialog');
-      dialog.userInfo = userInfo;
+      dialog.activeUser = '';
+      dialog.users = [];
       dialog.destinationStore = destinationStore;
-      dialog.invitationStore = new print_preview.InvitationStore(userInfo);
+      dialog.invitationStore = new print_preview.InvitationStore();
       dialog.recentDestinations = recentDestinations;
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities')

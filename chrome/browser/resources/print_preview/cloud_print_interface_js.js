@@ -16,11 +16,10 @@ cr.define('cloudprint', function() {
      *     'https://www.google.com/cloudprint'.
      * @param {!print_preview.NativeLayer} nativeLayer Native layer used to get
      *     Auth2 tokens.
-     * @param {!print_preview.UserInfo} userInfo User information repository.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
      */
-    constructor(baseUrl, nativeLayer, userInfo, isInAppKioskMode) {
+    constructor(baseUrl, nativeLayer, isInAppKioskMode) {
       /**
        * The base URL of the Google Cloud Print API.
        * @private {string}
@@ -32,12 +31,6 @@ cr.define('cloudprint', function() {
        * @private {!print_preview.NativeLayer}
        */
       this.nativeLayer_ = nativeLayer;
-
-      /**
-       * User information repository.
-       * @private {!print_preview.UserInfo}
-       */
-      this.userInfo_ = userInfo;
 
       /**
        * Whether Print Preview is in App Kiosk mode, basically, use only
@@ -309,6 +302,20 @@ cr.define('cloudprint', function() {
     }
 
     /**
+     * Fires an event with information about the new active user and logged in
+     * users.
+     * @param {string} activeUser The active user account.
+     * @param {Array<string>=} users The currently logged in users. Omitted
+     *     if the list of users has not changed.
+     * @private
+     */
+    dispatchUserUpdateEvent_(activeUser, users) {
+      this.eventTarget_.dispatchEvent(new CustomEvent(
+          CloudPrintInterfaceEventType.UPDATE_USERS,
+          {detail: {activeUser: activeUser, users: users}}));
+    }
+
+    /**
      * Updates user info and session index from the {@code request} response.
      * @param {!cloudprint.CloudPrintRequest} request Request to extract user
      *     info from.
@@ -321,7 +328,7 @@ cr.define('cloudprint', function() {
         for (let i = 0; i < users.length; i++) {
           this.userSessionIndex_[users[i]] = i;
         }
-        this.userInfo_.setUsers(request.result['request']['user'], users);
+        this.dispatchUserUpdateEvent_(request.result['request']['user'], users);
       }
     }
 
@@ -547,7 +554,7 @@ cr.define('cloudprint', function() {
         // In case the user account is known, but not the primary one,
         // activate it.
         if (this.userSessionIndex_[request.account] > 0) {
-          this.userInfo_.activeUser = request.account;
+          this.dispatchUserUpdateEvent_(request.result['request']['user']);
           // Repeat the request for the newly activated account.
           this.printer(
               request.result['request']['params']['printerid'], request.origin,

@@ -13,19 +13,17 @@ cr.define('cloudprint', function() {
    *     with no trailing slash. For example,
    *     'https://www.google.com/cloudprint'.
    * @param {!print_preview.NativeLayer} nativeLayer Native layer instance.
-   * @param {!print_preview.UserInfo} userInfo User information repository.
    * @param {boolean} isInAppKioskMode Whether the print preview is in App
    *     Kiosk mode.
    * @return {!cloudprint.CloudPrintInterface}
    */
-  function getCloudPrintInterface(
-      baseUrl, nativeLayer, userInfo, isInAppKioskMode) {
+  function getCloudPrintInterface(baseUrl, nativeLayer, isInAppKioskMode) {
     if (instance === null) {
       if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
         instance = new cloudprint.CloudPrintInterfaceNative();
       } else {
         instance = new cloudprint.CloudPrintInterfaceJS(
-            baseUrl, nativeLayer, userInfo, isInAppKioskMode);
+            baseUrl, nativeLayer, isInAppKioskMode);
       }
     }
     return instance;

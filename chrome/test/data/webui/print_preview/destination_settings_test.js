@@ -41,9 +41,8 @@ cr.define('destination_settings_test', function() {
 
       // Set up the destination store, but no destination yet. Button is
       // disabled.
-      const userInfo = new print_preview.UserInfo();
       const destinationStore =
-          print_preview_test_utils.createDestinationStore(userInfo);
+          print_preview_test_utils.createDestinationStore();
       destinationStore.init(
           false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
