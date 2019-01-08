@@ -53,6 +53,12 @@ void DtlsTransportProxy::StartOnHostThread() {
 
 void DtlsTransportProxy::OnStateChange(webrtc::DtlsTransportInformation info) {
   DCHECK(host_thread_->BelongsToCurrentThread());
+  // Closed is the last state that can happen, so unregister when we see this.
+  // Unregistering allows us to safely delete the proxy independent of the
+  // state of the webrtc::DtlsTransport.
+  if (info.state() == webrtc::DtlsTransportState::kClosed) {
+    dtls_transport_->UnregisterObserver();
+  }
   PostCrossThreadTask(*proxy_thread_, FROM_HERE,
                       CrossThreadBind(&Delegate::OnStateChange,
                                       CrossThreadUnretained(delegate_), info));
