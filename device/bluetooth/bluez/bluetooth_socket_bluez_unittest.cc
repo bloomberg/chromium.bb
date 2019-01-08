@@ -76,9 +76,9 @@ class BluetoothSocketBlueZTest : public testing::Test {
     // Grab a pointer to the adapter.
     {
       base::RunLoop run_loop;
-      device::BluetoothAdapterFactory::GetAdapter(
-          base::Bind(&BluetoothSocketBlueZTest::AdapterCallback,
-                     base::Unretained(this), run_loop.QuitWhenIdleClosure()));
+      device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+          &BluetoothSocketBlueZTest::AdapterCallback, base::Unretained(this),
+          run_loop.QuitWhenIdleClosure()));
       run_loop.Run();
     }
 

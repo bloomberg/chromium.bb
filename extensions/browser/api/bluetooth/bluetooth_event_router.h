@@ -48,8 +48,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   // adapter is available for the current platform.
   bool IsBluetoothSupported() const;
 
-  void GetAdapter(
-      const device::BluetoothAdapterFactory::AdapterCallback& callback);
+  void GetAdapter(device::BluetoothAdapterFactory::AdapterCallback callback);
 
   // Requests that a new device discovery session be initiated for extension
   // with id |extension_id|. |callback| is called, if a session has been
@@ -140,7 +139,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   void AddPairingDelegateImpl(const std::string& extension_id);
 
   void OnAdapterInitialized(
-      const device::BluetoothAdapterFactory::AdapterCallback& callback,
+      device::BluetoothAdapterFactory::AdapterCallback callback,
       scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();

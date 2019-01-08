@@ -24,8 +24,8 @@ const int kBluetoothInitializationDelay = 1000;
 
 BluetoothPowerController::BluetoothPowerController() : weak_ptr_factory_(this) {
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothPowerController::InitializeOnAdapterReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothPowerController::InitializeOnAdapterReady,
+                     weak_ptr_factory_.GetWeakPtr()));
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 }

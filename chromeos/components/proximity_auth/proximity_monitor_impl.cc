@@ -42,8 +42,8 @@ ProximityMonitorImpl::ProximityMonitorImpl(
       weak_ptr_factory_(this) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&ProximityMonitorImpl::OnAdapterInitialized,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ProximityMonitorImpl::OnAdapterInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     PA_LOG(ERROR) << "[Proximity] Proximity monitoring unavailable: "
                   << "Bluetooth is unsupported on this platform.";

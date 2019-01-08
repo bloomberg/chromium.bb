@@ -282,18 +282,18 @@ bool BluetoothLowEnergyEventRouter::IsBluetoothSupported() const {
 }
 
 bool BluetoothLowEnergyEventRouter::InitializeAdapterAndInvokeCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   if (!IsBluetoothSupported())
     return false;
 
   if (adapter_.get()) {
-    callback.Run();
+    std::move(callback).Run();
     return true;
   }
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnGetAdapter,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnGetAdapter,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return true;
 }
 
@@ -1392,7 +1392,7 @@ void BluetoothLowEnergyEventRouter::HandleRequestResponse(
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
 
@@ -1401,7 +1401,7 @@ void BluetoothLowEnergyEventRouter::OnGetAdapter(
   InitializeIdentifierMappings();
   adapter_->AddObserver(this);
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void BluetoothLowEnergyEventRouter::InitializeIdentifierMappings() {

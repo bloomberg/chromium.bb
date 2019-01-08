@@ -23,7 +23,7 @@ namespace device {
 // http://crbug.com/603291
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
  public:
-  typedef base::Callback<void(BluetoothAdapter*)> AcquireAdapterCallback;
+  using AcquireAdapterCallback = base::OnceCallback<void(BluetoothAdapter*)>;
 
   ~BluetoothAdapterFactoryWrapper();
 
@@ -38,7 +38,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
   // adapter, otherwise it gets a new adapter and adds |observer| to it. Runs
   // |callback| with the adapter |observer| has been added to.
   void AcquireAdapter(BluetoothAdapter::Observer* observer,
-                      const AcquireAdapterCallback& callback);
+                      AcquireAdapterCallback callback);
   // Removes |observer| from the list of adapter observers if |observer|
   // has acquired the adapter in the past. If there are no more observers
   // it deletes the reference to the adapter.
@@ -60,7 +60,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
 
   BluetoothAdapterFactoryWrapper();
 
-  void OnGetAdapter(const AcquireAdapterCallback& continuation,
+  void OnGetAdapter(AcquireAdapterCallback continuation,
                     scoped_refptr<BluetoothAdapter> adapter);
 
   bool HasAdapter(BluetoothAdapter::Observer* observer);

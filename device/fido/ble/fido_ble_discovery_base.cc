@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -83,9 +82,8 @@ void FidoBleDiscoveryBase::OnGetAdapter(
 }
 
 void FidoBleDiscoveryBase::StartInternal() {
-  BluetoothAdapterFactory::Get().GetAdapter(
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &FidoBleDiscoveryBase::OnGetAdapter, weak_factory_.GetWeakPtr())));
+  BluetoothAdapterFactory::Get().GetAdapter(base::BindOnce(
+      &FidoBleDiscoveryBase::OnGetAdapter, weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace device

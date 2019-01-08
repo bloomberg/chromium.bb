@@ -101,8 +101,8 @@ class EasyUnlockService::BluetoothDetector
       return;
 
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothDetector::OnAdapterInitialized,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothDetector::OnAdapterInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool IsPresent() const { return adapter_.get() && adapter_->IsPresent(); }

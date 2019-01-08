@@ -79,7 +79,7 @@ HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
   if (view_)
     view_->Bind(this);
 
-  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &HIDDetectionScreen::InitializeAdapter, weak_ptr_factory_.GetWeakPtr()));
   ConnectToInputDeviceManager();
 }

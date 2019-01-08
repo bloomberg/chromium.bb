@@ -167,8 +167,8 @@ PeripheralBatteryNotifier::PeripheralBatteryNotifier()
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
-                 weakptr_factory_->GetWeakPtr()));
+      base::BindOnce(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
+                     weakptr_factory_->GetWeakPtr()));
 }
 
 PeripheralBatteryNotifier::~PeripheralBatteryNotifier() {
