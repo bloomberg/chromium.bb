@@ -775,6 +775,22 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
 }
 
 // static
+std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
+                                                const gfx::Size& coded_size) {
+  std::vector<int32_t> strides;
+  const size_t num_planes = NumPlanes(format);
+  if (num_planes == 1) {
+    strides.push_back(RowBytes(0, format, coded_size.width()));
+  } else {
+    for (size_t plane = 0; plane < num_planes; ++plane) {
+      strides.push_back(base::bits::Align(
+          RowBytes(plane, format, coded_size.width()), kFrameAddressAlignment));
+    }
+  }
+  return strides;
+}
+
+// static
 size_t VideoFrame::Rows(size_t plane, VideoPixelFormat format, int height) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_height = SampleSize(format, plane).height();
@@ -1243,22 +1259,6 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
     data_[plane] = data + offset;
     offset += plane_size[plane];
   }
-}
-
-// static
-std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
-                                                const gfx::Size& coded_size) {
-  std::vector<int32_t> strides;
-  const size_t num_planes = NumPlanes(format);
-  if (num_planes == 1) {
-    strides.push_back(RowBytes(0, format, coded_size.width()));
-  } else {
-    for (size_t plane = 0; plane < num_planes; ++plane) {
-      strides.push_back(base::bits::Align(
-          RowBytes(plane, format, coded_size.width()), kFrameAddressAlignment));
-    }
-  }
-  return strides;
 }
 
 std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
