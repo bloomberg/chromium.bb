@@ -20,6 +20,7 @@
 #include "ash/system/power/power_event_observer.h"
 #include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -37,8 +38,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
-#include "ui/wm/core/focus_controller.h"
-#include "ui/wm/core/focus_rules.h"
 
 using session_manager::SessionState;
 
@@ -737,19 +736,13 @@ void SessionController::MaybeNotifyOnActiveUserPrefServiceChanged() {
 }
 
 void SessionController::EnsureActiveWindowAfterUnblockingUserSession() {
+  // This happens only in tests (See SessionControllerTest).
   if (!Shell::HasInstance())
     return;
 
-  ::wm::FocusController* focus_controller = Shell::Get()->focus_controller();
-  if (focus_controller->GetActiveWindow() ||
-      !Shell::GetRootWindowForNewWindows()) {
-    return;
-  }
-  aura::Window* to_activate =
-      Shell::Get()->focus_rules()->GetNextActivatableWindow(
-          Shell::GetRootWindowForNewWindows());
-  if (to_activate)
-    focus_controller->ActivateWindow(to_activate);
+  auto mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  if (!mru_list.empty())
+    mru_list.front()->Focus();
 }
 
 }  // namespace ash
