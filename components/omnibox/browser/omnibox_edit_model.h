@@ -68,6 +68,8 @@ class OmniboxEditModel {
     OmniboxFocusState focus_state;
     FocusSource focus_source;
     const AutocompleteInput autocomplete_input;
+   private:
+    DISALLOW_ASSIGN(State);
   };
 
   // This is a mirror of content::kMaxURLDisplayChars because ios cannot depend
