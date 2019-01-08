@@ -56,19 +56,17 @@ TEST(RelocElfTest, ReadWrite32) {
   // r_type = 0x08 = R_386_RELATIVE, and under this r_offset is an RVA
   // 0x000410C0. Zucchini does not care about r_sym.
   std::vector<uint8_t> reloc_data1 = ParseHexString(
-      "C0 10 04 00 08 00 00 00 "  // R_386_RELATIVE.
-      "F8 10 04 00 08 AB CD EF "  // R_386_RELATIVE.
-      "00 10 04 00 00 AB CD EF "  // R_386_NONE.
-      "00 10 04 00 07 AB CD EF"   // R_386_JMP_SLOT.
-      );
+      "C0 10 04 00 08 00 00 00 "   // R_386_RELATIVE.
+      "F8 10 04 00 08 AB CD EF "   // R_386_RELATIVE.
+      "00 10 04 00 00 AB CD EF "   // R_386_NONE.
+      "00 10 04 00 07 AB CD EF");  // R_386_JMP_SLOT.
   BufferRegion reloc_region1 = {0x600, reloc_data1.size()};
   std::copy(reloc_data1.begin(), reloc_data1.end(),
             image_data.begin() + reloc_region1.lo());
 
   std::vector<uint8_t> reloc_data2 = ParseHexString(
-      "BC 20 04 00 08 00 00 00 "  // R_386_RELATIVE.
-      "A0 20 04 00 08 AB CD EF"   // R_386_RELATIVE.
-      );
+      "BC 20 04 00 08 00 00 00 "   // R_386_RELATIVE.
+      "A0 20 04 00 08 AB CD EF");  // R_386_RELATIVE.
   BufferRegion reloc_region2 = {0x620, reloc_data2.size()};
   std::copy(reloc_data2.begin(), reloc_data2.end(),
             image_data.begin() + reloc_region2.lo());
@@ -107,19 +105,17 @@ TEST(RelocElfTest, ReadWrite32) {
 
   writer->PutNext({0x608, 0x1F83});
   std::vector<uint8_t> exp_reloc_data1 = ParseHexString(
-      "C0 10 04 00 08 00 00 00 "  // R_386_RELATIVE.
-      "83 1F 04 00 08 AB CD EF "  // R_386_RELATIVE (address modified).
-      "00 10 04 00 00 AB CD EF "  // R_386_NONE.
-      "00 10 04 00 07 AB CD EF "  // R_386_JMP_SLOT.
-      );
+      "C0 10 04 00 08 00 00 00 "   // R_386_RELATIVE.
+      "83 1F 04 00 08 AB CD EF "   // R_386_RELATIVE (address modified).
+      "00 10 04 00 00 AB CD EF "   // R_386_NONE.
+      "00 10 04 00 07 AB CD EF");  // R_386_JMP_SLOT.
   EXPECT_EQ(exp_reloc_data1,
             Sub(image_data, reloc_region1.lo(), reloc_region1.hi()));
 
   writer->PutNext({0x628, 0x2950});
   std::vector<uint8_t> exp_reloc_data2 = ParseHexString(
-      "BC 20 04 00 08 00 00 00 "  // R_386_RELATIVE.
-      "50 29 04 00 08 AB CD EF"   // R_386_RELATIVE (address modified).
-      );
+      "BC 20 04 00 08 00 00 00 "   // R_386_RELATIVE.
+      "50 29 04 00 08 AB CD EF");  // R_386_RELATIVE (address modified).
   EXPECT_EQ(exp_reloc_data2,
             Sub(image_data, reloc_region2.lo(), reloc_region2.hi()));
 }
