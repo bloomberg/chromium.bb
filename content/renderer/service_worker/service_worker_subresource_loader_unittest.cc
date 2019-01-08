@@ -1341,6 +1341,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponse) {
        url::Origin::Create(GURL("https://other.example.com/")), false}};
 
   for (const auto& test : kTests) {
+    base::HistogramTester histogram_tester;
+
     SCOPED_TRACE(
         ::testing::Message()
         << "fetch_request_mode: " << static_cast<int>(test.fetch_request_mode)
@@ -1355,7 +1357,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponse) {
     network::mojom::URLLoaderPtr loader;
     std::unique_ptr<network::TestURLLoaderClient> client;
     StartRequest(factory, request, &loader, &client);
-    client->RunUntilResponseReceived();
+    client->RunUntilComplete();
 
     const network::ResourceResponseHead& info = client->response_head();
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
@@ -1366,6 +1368,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponse) {
       EXPECT_EQ("HTTP/1.1 400 Service Worker Fallback Required",
                 info.headers->GetStatusLine());
     }
+    histogram_tester.ExpectTotalCount(
+        "ServiceWorker.LoadTiming.Subresource."
+        "FetchHandlerEndToFallbackNetwork",
+        1);
   }
 }
 
