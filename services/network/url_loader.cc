@@ -401,11 +401,9 @@ URLLoader::URLLoader(
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
-  initiator_lock_compatibility_ =
-      VerifyRequestInitiatorLock(*factory_params_, request);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-      initiator_lock_compatibility_);
+      VerifyRequestInitiatorLock(*factory_params_, request));
   // TODO(lukasza): Enforce the origin lock.
   // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
   //   a renderer kill, but this can't be done until HTML Imports are gone.
@@ -799,7 +797,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
-            *url_request_, *response_, initiator_lock_compatibility_);
+            *url_request_, *response_,
+            factory_params_->request_initiator_site_lock);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);

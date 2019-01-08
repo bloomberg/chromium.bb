@@ -6,6 +6,8 @@
 #define SERVICES_NETWORK_INITIATOR_LOCK_COMPATIBILITY_H_
 
 #include "base/component_export.h"
+#include "base/optional.h"
+#include "url/origin.h"
 
 namespace network {
 
@@ -52,6 +54,10 @@ COMPONENT_EXPORT(NETWORK_SERVICE)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const mojom::URLLoaderFactoryParams& factory_params,
     const ResourceRequest& request);
+COMPONENT_EXPORT(NETWORK_SERVICE)
+InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator);
 
 }  // namespace network
 

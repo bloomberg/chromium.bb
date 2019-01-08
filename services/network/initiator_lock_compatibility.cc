@@ -4,8 +4,10 @@
 
 #include "services/network/initiator_lock_compatibility.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -15,20 +17,19 @@
 namespace network {
 
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request) {
-  if (factory_params.process_id == mojom::kBrowserProcessId)
-    return InitiatorLockCompatibility::kBrowserProcess;
-
-  if (!factory_params.request_initiator_site_lock.has_value())
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator) {
+  if (!request_initiator_site_lock.has_value())
     return InitiatorLockCompatibility::kNoLock;
-  const url::Origin& lock = factory_params.request_initiator_site_lock.value();
+  const url::Origin& lock = request_initiator_site_lock.value();
 
-  if (!request.request_initiator.has_value()) {
-    NOTREACHED();  // Should only happen for the browser process.
+  if (!request_initiator.has_value()) {
+    // This should only happen for the browser process (or if NetworkService is
+    // not enabled).
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     return InitiatorLockCompatibility::kNoInitiator;
   }
-  const url::Origin& initiator = request.request_initiator.value();
+  const url::Origin& initiator = request_initiator.value();
 
   // TODO(lukasza, nasko): Also consider equality of precursor origins (e.g. if
   // |initiator| is opaque, then it's precursor origin should match the |lock|
@@ -55,6 +56,16 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   }
 
   return InitiatorLockCompatibility::kIncorrectLock;
+}
+
+InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    const mojom::URLLoaderFactoryParams& factory_params,
+    const ResourceRequest& request) {
+  if (factory_params.process_id == mojom::kBrowserProcessId)
+    return InitiatorLockCompatibility::kBrowserProcess;
+
+  return VerifyRequestInitiatorLock(factory_params.request_initiator_site_lock,
+                                    request.request_initiator);
 }
 
 }  // namespace network

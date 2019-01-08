@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // ResponseAnalyzer will decide whether |response| needs to be blocked.
     ResponseAnalyzer(const net::URLRequest& request,
                      const ResourceResponse& response,
-                     InitiatorLockCompatibility initiator_compatibility);
+                     base::Optional<url::Origin> request_initiator_site_lock);
 
     ~ResponseAnalyzer();
 
@@ -162,6 +162,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // but in practice it will always be explicitly set by the constructor.
     InitiatorLockCompatibility initiator_compatibility_ =
         InitiatorLockCompatibility::kIncorrectLock;
+
+    // Propagated from URLLoaderFactoryParams::request_initiator_site_lock;
+    base::Optional<url::Origin> request_initiator_site_lock_;
 
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;
