@@ -96,7 +96,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   scoped_refptr<NGLayoutResult> LayoutDescendant(
       const NGOutOfFlowPositionedDescendant&,
-      NGLogicalOffset* offset);
+      NGLogicalOffset* offset,
+      LayoutBox* only_layout);
 
   bool IsContainingBlockForDescendant(
       const NGOutOfFlowPositionedDescendant& descendant);
