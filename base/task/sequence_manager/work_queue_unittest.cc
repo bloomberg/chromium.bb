@@ -20,11 +20,6 @@ namespace internal {
 
 namespace {
 
-class MockObserver : public WorkQueueSets::Observer {
-  MOCK_METHOD1(WorkQueueSetBecameEmpty, void(size_t set_index));
-  MOCK_METHOD1(WorkQueueSetBecameNonEmpty, void(size_t set_index));
-};
-
 void NopTask() {}
 
 struct Cancelable {
@@ -52,8 +47,7 @@ class WorkQueueTest : public testing::Test {
 
     work_queue_.reset(new WorkQueue(task_queue_.get(), "test",
                                     WorkQueue::QueueType::kImmediate));
-    mock_observer_.reset(new MockObserver);
-    work_queue_sets_.reset(new WorkQueueSets("test", mock_observer_.get()));
+    work_queue_sets_.reset(new WorkQueueSets("test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
   }
 
@@ -88,7 +82,6 @@ class WorkQueueTest : public testing::Test {
     return fake_task;
   }
 
-  std::unique_ptr<MockObserver> mock_observer_;
   std::unique_ptr<SequenceManagerImpl> dummy_sequence_manager_;
   std::unique_ptr<RealTimeDomain> time_domain_;
   std::unique_ptr<TaskQueueImpl> task_queue_;

@@ -28,16 +28,7 @@ namespace internal {
 // values are kept in sorted order.
 class BASE_EXPORT WorkQueueSets {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    virtual void WorkQueueSetBecameEmpty(size_t set_index) = 0;
-
-    virtual void WorkQueueSetBecameNonEmpty(size_t set_index) = 0;
-  };
-
-  WorkQueueSets(const char* name, Observer* observer);
+  explicit WorkQueueSets(const char* name);
   ~WorkQueueSets();
 
   // O(log num queues)
@@ -99,14 +90,12 @@ class BASE_EXPORT WorkQueueSets {
     }
   };
 
-  const char* const name_;
-  Observer* const observer_;
-
   // For each set |work_queue_heaps_| has a queue of WorkQueue ordered by the
   // oldest task in each WorkQueue.
   std::array<base::internal::IntrusiveHeap<OldestTaskEnqueueOrder>,
              TaskQueue::kQueuePriorityCount>
       work_queue_heaps_;
+  const char* const name_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueueSets);
 };
