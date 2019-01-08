@@ -221,7 +221,7 @@ function PDFViewer(browserApi) {
     this.plugin_.setAttribute('full-frame', '');
   }
 
-  document.body.appendChild(this.plugin_);
+  $('content').appendChild(this.plugin_);
 
   this.pluginController_ =
       new PluginController(this.plugin_, this, this.viewport_);
@@ -237,7 +237,7 @@ function PDFViewer(browserApi) {
   this.zoomToolbar_.addEventListener(
       'zoom-out', this.viewport_.zoomOut.bind(this.viewport_));
 
-  this.gestureDetector_ = new GestureDetector(this.plugin_);
+  this.gestureDetector_ = new GestureDetector($('content'));
   this.gestureDetector_.addEventListener(
       'pinchstart', this.onPinchStart_.bind(this));
   this.sentPinchEvent_ = false;
@@ -1246,7 +1246,7 @@ class InkController extends ContentController {
   load(filename, data) {
     if (!this.inkHost_) {
       this.inkHost_ = document.createElement('viewer-ink-host');
-      document.body.appendChild(this.inkHost_);
+      $('content').appendChild(this.inkHost_);
     }
     return this.inkHost_.load(filename, data, this.viewport_);
   }
