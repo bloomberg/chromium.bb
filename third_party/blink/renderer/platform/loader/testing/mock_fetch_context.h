@@ -115,7 +115,9 @@ class MockFetchContext : public FetchContext {
     }
     WrappedResourceRequest wrapped(request);
     return url_loader_factory_->CreateURLLoader(
-        wrapped, CreateResourceLoadingTaskRunnerHandle());
+        wrapped,
+        scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
+            GetLoadingTaskRunner()));
   }
 
   ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
@@ -125,12 +127,6 @@ class MockFetchContext : public FetchContext {
 
   FrameScheduler* GetFrameScheduler() const override {
     return frame_scheduler_.get();
-  }
-
-  std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle() override {
-    return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-        GetLoadingTaskRunner());
   }
 
  private:
