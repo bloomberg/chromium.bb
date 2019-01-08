@@ -2903,6 +2903,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                               ->GetFullscreenProvider()
                               ->IsInitialized() ||
                           webState->GetWebViewProxy().shouldUseViewContentInset;
+  // When the tab strip is present, there is no inset for the content area of
+  // the NTP.
+  if ([self canShowTabStrip] && isNTPActive) {
+    return UIEdgeInsetsZero;
+  }
   if (isNTPActive || (outOfWeb && !usesContentInset)) {
     return UIEdgeInsetsMake(self.headerHeight, 0.0, 0.0, 0.0);
   }
