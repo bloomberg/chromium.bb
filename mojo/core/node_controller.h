@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"

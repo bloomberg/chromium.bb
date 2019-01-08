@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"

@@ -5,7 +5,6 @@
 #ifndef SERVICE_MANAGER_SANDBOX_MAC_SANDBOX_MAC_H_
 #define SERVICE_MANAGER_SANDBOX_MAC_SANDBOX_MAC_H_
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "services/service_manager/sandbox/export.h"

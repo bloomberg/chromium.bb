@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_buildflags.h"

@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"

@@ -36,7 +36,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 

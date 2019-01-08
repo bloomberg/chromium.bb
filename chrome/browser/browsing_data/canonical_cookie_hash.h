@@ -11,7 +11,8 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_set>
+
 #include "net/cookies/canonical_cookie.h"
 
 namespace canonical_cookie {

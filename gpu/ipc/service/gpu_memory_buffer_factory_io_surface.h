@@ -10,7 +10,6 @@
 
 #include <IOSurface/IOSurface.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/snap_fling_controller.h"

@@ -13,7 +13,6 @@
 #include <set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"

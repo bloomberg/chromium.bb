@@ -12,7 +12,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_source.h"

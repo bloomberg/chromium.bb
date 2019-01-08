@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/auth/challenge_response_key.h"

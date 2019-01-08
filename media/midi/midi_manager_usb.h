@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"

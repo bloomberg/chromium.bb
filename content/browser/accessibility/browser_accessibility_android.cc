@@ -4,7 +4,6 @@
 
 #include "content/browser/accessibility/browser_accessibility_android.h"
 
-#include "base/containers/hash_tables.h"
 #include "base/i18n/break_iterator.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"

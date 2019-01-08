@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"

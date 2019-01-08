@@ -8,7 +8,6 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"

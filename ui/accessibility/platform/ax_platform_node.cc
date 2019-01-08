@@ -4,7 +4,6 @@
 
 #include "ui/accessibility/platform/ax_platform_node.h"
 
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"

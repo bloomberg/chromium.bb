@@ -10,7 +10,6 @@
 #include <cmath>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/shared_impl/array_var.h"

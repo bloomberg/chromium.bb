@@ -10,7 +10,6 @@
 #include <list>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 
 namespace media {

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

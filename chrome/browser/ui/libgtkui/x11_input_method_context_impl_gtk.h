@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/glib/glib_integers.h"

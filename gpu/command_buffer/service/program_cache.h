@@ -11,7 +11,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sha1.h"

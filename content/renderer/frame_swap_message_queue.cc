@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"

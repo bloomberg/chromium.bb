@@ -11,7 +11,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gles2_impl_export.h"
 

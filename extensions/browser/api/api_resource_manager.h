@@ -11,7 +11,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"

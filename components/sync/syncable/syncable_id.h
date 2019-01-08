@@ -11,7 +11,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/containers/hash_tables.h"
 #include "base/trace_event/memory_usage_estimator.h"
 
 namespace base {

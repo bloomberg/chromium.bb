@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"

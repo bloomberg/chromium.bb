@@ -10,7 +10,6 @@
 #include <ostream>
 #include <string>
 
-#include "base/containers/hash_tables.h"
 
 enum class AccountType { UNKNOWN, GOOGLE, ACTIVE_DIRECTORY };
 

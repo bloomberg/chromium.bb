@@ -11,7 +11,6 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"

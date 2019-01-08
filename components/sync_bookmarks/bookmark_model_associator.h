@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/stack.h"
 #include "base/hash.h"
 #include "base/macros.h"

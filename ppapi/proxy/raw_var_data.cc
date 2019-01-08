@@ -4,7 +4,6 @@
 
 #include "ppapi/proxy/raw_var_data.h"
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/stack.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

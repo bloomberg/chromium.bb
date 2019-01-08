@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"

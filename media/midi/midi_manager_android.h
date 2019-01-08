@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/containers/hash_tables.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/midi/midi_input_port_android.h"

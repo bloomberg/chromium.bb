@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "ui/gfx/buffer_types.h"
 

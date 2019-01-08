@@ -7,7 +7,6 @@
 
 #include <array>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/gpu_gles2_export.h"

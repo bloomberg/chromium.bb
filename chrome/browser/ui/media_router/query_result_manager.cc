@@ -7,7 +7,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"

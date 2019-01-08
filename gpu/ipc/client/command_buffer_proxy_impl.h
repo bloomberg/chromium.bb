@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {

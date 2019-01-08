@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
 

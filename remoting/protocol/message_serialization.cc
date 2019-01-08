@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "third_party/webrtc/rtc_base/byteorder.h"

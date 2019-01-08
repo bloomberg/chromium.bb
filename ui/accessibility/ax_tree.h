@@ -10,7 +10,6 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/observer_list.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node.h"

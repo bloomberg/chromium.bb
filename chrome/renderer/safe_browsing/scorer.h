@@ -20,7 +20,6 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"

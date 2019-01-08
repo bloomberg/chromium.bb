@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/unguessable_token.h"
