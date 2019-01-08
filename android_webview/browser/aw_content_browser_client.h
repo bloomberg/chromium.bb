@@ -58,6 +58,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+  network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
