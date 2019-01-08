@@ -45,7 +45,7 @@ class CC_PAINT_EXPORT ClientTransferCacheEntry {
   // Returns the serialized sized of this entry in bytes. This function will be
   // used to determine how much memory is going to be allocated and passed to
   // the Serialize() call.
-  virtual size_t SerializedSize() const = 0;
+  virtual uint32_t SerializedSize() const = 0;
 
   // Serializes the entry into the given span of memory. The size of the span is
   // guaranteed to be at least SerializedSize() bytes. Returns true on success

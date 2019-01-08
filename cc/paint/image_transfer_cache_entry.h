@@ -31,7 +31,7 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   uint32_t Id() const final;
 
   // ClientTransferCacheEntry implementation:
-  size_t SerializedSize() const final;
+  uint32_t SerializedSize() const final;
   bool Serialize(base::span<uint8_t> data) const final;
 
  private:
@@ -39,7 +39,7 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   const SkPixmap* const pixmap_;
   const SkColorSpace* const target_color_space_;
   const bool needs_mips_;
-  size_t size_ = 0;
+  uint32_t size_ = 0;
   static base::AtomicSequenceNumber s_next_id_;
 };
 

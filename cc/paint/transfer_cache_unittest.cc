@@ -75,7 +75,7 @@ class TransferCacheTest : public testing::Test {
   }
   void CreateEntry(const ClientTransferCacheEntry& entry) {
     auto* context_support = ContextSupport();
-    size_t size = entry.SerializedSize();
+    uint32_t size = entry.SerializedSize();
     void* data = context_support->MapTransferCacheEntry(size);
     ASSERT_TRUE(data);
     entry.Serialize(base::make_span(static_cast<uint8_t*>(data), size));

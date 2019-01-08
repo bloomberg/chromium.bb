@@ -105,7 +105,7 @@ bool TestContextSupport::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return false;
 }
 
-void* TestContextSupport::MapTransferCacheEntry(size_t serialized_size) {
+void* TestContextSupport::MapTransferCacheEntry(uint32_t serialized_size) {
   NOTIMPLEMENTED();
   return nullptr;
 }

@@ -132,7 +132,7 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override {}
 
-  void* MapTransferCacheEntry(size_t serialized_size) override {
+  void* MapTransferCacheEntry(uint32_t serialized_size) override {
     mapped_entry_size_ = serialized_size;
     mapped_entry_.reset(new uint8_t[serialized_size]);
     return mapped_entry_.get();

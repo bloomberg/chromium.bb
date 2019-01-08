@@ -79,7 +79,7 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
                              uint32_t id,
                              uint32_t shm_id,
                              uint32_t shm_offset,
-                             size_t size);
+                             uint32_t size);
 
   // Similar to AddTransferCacheEntry() but doesn't use |client_| to trigger the
   // creation of the service-side cache entry. Instead, it calls
@@ -97,9 +97,9 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
       base::OnceCallback<void(ClientDiscardableHandle)> create_entry_cb);
 
   // Map(of either type) must always be followed by an Unmap.
-  void* MapEntry(MappedMemoryManager* mapped_memory, size_t size);
+  void* MapEntry(MappedMemoryManager* mapped_memory, uint32_t size);
   void* MapTransferBufferEntry(TransferBufferInterface* transfer_buffer,
-                               size_t size);
+                               uint32_t size);
   void UnmapAndCreateEntry(uint32_t type, uint32_t id);
   bool LockEntry(uint32_t type, uint32_t id);
   void UnlockEntries(const std::vector<std::pair<uint32_t, uint32_t>>& entries);

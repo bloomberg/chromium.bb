@@ -116,7 +116,7 @@ class ContextSupport {
   // Maps a buffer that will receive serialized data for an entry to be created.
   // Returns nullptr on failure. If success, must be paired with a call to
   // UnmapAndCreateTransferCacheEntry.
-  virtual void* MapTransferCacheEntry(size_t serialized_size) = 0;
+  virtual void* MapTransferCacheEntry(uint32_t serialized_size) = 0;
 
   // Unmaps the buffer and creates a transfer cache entry with the serialized
   // data.

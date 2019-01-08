@@ -69,7 +69,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
                             : 0u;
 
   // Compute and cache the size of the data.
-  base::CheckedNumeric<size_t> safe_size;
+  base::CheckedNumeric<uint32_t> safe_size;
   safe_size += PaintOpWriter::HeaderBytes();
   safe_size += sizeof(uint32_t);  // color type
   safe_size += sizeof(uint32_t);  // width
@@ -90,7 +90,7 @@ ClientImageTransferCacheEntry::~ClientImageTransferCacheEntry() = default;
 // static
 base::AtomicSequenceNumber ClientImageTransferCacheEntry::s_next_id_;
 
-size_t ClientImageTransferCacheEntry::SerializedSize() const {
+uint32_t ClientImageTransferCacheEntry::SerializedSize() const {
   return size_;
 }
 

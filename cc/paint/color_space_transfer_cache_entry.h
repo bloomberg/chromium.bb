@@ -29,7 +29,7 @@ class CC_PAINT_EXPORT ClientColorSpaceTransferCacheEntry final
       const RasterColorSpace& raster_color_space);
   ~ClientColorSpaceTransferCacheEntry() override;
   uint32_t Id() const override;
-  size_t SerializedSize() const override;
+  uint32_t SerializedSize() const override;
   bool Serialize(base::span<uint8_t> data) const final;
 
  private:
