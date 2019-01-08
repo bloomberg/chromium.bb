@@ -155,5 +155,9 @@ const char kMixedContentAutoupgradeModeOptionallyBlockable[] =
 const base::Feature kDecodeLossyWebPImagesToYUV{
     "DecodeLossyWebPImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use accelerated canvases whenever possible see https://crbug.com/909937
+const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

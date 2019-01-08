@@ -37,6 +37,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -407,7 +408,8 @@ void HTMLCanvasElement::FinalizeFrame() {
     // Compute to determine whether disable accleration is needed
     if (IsAccelerated() &&
         canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration &&
-        !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled()) {
+        !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
+        !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
       if (gpu_readback_invoked_in_current_frame_) {
         gpu_readback_successive_frames_++;
         gpu_readback_invoked_in_current_frame_ = false;
@@ -464,6 +466,9 @@ void HTMLCanvasElement::FinalizeFrame() {
 void HTMLCanvasElement::DisableAcceleration(
     std::unique_ptr<Canvas2DLayerBridge>
         unaccelerated_bridge_used_for_testing) {
+  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
+    NOTREACHED();
+  }
   // Create and configure an unaccelerated Canvas2DLayerBridge.
   std::unique_ptr<Canvas2DLayerBridge> bridge;
   if (unaccelerated_bridge_used_for_testing)
@@ -981,6 +986,9 @@ void HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
 }
 
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
+  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas))
+    return true;
+
   if (context_ && !Is2d())
     return false;
 
@@ -1234,7 +1242,8 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     if (canvas_heuristic_parameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
         hint == kPreferNoAcceleration && canvas2d_bridge_ &&
-        canvas2d_bridge_->IsAccelerated()) {
+        canvas2d_bridge_->IsAccelerated() &&
+        !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
       DisableAcceleration();
     }
     image = RenderingContext()->GetImage(hint);
