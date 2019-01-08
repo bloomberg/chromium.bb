@@ -21,7 +21,7 @@ per-file app_management_strings.grdp=file://chrome/browser/ui/webui/app_manageme
 
 per-file media_router_strings.grdp=file://chrome/browser/media/router/OWNERS
 
-per-file onboarding_welcome_strings.grdp=file://chrome/browser/ui/webui/welcome/nux/OWNERS
+per-file onboarding_welcome_strings.grdp=file://chrome/browser/ui/webui/welcome/OWNERS
 
 per-file printing_strings.grdp=file://printing/OWNERS
 
