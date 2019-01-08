@@ -45,7 +45,6 @@ class ArCore {
 
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,
-      const gfx::Size& image_size,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
 
   virtual void Pause() = 0;

@@ -203,7 +203,6 @@ mojom::VRPosePtr FakeArCore::Update(bool* camera_updated) {
 
 bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
-    const gfx::Size& image_size,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
   mojom::XRHitResultPtr hit = mojom::XRHitResult::New();
   hit->hit_matrix.resize(16);
