@@ -82,6 +82,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event_injector.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/test/material_design_controller_test_api.h"
@@ -145,6 +146,7 @@ void ToggleOverview() {
     base::RunLoop run_loop;
     shell_test_api->ToggleOverviewMode(run_loop.QuitClosure());
     run_loop.Run();
+    aura::test::WaitForAllChangesToComplete();
   } else {
     ash::Shell::Get()->window_selector_controller()->ToggleOverview();
   }
