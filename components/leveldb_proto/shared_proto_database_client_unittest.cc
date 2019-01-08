@@ -20,9 +20,10 @@ namespace leveldb_proto {
 
 namespace {
 
-const std::string kDefaultNamespace = "ns";
-const std::string kDefaultNamespace2 = "ns2";
-const std::string kDefaultTypePrefix = "tp";
+const char* kDefaultNamespace = "abc";
+const char* kDefaultNamespace1 = "cde";
+const char* kDefaultNamespace2 = "cfd";
+const char* kDefaultTypePrefix = "tp";
 
 }  // namespace
 
@@ -40,6 +41,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     temp_dir_.reset();
   }
 
+ protected:
   scoped_refptr<SharedProtoDatabase> db() { return db_; }
   base::ScopedTempDir* temp_dir() { return temp_dir_.get(); }
 
@@ -233,6 +235,26 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         },
         expect_success, destroy_loop.QuitClosure()));
     destroy_loop.Run();
+  }
+
+  // Sets the obsolete client list to given list, runs clean up tasks and waits
+  // for them to complete.
+  void DestroyObsoleteClientsAndWait(const char* const* client_list) {
+    SetObsoleteClientListForTesting(client_list);
+    base::RunLoop wait_loop;
+    Callbacks::UpdateCallback wait_callback = base::BindOnce(
+        [](base::OnceClosure closure, bool success) {
+          EXPECT_TRUE(success);
+          std::move(closure).Run();
+        },
+        wait_loop.QuitClosure());
+
+    DestroyObsoleteSharedProtoDatabaseClients(
+        std::make_unique<ProtoLevelDBWrapper>(
+            db_->database_task_runner_for_testing(), GetLevelDB()),
+        std::move(wait_callback));
+    wait_loop.Run();
+    SetObsoleteClientListForTesting(nullptr);
   }
 
  private:
@@ -461,6 +483,61 @@ TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
     entry = GetEntry(client_b.get(), key, true);
     ASSERT_EQ(entry->id(), b_prefix + key);
   }
+}
+
+TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
+  auto status = Enums::InitStatus::kError;
+  auto client_a =
+      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
+  auto client_b =
+      GetClientAndWait<TestProto>(kDefaultNamespace1, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
+  auto client_c =
+      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
+
+  std::vector<std::string> test_keys = {"a", "b", "c"};
+  UpdateEntries(client_a.get(), test_keys, leveldb_proto::KeyVector(), true);
+  UpdateEntries(client_b.get(), test_keys, leveldb_proto::KeyVector(), true);
+  UpdateEntries(client_c.get(), test_keys, leveldb_proto::KeyVector(), true);
+
+  // Check that the original list does not clear any data from test DBs.
+  DestroyObsoleteClientsAndWait(nullptr /* client_list */);
+
+  std::vector<std::string> keys;
+  LevelDB* db = GetLevelDB();
+  db->LoadKeys(&keys);
+  EXPECT_EQ(keys.size(), test_keys.size() * 3);
+
+  // Mark some DBs obsolete.
+  const char* const kObsoleteList1[] = {kDefaultNamespace, kDefaultNamespace1,
+                                        nullptr};
+  DestroyObsoleteClientsAndWait(kObsoleteList1);
+
+  keys.clear();
+  db->LoadKeys(&keys);
+
+  EXPECT_EQ(keys.size(), test_keys.size());
+  EXPECT_FALSE(
+      ContainsKeys(keys, test_keys, kDefaultNamespace, kDefaultTypePrefix));
+  EXPECT_FALSE(
+      ContainsKeys(keys, test_keys, kDefaultNamespace1, kDefaultTypePrefix));
+  EXPECT_TRUE(
+      ContainsKeys(keys, test_keys, kDefaultNamespace2, kDefaultTypePrefix));
+
+  // Make all the DBs obsolete.
+  const char* const kObsoleteList2[] = {kDefaultNamespace, kDefaultNamespace1,
+                                        kDefaultNamespace2, nullptr};
+  DestroyObsoleteClientsAndWait(kObsoleteList2);
+
+  // Nothing should remain.
+  keys.clear();
+  db->LoadKeys(&keys);
+  EXPECT_EQ(keys.size(), 0U);
 }
 
 TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {

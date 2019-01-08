@@ -12,22 +12,6 @@
 
 namespace leveldb_proto {
 
-const char kFeatureEngagementClientName[] = "FeatureEngagement";
-
-const char* const kCurrentSharedProtoDatabaseClients[] = {
-    kFeatureEngagementClientName,
-};
-const size_t kCurrentSharedProtoDatabaseClientsLength =
-    base::size(kCurrentSharedProtoDatabaseClients);
-
-#ifdef SHARED_PROTO_DATABASE_CLIENT_LIST_USE_OBSOLETE_CLIENT_LIST
-const char* const kObsoleteSharedProtoDatabaseClients[] = {
-    /* Add obsolete clients here. */
-};
-const size_t kObsoleteSharedProtoDatabaseClientsLength =
-    base::size(kObsoleteSharedProtoDatabaseClients);
-#endif  // SHARED_PROTO_DATABASE_CLIENT_LIST_USE_OBSOLETE_CLIENT_LIST
-
 // static
 bool SharedProtoDatabaseClientList::ShouldUseSharedDB(
     const std::string& client_name) {

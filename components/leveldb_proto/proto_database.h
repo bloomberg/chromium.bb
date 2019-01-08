@@ -155,7 +155,11 @@ class ProtoDatabase {
       const std::string& key,
       typename Callbacks::Internal<T>::GetCallback callback) = 0;
 
-  // Asynchronously destroys the database.
+  // Asynchronously destroys the database. Use this call only if the database
+  // needs to be destroyed for this particular profile. If the database is no
+  // longer useful for everyone, the client name must be added to
+  // |kObsoleteSharedProtoDatabaseClients| to ensure automatic clean up of the
+  // database from all users.
   virtual void Destroy(Callbacks::DestroyCallback callback) = 0;
 
  protected:

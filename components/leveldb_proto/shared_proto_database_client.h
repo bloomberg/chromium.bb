@@ -40,9 +40,21 @@ void UpdateClientCorruptAsync(const scoped_refptr<SharedProtoDatabase>& db,
                               const std::string& client_name,
                               ClientCorruptCallback callback);
 
+// Destroys all the data from obsolete clients, for the given |db_wrapper|
+// instance. |callback| is called once all the obsolete clients data are
+// removed, with failure status if one or more of the update fails.
+void DestroyObsoleteSharedProtoDatabaseClients(
+    std::unique_ptr<ProtoLevelDBWrapper> db_wrapper,
+    Callbacks::UpdateCallback callback);
+
+// Sets list of client names that are obsolete and will be cleared by next call
+// to DestroyObsoleteSharedProtoDatabaseClients(). |list| is list of c strings
+// with a nullptr to mark the end of list.
+void SetObsoleteClientListForTesting(const char* const* list);
+
 // An implementation of ProtoDatabase<T> that uses a shared LevelDB and task
 // runner.
-// Should be created, destroyed, and used on the same thread.
+// Should be created, destroyed, and used on the same sequenced task runner.
 template <typename T>
 class SharedProtoDatabaseClient : public ProtoDatabase<T> {
  public:
