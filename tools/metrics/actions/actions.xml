@@ -13979,13 +13979,25 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_DoNotTrackCheckbox_Disable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated. Replaced by the Privacy.DoNotTrackSetting histogram.
+  </obsolete>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Indicates that the Do Not Track setting is disabled. Recording was removed
+    from the code around M59.
+  </description>
 </action>
 
 <action name="Options_DoNotTrackCheckbox_Enable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated. Replaced by the Privacy.DoNotTrackSetting histogram.
+  </obsolete>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Indicates that the Do Not Track setting is enabled. Recording was removed
+    from the code around M59.
+  </description>
 </action>
 
 <action name="Options_EasyUnlockRequireProximity_Disable">
@@ -20017,13 +20029,25 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ThirdPartyCookieBlockingDisabled" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated. Replaced by the Privacy.ThirdPartyCookieBlockingSetting
+    histogram.
+  </obsolete>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Recorded on Profile startup if the third party cookie blocking is disabled.
+  </description>
 </action>
 
 <action name="ThirdPartyCookieBlockingEnabled" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated. Replaced by the Privacy.ThirdPartyCookieBlockingSetting
+    histogram.
+  </obsolete>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Recorded on Profile startup if the third party cookie blocking is disabled.
+  </description>
 </action>
 
 <action name="TodayExtension.ExtensionDismissed">
