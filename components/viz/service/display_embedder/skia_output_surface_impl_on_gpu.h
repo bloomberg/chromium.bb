@@ -109,7 +109,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // Fulfill callback for promise SkImage created from a resource.
   void FulfillPromiseTexture(
-      const ResourceMetadata& metadata,
+      const gpu::MailboxHolder& mailbox_holder,
+      const gfx::Size& size,
+      const ResourceFormat resource_format,
       std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
       GrBackendTexture* backend_texture);
   // Fulfill callback for promise SkImage created from a render pass.

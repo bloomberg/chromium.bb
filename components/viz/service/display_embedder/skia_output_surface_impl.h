@@ -99,7 +99,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
  private:
-  template <class T>
   class PromiseTextureHelper;
   class YUVAPromiseTextureHelper;
   void InitializeOnGpuThread(base::WaitableEvent* event);
@@ -151,6 +150,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
   bool needs_swap_size_notifications_ = false;
 
+  // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
   THREAD_CHECKER(thread_checker_);

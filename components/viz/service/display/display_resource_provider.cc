@@ -522,11 +522,7 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
 
   metadata.mailbox_holder = resource->transferable.mailbox_holder;
   metadata.size = resource->transferable.size;
-  metadata.mip_mapped = GrMipMapped::kNo;
-  metadata.origin = kTopLeft_GrSurfaceOrigin;
   metadata.resource_format = resource->transferable.format;
-  metadata.alpha_type = kPremul_SkAlphaType;
-  metadata.color_space = nullptr;
   metadata.mailbox_holder.sync_token = resource->sync_token();
 
   resource->locked_for_external_use = true;
