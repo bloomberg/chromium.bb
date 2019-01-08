@@ -13,15 +13,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -36,25 +30,9 @@ using signin_metrics::ReportingType;
 class AccountInvestigatorTest : public testing::Test {
  protected:
   AccountInvestigatorTest()
-      : signin_client_(&prefs_),
-        token_service_(&prefs_,
-                       std::make_unique<FakeOAuth2TokenServiceDelegate>()),
-        signin_manager_(&signin_client_,
-                        &token_service_,
-                        &account_tracker_service_,
-                        nullptr),
-        gaia_cookie_manager_service_(&token_service_,
-                                     &signin_client_,
-                                     &test_url_loader_factory_),
-        identity_test_env_(&account_tracker_service_,
-                           &token_service_,
-                           &signin_manager_,
-                           &gaia_cookie_manager_service_),
+      : identity_test_env_(&test_url_loader_factory_, &prefs_),
         investigator_(&prefs_, identity_test_env_.identity_manager()) {
-    AccountTrackerService::RegisterPrefs(prefs_.registry());
     AccountInvestigator::RegisterPrefs(prefs_.registry());
-    SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
-    account_tracker_service_.Initialize(&prefs_, base::FilePath());
   }
 
   ~AccountInvestigatorTest() override { investigator_.Shutdown(); }
@@ -64,9 +42,6 @@ class AccountInvestigatorTest : public testing::Test {
   }
   PrefService* pref_service() { return &prefs_; }
   AccountInvestigator* investigator() { return &investigator_; }
-  FakeGaiaCookieManagerService* cookie_manager_service() {
-    return &gaia_cookie_manager_service_;
-  }
 
   // Wrappers to invoke private methods through friend class.
   TimeDelta Delay(const Time previous,
@@ -159,12 +134,7 @@ class AccountInvestigatorTest : public testing::Test {
   // Timer needs a message loop.
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  AccountTrackerService account_tracker_service_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-  FakeSigninManager signin_manager_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   identity::IdentityTestEnvironment identity_test_env_;
   AccountInvestigator investigator_;
   std::map<ReportingType, std::string> suffix_ = {
@@ -355,22 +325,23 @@ TEST_F(AccountInvestigatorTest, InitializeSignedIn) {
 
 TEST_F(AccountInvestigatorTest, TryPeriodicReportStale) {
   investigator()->Initialize();
-  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
 
   const HistogramTester histogram_tester;
   TryPeriodicReport();
   EXPECT_TRUE(*periodic_pending());
   EXPECT_EQ(0u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
 
-  base::RunLoop().RunUntilIdle();
+  std::string email("f@bar.com");
+  identity_test_env()->SetCookieAccounts(
+      {{email, identity::GetTestGaiaIdForEmail(email)}});
+
   EXPECT_FALSE(*periodic_pending());
   ExpectSharedReportHistograms(ReportingType::PERIODIC, histogram_tester,
                                nullptr, 1, 0, 1, nullptr, false);
 }
 
 TEST_F(AccountInvestigatorTest, TryPeriodicReportEmpty) {
-  cookie_manager_service()->set_list_accounts_stale_for_testing(false);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
   const HistogramTester histogram_tester;
 
   TryPeriodicReport();
