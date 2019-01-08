@@ -335,18 +335,24 @@ public abstract class SigninFragmentBase
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
-        mConsentTextTracker.setText(
-                mView.getSyncDescriptionView(), R.string.signin_sync_description);
 
-        final @StringRes int personalizationDescription =
+        mConsentTextTracker.setText(mView.getSyncTitleView(), R.string.signin_sync_title);
+        final @StringRes int syncDescription =
                 mChildAccountStatus == ChildAccountStatus.REGULAR_CHILD
-                ? R.string.signin_personalization_description_child_account
-                : R.string.signin_personalization_description;
-        mConsentTextTracker.setText(
-                mView.getPersonalizationDescriptionView(), personalizationDescription);
+                ? R.string.signin_sync_description_child_account
+                : R.string.signin_sync_description;
+        mConsentTextTracker.setText(mView.getSyncDescriptionView(), syncDescription);
 
-        mConsentTextTracker.setText(mView.getGoogleServicesDescriptionView(),
-                R.string.signin_google_services_description);
+        mConsentTextTracker.setText(
+                mView.getTapToSearchTitleView(), R.string.signin_tap_to_search_title);
+        mConsentTextTracker.setText(
+                mView.getTapToSearchDescriptionView(), R.string.signin_tap_to_search_description);
+
+        mConsentTextTracker.setText(
+                mView.getSafeBrowsingTitleView(), R.string.signin_safe_browsing_title);
+        mConsentTextTracker.setText(
+                mView.getSafeBrowsingDescriptionView(), R.string.signin_safe_browsing_description);
+
         mConsentTextTracker.setText(mView.getRefuseButton(), getNegativeButtonTextId());
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
     }

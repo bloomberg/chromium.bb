@@ -2639,20 +2639,29 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync and personalization. [CHAR-LIMIT=27]">
         Get Google smarts in Chrome
       </message>
+      <message name="IDS_SIGNIN_SYNC_TITLE" desc="Title of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Sync your passwords, history &amp; more on all devices
+      </message>
       <message name="IDS_SIGNIN_SYNC_DESCRIPTION" desc="Description of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization.">
-        Your passwords, history &amp; more on all devices
+        Google may use your history to personalize Search, ads, and other Google services
       </message>
-      <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization.">
-        More personal Google services, like better page suggestions
+      <message name="IDS_SIGNIN_SYNC_DESCRIPTION_CHILD_ACCOUNT" desc="Description of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Google may use your history to personalize Search and other Google services
       </message>
-      <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION_CHILD_ACCOUNT" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
-        Personalized Google services
+      <message name="IDS_SIGNIN_TAP_TO_SEARCH_TITLE" desc="Title of TapToSearch feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Search by tapping a word on a page (Tap to Search)
       </message>
-      <message name="IDS_SIGNIN_GOOGLE_SERVICES_DESCRIPTION" desc="Description of Google Services for the screen that asks users to sign-in and turn on Sync and personalization.">
-        Improve Chrome and its security by sending system and usage data to Google
+      <message name="IDS_SIGNIN_TAP_TO_SEARCH_DESCRIPTION" desc="Description of TapToSearch feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Google may use the words you tap on and surrounding text to return results
       </message>
-      <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization.">
-        <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized anytime. Google may use content on sites you visit, plus browser activity and interactions, to personalize Chrome and other Google services like Translate, Search, and ads.
+      <message name="IDS_SIGNIN_SAFE_BROWSING_TITLE" desc="Title of Safe Browsing Extended Reporting feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Help improve Chrome and its security
+      </message>
+      <message name="IDS_SIGNIN_SAFE_BROWSING_DESCRIPTION" desc="Description of Safe Browsing Extended Reporting feature for the screen that asks users to sign-in and turn on Sync and personalization.">
+        Sends some system information and page content to Google anonymously
+      </message>
+      <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message with a link to customize settings of the features enabled by 'Get Google smarts in Chrome' screen.">
+        You can <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>customize these settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> anytime
       </message>
       <message name="IDS_SIGNIN_DETAILS_DESCRIPTION_CHILD_ACCOUNT" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
         <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized by you or your parents anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.

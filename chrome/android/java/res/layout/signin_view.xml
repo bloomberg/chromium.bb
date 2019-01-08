@@ -29,17 +29,16 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:background="@color/signin_header_animation_background"
-                tools:ignore="ContentDescription"
                 android:scaleType="center"
                 app:srcCompat="@drawable/signin_header_animation"
-                tools:src="@drawable/signin_header_animation"/>
+                tools:ignore="ContentDescription"/>
             <TextView
                 android:id="@+id/signin_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_header_image"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                android:layout_marginTop="15dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:textAppearance="@style/TextAppearance.BlackHeadline"
                 tools:text="@string/signin_title"/>
@@ -48,8 +47,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_title"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                android:layout_marginTop="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="27dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:background="@drawable/account_picker_background"
                 android:orientation="horizontal"
@@ -77,7 +76,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+                        android:textAppearance="@style/TextAppearance.BlackTitle1"
                         tools:text="John Doe"/>
                     <TextView
                         android:id="@+id/account_text_secondary"
@@ -85,7 +84,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/TextAppearance.BlackCaption"
+                        android:textAppearance="@style/TextAppearance.BlackBody"
                         tools:text="john.doe@example.com"/>
                 </LinearLayout>
                 <!-- For forced sign-in & consent bump this ImageView shows checkmark icon. -->
@@ -100,17 +99,18 @@
             </LinearLayout>
             <ImageView
                 android:id="@+id/signin_sync_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_sync_description"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignTop="@+id/signin_sync_title"
                 android:layout_alignBottom="@+id/signin_sync_description"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_sync_circle_green_16dp"/>
+                app:srcCompat="@drawable/permission_background_sync"
+                app:tint="@color/google_green_600"
+                tools:ignore="ContentDescription"/>
             <TextView
-                android:id="@+id/signin_sync_description"
+                android:id="@+id/signin_sync_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_account_picker"
@@ -119,21 +119,33 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:layout_toEndOf="@id/signin_sync_icon"
+                android:textAppearance="@style/TextAppearance.BlackTitle1"
+                tools:text="@string/signin_sync_title"/>
+            <TextView
+                android:id="@+id/signin_sync_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/signin_sync_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/signin_drawable_padding"
+                android:layout_marginEnd="@dimen/signin_margin_end"
+                android:layout_toEndOf="@id/signin_sync_icon"
                 android:textAppearance="@style/TextAppearance.BlackBody"
                 tools:text="@string/signin_sync_description"/>
             <ImageView
-                android:id="@+id/signin_personalization_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_personalization_description"
-                android:layout_alignBottom="@+id/signin_personalization_description"
+                android:id="@+id/signin_tap_to_search_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignTop="@+id/signin_tap_to_search_title"
+                android:layout_alignBottom="@+id/signin_tap_to_search_description"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_assistant_16dp"/>
+                app:srcCompat="@drawable/ic_search"
+                app:tint="@color/default_icon_color_blue"
+                tools:ignore="ContentDescription"/>
             <TextView
-                android:id="@+id/signin_personalization_description"
+                android:id="@+id/signin_tap_to_search_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_sync_description"
@@ -141,57 +153,71 @@
                 android:layout_marginStart="@dimen/signin_drawable_padding"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_sync_icon"
+                android:layout_toEndOf="@id/signin_tap_to_search_icon"
+                android:textAppearance="@style/TextAppearance.BlackTitle1"
+                tools:text="@string/signin_tap_to_search_title"/>
+            <TextView
+                android:id="@+id/signin_tap_to_search_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/signin_tap_to_search_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/signin_drawable_padding"
+                android:layout_marginEnd="@dimen/signin_margin_end"
+                android:layout_toEndOf="@id/signin_tap_to_search_icon"
                 android:textAppearance="@style/TextAppearance.BlackBody"
-                tools:text="@string/signin_personalization_description"/>
+                tools:text="@string/signin_tap_to_search_description"/>
             <ImageView
-                android:id="@+id/signin_google_services_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_google_services_description"
-                android:layout_alignBottom="@+id/signin_google_services_description"
+                android:id="@+id/signin_safe_browsing_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignTop="@+id/signin_safe_browsing_title"
+                android:layout_alignBottom="@+id/signin_safe_browsing_description"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_logo_googleg_16dp"/>
+                app:srcCompat="@drawable/ic_lock_24dp"
+                tools:ignore="ContentDescription"/>
             <TextView
-                android:id="@+id/signin_google_services_description"
+                android:id="@+id/signin_safe_browsing_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/signin_personalization_description"
+                android:layout_below="@id/signin_tap_to_search_description"
+                android:layout_alignParentEnd="true"
                 android:layout_marginStart="@dimen/signin_drawable_padding"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_google_services_icon"
+                android:layout_toEndOf="@id/signin_safe_browsing_icon"
+                android:textAppearance="@style/TextAppearance.BlackTitle1"
+                tools:text="@string/signin_safe_browsing_title"/>
+            <TextView
+                android:id="@+id/signin_safe_browsing_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/signin_safe_browsing_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/signin_drawable_padding"
+                android:layout_marginEnd="@dimen/signin_margin_end"
+                android:layout_toEndOf="@id/signin_safe_browsing_icon"
                 android:textAppearance="@style/TextAppearance.BlackBody"
-                tools:text="@string/signin_google_services_description"/>
+                tools:text="@string/signin_safe_browsing_description"/>
             <View
                 android:id="@+id/signin_divider"
                 style="@style/HorizontalDivider"
-                android:layout_below="@id/signin_google_services_description"
-                android:layout_marginStart="@dimen/signin_divider_margin_start"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"/>
-            <ImageView
-                android:id="@+id/signin_details_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignBaseline="@+id/signin_details_description"
-                android:layout_alignParentStart="true"
+                android:layout_below="@id/signin_safe_browsing_description"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                android:baseline="12dp"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_settings_grey_16dp"/>
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="@dimen/signin_margin_end"/>
             <TextView
                 android:id="@+id/signin_details_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_divider"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
                 android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="32dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_details_icon"
                 android:textAppearance="@style/TextAppearance.BlackBody"
                 tools:text="@string/signin_details_description"/>
         </RelativeLayout>

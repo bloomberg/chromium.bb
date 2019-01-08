@@ -48,6 +48,10 @@
     <color name="google_green_700">#0B8043</color>
     <color name="light_grey">#CCCCCC</color>
 
+    <!-- TODO(https://crbug.com/919835): Clarify whether these colors can be reused. -->
+    <color name="google_green_600">#1E8E3E</color>
+    <color name="google_yellow_600">#F9AB00</color>
+
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">@color/modern_blue_600</color>
 
