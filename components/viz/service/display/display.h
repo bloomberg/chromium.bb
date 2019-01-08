@@ -136,6 +136,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
  private:
   void InitializeRenderer();
   void UpdateRootFrameMissing();
+  void RunDrawCallbacks();
 
   // ContextLostObserver implementation.
   void OnContextLost() override;

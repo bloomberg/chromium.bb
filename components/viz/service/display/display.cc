@@ -135,13 +135,8 @@ Display::~Display() {
     if (scheduler_)
       surface_manager_->RemoveObserver(scheduler_.get());
   }
-  if (aggregator_) {
-    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      if (surface)
-        surface->RunDrawCallback();
-    }
-  }
+
+  RunDrawCallbacks();
 }
 
 void Display::Initialize(DisplayClient* client,
@@ -382,12 +377,7 @@ bool Display::DrawAndSwap() {
                            swapped_trace_id_);
 
   // Run callbacks early to allow pipelining and collect presented callbacks.
-  for (const auto& surface_id : surfaces_to_ack_on_next_draw_) {
-    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-    if (surface)
-      surface->RunDrawCallback();
-  }
-  surfaces_to_ack_on_next_draw_.clear();
+  RunDrawCallbacks();
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                      stored_latency_info_.begin(),
@@ -827,6 +817,24 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved2",
       static_cast<uint64_t>(total_area_saved_in_px.ValueOrDefault(
           std::numeric_limits<uint64_t>::max())));
+}
+
+void Display::RunDrawCallbacks() {
+  for (const auto& surface_id : surfaces_to_ack_on_next_draw_) {
+    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+    if (surface)
+      surface->RunDrawCallback();
+  }
+  surfaces_to_ack_on_next_draw_.clear();
+  // |surfaces_to_ack_on_next_draw_| does not cover surfaces that are being
+  // embedded for the first time, so also go through SurfaceAggregator's list.
+  if (aggregator_) {
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      if (surface)
+        surface->RunDrawCallback();
+    }
+  }
 }
 
 }  // namespace viz
