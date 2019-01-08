@@ -26,6 +26,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Default maximum alignment for all returned allocations.
   static constexpr size_t kGpaAllocAlignment = 16;
 
+  // Does not allocate any memory for the allocator, to finish initializing call
+  // Init().
+  GuardedPageAllocator();
+
   // Configures this allocator to allocate up to max_alloced_pages pages at a
   // time from a pool of total_pages pages, where:
   //   1 <= max_alloced_pages <= total_pages <= kGpaMaxPages
@@ -67,10 +71,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   static_assert(std::numeric_limits<SlotTy>::max() >=
                     AllocatorState::kGpaMaxPages - 1,
                 "SlotTy can hold all possible slot values");
-
-  // Does not allocate any memory for the allocator, to finish initializing call
-  // Init().
-  GuardedPageAllocator();
 
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
