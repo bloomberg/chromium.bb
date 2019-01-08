@@ -86,7 +86,7 @@ enum class SendPasswordFormToBrowserProcess {
 // credentials after being instructed to do so by the browser process.
 enum class FillingResult {
   kSuccess = 0,
-  // The password element to be filled could not be found.
+  // The password element to be filled has not been found.
   kNoPasswordElement = 1,
   // Filling only happens in iframes, if all parent frames PSL match the
   // security origin of the iframe containing the password field.
