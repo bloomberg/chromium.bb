@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("peerconnection") {
   sources = [
+    "adapters/dtls_transport_proxy.cc",
+    "adapters/dtls_transport_proxy.h",
     "adapters/ice_transport_adapter.h",
     "adapters/ice_transport_adapter_cross_thread_factory.h",
     "adapters/ice_transport_adapter_impl.cc",
