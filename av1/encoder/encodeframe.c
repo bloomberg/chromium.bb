@@ -6440,7 +6440,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
          REF_FRAMES * sizeof(WarpedMotionParams));
 
-  if (cm->allow_ref_frame_mvs) av1_setup_motion_field(cm);
+  av1_setup_motion_field(cm);
 
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);

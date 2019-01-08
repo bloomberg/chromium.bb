@@ -5482,7 +5482,7 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 
   cm->setup_mi(cm);
 
-  if (cm->allow_ref_frame_mvs) av1_setup_motion_field(cm);
+  av1_setup_motion_field(cm);
 
   av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
                          cm->seq_params.subsampling_y, num_planes);
