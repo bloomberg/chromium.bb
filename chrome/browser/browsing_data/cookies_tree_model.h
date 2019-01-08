@@ -865,11 +865,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   static std::unique_ptr<CookiesTreeModel> CreateForProfile(Profile* profile);
 
  private:
-  enum CookieIconIndex {
-    ORIGIN = 0,
-    COOKIE = 1,
-    DATABASE = 2
-  };
+  enum CookieIconIndex { COOKIE = 0, DATABASE = 1 };
 
   // Reset the counters for batches.
   void ResetBatches();
