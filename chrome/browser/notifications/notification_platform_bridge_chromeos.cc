@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -16,8 +18,9 @@
 #include "ui/gfx/image/image.h"
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeChromeOs();
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
+  return std::make_unique<NotificationPlatformBridgeChromeOs>();
 }
 
 // static

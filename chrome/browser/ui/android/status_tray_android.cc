@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-StatusTray* StatusTray::Create() {
+std::unique_ptr<StatusTray> StatusTray::Create() {
   NOTIMPLEMENTED();
   return NULL;
 }

@@ -243,6 +243,6 @@ void StatusTrayWin::SetStatusTrayStateChangerProxyForTest(
   state_changer_proxy_ = std::move(proxy);
 }
 
-StatusTray* StatusTray::Create() {
-  return new StatusTrayWin();
+std::unique_ptr<StatusTray> StatusTray::Create() {
+  return std::make_unique<StatusTrayWin>();
 }

@@ -113,8 +113,9 @@ static void JNI_NotificationPlatformBridge_InitializeNotificationPlatformBridge(
 }
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeAndroid();
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
+  return std::make_unique<NotificationPlatformBridgeAndroid>();
 }
 
 // static

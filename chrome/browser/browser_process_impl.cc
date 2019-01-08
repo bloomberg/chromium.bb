@@ -1245,7 +1245,7 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 void BrowserProcessImpl::CreateNotificationPlatformBridge() {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
   DCHECK(!notification_bridge_);
-  notification_bridge_.reset(NotificationPlatformBridge::Create());
+  notification_bridge_ = NotificationPlatformBridge::Create();
   created_notification_bridge_ = true;
 #endif
 }
@@ -1255,7 +1255,7 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 // All notification traffic is routed through NotificationPlatformBridge.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   DCHECK(!notification_ui_manager_);
-  notification_ui_manager_.reset(NotificationUIManager::Create());
+  notification_ui_manager_ = NotificationUIManager::Create();
   created_notification_ui_manager_ = !!notification_ui_manager_;
 #endif
 }
@@ -1271,7 +1271,7 @@ void BrowserProcessImpl::CreateBackgroundModeManager() {
 
 void BrowserProcessImpl::CreateStatusTray() {
   DCHECK(!status_tray_);
-  status_tray_.reset(StatusTray::Create());
+  status_tray_ = StatusTray::Create();
 }
 
 void BrowserProcessImpl::CreatePrintPreviewDialogController() {
