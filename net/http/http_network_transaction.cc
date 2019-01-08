@@ -819,9 +819,6 @@ int HttpNetworkTransaction::DoCreateStream() {
 }
 
 int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
-  // Version interference probes should not result in success.
-  DCHECK(!server_ssl_config_.version_interference_probe || result != OK);
-
   // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE, then
   // DoCreateStreamComplete is being called from OnHttpsProxyTunnelResponse,
   // which resets the stream request first. Therefore, we have to grab the
