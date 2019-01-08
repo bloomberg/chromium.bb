@@ -7,10 +7,15 @@
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/contextual_search/buildflags.h"
-#include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+
+#if !defined(OS_ANDROID)
 #include "components/spellcheck/browser/pref_names.h"
+#endif
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
+#include "components/contextual_search/core/browser/contextual_search_preference.h"
+#endif
 
 ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
     PrefService* pref_service)
@@ -19,9 +24,11 @@ ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
   ObserveServicePrefChange(Service::kSafeBrowsingExtendedReporting,
                            prefs::kSafeBrowsingScoutReportingEnabled,
                            pref_service_);
+#if !defined(OS_ANDROID)
   ObserveServicePrefChange(Service::kSpellCheck,
                            spellcheck::prefs::kSpellCheckUseSpellingService,
                            pref_service_);
+#endif
 #if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
   ObserveServicePrefChange(Service::kContextualSearch,
                            contextual_search::GetPrefName(), pref_service_);
@@ -32,30 +39,31 @@ ChromeUnifiedConsentServiceClient::~ChromeUnifiedConsentServiceClient() {}
 
 ChromeUnifiedConsentServiceClient::ServiceState
 ChromeUnifiedConsentServiceClient::GetServiceState(Service service) {
-  bool enabled;
   switch (service) {
     case Service::kSafeBrowsingExtendedReporting:
-      enabled = safe_browsing::IsExtendedReportingEnabled(*pref_service_);
-      break;
+      return safe_browsing::IsExtendedReportingEnabled(*pref_service_)
+                 ? ServiceState::kEnabled
+                 : ServiceState::kDisabled;
     case Service::kSpellCheck:
-      enabled = pref_service_->GetBoolean(
-          spellcheck::prefs::kSpellCheckUseSpellingService);
-      break;
-    case Service::kContextualSearch:
-#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
-      enabled = contextual_search::IsEnabled(*pref_service_);
+#if !defined(OS_ANDROID)
+      return pref_service_->GetBoolean(
+                 spellcheck::prefs::kSpellCheckUseSpellingService)
+                 ? ServiceState::kEnabled
+                 : ServiceState::kDisabled;
 #else
       return ServiceState::kNotSupported;
 #endif
-      break;
-    case Service::kAlternateErrorPages:
-    case Service::kMetricsReporting:
-    case Service::kNetworkPrediction:
-    case Service::kSafeBrowsing:
-    case Service::kSearchSuggest:
+    case Service::kContextualSearch:
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
+      return contextual_search::IsEnabled(*pref_service_)
+                 ? ServiceState::kEnabled
+                 : ServiceState::kDisabled;
+#else
       return ServiceState::kNotSupported;
+#endif
   }
-  return enabled ? ServiceState::kEnabled : ServiceState::kDisabled;
+
+  NOTREACHED();
 }
 
 void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
@@ -68,8 +76,12 @@ void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
       safe_browsing::SetExtendedReportingPref(pref_service_, enabled);
       break;
     case Service::kSpellCheck:
+#if !defined(OS_ANDROID)
       pref_service_->SetBoolean(
           spellcheck::prefs::kSpellCheckUseSpellingService, enabled);
+#else
+      NOTREACHED();
+#endif
       break;
     case Service::kContextualSearch: {
 #if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
@@ -84,11 +96,5 @@ void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
 #endif
       break;
     }
-    case Service::kAlternateErrorPages:
-    case Service::kMetricsReporting:
-    case Service::kNetworkPrediction:
-    case Service::kSafeBrowsing:
-    case Service::kSearchSuggest:
-      NOTREACHED();
   }
 }
