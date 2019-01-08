@@ -17,6 +17,16 @@
 
 namespace media_session {
 
+namespace {
+
+mojom::EnforcementMode GetDefaultEnforcementMode() {
+  if (IsAudioFocusEnabled() && IsAudioFocusEnforcementEnabled())
+    return mojom::EnforcementMode::kSingleGroup;
+  return mojom::EnforcementMode::kNone;
+}
+
+}  // namespace
+
 class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
  public:
   StackRow(AudioFocusManager* owner,
@@ -128,6 +138,22 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     controller_->BindToInterface(std::move(request));
   }
 
+  void Suspend(bool transient) {
+    DCHECK(!session_info_->force_duck);
+    transient_suspend_ = transient_suspend_ || transient;
+    session_->Suspend(mojom::MediaSession::SuspendType::kSystem);
+  }
+
+  void MaybeResume() {
+    DCHECK(!session_info_->force_duck);
+
+    if (!transient_suspend_)
+      return;
+
+    transient_suspend_ = false;
+    session_->Resume(mojom::MediaSession::SuspendType::kSystem);
+  }
+
  private:
   void SetSessionInfo(mojom::MediaSessionInfoPtr session_info) {
     bool is_controllable_changed =
@@ -162,6 +188,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;
+  bool transient_suspend_ = false;
 
   std::unique_ptr<MediaController> controller_;
 
@@ -261,9 +288,7 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
     return;
   }
 
-  if (IsAudioFocusEnforcementEnabled())
-    EnforceAudioFocusAbandon(row->audio_focus_type());
-
+  EnforceAudioFocusAbandon();
   MaybeUpdateActiveSession();
 
   // Notify observers that we lost audio focus.
@@ -286,6 +311,21 @@ void AudioFocusManager::AddObserver(mojom::AudioFocusObserverPtr observer) {
 void AudioFocusManager::SetSourceName(const std::string& name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bindings_.dispatch_context()->source_name = name;
+}
+
+void AudioFocusManager::SetEnforcementMode(mojom::EnforcementMode mode) {
+  if (mode == mojom::EnforcementMode::kDefault)
+    mode = GetDefaultEnforcementMode();
+
+  if (mode == enforcement_mode_)
+    return;
+
+  enforcement_mode_ = mode;
+
+  if (audio_focus_stack_.empty())
+    return;
+
+  EnforceAudioFocus();
 }
 
 void AudioFocusManager::CreateActiveMediaController(
@@ -329,16 +369,10 @@ void AudioFocusManager::RequestAudioFocusInternal(
     std::unique_ptr<StackRow> row,
     mojom::AudioFocusType type,
     base::OnceCallback<void()> callback) {
-  // If audio focus is enabled then we should enforce this request and make sure
-  // the new active session is not ducking.
-  if (IsAudioFocusEnforcementEnabled()) {
-    EnforceAudioFocusRequest(type, row->group_id());
-    row->session()->StopDucking();
-  }
-
   row->SetAudioFocusType(type);
   audio_focus_stack_.push_back(std::move(row));
 
+  EnforceAudioFocus();
   MaybeUpdateActiveSession();
 
   // Notify observers that we were gained audio focus.
@@ -353,87 +387,49 @@ void AudioFocusManager::RequestAudioFocusInternal(
   std::move(callback).Run();
 }
 
-void AudioFocusManager::EnforceAudioFocusRequest(
-    mojom::AudioFocusType type,
-    const base::UnguessableToken& group_id) {
-  DCHECK(IsAudioFocusEnforcementEnabled());
-
-  for (auto& old_session : audio_focus_stack_) {
-    // If the session has the force duck flag set then we should always duck it.
-    if (old_session->info()->force_duck) {
-      old_session->session()->StartDucking();
-      continue;
-    }
-
-    switch (type) {
-      case mojom::AudioFocusType::kGain:
-      case mojom::AudioFocusType::kGainTransient:
-        // If the session has the same group id as the new session then we
-        // should not suspend that session.
-        if (old_session->group_id() == group_id)
-          break;
-
-        old_session->session()->Suspend(
-            mojom::MediaSession::SuspendType::kSystem);
-        break;
-      case mojom::AudioFocusType::kGainTransientMayDuck:
-        old_session->session()->StartDucking();
-        break;
-    }
-  }
-}
-
-void AudioFocusManager::EnforceAudioFocusAbandon(mojom::AudioFocusType type) {
-  DCHECK(IsAudioFocusEnforcementEnabled());
-
+void AudioFocusManager::EnforceAudioFocusAbandon() {
   // Allow the top-most MediaSession having force duck to unduck even if
   // it is not active.
-  for (auto iter = audio_focus_stack_.rbegin();
-       iter != audio_focus_stack_.rend(); ++iter) {
-    if (!(*iter)->info()->force_duck)
-      continue;
+  if (enforcement_mode_ != mojom::EnforcementMode::kNone) {
+    for (auto iter = audio_focus_stack_.rbegin();
+         iter != audio_focus_stack_.rend(); ++iter) {
+      if (!(*iter)->info()->force_duck)
+        continue;
 
-    // TODO(beccahughes): Replace with std::rotate.
-    auto duck_row = std::move(*iter);
-    duck_row->session()->StopDucking();
-    audio_focus_stack_.erase(std::next(iter).base());
-    audio_focus_stack_.push_back(std::move(duck_row));
-    return;
+      // TODO(beccahughes): Replace with std::rotate.
+      auto duck_row = std::move(*iter);
+      duck_row->session()->StopDucking();
+      audio_focus_stack_.erase(std::next(iter).base());
+      audio_focus_stack_.push_back(std::move(duck_row));
+      return;
+    }
   }
 
-  DCHECK(!audio_focus_stack_.empty());
-  StackRow* top = audio_focus_stack_.back().get();
+  EnforceAudioFocus();
+}
 
-  switch (type) {
-    case mojom::AudioFocusType::kGain:
-      // Do nothing. The abandoned session suspended all the media sessions and
-      // they should stay suspended to avoid surprising the user.
-      break;
-    case mojom::AudioFocusType::kGainTransient:
-      // The abandoned session suspended all the media sessions but we should
-      // start playing the top one again as the abandoned media was transient.
-      // This will also apply to any sessions that have the same group_id as the
-      // new top most session.
-      for (auto& session : audio_focus_stack_) {
-        if (session->group_id() != top->group_id())
-          continue;
+void AudioFocusManager::EnforceAudioFocus() {
+  DCHECK_NE(mojom::EnforcementMode::kDefault, enforcement_mode_);
+  if (audio_focus_stack_.empty())
+    return;
 
-        session->session()->Resume(mojom::MediaSession::SuspendType::kSystem);
-      }
-      break;
-    case mojom::AudioFocusType::kGainTransientMayDuck:
-      // The abandoned session ducked all the media sessions so we should unduck
-      // them. If they are not playing then they will not resume.
-      for (auto& session : base::Reversed(audio_focus_stack_)) {
-        session->session()->StopDucking();
+  EnforcementState state;
 
-        // If the new session is ducking then we should continue ducking all but
-        // the new session.
-        if (top->audio_focus_type() ==
-            mojom::AudioFocusType::kGainTransientMayDuck)
-          break;
-      }
-      break;
+  for (auto& session : base::Reversed(audio_focus_stack_)) {
+    EnforceSingleSession(session.get(), state);
+
+    // Update the flags based on the audio focus type of this session.
+    switch (session->audio_focus_type()) {
+      case mojom::AudioFocusType::kGain:
+        state.should_suspend = true;
+        break;
+      case mojom::AudioFocusType::kGainTransient:
+        state.should_transient_suspend = true;
+        break;
+      case mojom::AudioFocusType::kGainTransientMayDuck:
+        state.should_duck = true;
+        break;
+    }
   }
 }
 
@@ -462,7 +458,8 @@ void AudioFocusManager::MaybeUpdateActiveSession() {
   });
 }
 
-AudioFocusManager::AudioFocusManager() {
+AudioFocusManager::AudioFocusManager()
+    : enforcement_mode_(GetDefaultEnforcementMode()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -494,6 +491,62 @@ bool AudioFocusManager::IsSessionOnTopOfAudioFocusStack(
     mojom::AudioFocusType type) const {
   return !audio_focus_stack_.empty() && audio_focus_stack_.back()->id() == id &&
          audio_focus_stack_.back()->audio_focus_type() == type;
+}
+
+bool AudioFocusManager::ShouldSessionBeSuspended(
+    const StackRow* session,
+    const EnforcementState& state) const {
+  bool should_suspend_any =
+      state.should_suspend || state.should_transient_suspend;
+
+  switch (enforcement_mode_) {
+    case mojom::EnforcementMode::kSingleSession:
+      return should_suspend_any;
+    case mojom::EnforcementMode::kSingleGroup:
+      return should_suspend_any &&
+             session->group_id() != audio_focus_stack_.back()->group_id();
+    case mojom::EnforcementMode::kNone:
+      return false;
+    case mojom::EnforcementMode::kDefault:
+      NOTIMPLEMENTED();
+      return false;
+  }
+}
+
+bool AudioFocusManager::ShouldSessionBeDucked(
+    const StackRow* session,
+    const EnforcementState& state) const {
+  switch (enforcement_mode_) {
+    case mojom::EnforcementMode::kSingleSession:
+    case mojom::EnforcementMode::kSingleGroup:
+      if (session->info()->force_duck)
+        return state.should_duck || ShouldSessionBeSuspended(session, state);
+      return state.should_duck;
+    case mojom::EnforcementMode::kNone:
+      return false;
+    case mojom::EnforcementMode::kDefault:
+      NOTIMPLEMENTED();
+      return false;
+  }
+}
+
+void AudioFocusManager::EnforceSingleSession(StackRow* session,
+                                             const EnforcementState& state) {
+  if (ShouldSessionBeDucked(session, state)) {
+    session->session()->StartDucking();
+  } else {
+    session->session()->StopDucking();
+  }
+
+  // If the session wants to be ducked instead of suspended we should stop now.
+  if (session->info()->force_duck)
+    return;
+
+  if (ShouldSessionBeSuspended(session, state)) {
+    session->Suspend(state.should_transient_suspend);
+  } else {
+    session->MaybeResume();
+  }
 }
 
 }  // namespace media_session

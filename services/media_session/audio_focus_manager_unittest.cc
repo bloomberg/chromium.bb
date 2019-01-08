@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -18,7 +17,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/media_session_service.h"
-#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -38,18 +36,12 @@ const char kExampleSourceName2[] = "test2";
 // This tests the Audio Focus Manager API. The parameter determines whether
 // audio focus is enabled or not. If it is not enabled it should track the media
 // sessions but not enforce single session focus.
-class AudioFocusManagerTest : public testing::TestWithParam<bool> {
+class AudioFocusManagerTest
+    : public testing::TestWithParam<mojom::EnforcementMode> {
  public:
   AudioFocusManagerTest() = default;
 
   void SetUp() override {
-    if (!GetParam()) {
-      command_line_.GetProcessCommandLine()->AppendSwitchASCII(
-          switches::kEnableAudioFocus, switches::kEnableAudioFocusNoEnforce);
-    }
-
-    ASSERT_EQ(GetParam(), IsAudioFocusEnforcementEnabled());
-
     // Create an instance of the MediaSessionService.
     service_ = std::make_unique<MediaSessionService>(
         connector_factory_.RegisterInstance(mojom::kServiceName));
@@ -57,6 +49,9 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
                                                             &audio_focus_ptr_);
     connector_factory_.GetDefaultConnector()->BindInterface(
         mojom::kServiceName, &audio_focus_debug_ptr_);
+
+    audio_focus_ptr_->SetEnforcementMode(GetParam());
+    audio_focus_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -126,7 +121,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
       test::MockMediaSession* session) {
     mojom::MediaSessionInfo::SessionState state = session->GetState();
 
-    if (!GetParam()) {
+    if (!IsEnforcementEnabled()) {
       // If audio focus enforcement is disabled then we should never see these
       // states in the tests.
       EXPECT_NE(mojom::MediaSessionInfo::SessionState::kSuspended, state);
@@ -152,7 +147,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
       mojom::MediaSessionInfo::SessionState state) {
     // If enforcement is enabled then returns the provided state, otherwise
     // returns kActive because without enforcement we did not change state.
-    if (GetParam())
+    if (IsEnforcementEnabled())
       return state;
     return mojom::MediaSessionInfo::SessionState::kActive;
   }
@@ -184,6 +179,15 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     return histogram_tester_
         .GetTotalCountsForPrefix("Media.Session.AudioFocus.")
         .size();
+  }
+
+  bool IsEnforcementEnabled() const {
+    return GetParam() == mojom::EnforcementMode::kSingleSession ||
+           GetParam() == mojom::EnforcementMode::kSingleGroup;
+  }
+
+  bool IsGroupingEnabled() const {
+    return GetParam() != mojom::EnforcementMode::kSingleSession;
   }
 
  private:
@@ -220,7 +224,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   }
 
   void FlushForTestingIfEnabled() {
-    if (!GetParam())
+    if (!IsEnforcementEnabled())
       return;
 
     audio_focus_ptr_.FlushForTesting();
@@ -239,7 +243,13 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, AudioFocusManagerTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    ,
+    AudioFocusManagerTest,
+    testing::Values(mojom::EnforcementMode::kDefault,
+                    mojom::EnforcementMode::kNone,
+                    mojom::EnforcementMode::kSingleGroup,
+                    mojom::EnforcementMode::kSingleSession));
 
 TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
   test::MockMediaSession media_session_1;
@@ -683,7 +693,8 @@ TEST_P(AudioFocusManagerTest,
             GetState(&media_session_1));
 
   media_session_3.AbandonAudioFocusFromClient();
-  EXPECT_EQ(GetParam() ? request_id_1 : request_id_2, GetAudioFocusedSession());
+  EXPECT_EQ(IsEnforcementEnabled() ? request_id_1 : request_id_2,
+            GetAudioFocusedSession());
 }
 
 TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
@@ -1105,7 +1116,9 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientResume) {
 
   media_session_4.AbandonAudioFocusFromClient();
 
-  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session_1));
   EXPECT_EQ(
       GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
@@ -1127,7 +1140,9 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_DoNotSuspendSameGroup) {
 
   RequestGroupedAudioFocus(&media_session_2, mojom::AudioFocusType::kGain,
                            group_id);
-  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session_1));
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_2));
@@ -1163,13 +1178,12 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientSameGroup) {
 
   RequestGroupedAudioFocus(&media_session_2,
                            mojom::AudioFocusType::kGainTransient, group_id);
-  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session_1));
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_2));
 }
-
-// TODO: Fix //content
-// TODO: Fix //ash
 
 }  // namespace media_session

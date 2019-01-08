@@ -55,6 +55,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
   void AddObserver(mojom::AudioFocusObserverPtr observer) override;
   void SetSourceName(const std::string& name) override;
+  void SetEnforcementMode(mojom::EnforcementMode mode) override;
 
   // mojom::AudioFocusManagerDebug.
   void GetDebugInfoForRequest(const RequestId& request_id,
@@ -95,14 +96,19 @@ class AudioFocusManager : public mojom::AudioFocusManager,
     std::string source_name;
   };
 
+  struct EnforcementState {
+    bool should_duck = false;
+    bool should_suspend = false;
+    bool should_transient_suspend = false;
+  };
+
   void RequestAudioFocusInternal(std::unique_ptr<StackRow>,
                                  mojom::AudioFocusType,
                                  base::OnceCallback<void()>);
-  void EnforceAudioFocusRequest(mojom::AudioFocusType type,
-                                const base::UnguessableToken& group_id);
-
   void AbandonAudioFocusInternal(RequestId);
-  void EnforceAudioFocusAbandon(mojom::AudioFocusType);
+
+  void EnforceAudioFocusAbandon();
+  void EnforceAudioFocus();
 
   void MaybeUpdateActiveSession();
 
@@ -114,6 +120,13 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   bool IsSessionOnTopOfAudioFocusStack(RequestId id,
                                        mojom::AudioFocusType type) const;
+
+  bool ShouldSessionBeSuspended(const StackRow* session,
+                                const EnforcementState& state) const;
+  bool ShouldSessionBeDucked(const StackRow* session,
+                             const EnforcementState& state) const;
+
+  void EnforceSingleSession(StackRow* session, const EnforcementState& state);
 
   // This |MediaController| acts as a proxy for controlling the active
   // |MediaSession| over mojo.
@@ -136,6 +149,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // A stack of Mojo interface pointers and their requested audio focus type.
   // A MediaSession must abandon audio focus before its destruction.
   std::list<std::unique_ptr<StackRow>> audio_focus_stack_;
+
+  mojom::EnforcementMode enforcement_mode_;
 
   // Adding observers should happen on the same thread that the service is
   // running on.

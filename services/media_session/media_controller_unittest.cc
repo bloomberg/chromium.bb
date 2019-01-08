@@ -38,6 +38,10 @@ class MediaControllerTest : public testing::Test {
     controller_manager_ptr_->CreateActiveMediaController(
         mojo::MakeRequest(&media_controller_ptr_));
     controller_manager_ptr_.FlushForTesting();
+
+    audio_focus_ptr_->SetEnforcementMode(
+        mojom::EnforcementMode::kSingleSession);
+    audio_focus_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
