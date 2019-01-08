@@ -39,9 +39,11 @@
 #include <unistd.h>
 
 #include <drm_fourcc.h>
+#include <xf86drm.h>
 #include <gbm.h>
 
 #include <wayland-client.h>
+#include "shared/helpers.h"
 #include "shared/platform.h"
 #include "shared/zalloc.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
@@ -62,6 +64,9 @@
 /* Possible options that affect the displayed image */
 #define OPT_IMMEDIATE  1  /* create wl_buffer immediately */
 
+#define BUFFER_FORMAT DRM_FORMAT_XRGB8888
+#define MAX_BUFFER_PLANES 4
+
 struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
@@ -69,11 +74,14 @@ struct display {
 	struct zxdg_shell_v6 *shell;
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct zwp_linux_dmabuf_v1 *dmabuf;
-	int xrgb8888_format_found;
+	uint64_t *modifiers;
+	int modifiers_count;
 	int req_dmabuf_immediate;
 	struct {
 		EGLDisplay display;
 		EGLContext context;
+		bool has_dma_buf_import_modifiers;
+		PFNEGLQUERYDMABUFMODIFIERSEXTPROC query_dma_buf_modifiers;
 		PFNEGLCREATEIMAGEKHRPROC create_image;
 		PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 		PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
@@ -91,12 +99,14 @@ struct buffer {
 
 	struct gbm_bo *bo;
 
-	int dmabuf_fd;
-
 	int width;
 	int height;
-	uint32_t stride;
 	int format;
+	uint64_t modifier;
+	int plane_count;
+	int dmabuf_fds[MAX_BUFFER_PLANES];
+	uint32_t strides[MAX_BUFFER_PLANES];
+	uint32_t offsets[MAX_BUFFER_PLANES];
 
 	EGLImageKHR egl_image;
 	GLuint gl_texture;
@@ -137,6 +147,8 @@ static const struct wl_buffer_listener buffer_listener = {
 static void
 buffer_free(struct buffer *buf)
 {
+	int i;
+
 	if (buf->gl_fbo)
 		glDeleteFramebuffers(1, &buf->gl_fbo);
 
@@ -154,8 +166,10 @@ buffer_free(struct buffer *buf)
 	if (buf->bo)
 		gbm_bo_destroy(buf->bo);
 
-	if (buf->dmabuf_fd >= 0)
-		close(buf->dmabuf_fd);
+	for (i = 0; i < buf->plane_count; ++i) {
+		if (buf->dmabuf_fds[i] >= 0)
+			close(buf->dmabuf_fds[i]);
+	}
 }
 
 static void
@@ -192,15 +206,52 @@ static const struct zwp_linux_buffer_params_v1_listener params_listener = {
 static bool
 create_fbo_for_buffer(struct display *display, struct buffer *buffer)
 {
-	EGLint attribs[] = {
-		EGL_WIDTH, buffer->width,
-		EGL_HEIGHT, buffer->height,
-		EGL_LINUX_DRM_FOURCC_EXT, buffer->format,
-		EGL_DMA_BUF_PLANE0_FD_EXT, buffer->dmabuf_fd,
-		EGL_DMA_BUF_PLANE0_OFFSET_EXT, 0,
-		EGL_DMA_BUF_PLANE0_PITCH_EXT, (int) buffer->stride,
-		EGL_NONE
-	};
+	static const int general_attribs = 3;
+	static const int plane_attribs = 5;
+	static const int entries_per_attrib = 2;
+	EGLint attribs[(general_attribs + plane_attribs * MAX_BUFFER_PLANES) *
+			entries_per_attrib + 1];
+	unsigned int atti = 0;
+
+	attribs[atti++] = EGL_WIDTH;
+	attribs[atti++] = buffer->width;
+	attribs[atti++] = EGL_HEIGHT;
+	attribs[atti++] = buffer->height;
+	attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
+	attribs[atti++] = buffer->format;
+
+#define ADD_PLANE_ATTRIBS(plane_idx) { \
+	attribs[atti++] = EGL_DMA_BUF_PLANE ## plane_idx ## _FD_EXT; \
+	attribs[atti++] = buffer->dmabuf_fds[plane_idx]; \
+	attribs[atti++] = EGL_DMA_BUF_PLANE ## plane_idx ## _OFFSET_EXT; \
+	attribs[atti++] = (int) buffer->offsets[plane_idx]; \
+	attribs[atti++] = EGL_DMA_BUF_PLANE ## plane_idx ## _PITCH_EXT; \
+	attribs[atti++] = (int) buffer->strides[plane_idx]; \
+	if (display->egl.has_dma_buf_import_modifiers) { \
+		attribs[atti++] = EGL_DMA_BUF_PLANE ## plane_idx ## _MODIFIER_LO_EXT; \
+		attribs[atti++] = buffer->modifier & 0xFFFFFFFF; \
+		attribs[atti++] = EGL_DMA_BUF_PLANE ## plane_idx ## _MODIFIER_HI_EXT; \
+		attribs[atti++] = buffer->modifier >> 32; \
+	} \
+	}
+
+	if (buffer->plane_count > 0)
+		ADD_PLANE_ATTRIBS(0);
+
+	if (buffer->plane_count > 1)
+		ADD_PLANE_ATTRIBS(1);
+
+	if (buffer->plane_count > 2)
+		ADD_PLANE_ATTRIBS(2);
+
+	if (buffer->plane_count > 3)
+		ADD_PLANE_ATTRIBS(3);
+
+#undef ADD_PLANE_ATTRIBS
+
+	attribs[atti] = EGL_NONE;
+
+	assert(atti < ARRAY_LENGTH(attribs));
 
 	buffer->egl_image = display->egl.create_image(display->egl.display,
 						      EGL_NO_CONTEXT,
@@ -238,42 +289,79 @@ create_fbo_for_buffer(struct display *display, struct buffer *buffer)
 
 static int
 create_dmabuf_buffer(struct display *display, struct buffer *buffer,
-		     int width, int height, int format)
+		     int width, int height)
 {
-	static const uint32_t flags = 0;
-	static const uint64_t modifier = DRM_FORMAT_MOD_INVALID;
+	/* Y-Invert the buffer image, since we are going to renderer to the
+	 * buffer through a FBO. */
+	static const uint32_t flags = ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
 	struct zwp_linux_buffer_params_v1 *params;
+	int i;
 
 	buffer->display = display;
 	buffer->width = width;
 	buffer->height = height;
-	buffer->format = format;
+	buffer->format = BUFFER_FORMAT;
 
-	buffer->bo = gbm_bo_create(display->gbm.device,
-				   buffer->width, buffer->height,
-				   format,
-				   GBM_BO_USE_RENDERING);
+#ifdef HAVE_GBM_MODIFIERS
+	if (display->modifiers_count > 0) {
+		buffer->bo = gbm_bo_create_with_modifiers(display->gbm.device,
+							  buffer->width,
+							  buffer->height,
+							  buffer->format,
+							  display->modifiers,
+							  display->modifiers_count);
+		if (buffer->bo)
+			buffer->modifier = gbm_bo_get_modifier(buffer->bo);
+	}
+#endif
+
+	if (!buffer->bo) {
+		buffer->bo = gbm_bo_create(display->gbm.device,
+					   buffer->width,
+					   buffer->height,
+					   buffer->format,
+					   GBM_BO_USE_RENDERING);
+		buffer->modifier = DRM_FORMAT_MOD_INVALID;
+	}
+
 	if (!buffer->bo) {
 		fprintf(stderr, "create_bo failed\n");
 		goto error;
 	}
 
-	buffer->stride = gbm_bo_get_stride(buffer->bo);
-	buffer->dmabuf_fd = gbm_bo_get_fd(buffer->bo);
-
-	if (buffer->dmabuf_fd < 0) {
-		fprintf(stderr, "error: dmabuf_fd < 0\n");
+#ifdef HAVE_GBM_MODIFIERS
+	buffer->plane_count = gbm_bo_get_plane_count(buffer->bo);
+	for (i = 0; i < buffer->plane_count; ++i) {
+		uint32_t handle = gbm_bo_get_handle_for_plane(buffer->bo, i).u32;
+		int ret = drmPrimeHandleToFD(display->gbm.drm_fd, handle, 0,
+					     &buffer->dmabuf_fds[i]);
+		if (ret < 0 || buffer->dmabuf_fds[i] < 0) {
+			fprintf(stderr, "error: failed to get dmabuf_fd\n");
+			goto error;
+		}
+		buffer->strides[i] = gbm_bo_get_stride_for_plane(buffer->bo, i);
+		buffer->offsets[i] = gbm_bo_get_offset(buffer->bo, i);
+	}
+#else
+	buffer->plane_count = 1;
+	buffer->strides[0] = gbm_bo_get_stride(buffer->bo);
+	buffer->dmabuf_fds[0] = gbm_bo_get_fd(buffer->bo);
+	if (buffer->dmabuf_fds[0] < 0) {
+		fprintf(stderr, "error: failed to get dmabuf_fd\n");
 		goto error;
 	}
+#endif
 
 	params = zwp_linux_dmabuf_v1_create_params(display->dmabuf);
-	zwp_linux_buffer_params_v1_add(params,
-				       buffer->dmabuf_fd,
-				       0, /* plane_idx */
-				       0, /* offset */
-				       buffer->stride,
-				       modifier >> 32,
-				       modifier & 0xffffffff);
+	for (i = 0; i < buffer->plane_count; ++i) {
+		zwp_linux_buffer_params_v1_add(params,
+					       buffer->dmabuf_fds[i],
+					       i,
+					       buffer->offsets[i],
+					       buffer->strides[i],
+					       buffer->modifier >> 32,
+					       buffer->modifier & 0xffffffff);
+	}
 
 	zwp_linux_buffer_params_v1_add_listener(params, &params_listener, buffer);
 	if (display->req_dmabuf_immediate) {
@@ -281,7 +369,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 			zwp_linux_buffer_params_v1_create_immed(params,
 								buffer->width,
 								buffer->height,
-								format,
+								buffer->format,
 								flags);
 		wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
 	}
@@ -289,7 +377,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 		zwp_linux_buffer_params_v1_create(params,
 						  buffer->width,
 						  buffer->height,
-						  format,
+						  buffer->format,
 						  flags);
 	}
 
@@ -387,8 +475,15 @@ create_window(struct display *display, int width, int height)
 	}
 
 	for (i = 0; i < NUM_BUFFERS; ++i) {
+		int j;
+		for (j = 0; j < MAX_BUFFER_PLANES; ++j)
+			window->buffers[i].dmabuf_fds[j] = -1;
+
+	}
+
+	for (i = 0; i < NUM_BUFFERS; ++i) {
 		ret = create_dmabuf_buffer(display, &window->buffers[i],
-		                           width, height, DRM_FORMAT_XRGB8888);
+		                           width, height);
 
 		if (ret < 0)
 			return NULL;
@@ -488,8 +583,12 @@ dmabuf_modifiers(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf,
 	struct display *d = data;
 
 	switch (format) {
-	case DRM_FORMAT_XRGB8888:
-		d->xrgb8888_format_found = 1;
+	case BUFFER_FORMAT:
+		++d->modifiers_count;
+		d->modifiers = realloc(d->modifiers,
+				       d->modifiers_count * sizeof(*d->modifiers));
+		d->modifiers[d->modifiers_count - 1] =
+			((uint64_t)modifier_hi << 32) | modifier_lo;
 		break;
 	default:
 		break;
@@ -568,6 +667,8 @@ destroy_display(struct display *display)
 
 	if (display->egl.display != EGL_NO_DISPLAY)
 		eglTerminate(display->egl.display);
+
+	free(display->modifiers);
 
 	if (display->dmabuf)
 		zwp_linux_dmabuf_v1_destroy(display->dmabuf);
@@ -663,6 +764,14 @@ display_set_up_egl(struct display *display)
 		goto error;
 	}
 
+	if (weston_check_egl_extension(egl_extensions,
+				       "EGL_EXT_image_dma_buf_import_modifiers")) {
+		display->egl.has_dma_buf_import_modifiers = true;
+		display->egl.query_dma_buf_modifiers =
+			(void *) eglGetProcAddress("eglQueryDmaBufModifiersEXT");
+		assert(display->egl.query_dma_buf_modifiers);
+	}
+
 	display->egl.create_image =
 		(void *) eglGetProcAddress("eglCreateImageKHR");
 	assert(display->egl.create_image);
@@ -678,6 +787,76 @@ display_set_up_egl(struct display *display)
 	return true;
 
 error:
+	return false;
+}
+
+static bool
+display_update_supported_modifiers_for_egl(struct display *d)
+{
+	uint64_t *egl_modifiers = NULL;
+	int num_egl_modifiers = 0;
+	EGLBoolean ret;
+	int i;
+
+	/* If EGL doesn't support modifiers, don't use them at all. */
+	if (!d->egl.has_dma_buf_import_modifiers) {
+		d->modifiers_count = 0;
+		free(d->modifiers);
+		d->modifiers = NULL;
+		return true;
+	}
+
+	ret = d->egl.query_dma_buf_modifiers(d->egl.display,
+				             BUFFER_FORMAT,
+				             0,    /* max_modifiers */
+				             NULL, /* modifiers */
+				             NULL, /* external_only */
+				             &num_egl_modifiers);
+	if (ret == EGL_FALSE || num_egl_modifiers == 0) {
+		fprintf(stderr, "Failed to query num EGL modifiers for format\n");
+		goto error;
+	}
+
+	egl_modifiers = zalloc(num_egl_modifiers * sizeof(*egl_modifiers));
+
+	ret = d->egl.query_dma_buf_modifiers(d->egl.display,
+					     BUFFER_FORMAT,
+					     num_egl_modifiers,
+					     egl_modifiers,
+					     NULL, /* external_only */
+					     &num_egl_modifiers);
+	if (ret == EGL_FALSE) {
+		fprintf(stderr, "Failed to query EGL modifiers for format\n");
+		goto error;
+	}
+
+	/* Poor person's set intersection: d->modifiers INTERSECT
+	 * egl_modifiers.  If a modifier is not supported, replace it with
+	 * DRM_FORMAT_MOD_INVALID in the d->modifiers array.
+	 */
+	for (i = 0; i < d->modifiers_count; ++i) {
+		uint64_t mod = d->modifiers[i];
+		bool egl_supported = false;
+		int j;
+
+		for (j = 0; j < num_egl_modifiers; ++j) {
+			if (egl_modifiers[j] == mod) {
+				egl_supported = true;
+				break;
+			}
+		}
+
+		if (!egl_supported)
+			d->modifiers[i] = DRM_FORMAT_MOD_INVALID;
+	}
+
+	free(egl_modifiers);
+
+	return true;
+
+error:
+	free(egl_modifiers);
+
 	return false;
 }
 
@@ -729,12 +908,15 @@ create_display(char const *drm_render_node, int opts)
 
 	wl_display_roundtrip(display->display);
 
-	if (!display->xrgb8888_format_found) {
+	if (!display->modifiers_count) {
 		fprintf(stderr, "format XRGB8888 is not available\n");
 		goto error;
 	}
 
 	if (!display_set_up_egl(display))
+		goto error;
+
+	if (!display_update_supported_modifiers_for_egl(display))
 		goto error;
 
 	if (!display_set_up_gbm(display, drm_render_node))
