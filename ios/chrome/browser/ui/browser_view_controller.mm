@@ -193,6 +193,7 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -3410,12 +3411,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - CRWWebStateObserver methods.
 
-// TODO(crbug.com/918934): didCommitNavigationWithDetails is deprecated, and
-// this call to closeFindInPage incorrectly triggers for all navigations, not
-// just navigations in the active WebState.
+// TODO(crbug.com/918934): This call to closeFindInPage incorrectly triggers for
+// all navigations, not just navigations in the active WebState.
 - (void)webState:(web::WebState*)webState
-    didCommitNavigationWithDetails:
-        (const web::LoadCommittedDetails&)load_details {
+    didFinishNavigation:(web::NavigationContext*)navigation {
   // Stop any Find in Page searches and close the find bar when navigating to a
   // new page.
   [self closeFindInPage];
