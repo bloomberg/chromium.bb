@@ -109,6 +109,7 @@ PASS Window interface: attribute onemptied
 PASS Window interface: attribute onended
 PASS Window interface: attribute onerror
 PASS Window interface: attribute onfocus
+PASS Window interface: attribute onformdata
 PASS Window interface: attribute oninput
 PASS Window interface: attribute oninvalid
 PASS Window interface: attribute onkeydown
@@ -254,6 +255,7 @@ PASS Window interface: window must inherit property "onemptied" with the proper 
 PASS Window interface: window must inherit property "onended" with the proper type
 PASS Window interface: window must inherit property "onerror" with the proper type
 PASS Window interface: window must inherit property "onfocus" with the proper type
+PASS Window interface: window must inherit property "onformdata" with the proper type
 PASS Window interface: window must inherit property "oninput" with the proper type
 PASS Window interface: window must inherit property "oninvalid" with the proper type
 PASS Window interface: window must inherit property "onkeydown" with the proper type
@@ -395,6 +397,7 @@ PASS Document interface: attribute onemptied
 PASS Document interface: attribute onended
 PASS Document interface: attribute onerror
 PASS Document interface: attribute onfocus
+PASS Document interface: attribute onformdata
 PASS Document interface: attribute oninput
 PASS Document interface: attribute oninvalid
 PASS Document interface: attribute onkeydown
@@ -516,6 +519,7 @@ PASS Document interface: iframe.contentDocument must inherit property "onemptied
 PASS Document interface: iframe.contentDocument must inherit property "onended" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onerror" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onfocus" with the proper type
+PASS Document interface: iframe.contentDocument must inherit property "onformdata" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oninput" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oninvalid" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onkeydown" with the proper type
@@ -637,6 +641,7 @@ PASS Document interface: new Document() must inherit property "onemptied" with t
 PASS Document interface: new Document() must inherit property "onended" with the proper type
 PASS Document interface: new Document() must inherit property "onerror" with the proper type
 PASS Document interface: new Document() must inherit property "onfocus" with the proper type
+PASS Document interface: new Document() must inherit property "onformdata" with the proper type
 PASS Document interface: new Document() must inherit property "oninput" with the proper type
 PASS Document interface: new Document() must inherit property "oninvalid" with the proper type
 PASS Document interface: new Document() must inherit property "onkeydown" with the proper type

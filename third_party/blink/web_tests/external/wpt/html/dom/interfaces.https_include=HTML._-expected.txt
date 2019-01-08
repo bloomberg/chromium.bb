@@ -123,6 +123,7 @@ PASS HTMLElement interface: attribute onemptied
 PASS HTMLElement interface: attribute onended
 PASS HTMLElement interface: attribute onerror
 PASS HTMLElement interface: attribute onfocus
+PASS HTMLElement interface: attribute onformdata
 PASS HTMLElement interface: attribute oninput
 PASS HTMLElement interface: attribute oninvalid
 PASS HTMLElement interface: attribute onkeydown
@@ -209,6 +210,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onended" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onerror" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onfocus" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "onformdata" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oninput" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oninvalid" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onkeydown" with the proper type
