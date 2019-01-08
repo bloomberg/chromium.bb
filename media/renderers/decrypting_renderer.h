@@ -68,6 +68,7 @@ class MEDIA_EXPORT DecryptingRenderer : public Renderer {
   // initialized.
   void InitializeRenderer(bool success);
   bool HasEncryptedStream();
+  void OnWaiting(WaitingReason reason);
 
   const std::unique_ptr<Renderer> renderer_;
   MediaLog* const media_log_;

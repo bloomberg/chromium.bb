@@ -46,7 +46,7 @@ class MEDIA_EXPORT DecryptingMediaResource : public MediaResource {
   std::vector<DemuxerStream*> GetAllStreams() override;
   MediaUrlParams GetMediaUrlParams() const override;
 
-  void Initialize(InitCB init_cb);
+  void Initialize(InitCB init_cb, WaitingCB waiting_cb_);
 
   // Returns the number of DecryptingDemuxerStreams that were created.
   virtual int DecryptingDemuxerStreamCountForTesting() const;
