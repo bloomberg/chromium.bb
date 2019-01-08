@@ -4,7 +4,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_STREAM_ID_MANAGER_PEER_H_
 #define NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_STREAM_ID_MANAGER_PEER_H_
 
-#include "base/macros.h"
+#include <stddef.h>
 
 namespace quic {
 

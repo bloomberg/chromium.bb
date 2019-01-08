@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -166,13 +167,17 @@ SimpleEntryImpl::SimpleEntryImpl(
                                       net::NetLogSourceType::DISK_CACHE_ENTRY)),
       stream_0_data_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       entry_priority_(entry_priority) {
-  static_assert(arraysize(data_size_) == arraysize(crc32s_end_offset_),
+  static_assert(std::extent<decltype(data_size_)>() ==
+                    std::extent<decltype(crc32s_end_offset_)>(),
                 "arrays should be the same size");
-  static_assert(arraysize(data_size_) == arraysize(crc32s_),
+  static_assert(
+      std::extent<decltype(data_size_)>() == std::extent<decltype(crc32s_)>(),
+      "arrays should be the same size");
+  static_assert(std::extent<decltype(data_size_)>() ==
+                    std::extent<decltype(have_written_)>(),
                 "arrays should be the same size");
-  static_assert(arraysize(data_size_) == arraysize(have_written_),
-                "arrays should be the same size");
-  static_assert(arraysize(data_size_) == arraysize(crc_check_state_),
+  static_assert(std::extent<decltype(data_size_)>() ==
+                    std::extent<decltype(crc_check_state_)>(),
                 "arrays should be the same size");
   ResetEntry();
   net_log_.BeginEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY,
@@ -614,7 +619,7 @@ void SimpleEntryImpl::ResetEntry() {
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
   std::memset(data_size_, 0, sizeof(data_size_));
-  for (size_t i = 0; i < arraysize(crc_check_state_); ++i) {
+  for (size_t i = 0; i < base::size(crc_check_state_); ++i) {
     crc_check_state_[i] = CRC_CHECK_NEVER_READ_AT_ALL;
   }
 }
