@@ -93,7 +93,7 @@ function localizeNumber(number) {
  * @const
  * @type {number}
  */
-var ImperialEraLimit = 2087;
+var ImperialEraLimit = 2117;
 
 /**
  * @param {!number} year
@@ -105,6 +105,10 @@ function formatJapaneseImperialEra(year, month) {
   // limitation.
   if (year > ImperialEraLimit)
     return '';
+  if (year >= 2020 || year == 2019 && month >= 4) {
+    // TODO(tkent): Next of Heisei is not published yet.
+    return '';
+  }
   if (year > 1989)
     return '(\u5e73\u6210' + localizeNumber(year - 1988) + '\u5e74)';
   if (year == 1989)
