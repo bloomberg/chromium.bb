@@ -95,7 +95,10 @@ void GCController::AsyncCollectAllWithEmptyStack(
   v8::Local<v8::Function> func = callback.Get(isolate);
   v8::Local<v8::Context> context = func->CreationContext();
   v8::Context::Scope context_scope(context);
-  func->Call(context, v8::Undefined(isolate), 0, nullptr).ToLocalChecked();
+  v8::TryCatch try_catch(isolate);
+  auto result = func->Call(context, context->Global(), 0, nullptr);
+  // Swallow potential exception.
+  ignore_result(result);
 }
 
 void GCController::MinorCollect(const gin::Arguments& args) {
