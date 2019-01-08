@@ -553,8 +553,11 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
   bool needs_end_layer = false;
   if (!painting_overflow_contents) {
+    bool skip_background = layout_box.BackgroundTransfersToView() ||
+                           (paint_info.SkipRootBackground() &&
+                            paint_info.PaintContainer() == layout_box);
     PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges_.line_left,
-                         border_edges_.line_right);
+                         border_edges_.line_right, skip_background);
 
     if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
         ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
