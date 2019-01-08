@@ -2,6 +2,7 @@ include_rules = [
     "+base/atomic_sequence_num.h",
     "+base/files/file.h",
     "+base/memory/scoped_refptr.h",
+    "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/task/sequence_manager/task_time_observer.h",
     "+base/unguessable_token.h",

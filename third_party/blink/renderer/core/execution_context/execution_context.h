@@ -142,6 +142,16 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   SecurityOrigin* GetMutableSecurityOrigin();
 
   ContentSecurityPolicy* GetContentSecurityPolicy();
+
+  // Returns the content security policy to be used based on the current
+  // JavaScript world we are in.
+  // Note: As part of crbug.com/896041, existing usages of
+  // ContentSecurityPolicy::ShouldBypassMainWorld should eventually be replaced
+  // by GetContentSecurityPolicyForWorld. However this is under active
+  // development, hence new callers should still use
+  // ContentSecurityPolicy::ShouldBypassMainWorld for now.
+  virtual ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
+
   virtual const KURL& Url() const = 0;
   virtual const KURL& BaseURL() const = 0;
   virtual KURL CompleteURL(const String& url) const = 0;
