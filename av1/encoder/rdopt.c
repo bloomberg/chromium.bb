@@ -12375,7 +12375,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                        &rd_stats_y, &rd_stats_uv, mode_rate,
                        search_state.best_rd)) {
         continue;
-      } else {
+      } else if (cpi->sf.inter_mode_rd_model_estimation == 1) {
         const int skip_ctx = av1_get_skip_context(xd);
         inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats.sse,
                              rd_stats.dist,
