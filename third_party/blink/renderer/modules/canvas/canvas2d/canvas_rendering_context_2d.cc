@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -1098,6 +1099,9 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
 }
 
 void CanvasRenderingContext2D::DisableAcceleration() {
+  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
+    NOTREACHED();
+  }
   canvas()->DisableAcceleration();
 }
 

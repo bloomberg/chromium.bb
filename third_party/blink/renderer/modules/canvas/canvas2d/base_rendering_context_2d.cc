@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_functions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
@@ -1233,7 +1234,8 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   // overhead.
   // See comments in canvas_heuristic_parameters.h for explanation.
   if (CanCreateCanvas2dResourceProvider() && IsAccelerated() &&
-      !image_source->IsAccelerated()) {
+      !image_source->IsAccelerated() &&
+      !base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
     float src_area = src_rect.Width() * src_rect.Height();
     if (src_area >
         canvas_heuristic_parameters::kDrawImageTextureUploadHardSizeLimit) {

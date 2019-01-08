@@ -60,7 +60,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       num_unreclaimed_frames_posted_(0),
       client_(client),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
+          ::features::IsSurfaceSynchronizationEnabled()),
       weak_ptr_factory_(this) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.

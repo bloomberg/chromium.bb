@@ -33,6 +33,7 @@
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -141,6 +142,9 @@ void Canvas2DLayerBridge::ResetResourceProvider() {
 }
 
 bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
+  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
+    return true;
+  }
   bool accelerate;
   if (software_rendering_while_hidden_) {
     accelerate = false;
