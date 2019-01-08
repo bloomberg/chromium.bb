@@ -60,6 +60,9 @@ class PrerenderService : public KeyedService {
                                ui::PageTransition transition,
                                TabModel* tab_model);
 
+  // |true| while a prerendered webstate is being inserted into a webStateList.
+  bool IsLoadingPrerender() { return loading_prerender_; }
+
   // Cancels any outstanding prerender requests and destroys any prerendered
   // pages.
   void CancelPrerender();
@@ -75,6 +78,8 @@ class PrerenderService : public KeyedService {
 
  private:
   __strong PreloadController* controller_;
+
+  bool loading_prerender_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderService);
 };

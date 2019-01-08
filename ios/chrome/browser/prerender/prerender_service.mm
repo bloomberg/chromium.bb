@@ -24,7 +24,8 @@
 
 PrerenderService::PrerenderService(ios::ChromeBrowserState* browser_state)
     : controller_(
-          [[PreloadController alloc] initWithBrowserState:browser_state]) {}
+          [[PreloadController alloc] initWithBrowserState:browser_state]),
+      loading_prerender_(false) {}
 
 PrerenderService::~PrerenderService() {}
 
@@ -83,9 +84,10 @@ bool PrerenderService::MaybeLoadPrerenderedURL(const GURL& url,
 
   if (new_navigation_manager->CanPruneAllButLastCommittedItem()) {
     new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
+    loading_prerender_ = true;
     web_state_list->ReplaceWebStateAt(web_state_list->active_index(),
                                       std::move(new_web_state));
-
+    loading_prerender_ = false;
     // new_web_state is now null after the std::move, so grab a new pointer to
     // it for further updates.
     web::WebState* active_web_state = web_state_list->GetActiveWebState();
