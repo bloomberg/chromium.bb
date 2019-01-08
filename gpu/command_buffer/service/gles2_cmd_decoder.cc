@@ -12236,7 +12236,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
         GL_INVALID_VALUE, "glVertexAttribIPointer", "offset < 0");
     return error::kNoError;
   }
-  GLsizei type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
+  uint32_t type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
   // type_size must be a power of two to use & as optimized modulo.
   DCHECK(GLES2Util::IsPOT(type_size));
   if (offset & (type_size - 1)) {
@@ -12256,7 +12256,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
                       SHADER_VARIABLE_INT : SHADER_VARIABLE_UINT;
   state_.vertex_attrib_manager->UpdateAttribBaseTypeAndMask(indx, base_type);
 
-  GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
+  uint32_t group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
+  DCHECK_LE(group_size, static_cast<uint32_t>(INT_MAX));
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
                       state_.bound_array_buffer.get(),
@@ -12327,7 +12328,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
         GL_INVALID_VALUE, "glVertexAttribPointer", "offset < 0");
     return error::kNoError;
   }
-  GLsizei type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
+  uint32_t type_size = GLES2Util::GetGLTypeSizeForBuffers(type);
   // type_size must be a power of two to use & as optimized modulo.
   DCHECK(GLES2Util::IsPOT(type_size));
   if (offset & (type_size - 1)) {
@@ -12346,7 +12347,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   state_.vertex_attrib_manager->UpdateAttribBaseTypeAndMask(
       indx, SHADER_VARIABLE_FLOAT);
 
-  GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
+  uint32_t group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
+  DCHECK_LE(group_size, static_cast<uint32_t>(INT_MAX));
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
                       state_.bound_array_buffer.get(),

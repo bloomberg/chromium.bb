@@ -269,7 +269,7 @@ std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
     GLsizei height,
     uint8_t* expected_color,
     uint8_t* expected_mask) {
-  const int src_channel_count = gles2::GLES2Util::ElementsPerGroup(
+  const uint32_t src_channel_count = gles2::GLES2Util::ElementsPerGroup(
       src_format_type.format, src_format_type.type);
   uint8_t color[4] = {1u, 63u, 127u, 255u};
   getExpectedColor(src_format_type.internal_format,
@@ -278,9 +278,9 @@ std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
   if (src_format_type.type == GL_UNSIGNED_BYTE) {
     std::unique_ptr<uint8_t[]> pixels(
         new uint8_t[width * height * src_channel_count]);
-    for (int i = 0; i < width * height * src_channel_count;
+    for (uint32_t i = 0; i < width * height * src_channel_count;
          i += src_channel_count) {
-      for (int j = 0; j < src_channel_count; ++j)
+      for (uint32_t j = 0; j < src_channel_count; ++j)
         pixels[i + j] = color[j];
     }
     return pixels;
@@ -290,9 +290,9 @@ std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
         new uint8_t[width * height * src_channel_count * sizeof(uint16_t)]);
     uint16_t* pixels = reinterpret_cast<uint16_t*>(data.get());
     int16_t flip_sign = -1;
-    for (int i = 0; i < width * height * src_channel_count;
+    for (uint32_t i = 0; i < width * height * src_channel_count;
          i += src_channel_count) {
-      for (int j = 0; j < src_channel_count; ++j) {
+      for (uint32_t j = 0; j < src_channel_count; ++j) {
         // Introduce an offset to the value to check. Expected value should be
         // the same as without the offset.
         flip_sign *= -1;
