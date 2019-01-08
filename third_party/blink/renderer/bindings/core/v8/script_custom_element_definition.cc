@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
@@ -74,35 +75,19 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
 }
 
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
-    ScriptState* script_state,
-    CustomElementRegistry* registry,
+    const ScriptCustomElementDefinitionData& data,
     const CustomElementDescriptor& descriptor,
-    CustomElementDefinition::Id id,
-    V8CustomElementConstructor* constructor,
-    V8VoidFunction* connected_callback,
-    V8VoidFunction* disconnected_callback,
-    V8CustomElementAdoptedCallback* adopted_callback,
-    V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-    V8CustomElementFormAssociatedCallback* form_associated_callback,
-    V8CustomElementDisabledStateChangedCallback*
-        disabled_state_changed_callback,
-    HashSet<AtomicString>&& observed_attributes,
-    const Vector<String>& disabled_features,
-    FormAssociationFlag form_association_flag) {
-  ScriptCustomElementDefinition* definition =
-      MakeGarbageCollected<ScriptCustomElementDefinition>(
-          script_state, descriptor, constructor, connected_callback,
-          disconnected_callback, adopted_callback, attribute_changed_callback,
-          form_associated_callback, disabled_state_changed_callback,
-          std::move(observed_attributes), disabled_features,
-          form_association_flag);
+    CustomElementDefinition::Id id) {
+  auto* definition =
+      MakeGarbageCollected<ScriptCustomElementDefinition>(data, descriptor);
 
   // Tag the JavaScript constructor object with its ID.
+  ScriptState* script_state = data.script_state_;
   v8::Local<v8::Value> id_value =
       v8::Integer::NewFromUnsigned(script_state->GetIsolate(), id);
   auto private_id =
       script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
-  CHECK(constructor->CallbackObject()
+  CHECK(data.constructor_->CallbackObject()
             ->SetPrivate(script_state->GetContext(), private_id, id_value)
             .ToChecked());
 
@@ -110,31 +95,22 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
 }
 
 ScriptCustomElementDefinition::ScriptCustomElementDefinition(
-    ScriptState* script_state,
-    const CustomElementDescriptor& descriptor,
-    V8CustomElementConstructor* constructor,
-    V8VoidFunction* connected_callback,
-    V8VoidFunction* disconnected_callback,
-    V8CustomElementAdoptedCallback* adopted_callback,
-    V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-    V8CustomElementFormAssociatedCallback* form_associated_callback,
-    V8CustomElementDisabledStateChangedCallback*
-        disabled_state_changed_callback,
-    HashSet<AtomicString>&& observed_attributes,
-    const Vector<String>& disabled_features,
-    FormAssociationFlag form_association_flag)
+    const ScriptCustomElementDefinitionData& data,
+    const CustomElementDescriptor& descriptor)
     : CustomElementDefinition(descriptor,
-                              std::move(observed_attributes),
-                              disabled_features,
-                              form_association_flag),
-      script_state_(script_state),
-      constructor_(constructor),
-      connected_callback_(connected_callback),
-      disconnected_callback_(disconnected_callback),
-      adopted_callback_(adopted_callback),
-      attribute_changed_callback_(attribute_changed_callback),
-      form_associated_callback_(form_associated_callback),
-      disabled_state_changed_callback_(disabled_state_changed_callback) {}
+                              std::move(data.observed_attributes_),
+                              data.disabled_features_,
+                              data.is_form_associated_
+                                  ? FormAssociationFlag::kYes
+                                  : FormAssociationFlag::kNo),
+      script_state_(data.script_state_),
+      constructor_(data.constructor_),
+      connected_callback_(data.connected_callback_),
+      disconnected_callback_(data.disconnected_callback_),
+      adopted_callback_(data.adopted_callback_),
+      attribute_changed_callback_(data.attribute_changed_callback_),
+      form_associated_callback_(data.form_associated_callback_),
+      disabled_state_changed_callback_(data.disabled_state_changed_callback_) {}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
