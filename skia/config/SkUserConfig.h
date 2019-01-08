@@ -144,8 +144,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
-#define SK_LEGACY_TESSELLATOR_CPU_COVERAGE
-
 // Skia is enabling this feature soon. Chrome probably does
 // not want it for M64
 #ifndef SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
