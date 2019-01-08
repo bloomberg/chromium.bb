@@ -23,6 +23,8 @@
 
 class GURL;
 
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+
 namespace content {
 
 class FrameTreeNode;
@@ -365,6 +367,12 @@ class NavigationSimulator : public WebContentsObserver {
   // Set the navigation to be done towards the specified navigation controller
   // offset. Typically -1 for back navigations or 1 for forward navigations.
   void SetSessionHistoryOffset(int offset);
+
+  // Build DidCommitProvisionalLoadParams to commit the ongoing navigation,
+  // based on internal NavigationSimulator state and given parameters.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+  BuildDidCommitProvisionalLoadParams(bool same_document,
+                                      bool failed_navigation);
 
   enum State {
     INITIALIZATION,
