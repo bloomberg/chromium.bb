@@ -7,6 +7,7 @@
 }
 </style>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <div id="content"></div>
 <div id="console"></div>
 <script>
@@ -21,7 +22,7 @@ function runTest() {
 
     window.addEventListener("scroll", onWindowScroll);
 
-    testRunner.layoutAndPaintAsyncThen(function() {
+    runAfterLayoutAndPaint(function() {
         eventSender.keyDown('End');
     });
 }

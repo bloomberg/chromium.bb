@@ -23,9 +23,29 @@
           "reason": "appeared"
         },
         {
+          "object": "InlineTextBox ' B C'",
+          "rect": [23, 8, 85, 23],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox ' B C'",
+          "rect": [23, 8, 85, 23],
+          "reason": "disappeared"
+        },
+        {
           "object": "InlineTextBox 'A'",
           "rect": [23, 8, 85, 23],
           "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'A'",
+          "rect": [23, 8, 85, 23],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'A'",
+          "rect": [23, 8, 85, 23],
+          "reason": "disappeared"
         },
         {
           "object": "InlineTextBox ' B C'",

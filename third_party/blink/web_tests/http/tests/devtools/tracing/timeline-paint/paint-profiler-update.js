@@ -7,8 +7,9 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
-      <div id="square" style="width: 40px; height: 40px"></div>
-    `);
+    <script src="../../../resources/run-after-layout-and-paint.js"></script>
+    <div id="square" style="width: 40px; height: 40px"></div>
+  `);
   await TestRunner.evaluateInPagePromise(`
       function performActions()
       {
@@ -20,13 +21,13 @@
           function step1()
           {
               square.style.backgroundColor = "red";
-              testRunner.layoutAndPaintAsyncThen(step2);
+              runAfterLayoutAndPaint(step2);
           }
 
           function step2()
           {
               square.style.backgroundColor = "black";
-              testRunner.layoutAndPaintAsyncThen(callback);
+              runAfterLayoutAndPaint(callback);
           }
           return promise;
       }

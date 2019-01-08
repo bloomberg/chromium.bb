@@ -79,12 +79,9 @@ class TestRunnerForSpecificView {
   void UpdateAllLifecyclePhasesAndCompositeThen(
       v8::Local<v8::Function> callback);
 
-  void LayoutAndPaintAsync();
-  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
-
-  // Similar to LayoutAndPaintAsyncThen(), but pass parameters of the captured
-  // snapshot (width, height, snapshot) to the callback. The snapshot is in
-  // uint8_t RGBA format.
+  // The callback will be called after the next full frame update and raster,
+  // with the captured snapshot as the parameters (width, height, snapshot).
+  // The snapshot is in uint8_t RGBA format.
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void CapturePixelsCallback(v8::UniquePersistent<v8::Function> callback,
                              const SkBitmap& snapshot);

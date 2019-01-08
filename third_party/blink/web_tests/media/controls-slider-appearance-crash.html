@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <script src="../resources/js-test.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
 description("This test ensures that applying media control slider thumb appearance to pseudo-elements does not cause a crash.");
 </script>
@@ -25,6 +26,6 @@ description("This test ensures that applying media control slider thumb appearan
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
-    testRunner.layoutAndPaintAsyncThen(function() { testRunner.notifyDone(); });
+    runAfterLayoutAndPaint(function() { testRunner.notifyDone(); });
 }
 </script>

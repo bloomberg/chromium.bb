@@ -8,18 +8,13 @@
 .abstop { position: absolute; left:0; right:0; height:30px   }
 .abs { position: absolute; left:0; right:0; top:0; bottom:0 }
 </style>
-
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 var node1;
 var node2;
 
 function startTest() {
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(doTest)
-    } else {
-        requestAnimationFrame(doTest)
-    }
+    runAfterLayoutAndPaint(doTest, true);
 }
 
 function doTest()
@@ -35,12 +30,6 @@ function doTest()
     //26
     document.getElementById('26c').style.setProperty('visibility','hidden','');
     document.getElementById('26a').removeChild(document.getElementById('26b'));
-
-    if (window.testRunner) {
-    	testRunner.layoutAndPaintAsyncThen(function() {
-      	    testRunner.notifyDone();
-        });
-    }
 }
 
 

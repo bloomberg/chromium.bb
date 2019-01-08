@@ -42,6 +42,7 @@ void main() {
 }
 </script>
 <script src="resources/webgl-test-utils.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 var ctxs = []
@@ -116,17 +117,9 @@ drawAll(0);
 
 function repaintTest() {
     drawAll(50);
-    if (window.testRunner) {
-        testRunner.notifyDone();
-    }
 }
 
 function runRepaintTest() {
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(repaintTest);
-    } else {
-        setTimeout(repaintTest, 100);
-    }
+    runAfterLayoutAndPaint(repaintTest, true);
 }
 </script>

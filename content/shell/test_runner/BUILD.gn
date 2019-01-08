@@ -31,8 +31,6 @@ jumbo_component("test_runner") {
     "gamepad_controller.h",
     "gc_controller.cc",
     "gc_controller.h",
-    "layout_and_paint_async_then.cc",
-    "layout_and_paint_async_then.h",
     "layout_dump.cc",
     "layout_dump.h",
     "mock_content_settings_client.cc",

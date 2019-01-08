@@ -1,26 +1,34 @@
-// Run a callback after layout and paint of all pending document changes.
+// Run a callback after a frame update.
 //
-// It has two modes:
-// - traditional mode, for existing tests, and tests needing customized notifyDone timing:
-//   Usage:
+// Note that this file has two copies:
+//   resources/run-after-layout-and-paint.js
+// and
+//   http/tests/resources/run-after-layout-and-paint.js.
+// They should be kept always the same.
+//
+// The function runAfterLayoutAndPaint() has two modes:
+// - traditional mode, for existing tests, and tests needing customized
+//   notifyDone timing:
 //     if (window.testRunner)
 //       testRunner.waitUntilDone();
 //     runAfterLayoutAndPaint(function() {
 //       ... // some code which modifies style/layout
 //       if (window.testRunner)
 //         testRunner.notifyDone();
-//       // Or to ensure the next paint is executed before the test finishes:
-//       // if (window.testRunner)
-//       //   runAfterAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 //       // Or notifyDone any time later if needed.
 //     });
 //
-// - autoNotifyDone mode, for new tests which just need to change style/layout and finish:
-//   Usage:
+// - autoNotifyDone mode, for new tests which just need to change style/layout
+//   and finish:
 //     runAfterLayoutAndPaint(function() {
 //       ... // some code which modifies style/layout
 //     }, true);
-
+//
+// Note that because we always update a frame before finishing a test,
+// we don't need
+//     runAfterLayoutAndPaint(function() { testRunner.notifyDone(); })
+// to ensure the test finish after a frame update.
+//
 if (window.internals)
     internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
 
@@ -35,9 +43,18 @@ function runAfterLayoutAndPaint(callback, autoNotifyDone) {
     if (autoNotifyDone)
         testRunner.waitUntilDone();
 
-    testRunner.layoutAndPaintAsyncThen(function() {
-        callback();
-        if (autoNotifyDone)
-            testRunner.notifyDone();
+    // We do requestAnimationFrame and setTimeout to ensure a frame has started
+    // and layout and paint have run. The requestAnimationFrame fires after the
+    // frame has started but before layout and paint. The setTimeout fires
+    // at the beginning of the next frame, meaning that the previous frame has
+    // completed layout and paint.
+    // See http://crrev.com/c/1395193/10/third_party/blink/web_tests/http/tests/resources/run-after-layout-and-paint.js
+    // for more discussions.
+    requestAnimationFrame(function() {
+        setTimeout(function() {
+            callback();
+            if (autoNotifyDone)
+                testRunner.notifyDone();
+        }, 0);
     });
 }

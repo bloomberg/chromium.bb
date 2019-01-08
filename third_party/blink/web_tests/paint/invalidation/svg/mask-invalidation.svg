@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
+<script xlink:href="../../../resources/run-after-layout-and-paint.js"></script>
 <script xlink:href="../resources/text-based-repaint.js"/>
 <script>
 window.testIsAsync = true;
@@ -24,7 +25,7 @@ function draw(x, y) {
 
 function repaintTest() {
     draw(150, 50);
-    requestAnimationFrame(function() {
+    runAfterLayoutAndPaint(function() {
         draw(50, 50);
         finishRepaintTest();
     });

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/renderer/compositor/layer_tree_view.h"
-#include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
@@ -215,26 +214,6 @@ void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndCompositeThen(
   TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite();
   InvokeV8Callback(
       v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(), callback));
-}
-
-void TestRunnerForSpecificView::LayoutAndPaintAsync() {
-  // TODO(lfg, lukasza): TestRunnerForSpecificView assumes that there's a single
-  // WebWidget for the entire view, but with out-of-process iframes there may be
-  // multiple WebWidgets, one for each local root. We should look into making
-  // this structure more generic. Also the PagePopup for an OOPIF would be
-  // attached to a WebView without a main frame, which should be handled.
-  test_runner::LayoutAndPaintAsyncThen(
-      web_view()->GetPagePopup(),
-      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
-      base::DoNothing());
-}
-
-void TestRunnerForSpecificView::LayoutAndPaintAsyncThen(
-    v8::Local<v8::Function> callback) {
-  test_runner::LayoutAndPaintAsyncThen(
-      web_view()->GetPagePopup(),
-      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
-      CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunnerForSpecificView::CapturePixelsAsyncThen(

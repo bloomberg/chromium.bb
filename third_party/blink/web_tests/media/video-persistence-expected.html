@@ -55,9 +55,7 @@
     });
 
     document.addEventListener('webkitfullscreenchange', e => {
-      testRunner.layoutAndPaintAsyncThen(() => {
-        testRunner.notifyDone();
-      });
+      testRunner.notifyDone();
     });
   }
 </script>

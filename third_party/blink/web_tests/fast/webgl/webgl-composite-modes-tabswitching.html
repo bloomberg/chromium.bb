@@ -42,6 +42,7 @@ void main() {
 }
 </script>
 <script src="resources/webgl-test-utils.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 var ctxs = []
@@ -121,32 +122,27 @@ function repaintOnVisiblePage() {
     }
 }
 
-function setPageVisible() {
-    if (window.testRunner) {
-        testRunner.setPageVisibility("visible");
-        testRunner.layoutAndPaintAsyncThen(repaintOnVisiblePage);
-    } else {
-        setTimeout(repaintOnVisiblePage, 50);
-    }
-}
-
 function repaintOnHiddenPage() {
     if (window.testRunner) {
         testRunner.setPageVisibility("hidden");
     }
     // Although page is hidden, WebGL must draw this frame.
     drawAll(30);
-    // testRunner.layoutAndPaintAsyncThen doesn't work when page is hidden.
-    setTimeout(setPageVisible, 50);
+
+    // TODO(crbug.com/919536): Ideally this should be wrapped in
+    // runAfterLayoutAndPaint() to ensure test coverage, but for now that will
+    // crash.
+    if (window.testRunner) {
+        testRunner.setPageVisibility("visible");
+    }
+    runAfterLayoutAndPaint(repaintOnVisiblePage);
 }
 
 function runRepaintTest() {
     drawAll(0);
     if (window.testRunner) {
         testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(repaintOnHiddenPage);
-    } else {
-        setTimeout(repaintOnHiddenPage, 50);
     }
+    runAfterLayoutAndPaint(repaintOnHiddenPage);
 }
 </script>

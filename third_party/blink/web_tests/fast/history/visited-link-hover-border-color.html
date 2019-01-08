@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
     testRunner.keepWebHistory();
-    testRunner.waitUntilDone();
-}
 </script>
 <style>
 a { border: solid red 10px; text-decoration: none; color: initial }
@@ -11,11 +10,8 @@ a:hover:visited { border-color: green; }
 </style>
 <a id="anchor" href="">Should have a green border when hovered</a>
 <script>
-if (window.testRunner) {
-    testRunner.layoutAndPaintAsyncThen(function(){
+    runAfterLayoutAndPaint(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 10, anchor.offsetTop + 10);
-        testRunner.notifyDone();
-    });
-}
+    }, true);
 </script>

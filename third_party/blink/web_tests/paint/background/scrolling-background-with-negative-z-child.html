@@ -1,4 +1,5 @@
 <!doctype html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 #container {
   overflow: scroll;
@@ -22,16 +23,7 @@
   <div id="compositedChild"></div>
 </div>
 <script>
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.layoutAndPaintAsyncThen(function() {
-      document.getElementById('container').scrollTop = 1000;
-      testRunner.notifyDone();
-    });
-  } else {
-    // For manual testing.
-    setTimeout(function() {
-      document.getElementById('container').scrollTop = 1000;
-    }, 500);
-  }
+  runAfterLayoutAndPaint(function() {
+    document.getElementById('container').scrollTop = 1000;
+  }, true);
 </script>

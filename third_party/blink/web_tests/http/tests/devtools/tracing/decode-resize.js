@@ -7,6 +7,7 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <style>
     div {
         display: inline-block;
@@ -47,7 +48,7 @@
     {
         for (let image of images) {
             await addImage(image);
-            await new Promise(fulfill => testRunner.layoutAndPaintAsyncThen(fulfill));
+            await new Promise(fulfill => runAfterLayoutAndPaint(fulfill));
         }
         return generateFrames(3);
 

@@ -13,6 +13,7 @@
   <text id="target" x="15" y="10 20" fill="green">A B C</text>
   <text id="source" x="50" y="50 60" fill="blue">X Y Z</text>
 </svg>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/text-based-repaint.js"></script>
 <script>
 testIsAsync = true;
@@ -22,10 +23,9 @@ function repaintTest() {
     var moved = document.querySelector('#source').y.baseVal.removeItem(1);
     document.querySelector('#target').x.baseVal.appendItem(moved);
 
-    requestAnimationFrame(function() {
+    runAfterLayoutAndPaint(function() {
         moved.value = 65;
-        if (window.testRunner)
-            finishRepaintTest();
+        finishRepaintTest();
     });
 }
 </script>

@@ -314,7 +314,7 @@ crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/select-text-overf
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/select-text-overflow-ellipsis-mixed-in-rtl.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/select-text-overflow-ellipsis.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/word-granularity.html [ Crash ]
-crbug.com/916511 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure ]
+crbug.com/916511 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
 crbug.com/591099 virtual/composite-after-paint/paint/invalidation/box/margin.html [ Failure Pass ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/acquire-update-measure-remove.html [ Failure ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/measure-forced-layout.html [ Failure ]

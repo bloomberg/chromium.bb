@@ -13,11 +13,7 @@ function click(x,y) {
 
 function animationEnded() {
     click(50,50);
-    if (window.testRunner) {
-      testRunner.layoutAndPaintAsyncThen(function() {
-        testRunner.notifyDone();
-      });
-    }
+    testRunner.notifyDone();
 }
 </script>
 <svg>

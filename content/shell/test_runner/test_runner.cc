@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
@@ -194,8 +193,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void UpdateAllLifecyclePhasesAndCompositeThen(
       v8::Local<v8::Function> callback);
   void SetAnimationRequiresRaster(bool do_raster);
-  void LayoutAndPaintAsync();
-  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
   void LogToStderr(const std::string& output);
   void NotImplemented(const gin::Arguments& args);
   void NotifyDone();
@@ -482,10 +479,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
       .SetMethod("setAnimationRequiresRaster",
                  &TestRunnerBindings::SetAnimationRequiresRaster)
-      .SetMethod("layoutAndPaintAsync",
-                 &TestRunnerBindings::LayoutAndPaintAsync)
-      .SetMethod("layoutAndPaintAsyncThen",
-                 &TestRunnerBindings::LayoutAndPaintAsyncThen)
       .SetMethod("logToStderr", &TestRunnerBindings::LogToStderr)
       .SetMethod("notifyDone", &TestRunnerBindings::NotifyDone)
       .SetMethod("overridePreference", &TestRunnerBindings::OverridePreference)
@@ -1344,17 +1337,6 @@ void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
   if (!runner_)
     return;
   runner_->SetAnimationRequiresRaster(do_raster);
-}
-
-void TestRunnerBindings::LayoutAndPaintAsync() {
-  if (view_runner_)
-    view_runner_->LayoutAndPaintAsync();
-}
-
-void TestRunnerBindings::LayoutAndPaintAsyncThen(
-    v8::Local<v8::Function> callback) {
-  if (view_runner_)
-    view_runner_->LayoutAndPaintAsyncThen(callback);
 }
 
 void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {

@@ -1,4 +1,5 @@
 <!DOCTYPE html> 
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/text-based-repaint.js"></script>
 <script src="../../../editing/editing.js"></script>
 <input id="root" style="will-change: transform" size="5"  value="test test test">
@@ -11,7 +12,7 @@ if (window.internals)
 function repaintTest() {
   root.focus();
   root.scrollLeft = 200;
-  requestAnimationFrame(function() {
+  runAfterLayoutAndPaint(function() {
     execMoveSelectionForwardByWordCommand();
     execMoveSelectionForwardByWordCommand();
     execMoveSelectionForwardByWordCommand();

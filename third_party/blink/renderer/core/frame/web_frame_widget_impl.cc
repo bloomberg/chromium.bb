@@ -337,10 +337,6 @@ void WebFrameWidgetImpl::UpdateLayerTreeViewport() {
       1, View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
 }
 
-void WebFrameWidgetImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
-  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
-}
-
 void WebFrameWidgetImpl::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));

@@ -3,6 +3,7 @@
 <title>Media Controls: Test controls layout correctly in different small sizes.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="../media-controls.js"></script>
 <video controls></video>
 <script>
@@ -23,7 +24,7 @@ async_test(t => {
     function runTestCase(index) {
       let test = testCases[index];
       video.width = test;
-      testRunner.layoutAndPaintAsyncThen(t.step_func(() => {
+      runAfterLayoutAndPaint(t.step_func(() => {
         expectLayoutCorrectly();
 
         assert_not_equals(getComputedStyle(overflowBtn), 'none',

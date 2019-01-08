@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body onload="start();">
 <canvas id="webgl" width="200" height="200"></canvas>
@@ -40,11 +41,7 @@
         gl.clearColor(0.0, 1.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         createImageBitmapAndCheck(webgl_canvas, false).then(function() {
-            if (window.testRunner) {
-                testRunner.layoutAndPaintAsyncThen(asyncTest);
-            } else {
-                window.requestAnimationFrame(asyncTest);
-            }
+            runAfterLayoutAndPaint(asyncTest);
         });
     }
 

@@ -4,6 +4,7 @@
 <canvas id="preserve-canvas3d" width="10" height="10"></canvas>
 <canvas id="nonpreserve-canvas3d" width="10" height="10"></canvas>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -44,12 +45,7 @@ function startTestAfterFirstPaint() {
     debug("2) when drawingBuffer is not preserved.")
     shouldBeTrue("nonpreserve_canvas3D.toDataURL('image/png') == internals.getImageSourceURL(nonpreserve_canvas3D)");
 
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(asyncTest);
-    } else {
-        window.requestAnimationFrame(asyncTest);
-    }
+    runAfterLayoutAndPaint(asyncTest);
 }
 
 window.onload = function () {

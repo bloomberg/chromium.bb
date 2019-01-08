@@ -23,19 +23,14 @@
           "reason": "subtree"
         },
         {
+          "object": "InlineTextBox 'test test test'",
+          "rect": [10, 11, 57, 16],
+          "reason": "selection"
+        },
+        {
           "object": "LayoutBlockFlow DIV",
           "rect": [10, 11, 57, 16],
           "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [10, 11, 56, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "InlineTextBox 'test test test'",
-          "rect": [18, 11, 26, 16],
-          "reason": "selection"
         }
       ]
     }

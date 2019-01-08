@@ -138,9 +138,6 @@ class WebLayerTreeView {
 
   // Flow control and scheduling ---------------------------------------
 
-  // Run layout and paint of all pending document changes asynchronously.
-  virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
-
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}
 
