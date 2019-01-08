@@ -133,25 +133,38 @@
       <div class="top-column">
         <p class="row section-header">Output controls</p>
         <input id="filter-text" type="text"
-               class="row input-icon-container filter-icon" accesskey="g"
+               class="row input-icon-container search-icon" accesskey="g"
                autocomplete="off"
                placeholder="Enter filter (e.g. 'google', 'is:star', 'not:del') [Alt+G]"
                title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
         <div class="row">
           <span id="copy-text" class="button"
                 title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling 'Show all details' affects what will be copied.">
-            <i class="icon copy-white-icon"></i>
+            <i class="icon copy-icon"></i>
             <span>Copy as text</span>
           </span>
         </div>
         <div class="row">
-          <span id="copy-json" class="button"
-                title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">
-            <i class="icon copy-black-icon"></i>
-            <span>Copy as JSON</span>
+          <span id="download-json" class="button"
+                title="Download responses in JSON format. This is not affected by the visibility of output and will include responses in their entirety as well as query and display inputs.">
+            <i class="icon copy-icon"></i>
+            <span>Download as JSON</span>
           </span>
         </div>
-        <!--TODO(manukh): import button-->
+        <div class="row">
+          <label id="import-json" class="icon-button button drag-container"
+                 title="Import JSON">
+            <input id="import-json-input" type="file" accept=".json">
+            <i class="icon copy-icon"></i>
+            <span>Import JSON</span>
+          </label>
+        </div>
+        <div id="imported-warning" class="row" hidden>
+          <span class="warning-text"
+                title="The output you are currently viewing was imported and may not be the same as if you had entered these inputs now.">
+            Viewing imported data
+          </span>
+        </div>
       </div>
     </div>
   </template>

@@ -6,9 +6,12 @@
  * @typedef {{
  *   inputText: string,
  *   resetAutocompleteController: boolean,
+ *   cursorLock: boolean,
  *   cursorPosition: number,
+ *   zeroSuggest: boolean,
  *   preventInlineAutocomplete: boolean,
  *   preferKeyword: boolean,
+ *   currentUrl: string,
  *   pageClassification: number,
  * }}
  */
@@ -26,8 +29,52 @@ let DisplayInputs;
 class OmniboxInput extends OmniboxElement {
   constructor() {
     super('omnibox-input-template');
+    this.displayInputs = OmniboxInput.defaultDisplayInputs;
+  }
 
-    const displayInputs = OmniboxInput.defaultDisplayInputs;
+  /** @return {QueryInputs} */
+  get queryInputs() {
+    return {
+      inputText: this.$$('#input-text').value,
+      resetAutocompleteController:
+          this.$$('#reset-autocomplete-controller').checked,
+      cursorLock: this.$$('#lock-cursor-position').checked,
+      cursorPosition: this.cursorPosition_,
+      zeroSuggest: this.$$('#zero-suggest').checked,
+      preventInlineAutocomplete:
+          this.$$('#prevent-inline-autocomplete').checked,
+      preferKeyword: this.$$('#prefer-keyword').checked,
+      currentUrl: this.$$('#current-url').value,
+      pageClassification: this.$$('#page-classification').value,
+    };
+  }
+
+  /** @param {QueryInputs} queryInputs */
+  set queryInputs(queryInputs) {
+    this.$$('#input-text').value = queryInputs.inputText;
+    this.$$('#reset-autocomplete-controller').checked =
+        queryInputs.resetAutocompleteController;
+    this.$$('#lock-cursor-position').checked = queryInputs.cursorLock;
+    this.cursorPosition_ = queryInputs.cursorPosition;
+    this.$$('#zero-suggest').checked = queryInputs.zeroSuggest;
+    this.$$('#prevent-inline-autocomplete').checked =
+        queryInputs.preventInlineAutocomplete;
+    this.$$('#prefer-keyword').checked = queryInputs.preferKeyword;
+    this.$$('#current-url').value = queryInputs.currentUrl;
+    this.$$('#page-classification').value = queryInputs.pageClassification;
+  }
+
+  /** @return {DisplayInputs} */
+  get displayInputs() {
+    return {
+      showIncompleteResults: this.$$('#show-incomplete-results').checked,
+      showDetails: this.$$('#show-details').checked,
+      showAllProviders: this.$$('#show-all-providers').checked,
+    };
+  }
+
+  /** @param {DisplayInputs} displayInputs */
+  set displayInputs(displayInputs) {
     this.$$('#show-incomplete-results').checked =
         displayInputs.showIncompleteResults;
     this.$$('#show-details').checked = displayInputs.showDetails;
@@ -62,59 +109,58 @@ class OmniboxInput extends OmniboxElement {
             query => this.$$(query).addEventListener(
                 'input', this.onDisplayInputsChanged_.bind(this)));
 
-    this.$$('#copy-text')
-        .addEventListener('click', () => this.onCopyOutput_('text'));
-    this.$$('#copy-json')
-        .addEventListener('click', () => this.onCopyOutput_('json'));
-
     this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));
+
+    this.$$('#copy-text')
+        .addEventListener('click', this.onCopyText_.bind(this));
+    this.$$('#download-json')
+        .addEventListener('click', this.onDownloadJson_.bind(this));
+    this.setupDragListeners_(this.$$('#import-json'));
+    this.$$('#import-json')
+        .addEventListener('drop', this.onImportDropped_.bind(this));
+    this.$$('#import-json-input')
+        .addEventListener('input', this.onImportFileSelected_.bind(this));
 
     // Set text of .arrow-padding to substring of #input-text text, from
     // beginning until cursor position, in order to correctly align .arrow-up.
     this.$$('#input-text')
         .addEventListener(
-            'input',
-            () => this.$$('.arrow-padding').textContent =
-                this.$$('#input-text')
-                    .value.substring(0, this.cursorPosition_));
+            'input', this.positionCursorPositionIndicators_.bind(this));
+  }
+
+  /**
+   * Sets up boilerplate event listeners for an element that is able to receive
+   * drag events.
+   * @private @param {!Element} element
+   */
+  setupDragListeners_(element) {
+    element.addEventListener(
+        'dragenter', () => element.classList.add('drag-hover'));
+    element.addEventListener(
+        'dragleave', () => element.classList.remove('drag-hover'));
+    element.addEventListener('dragover', e => e.preventDefault());
+    element.addEventListener('drop', e => {
+      e.preventDefault();
+      element.classList.remove('drag-hover');
+    });
   }
 
   /** @private */
   onQueryInputsChanged_() {
-    const zeroSuggest = this.$$('#zero-suggest').checked;
-    this.$$('#current-url').disabled = zeroSuggest;
-    if (zeroSuggest) {
+    this.$$('#imported-warning').hidden = true;
+    this.$$('#current-url').disabled = this.$$('#zero-suggest').checked;
+    if (this.$$('#zero-suggest').checked) {
       this.$$('#current-url').value = this.$$('#input-text').value;
     }
-
-    /** @type {!QueryInputs} */
-    const queryInputs = {
-      inputText: this.$$('#input-text').value,
-      resetAutocompleteController:
-          this.$$('#reset-autocomplete-controller').checked,
-      cursorPosition: this.cursorPosition_,
-      zeroSuggest: zeroSuggest,
-      preventInlineAutocomplete:
-          this.$$('#prevent-inline-autocomplete').checked,
-      preferKeyword: this.$$('#prefer-keyword').checked,
-      currentUrl: this.$$('#current-url').value,
-      pageClassification: this.$$('#page-classification').value,
-    };
     this.dispatchEvent(
-        new CustomEvent('query-inputs-changed', {detail: queryInputs}));
+        new CustomEvent('query-inputs-changed', {detail: this.queryInputs}));
   }
 
   /** @private */
   onDisplayInputsChanged_() {
-    /** @type {!DisplayInputs} */
-    const displayInputs = {
-      showIncompleteResults: this.$$('#show-incomplete-results').checked,
-      showDetails: this.$$('#show-details').checked,
-      showAllProviders: this.$$('#show-all-providers').checked,
-    };
-    this.dispatchEvent(
-        new CustomEvent('display-inputs-changed', {detail: displayInputs}));
+    this.dispatchEvent(new CustomEvent(
+        'display-inputs-changed', {detail: this.displayInputs}));
   }
 
   /** @private */
@@ -123,9 +169,53 @@ class OmniboxInput extends OmniboxElement {
         'filter-input-changed', {detail: this.$$('#filter-text').value}));
   }
 
-  /** @private @param {string} format Either 'text' or 'json'. */
-  onCopyOutput_(format) {
-    this.dispatchEvent(new CustomEvent('copy-request', {detail: format}));
+  /** @private */
+  onCopyText_() {
+    this.dispatchEvent(new CustomEvent('copy-text'));
+  }
+
+  /** @private */
+  onDownloadJson_() {
+    this.dispatchEvent(new CustomEvent('download-json'));
+  }
+
+  /** @private @param {!Event} event */
+  onImportDropped_(event) {
+    const dragText = event.dataTransfer.getData('Text');
+    if (dragText) {
+      this.import_(dragText);
+    } else if (event.dataTransfer.files[0]) {
+      this.importFile_(event.dataTransfer.files[0]);
+    }
+  }
+
+  /** @private @param {!Event} event */
+  onImportFileSelected_(event) {
+    this.importFile_(event.target.files[0]);
+  }
+
+  /** @private @param {!File} file */
+  importFile_(file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (reader.readyState === FileReader.DONE) {
+        this.import_(/** @type {string} */ (reader.result));
+      } else {
+        console.error('error importing, unable to read file:', reader.error);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /** @private @param {string} importString */
+  import_(importString) {
+    try {
+      const importData = JSON.parse(importString);
+      this.$$('#imported-warning').hidden = false;
+      this.dispatchEvent(new CustomEvent('import-json', {detail: importData}));
+    } catch (error) {
+      console.error('error during import, invalid json:', error);
+    }
   }
 
   /** @private @return {number} */
@@ -133,6 +223,18 @@ class OmniboxInput extends OmniboxElement {
     return this.$$('#lock-cursor-position').checked ?
         this.$$('#input-text').value.length :
         this.$$('#input-text').selectionEnd;
+  }
+
+  /** @private @param {number} value */
+  set cursorPosition_(value) {
+    this.$$('#input-text').setSelectionRange(value, value);
+    this.positionCursorPositionIndicators_();
+  }
+
+  /** @private */
+  positionCursorPositionIndicators_() {
+    this.$$('.arrow-padding').textContent =
+        this.$$('#input-text').value.substring(0, this.cursorPosition_);
   }
 
   /** @return {DisplayInputs} */

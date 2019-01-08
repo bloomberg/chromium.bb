@@ -338,10 +338,10 @@ select {
 /* stylized checkbox */
 
 .checkbox-container,
-.button {
+.button,
+.warning-text {
   align-items: center;
   border-radius: 5px;
-  cursor: pointer;
   display: inline-flex;
   min-height: var(--row-height);
   padding-inline-end: var(--input-alignment-indentation);
@@ -349,18 +349,26 @@ select {
   user-select: none;
 }
 
-input[type=checkbox] {
-  margin-inline-start: 0;
+.checkbox-container,
+.button {
+  cursor: pointer;
 }
 
-.checkbox-container span {
-  align-self: center;
+input[type=checkbox] {
+  margin-inline-start: 0;
 }
 
 /* button */
 
 .button {
   color: var(--action-color);
+}
+
+/* warning text */
+
+.warning-text {
+  background-color: red;
+  color: white;
 }
 
 /* icons */
@@ -378,23 +386,11 @@ input[type=checkbox] {
   background-image: url(../../../../ui/webui/resources/images/icon_search.svg);
 }
 
-.filter-icon {
-  background-image: url(../../../../ui/webui/resources/images/icon_search.svg);
-}
-
 .reset-icon {
   background-image: url(../../../../ui/webui/resources/images/icon_refresh.svg);
 }
 
-.copy-white-icon {
-  background-image: url(../../../../ui/webui/resources/images/icon_tabs.svg);
-}
-
-.copy-black-icon {
-  background-image: url(../../../../ui/webui/resources/images/icon_tabs.svg);
-}
-
-.copy-red-icon {
+.copy-icon {
   background-image: url(../../../../ui/webui/resources/images/icon_tabs.svg);
 }
 
@@ -435,4 +431,18 @@ omnibox-input,
   color: gray;
   font-size: 12px;
   margin-inline-start: var(--input-alignment-indentation);
+}
+
+/* drag */
+
+.drag-container * {
+  pointer-events: none;
+}
+
+.drag-container input[type=file] {
+  display: none;
+}
+
+.drag-container.drag-hover {
+  background: lightblue;
 }
