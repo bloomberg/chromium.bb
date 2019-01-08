@@ -19,6 +19,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -200,10 +202,13 @@ base::FilePath DetermineScanDir(Profile* profile) {
 
       // Limit web apps for known type of users. Unmanaged users have all apps,
       // including sub-dirs.
-      if (profile->IsChild())
+      if (profile->IsChild()) {
         dir = dir.Append(kChildUsersSubdir);
-      else if (profile->IsSupervised())
+      } else if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+                     profile)
+                     ->IsManaged()) {
         dir = dir.Append(kManagedUsersSubdir);
+      }
     }
   }
 

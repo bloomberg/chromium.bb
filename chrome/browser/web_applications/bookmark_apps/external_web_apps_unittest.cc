@@ -27,6 +27,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -313,9 +315,20 @@ TEST_F(ScanDirForExternalWebAppsWithProfileTest, UnmanagedUser) {
     EXPECT_EQ(1u, expectations.count(app_info.url));
 }
 
-TEST_F(ScanDirForExternalWebAppsWithProfileTest, ManagedUser) {
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, SupervisedUser) {
   const auto profile = CreateProfileAndLogin();
   profile->SetSupervisedUserId("asdf");
+  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
+  // This contains all apps, including for child and managed users once
+  // supervised user in general is not managed or child and there is no current
+  // separation for this type of user.
+  ASSERT_EQ(3u, app_infos.size());
+}
+
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, ManagedUser) {
+  const auto profile = CreateProfileAndLogin();
+  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile.get())
+      ->OverrideIsManagedForTesting(true);
   const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
   // This includes apps for managed users only.
   ASSERT_EQ(1u, app_infos.size());
