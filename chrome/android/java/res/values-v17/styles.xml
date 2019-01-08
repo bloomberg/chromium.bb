@@ -102,6 +102,9 @@
     <style name="WebappTheme" parent="MainThemeBase">
         <item name="android:windowBackground">@null</item>
         <item name="android:windowDisablePreview">true</item>
+        <!-- Translucency is necessary for a jank-free transition when launching both
+             WebApkActivity and a splash screen activity with Intent.FLAG_ACTIVITY_NO_ANIMATION. -->
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
