@@ -88,3 +88,45 @@ testcase.clickControlButtons = function() {
             appId, '#controls:not([fullscreen])');
       });
 };
+
+/**
+ * Confirms that native media keys are dispatched correctly.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+testcase.mediaKeyNative = function() {
+  const openVideo = openSingleVideo('local', 'downloads', ENTRIES.world);
+  let appId;
+  function ensurePlaying() {
+    return waitForFunctionResult('isPlaying', 'world.ogv', true);
+  }
+  function ensurePaused() {
+    return waitForFunctionResult('isPlaying', 'world.ogv', false);
+  }
+  function sendMediaKey() {
+    return sendTestMessage({name: 'dispatchNativeMediaKey'}).then((result) => {
+      chrome.test.assertEq(
+          result, 'mediaKeyDispatched', 'Key dispatch failure');
+    });
+  }
+  function pauseAndUnpause() {
+    // Video player should be playing when this is called,
+    return Promise.resolve()
+        .then(ensurePlaying)
+        .then(sendMediaKey)
+        .then(ensurePaused)
+        .then(sendMediaKey)
+        .then(ensurePlaying);
+  }
+  function enableTabletMode() {
+    return sendTestMessage({name: 'enableTabletMode'}).then((result) => {
+      chrome.test.assertEq(result, 'tabletModeEnabled');
+    });
+  }
+  return openVideo
+      .then((args) => {
+        appId = args[0];
+      })
+      .then(pauseAndUnpause)
+      .then(enableTabletMode)
+      .then(pauseAndUnpause);
+};

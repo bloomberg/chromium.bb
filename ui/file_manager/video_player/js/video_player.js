@@ -492,10 +492,12 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           this.videoElement_.addEventListener('play', function() {
             chrome.power.requestKeepAwake('display');
             this.updateInactivityWatcherState_();
+            this.updateMediaSessionPlaybackState_();
           }.wrap(this));
           this.videoElement_.addEventListener('pause', function() {
             chrome.power.releaseKeepAwake();
             this.updateInactivityWatcherState_();
+            this.updateMediaSessionPlaybackState_();
           }.wrap(this));
           this.controls.attachMedia(this.videoElement_);
           this.videoElement_.load();
@@ -851,6 +853,22 @@ VideoPlayer.prototype.updateInactivityWatcherState_ = function() {
       (this.videoElement_ && this.videoElement_.paused) ||
       videoPlayerElement.hasAttribute('loading') ||
       videoPlayerElement.hasAttribute('disabled');
+};
+
+/**
+ * Updates the Media Session API with the current playback state of the video
+ * element.
+ * @private
+ */
+VideoPlayer.prototype.updateMediaSessionPlaybackState_ = function() {
+  if (!navigator.mediaSession) {
+    return;
+  }
+
+  navigator.mediaSession.playbackState =
+      (this.videoElement_ && !this.videoElement_.paused) ?
+      MediaSessionPlaybackState.PLAYING :
+      MediaSessionPlaybackState.PAUSED;
 };
 
 var player = new VideoPlayer();
