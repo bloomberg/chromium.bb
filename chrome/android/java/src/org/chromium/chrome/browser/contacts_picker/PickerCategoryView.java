@@ -296,16 +296,20 @@ public class PickerCategoryView
 
     // Simple accessors:
 
-    public SelectionDelegate<ContactDetails> getSelectionDelegate() {
+    SelectionDelegate<ContactDetails> getSelectionDelegate() {
         return mSelectionDelegate;
     }
 
-    public RoundedIconGenerator getIconGenerator() {
+    RoundedIconGenerator getIconGenerator() {
         return mIconGenerator;
     }
 
-    public BitmapCache getIconCache() {
+    BitmapCache getIconCache() {
         return mBitmapCache;
+    }
+
+    ChromeActivity getActivity() {
+        return mActivity;
     }
 
     /**
