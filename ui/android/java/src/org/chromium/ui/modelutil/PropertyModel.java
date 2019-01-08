@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.util.ObjectsCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -24,50 +25,189 @@ import java.util.Map;
  * Generic property model that aims to provide an extensible and efficient model for ease of use.
  */
 public class PropertyModel extends PropertyObservable<PropertyKey> {
+    /**
+     * A PropertyKey implementation that associates a name with the property for easy debugging.
+     */
+    private static class NamedPropertyKey implements PropertyKey {
+        private final String mPropertyName;
+
+        public NamedPropertyKey(@Nullable String propertyName) {
+            mPropertyName = propertyName;
+        }
+
+        @Override
+        public String toString() {
+            if (mPropertyName == null) return super.toString();
+            return mPropertyName;
+        }
+    }
+
     /** The key type for read-ony boolean model properties. */
-    public static class ReadableBooleanPropertyKey implements PropertyKey {}
+    public static class ReadableBooleanPropertyKey extends NamedPropertyKey {
+        /**
+         * Constructs a new unnamed read-only boolean property key.
+         */
+        public ReadableBooleanPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named read-only boolean property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public ReadableBooleanPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /** The key type for mutable boolean model properties. */
-    public final static class WritableBooleanPropertyKey extends ReadableBooleanPropertyKey {}
+    public final static class WritableBooleanPropertyKey extends ReadableBooleanPropertyKey {
+        /**
+         * Constructs a new unnamed writable boolean property key.
+         */
+        public WritableBooleanPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named writable boolean property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public WritableBooleanPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /** The key type for read-only float model properties. */
-    public static class ReadableFloatPropertyKey implements PropertyKey {}
+    public static class ReadableFloatPropertyKey extends NamedPropertyKey {
+        /**
+         * Constructs a new unnamed read-only float property key.
+         */
+        public ReadableFloatPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named read-only float property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public ReadableFloatPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /** The key type for mutable float model properties. */
-    public final static class WritableFloatPropertyKey extends ReadableFloatPropertyKey {}
+    public final static class WritableFloatPropertyKey extends ReadableFloatPropertyKey {
+        /**
+         * Constructs a new unnamed writable float property key.
+         */
+        public WritableFloatPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named writable float property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public WritableFloatPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /** The key type for read-only int model properties. */
-    public static class ReadableIntPropertyKey implements PropertyKey {}
+    public static class ReadableIntPropertyKey extends NamedPropertyKey {
+        /**
+         * Constructs a new unnamed read-only integer property key.
+         */
+        public ReadableIntPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named read-only integer property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public ReadableIntPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /** The key type for mutable int model properties. */
-    public final static class WritableIntPropertyKey extends ReadableIntPropertyKey {}
+    public final static class WritableIntPropertyKey extends ReadableIntPropertyKey {
+        /**
+         * Constructs a new unnamed writable integer property key.
+         */
+        public WritableIntPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named writable integer property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public WritableIntPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /**
      * The key type for read-only Object model properties.
      *
      * @param <T> The type of the Object being tracked by the key.
      */
-    public static class ReadableObjectPropertyKey<T> implements PropertyKey {}
+    public static class ReadableObjectPropertyKey<T> extends NamedPropertyKey {
+        /**
+         * Constructs a new unnamed read-only object property key.
+         */
+        public ReadableObjectPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named read-only object property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public ReadableObjectPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
 
     /**
      * The key type for mutable Object model properties.
      *
      * @param <T> The type of the Object being tracked by the key.
      */
-    public final static class WritableObjectPropertyKey<T>
-            extends ReadableObjectPropertyKey<T> implements PropertyKey {
+    public final static class WritableObjectPropertyKey<T> extends ReadableObjectPropertyKey<T> {
         private final boolean mSkipEquality;
 
-        /** Default constructor for a writable object property. */
+        /** Default constructor for an unnamed writable object property. */
         public WritableObjectPropertyKey() {
             this(false);
         }
 
         /**
-         * Constructs a new writable object property.
+         * Constructs a new unnamed writable object property.
          * @param skipEquality Whether the equality check should be bypassed for this key.
          */
         public WritableObjectPropertyKey(boolean skipEquality) {
+            this(skipEquality, null);
+        }
+
+        /**
+         * Constructs a new named writable object property key bypassing equality checks.
+         * @param name The optional name of the property.
+         */
+        public WritableObjectPropertyKey(@Nullable String name) {
+            this(false, name);
+        }
+
+        /**
+         * Constructs a new writable, named object property.
+         * @param skipEquality Whether the equality check should be bypassed for this key.
+         * @param name Name of the property -- used while debugging.
+         */
+        public WritableObjectPropertyKey(boolean skipEquality, @Nullable String name) {
+            super(name);
             mSkipEquality = skipEquality;
         }
     }
@@ -320,9 +460,40 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         return data;
     }
 
-    private interface ValueContainer {}
-    private static class FloatContainer implements ValueContainer { public float value; }
-    private static class IntContainer implements ValueContainer { public int value; }
-    private static class BooleanContainer implements ValueContainer { public boolean value; }
-    private static class ObjectContainer<T> implements ValueContainer { public T value; }
+    private static class ValueContainer {}
+    private static class FloatContainer extends ValueContainer {
+        public float value;
+
+        @Override
+        public String toString() {
+            return value + " in " + super.toString();
+        }
+    }
+
+    private static class IntContainer extends ValueContainer {
+        public int value;
+
+        @Override
+        public String toString() {
+            return value + " in " + super.toString();
+        }
+    }
+
+    private static class BooleanContainer extends ValueContainer {
+        public boolean value;
+
+        @Override
+        public String toString() {
+            return value + " in " + super.toString();
+        }
+    }
+
+    private static class ObjectContainer<T> extends ValueContainer {
+        public T value;
+
+        @Override
+        public String toString() {
+            return value + " in " + super.toString();
+        }
+    }
 }

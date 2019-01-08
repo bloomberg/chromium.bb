@@ -173,6 +173,23 @@ public class KeyboardAccessoryData {
         public @AccessoryAction int getActionType() {
             return mType;
         }
+
+        @Override
+        public String toString() {
+            String typeName = "AccessoryAction(" + mType + ")"; // Fallback. We shouldn't crash.
+            switch (mType) {
+                case AccessoryAction.AUTOFILL_SUGGESTION:
+                    typeName = "AUTOFILL_SUGGESTION";
+                    break;
+                case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
+                    typeName = "GENERATE_PASSWORD_AUTOMATIC";
+                    break;
+                case AccessoryAction.MANAGE_PASSWORDS:
+                    typeName = "MANAGE_PASSWORDS";
+                    break;
+            }
+            return "'" + mCaption + "' of type " + typeName;
+        }
     }
 
     /**

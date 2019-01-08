@@ -19,13 +19,14 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  */
 class KeyboardAccessoryProperties {
     static final ReadableObjectPropertyKey<ListModel<KeyboardAccessoryData.Action>> ACTIONS =
-            new ReadableObjectPropertyKey<>();
-    static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
-    static final WritableIntPropertyKey BOTTOM_OFFSET_PX = new WritableIntPropertyKey();
+            new ReadableObjectPropertyKey<>("actions");
+    static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey("visible");
+    static final WritableIntPropertyKey BOTTOM_OFFSET_PX =
+            new WritableIntPropertyKey("bottom_offset_px");
     static final WritableBooleanPropertyKey KEYBOARD_TOGGLE_VISIBLE =
-            new WritableBooleanPropertyKey();
+            new WritableBooleanPropertyKey("keyboard_toggle_visible");
     static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
-            new WritableObjectPropertyKey<>();
+            new WritableObjectPropertyKey<>("show_keyboard_callback");
 
     private KeyboardAccessoryProperties() {}
 }

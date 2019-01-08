@@ -21,13 +21,15 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 class AccessorySheetProperties {
     public static final ReadableObjectPropertyKey<ListModel<Tab>> TABS =
             new ReadableObjectPropertyKey<>();
-    public static final WritableIntPropertyKey ACTIVE_TAB_INDEX = new WritableIntPropertyKey();
-    public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
-    public static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey();
+    public static final WritableIntPropertyKey ACTIVE_TAB_INDEX =
+            new WritableIntPropertyKey("active_tab_index");
+    public static final WritableBooleanPropertyKey VISIBLE =
+            new WritableBooleanPropertyKey("visible");
+    public static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey("height");
     public static final WritableBooleanPropertyKey TOP_SHADOW_VISIBLE =
-            new WritableBooleanPropertyKey();
+            new WritableBooleanPropertyKey("top_shadow_visible");
     public static final WritableObjectPropertyKey<ViewPager.OnPageChangeListener>
-            PAGE_CHANGE_LISTENER = new WritableObjectPropertyKey<>();
+            PAGE_CHANGE_LISTENER = new WritableObjectPropertyKey<>("page_change_listener");
 
     public static final int NO_ACTIVE_TAB = -1;
 
