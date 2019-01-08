@@ -70,13 +70,18 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
 
   void RemoveObserver(Observer* observer);
 
-  // Returns whether current user is owner or not. When this method
-  // is called too early, incorrect result can be returned because
-  // private key loading may be in progress.
+  // Returns whether this OwnerSettingsService has finished loading keys, and so
+  // we are able to confirm whether the current user is the owner or not.
+  virtual bool IsReady();
+
+  // Returns whether current user is owner or not - as long as IsReady()
+  // returns true. When IsReady() is false, we don't yet know if the current
+  // user is the owner or not. In that case this method returns false.
   virtual bool IsOwner();
 
-  // Determines whether current user is owner or not, responds via
-  // |callback|.
+  // Determines whether current user is owner or not, responds via |callback|.
+  // Reliably returns the correct value, but will not respond on the callback
+  // until IsReady() returns true.
   virtual void IsOwnerAsync(const IsOwnerCallback& callback);
 
   // Assembles and signs |policy| on the |task_runner|, responds on
