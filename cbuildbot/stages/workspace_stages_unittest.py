@@ -44,9 +44,10 @@ class WorkspaceStageBase(
     self.manifest_versions_int = os.path.join(
         self.build_root, 'manifest-versions-internal')
 
-  def SetWorkspaceVersion(self, version):
+  def SetWorkspaceVersion(self, version, chrome_branch='1'):
     """Change the "version" of the workspace."""
-    self.from_repo_mock.return_value = manifest_version.VersionInfo(version)
+    self.from_repo_mock.return_value = manifest_version.VersionInfo(
+        version, chrome_branch=chrome_branch)
 
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
@@ -644,4 +645,39 @@ class WorkspaceUnitTestStageTest(WorkspaceStageBase):
                 cwd=self.workspace,
             ),
         ]
+    )
+
+
+class WorkspaceBuildImageStageTest(WorkspaceStageBase):
+  """Test the workspace_stages classes."""
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceBuildImageStage(
+        self._run, self.buildstore, build_root=self.workspace, board='board')
+
+  def testFactory(self):
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            './build_image',
+            '--board=board',
+            '--replace',
+            '--version=R1-1.2.3',
+            '--builder_path=test-factorybranch/R1-1.2.3',
+            'test',
+        ],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal',
+            'FEATURES': 'separatedebug',
+        },
+        cwd=self.workspace,
     )

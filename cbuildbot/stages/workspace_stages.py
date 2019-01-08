@@ -493,3 +493,37 @@ class WorkspaceUnitTestStage(generic_stages.BoardSpecificBuilderStage,
           build_stage=self._run.config.build_packages,
           chroot_args=ChrootArgs(self._run.options),
           extra_env=extra_env)
+
+
+class WorkspaceBuildImageStage(generic_stages.BoardSpecificBuilderStage,
+                               WorkspaceStageBase):
+  """Build standard Chromium OS images."""
+
+  option_name = 'build'
+  config_name = 'images'
+  category = constants.PRODUCT_OS_STAGE
+
+  def _BuildImages(self):
+    # We only build base, dev, and test images from this stage.
+    images_can_build = set(['base', 'dev', 'test'])
+    images_to_build = set(self._run.config.images).intersection(
+        images_can_build)
+
+    version = self.GetWorkspaceReleaseTag()
+
+    disk_layout = self._run.config.disk_layout
+
+    rootfs_verification = self._run.config.rootfs_verification
+    builder_path = '/'.join([self._bot_id, version])
+    commands.BuildImage(self._build_root,
+                        self._current_board,
+                        sorted(images_to_build),
+                        rootfs_verification=rootfs_verification,
+                        version=version,
+                        builder_path=builder_path,
+                        disk_layout=disk_layout,
+                        chroot_args=ChrootArgs(self._run.options),
+                        extra_env=self._portage_extra_env)
+
+  def PerformStage(self):
+    self._BuildImages()
