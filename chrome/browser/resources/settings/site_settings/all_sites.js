@@ -91,6 +91,20 @@ Polymer({
       type: Object,
       observer: 'focusConfigChanged_',
     },
+
+    /**
+     * @private
+     * Used to track the last-focused element across rows for the
+     * focusRowBehavior.
+     */
+    lastFocused_: Object,
+
+    /**
+     * @private
+     * Used to track whether the list of row items has been blurred for the
+     * focusRowBehavior.
+     */
+    listBlurred_: Boolean,
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
