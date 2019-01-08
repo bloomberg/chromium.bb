@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
 
@@ -128,7 +129,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
-        intent.putExtra(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
+        intent.putExtra(WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, true);
 
         WebApkInfo info = WebApkInfo.create(intent);
 
@@ -155,7 +156,8 @@ public class WebApkInfoTest {
         Assert.assertEquals(ICON_MURMUR2_HASH, info.iconUrlToMurmur2HashMap().get(ICON_URL));
 
         Assert.assertEquals(SOURCE, info.source());
-        Assert.assertTrue(info.useTransparentSplash());
+        Assert.assertEquals(
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M), info.isSplashProvidedByWebApk());
 
         Assert.assertEquals(null, info.icon());
         Assert.assertEquals(null, info.badgeIcon());

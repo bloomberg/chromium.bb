@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
@@ -123,7 +124,7 @@ public class WebApkInfo extends WebappInfo {
     private @WebApkDistributor int mDistributor;
     private ShareTarget mShareTarget;
     private Map<String, String> mIconUrlToMurmur2HashMap;
-    private boolean mUseTransparentSplash;
+    private boolean mIsSplashProvidedByWebApk;
 
     private ShareData mShareData;
 
@@ -180,12 +181,12 @@ public class WebApkInfo extends WebappInfo {
                 }
             }
         }
-        boolean useTransparentSplash = !IntentUtils.isIntentForNewTaskOrNewDocument(intent)
+        boolean isSplashProvidedByWebApk = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && IntentUtils.safeGetBooleanExtra(
-                           intent, WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, false);
+                        intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
 
-        return create(
-                webApkPackageName, url, source, forceNavigation, useTransparentSplash, shareData);
+        return create(webApkPackageName, url, source, forceNavigation, isSplashProvidedByWebApk,
+                shareData);
     }
 
     private static @WebApkDistributor int getDistributor(Bundle bundle, String packageName) {
@@ -291,34 +292,35 @@ public class WebApkInfo extends WebappInfo {
     /**
      * Construct a {@link WebApkInfo} instance.
      *
-     * @param id                      ID for the WebAPK.
-     * @param url                     URL that the WebAPK should navigate to when launched.
-     * @param scope                   Scope for the WebAPK.
-     * @param primaryIcon             Primary icon to show for the WebAPK.
-     * @param badgeIcon               Badge icon to use for notifications.
-     * @param splashIcon              Splash icon to use for the splash screen.
-     * @param name                    Name of the WebAPK.
-     * @param shortName               The short name of the WebAPK.
-     * @param displayMode             Display mode of the WebAPK.
-     * @param orientation             Orientation of the WebAPK.
-     * @param source                  Source that the WebAPK was launched from.
-     * @param themeColor              The theme color of the WebAPK.
-     * @param backgroundColor         The background color of the WebAPK.
-     * @param webApkPackageName       The package of the WebAPK.
-     * @param shellApkVersion         Version of the code in //chrome/android/webapk/shell_apk.
-     * @param manifestUrl             URL of the Web Manifest.
-     * @param manifestStartUrl        URL that the WebAPK should navigate to when launched from the
-     *                                homescreen. Different from the {@link url} parameter if the
-     *                                WebAPK is launched from a deep link.
-     * @param distributor             The source from where the WebAPK is installed.
-     * @param iconUrlToMurmur2HashMap Map of the WebAPK's icon URLs to Murmur2 hashes of the
-     *                                icon untransformed bytes.
-     * @param shareTarget             Data about WebAPK's share intent handlers.
-     * @param forceNavigation         Whether the WebAPK should navigate to {@link url} if the
-     *                                WebAPK is already open.
-     * @param useTransparentSplash    Whether the WebApkActivity should be fully transparent while
-     *                                the page is loading.
-     * @param shareData               Shared information from the share intent.
+     * @param id                       ID for the WebAPK.
+     * @param url                      URL that the WebAPK should navigate to when launched.
+     * @param scope                    Scope for the WebAPK.
+     * @param primaryIcon              Primary icon to show for the WebAPK.
+     * @param badgeIcon                Badge icon to use for notifications.
+     * @param splashIcon               Splash icon to use for the splash screen.
+     * @param name                     Name of the WebAPK.
+     * @param shortName                The short name of the WebAPK.
+     * @param displayMode              Display mode of the WebAPK.
+     * @param orientation              Orientation of the WebAPK.
+     * @param source                   Source that the WebAPK was launched from.
+     * @param themeColor               The theme color of the WebAPK.
+     * @param backgroundColor          The background color of the WebAPK.
+     * @param webApkPackageName        The package of the WebAPK.
+     * @param shellApkVersion          Version of the code in //chrome/android/webapk/shell_apk.
+     * @param manifestUrl              URL of the Web Manifest.
+     * @param manifestStartUrl         URL that the WebAPK should navigate to when launched from
+     *                                 the homescreen. Different from the {@link url} parameter if
+     *                                 the WebAPK is launched from a deep link.
+     * @param distributor              The source from where the WebAPK is installed.
+     * @param iconUrlToMurmur2HashMap  Map of the WebAPK's icon URLs to Murmur2 hashes of the
+     *                                 icon untransformed bytes.
+     * @param shareTarget              Data about WebAPK's share intent handlers.
+     * @param forceNavigation          Whether the WebAPK should navigate to {@link url} if the
+     *                                 WebAPK is already open.
+     * @param isSplashProvidedByWebApk Whether the WebAPK provides a splash screen activity which
+     *                                 should be launched to hide the web contents while the page is
+     *                                 loading.
+     * @param shareData                Shared information from the share intent.
      */
     public static WebApkInfo create(String id, String url, String scope, Icon primaryIcon,
             Icon badgeIcon, Icon splashIcon, String name, String shortName,
@@ -326,7 +328,7 @@ public class WebApkInfo extends WebappInfo {
             long backgroundColor, String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            boolean forceNavigation, boolean useTransparentSplash, ShareData shareData) {
+            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData) {
         if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG,
                     "Incomplete data provided: " + id + ", " + url + ", " + manifestStartUrl + ", "
@@ -344,7 +346,7 @@ public class WebApkInfo extends WebappInfo {
         return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, splashIcon, name, shortName,
                 displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
                 shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, forceNavigation, useTransparentSplash,
+                iconUrlToMurmur2HashMap, shareTarget, forceNavigation, isSplashProvidedByWebApk,
                 shareData);
     }
 
@@ -354,7 +356,7 @@ public class WebApkInfo extends WebappInfo {
             String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            boolean forceNavigation, boolean useTransparentSplash, ShareData shareData) {
+            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
                 themeColor, backgroundColor, null /* splash_screen_url */,
                 false /* isIconGenerated */, false /* isIconAdaptive */, forceNavigation);
@@ -366,7 +368,7 @@ public class WebApkInfo extends WebappInfo {
         mManifestStartUrl = manifestStartUrl;
         mDistributor = distributor;
         mIconUrlToMurmur2HashMap = iconUrlToMurmur2HashMap;
-        mUseTransparentSplash = useTransparentSplash;
+        mIsSplashProvidedByWebApk = isSplashProvidedByWebApk;
         mShareData = shareData;
 
         mShareTarget = shareTarget;
@@ -407,8 +409,8 @@ public class WebApkInfo extends WebappInfo {
     }
 
     @Override
-    public boolean useTransparentSplash() {
-        return mUseTransparentSplash;
+    public boolean isSplashProvidedByWebApk() {
+        return mIsSplashProvidedByWebApk;
     }
 
     public int shellApkVersion() {

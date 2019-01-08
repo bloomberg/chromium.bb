@@ -71,8 +71,9 @@ public class H2OLauncher {
         Log.v(TAG, "WebAPK Launch URL: " + params.getStartUrl());
 
         Bundle extraExtras = new Bundle();
-        extraExtras.putBoolean(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
-        HostBrowserLauncher.launchBrowserInWebApkMode(splashActivity, params, extraExtras, 0);
+        extraExtras.putBoolean(WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, true);
+        HostBrowserLauncher.launchBrowserInWebApkMode(
+                splashActivity, params, extraExtras, Intent.FLAG_ACTIVITY_NO_ANIMATION);
     }
 
     /** Launches the given component, passing extras from the given intent. */

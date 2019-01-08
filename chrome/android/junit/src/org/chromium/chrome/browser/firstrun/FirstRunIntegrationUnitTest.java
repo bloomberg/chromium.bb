@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.support.customtabs.CustomTabsIntent;
+import android.text.TextUtils;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,7 +33,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
-import org.chromium.chrome.browser.webapps.TransparentSplashWebApkActivity;
+import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.chrome.browser.webapps.WebApkActivity0;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
@@ -73,6 +74,11 @@ public final class FirstRunIntegrationUnitTest {
             if (componentClassOption.getName().equals(componentClassName)) return true;
         }
         return false;
+    }
+
+    /** Checks whether the intent has the provided action. */
+    private boolean checkIntentHasAction(Intent intent, String action) {
+        return intent != null && TextUtils.equals(intent.getAction(), action);
     }
 
     /**
@@ -176,15 +182,20 @@ public final class FirstRunIntegrationUnitTest {
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
         intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
-        intent.putExtra(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
+        intent.putExtra(WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, true);
 
         Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
 
         Intent launchedIntent = mShadowApplication.getNextStartedActivity();
-        while (checkIntentComponentClassOneOf(launchedIntent,
-                new Class[] {WebApkActivity.class, WebApkActivity0.class,
-                        TransparentSplashWebApkActivity.class})) {
-            buildActivityWithClassNameFromIntent(launchedIntent);
+        while (checkIntentHasAction(launchedIntent, WebApkConstants.ACTION_SHOW_SPLASH)
+                || checkIntentComponentClassOneOf(launchedIntent,
+                        new Class[] {WebApkActivity.class, WebApkActivity0.class,
+                                SameTaskWebApkActivity.class})) {
+            if (launchedIntent.getComponent() != null) {
+                buildActivityWithClassNameFromIntent(launchedIntent);
+            }
+            // Get next intent even if we did not build an activity to deal with the case of
+            // several activities having been started simultaneously.
             launchedIntent = mShadowApplication.getNextStartedActivity();
         }
 

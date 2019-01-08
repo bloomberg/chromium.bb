@@ -67,11 +67,10 @@ public class WebApkActivity extends WebappActivity {
      */
     public static FreParams slowGenerateFreParamsIfIntentIsForWebApkActivity(Intent fromIntent) {
         // Check for intents targeted at WebApkActivity, WebApkActivity0-9 and
-        // TransparentSplashWebApkActivity.
+        // SameTaskWebApkActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
         if (!targetActivityClassName.startsWith(WebApkActivity.class.getName())
-                && !targetActivityClassName.equals(
-                        TransparentSplashWebApkActivity.class.getName())) {
+                && !targetActivityClassName.equals(SameTaskWebApkActivity.class.getName())) {
             return null;
         }
 
