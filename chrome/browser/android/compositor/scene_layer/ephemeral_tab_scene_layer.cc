@@ -59,19 +59,24 @@ void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
 
 void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     const JavaParamRef<jobject>& object,
+                                    jint title_view_resource_id,
+                                    jint caption_view_resource_id,
+                                    jfloat caption_animation_percentage,
+                                    jfloat text_layer_min_height,
+                                    jfloat title_caption_spacing,
+                                    jboolean caption_visible,
                                     jint progress_bar_background_resource_id,
                                     jint progress_bar_resource_id,
                                     jfloat dp_to_px,
                                     jfloat base_page_brightness,
                                     jfloat base_page_offset,
                                     const JavaParamRef<jobject>& jweb_contents,
-                                    jfloat panel_X,
+                                    jfloat panel_x,
                                     jfloat panel_y,
                                     jfloat panel_width,
                                     jfloat panel_height,
                                     jfloat bar_margin_side,
                                     jfloat bar_height,
-                                    jfloat text_opacity,
                                     jboolean bar_border_visible,
                                     jfloat bar_border_height,
                                     jboolean bar_shadow_visible,
@@ -100,12 +105,14 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
   // Move the base page contents up.
   content_container_->SetPosition(gfx::PointF(0.0f, base_page_offset));
   ephemeral_tab_layer_->SetProperties(
+      title_view_resource_id, caption_view_resource_id,
+      caption_animation_percentage, text_layer_min_height,
+      title_caption_spacing, caption_visible,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,
-      content_layer, panel_X, panel_y, panel_width, panel_height,
-      bar_margin_side, bar_height, text_opacity, bar_border_visible,
-      bar_border_height, bar_shadow_visible, bar_shadow_opacity,
-      progress_bar_visible, progress_bar_height, progress_bar_opacity,
-      progress_bar_completion);
+      content_layer, panel_x, panel_y, panel_width, panel_height,
+      bar_margin_side, bar_height, bar_border_visible, bar_border_height,
+      bar_shadow_visible, bar_shadow_opacity, progress_bar_visible,
+      progress_bar_height, progress_bar_opacity, progress_bar_completion);
   // Make the layer visible if it is not already.
   ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(false);
 }
