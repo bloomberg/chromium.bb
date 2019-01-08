@@ -38,7 +38,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -112,7 +111,6 @@ public class TabModalPresenterTest {
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
-    @DisabledTest(message = "crbug.com/812066")
     public void testShow_UrlBarFocused() throws Exception {
         // Show a tab modal dialog. The dialog should be shown on top of the toolbar.
         PropertyModel dialog1 = createDialog(mActivity, "1", null);
@@ -155,7 +153,6 @@ public class TabModalPresenterTest {
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
-    @DisabledTest(message = "crbug.com/804858")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testSuspend_ToggleOverview() throws Exception {
         mActivity.getActivityTab().addObserver(mTestObserver);
@@ -202,7 +199,7 @@ public class TabModalPresenterTest {
 
         // Exit overview mode. The first dialog should be showing again.
         int callCount = mTestObserver.onTabInteractabilityChangedCallback.getCallCount();
-        onView(withId(R.id.tab_switcher_button)).perform(click());
+        onView(withId(R.id.tab_switcher_mode_tab_switcher_button)).perform(click());
         mTestObserver.onTabInteractabilityChangedCallback.waitForCallback(callCount);
 
         checkPendingSize(mManager, ModalDialogType.TAB, 1);
