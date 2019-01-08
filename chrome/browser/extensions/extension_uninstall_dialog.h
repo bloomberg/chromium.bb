@@ -16,6 +16,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 class NativeWindowTracker;
 class Profile;
@@ -33,10 +34,10 @@ class ExtensionUninstallDialog
       base::RepeatingCallback<void(ExtensionUninstallDialog*)>;
 
   // The type of action the dialog took at close.
-  // Do not reorder this enum, as it is used in UMA histograms.
+  // Do not reorder this enum as it is used in UMA histograms.
   enum CloseAction {
     CLOSE_ACTION_UNINSTALL = 0,
-    CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE = 1,
+    CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED = 1,
     CLOSE_ACTION_CANCELED = 2,
     CLOSE_ACTION_LAST = 3,
   };
@@ -89,8 +90,14 @@ class ExtensionUninstallDialog
 
   std::string GetHeadingText();
 
-  // Returns true if a checkbox for reporting abuse should be shown.
-  bool ShouldShowReportAbuseCheckbox() const;
+  GURL GetLaunchURL() const;
+
+  // Returns true if a checkbox should be shown in the dialog.
+  bool ShouldShowCheckbox() const;
+
+  // Returns the string to be displayed with the checkbox. Must not be called if
+  // ShouldShowCheckbox() returns false.
+  base::string16 GetCheckboxLabel() const;
 
   // Called when the dialog is closing to do any book-keeping.
   void OnDialogClosed(CloseAction action);
@@ -133,6 +140,12 @@ class ExtensionUninstallDialog
   // Displays the prompt. This should only be called after loading the icon.
   // The implementations of this method are platform-specific.
   virtual void Show() = 0;
+
+  // Returns true if a checkbox for reporting abuse should be shown.
+  bool ShouldShowReportAbuseCheckbox() const;
+
+  // Returns true if a checkbox for removing associated data should be shown.
+  bool ShouldShowRemoveDataCheckbox() const;
 
   Profile* const profile_;
 
