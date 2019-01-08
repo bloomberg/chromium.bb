@@ -1,0 +1,43 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <bitset>
+#include <vector>
+
+namespace {
+
+// Instantiating data as static function variables to avoid initializers.
+
+std::vector<std::string> GetLanguages() {
+  const std::vector<std::string> kLanguages = {
+    {% for language in languages -%}
+      "{{language}}",
+    {% endfor -%}
+  };
+  return kLanguages;
+}
+
+const size_t kNumBits = {{tree_serialized|length * 32}};
+
+std::bitset<kNumBits> GetTreeSerialized() {
+
+  const std::vector<uint32_t> kSerializedTree = {
+    {% for tree_word in tree_serialized -%}
+      {{tree_word}},
+    {% endfor -%}
+  };
+
+  std::bitset<kNumBits> bitset;
+  for(size_t index_word = 0; index_word < kSerializedTree.size(); index_word++) {
+    const uint32_t word = kSerializedTree.at(index_word);
+    for(size_t index_bit = 0; index_bit < 32; index_bit++) {
+      const size_t index = index_word*32 + index_bit;
+      bitset.set(index, (word >> index_bit) & 1);
+    }
+  }
+  return bitset;
+}
+
+
+}  // namespace

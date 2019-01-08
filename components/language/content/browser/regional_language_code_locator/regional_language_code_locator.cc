@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/language/content/browser/regional_language_code_locator.h"
+#include "components/language/content/browser/regional_language_code_locator/regional_language_code_locator.h"
 
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -11,7 +11,7 @@
 
 namespace language {
 namespace {
-#include "components/language/content/browser/regional_language_code_locator_helper.h"
+#include "components/language/content/browser/regional_language_code_locator/regional_language_code_locator_helper.h"
 }  // namespace
 
 RegionalLanguageCodeLocator::RegionalLanguageCodeLocator() {
