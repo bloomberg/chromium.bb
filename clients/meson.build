@@ -229,6 +229,14 @@ demo_clients = [
 		'dep_objs': dep_vertex_clipping
 	},
 	{ 'basename': 'confine' },
+	{
+		'basename': 'content_protection',
+		'add_sources': [
+			weston_content_protection_client_protocol_h,
+			weston_content_protection_protocol_c,
+		]
+	},
+
 	{ 'basename': 'dnd' },
 	{
 		'basename': 'editor',
