@@ -382,13 +382,6 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
   return frame;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-FrameFetchContext::GetLoadingTaskRunner() {
-  if (IsDetached())
-    return Thread::Current()->GetTaskRunner();
-  return FetchContext::GetLoadingTaskRunner();
-}
-
 std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
 FrameFetchContext::CreateResourceLoadingTaskRunnerHandle() {
   if (IsDetached()) {

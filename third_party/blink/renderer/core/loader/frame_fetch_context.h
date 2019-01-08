@@ -191,7 +191,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // FetchContext overrides:
   FrameScheduler* GetFrameScheduler() const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
   std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
   CreateResourceLoadingTaskRunnerHandle() override;
 
