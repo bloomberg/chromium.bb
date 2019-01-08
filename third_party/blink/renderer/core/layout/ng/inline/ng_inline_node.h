@@ -93,6 +93,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return GetLayoutBlockFlow()->CanContainFirstFormattedLine();
   }
 
+  bool UseFirstLineStyle() const;
   void CheckConsistency() const;
 
   String ToString() const;

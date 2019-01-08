@@ -1077,6 +1077,11 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(
   return sizes;
 }
 
+bool NGInlineNode::UseFirstLineStyle() const {
+  return GetLayoutBox() &&
+         GetLayoutBox()->GetDocument().GetStyleEngine().UsesFirstLineRules();
+}
+
 void NGInlineNode::CheckConsistency() const {
 #if DCHECK_IS_ON()
   const Vector<NGInlineItem>& items = Data().items;
