@@ -643,6 +643,9 @@ typedef struct SPEED_FEATURES {
 
   // mask for skip evaluation of certain interp_filter type.
   INTERP_FILTER_MASK interp_filter_search_mask;
+
+  // Enable/disable interintra wedge search.
+  int disable_wedge_interintra_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
