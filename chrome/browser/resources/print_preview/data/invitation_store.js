@@ -18,18 +18,9 @@ cr.define('print_preview', function() {
   'use strict';
 
   class InvitationStore extends cr.EventTarget {
-    /**
-     * Printer sharing invitations data store.
-     * @param {!print_preview.UserInfo} userInfo User information repository.
-     */
-    constructor(userInfo) {
+    /** Printer sharing invitations data store. */
+    constructor() {
       super();
-
-      /**
-       * User information repository.
-       * @private {!print_preview.UserInfo}
-       */
-      this.userInfo_ = userInfo;
 
       /**
        * Maps user account to the list of invitations for this account.
@@ -103,16 +94,17 @@ cr.define('print_preview', function() {
           this.onCloudPrintProcessInviteDone_.bind(this));
     }
 
-    /** Initiates loading of cloud printer sharing invitations. */
-    startLoadingInvitations() {
+    /**
+     * Initiates loading of cloud printer sharing invitations for the user
+     * account given by |user|.
+     * @param {string} user The user to load invitations for.
+     */
+    startLoadingInvitations(user) {
       if (!this.cloudPrintInterface_) {
         return;
       }
-      if (!this.userInfo_.activeUser) {
-        return;
-      }
-      if (this.loadStatus_.hasOwnProperty(this.userInfo_.activeUser)) {
-        if (this.loadStatus_[this.userInfo_.activeUser] ==
+      if (this.loadStatus_.hasOwnProperty(user)) {
+        if (this.loadStatus_[user] ==
             print_preview.InvitationStoreLoadStatus.DONE) {
           this.dispatchEvent(new CustomEvent(
               InvitationStore.EventType.INVITATION_SEARCH_DONE));
@@ -120,9 +112,9 @@ cr.define('print_preview', function() {
         return;
       }
 
-      this.loadStatus_[this.userInfo_.activeUser] =
+      this.loadStatus_[user] =
           print_preview.InvitationStoreLoadStatus.IN_PROGRESS;
-      this.cloudPrintInterface_.invites(this.userInfo_.activeUser);
+      this.cloudPrintInterface_.invites(user);
     }
 
     /**

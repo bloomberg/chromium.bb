@@ -153,14 +153,14 @@
     <cr-dialog id="dialog" on-close="onCloseOrCancel_">
       <div slot="title" id="header">
         <div>$i18n{destinationSearchTitle}</div>
-        <div class="user-info" hidden$="[[!userInfo.loggedIn]]">
+        <div class="user-info" hidden$="[[!activeUser]]">
           <label class="account-select-label" id="accountSelectLabel">
             $i18n{accountSelectTitle}
           </label>
           <select class="md-select account-select"
               aria-labelledby="accountSelectLabel" on-change="onUserChange_">
-            <template is="dom-repeat" items="[[userInfo.users]]">
-              <option selected="[[isSelected_(item, userInfo.activeUser)]]"
+            <template is="dom-repeat" items="[[users]]">
+              <option selected="[[isSelected_(item, activeUser)]]"
                   value="[[item]]">
                 [[item]]
               </option>

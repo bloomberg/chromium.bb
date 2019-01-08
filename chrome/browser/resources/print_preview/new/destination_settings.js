@@ -8,44 +8,43 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
+    activeUser: String,
+
     /** @type {!print_preview.Destination} */
     destination: Object,
 
     /** @type {?print_preview.DestinationStore} */
     destinationStore: Object,
 
-    /** @type {?print_preview.InvitationStore} */
-    invitationStore: Object,
-
-    /** @type {!Array<!print_preview.RecentDestination>} */
-    recentDestinations: Array,
-
-    /** @type {!print_preview.UserInfo} */
-    userInfo: {
-      type: Object,
-      notify: true,
-    },
-
     disabled: Boolean,
 
-    /** @type {!print_preview_new.State} */
-    state: Number,
+    /** @type {?print_preview.InvitationStore} */
+    invitationStore: Object,
 
     noDestinationsFound: {
       type: Boolean,
       value: false,
     },
 
-    /** @private {boolean} */
-    showCloudPrintPromo_: {
-      type: Boolean,
-      value: false,
-    },
+    /** @type {!Array<!print_preview.RecentDestination>} */
+    recentDestinations: Array,
+
+    /** @type {!print_preview_new.State} */
+    state: Number,
+
+    /** @type {!Array<string>} */
+    users: Array,
 
     /** @private {boolean} */
     loadingDestination_: {
       type: Boolean,
       value: true,
+    },
+
+    /** @private {boolean} */
+    showCloudPrintPromo_: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private {boolean} */
@@ -99,7 +98,9 @@ Polymer({
   /** @private */
   onChangeButtonClick_: function() {
     this.destinationStore.startLoadAllDestinations();
-    this.invitationStore.startLoadingInvitations();
+    if (this.activeUser) {
+      this.invitationStore.startLoadingInvitations(this.activeUser);
+    }
     const dialog = this.$.destinationDialog.get();
     dialog.show();
   },

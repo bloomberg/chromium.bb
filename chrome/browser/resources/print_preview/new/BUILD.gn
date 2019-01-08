@@ -99,7 +99,6 @@ js_library("destination_settings") {
     "../data:destination",
     "../data:destination_store",
     "../data:invitation_store",
-    "../data:user_info",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -296,7 +295,6 @@ js_library("destination_dialog") {
     "../data:destination_store",
     "../data:invitation",
     "../data:invitation_store",
-    "../data:user_info",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:i18n_behavior",

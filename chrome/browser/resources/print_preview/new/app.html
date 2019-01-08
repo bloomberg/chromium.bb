@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_outline_manager.html">
-<link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -91,6 +90,11 @@
         recent-destinations="{{recentDestinations_}}"
         on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
+    <print-preview-user-info id="userInfo" active-user="{{activeUser_}}"
+        users="{{users_}}" cloud-print-interface="[[cloudPrintInterface_]]"
+        destination-store="[[destinationStore_]]"
+        invitation-store="[[invitationStore_]]">
+    </print-preview-user-info>
     <print-preview-document-info id="documentInfo"
         document-settings="{{documentSettings_}}" margins="{{margins_}}"
         page-size="{{pageSize_}}">
@@ -108,7 +112,9 @@
             invitation-store="[[invitationStore_]]"
             disabled="[[controlsDisabled_]]" state="[[state]]"
             recent-destinations="[[recentDestinations_]]"
-            user-info="{{userInfo_}}" available class="settings-section">
+            active-user="[[activeUser_]]" users="[[users_]]"
+            available class="settings-section"
+            on-account-change="onAccountChange_">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
             page-count="[[documentSettings_.pageCount]]"

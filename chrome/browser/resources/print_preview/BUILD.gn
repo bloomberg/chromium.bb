@@ -91,6 +91,7 @@ js_library("metrics") {
 js_library("cloud_print_interface") {
   deps = [
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -100,7 +101,6 @@ js_library("cloud_print_interface_manager") {
     ":cloud_print_interface_js",
     ":cloud_print_interface_native",
     ":native_layer",
-    "data:user_info",
   ]
 }
 
@@ -112,8 +112,8 @@ js_library("cloud_print_interface_js") {
     "data:destination",
     "data:document_info",
     "data:invitation",
-    "data:user_info",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 

@@ -305,15 +305,11 @@ cr.define('print_preview_test_utils', function() {
     });
   }
 
-  /**
-   * @param {!print_preview.UserInfo} userInfo
-   * @return {!print_preview.DestinationStore}
-   */
-  function createDestinationStore(userInfo) {
+  /** @return {!print_preview.DestinationStore} */
+  function createDestinationStore() {
     const testListenerElement = document.createElement('test-listener-element');
     document.body.appendChild(testListenerElement);
     return new print_preview.DestinationStore(
-        userInfo,
         testListenerElement.addWebUIListener.bind(testListenerElement));
   }
 

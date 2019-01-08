@@ -31,6 +31,22 @@ Polymer({
       notify: true,
     },
 
+    /** @type {!print_preview_new.State} */
+    state: {
+      type: Number,
+      observer: 'onStateChanged_',
+    },
+
+    /** @private {string} */
+    activeUser_: String,
+
+    /** @private {boolean} */
+    controlsDisabled_: {
+      type: Boolean,
+      notify: true,
+      computed: 'computeControlsDisabled_(state)',
+    },
+
     /** @private {print_preview.Destination} */
     destination_: {
       type: Object,
@@ -56,32 +72,6 @@ Polymer({
     /** @private {!print_preview.PrintableArea} */
     printableArea_: Object,
 
-    /** @private {?print_preview.InvitationStore} */
-    invitationStore_: {
-      type: Object,
-      notify: true,
-      value: null,
-    },
-
-    /** @private {!Array<print_preview.RecentDestination>} */
-    recentDestinations_: {
-      type: Array,
-      notify: true,
-    },
-
-    /** @type {!print_preview_new.State} */
-    state: {
-      type: Number,
-      observer: 'onStateChanged_',
-    },
-
-    /** @private {?print_preview.UserInfo} */
-    userInfo_: {
-      type: Object,
-      notify: true,
-      value: null,
-    },
-
     /** @private {string} */
     errorMessage_: {
       type: String,
@@ -89,15 +79,8 @@ Polymer({
       value: '',
     },
 
-    /** @private {boolean} */
-    controlsDisabled_: {
-      type: Boolean,
-      notify: true,
-      computed: 'computeControlsDisabled_(state)',
-    },
-
-    /** @private {?print_preview.MeasurementSystem} */
-    measurementSystem_: {
+    /** @private {?print_preview.InvitationStore} */
+    invitationStore_: {
       type: Object,
       notify: true,
       value: null,
@@ -110,10 +93,23 @@ Polymer({
       value: false,
     },
 
+    /** @private {?print_preview.MeasurementSystem} */
+    measurementSystem_: {
+      type: Object,
+      notify: true,
+      value: null,
+    },
+
     /** @private {!print_preview_new.PreviewAreaState} */
     previewState_: {
       type: String,
       observer: 'onPreviewAreaStateChanged_',
+    },
+
+    /** @private {!Array<print_preview.RecentDestination>} */
+    recentDestinations_: {
+      type: Array,
+      notify: true,
     },
 
     /** @private {boolean} */
@@ -145,6 +141,9 @@ Polymer({
         return loadTimeData.getBoolean('pagesPerSheetEnabled');
       },
     },
+
+    /** @private {!Array<string>} */
+    users_: Array,
   },
 
   listeners: {
@@ -184,15 +183,14 @@ Polymer({
   /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
-    this.userInfo_ = new print_preview.UserInfo();
     this.addWebUIListener(
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
     this.addWebUIListener('print-failed', this.onPrintFailed_.bind(this));
     this.addWebUIListener(
         'print-preset-options', this.onPrintPresetOptions_.bind(this));
-    this.destinationStore_ = new print_preview.DestinationStore(
-        this.userInfo_, this.addWebUIListener.bind(this));
-    this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
+    this.destinationStore_ =
+        new print_preview.DestinationStore(this.addWebUIListener.bind(this));
+    this.invitationStore_ = new print_preview.InvitationStore();
     this.tracker_.add(window, 'keydown', this.onKeyDown_.bind(this));
     this.$.previewArea.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
     this.tracker_.add(
@@ -380,8 +378,7 @@ Polymer({
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
     assert(!this.cloudPrintInterface_);
     this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
-        cloudPrintUrl, assert(this.nativeLayer_), assert(this.userInfo_),
-        appKioskMode);
+        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
@@ -399,7 +396,9 @@ Polymer({
     this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
     if (this.$.destinationSettings.isDialogOpen()) {
       this.destinationStore_.startLoadCloudDestinations();
-      this.invitationStore_.startLoadingInvitations();
+      if (this.activeUser_) {
+        this.invitationStore_.startLoadingInvitations(this.activeUser_);
+      }
     }
   },
 
@@ -705,6 +704,15 @@ Polymer({
   /** @private */
   close_: function() {
     this.$.state.transitTo(print_preview_new.State.CLOSING);
+  },
+
+  /**
+   * @param {!CustomEvent<string>} e Event containing the new active user
+   *     account.
+   * @private
+   */
+  onAccountChange_: function(e) {
+    this.$.userInfo.updateActiveUser(e.detail);
   },
 });
 })();

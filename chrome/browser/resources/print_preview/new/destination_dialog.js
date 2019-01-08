@@ -20,16 +20,15 @@ Polymer({
       observer: 'onInvitationStoreSet_',
     },
 
+    activeUser: String,
+
+    /** @type {!Array<string>} */
+    users: Array,
+
     /** @private {?print_preview.Invitation} */
     invitation_: {
       type: Object,
       value: null,
-    },
-
-    /** @type {!print_preview.UserInfo} */
-    userInfo: {
-      type: Object,
-      notify: true,
     },
 
     /** @type {boolean} */
@@ -61,7 +60,7 @@ Polymer({
       notify: true,
       computed: 'computeRecentDestinationList_(' +
           'destinationStore, recentDestinations, recentDestinations.*, ' +
-          'userInfo, destinations_.*)',
+          'activeUser, destinations_.*)',
       observer: 'onRecentDestinationListChange_',
     },
 
@@ -155,7 +154,9 @@ Polymer({
   /** @private */
   onDestinationSearchDone_: function() {
     this.updateDestinations_();
-    this.invitationStore.startLoadingInvitations();
+    if (this.activeUser) {
+      this.invitationStore.startLoadingInvitations(this.activeUser);
+    }
   },
 
   /** @private */
@@ -164,21 +165,14 @@ Polymer({
       return;
     }
 
-    this.notifyPath('userInfo.users');
-    this.notifyPath('userInfo.activeUser');
-    this.notifyPath('userInfo.loggedIn');
-    if (this.userInfo.loggedIn) {
+    if (this.activeUser) {
       this.showCloudPrintPromo = false;
     }
 
-    if (this.userInfo) {
-      this.updateList(
-          'destinations_',
-          destination => destination.origin + '/' + destination.id,
-          this.destinationStore.destinations(this.userInfo.activeUser));
-    } else {
-      this.destinations_ = [];
-    }
+    this.updateList(
+        'destinations_',
+        destination => destination.origin + '/' + destination.id,
+        this.destinationStore.destinations(this.activeUser));
 
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
@@ -194,7 +188,7 @@ Polymer({
     }
 
     const recentDestinations = [];
-    const filterAccount = this.userInfo.activeUser;
+    const filterAccount = this.activeUser;
     this.recentDestinations.forEach((recentDestination) => {
       const destination = this.destinationStore.getDestination(
           recentDestination.origin, recentDestination.id,
@@ -323,7 +317,7 @@ Polymer({
 
   /** @private */
   isSelected_: function(account) {
-    return account == this.userInfo.activeUser;
+    return account == this.activeUser;
   },
 
   /** @private */
@@ -345,8 +339,8 @@ Polymer({
    * @private
    */
   updateInvitations_: function() {
-    const invitations = this.userInfo.activeUser ?
-        this.invitationStore.invitations(this.userInfo.activeUser) :
+    const invitations = this.activeUser ?
+        this.invitationStore.invitations(this.activeUser) :
         [];
     if (this.invitation_ != invitations[0]) {
       this.metrics_.record(
@@ -416,11 +410,7 @@ Polymer({
     const account = select.value;
     if (account) {
       this.showCloudPrintPromo = false;
-      this.userInfo.activeUser = account;
-      this.notifyPath('userInfo.activeUser');
-      this.notifyPath('userInfo.loggedIn');
-      this.destinationStore.reloadUserCookieBasedDestinations();
-      this.invitationStore.startLoadingInvitations();
+      this.fire('account-change', account);
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
@@ -429,7 +419,7 @@ Polymer({
               this.destinationStore));
       const options = select.querySelectorAll('option');
       for (let i = 0; i < options.length; i++) {
-        if (options[i].value == this.userInfo.activeUser) {
+        if (options[i].value == this.activeUser) {
           select.selectedIndex = i;
           break;
         }

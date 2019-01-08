@@ -100,7 +100,8 @@ cr.define('invalid_settings_browsertest', function() {
 
       createPage(true);
 
-      page.userInfo_.setUsers('foo@chromium.org', ['foo@chromium.org']);
+      page.activeUser = 'foo@chromium.org';
+      page.users = [page.activeUser];
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => {
         cloudPrintInterface.setPrinter(printer.id, printer);

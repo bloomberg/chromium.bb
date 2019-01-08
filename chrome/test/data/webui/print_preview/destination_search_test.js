@@ -22,9 +22,6 @@ cr.define('destination_search_test', function() {
     /** @type {?print_preview.DestinationStore} */
     let destinationStore = null;
 
-    /** @type {?print_preview.UserInfo} */
-    let userInfo = null;
-
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
 
@@ -38,9 +35,7 @@ cr.define('destination_search_test', function() {
       // Create data classes
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      userInfo = new print_preview.UserInfo();
-      destinationStore =
-          print_preview_test_utils.createDestinationStore(userInfo);
+      destinationStore = print_preview_test_utils.createDestinationStore();
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate('FooDevice', 'FooName'));
       destinationStore.init(
@@ -50,9 +45,10 @@ cr.define('destination_search_test', function() {
 
       // Set up dialog
       dialog = document.createElement('print-preview-destination-dialog');
-      dialog.userInfo = userInfo;
+      dialog.users = [];
+      dialog.activeUser = '';
       dialog.destinationStore = destinationStore;
-      dialog.invitationStore = new print_preview.InvitationStore(userInfo);
+      dialog.invitationStore = new print_preview.InvitationStore();
       dialog.recentDestinations = [];
       PolymerTest.clearBody();
       document.body.appendChild(dialog);
