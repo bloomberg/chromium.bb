@@ -197,6 +197,16 @@ class BASE_EXPORT Value {
   Value* FindKeyOfType(StringPiece key, Type type);
   const Value* FindKeyOfType(StringPiece key, Type type) const;
 
+  // These are convenience forms of |FindKey|. They return |base::nullopt| if
+  // the value is not found or doesn't have the type specified in the
+  // function's name.
+  base::Optional<bool> FindBoolKey(StringPiece key) const;
+  base::Optional<int> FindIntKey(StringPiece key) const;
+  base::Optional<double> FindDoubleKey(StringPiece key) const;
+
+  // |FindStringKey| returns |nullptr| if value is not found or not a string.
+  const std::string* FindStringKey(StringPiece key) const;
+
   // |SetKey| looks up |key| in the underlying dictionary and sets the mapped
   // value to |value|. If |key| could not be found, a new element is inserted.
   // A pointer to the modified item is returned.
@@ -508,16 +518,16 @@ class BASE_EXPORT DictionaryValue : public Value {
   bool GetWithoutPathExpansion(StringPiece key, const Value** out_value) const;
   // DEPRECATED, use Value::FindKey(key) instead.
   bool GetWithoutPathExpansion(StringPiece key, Value** out_value);
-  // DEPRECATED, use Value::FindKey(key) and Value::GetBool() instead.
+  // DEPRECATED, use Value::FindBoolKey(key) instead.
   bool GetBooleanWithoutPathExpansion(StringPiece key, bool* out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value::GetInt() instead.
+  // DEPRECATED, use Value::FindIntKey(key) instead.
   bool GetIntegerWithoutPathExpansion(StringPiece key, int* out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value::GetDouble() instead.
+  // DEPRECATED, use Value::FindDoubleKey(key) instead.
   bool GetDoubleWithoutPathExpansion(StringPiece key, double* out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value::GetString() instead.
+  // DEPRECATED, use Value::FindStringKey(key) instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      std::string* out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value::GetString() instead.
+  // DEPRECATED, use Value::FindStringKey(key) and UTF8ToUTF16() instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      string16* out_value) const;
   // DEPRECATED, use Value::FindKey(key) and Value's Dictionary API instead.
