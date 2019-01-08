@@ -7,7 +7,29 @@ module media_session.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 5
+// Next MinVersion: 6
+
+// These are the different modes the AudioFocusManager can enforce audio focus.
+[Extensible]
+enum EnforcementMode {
+  // This will default to whatever enforcement mode is configured through
+  // feature flags.
+  kDefault,
+
+  // This will allow all sessions to play, without the enforcement of a single
+  // media session.
+  kNone,
+
+  // This will enforce that all media sessions playing have the same audio
+  // focus group id. If a session gains focus then all other sessions with
+  // a different group id will be ducked/paused. Any session with the same
+  // group id will be ignored.
+  kSingleGroup,
+
+  // This will enforce that only one media session can be playing at any
+  // one time.
+  kSingleSession,
+};
 
 // These are the different types of audio focus that can be requested.
 [Extensible]
@@ -72,7 +94,7 @@ interface AudioFocusRequestClient {
 };
 
 // Controls audio focus across the entire system.
-// Next Method ID: 5
+// Next Method ID: 6
 interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
   // |session_info|. Media sessions should provide a |request| that will
@@ -105,6 +127,9 @@ interface AudioFocusManager {
   // associating metrics to a source. If the source name is updated then
   // the audio focus requests will retain the previous source name.
   [MinVersion=2] SetSourceName@3(string name);
+
+  // Sets the enforcement mode for the Audio Focus Manager.
+  [MinVersion=5] SetEnforcementMode@5(EnforcementMode mode);
 };
 
 // Provides debug information about audio focus requests.
