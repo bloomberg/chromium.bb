@@ -277,7 +277,8 @@ NativeThemeMac::NativeThemeMac() {
         [[NativeThemeEffectiveAppearanceObserver alloc] init]);
   }
   if (@available(macOS 10.10, *)) {
-    high_contrast_notification_token_ = [[NSNotificationCenter defaultCenter]
+    high_contrast_notification_token_ = [[[NSWorkspace sharedWorkspace]
+        notificationCenter]
         addObserverForName:
             NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                     object:nil
