@@ -937,8 +937,6 @@ static int motion_field_projection(AV1_COMMON *cm,
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
   int ref_offset[REF_FRAMES] = { 0 };
 
-  (void)dir;
-
   const RefCntBuffer *const start_frame_buf =
       get_ref_frame_buf(cm, start_frame);
   if (start_frame_buf == NULL) return 0;
@@ -1071,8 +1069,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
       ref_stamp >= 0)
     if (motion_field_projection(cm, ALTREF_FRAME, 0)) --ref_stamp;
 
-  if (ref_stamp >= 0 && ref_buf[LAST2_FRAME - LAST_FRAME] != NULL)
-    if (motion_field_projection(cm, LAST2_FRAME, 2)) --ref_stamp;
+  if (ref_stamp >= 0) motion_field_projection(cm, LAST2_FRAME, 2);
 }
 
 static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
