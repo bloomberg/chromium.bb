@@ -21,10 +21,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -53,6 +55,27 @@ public class WebappLauncherActivity extends Activity {
     private static final int WEBAPK_LAUNCH_DELAY_MS = 20;
 
     private static final String TAG = "webapps";
+
+    /** WebAPK first run experience parameters. */
+    public static class FreParams {
+        private final Intent mIntentToLaunchAfterFreComplete;
+        private final String mShortName;
+
+        public FreParams(Intent intentToLaunchAfterFreComplete, String shortName) {
+            mIntentToLaunchAfterFreComplete = intentToLaunchAfterFreComplete;
+            mShortName = shortName;
+        }
+
+        /** Returns the intent launch when the user completes the first run experience. */
+        public Intent getIntentToLaunchAfterFreComplete() {
+            return mIntentToLaunchAfterFreComplete;
+        }
+
+        /** Returns the WebAPK's short name. */
+        public String webApkShortName() {
+            return mShortName;
+        }
+    }
 
     /** Creates intent to relaunch WebAPK. */
     public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
@@ -93,6 +116,27 @@ public class WebappLauncherActivity extends Activity {
         return false;
     }
 
+    /**
+     * Generates parameters for the WebAPK first run experience for the given intent. Returns null
+     * if the intent does not launch either a WebappLauncherActivity or a WebApkActivity. This
+     * method is slow. It makes several PackageManager calls.
+     */
+    public static FreParams slowGenerateFreParamsIfIntentIsForWebApk(Intent fromIntent) {
+        // Check for intents targeted at WebApkActivity, WebApkActivity0-9,
+        // SameTaskWebApkActivity and WebappLauncherActivity.
+        String targetActivityClassName = fromIntent.getComponent().getClassName();
+        if (!targetActivityClassName.startsWith(WebApkActivity.class.getName())
+                && !targetActivityClassName.equals(SameTaskWebApkActivity.class.getName())
+                && !targetActivityClassName.equals(WebappLauncherActivity.class.getName())) {
+            return null;
+        }
+
+        WebApkInfo info = WebApkInfo.create(fromIntent);
+        return (info != null)
+                ? new FreParams(createRelaunchWebApkIntent(fromIntent, info), info.shortName())
+                : null;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,12 +151,29 @@ public class WebappLauncherActivity extends Activity {
             return;
         }
 
+        if (FirstRunFlowSequencer.launch(this, intent, false /* requiresBroadcast */,
+                    shouldPreferLightweightFre(webappInfo))) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
+
         if (shouldLaunchWebapp(intent, webappInfo)) {
             launchWebapp(this, intent, webappInfo, createTimestamp);
             return;
         }
 
         launchInTab(this, intent, webappInfo);
+    }
+
+    /**
+     * Returns whether to prefer the Lightweight First Run Experience instead of the
+     * non-Lightweight First Run Experience when launching the given webapp.
+     */
+    private static boolean shouldPreferLightweightFre(WebappInfo webappInfo) {
+        // Use lightweight FRE for unbound WebAPKs.
+        return webappInfo != null && webappInfo.webApkPackageName() != null
+                && !webappInfo.webApkPackageName().startsWith(
+                        WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 
     private static boolean shouldLaunchWebapp(Intent intent, WebappInfo webappInfo) {
@@ -354,7 +415,8 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /** Tries to create WebappInfo/WebApkInfo for the intent. */
-    private static WebappInfo tryCreateWebappInfo(Intent intent) {
+    @VisibleForTesting
+    static WebappInfo tryCreateWebappInfo(Intent intent) {
         // Builds WebApkInfo for the intent if the WebAPK package specified in the intent is a valid
         // WebAPK and the URL specified in the intent can be fulfilled by the WebAPK.
         String webApkPackage =
@@ -365,6 +427,9 @@ public class WebappLauncherActivity extends Activity {
                         ContextUtils.getApplicationContext(), webApkPackage, url)) {
             return WebApkInfo.create(intent);
         }
+
+        // This is not a valid WebAPK. Modify the intent so that WebApkInfo#create() returns null.
+        intent.removeExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
 
         Log.d(TAG, "%s is either not a WebAPK or %s is not within the WebAPK's scope",
                 webApkPackage, url);
