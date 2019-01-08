@@ -22,7 +22,7 @@ class VR_EXPORT VRUiHost {
   virtual ~VRUiHost() = 0;
 
   using Factory =
-      std::unique_ptr<VRUiHost>(device::mojom::VRDisplayInfoPtr info,
+      std::unique_ptr<VRUiHost>(device::mojom::XRDeviceId device_id,
                                 device::mojom::XRCompositorHostPtr compositor);
 
   static void SetFactory(Factory* factory);

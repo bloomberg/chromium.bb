@@ -83,8 +83,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
                          base::OnceCallback<void(bool)> on_handled) override;
   void OnDeviceIdle(device::mojom::VRDisplayEventReason reason) override;
 
-  void OnInitialDevicePropertiesReceived(
-      device::mojom::VRDisplayInfoPtr display_info);
   void StopImmersiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(

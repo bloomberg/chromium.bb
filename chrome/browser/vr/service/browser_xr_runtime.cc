@@ -24,23 +24,20 @@ BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
   // so we won't be called after runtime_ is destroyed.
   runtime_->ListenToDeviceChanges(
       listener.PassInterface(),
-      base::BindOnce(&BrowserXRRuntime::OnInitialDevicePropertiesReceived,
+      base::BindOnce(&BrowserXRRuntime::OnDisplayInfoChanged,
                      base::Unretained(this)));
-}
-
-void BrowserXRRuntime::OnInitialDevicePropertiesReceived(
-    device::mojom::VRDisplayInfoPtr display_info) {
-  if (!display_info_)
-    OnDisplayInfoChanged(std::move(display_info));
 }
 
 BrowserXRRuntime::~BrowserXRRuntime() = default;
 
 void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
+  bool had_display_info = !!display_info_;
   display_info_ = std::move(vr_device_info);
-  for (XRDeviceImpl* device : renderer_device_connections_) {
-    device->RuntimesChanged();
+  if (had_display_info) {
+    for (XRDeviceImpl* device : renderer_device_connections_) {
+      device->RuntimesChanged();
+    }
   }
 
   // Notify observers of the new display info.

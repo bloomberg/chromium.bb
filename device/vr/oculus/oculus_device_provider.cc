@@ -49,7 +49,7 @@ void OculusVRDeviceProvider::CreateDevice() {
   device_ = std::make_unique<OculusDevice>();
 
   // If the device failed to inialize, don't return it.
-  if (!device_->IsInitialized()) {
+  if (!device_->IsAvailable()) {
     device_ = nullptr;
   }
 }

@@ -61,7 +61,7 @@ void OpenVRDeviceProvider::CreateDevice() {
     return;
 
   device_ = std::make_unique<OpenVRDevice>();
-  if (device_->IsInitialized()) {
+  if (device_->IsAvailable()) {
     GamepadDataFetcherManager::GetInstance()->AddFactory(
         new IsolatedGamepadDataFetcher::Factory(
             device::mojom::XRDeviceId::OPENVR_DEVICE_ID,

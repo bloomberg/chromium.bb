@@ -90,13 +90,6 @@ OculusDevice::OculusDevice()
       gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
       weak_ptr_factory_(this) {
-  StartOvrSession();
-  if (!session_) {
-    return;
-  }
-
-  SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
-
   render_loop_ = std::make_unique<OculusRenderLoop>();
 }
 
@@ -134,6 +127,11 @@ OculusDevice::~OculusDevice() {
 void OculusDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
+  if (!EnsureValidDisplayInfo()) {
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
   if (!options->immersive) {
     ReturnNonImmersiveSession(std::move(callback));
     return;
@@ -182,6 +180,26 @@ void OculusDevice::RequestSession(
                      std::move(on_request_present_result)));
 }
 
+void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+  EnsureValidDisplayInfo();
+  std::move(callback).Run();
+}
+
+bool OculusDevice::EnsureValidDisplayInfo() {
+  // Ensure we have had a valid display_info set at least once.
+  if (!have_real_display_info_) {
+    // Initialize Oculus briefly.
+    StartOvrSession();
+    if (!session_) {
+      return false;
+    }
+
+    SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
+    have_real_display_info_ = true;
+  }
+  return have_real_display_info_;
+}
+
 void OculusDevice::OnRequestSessionResult(
     mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
@@ -208,6 +226,11 @@ void OculusDevice::OnRequestSessionResult(
   session->display_info = display_info_.Clone();
 
   std::move(callback).Run(std::move(session), std::move(session_controller));
+}
+
+bool OculusDevice::IsAvailable() {
+  auto result = ovr_Detect(0);
+  return result.IsOculusHMDConnected && result.IsOculusServiceRunning;
 }
 
 // XRSessionController
