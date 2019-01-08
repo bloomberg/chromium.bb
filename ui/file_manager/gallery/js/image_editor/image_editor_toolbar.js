@@ -350,7 +350,9 @@ ImageEditorToolbar.prototype.show = function(on) {
   // Focus the first input on the toolbar.
   if (on) {
     var input = this.container_.querySelector(
-        'button, paper-button, input, cr-slider, cr-input');
+        // Crop aspect ratio buttons should not be focused immediately
+        // crbug.com/655943
+        'button:not(.crop-aspect-ratio), paper-button, input, cr-slider, cr-input');
     if (input) {
       input.focus();
     }
