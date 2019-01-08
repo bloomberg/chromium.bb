@@ -12,12 +12,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
-#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/syncable/directory.h"
 #include "sql/test/test_helpers.h"
@@ -76,23 +74,8 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
   }
 };
 
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/915219
-#define MAYBE_StopThenDisableDeletesDirectory \
-  DISABLED_StopThenDisableDeletesDirectory
-#else
-#define MAYBE_StopThenDisableDeletesDirectory StopThenDisableDeletesDirectory
-#endif
-
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       MAYBE_StopThenDisableDeletesDirectory) {
-  // If SyncStandaloneTransport is enabled, then the sync service will
-  // immediately restart (and thus recreate directory files) after StopAndClear.
-  // TODO(crbug.com/856179): Rewrite this test to pass with
-  // kSyncStandaloneTransport enabled.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(switches::kSyncStandaloneTransport);
-
+                       StopThenDisableDeletesDirectory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   FilePath directory_path = sync_service->GetSyncClientForTest()
@@ -109,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // Wait for the directory deletion to finish.
   WaitForExistingTasksOnTaskRunner(
       sync_service->GetSyncThreadTaskRunnerForTest());
-  ASSERT_FALSE(FolderContainsFiles(directory_path));
+  EXPECT_FALSE(FolderContainsFiles(directory_path));
 }
 
 // Verify that when the sync directory's backing store becomes corrupted, we
