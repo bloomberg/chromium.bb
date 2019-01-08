@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/port_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
@@ -176,6 +177,13 @@ NetworkService::NetworkService(
 #endif
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Set-up the global port overrides.
+  if (command_line->HasSwitch(switches::kExplicitlyAllowedPorts)) {
+    std::string allowed_ports =
+        command_line->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+    net::SetExplicitlyAllowedPorts(allowed_ports);
+  }
 
   // Record this once per session, though the switch is appled on a
   // per-NetworkContext basis.

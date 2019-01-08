@@ -66,7 +66,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
-#include "net/base/port_util.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
@@ -587,12 +586,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
-  if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
-    std::string allowed_ports =
-        command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
-    net::SetExplicitlyAllowedPorts(allowed_ports);
-  }
 
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (!process_startup) {

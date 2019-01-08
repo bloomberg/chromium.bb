@@ -49,6 +49,10 @@ const char kSSLKeyLogFile[] = "ssl-key-log-file";
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[] = "no-referrers";
 
+// Allows overriding the list of restricted ports by passing a comma-separated
+// list of port numbers.
+const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
+
 }  // namespace switches
 
 }  // namespace network

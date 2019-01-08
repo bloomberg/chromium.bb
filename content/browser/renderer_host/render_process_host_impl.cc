@@ -2982,6 +2982,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
     network::switches::kNoReferrers,
+    network::switches::kExplicitlyAllowedPorts,
     service_manager::switches::kDisableInProcessStackTraces,
     service_manager::switches::kDisableSeccompFilterSandbox,
     service_manager::switches::kNoSandbox,
@@ -3064,7 +3065,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebGLImageChromium,
     switches::kEnableWebVR,
-    switches::kExplicitlyAllowedPorts,
     switches::kFileUrlPathAlias,
     switches::kForceDisplayColorProfile,
     switches::kForceDeviceScaleFactor,

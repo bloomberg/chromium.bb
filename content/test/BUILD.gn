@@ -827,6 +827,7 @@ test("content_browsertests") {
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/navigation_browsertest.cc",
     "../browser/net/accept_header_browsertest.cc",
+    "../browser/net/net_command_line_flags_browsertest.cc",
     "../browser/net_info_browsertest.cc",
     "../browser/network_service_browsertest.cc",
     "../browser/network_service_restart_browsertest.cc",
