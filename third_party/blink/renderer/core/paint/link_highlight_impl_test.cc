@@ -248,6 +248,44 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
   }
 }
 
+TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
+  // This test requires GraphicsLayers which are not used in
+  // CompositeAfterPaint.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
+  web_view_impl->MainFrameWidget()->Resize(WebSize(640, 480));
+  UpdateAllLifecyclePhases();
+
+  WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests(),
+                              kWebGestureDeviceTouchscreen);
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
+  GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
+  auto* touch_element = ToElement(web_view_impl->BestTapNode(targeted_event));
+  web_view_impl->EnableTapHighlightAtPoint(targeted_event);
+
+  web_view_helper_.LocalMainFrame()
+      ->GetFrameView()
+      ->SetTracksPaintInvalidations(true);
+
+  // Change the touched element's height to 12px.
+  auto& style = touch_element->getAttribute(html_names::kStyleAttr);
+  String new_style = style.GetString();
+  new_style.append("height: 12px;");
+  touch_element->setAttribute(html_names::kStyleAttr, AtomicString(new_style));
+  UpdateAllLifecyclePhases();
+
+  const auto& highlights =
+      web_view_impl->GetPage()->GetLinkHighlights().link_highlights_;
+  auto* highlight_layer = highlights.at(0)->CurrentGraphicsLayerForTesting();
+  const auto* tracking = highlight_layer->GetRasterInvalidationTracking();
+  // The invalidation rect should fully cover the layer.
+  EXPECT_EQ(tracking->Invalidations().back().rect, IntRect(0, 0, 200, 12));
+}
+
 TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // This is testing the blink->cc layer integration.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
