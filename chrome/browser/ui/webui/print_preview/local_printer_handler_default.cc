@@ -58,8 +58,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
   if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
     return base::Value();
 
-  return std::move(*GetSettingsOnBlockingPool(
-      device_name, basic_info, additional_papers, print_backend));
+  return GetSettingsOnBlockingPool(device_name, basic_info, additional_papers,
+                                   print_backend);
 }
 
 std::string GetDefaultPrinterAsync() {

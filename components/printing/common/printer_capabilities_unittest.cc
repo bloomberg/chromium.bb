@@ -51,11 +51,10 @@ TEST_F(PrinterCapabilitiesTest, NonNullForMissingPrinter) {
   PrinterBasicInfo basic_info;
   PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
 
-  std::unique_ptr<base::DictionaryValue> settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                nullptr);
+  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+      printer_name, basic_info, no_additional_papers, nullptr);
 
-  ASSERT_TRUE(settings_dictionary);
+  ASSERT_FALSE(settings_dictionary.DictEmpty());
 }
 
 TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
@@ -68,22 +67,23 @@ TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
   caps->dpis = {{600, 600}};
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
-  std::unique_ptr<base::DictionaryValue> settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                print_backend());
+  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+      printer_name, basic_info, no_additional_papers, print_backend());
 
   // Verify settings were created.
-  ASSERT_TRUE(settings_dictionary);
+  ASSERT_FALSE(settings_dictionary.DictEmpty());
 
   // Verify capabilities dict exists and has 2 entries. (printer and version)
-  base::DictionaryValue* cdd;
-  ASSERT_TRUE(settings_dictionary->GetDictionary(kSettingCapabilities, &cdd));
-  EXPECT_EQ(2U, cdd->size());
+  base::Value* cdd = settings_dictionary.FindKeyOfType(
+      kSettingCapabilities, base::Value::Type::DICTIONARY);
+  ASSERT_TRUE(cdd);
+  EXPECT_EQ(2U, cdd->DictSize());
 
   // Read the CDD for the "dpi" attribute.
-  base::DictionaryValue* caps_dict;
-  ASSERT_TRUE(cdd->GetDictionary(kPrinter, &caps_dict));
-  EXPECT_TRUE(caps_dict->HasKey(kDpi));
+  base::Value* caps_dict =
+      cdd->FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
+  ASSERT_TRUE(caps_dict);
+  EXPECT_TRUE(caps_dict->FindKey(kDpi));
 }
 
 // Ensure that the capabilities dictionary is present but empty if the backend
@@ -96,18 +96,17 @@ TEST_F(PrinterCapabilitiesTest, NullCapabilitiesExcluded) {
   // Return false when attempting to retrieve capabilities.
   print_backend()->AddValidPrinter(printer_name, nullptr);
 
-  std::unique_ptr<base::DictionaryValue> settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                print_backend());
+  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+      printer_name, basic_info, no_additional_papers, print_backend());
 
   // Verify settings were created.
-  ASSERT_TRUE(settings_dictionary);
+  ASSERT_FALSE(settings_dictionary.DictEmpty());
 
   // Verify that capabilities is an empty dictionary.
-  base::DictionaryValue* caps_dict;
-  ASSERT_TRUE(
-      settings_dictionary->GetDictionary(kSettingCapabilities, &caps_dict));
-  EXPECT_TRUE(caps_dict->empty());
+  base::Value* caps_dict = settings_dictionary.FindKeyOfType(
+      kSettingCapabilities, base::Value::Type::DICTIONARY);
+  ASSERT_TRUE(caps_dict);
+  EXPECT_TRUE(caps_dict->DictEmpty());
 }
 
 TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
@@ -124,16 +123,15 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   additional_papers.push_back({"foo", "vendor", {200, 300}});
   additional_papers.push_back({"bar", "vendor", {600, 600}});
 
-  std::unique_ptr<base::DictionaryValue> settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, additional_papers,
-                                print_backend());
+  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+      printer_name, basic_info, additional_papers, print_backend());
 
   // Verify settings were created.
-  ASSERT_TRUE(settings_dictionary);
+  ASSERT_FALSE(settings_dictionary.DictEmpty());
 
   // Verify there is a CDD with a printer entry.
-  const Value* cdd = settings_dictionary->FindKeyOfType(
-      kSettingCapabilities, Value::Type::DICTIONARY);
+  const Value* cdd = settings_dictionary.FindKeyOfType(kSettingCapabilities,
+                                                       Value::Type::DICTIONARY);
   ASSERT_TRUE(cdd);
   const Value* printer = cdd->FindKeyOfType(kPrinter, Value::Type::DICTIONARY);
   ASSERT_TRUE(printer);

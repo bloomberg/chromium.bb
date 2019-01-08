@@ -9,11 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
+#include "base/values.h"
 
 namespace cloud_devices {
 
@@ -29,7 +25,7 @@ class CloudDeviceDescription {
 
   std::string ToString() const;
 
-  const base::DictionaryValue& root() const { return *root_; }
+  base::Value ToValue() &&;
 
   // Returns dictionary with capability/option.
   // Returns NULL if missing.

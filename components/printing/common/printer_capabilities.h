@@ -10,11 +10,8 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/values.h"
 #include "printing/backend/print_backend.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace printing {
 
@@ -34,7 +31,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 // with default settings.
 // Data from |basic_info| and |additional_papers| are incorporated into the
 // returned dictionary.
-std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
+base::Value GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
