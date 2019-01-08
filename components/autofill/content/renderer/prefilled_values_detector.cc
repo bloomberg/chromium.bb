@@ -81,7 +81,8 @@ const base::flat_set<std::string, std::less<>>& KnownUsernamePlaceholders() {
   return *kPrefilledUsernameValues;
 }
 
-bool PossiblePrefilledUsernameValue(const std::string& username_value) {
+bool PossiblePrefilledUsernameValue(const std::string& username_value,
+                                    const std::string& possible_email_domain) {
   const auto& placeholders = KnownUsernamePlaceholders();
 
   std::string normalized_username_value = base::ToLowerASCII(
@@ -89,6 +90,16 @@ bool PossiblePrefilledUsernameValue(const std::string& username_value) {
 
   if (normalized_username_value.empty())
     return true;
+
+  // Check whether the prefilled value looks like "@example.com",
+  // "@mail.example.com" or other strings matching the regex
+  // "^@.*possible_email_domain$" where the string possible_email_domain is
+  // replaced with the value of |possible_email_domain|.
+  if (normalized_username_value[0] == '@' && !possible_email_domain.empty() &&
+      base::EndsWith(normalized_username_value, possible_email_domain,
+                     base::CompareCase::SENSITIVE)) {
+    return true;
+  }
 
   return placeholders.find(normalized_username_value) != placeholders.end();
 }

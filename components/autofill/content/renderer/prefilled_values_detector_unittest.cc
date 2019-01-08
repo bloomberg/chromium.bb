@@ -17,7 +17,21 @@ TEST(PossiblePrefilledUsernameValue, AllLowerCase) {
 }
 
 TEST(PossiblePrefilledUsernameValue, Whitespace) {
-  EXPECT_TRUE(PossiblePrefilledUsernameValue(" "));
+  EXPECT_TRUE(PossiblePrefilledUsernameValue(" ", ""));
+}
+
+TEST(PossiblePrefilledUsernameValue, EmailAddress) {
+  EXPECT_TRUE(PossiblePrefilledUsernameValue("@example.com", "example.com"));
+  EXPECT_TRUE(PossiblePrefilledUsernameValue("@EXAMPLE.COM", "example.com"));
+  EXPECT_TRUE(PossiblePrefilledUsernameValue(" @example.com", "example.com"));
+  EXPECT_TRUE(
+      PossiblePrefilledUsernameValue("@mail.example.com", "example.com"));
+  EXPECT_FALSE(
+      PossiblePrefilledUsernameValue("user@example.com", "example.com"));
+  EXPECT_FALSE(PossiblePrefilledUsernameValue("@example.com", "foo.com"));
+  EXPECT_FALSE(PossiblePrefilledUsernameValue("@example.com", ""));
+  EXPECT_FALSE(PossiblePrefilledUsernameValue("@", "foo.com"));
+  EXPECT_FALSE(PossiblePrefilledUsernameValue("@", ""));
 }
 
 }  // namespace autofill
