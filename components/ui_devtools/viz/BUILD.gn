@@ -4,7 +4,7 @@
 
 import("//components/viz/viz.gni")
 
-source_set("viz_views") {
+source_set("viz") {
   sources = [
     "dom_agent_viz.cc",
     "dom_agent_viz.h",
@@ -30,7 +30,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":viz_views",
+    ":viz",
     "//components/ui_devtools",
     "//components/ui_devtools:test_support",
     "//components/viz/service",

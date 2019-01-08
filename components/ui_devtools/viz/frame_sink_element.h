@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_FRAME_SINK_ELEMENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_FRAME_SINK_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_FRAME_SINK_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIZ_FRAME_SINK_ELEMENT_H_
 
 #include "base/macros.h"
 #include "components/ui_devtools/ui_element.h"
@@ -64,4 +64,4 @@ class FrameSinkElement : public UIElement {
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_FRAME_SINK_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_FRAME_SINK_ELEMENT_H_

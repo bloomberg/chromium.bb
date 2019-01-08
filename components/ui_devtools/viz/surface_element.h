@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_SURFACE_ELEMENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_SURFACE_ELEMENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_SURFACE_ELEMENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIZ_SURFACE_ELEMENT_H_
 
 #include "base/macros.h"
 #include "components/ui_devtools/ui_element.h"
@@ -47,4 +47,4 @@ class SurfaceElement : public UIElement {
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_SURFACE_ELEMENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_SURFACE_ELEMENT_H_

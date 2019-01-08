@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_OVERLAY_AGENT_VIZ_H_
-#define COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_OVERLAY_AGENT_VIZ_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_OVERLAY_AGENT_VIZ_H_
+#define COMPONENTS_UI_DEVTOOLS_VIZ_OVERLAY_AGENT_VIZ_H_
 
 #include "components/ui_devtools/Overlay.h"
 #include "components/ui_devtools/overlay_agent.h"
-#include "components/ui_devtools/viz_views/dom_agent_viz.h"
+#include "components/ui_devtools/viz/dom_agent_viz.h"
 
 namespace ui_devtools {
 
@@ -32,4 +32,4 @@ class OverlayAgentViz : public OverlayAgent {
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_OVERLAY_AGENT_VIZ_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_OVERLAY_AGENT_VIZ_H_

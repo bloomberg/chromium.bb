@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_DOM_AGENT_VIZ_H_
-#define COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_DOM_AGENT_VIZ_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIZ_DOM_AGENT_VIZ_H_
+#define COMPONENTS_UI_DEVTOOLS_VIZ_DOM_AGENT_VIZ_H_
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -20,7 +20,7 @@ class FrameSinkManagerImpl;
 class SurfaceId;
 class SurfaceInfo;
 class SurfaceManager;
-}
+}  // namespace viz
 
 namespace ui_devtools {
 class FrameSinkElement;
@@ -141,4 +141,4 @@ class DOMAgentViz : public viz::SurfaceObserver,
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_VIEWS_DOM_AGENT_VIZ_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIZ_DOM_AGENT_VIZ_H_

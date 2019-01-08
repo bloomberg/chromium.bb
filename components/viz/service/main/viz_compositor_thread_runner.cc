@@ -25,8 +25,8 @@
 #if defined(USE_VIZ_DEVTOOLS)
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
-#include "components/ui_devtools/viz_views/dom_agent_viz.h"
-#include "components/ui_devtools/viz_views/overlay_agent_viz.h"
+#include "components/ui_devtools/viz/dom_agent_viz.h"
+#include "components/ui_devtools/viz/overlay_agent_viz.h"
 #endif
 
 namespace viz {
