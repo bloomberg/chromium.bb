@@ -691,10 +691,12 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
   // However, if the frame is already very dark or very light, respectively,
   // this won't contrast sufficiently with the frame color, so we'll need to
   // reverse when we're lightening and darkening.
-  const bool lighten = color_utils::GetRelativeLuminance(tab_color) <
-                       color_utils::GetRelativeLuminance(frame_color);
-  SkColor separator_color =
-      lighten ? SK_ColorWHITE : color_utils::GetDarkestColor();
+  SkColor separator_color = SK_ColorWHITE;
+  if (color_utils::GetRelativeLuminance(tab_color) >=
+      color_utils::GetRelativeLuminance(frame_color)) {
+    separator_color =
+        color_utils::BlendTowardOppositeLuma(separator_color, SK_AlphaOPAQUE);
+  }
 
   SkAlpha alpha = color_utils::FindBlendValueForContrastRatio(
       frame_color, separator_color, frame_color, kContrastRatio, 0);

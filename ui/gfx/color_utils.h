@@ -6,6 +6,7 @@
 #define UI_GFX_COLOR_UTILS_H_
 
 #include <string>
+#include <tuple>
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
@@ -105,7 +106,7 @@ GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
 GFX_EXPORT SkColor GetResultingPaintColor(SkColor foreground,
                                           SkColor background);
 
-// Returns true if the luma of |color| is closer to black than white.
+// Returns true if |color| contrasts more with white than the darkest color.
 GFX_EXPORT bool IsDark(SkColor color);
 
 // Makes a dark color lighter or a light color darker by blending |color| with
@@ -185,11 +186,12 @@ GFX_EXPORT std::string SkColorToRgbaString(SkColor color);
 // Creates an rgb string for an SkColor. For example: '255,0,255'.
 GFX_EXPORT std::string SkColorToRgbString(SkColor color);
 
-// Sets the color_utils darkest color to |color| from the SK_ColorBLACK default.
-GFX_EXPORT void SetDarkestColor(SkColor color);
+// Sets the darkest available color to |color|.  Returns the previous darkest
+// color.
+GFX_EXPORT SkColor SetDarkestColorForTesting(SkColor color);
 
-// Returns the current color_utils darkest color so tests can clean up.
-GFX_EXPORT SkColor GetDarkestColor();
+// Returns the luminance of the darkest, midpoint, and lightest colors.
+GFX_EXPORT std::tuple<float, float, float> GetLuminancesForTesting();
 
 }  // namespace color_utils
 

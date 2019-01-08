@@ -205,13 +205,25 @@ TEST(ColorUtils, SkColorToRgbString) {
 }
 
 TEST(ColorUtils, IsDarkDarkestColorChange) {
-  SkColor old_black_color = GetDarkestColor();
-
   ASSERT_FALSE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
-  SetDarkestColor(SkColorSetARGB(255, 200, 200, 200));
+  const SkColor old_darkest_color =
+      SetDarkestColorForTesting(SkColorSetARGB(255, 200, 200, 200));
   EXPECT_TRUE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
 
-  SetDarkestColor(old_black_color);
+  SetDarkestColorForTesting(old_darkest_color);
+}
+
+TEST(ColorUtils, MidpointLuminanceMatches) {
+  const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorBLACK);
+  float darkest, midpoint, lightest;
+  std::tie(darkest, midpoint, lightest) = GetLuminancesForTesting();
+  EXPECT_FLOAT_EQ(GetContrastRatio(darkest, midpoint),
+                  GetContrastRatio(midpoint, lightest));
+
+  SetDarkestColorForTesting(old_darkest_color);
+  std::tie(darkest, midpoint, lightest) = GetLuminancesForTesting();
+  EXPECT_FLOAT_EQ(GetContrastRatio(darkest, midpoint),
+                  GetContrastRatio(midpoint, lightest));
 }
 
 TEST(ColorUtils, GetColorWithMinimumContrast_ForegroundAlreadyMeetsMinimum) {
@@ -236,15 +248,13 @@ TEST(ColorUtils, GetColorWithMinimumContrast_BlendLighter) {
 }
 
 TEST(ColorUtils, GetColorWithMinimumContrast_StopsAtDarkestColor) {
-  SkColor old_black_color = GetDarkestColor();
-
   const SkColor darkest_color = SkColorSetRGB(0x44, 0x44, 0x44);
-  SetDarkestColor(darkest_color);
+  const SkColor old_darkest_color = SetDarkestColorForTesting(darkest_color);
   EXPECT_EQ(darkest_color,
             GetColorWithMinimumContrast(SkColorSetRGB(0x55, 0x55, 0x55),
                                         SkColorSetRGB(0xAA, 0xAA, 0xAA)));
 
-  SetDarkestColor(old_black_color);
+  SetDarkestColorForTesting(old_darkest_color);
 }
 
 TEST(ColorUtils, GetBlendValueWithMinimumContrast_ComputesExpectedOpacities) {
