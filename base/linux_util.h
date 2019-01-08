@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include <string>
+#include <vector>
 
 #include "base/base_export.h"
 
@@ -23,6 +24,10 @@ BASE_EXPORT std::string GetLinuxDistro();
 
 // Set the Linux Distro string.
 BASE_EXPORT void SetLinuxDistro(const std::string& distro);
+
+// For a given process |pid|, get a list of all its threads. On success, returns
+// true and appends the list of threads to |tids|. Otherwise, returns false.
+BASE_EXPORT bool GetThreadsForProcess(pid_t pid, std::vector<pid_t>* tids);
 
 // For a given process |pid|, look through all its threads and find the first
 // thread with /proc/[pid]/task/[thread_id]/syscall whose first N bytes matches

@@ -18,6 +18,10 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/reached_code_profiler.h"
+#endif
+
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
 #include <dlfcn.h>
@@ -177,6 +181,13 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
                                      &enabled);
   if (!enabled)
     return;
+
+#if defined(OS_ANDROID)
+  // The sampler profiler would conflict with the reached code profiler if they
+  // run at the same time because they use the same signal to suspend threads.
+  if (base::android::IsReachedCodeProfilerEnabled())
+    return;
+#endif
 
   base::StackSamplingProfiler::SamplingParams params;
   params.samples_per_profile = std::numeric_limits<int>::max();

@@ -4,6 +4,7 @@
 
 #include "content/app/android/library_loader_hooks.h"
 
+#include "base/android/reached_code_profiler.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_startup.h"
@@ -14,6 +15,8 @@ namespace content {
 bool LibraryLoaded(JNIEnv* env,
                    jclass clazz,
                    base::android::LibraryProcessType library_process_type) {
+  base::android::InitReachedCodeProfilerAtStartup(library_process_type);
+
   // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
   tracing::EnableStartupTracingIfNeeded();
 
