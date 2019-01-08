@@ -12,8 +12,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
-#include "media/learning/common/training_example.h"
 #include "media/learning/common/value.h"
 #include "media/learning/impl/model.h"
 

@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
-#include "media/learning/common/training_example.h"
 
 namespace media {
 namespace learning {
@@ -29,7 +29,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskController {
   virtual ~LearningTaskController() = default;
 
   // Receive an example for this task.
-  virtual void AddExample(const TrainingExample& example) = 0;
+  virtual void AddExample(const LabelledExample& example) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LearningTaskController);

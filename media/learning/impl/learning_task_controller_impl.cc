@@ -38,7 +38,7 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
 
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
-void LearningTaskControllerImpl::AddExample(const TrainingExample& example) {
+void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
   // TODO(liberato): do we ever trim older examples?
   training_data_->push_back(example);
 

@@ -20,7 +20,7 @@ void MojoLearningSessionImpl::Bind(mojom::LearningSessionRequest request) {
 }
 
 void MojoLearningSessionImpl::AddExample(mojom::LearningTaskType task_type,
-                                         const TrainingExample& example) {
+                                         const LabelledExample& example) {
   // TODO(liberato): Convert |task_type| into a task name.
   std::string task_name("no_task");
 

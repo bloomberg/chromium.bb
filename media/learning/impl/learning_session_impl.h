@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
 
   // LearningSession
   void AddExample(const std::string& task_name,
-                  const TrainingExample& example) override;
+                  const LabelledExample& example) override;
 
   // Registers |task|, so that calls to AddExample with |task.name| will work.
   // This will create a new controller for the task.

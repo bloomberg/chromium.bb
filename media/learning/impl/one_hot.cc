@@ -37,7 +37,7 @@ OneHotConverter::~OneHotConverter() = default;
 TrainingData OneHotConverter::Convert(const TrainingData& training_data) const {
   TrainingData converted_training_data;
   for (auto& example : training_data) {
-    TrainingExample converted_example(example);
+    LabelledExample converted_example(example);
     converted_example.features = Convert(example.features);
     converted_training_data.push_back(converted_example);
   }

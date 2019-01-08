@@ -29,7 +29,7 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningSessionImpl
 
   // mojom::LearningSession
   void AddExample(mojom::LearningTaskType task_type,
-                  const TrainingExample& example) override;
+                  const LabelledExample& example) override;
 
  protected:
   explicit MojoLearningSessionImpl(

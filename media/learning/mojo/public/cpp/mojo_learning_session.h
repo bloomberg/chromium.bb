@@ -22,7 +22,7 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningSession
 
   // LearningSession
   void AddExample(const std::string& task_name,
-                  const TrainingExample& example) override;
+                  const LabelledExample& example) override;
 
  private:
   mojom::LearningSessionPtr session_ptr_;

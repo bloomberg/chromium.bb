@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
-  void AddExample(const TrainingExample& example) override;
+  void AddExample(const LabelledExample& example) override;
 
  private:
   // Called with accuracy results as new examples are added.  Only tests should

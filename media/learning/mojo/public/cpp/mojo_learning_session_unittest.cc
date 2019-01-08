@@ -22,13 +22,13 @@ class MojoLearningSessionTest : public ::testing::Test {
   class FakeMojoLearningSessionImpl : public mojom::LearningSession {
    public:
     void AddExample(mojom::LearningTaskType task_type,
-                    const TrainingExample& example) override {
+                    const LabelledExample& example) override {
       task_type_ = std::move(task_type);
       example_ = example;
     }
 
     mojom::LearningTaskType task_type_;
-    TrainingExample example_;
+    LabelledExample example_;
   };
 
  public:
@@ -57,7 +57,7 @@ class MojoLearningSessionTest : public ::testing::Test {
 };
 
 TEST_F(MojoLearningSessionTest, ExampleIsCopied) {
-  TrainingExample example({FeatureValue(123), FeatureValue(456)},
+  LabelledExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(1234));
   learning_session_->AddExample("unused task id", example);
   learning_session_binding_.FlushForTesting();

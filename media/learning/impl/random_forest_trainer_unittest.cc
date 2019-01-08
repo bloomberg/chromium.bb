@@ -46,7 +46,7 @@ TEST_P(RandomForestTest, EmptyTrainingDataWorks) {
 
 TEST_P(RandomForestTest, UniformTrainingDataWorks) {
   SetupFeatures(2);
-  TrainingExample example({FeatureValue(123), FeatureValue(456)},
+  LabelledExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
   const int n_examples = 10;
 
@@ -69,8 +69,8 @@ TEST_P(RandomForestTest, SimpleSeparableTrainingData) {
   // TODO: oob estimates aren't so good if a target only shows up once.  any
   // tree that trains on it won't be used to predict it during oob accuracy,
   // and the remaining trees will get it wrong.
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(456)}, TargetValue(2));
   TrainingData training_data;
   training_data.push_back(example_1);
   training_data.push_back(example_2);
@@ -99,7 +99,7 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
     for (int f2 = 0; f2 < 2; f2++) {
       for (int f3 = 0; f3 < 2; f3++) {
         for (int f4 = 0; f4 < 2; f4++) {
-          TrainingExample example(
+          LabelledExample example(
               {FeatureValue(f1), FeatureValue(f2), FeatureValue(f3),
                FeatureValue(f4)},
               TargetValue(f1 * 1 + f2 * 2 + f3 * 4 + f4 * 8));
@@ -116,7 +116,7 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
   EXPECT_NE(result->model.get(), nullptr);
 
   // Each example should have a distribution in which it is the max.
-  for (const TrainingExample& example : training_data) {
+  for (const LabelledExample& example : training_data) {
     TargetDistribution distribution =
         result->model->PredictDistribution(example.features);
     TargetValue max_value;
@@ -127,8 +127,8 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
 
 TEST_P(RandomForestTest, UnseparableTrainingData) {
   SetupFeatures(1);
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(123)}, TargetValue(2));
   TrainingData training_data;
   training_data.push_back(example_1);
   training_data.push_back(example_2);
@@ -160,7 +160,7 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
 
   // Verify predictions on the training set, just for sanity.
   size_t num_correct = 0;
-  for (const TrainingExample& example : training_data) {
+  for (const LabelledExample& example : training_data) {
     TargetDistribution distribution =
         result->model->PredictDistribution(example.features);
     TargetValue predicted_value;
@@ -179,8 +179,8 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
 }
 
 TEST_P(RandomForestTest, WeightedTrainingSetIsUnsupported) {
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(123)}, TargetValue(2));
   const size_t weight = 100;
   TrainingData training_data;
   example_1.weight = weight;

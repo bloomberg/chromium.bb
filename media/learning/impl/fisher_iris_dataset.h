@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "media/learning/common/training_example.h"
+#include "media/learning/common/labelled_example.h"
 
 namespace media {
 namespace learning {

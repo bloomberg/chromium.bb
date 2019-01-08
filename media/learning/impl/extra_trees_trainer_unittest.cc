@@ -49,7 +49,7 @@ TEST_P(ExtraTreesTest, FisherIrisDataset) {
 
   // Verify predictions on the training set, just for sanity.
   size_t num_correct = 0;
-  for (const TrainingExample& example : training_data) {
+  for (const LabelledExample& example : training_data) {
     TargetDistribution distribution =
         model->PredictDistribution(example.features);
     TargetValue predicted_value;
@@ -68,8 +68,8 @@ TEST_P(ExtraTreesTest, WeightedTrainingSetIsSupported) {
   // Create a training set with unseparable data, but give one of them a large
   // weight.  See if that one wins.
   SetupFeatures(1);
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(123)}, TargetValue(2));
   const size_t weight = 100;
   TrainingData training_data;
   example_1.weight = weight;
@@ -96,13 +96,13 @@ TEST_P(ExtraTreesTest, RegressionWorks) {
   // Create a training set with unseparable data, but give one of them a large
   // weight.  See if that one wins.
   SetupFeatures(2);
-  TrainingExample example_1({FeatureValue(1), FeatureValue(123)},
+  LabelledExample example_1({FeatureValue(1), FeatureValue(123)},
                             TargetValue(1));
-  TrainingExample example_1_a({FeatureValue(1), FeatureValue(123)},
+  LabelledExample example_1_a({FeatureValue(1), FeatureValue(123)},
                               TargetValue(5));
-  TrainingExample example_2({FeatureValue(1), FeatureValue(456)},
+  LabelledExample example_2({FeatureValue(1), FeatureValue(456)},
                             TargetValue(20));
-  TrainingExample example_2_a({FeatureValue(1), FeatureValue(456)},
+  LabelledExample example_2_a({FeatureValue(1), FeatureValue(456)},
                               TargetValue(25));
   TrainingData training_data;
   example_1.weight = 100;
@@ -137,13 +137,13 @@ TEST_P(ExtraTreesTest, RegressionVsBinaryClassification) {
   SetupFeatures(3);
   TrainingData c_data, r_data;
 
-  std::set<TrainingExample> r_examples;
+  std::set<LabelledExample> r_examples;
   for (size_t i = 0; i < 4 * 4 * 4; i++) {
     FeatureValue f1(i & 3);
     FeatureValue f2((i >> 2) & 3);
     FeatureValue f3((i >> 4) & 3);
     int pct = (100 * (f1.value() + f2.value() + f3.value())) / 9;
-    TrainingExample e({f1, f2, f3}, TargetValue(0));
+    LabelledExample e({f1, f2, f3}, TargetValue(0));
 
     // TODO(liberato): Consider adding noise, and verifying that the model
     // predictions are roughly the same as each other, rather than the same as
@@ -162,7 +162,7 @@ TEST_P(ExtraTreesTest, RegressionVsBinaryClassification) {
 
     // For the regression data, add an example with |pct| directly.  Also save
     // it so that we can look up the right answer below.
-    TrainingExample r_example(TrainingExample({f1, f2, f3}, TargetValue(pct)));
+    LabelledExample r_example(LabelledExample({f1, f2, f3}, TargetValue(pct)));
     r_examples.insert(r_example);
     r_data.push_back(r_example);
   }

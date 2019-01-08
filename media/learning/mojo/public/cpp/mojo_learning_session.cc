@@ -15,7 +15,7 @@ MojoLearningSession::MojoLearningSession(mojom::LearningSessionPtr session_ptr)
 MojoLearningSession::~MojoLearningSession() = default;
 
 void MojoLearningSession::AddExample(const std::string& task_name,
-                                     const TrainingExample& example) {
+                                     const LabelledExample& example) {
   // TODO(liberato): Convert from |task_name| to a task type.
   session_ptr_->AddExample(mojom::LearningTaskType::kPlaceHolderTask, example);
 }

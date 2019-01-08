@@ -26,7 +26,7 @@ void LearningSessionImpl::SetTaskControllerFactoryCBForTesting(
 }
 
 void LearningSessionImpl::AddExample(const std::string& task_name,
-                                     const TrainingExample& example) {
+                                     const LabelledExample& example) {
   auto iter = task_map_.find(task_name);
   if (iter != task_map_.end())
     iter->second->AddExample(example);
