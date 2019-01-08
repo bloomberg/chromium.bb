@@ -14,7 +14,8 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
+#include "base/containers/adapters.h"
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -23,78 +24,85 @@ namespace ash {
 
 namespace {
 
-using CanActivateWindowPredicate = base::Callback<bool(aura::Window*)>;
-
-bool CallCanActivate(aura::Window* window) {
+// A predicate that determines whether |window| can be included in the MRU
+// window list.
+bool CanIncludeWindowInMruList(aura::Window* window) {
   return ::wm::CanActivateWindow(window) &&
          !wm::GetWindowState(window)->IsPip();
 }
 
-// Adds the windows that can be cycled through for the specified window id to
-// |windows|.
-void AddTrackedWindows(aura::Window* root,
-                       int container_id,
-                       MruWindowTracker::WindowList* windows) {
-  aura::Window* container = root->GetChildById(container_id);
-  const MruWindowTracker::WindowList children(container->children());
-  windows->insert(windows->end(), children.begin(), children.end());
+// A predicate that determines whether |window| can be included in the list
+// built for cycling through windows (alt + tab).
+bool CanIncludeWindowInCycleList(aura::Window* window) {
+  return CanIncludeWindowInMruList(window) &&
+         !wm::ShouldExcludeForCycleList(window);
 }
 
-// Returns a list of windows ordered by their stacking order.
+// Returns a list of windows ordered by their stacking order such that the most
+// recently used window is at the front of the list.
 // If |mru_windows| is passed, these windows are moved to the front of the list.
-// It uses the given |should_include_window_predicate| to determine whether to
+// It uses the given |can_include_window_predicate| to determine whether to
 // include a window in the returned list or not.
+template <class CanIncludeWindowPredicate>
 MruWindowTracker::WindowList BuildWindowListInternal(
-    const std::list<aura::Window*>* mru_windows,
-    const CanActivateWindowPredicate& should_include_window_predicate) {
+    const std::vector<aura::Window*>* mru_windows,
+    CanIncludeWindowPredicate can_include_window_predicate) {
   MruWindowTracker::WindowList windows;
-  aura::Window* active_root = Shell::GetRootWindowForNewWindows();
-  for (auto* window : Shell::GetAllRootWindows()) {
-    if (window == active_root)
-      continue;
-    for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i)
-      AddTrackedWindows(window, wm::kSwitchableWindowContainerIds[i], &windows);
-  }
-
-  // Add windows in the active root windows last so that the topmost window
-  // in the active root window becomes the front of the list.
-  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-    AddTrackedWindows(active_root, wm::kSwitchableWindowContainerIds[i],
-                      &windows);
-  }
-
-  // Removes unfocusable windows.
-  MruWindowTracker::WindowList::iterator itr = windows.begin();
-  while (itr != windows.end()) {
-    if (!should_include_window_predicate.Run(*itr))
-      itr = windows.erase(itr);
-    else
-      ++itr;
-  }
 
   // Put the windows in the mru_windows list at the head, if it's available.
   if (mru_windows) {
-    // Iterate through the list backwards, so that we can move each window to
-    // the front of the windows list as we find them.
-    for (auto ix = mru_windows->rbegin(); ix != mru_windows->rend(); ++ix) {
-      // Exclude windows in non-switchable containers and those which cannot
-      // be activated.
-      if (((*ix)->parent() && !wm::IsSwitchableContainer((*ix)->parent())) ||
-          !should_include_window_predicate.Run(*ix)) {
+    // The |mru_windows| are sorted such that the most recent window comes last,
+    // hence iterate in reverse order.
+    for (auto* window : base::Reversed(*mru_windows)) {
+      // Exclude windows in non-switchable containers and those which should not
+      // be included.
+      if ((window->parent() && !wm::IsSwitchableContainer(window->parent())) ||
+          !can_include_window_predicate(window)) {
         continue;
       }
 
-      MruWindowTracker::WindowList::iterator window =
-          std::find(windows.begin(), windows.end(), *ix);
-      if (window != windows.end()) {
-        windows.erase(window);
-        windows.push_back(*ix);
-      }
+      windows.emplace_back(window);
     }
   }
 
-  // Window cycling expects the topmost window at the front of the list.
-  std::reverse(windows.begin(), windows.end());
+  auto roots = Shell::GetAllRootWindows();
+
+  // Put the active root window last in |roots| so that when we iterate over the
+  // root windows in reverse order below, the active root comes first. We do
+  // this so that the top-most windows in the active root window will be added
+  // first to |windows|.
+  aura::Window* active_root = Shell::GetRootWindowForNewWindows();
+  auto iter = std::find(roots.begin(), roots.end(), active_root);
+  // When switching to/from Unified Mode, the active root window controller
+  // might be in the process of shutting down, and its windows are being moved
+  // to another root window before the root window for new windows is updated.
+  // See WindowTreeHostManager::DeleteHost().
+  if (iter != roots.end()) {
+    roots.erase(iter);
+    roots.emplace_back(active_root);
+  }
+
+  for (auto* root : base::Reversed(roots)) {
+    // |wm::kSwitchableWindowContainerIds[]| contains a list of the container
+    // IDs sorted such that the ID of the top-most container comes last. Hence,
+    // we iterate in reverse order so the top-most windows are added first.
+    for (int i = wm::kSwitchableWindowContainerIdsLength - 1; i >= 0; --i) {
+      aura::Window* container =
+          root->GetChildById(wm::kSwitchableWindowContainerIds[i]);
+      for (auto* child : base::Reversed(container->children())) {
+        // Only add windows that the predicate allows.
+        if (!can_include_window_predicate(child))
+          continue;
+
+        // Only add windows that have not been added previously from
+        // |mru_windows| (if available).
+        if (mru_windows && base::ContainsValue(*mru_windows, child))
+          continue;
+
+        windows.emplace_back(child);
+      }
+    }
+  }
 
   return windows;
 }
@@ -106,30 +114,25 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
 MruWindowTracker::MruWindowTracker() {
   Shell::Get()->activation_client()->AddObserver(this);
-  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
-  Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto* window : mru_windows_)
     window->RemoveObserver(this);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList() const {
-  return BuildWindowListInternal(&mru_windows_, base::Bind(&CallCanActivate));
+  return BuildWindowListInternal(&mru_windows_, CanIncludeWindowInMruList);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildWindowListIgnoreModal()
     const {
-  return BuildWindowListInternal(nullptr,
-                                 base::Bind(&IsWindowConsideredActivatable));
+  return BuildWindowListInternal(nullptr, IsWindowConsideredActivatable);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleList() const {
-  MruWindowTracker::WindowList window_list = BuildMruWindowList();
-  base::EraseIf(window_list, wm::ShouldExcludeForCycleList);
-  return window_list;
+  return BuildWindowListInternal(&mru_windows_, CanIncludeWindowInCycleList);
 }
 
 void MruWindowTracker::SetIgnoreActivations(bool ignore) {
@@ -141,20 +144,6 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
     SetActiveWindow(wm::GetActiveWindow());
 }
 
-// SessionObserver
-
-// Restore focus after the user session has started. This is needed because some
-// windows can be opened in the background while the login UI is still active
-// since we currently restore browser windows before login UI is deleted.
-void MruWindowTracker::OnUserSessionAdded(const AccountId& account_id) {
-  if (user_session_focus_restored_)
-    return;
-  user_session_focus_restored_ = true;
-  aura::Window::Windows mru_list = BuildMruWindowList();
-  if (!mru_list.empty())
-    mru_list.front()->Focus();
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, private:
 
@@ -162,14 +151,14 @@ void MruWindowTracker::SetActiveWindow(aura::Window* active_window) {
   if (!active_window)
     return;
 
-  std::list<aura::Window*>::iterator iter =
+  auto iter =
       std::find(mru_windows_.begin(), mru_windows_.end(), active_window);
   // Observe all newly tracked windows.
   if (iter == mru_windows_.end())
     active_window->AddObserver(this);
   else
     mru_windows_.erase(iter);
-  mru_windows_.push_front(active_window);
+  mru_windows_.emplace_back(active_window);
 }
 
 void MruWindowTracker::OnWindowActivated(ActivationReason reason,
@@ -183,7 +172,7 @@ void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
   // It's possible for OnWindowActivated() to be called after
   // OnWindowDestroying(). This means we need to override OnWindowDestroyed()
   // else we may end up with a deleted window in |mru_windows_|.
-  mru_windows_.remove(window);
+  base::Erase(mru_windows_, window);
   window->RemoveObserver(this);
 }
 
