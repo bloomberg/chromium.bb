@@ -1127,7 +1127,7 @@ def make_tree_deleteable(root):
       # to use linux capabilities.
       with open(os.devnull, 'rb') as f:
         if not subprocess42.call(
-            ['sudo', '-n', 'chmod', 'a+rwX', p], stdin=f):
+            ['sudo', '-n', 'chmod', 'a+rwX,-t', p], stdin=f):
           return False
       logging.debug('sudo chmod %s failed', p)
     return True
