@@ -731,8 +731,8 @@ void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
 void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   if (!node)
     return;
-
-  if (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
+  if (node->GetDocument().IsFlatTreeTraversalForbidden() ||
+      node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
     nodes_changed_during_layout_.push_back(node);
     return;
   }
@@ -753,7 +753,8 @@ void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
 
   Node* node = GetClosestNodeForLayoutObject(layout_object);
 
-  if (node && (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node) ||
+  if (node && (node->GetDocument().IsFlatTreeTraversalForbidden() ||
+               node->GetDocument().NeedsLayoutTreeUpdateForNode(*node) ||
                node->NeedsDistributionRecalc())) {
     nodes_changed_during_layout_.push_back(node);
     return;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -239,6 +240,9 @@ void SlotAssignment::RecalcAssignment() {
 #endif
   // To detect recursive RecalcAssignment, which shouldn't happen.
   SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(owner_->GetDocument());
+
+  FlatTreeTraversalForbiddenScope forbid_flat_tree_traversal(
+      owner_->GetDocument());
 
   needs_assignment_recalc_ = false;
 
