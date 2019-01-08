@@ -1506,11 +1506,6 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
   // If our flow is ltr then iterate over the boxes from left to right,
   // otherwise iterate from right to left. Varying the order allows us to
   // correctly hide the boxes following the ellipsis.
-  LayoutUnit relative_offset =
-      BoxModelObject().IsInline() && BoxModelObject().IsRelPositioned()
-          ? BoxModelObject().RelativePositionLogicalOffset().Width()
-          : LayoutUnit();
-  logical_left_offset += relative_offset;
   InlineBox* box = ltr ? FirstChild() : LastChild();
 
   // NOTE: these will cross after foundBox = true.
@@ -1540,7 +1535,7 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
       box = box->PrevOnLine();
     }
   }
-  return result + relative_offset;
+  return result;
 }
 
 void InlineFlowBox::ClearTruncation() {

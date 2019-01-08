@@ -313,22 +313,6 @@ class InlineFlowBox : public InlineBox {
       result = result.TransposedRect();
     return result;
   }
-  LayoutUnit LogicalRightLayoutOverflow() const {
-    if (LayoutOverflowIsSet()) {
-      return IsHorizontal()
-                 ? overflow_->layout_overflow->LayoutOverflowRect().MaxX()
-                 : overflow_->layout_overflow->LayoutOverflowRect().MaxY();
-    }
-    return LogicalRight();
-  }
-  LayoutUnit LogicalLeftLayoutOverflow() const {
-    if (LayoutOverflowIsSet()) {
-      return IsHorizontal()
-                 ? overflow_->layout_overflow->LayoutOverflowRect().X()
-                 : overflow_->layout_overflow->LayoutOverflowRect().Y();
-    }
-    return LogicalLeft();
-  }
 
   LayoutRect VisualOverflowRect(LayoutUnit line_top,
                                 LayoutUnit line_bottom) const {
