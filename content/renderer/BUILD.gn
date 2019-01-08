@@ -547,6 +547,8 @@ target(link_target_type, "renderer") {
     "shared_worker/embedded_shared_worker_stub.h",
     "shared_worker/shared_worker_factory_impl.cc",
     "shared_worker/shared_worker_factory_impl.h",
+    "shared_worker/web_service_worker_network_provider_impl_for_worker.cc",
+    "shared_worker/web_service_worker_network_provider_impl_for_worker.h",
     "skia_benchmarking_extension.cc",
     "skia_benchmarking_extension.h",
     "stats_collection_controller.cc",
