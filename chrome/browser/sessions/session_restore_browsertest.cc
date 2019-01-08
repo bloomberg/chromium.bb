@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  const content::NavigationEntry* entry =
+  content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(timestamp, entry->GetTimestamp());
@@ -686,9 +686,9 @@ namespace {
 // Verifies that the given NavigationController has exactly two
 // entries that correspond to the given URLs and that all entries have non-null
 // timestamps.
-void VerifyNavigationEntries(
-    const content::NavigationController& controller,
-    GURL url1, GURL url2) {
+void VerifyNavigationEntries(content::NavigationController& controller,
+                             GURL url1,
+                             GURL url2) {
   ASSERT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
@@ -881,8 +881,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {
   // Three urls and the NTP.
   EXPECT_EQ(4, controller.GetEntryCount());
   controller.DeleteNavigationEntries(
-      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
-        return entry.GetURL() == url2_;
+      base::BindLambdaForTesting([&](content::NavigationEntry* entry) {
+        return entry->GetURL() == url2_;
       }));
   EXPECT_EQ(3, controller.GetEntryCount());
 

@@ -728,7 +728,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // when activated. If it was true, there would be an immediate reload when the
   // active tab of a non-visible window is discarded. SetFocused() will take
   // care of reloading the tab when it becomes active in a focused window.
-  null_contents->GetController().CopyStateFrom(old_contents->GetController(),
+  null_contents->GetController().CopyStateFrom(&old_contents->GetController(),
                                                /* needs_reload */ false);
 
   // First try to fast-kill the process, if it's just running a single tab.

@@ -1051,7 +1051,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // using the NavigationEntry. This can happen when a tab crashed, and a new
   // RenderFrameHost was swapped in at the beginning of the navigation. See
   // https://crbug.com/766630.
-  const NavigationEntry* current_entry =
+  NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
   bool current_is_view_source_mode = current_entry ?
       current_entry->IsViewSourceMode() : dest_is_view_source_mode;

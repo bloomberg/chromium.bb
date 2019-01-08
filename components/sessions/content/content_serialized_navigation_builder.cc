@@ -39,30 +39,30 @@ ConvertReplacedEntryData(
 SerializedNavigationEntry
 ContentSerializedNavigationBuilder::FromNavigationEntry(
     int index,
-    const content::NavigationEntry& entry,
+    content::NavigationEntry* entry,
     SerializationOptions serialization_options) {
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
-  navigation.unique_id_ = entry.GetUniqueID();
-  navigation.referrer_url_ = entry.GetReferrer().url;
-  navigation.referrer_policy_ = static_cast<int>(entry.GetReferrer().policy);
-  navigation.virtual_url_ = entry.GetVirtualURL();
-  navigation.title_ = entry.GetTitle();
+  navigation.unique_id_ = entry->GetUniqueID();
+  navigation.referrer_url_ = entry->GetReferrer().url;
+  navigation.referrer_policy_ = static_cast<int>(entry->GetReferrer().policy);
+  navigation.virtual_url_ = entry->GetVirtualURL();
+  navigation.title_ = entry->GetTitle();
   if (!(serialization_options & SerializationOptions::EXCLUDE_PAGE_STATE))
-    navigation.encoded_page_state_ = entry.GetPageState().ToEncodedData();
-  navigation.transition_type_ = entry.GetTransitionType();
-  navigation.has_post_data_ = entry.GetHasPostData();
-  navigation.post_id_ = entry.GetPostID();
-  navigation.original_request_url_ = entry.GetOriginalRequestURL();
-  navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
-  navigation.timestamp_ = entry.GetTimestamp();
-  navigation.is_restored_ = entry.IsRestored();
-  if (entry.GetFavicon().valid)
-    navigation.favicon_url_ = entry.GetFavicon().url;
-  navigation.http_status_code_ = entry.GetHttpStatusCode();
-  navigation.redirect_chain_ = entry.GetRedirectChain();
+    navigation.encoded_page_state_ = entry->GetPageState().ToEncodedData();
+  navigation.transition_type_ = entry->GetTransitionType();
+  navigation.has_post_data_ = entry->GetHasPostData();
+  navigation.post_id_ = entry->GetPostID();
+  navigation.original_request_url_ = entry->GetOriginalRequestURL();
+  navigation.is_overriding_user_agent_ = entry->GetIsOverridingUserAgent();
+  navigation.timestamp_ = entry->GetTimestamp();
+  navigation.is_restored_ = entry->IsRestored();
+  if (entry->GetFavicon().valid)
+    navigation.favicon_url_ = entry->GetFavicon().url;
+  navigation.http_status_code_ = entry->GetHttpStatusCode();
+  navigation.redirect_chain_ = entry->GetRedirectChain();
   navigation.replaced_entry_data_ =
-      ConvertReplacedEntryData(entry.GetReplacedEntryData());
+      ConvertReplacedEntryData(entry->GetReplacedEntryData());
   navigation.password_state_ = GetPasswordStateFromNavigation(entry);
 
   for (const auto& handler_entry :

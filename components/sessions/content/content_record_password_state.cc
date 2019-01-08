@@ -16,9 +16,9 @@ const char kPasswordStateKey[] = "sessions_password_state";
 }
 
 SerializedNavigationEntry::PasswordState GetPasswordStateFromNavigation(
-    const content::NavigationEntry& entry) {
+    content::NavigationEntry* entry) {
   base::string16 password_state_str;
-  if (!entry.GetExtraData(kPasswordStateKey, &password_state_str) ||
+  if (!entry->GetExtraData(kPasswordStateKey, &password_state_str) ||
       password_state_str.size() != 1) {
     return SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN;
   }

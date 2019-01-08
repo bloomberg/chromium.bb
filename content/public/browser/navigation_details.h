@@ -68,7 +68,7 @@ struct CONTENT_EXPORT LoadCommittedDetails {
 // Provides the details for a NOTIFICATION_NAV_ENTRY_CHANGED notification.
 struct EntryChangedDetails {
   // The changed navigation entry after it has been updated.
-  const NavigationEntry* changed_entry;
+  NavigationEntry* changed_entry;
 
   // Indicates the current index in the back/forward list of the entry.
   int index;

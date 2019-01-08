@@ -101,7 +101,7 @@ void TabContentsSyncedTabDelegate::GetSerializedNavigationAtIndex(
     // the page state can be expensive to serialize.
     *serialized_entry =
         sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-            i, *entry,
+            i, entry,
             sessions::ContentSerializedNavigationBuilder::EXCLUDE_PAGE_STATE);
   }
 }

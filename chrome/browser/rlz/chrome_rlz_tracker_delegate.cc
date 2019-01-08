@@ -222,7 +222,7 @@ void ChromeRLZTrackerDelegate::Observe(
         if (entry_index < 1)
           break;
 
-        const content::NavigationEntry* previous_entry =
+        content::NavigationEntry* previous_entry =
             controller->GetEntryAtIndex(entry_index - 1);
 
         if (previous_entry == nullptr)

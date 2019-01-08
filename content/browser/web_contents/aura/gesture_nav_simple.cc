@@ -83,16 +83,15 @@ constexpr float kExtraAffordanceRatio =
 const gfx::Tween::Type kAbortAnimationTweenType = gfx::Tween::EASE_IN;
 constexpr auto kAbortAnimationDuration = base::TimeDelta::FromMilliseconds(300);
 
-bool ShouldNavigateForward(const NavigationController& controller,
+bool ShouldNavigateForward(NavigationController* controller,
                            OverscrollMode mode) {
   return mode == (base::i18n::IsRTL() ? OVERSCROLL_EAST : OVERSCROLL_WEST) &&
-         controller.CanGoForward();
+         controller->CanGoForward();
 }
 
-bool ShouldNavigateBack(const NavigationController& controller,
-                        OverscrollMode mode) {
+bool ShouldNavigateBack(NavigationController* controller, OverscrollMode mode) {
   return mode == (base::i18n::IsRTL() ? OVERSCROLL_WEST : OVERSCROLL_EAST) &&
-         controller.CanGoBack();
+         controller->CanGoBack();
 }
 
 bool ShouldReload(const NavigationController& controller, OverscrollMode mode) {
@@ -572,10 +571,10 @@ void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
 
   NavigationControllerImpl& controller = web_contents_->GetController();
   NavigationDirection direction = NavigationDirection::NONE;
-  if (ShouldNavigateForward(controller, overscroll_mode)) {
+  if (ShouldNavigateForward(&controller, overscroll_mode)) {
     controller.GoForward();
     direction = NavigationDirection::FORWARD;
-  } else if (ShouldNavigateBack(controller, overscroll_mode)) {
+  } else if (ShouldNavigateBack(&controller, overscroll_mode)) {
     controller.GoBack();
     direction = NavigationDirection::BACK;
   } else if (ShouldReload(controller, overscroll_mode)) {
@@ -633,8 +632,8 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   mode_ = new_mode;
 
   NavigationControllerImpl& controller = web_contents_->GetController();
-  if (!ShouldNavigateForward(controller, mode_) &&
-      !ShouldNavigateBack(controller, mode_) &&
+  if (!ShouldNavigateForward(&controller, mode_) &&
+      !ShouldNavigateBack(&controller, mode_) &&
       !ShouldReload(controller, mode_)) {
     // If there is an overscroll in progress - record its cancellation.
     if (affordance_ && !affordance_->IsFinishing()) {
