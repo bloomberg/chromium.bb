@@ -56,9 +56,11 @@ WebAppMetrics* WebAppMetrics::Get(Profile* profile) {
 WebAppMetrics::WebAppMetrics(Profile* profile)
     : SiteEngagementObserver(SiteEngagementService::Get(profile)),
       profile_(profile) {
-  // WebAppMetrics is lazily initialized in TabHelpers::AttachTabHelpers.
-  // ExtensionSystem is always ready at this point.
-  CountUserInstalledApps();
+  WebAppProvider* provider = WebAppProvider::Get(profile_);
+  DCHECK(provider);
+
+  provider->SetRegistryReadyCallback(base::BindOnce(
+      &WebAppMetrics::CountUserInstalledApps, weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebAppMetrics::~WebAppMetrics() = default;
@@ -75,7 +77,9 @@ void WebAppMetrics::OnEngagementEvent(
   if (!browser)
     return;
 
-  DCHECK_NE(kNumUserInstalledAppsNotCounted, num_user_installed_apps_);
+  // Number of apps is not yet counted.
+  if (num_user_installed_apps_ == kNumUserInstalledAppsNotCounted)
+    return;
 
   // The engagement broken down by the number of apps installed must be recorded
   // for all engagement events, not just web apps.
@@ -124,7 +128,6 @@ void WebAppMetrics::CountUserInstalledApps() {
   DCHECK_EQ(kNumUserInstalledAppsNotCounted, num_user_installed_apps_);
 
   WebAppProvider* provider = WebAppProvider::Get(profile_);
-  DCHECK(provider);
 
   num_user_installed_apps_ = provider->CountUserInstalledApps();
   DCHECK_NE(kNumUserInstalledAppsNotCounted, num_user_installed_apps_);

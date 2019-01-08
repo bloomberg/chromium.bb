@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
@@ -35,6 +36,8 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace web_app {
 
@@ -81,7 +84,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   install_manager_ = std::make_unique<WebAppInstallManager>(
       profile, std::move(install_finalizer));
 
-  registrar_->Init(base::DoNothing());
+  registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
+                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
@@ -101,6 +105,18 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   web_app::ScanForExternalWebApps(
       profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
                               weak_ptr_factory_.GetWeakPtr()));
+
+  extensions::ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE, base::BindRepeating(&WebAppProvider::OnRegistryReady,
+                                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppProvider::OnRegistryReady() {
+  DCHECK(!registry_is_ready_);
+  registry_is_ready_ = true;
+
+  if (registry_ready_callback_)
+    std::move(registry_ready_callback_).Run();
 }
 
 // static
@@ -182,6 +198,16 @@ void WebAppProvider::Observe(int type,
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
   Reset();
+}
+
+void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
+  DCHECK(!registry_ready_callback_);
+  if (registry_is_ready_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  } else {
+    registry_ready_callback_ = std::move(callback);
+  }
 }
 
 int WebAppProvider::CountUserInstalledApps() const {
