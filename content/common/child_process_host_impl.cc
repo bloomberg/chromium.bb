@@ -46,8 +46,9 @@ base::AtomicSequenceNumber g_unique_id;
 namespace content {
 
 // static
-ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
-  return new ChildProcessHostImpl(delegate);
+std::unique_ptr<ChildProcessHost> ChildProcessHost::Create(
+    ChildProcessHostDelegate* delegate) {
+  return base::WrapUnique(new ChildProcessHostImpl(delegate));
 }
 
 // static

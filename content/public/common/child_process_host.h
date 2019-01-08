@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
@@ -37,7 +38,8 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   enum : int { kInvalidUniqueID = -1 };
 
   // Used to create a child process host. The delegate must outlive this object.
-  static ChildProcessHost* Create(ChildProcessHostDelegate* delegate);
+  static std::unique_ptr<ChildProcessHost> Create(
+      ChildProcessHostDelegate* delegate);
 
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
