@@ -19,6 +19,7 @@ class Tracker;
 @protocol BrowserCommands;
 @protocol PopupMenuConsumer;
 class ReadingListModel;
+class TemplateURLService;
 class WebStateList;
 
 // Mediator for the popup menu. This object is in charge of creating and
@@ -48,6 +49,9 @@ class WebStateList;
 @property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 // The bookmarks model to know if the page is bookmarked.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+// The template url service to use for checking whether search by image is
+// available.
+@property(nonatomic, assign) TemplateURLService* templateURLService;
 
 // Disconnect the mediator.
 - (void)disconnect;

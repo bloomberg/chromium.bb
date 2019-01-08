@@ -60,5 +60,7 @@ extern NSString* const kToolsMenuPasteAndGo;
 extern NSString* const kToolsMenuVoiceSearch;
 // QR Code Search item accessibility Identifier.
 extern NSString* const kToolsMenuQRCodeSearch;
+// Copied Image Search item accessibility Identifier.
+extern NSString* const kToolsMenuCopiedImageSearch;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_

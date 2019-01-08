@@ -12,8 +12,10 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -590,18 +592,26 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
-    NSNumber* titleID = nil;
-    if (clipboardRecentContent->GetRecentURLFromClipboard()) {
-      titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK];
+    PopupMenuToolsItem* copiedContentItem = nil;
+
+    if (search_engines::SupportsSearchByImage(self.templateURLService) &&
+        clipboardRecentContent->GetRecentImageFromClipboard()) {
+      copiedContentItem = CreateTableViewItem(
+          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
+          PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
+          kToolsMenuCopiedImageSearch);
+    } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
+      copiedContentItem = CreateTableViewItem(
+          IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
+          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
     } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
-      titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT];
+      copiedContentItem = CreateTableViewItem(
+          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
+          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
     }
 
-    if (titleID) {
-      PopupMenuToolsItem* pasteAndGo =
-          CreateTableViewItem(titleID.intValue, PopupMenuActionPasteAndGo,
-                              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-      [items addObject:pasteAndGo];
+    if (copiedContentItem) {
+      [items addObject:copiedContentItem];
     }
   } else {
     NSString* pasteboardString = [UIPasteboard generalPasteboard].string;

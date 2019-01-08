@@ -3,4 +3,5 @@ include_rules = [
   "+net",
   "+ui/base/clipboard",
   "+ui/base/test",
+  "+ui/gfx/image",
 ]

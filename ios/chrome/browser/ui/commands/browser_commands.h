@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
@@ -100,6 +101,9 @@ class GURL;
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
 - (void)focusFakebox;
+
+// Searches for an image in the current tab.
+- (void)searchByImage:(UIImage*)image;
 
 @end
 

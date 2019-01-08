@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -105,6 +106,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
+#import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
@@ -203,7 +205,6 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/google_toolbox_for_mac/src/iPhone/GTMUIImage+Resize.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/page_transition_types.h"
@@ -270,11 +271,6 @@ UIColor* StatusBarBackgroundColor() {
 
 // Duration of the toolbar animation.
 const NSTimeInterval kLegacyFullscreenControllerToolbarAnimationDuration = 0.3;
-
-// Dimensions to use when downsizing an image for search-by-image.
-const CGFloat kSearchByImageMaxImageArea = 90000.0;
-const CGFloat kSearchByImageMaxImageWidth = 600.0;
-const CGFloat kSearchByImageMaxImageHeight = 400.0;
 
 // When the tab strip moves beyond this origin offset, switch the status bar
 // appearance from light to dark.
@@ -3291,9 +3287,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     TemplateURLService* service =
         ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-    const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
-    if (defaultURL && !defaultURL->image_url().empty() &&
-        defaultURL->image_url_ref().IsValid(service->search_terms_data())) {
+    if (search_engines::SupportsSearchByImage(service)) {
+      const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
       title = l10n_util::GetNSStringF(IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE,
                                       defaultURL->short_name());
       action = ^{
@@ -3361,27 +3356,25 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-// Performs a search using |data| and |imageURL| as inputs.
+// Performs a search using |data| and |imageURL| as inputs. Opens the results in
+// a new tab based on |inNewTab|.
 - (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
   NSData* imageData = data;
-  UIImage* image = [UIImage imageWithData:imageData];
-  // Downsize the image if its area exceeds kSearchByImageMaxImageArea AND
-  // (either its width exceeds kSearchByImageMaxImageWidth OR its height exceeds
-  // kSearchByImageMaxImageHeight).
-  if (image &&
-      image.size.height * image.size.width > kSearchByImageMaxImageArea &&
-      (image.size.width > kSearchByImageMaxImageWidth ||
-       image.size.height > kSearchByImageMaxImageHeight)) {
-    CGSize newImageSize =
-        CGSizeMake(kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight);
-    image = [image gtm_imageByResizingToSize:newImageSize
-                         preserveAspectRatio:YES
-                                   trimToFit:NO];
-    imageData = UIImageJPEGRepresentation(image, 1.0);
+  UIImage* image = [UIImage imageWithData:data];
+  UIImage* resizedImage = ResizeImageForSearchByImage(image);
+  if (![image isEqual:resizedImage]) {
+    imageData = UIImageJPEGRepresentation(resizedImage, 1.0);
   }
+  [self searchByResizedImageData:imageData atURL:&imageURL inNewTab:YES];
+}
 
-  char const* bytes = reinterpret_cast<const char*>([imageData bytes]);
-  std::string byteString(bytes, [imageData length]);
+// Performs a search with the given image data. The data should alread have
+// been scaled down in |ResizeImageForSearchByImage|.
+- (void)searchByResizedImageData:(NSData*)data
+                           atURL:(const GURL*)imageURL
+                        inNewTab:(BOOL)inNewTab {
+  char const* bytes = reinterpret_cast<const char*>([data bytes]);
+  std::string byteString(bytes, [data length]);
 
   TemplateURLService* templateUrlService =
       ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
@@ -3391,7 +3384,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(defaultURL->image_url_ref().IsValid(
       templateUrlService->search_terms_data()));
   TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
-  search_args.image_url = imageURL;
+  if (imageURL) {
+    search_args.image_url = *imageURL;
+  }
   search_args.image_thumbnail_content = byteString;
 
   // Generate the URL and populate |post_content| with the content type and
@@ -3399,14 +3394,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   TemplateURLRef::PostContent postContent;
   GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
       search_args, templateUrlService->search_terms_data(), &postContent));
-  [self.tabModel
-      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
-                                  result, ui::PAGE_TRANSITION_TYPED,
-                                  &postContent)
-                       opener:nil
-                  openedByDOM:NO
-                      atIndex:self.tabModel.count
-                 inBackground:NO];
+  web::NavigationManager::WebLoadParams loadParams =
+      web_navigation_util::CreateWebLoadParams(
+          result, ui::PAGE_TRANSITION_TYPED, &postContent);
+  if (inNewTab) {
+    [self.tabModel insertTabWithLoadParams:loadParams
+                                    opener:nil
+                               openedByDOM:NO
+                                   atIndex:self.tabModel.count
+                              inBackground:NO];
+  } else {
+    [self loadURLWithParams:ChromeLoadParams(loadParams)];
+  }
 }
 
 #pragma mark - CRWWebStateObserver methods.
@@ -4391,6 +4390,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
   DCHECK([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]);
   [nativeController focusFakebox];
+}
+
+- (void)searchByImage:(UIImage*)image {
+  UIImage* resizedImage = ResizeImageForSearchByImage(image);
+  NSData* data = UIImageJPEGRepresentation(resizedImage, 1.0);
+  [self searchByResizedImageData:data atURL:nil inNewTab:NO];
 }
 
 #pragma mark - BrowserCommands helpers
