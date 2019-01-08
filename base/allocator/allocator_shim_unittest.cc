@@ -462,7 +462,14 @@ TEST_F(AllocatorShimTest, InterceptUcrtAlignedAllocationSymbols) {
 
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 }
-#endif
+
+TEST_F(AllocatorShimTest, AlignedReallocSizeZeroFrees) {
+  void* alloc_ptr = _aligned_malloc(123, 16);
+  CHECK(alloc_ptr);
+  alloc_ptr = _aligned_realloc(alloc_ptr, 0, 16);
+  CHECK(!alloc_ptr);
+}
+#endif  // defined(OS_WIN)
 
 TEST_F(AllocatorShimTest, InterceptCppSymbols) {
   InsertAllocatorDispatch(&g_mock_dispatch);
