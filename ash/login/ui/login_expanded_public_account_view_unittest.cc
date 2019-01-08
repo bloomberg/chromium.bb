@@ -176,6 +176,12 @@ TEST_F(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   // Press escape again should hide the public account expanded view.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
   EXPECT_FALSE(public_account_->visible());
+
+  // Warning icon is shown only if full management disclosure flag is set.
+  public_account_->SetShowFullManagementDisclosure(true);
+  EXPECT_TRUE(test_api.monitoring_warning_icon()->visible());
+  public_account_->SetShowFullManagementDisclosure(false);
+  EXPECT_FALSE(test_api.monitoring_warning_icon()->visible());
 }
 
 // Verifies tap on submit button will try to launch public session.
