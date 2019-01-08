@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {

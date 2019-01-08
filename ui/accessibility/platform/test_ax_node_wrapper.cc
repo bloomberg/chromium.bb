@@ -4,7 +4,6 @@
 
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
-#include "base/containers/hash_tables.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_table_info.h"

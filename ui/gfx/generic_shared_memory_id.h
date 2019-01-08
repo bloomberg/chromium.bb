@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gfx/gfx_export.h"

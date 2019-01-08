@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/values.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"

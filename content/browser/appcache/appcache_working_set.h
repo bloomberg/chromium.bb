@@ -10,7 +10,6 @@
 #include <map>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 #include "url/origin.h"

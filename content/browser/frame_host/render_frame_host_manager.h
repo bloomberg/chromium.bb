@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

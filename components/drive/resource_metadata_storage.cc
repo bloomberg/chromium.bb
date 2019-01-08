@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"

@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 

@@ -14,7 +14,6 @@
 #include "content/common/all_messages.h"
 
 
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 
 namespace content {

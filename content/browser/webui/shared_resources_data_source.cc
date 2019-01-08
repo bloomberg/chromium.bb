@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"

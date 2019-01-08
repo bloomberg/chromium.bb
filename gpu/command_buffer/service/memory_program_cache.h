@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

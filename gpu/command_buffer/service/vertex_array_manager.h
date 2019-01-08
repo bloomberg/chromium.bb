@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

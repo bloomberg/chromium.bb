@@ -11,7 +11,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"

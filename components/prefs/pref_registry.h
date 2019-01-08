@@ -11,7 +11,6 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_value_map.h"

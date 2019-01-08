@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"

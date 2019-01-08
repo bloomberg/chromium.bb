@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"

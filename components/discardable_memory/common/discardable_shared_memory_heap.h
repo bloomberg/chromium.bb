@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/trace_event/process_memory_dump.h"

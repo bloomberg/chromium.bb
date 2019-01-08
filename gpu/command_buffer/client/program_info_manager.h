@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "gles2_impl_export.h"

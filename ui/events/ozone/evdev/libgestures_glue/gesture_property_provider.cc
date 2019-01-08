@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"

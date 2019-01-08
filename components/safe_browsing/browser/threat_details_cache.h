@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 

@@ -8,7 +8,6 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/gpu_gles2_export.h"
 

@@ -11,7 +11,6 @@
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"

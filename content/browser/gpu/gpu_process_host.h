@@ -14,7 +14,6 @@
 
 #include "base/atomicops.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
