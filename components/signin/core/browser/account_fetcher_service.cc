@@ -253,8 +253,8 @@ void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
 void AccountFetcherService::OnUserInfoFetchSuccess(
     const std::string& account_id,
     std::unique_ptr<base::DictionaryValue> user_info) {
-  account_tracker_service_->SetAccountStateFromUserInfo(account_id,
-                                                        user_info.get());
+  account_tracker_service_->SetAccountInfoFromUserInfo(account_id,
+                                                       user_info.get());
   FetchAccountImage(account_id);
   user_info_requests_.erase(account_id);
 }
