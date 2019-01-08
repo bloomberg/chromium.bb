@@ -224,6 +224,12 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setCategory(String category) {
+        mBuilder.setCategory(category);
+        return this;
+    }
+
+    @Override
     public Notification buildWithBigContentView(RemoteViews view) {
         return mBuilder.setCustomBigContentView(view).build();
     }

@@ -266,6 +266,14 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setCategory(String category) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBuilder.setCategory(category);
+        }
+        return this;
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
     public Notification buildWithBigContentView(RemoteViews view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

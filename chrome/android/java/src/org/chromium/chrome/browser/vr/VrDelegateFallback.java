@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -19,6 +21,11 @@ import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -30,6 +37,9 @@ import org.chromium.ui.widget.Toast;
     private static final String DEFAULT_VR_MODE_PACKAGE = "com.google.vr.vrcore";
     private static final String DEFAULT_VR_MODE_CLASS =
             "com.google.vr.vrcore.common.VrCoreListenerService";
+    private static final int PREPARING_VR_NOTIFICATION_TIMEOUT_MS = 5000;
+    private static final int PREPARING_VR_NOTIFICATION_DELAY_MS = 2000;
+    private static final int WAITING_FOR_MODULE_TIMEOUT_MS = 1500;
 
     @Override
     public void forceExitVrImmediately() {}
@@ -147,7 +157,7 @@ import org.chromium.ui.widget.Toast;
         ThreadUtils.postOnUiThreadDelayed(() -> {
             if (VrModuleProvider.isModuleInstalled()) return;
             onVrModuleInstallFailure(activity);
-        }, 2000);
+        }, WAITING_FOR_MODULE_TIMEOUT_MS);
     }
 
     @Override
@@ -208,6 +218,34 @@ import org.chromium.ui.widget.Toast;
                          R.string.vr_preparing_vr_toast_standalone_text, Toast.LENGTH_SHORT)
                     .show();
         } else {
+            // Create immersive notification to inform user that Chrome's VR browser cannot be
+            // accessed yet.
+            ThreadUtils.postOnUiThreadDelayed(() -> {
+                NotificationManagerProxy notificationManager =
+                        new NotificationManagerProxyImpl(activity);
+                Notification notification =
+                        NotificationBuilderFactory
+                                .createChromeNotificationBuilder(
+                                        true, ChannelDefinitions.ChannelId.VR)
+                                .setContentTitle(activity.getResources().getString(
+                                        R.string.vr_preparing_vr_notification_title))
+                                .setContentText(activity.getResources().getString(
+                                        R.string.vr_preparing_vr_notification_body))
+                                .setSmallIcon(R.drawable.ic_chrome)
+                                // Need to set category and max priority. Otherwise, notification
+                                // won't show up.
+                                .setCategory(Notification.CATEGORY_MESSAGE)
+                                .setPriorityBeforeO(NotificationCompat.PRIORITY_MAX)
+                                .build();
+                notificationManager.notify(
+                        NotificationConstants.NOTIFICATION_ID_PREPARING_VR, notification);
+
+                // Close notification after a few seconds as it is only really relevant right after
+                // accessing the VR browser failed.
+                ThreadUtils.postOnUiThreadDelayed(() -> {
+                    notificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PREPARING_VR);
+                }, PREPARING_VR_NOTIFICATION_TIMEOUT_MS);
+            }, PREPARING_VR_NOTIFICATION_DELAY_MS);
             activity.finish();
         }
     }
