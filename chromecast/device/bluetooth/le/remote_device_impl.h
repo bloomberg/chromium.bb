@@ -40,6 +40,8 @@ class RemoteDeviceImpl : public RemoteDevice {
   bool ConnectSync() override;
   void Disconnect(StatusCallback cb) override;
   bool DisconnectSync() override;
+  void CreateBond(StatusCallback cb) override;
+  void RemoveBond(StatusCallback cb) override;
   void ReadRemoteRssi(RssiCallback cb) override;
   void RequestMtu(int mtu, StatusCallback cb) override;
   void ConnectionParameterUpdate(int min_interval,
@@ -48,6 +50,7 @@ class RemoteDeviceImpl : public RemoteDevice {
                                  int timeout,
                                  StatusCallback cb) override;
   bool IsConnected() override;
+  bool IsBonded() override;
   int GetMtu() override;
   void GetServices(
       base::OnceCallback<void(std::vector<scoped_refptr<RemoteService>>)> cb)
@@ -88,6 +91,7 @@ class RemoteDeviceImpl : public RemoteDevice {
 
   // Friend methods for GattClientManagerImpl
   void SetConnected(bool connected);
+  void SetBonded(bool bonded);
   void SetServicesDiscovered(bool discovered);
   bool GetServicesDiscovered();
   void SetMtu(int mtu);
@@ -155,10 +159,17 @@ class RemoteDeviceImpl : public RemoteDevice {
   bool disconnect_pending_ = false;
   StatusCallback disconnect_cb_;
 
+  bool create_bond_pending_ = false;
+  StatusCallback create_bond_cb_;
+
+  bool remove_bond_pending_ = false;
+  StatusCallback remove_bond_cb_;
+
   bool rssi_pending_ = false;
   RssiCallback rssi_cb_;
 
   std::atomic<bool> connected_{false};
+  std::atomic<bool> bonded_{false};
   std::atomic<int> mtu_{kDefaultMtu};
   std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteService>>
       uuid_to_service_;

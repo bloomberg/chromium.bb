@@ -127,6 +127,13 @@ void GattClientManagerImpl::NotifyConnect(
   observers_->Notify(FROM_HERE, &Observer::OnConnectInitated, addr);
 }
 
+void GattClientManagerImpl::NotifyBonded(const bluetooth_v2_shlib::Addr& addr) {
+  MAKE_SURE_IO_THREAD(NotifyBonded, addr);
+  auto device = GetDeviceSync(addr);
+  static_cast<RemoteDeviceImpl*>(device.get())->SetBonded(true);
+  observers_->Notify(FROM_HERE, &Observer::OnBondChanged, device, true);
+}
+
 void GattClientManagerImpl::EnqueueConnectRequest(
     const bluetooth_v2_shlib::Addr& addr) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -196,6 +203,22 @@ void GattClientManagerImpl::OnConnectChanged(
     observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
                        false);
   }
+}
+
+void GattClientManagerImpl::OnBondChanged(const bluetooth_v2_shlib::Addr& addr,
+                                          bool status,
+                                          bool bonded) {
+  MAKE_SURE_IO_THREAD(OnBondChanged, addr, status, bonded);
+  auto it = addr_to_device_.find(addr);
+
+  // Silently ignore devices we aren't keeping track of.
+  if (it == addr_to_device_.end()) {
+    return;
+  }
+
+  it->second->SetBonded(bonded);
+
+  observers_->Notify(FROM_HERE, &Observer::OnBondChanged, it->second, bonded);
 }
 
 void GattClientManagerImpl::OnNotification(const bluetooth_v2_shlib::Addr& addr,
