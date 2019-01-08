@@ -1009,11 +1009,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
 
   return GetRecentEffectiveConnectionTypeUsingMetrics(
       start_time,
-      NetworkQualityEstimator::MetricUsage::MUST_BE_USED /* http_rtt_metric */,
-      NetworkQualityEstimator::MetricUsage::
-          DO_NOT_USE /* transport_rtt_metric */,
-      NetworkQualityEstimator::MetricUsage::
-          USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
       http_rtt, transport_rtt, end_to_end_rtt, downstream_throughput_kbps,
       transport_rtt_observation_count, end_to_end_rtt_observation_count);
 }
@@ -1021,9 +1016,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
 EffectiveConnectionType
 NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     const base::TimeTicks& start_time,
-    NetworkQualityEstimator::MetricUsage http_rtt_metric,
-    NetworkQualityEstimator::MetricUsage transport_rtt_metric,
-    NetworkQualityEstimator::MetricUsage downstream_throughput_kbps_metric,
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
@@ -1114,20 +1106,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   if (!GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps))
     *downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
-  if (*http_rtt == nqe::internal::InvalidRTT() &&
-      http_rtt_metric == NetworkQualityEstimator::MetricUsage::MUST_BE_USED) {
-    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
-
-  if (*transport_rtt == nqe::internal::InvalidRTT() &&
-      transport_rtt_metric ==
-          NetworkQualityEstimator::MetricUsage::MUST_BE_USED) {
-    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
-
-  if (*downstream_throughput_kbps == nqe::internal::INVALID_RTT_THROUGHPUT &&
-      downstream_throughput_kbps_metric ==
-          NetworkQualityEstimator::MetricUsage::MUST_BE_USED) {
+  if (*http_rtt == nqe::internal::InvalidRTT()) {
     return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   }
 
@@ -1147,23 +1126,12 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
       continue;
 
     const bool estimated_http_rtt_is_higher_than_threshold =
-        http_rtt_metric != NetworkQualityEstimator::MetricUsage::DO_NOT_USE &&
         *http_rtt != nqe::internal::InvalidRTT() &&
         params_->ConnectionThreshold(type).http_rtt() !=
             nqe::internal::InvalidRTT() &&
         *http_rtt >= params_->ConnectionThreshold(type).http_rtt();
 
-    const bool estimated_transport_rtt_is_higher_than_threshold =
-        transport_rtt_metric !=
-            NetworkQualityEstimator::MetricUsage::DO_NOT_USE &&
-        *transport_rtt != nqe::internal::InvalidRTT() &&
-        params_->ConnectionThreshold(type).transport_rtt() !=
-            nqe::internal::InvalidRTT() &&
-        *transport_rtt >= params_->ConnectionThreshold(type).transport_rtt();
-
     const bool estimated_throughput_is_lower_than_threshold =
-        downstream_throughput_kbps_metric !=
-            NetworkQualityEstimator::MetricUsage::DO_NOT_USE &&
         *downstream_throughput_kbps != nqe::internal::INVALID_RTT_THROUGHPUT &&
         params_->ConnectionThreshold(type).downstream_throughput_kbps() !=
             nqe::internal::INVALID_RTT_THROUGHPUT &&
@@ -1171,7 +1139,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
             params_->ConnectionThreshold(type).downstream_throughput_kbps();
 
     if (estimated_http_rtt_is_higher_than_threshold ||
-        estimated_transport_rtt_is_higher_than_threshold ||
         estimated_throughput_is_lower_than_threshold) {
       return type;
     }

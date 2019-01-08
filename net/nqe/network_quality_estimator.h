@@ -419,21 +419,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestRttThroughputObservers);
 
-  // Defines how a metric (e.g, transport RTT) should be used when computing
-  // the effective connection type.
-  enum class MetricUsage {
-    // The metric should not be used when computing the effective connection
-    // type.
-    DO_NOT_USE = 0,
-    // If the metric is available, then it should be used when computing the
-    // effective connection type.
-    USE_IF_AVAILABLE,
-    // The metric is required when computing the effective connection type.
-    // If the value of the metric is unavailable, effective connection type
-    // should be set to |EFFECTIVE_CONNECTION_TYPE_UNKNOWN|.
-    MUST_BE_USED,
-  };
-
   // Returns the RTT value to be used when the valid RTT is unavailable. Readers
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
@@ -501,9 +486,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // effective connection type.
   EffectiveConnectionType GetRecentEffectiveConnectionTypeUsingMetrics(
       const base::TimeTicks& start_time,
-      MetricUsage http_rtt_metric,
-      MetricUsage transport_rtt_metric,
-      MetricUsage downstream_throughput_kbps_metric,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,
