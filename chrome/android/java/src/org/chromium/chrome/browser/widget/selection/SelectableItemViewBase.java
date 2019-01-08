@@ -32,6 +32,9 @@ public abstract class SelectableItemViewBase<E> extends FrameLayout
     private E mItem;
     private boolean mIsChecked;
 
+    // Controls whether selection should happen during onLongClick.
+    private boolean mSelectOnLongClick = true;
+
     /**
      * Constructor for inflating from XML.
      */
@@ -59,6 +62,15 @@ public abstract class SelectableItemViewBase<E> extends FrameLayout
             mSelectionDelegate = delegate;
             mSelectionDelegate.addObserver(this);
         }
+    }
+
+    /**
+     * Controls whether selection happens during onLongClick or onClick.
+     * @param selectOnLongClick True if selection should happen on longClick, false if selection
+     *                          should happen on click instead.
+     */
+    public void setSelectionOnLongClick(boolean selectOnLongClick) {
+        mSelectOnLongClick = selectOnLongClick;
     }
 
     /**
@@ -104,6 +116,11 @@ public abstract class SelectableItemViewBase<E> extends FrameLayout
     public final void onClick(View view) {
         assert view == this;
 
+        if (!mSelectOnLongClick) {
+            handleSelection();
+            return;
+        }
+
         if (isSelectionModeActive()) {
             onLongClick(view);
         } else {
@@ -115,9 +132,13 @@ public abstract class SelectableItemViewBase<E> extends FrameLayout
     @Override
     public boolean onLongClick(View view) {
         assert view == this;
+        handleSelection();
+        return true;
+    }
+
+    private void handleSelection() {
         boolean checked = toggleSelectionForItem(mItem);
         setChecked(checked);
-        return true;
     }
 
     /**
