@@ -294,12 +294,14 @@ ALWAYS_INLINE void* ShimAlignedRealloc(void* address,
                                        size_t size,
                                        size_t alignment,
                                        void* context) {
+  // _aligned_realloc(size == 0) means _aligned_free() and might return a
+  // nullptr. We should not call the std::new_handler in that case, though.
   const allocator::AllocatorDispatch* const chain_head = GetChainHead();
   void* ptr = nullptr;
   do {
     ptr = chain_head->aligned_realloc_function(chain_head, address, size,
                                                alignment, context);
-  } while (!ptr && g_call_new_handler_on_malloc_failure &&
+  } while (!ptr && size && g_call_new_handler_on_malloc_failure &&
            CallNewHandler(size));
   return ptr;
 }
