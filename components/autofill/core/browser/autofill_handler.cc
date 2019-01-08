@@ -54,10 +54,9 @@ AutofillHandler::~AutofillHandler() = default;
 
 void AutofillHandler::OnFormSubmitted(const FormData& form,
                                       bool known_success,
-                                      SubmissionSource source,
-                                      base::TimeTicks timestamp) {
+                                      SubmissionSource source) {
   if (IsValidFormData(form))
-    OnFormSubmittedImpl(form, known_success, source, timestamp);
+    OnFormSubmittedImpl(form, known_success, source);
 }
 
 void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,

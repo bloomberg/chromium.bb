@@ -174,8 +174,7 @@ void AutofillProviderAndroid::FireSuccessfulSubmission(
 void AutofillProviderAndroid::OnFormSubmitted(AutofillHandlerProxy* handler,
                                               const FormData& form,
                                               bool known_success,
-                                              SubmissionSource source,
-                                              base::TimeTicks timestamp) {
+                                              SubmissionSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsCurrentlyLinkedHandler(handler) || !IsCurrentlyLinkedForm(form))
     return;

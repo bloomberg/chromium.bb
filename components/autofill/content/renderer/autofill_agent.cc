@@ -295,8 +295,7 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
   if (!submitted_forms_.insert(form_data).second)
     return;
 
-  GetAutofillDriver()->FormSubmitted(form_data, known_success, source,
-                                     base::TimeTicks::Now());
+  GetAutofillDriver()->FormSubmitted(form_data, known_success, source);
 }
 
 void AutofillAgent::Shutdown() {

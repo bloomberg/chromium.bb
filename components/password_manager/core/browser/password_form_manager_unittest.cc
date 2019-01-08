@@ -246,15 +246,13 @@ class MockAutofillManager : public autofill::AutofillManager {
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
-      const base::TimeTicks& timestamp,
       bool observed_submission) override {
-    MaybeStartVoteUploadProcessPtr(form_structure.release(), timestamp,
+    MaybeStartVoteUploadProcessPtr(form_structure.release(),
                                    observed_submission);
     return true;
   }
 
-  MOCK_METHOD3(MaybeStartVoteUploadProcessPtr,
-               void(FormStructure*, const base::TimeTicks&, bool));
+  MOCK_METHOD2(MaybeStartVoteUploadProcessPtr, void(FormStructure*, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);

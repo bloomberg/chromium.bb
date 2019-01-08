@@ -78,8 +78,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void FormSubmitted(const FormData& form,
                      bool known_success,
-                     SubmissionSource source,
-                     base::TimeTicks timestamp) override {}
+                     SubmissionSource source) override {}
 
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,

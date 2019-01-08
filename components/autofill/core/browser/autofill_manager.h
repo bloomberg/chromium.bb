@@ -171,7 +171,6 @@ class AutofillManager : public AutofillHandler,
   // start.
   virtual bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
-      const base::TimeTicks& timestamp,
       bool observed_submission);
 
   // Update the pending form with |form|, possibly processing the current
@@ -267,8 +266,7 @@ class AutofillManager : public AutofillHandler,
   // AutofillHandler:
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
-                           SubmissionSource source,
-                           base::TimeTicks timestamp) override;
+                           SubmissionSource source) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box,

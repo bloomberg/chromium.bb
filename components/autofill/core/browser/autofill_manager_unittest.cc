@@ -436,8 +436,8 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void FormSubmitted(const FormData& form) {
-    autofill_manager_->OnFormSubmitted(
-        form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
+    autofill_manager_->OnFormSubmitted(form, false,
+                                       SubmissionSource::FORM_SUBMISSION);
   }
 
   void FillAutofillFormData(int query_id,
@@ -3708,8 +3708,7 @@ TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
                                false);
 
   autofill_manager_->OnFormSubmitted(response_data, false,
-                                     SubmissionSource::FORM_SUBMISSION,
-                                     base::TimeTicks::Now());
+                                     SubmissionSource::FORM_SUBMISSION);
   EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
@@ -5289,8 +5288,8 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
   full_card_unmask_delegate()->OnUnmaskResponse(response);
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
-  autofill_manager_->OnFormSubmitted(
-      form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
 }
 
 TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {

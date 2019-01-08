@@ -366,8 +366,7 @@ bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
 
 void AutofillManager::OnFormSubmittedImpl(const FormData& form,
                                           bool known_success,
-                                          SubmissionSource source,
-                                          base::TimeTicks timestamp) {
+                                          SubmissionSource source) {
   // TODO(crbug.com/801698): handle PROBABLY_FORM_SUBMITTED.
   if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED &&
       !base::FeatureList::IsEnabled(
@@ -403,7 +402,7 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   }
 
   submitted_form->set_submission_source(source);
-  MaybeStartVoteUploadProcess(std::move(submitted_form), timestamp,
+  MaybeStartVoteUploadProcess(std::move(submitted_form),
                               /*observed_submission=*/true);
 
   // TODO(crbug.com/803334): Add FormStructure::Clone() method.
@@ -442,7 +441,6 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
 
 bool AutofillManager::MaybeStartVoteUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
-    const TimeTicks& timestamp,
     bool observed_submission) {
   // It is possible for |personal_data_| to be null, such as when used in the
   // Android webview.
@@ -492,10 +490,11 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards, app_locale_,
                      raw_form),
-      base::BindOnce(
-          &AutofillManager::UploadFormDataAsyncCallback,
-          weak_ptr_factory_.GetWeakPtr(), base::Owned(form_structure.release()),
-          initial_interaction_timestamp_, timestamp, observed_submission));
+      base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(form_structure.release()),
+                     initial_interaction_timestamp_, base::TimeTicks::Now(),
+                     observed_submission));
   return true;
 }
 
@@ -520,7 +519,7 @@ void AutofillManager::ProcessPendingFormForUpload() {
   if (!upload_form)
     return;
 
-  MaybeStartVoteUploadProcess(std::move(upload_form), TimeTicks::Now(),
+  MaybeStartVoteUploadProcess(std::move(upload_form),
                               /*observed_submission=*/false);
 }
 
