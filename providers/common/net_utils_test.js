@@ -47,15 +47,4 @@ describe('mr.NetUtils', () => {
     expect(n.isPrivateIPv4Address('193.169.0.0')).toBe(false);
   });
 
-  it('parses a URL', () => {
-    const url =
-        n.parseUrl('https://www.example.com:8080/a/path?a_query#a_fragment');
-    expect(url.protocol).toBe('https:');
-    expect(url.hostname).toBe('www.example.com');
-    expect(url.port).toBe('8080');
-    expect(url.pathname).toBe('/a/path');
-    expect(url.search).toBe('?a_query');
-    expect(url.hash).toBe('#a_fragment');
-    expect(url.host).toBe('www.example.com:8080');
-  });
 });

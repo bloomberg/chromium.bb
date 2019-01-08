@@ -78,16 +78,6 @@ exports.isPrivateIPv4Address = function(ipAddress) {
 };
 
 /**
- * @param {string} url A url.
- * @return {!HTMLAnchorElement} The result of parsing url.
- */
-exports.parseUrl = function(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  return /** @type {!HTMLAnchorElement} */ (a);
-};
-
-/**
  * Non-exhaustive list of HTTP status codes. Add new codes as needed here.
  * @enum {number}
  */

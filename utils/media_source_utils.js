@@ -30,20 +30,19 @@ mr.MediaSourceUtils.isMirrorSource = function(sourceUrn) {
  *     is not a Cast custom receiver app.
  */
 mr.MediaSourceUtils.isPresentationSource = function(sourceUrn) {
+  try {
+    const url = new URL(sourceUrn);
+    // Protocol must be http or https.
+    if (url.protocol != 'http:' && url.protocol != 'https:') {
+      return false;
+    }
 
-  if (!sourceUrn.startsWith('http:') && !sourceUrn.startsWith('https:')) {
+    // Must not be a custom Cast receiver app.
+    return url.hash.indexOf(mr.MediaSourceUtils.CAST_APP_ID_) == -1;
+  } catch (err) {
+    // Invalid URL.
     return false;
   }
-  // Use the DOM to parse sourceUrn.
-  const link = document.createElement('a');
-  link.href = sourceUrn;
-  // Protocol must be http or https.
-  if (link.protocol != 'http:' && link.protocol != 'https:') {
-    return false;
-  }
-
-  // Must not be a custom Cast receiver app.
-  return link.hash.indexOf(mr.MediaSourceUtils.CAST_APP_ID_) == -1;
 };
 
 

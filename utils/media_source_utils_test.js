@@ -37,6 +37,9 @@ describe('Tests MediaSourceUtils', function() {
     });
 
     it('should return false for cast receiver app', function() {
+      expect(mr.MediaSourceUtils.isPresentationSource('cast:deadbeef'))
+          .toBe(false);
+      // Legacy URL, no longer used by the SDK.
       expect(mr.MediaSourceUtils.isPresentationSource(
                  'http://www.google.com/cast#__castAppId__=deadbeef'))
           .toBe(false);
