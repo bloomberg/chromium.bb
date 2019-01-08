@@ -174,11 +174,11 @@ void SelectionController::ContextDestroyed(Document*) {
   original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
 }
 
-static PositionInFlatTree AdjustPositionRespectUserSelectAll(
+static PositionInFlatTreeWithAffinity AdjustPositionRespectUserSelectAll(
     Node* inner_node,
     const PositionInFlatTree& selection_start,
     const PositionInFlatTree& selection_end,
-    const PositionInFlatTree& position) {
+    const PositionInFlatTreeWithAffinity& position) {
   const VisibleSelectionInFlatTree& selection_in_user_select_all =
       CreateVisibleSelection(ExpandSelectionToRespectUserSelectAll(
           inner_node,
@@ -188,9 +188,10 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
   if (!selection_in_user_select_all.IsRange())
     return position;
   if (selection_in_user_select_all.Start().CompareTo(selection_start) < 0)
-    return selection_in_user_select_all.Start();
+    return PositionInFlatTreeWithAffinity(selection_in_user_select_all.Start());
+  // TODO(xiaochengh): Do we need to use upstream affinity for end?
   if (selection_end.CompareTo(selection_in_user_select_all.End()) < 0)
-    return selection_in_user_select_all.End();
+    return PositionInFlatTreeWithAffinity(selection_in_user_select_all.End());
   return position;
 }
 
@@ -211,7 +212,7 @@ static PositionInFlatTree ComputeStartFromEndForExtendForward(
 }
 
 static SelectionInFlatTree ExtendSelectionAsDirectional(
-    const PositionInFlatTree& position,
+    const PositionInFlatTreeWithAffinity& position,
     const SelectionInFlatTree& selection,
     TextGranularity granularity) {
   DCHECK(!selection.IsNone());
@@ -219,7 +220,7 @@ static SelectionInFlatTree ExtendSelectionAsDirectional(
   const PositionInFlatTree& start = selection.ComputeStartPosition();
   const PositionInFlatTree& end = selection.ComputeEndPosition();
   const PositionInFlatTree& base = selection.IsBaseFirst() ? start : end;
-  if (position < base) {
+  if (position.GetPosition() < base) {
     // Extend backward yields backward selection
     //  - forward selection:  *abc ^def ghi| => |abc def^ ghi
     //  - backward selection: *abc |def ghi^ => |abc def ghi^
@@ -230,9 +231,11 @@ static SelectionInFlatTree ExtendSelectionAsDirectional(
             ? ComputeEndRespectingGranularity(
                   new_start, PositionInFlatTreeWithAffinity(start), granularity)
             : end;
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(new_end, new_start)
-        .Build();
+    SelectionInFlatTree::Builder builder;
+    builder.SetBaseAndExtent(new_end, new_start);
+    if (new_start == new_end)
+      builder.SetAffinity(position.Affinity());
+    return builder.Build();
   }
 
   // Extend forward yields forward selection
@@ -244,9 +247,11 @@ static SelectionInFlatTree ExtendSelectionAsDirectional(
           : ComputeStartFromEndForExtendForward(end, granularity);
   const PositionInFlatTree& new_end = ComputeEndRespectingGranularity(
       new_start, PositionInFlatTreeWithAffinity(position), granularity);
-  return SelectionInFlatTree::Builder()
-      .SetBaseAndExtent(new_start, new_end)
-      .Build();
+  SelectionInFlatTree::Builder builder;
+  builder.SetBaseAndExtent(new_start, new_end);
+  if (new_start == new_end)
+    builder.SetAffinity(position.Affinity());
+  return builder.Build();
 }
 
 static SelectionInFlatTree ExtendSelectionAsNonDirectional(
@@ -258,6 +263,8 @@ static SelectionInFlatTree ExtendSelectionAsNonDirectional(
   // Shift+Click deselects when selection was created right-to-left
   const PositionInFlatTree& start = selection.ComputeStartPosition();
   const PositionInFlatTree& end = selection.ComputeEndPosition();
+  if (start == end && position == start)
+    return selection;
   if (position < start) {
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
@@ -336,10 +343,9 @@ bool SelectionController::HandleSingleClick(
   if (extend_selection && !selection.IsNone()) {
     // Note: "fast/events/shift-click-user-select-none.html" makes
     // |pos.isNull()| true.
-    const PositionInFlatTree& adjusted_position =
+    const PositionInFlatTreeWithAffinity adjusted_position =
         AdjustPositionRespectUserSelectAll(inner_node, selection.Start(),
-                                           selection.End(),
-                                           position_to_use.GetPosition());
+                                           selection.End(), position_to_use);
     const TextGranularity granularity = Selection().Granularity();
     if (adjusted_position.IsNull()) {
       UpdateSelectionForMouseDownDispatchingSelectStart(
@@ -352,8 +358,9 @@ bool SelectionController::HandleSingleClick(
         frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional()
             ? ExtendSelectionAsDirectional(adjusted_position,
                                            selection.AsSelection(), granularity)
-            : ExtendSelectionAsNonDirectional(
-                  adjusted_position, selection.AsSelection(), granularity),
+            : ExtendSelectionAsNonDirectional(adjusted_position.GetPosition(),
+                                              selection.AsSelection(),
+                                              granularity),
         SetSelectionOptions::Builder().SetGranularity(granularity).Build());
     return false;
   }
@@ -516,10 +523,10 @@ void SelectionController::UpdateSelectionForMouseDrag(
     return;
   }
 
-  const PositionInFlatTree& adjusted_position =
-      AdjustPositionRespectUserSelectAll(target, visible_selection.Start(),
-                                         visible_selection.End(),
-                                         target_position.DeepEquivalent());
+  const PositionInFlatTreeWithAffinity adjusted_position =
+      AdjustPositionRespectUserSelectAll(
+          target, visible_selection.Start(), visible_selection.End(),
+          target_position.ToPositionWithAffinity());
   const SelectionInFlatTree& adjusted_selection =
       should_extend_selection
           ? ExtendSelectionAsDirectional(adjusted_position,
