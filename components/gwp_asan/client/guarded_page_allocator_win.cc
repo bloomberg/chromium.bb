@@ -15,25 +15,12 @@ namespace internal {
 // TODO(vtsyrklevich): See if the platform-specific memory allocation and
 // protection routines can be broken out in base/ and merged with those used for
 // PartionAlloc/ProtectedMemory.
-bool GuardedPageAllocator::MapPages() {
-  size_t len = (2 * state_.total_pages + 1) * state_.page_size;
-  void* base_ptr = VirtualAlloc(nullptr, len, MEM_RESERVE, PAGE_NOACCESS);
-  if (!base_ptr) {
-    DPLOG(ERROR) << "Failed to reserve guarded allocator region";
-    return false;
-  }
-
-  uintptr_t base_addr = reinterpret_cast<uintptr_t>(base_ptr);
-
-  state_.pages_base_addr = base_addr;
-  state_.first_page_addr = state_.pages_base_addr + state_.page_size;
-  state_.pages_end_addr = state_.pages_base_addr + len;
-
-  return true;
+void* GuardedPageAllocator::MapRegion() {
+  return VirtualAlloc(nullptr, RegionSize(), MEM_RESERVE, PAGE_NOACCESS);
 }
 
-void GuardedPageAllocator::UnmapPages() {
-  DCHECK(state_.pages_base_addr);
+void GuardedPageAllocator::UnmapRegion() {
+  CHECK(state_.pages_base_addr);
   BOOL err = VirtualFree(reinterpret_cast<void*>(state_.pages_base_addr), 0,
                          MEM_RELEASE);
   DCHECK(err);

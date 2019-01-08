@@ -75,12 +75,12 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
 
-  // Maps pages into memory and sets pages_base_addr_, first_page_addr_, and
-  // pages_end_addr on success. Returns true on success, false on failure.
-  bool MapPages();
+  // Allocates/deallocates the virtual memory used for allocations.
+  void* MapRegion();
+  void UnmapRegion();
 
-  // Unmaps pages.
-  void UnmapPages();
+  // Returns the size of the virtual memory region used to store allocations.
+  size_t RegionSize() const;
 
   // Mark page read-write or inaccessible.
   void MarkPageReadWrite(void*);
