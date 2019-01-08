@@ -1688,6 +1688,12 @@ const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have other "
     "elements drawn underneath.";
 
+const char kHistoryManipulationIntervention[] =
+    "History Manipulation Intervention";
+const char kHistoryManipulationInterventionDescription[] =
+    "If a page does a client side redirect or adds to the history without a "
+    "user gesture, then skip it on back/forward UI.";
+
 const char kSupervisedUserCommittedInterstitialsName[] =
     "Enable Supervised User Committed Interstitials";
 const char kSupervisedUserCommittedInterstitialsDescription[] =

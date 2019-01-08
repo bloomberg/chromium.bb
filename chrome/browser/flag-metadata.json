@@ -1289,6 +1289,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-history-manipulation-intervention",
+    "owners": [ "shivanisha" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-home-launcher",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -200,6 +200,11 @@ const base::Feature kGuestViewCrossProcessFrames{
 const base::Feature kHeapCompaction{"HeapCompaction",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If a page does a client side redirect or adds to the history without a user
+// gesture, then skip it on back/forward UI.
+const base::Feature kHistoryManipulationIntervention{
+    "HistoryManipulationIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables/disables the Image Capture API.
 const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

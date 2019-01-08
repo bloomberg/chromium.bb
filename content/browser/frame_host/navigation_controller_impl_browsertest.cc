@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -48,6 +49,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"
@@ -8240,8 +8242,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NoUserActivationSetSkipOnBackForward) {
   base::HistogramTester histograms;
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8253,30 +8262,31 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Navigate to a new same-site document from the renderer without a user
   // gesture.
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
 
   // Last entry should have been marked as skippable.
-  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(
       controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
   histograms.ExpectBucketCount(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
-  // TODO(shivanisha): Test that the site actually gets skipped when the
-  // intervention logic is implemented.
   // Attempt to go back or forward to the skippable entry should log the
-  // corresponding histogram.
+  // corresponding histogram and skip the corresponding entry.
   TestNavigationObserver back_load_observer(shell()->web_contents());
   controller.GoBack();
   back_load_observer.Wait();
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 1,
                                1);
+  EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
 
 // Same as the above test except the navigation is cross-site in this case.
@@ -8286,8 +8296,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NoUserActivationSetSkipOnBackForwardCrossSite) {
   base::HistogramTester histograms;
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8299,42 +8316,46 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Navigate to a new cross-site document from the renderer with a user
   // gesture.
-  GURL url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+  GURL redirected_url(
+      embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
 
   // Last entry should have been marked as skippable.
-  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(
       controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
   histograms.ExpectBucketCount(
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 
-  // TODO(shivanisha): Test that the site actually gets skipped when the
-  // intervention logic is implemented.
   // Attempt to go back or forward to the skippable entry should log the
-  // corresponding histogram.
+  // corresponding histogram and skip the corresponding entry.
   TestNavigationObserver back_load_observer(shell()->web_contents());
   controller.GoBack();
   back_load_observer.Wait();
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 1,
                                1);
+  EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
 
-// Tests that the navigation entry is marked as skippable on back button if it
-// does a renderer initiated navigation without ever getting a user activation.
-// Also tests this for an entry added using history.pushState.
+// Tests that the navigation entry is marked as skippable on back/forward button
+// but is not skipped if the feature is not enabled.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       NoUserActivationSetSkippableMultipleGoBack) {
+                       NoSkipOnBackFeatureDisabled) {
   base::HistogramTester histograms;
-  const std::string histogram_name =
-      "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8346,8 +8367,61 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Navigate to a new same-site document from the renderer without a user
   // gesture.
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+
+  // Last entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+  histograms.ExpectBucketCount(
+      "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
+
+  // Attempt to go back or forward to the skippable entry should log the
+  // corresponding histogram.
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+  histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 1,
+                               1);
+  // Since the feature is disabled, it will be navigated to the skippable entry.
+  EXPECT_EQ(skippable_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+}
+
+// Tests that the navigation entry is marked as skippable on back button if it
+// does a renderer initiated navigation without ever getting a user activation.
+// Also tests this for an entry added using history.pushState.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoUserActivationSetSkippableMultipleGoBack) {
+  base::HistogramTester histograms;
+  const std::string histogram_name =
+      "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
 
   // Use the pushState API to add another entry without user gesture.
   GURL push_state_url(embedded_test_server()->GetURL("/title2.html"));
@@ -8370,13 +8444,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Attempt to go back to the entries marked to be skipped should log a
   // histogram.
-  {
-    TestNavigationObserver back_load_observer(shell()->web_contents());
-    controller.GoBack();
-    back_load_observer.Wait();
-    histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 2,
-                                 1);
-  }
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+  histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 2,
+                               1);
+
+  // TODO(crbug.com/907167): Test the target URL when the case of all skippable
+  // entries is implemented.
 }
 
 // Same as above but tests the metrics on going forward.
@@ -8385,8 +8460,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8398,8 +8476,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Navigate to a new same-site document from the renderer without a user
   // gesture.
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+  GURL redirected_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
 
   // Use the pushState API to add another entry without user gesture.
   GURL push_state_url(embedded_test_server()->GetURL("/title2.html"));
@@ -8435,6 +8514,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     histograms.ExpectBucketCount("Navigation.BackForward.ForwardTargetSkipped",
                                  1, 1);
   }
+  // TODO(crbug.com/907167): Test the target URL when the case of all skippable
+  // entries is implemented.
 }
 
 // Tests that if an entry is marked as skippable, it will be reset if there is a
@@ -8443,6 +8524,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ResetSkipOnBackForward) {
   base::HistogramTester histograms;
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -8495,8 +8577,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8508,8 +8594,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Navigate to a new same-site document from the renderer.
   // Note that NavigateToURLFromRenderer also simulates a user gesture.
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
+  GURL user_gesture_redirected_url(
+      embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), user_gesture_redirected_url));
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8523,12 +8610,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histograms.ExpectBucketCount(histogram_name, false, 1);
 
   // Nothing should get skipped when back button is clicked.
-  {
-    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
-    controller.GoBack();
-    back_nav_load_observer.Wait();
-  }
-  EXPECT_EQ(controller.GetLastCommittedEntry()->GetURL(), main_url);
+  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_nav_load_observer.Wait();
+  EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   histograms.ExpectBucketCount("Navigation.BackForward.BackTargetSkipped", 0,
                                1);
 }
@@ -8541,8 +8627,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -8569,12 +8659,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histograms.ExpectBucketCount(histogram_name, false, 1);
 
   // Nothing should get skipped when back button is clicked.
-  {
-    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
-    controller.GoBack();
-    back_nav_load_observer.Wait();
-  }
-  EXPECT_EQ(controller.GetLastCommittedEntry()->GetURL(), main_url);
+  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_nav_load_observer.Wait();
+  EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
 
 }  // namespace content

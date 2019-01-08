@@ -755,20 +755,25 @@ void NavigationControllerImpl::GoBack() {
   int target_index = GetIndexForOffset(-1);
 
   // Log metrics for the number of entries that are eligible for skipping on
-  // back button.
+  // back button and move the target index past the skippable entries, if
+  // history intervention is enabled.
+  // TODO(crbug.com/907167): Implement the case when all entries are
+  // skippable.
   int count_entries_skipped = 0;
+  bool history_intervention_enabled = base::FeatureList::IsEnabled(
+              features::kHistoryManipulationIntervention);
   for (int index = target_index; index >= 0; index--) {
-    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui()) {
       count_entries_skipped++;
-    else
+    } else {
+      if (history_intervention_enabled)
+        target_index = index;
       break;
+    }
   }
   UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.BackTargetSkipped",
                             count_entries_skipped, kMaxSessionHistoryEntries);
 
-  // TODO(crbug.com/907167): Move target_index to the first non-skippable entry,
-  // if it exists, for the history manipulation intervention. Call GoToIndex
-  // rather than GoToOffset to get the NOTREACHED() check.
   GoToIndex(target_index);
 }
 
@@ -776,20 +781,26 @@ void NavigationControllerImpl::GoForward() {
   int target_index = GetIndexForOffset(1);
 
   // Log metrics for the number of entries that are eligible for skipping on
-  // forward button.
+  // forward button and move the target index past the skippable entries, if
+  // history intervention is enabled.
+  // Note that at least one entry (the last one) will be non-skippable since
+  // entries are marked skippable only when they add another entry because of
+  // redirect or pushState.
   int count_entries_skipped = 0;
+  bool history_intervention_enabled = base::FeatureList::IsEnabled(
+              features::kHistoryManipulationIntervention);
   for (size_t index = target_index; index < entries_.size(); index++) {
-    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui()) {
       count_entries_skipped++;
-    else
+    } else {
+      if (history_intervention_enabled)
+        target_index = index;
       break;
+    }
   }
   UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.ForwardTargetSkipped",
                             count_entries_skipped, kMaxSessionHistoryEntries);
 
-  // TODO(crbug.com/907167): Move target_index to the first non-skippable entry,
-  // if it exists, for the history manipulation intervention. Call GoToIndex
-  // rather than GoToOffset to get the NOTREACHED() check.
   GoToIndex(target_index);
 }
 
@@ -2352,12 +2363,15 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 }
 
 void NavigationControllerImpl::PruneOldestEntryIfFull() {
-  if (entries_.size() >= max_entry_count()) {
-    DCHECK_EQ(max_entry_count(), entries_.size());
-    DCHECK_GT(last_committed_entry_index_, 0);
-    RemoveEntryAtIndex(0);
-    NotifyPrunedEntries(this, true, 1);
-  }
+  if (entries_.size() < max_entry_count())
+    return;
+
+  DCHECK_EQ(max_entry_count(), entries_.size());
+  DCHECK_GT(last_committed_entry_index_, 0);
+  RemoveEntryAtIndex(0);
+  NotifyPrunedEntries(this, true, 1);
+  // TODO(crbug.com/907167): Consider removing the earliest skippable entry
+  // instead of the first entry.
 }
 
 void NavigationControllerImpl::NavigateToExistingPendingEntry(
