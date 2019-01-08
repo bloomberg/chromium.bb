@@ -5716,11 +5716,6 @@ interface RTCQuicTransport : EventTarget
     setter onerror
     setter onquicstream
     setter onstatechange
-interface RTCRtpContributingSource
-    attribute @@toStringTag
-    getter source
-    getter timestamp
-    method constructor
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
