@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -977,6 +978,98 @@ TEST_F(DocumentTest, InterfaceInvalidatorDestruction) {
   EXPECT_FALSE(GetDocument().GetInterfaceInvalidator());
   EXPECT_EQ(1, obs.CountInvalidateCalled());
 }
+
+// Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
+// enabled.
+class IsolatedWorldCSPTest : public DocumentTest,
+                             public testing::WithParamInterface<bool> {
+ public:
+  IsolatedWorldCSPTest() {
+    RuntimeEnabledFeatures::SetIsolatedWorldCSPEnabled(GetParam());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
+};
+
+// Tests ExecutionContext::GetContentSecurityPolicyForWorld().
+TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
+  using ::testing::ElementsAre;
+
+  // Set a CSP for the main world.
+  const char* kMainWorldCSP = "connect-src https://google.com;";
+  GetDocument().GetContentSecurityPolicy()->DidReceiveHeader(
+      kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce,
+      kContentSecurityPolicyHeaderSourceHTTP);
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
+  v8::Isolate* isolate = main_world_script_state->GetIsolate();
+
+  constexpr int kIsolatedWorldWithoutCSPId = 1;
+  scoped_refptr<DOMWrapperWorld> world_without_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithoutCSPId);
+  ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_without_csp_script_state =
+      ToScriptState(frame, *world_without_csp);
+
+  const char* kIsolatedWorldCSP = "script-src 'none';";
+  constexpr int kIsolatedWorldWithCSPId = 2;
+  scoped_refptr<DOMWrapperWorld> world_with_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
+  ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_with_csp_script_state =
+      ToScriptState(frame, *world_with_csp);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(kIsolatedWorldWithCSPId,
+                                                   kIsolatedWorldCSP);
+
+  // Returns the csp headers being used for the current world.
+  auto get_csp_headers = [this]() {
+    return GetDocument().GetContentSecurityPolicyForWorld()->Headers();
+  };
+
+  {
+    SCOPED_TRACE("In main world.");
+    ScriptState::Scope scope(main_world_script_state);
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+  }
+
+  {
+    SCOPED_TRACE("In isolated world without csp.");
+    ScriptState::Scope scope(isolated_world_without_csp_script_state);
+
+    // If we are in an isolated world with no CSP defined, we use the main world
+    // CSP.
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+  }
+
+  {
+    bool is_isolated_world_csp_enabled = GetParam();
+    SCOPED_TRACE(base::StringPrintf(
+        "In isolated world with csp and 'IsolatedWorldCSP' %s",
+        is_isolated_world_csp_enabled ? "enabled" : "disabled"));
+    ScriptState::Scope scope(isolated_world_with_csp_script_state);
+
+    if (!is_isolated_world_csp_enabled) {
+      // With 'IsolatedWorldCSP' feature disabled, we should just bypass the
+      // main world CSP by using an empty CSP.
+      EXPECT_TRUE(get_csp_headers().IsEmpty());
+    } else {
+      // With 'IsolatedWorldCSP' feature enabled, we use the isolated world's
+      // CSP if it specified one.
+      EXPECT_THAT(
+          get_csp_headers(),
+          ElementsAre(CSPHeaderAndType(
+              {kIsolatedWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+    }
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   constexpr SandboxFlags kSandboxMask = kSandboxScripts;

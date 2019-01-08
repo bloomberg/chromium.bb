@@ -50,6 +50,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -699,7 +700,10 @@ Document::Document(const DocumentInit& initializer,
       parsed_feature_policies_(
           static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1),
       potentially_violated_features_(
-          static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1U) {
+          static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1U),
+      isolated_world_csp_map_(
+          MakeGarbageCollected<
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());
@@ -853,6 +857,34 @@ Location* Document::location() const {
 
 bool Document::ShouldInstallV8Extensions() const {
   return frame_->Client()->AllowScriptExtensions();
+}
+
+ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  // This can be called before we enter v8, hence the context might be empty,
+  // which implies we are not in an isolated world.
+  if (v8_context.IsEmpty())
+    return GetContentSecurityPolicy();
+
+  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
+  if (!world.IsIsolatedWorld())
+    return GetContentSecurityPolicy();
+
+  int world_id = world.GetWorldId();
+  auto it = isolated_world_csp_map_->find(world_id);
+  if (it != isolated_world_csp_map_->end())
+    return it->value;
+
+  ContentSecurityPolicy* policy =
+      IsolatedWorldCSP::Get().CreateIsolatedWorldCSP(*this, world_id);
+  if (!policy)
+    return GetContentSecurityPolicy();
+
+  isolated_world_csp_map_->insert(world_id, policy);
+  return policy;
 }
 
 void Document::ChildrenChanged(const ChildrenChange& change) {
@@ -7632,6 +7664,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
   visitor->Trace(lazy_load_image_observer_);
+  visitor->Trace(isolated_world_csp_map_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);

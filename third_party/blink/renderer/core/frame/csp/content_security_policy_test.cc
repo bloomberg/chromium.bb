@@ -1453,4 +1453,74 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
       not_example_url, String(), IntegrityMetadataSet(), kParserInserted));
 }
 
+// Tests that using an empty CSP works and doesn't impose any policy
+// restrictions.
+TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
+  csp = ContentSecurityPolicy::Create();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+
+  const KURL example_url("http://example.com");
+  Document* document = Document::CreateForTest();
+  String source;
+  String context_url;
+  String nonce;
+  OrdinalNumber ordinal_number;
+  Element* element =
+      HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
+
+  EXPECT_TRUE(csp->Headers().IsEmpty());
+  EXPECT_TRUE(
+      csp->AllowJavaScriptURLs(element, source, context_url, ordinal_number));
+  EXPECT_TRUE(csp->AllowInlineEventHandler(element, source, context_url,
+                                           ordinal_number));
+  EXPECT_TRUE(csp->AllowEval(nullptr, SecurityViolationReportingPolicy::kReport,
+                             ContentSecurityPolicy::kWillNotThrowException,
+                             g_empty_string));
+  EXPECT_TRUE(csp->AllowWasmEval(
+      nullptr, SecurityViolationReportingPolicy::kReport,
+      ContentSecurityPolicy::kWillNotThrowException, g_empty_string));
+  EXPECT_TRUE(csp->AllowPluginType("application/x-type-1",
+                                   "application/x-type-1", example_url));
+  EXPECT_TRUE(csp->AllowPluginTypeForDocument(
+      *document, "application/x-type-1", "application/x-type-1", example_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_TRUE(csp->AllowObjectFromSource(example_url));
+  EXPECT_TRUE(csp->AllowPrefetchFromSource(example_url));
+  EXPECT_TRUE(csp->AllowFrameFromSource(example_url));
+  EXPECT_TRUE(csp->AllowImageFromSource(example_url));
+  EXPECT_TRUE(csp->AllowFontFromSource(example_url));
+  EXPECT_TRUE(csp->AllowMediaFromSource(example_url));
+  EXPECT_TRUE(csp->AllowConnectToSource(example_url));
+  EXPECT_TRUE(csp->AllowFormAction(example_url));
+  EXPECT_TRUE(csp->AllowBaseURI(example_url));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
+  EXPECT_TRUE(csp->AllowWorkerContextFromSource(example_url));
+  EXPECT_TRUE(csp->AllowManifestFromSource(example_url));
+  EXPECT_TRUE(csp->AllowScriptFromSource(
+      example_url, nonce, IntegrityMetadataSet(), kParserInserted));
+  EXPECT_TRUE(csp->AllowStyleFromSource(example_url, nonce));
+  EXPECT_TRUE(csp->AllowInlineScript(
+      element, context_url, nonce, ordinal_number, source,
+      ContentSecurityPolicy::InlineType::kBlock));
+  EXPECT_TRUE(csp->AllowInlineStyle(element, context_url, nonce, ordinal_number,
+                                    source,
+                                    ContentSecurityPolicy::InlineType::kBlock));
+  EXPECT_TRUE(csp->AllowAncestors(document->GetFrame(), example_url));
+  EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
+  EXPECT_TRUE(csp->AllowRequestWithoutIntegrity(
+      mojom::RequestContextType::SCRIPT, example_url));
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SCRIPT, example_url,
+                                nonce, IntegrityMetadataSet(),
+                                kParserInserted));
+  EXPECT_FALSE(csp->IsActive());
+  EXPECT_FALSE(csp->IsActiveForConnections());
+  EXPECT_TRUE(csp->FallbackUrlForPlugin().IsEmpty());
+  EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
+  EXPECT_FALSE(csp->HasHeaderDeliveredPolicy());
+  EXPECT_FALSE(csp->SupportsWasmEval());
+  EXPECT_EQ(kSandboxNone, csp->GetSandboxMask());
+  EXPECT_FALSE(
+      csp->HasPolicyFromSource(kContentSecurityPolicyHeaderSourceHTTP));
+}
+
 }  // namespace blink

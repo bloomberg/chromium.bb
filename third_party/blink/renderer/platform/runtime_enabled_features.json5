@@ -650,6 +650,11 @@
       status: "experimental",
     },
     {
+      // If enabled, CSP checks use the isolated world CSP when in an isolated
+      // world. See crbug.com/896041.
+      name: "IsolatedWorldCSP"
+    },
+    {
       // Tracks "jank" from layout objects changing their visual location
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",

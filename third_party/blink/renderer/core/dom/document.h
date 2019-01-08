@@ -274,6 +274,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // ExecutionContext overrides:
   bool IsDocument() const final { return true; }
   bool ShouldInstallV8Extensions() const final;
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld() override;
 
   bool CanContainRangeEndPoint() const override { return true; }
 
@@ -1939,6 +1940,10 @@ class CORE_EXPORT Document : public ContainerNode,
   mutable BitVector potentially_violated_features_;
 
   AtomicString override_last_modified_;
+
+  // Map from isolated world IDs to their ContentSecurityPolicy instances.
+  Member<HeapHashMap<int, Member<ContentSecurityPolicy>>>
+      isolated_world_csp_map_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

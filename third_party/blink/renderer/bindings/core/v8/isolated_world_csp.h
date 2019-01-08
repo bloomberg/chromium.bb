@@ -12,6 +12,9 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
+class Document;
+
 // A singleton storing content security policy for each isolated world.
 class CORE_EXPORT IsolatedWorldCSP {
  public:
@@ -19,21 +22,26 @@ class CORE_EXPORT IsolatedWorldCSP {
 
   // Associated an isolated world with a Content Security Policy. Resources
   // embedded into the main world's DOM from script executed in an isolated
-  // world should be restricted based on the isolated world's DOM, not the
+  // world should be restricted based on the isolated world's CSP, not the
   // main world's.
   //
-  // FIXME: Right now, resource injection simply bypasses the main world's
-  // DOM. More work is necessary to allow the isolated world's policy to be
-  // applied correctly.
+  // TODO(crbug.com/896041): Right now, resource injection simply bypasses the
+  // main world's CSP. More work is necessary to allow the isolated world's
+  // policy to be applied correctly.
   void SetContentSecurityPolicy(int world_id, const String& policy);
   bool HasContentSecurityPolicy(int world_id) const;
+
+  // Creates a ContentSecurityPolicy instance for the given isolated |world_id|
+  // and |document|. Returns null if no ContentSecurityPolicy is defined for the
+  // given isolated |world_id|.
+  ContentSecurityPolicy* CreateIsolatedWorldCSP(Document& document,
+                                                int world_id);
 
  private:
   IsolatedWorldCSP();
 
-  // Map from the isolated world |world_id| to a bool denoting if it has a CSP
-  // defined.
-  HashMap<int, bool> csp_map_;
+  // Map from the isolated world |world_id| to its content security policy.
+  HashMap<int, String> csp_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSP);
 };

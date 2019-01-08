@@ -172,6 +172,12 @@ ExecutionContext::GetContentSecurityPolicyDelegate() {
   return *csp_delegate_;
 }
 
+ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld() {
+  // Isolated worlds are only relevant for Documents. Hence just return the main
+  // world's content security policy by default.
+  return GetContentSecurityPolicy();
+}
+
 const SecurityOrigin* ExecutionContext::GetSecurityOrigin() {
   return GetSecurityContext().GetSecurityOrigin();
 }
