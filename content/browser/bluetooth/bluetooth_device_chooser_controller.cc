@@ -84,9 +84,6 @@ namespace content {
 int64_t BluetoothDeviceChooserController::scan_duration_ = 60;
 
 namespace {
-// Max length of device name in filter. Bluetooth 5.0 3.C.3.2.2.3 states that
-// the maximum device name length is 248 bytes (UTF-8 encoded).
-constexpr size_t kMaxLengthForDeviceName = 248;
 
 void LogRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
@@ -112,47 +109,6 @@ void LogRequestDeviceOptions(
         DVLOG(1) << "\t\t" << service.canonical_value();
       DVLOG(1) << "\t]";
     }
-  }
-}
-
-bool IsEmptyOrInvalidFilter(
-    const blink::mojom::WebBluetoothLeScanFilterPtr& filter) {
-  // At least one member needs to be present.
-  if (!filter->name && !filter->name_prefix && !filter->services)
-    return true;
-
-  // The renderer will never send a name or a name_prefix longer than
-  // kMaxLengthForDeviceName.
-  if (filter->name && filter->name->size() > kMaxLengthForDeviceName)
-    return true;
-  if (filter->name_prefix && filter->name_prefix->size() == 0)
-    return true;
-  if (filter->name_prefix &&
-      filter->name_prefix->size() > kMaxLengthForDeviceName)
-    return true;
-
-  return false;
-}
-
-bool HasEmptyOrInvalidFilter(
-    const base::Optional<
-        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
-  if (!filters) {
-    return true;
-  }
-
-  return filters->empty()
-             ? true
-             : filters->end() != std::find_if(filters->begin(), filters->end(),
-                                              IsEmptyOrInvalidFilter);
-}
-
-bool IsOptionsInvalid(
-    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
-  if (options->accept_all_devices) {
-    return options->filters.has_value();
-  } else {
-    return HasEmptyOrInvalidFilter(options->filters);
   }
 }
 
@@ -310,13 +266,6 @@ void BluetoothDeviceChooserController::GetDevice(
 
   success_callback_ = success_callback;
   error_callback_ = error_callback;
-
-  // The renderer should never send invalid options.
-  if (IsOptionsInvalid(options)) {
-    web_bluetooth_service_->CrashRendererAndClosePipe(
-        bad_message::BDH_INVALID_OPTIONS);
-    return;
-  }
   options_ = std::move(options);
   LogRequestDeviceOptions(options_);
 
