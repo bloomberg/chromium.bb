@@ -18,7 +18,6 @@
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
-#include "components/password_manager/core/browser/invalid_realm_credential_cleaner.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -172,25 +171,9 @@ void RemoveUselessCredentials(
   // TODO(https://crbug.com/887889): Remove the knowledge of the particular
   // preferences from this code.
 
-  const bool need_to_remove_invalid_credentials = !prefs->GetBoolean(
-      password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved);
-  base::UmaHistogramBoolean(
-      "PasswordManager.InvalidtHttpsCredentialsNeedToBeCleared",
-      need_to_remove_invalid_credentials);
-
   // The object will delete itself once the clearing tasks are done.
   auto* cleaning_tasks_runner =
       new password_manager::CredentialsCleanerRunner();
-
-  // Cleaning of credentials with invalid signon_realm needs to search for
-  // blacklisted non-HTML HTTPS credentials for a corresponding HTTP
-  // credentials. Thus, this clean-up must be done before cleaning blacklisted
-  // credentials. Otherwise finding a corresponding HTTP credentials will fail.
-  if (need_to_remove_invalid_credentials) {
-    cleaning_tasks_runner->AddCleaningTask(
-        std::make_unique<password_manager::InvalidRealmCredentialCleaner>(
-            store, prefs));
-  }
 
 #if !defined(OS_IOS)
   // Can be null for some unittests.
