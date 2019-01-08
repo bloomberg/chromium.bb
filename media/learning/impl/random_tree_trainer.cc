@@ -187,30 +187,38 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   // classification, and 5 for regression.
 
   // Remove any constant attributes in |training_data| from |unused_set|.  Also
-  // check if our training data has a constant target value.
-  std::set<TargetValue> target_values;
-  std::vector<std::set<FeatureValue>> feature_values;
+  // check if our training data has a constant target value.  For both features
+  // and the target value, if the Optional has a value then it's the singular
+  // value that we've found so far.  If we find a second one, then we'll clear
+  // the Optional.
+  base::Optional<TargetValue> target_value(
+      training_data[training_idx[0]].target_value);
+  std::vector<base::Optional<FeatureValue>> feature_values;
   feature_values.resize(training_data[0].features.size());
+  for (size_t feature_idx : unused_set) {
+    feature_values[feature_idx] =
+        training_data[training_idx[0]].features[feature_idx];
+  }
   for (size_t idx : training_idx) {
     const LabelledExample& example = training_data[idx];
     // Record this target value to see if there is more than one.  We skip the
     // insertion if we've already determined that it's not constant.
-    if (target_values.size() < 2)
-      target_values.insert(example.target_value);
+    if (target_value && target_value != example.target_value)
+      target_value.reset();
 
     // For all features in |unused_set|, see if it's a constant in our subset of
     // the training data.
     for (size_t feature_idx : unused_set) {
-      auto& values = feature_values[feature_idx];
-      if (values.size() < 2)
-        values.insert(example.features[feature_idx]);
+      auto& value = feature_values[feature_idx];
+      if (value && *value != example.features[feature_idx])
+        value.reset();
     }
   }
 
   // Is the output constant in |training_data|?  If so, then generate a leaf.
   // If we're not normalizing leaves, then this matters since this training data
   // might be split across multiple leaves.
-  if (target_values.size() == 1) {
+  if (target_value) {
     return std::make_unique<LeafNode>(training_data, training_idx,
                                       task.target_description.ordering);
   }
@@ -220,8 +228,8 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   // don't want to use one of our potential splits on it.
   FeatureSet new_unused_set = unused_set;
   for (size_t feature_idx : unused_set) {
-    auto& values = feature_values[feature_idx];
-    if (values.size() == 1)
+    auto& value = feature_values[feature_idx];
+    if (value)
       new_unused_set.erase(feature_idx);
   }
 
