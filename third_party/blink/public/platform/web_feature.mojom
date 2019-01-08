@@ -2164,6 +2164,8 @@ enum WebFeature {
   kTrustedTypesCreatePolicy = 2723,
   kTrustedTypesDefaultPolicyUsed = 2724,
   kTrustedTypesAssignmentError = 2725,
+  kBadgeSet = 2726,
+  kBadgeClear = 2727,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
