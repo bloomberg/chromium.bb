@@ -3221,6 +3221,45 @@ TEST_F(CookieMonsterTest, DeleteDuplicateCTime) {
   }
 }
 
+TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
+  Time t1 = Time::Now();
+  Time t2 = t1 + base::TimeDelta::FromSeconds(1);
+  GURL url("http://www.example.com");
+  std::string cookie_line = "foo=bar";
+  CookieOptions options;
+  CookieMonster cm(nullptr, nullptr, nullptr);
+
+  // Write a cookie created at |t1|.
+  auto cookie = CanonicalCookie::Create(url, cookie_line, t1, options);
+  ResultSavingCookieCallback<bool> set_callback_1;
+  cm.SetCanonicalCookieAsync(
+      std::move(cookie), url.SchemeIsCryptographic(),
+      !options.exclude_httponly(),
+      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                     base::Unretained(&set_callback_1)));
+  set_callback_1.WaitUntilDone();
+
+  // Overwrite the cookie at |t2|.
+  cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
+  ResultSavingCookieCallback<bool> set_callback_2;
+  cm.SetCanonicalCookieAsync(
+      std::move(cookie), url.SchemeIsCryptographic(),
+      !options.exclude_httponly(),
+      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                     base::Unretained(&set_callback_2)));
+  set_callback_2.WaitUntilDone();
+
+  // The second cookie overwrites the first one but it will inherit the creation
+  // timestamp |t1|. Test that deleting the new cookie still works.
+  cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
+  ResultSavingCookieCallback<unsigned int> delete_callback;
+  cm.DeleteCanonicalCookieAsync(
+      *cookie, base::BindOnce(&ResultSavingCookieCallback<unsigned int>::Run,
+                              base::Unretained(&delete_callback)));
+  delete_callback.WaitUntilDone();
+  EXPECT_EQ(1U, delete_callback.result());
+}
+
 class CookieMonsterNotificationTest : public CookieMonsterTest {
  public:
   CookieMonsterNotificationTest()
