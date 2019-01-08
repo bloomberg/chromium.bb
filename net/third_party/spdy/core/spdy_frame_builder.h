@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/sys_byteorder.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/zero_copy_output_buffer.h"
+#include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
@@ -81,20 +81,20 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
   // host to network form.
   bool WriteUInt8(uint8_t value) { return WriteBytes(&value, sizeof(value)); }
   bool WriteUInt16(uint16_t value) {
-    value = base::HostToNet16(value);
+    value = SpdyHostToNet16(value);
     return WriteBytes(&value, sizeof(value));
   }
   bool WriteUInt24(uint32_t value) {
-    value = base::HostToNet32(value);
+    value = SpdyHostToNet32(value);
     return WriteBytes(reinterpret_cast<char*>(&value) + 1, sizeof(value) - 1);
   }
   bool WriteUInt32(uint32_t value) {
-    value = base::HostToNet32(value);
+    value = SpdyHostToNet32(value);
     return WriteBytes(&value, sizeof(value));
   }
   bool WriteUInt64(uint64_t value) {
-    uint32_t upper = base::HostToNet32(static_cast<uint32_t>(value >> 32));
-    uint32_t lower = base::HostToNet32(static_cast<uint32_t>(value));
+    uint32_t upper = SpdyHostToNet32(static_cast<uint32_t>(value >> 32));
+    uint32_t lower = SpdyHostToNet32(static_cast<uint32_t>(value));
     return (WriteBytes(&upper, sizeof(upper)) &&
             WriteBytes(&lower, sizeof(lower)));
   }

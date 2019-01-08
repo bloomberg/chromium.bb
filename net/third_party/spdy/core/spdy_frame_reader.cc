@@ -4,9 +4,9 @@
 
 #include <limits>
 
-#include "base/sys_byteorder.h"
 #include "net/third_party/spdy/core/spdy_frame_reader.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 
 namespace spdy {
 
@@ -37,8 +37,7 @@ bool SpdyFrameReader::ReadUInt16(uint16_t* result) {
   }
 
   // Read into result.
-  *result =
-      base::NetToHost16(*(reinterpret_cast<const uint16_t*>(data_ + ofs_)));
+  *result = SpdyNetToHost16(*(reinterpret_cast<const uint16_t*>(data_ + ofs_)));
 
   // Iterate.
   ofs_ += 2;
@@ -54,8 +53,7 @@ bool SpdyFrameReader::ReadUInt32(uint32_t* result) {
   }
 
   // Read into result.
-  *result =
-      base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_)));
+  *result = SpdyNetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_)));
 
   // Iterate.
   ofs_ += 4;
@@ -72,9 +70,9 @@ bool SpdyFrameReader::ReadUInt64(uint64_t* result) {
 
   // Read into result. Network byte order is big-endian.
   uint64_t upper =
-      base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_)));
+      SpdyNetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_)));
   uint64_t lower =
-      base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_ + 4)));
+      SpdyNetToHost32(*(reinterpret_cast<const uint32_t*>(data_ + ofs_ + 4)));
   *result = (upper << 32) + lower;
 
   // Iterate.
@@ -104,7 +102,7 @@ bool SpdyFrameReader::ReadUInt24(uint32_t* result) {
   // Read into result.
   *result = 0;
   memcpy(reinterpret_cast<char*>(result) + 1, data_ + ofs_, 3);
-  *result = base::NetToHost32(*result);
+  *result = SpdyNetToHost32(*result);
 
   // Iterate.
   ofs_ += 3;

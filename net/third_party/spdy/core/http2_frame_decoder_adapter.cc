@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
@@ -33,6 +32,7 @@
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_flags.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"

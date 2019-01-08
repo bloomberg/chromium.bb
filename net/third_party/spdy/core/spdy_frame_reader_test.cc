@@ -8,8 +8,8 @@
 #include <iostream>
 #include <memory>
 
-#include "base/sys_byteorder.h"
 #include "net/third_party/spdy/platform/api/spdy_arraysize.h"
+#include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 #include "testing/platform_test.h"
 
 namespace spdy {
@@ -17,7 +17,8 @@ namespace spdy {
 TEST(SpdyFrameReaderTest, ReadUInt16) {
   // Frame data in network byte order.
   const uint16_t kFrameData[] = {
-      base::HostToNet16(1), base::HostToNet16(1 << 15),
+      SpdyHostToNet16(1),
+      SpdyHostToNet16(1 << 15),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
@@ -37,7 +38,8 @@ TEST(SpdyFrameReaderTest, ReadUInt16) {
 TEST(SpdyFrameReaderTest, ReadUInt32) {
   // Frame data in network byte order.
   const uint32_t kFrameData[] = {
-      base::HostToNet32(1), base::HostToNet32(0x80000000),
+      SpdyHostToNet32(1),
+      SpdyHostToNet32(0x80000000),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
