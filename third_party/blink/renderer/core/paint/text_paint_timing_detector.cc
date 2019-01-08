@@ -45,9 +45,9 @@ void TextPaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
     const TextRecord& first_text_paint,
     unsigned candidate_index) const {
-  value.SetInteger("DOMNodeId", first_text_paint.node_id);
+  value.SetInteger("DOMNodeId", static_cast<int>(first_text_paint.node_id));
   value.SetString("text", first_text_paint.text);
-  value.SetInteger("size", first_text_paint.first_size);
+  value.SetInteger("size", static_cast<int>(first_text_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
   value.SetString("frame",
                   IdentifiersFactory::FrameId(&frame_view_->GetFrame()));

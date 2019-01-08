@@ -210,7 +210,7 @@ Vector<std::unique_ptr<IDBKey>> IDBKey::ToMultiEntryArray(
       });
   std::unique_ptr<IDBKey>* end = std::unique(result.begin(), result.end());
   DCHECK_LE(static_cast<wtf_size_t>(end - result.begin()), result.size());
-  result.resize(end - result.begin());
+  result.resize(static_cast<wtf_size_t>(end - result.begin()));
 
   return result;
 }

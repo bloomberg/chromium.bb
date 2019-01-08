@@ -987,7 +987,8 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
 
   GetFrontend()->dataReceived(
       request_id, CurrentTimeTicksInSeconds(), data_length,
-      resources_data_->GetAndClearPendingEncodedDataLength(request_id));
+      static_cast<int>(
+          resources_data_->GetAndClearPendingEncodedDataLength(request_id)));
 }
 
 void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
@@ -1015,8 +1016,8 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
 
-  int pending_encoded_data_length =
-      resources_data_->GetAndClearPendingEncodedDataLength(request_id);
+  int pending_encoded_data_length = static_cast<int>(
+      resources_data_->GetAndClearPendingEncodedDataLength(request_id));
   if (pending_encoded_data_length > 0) {
     GetFrontend()->dataReceived(request_id, CurrentTimeTicksInSeconds(), 0,
                                 pending_encoded_data_length);
