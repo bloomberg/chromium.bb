@@ -944,6 +944,10 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
   event_generator.MoveMouseTo(54, 300);
   event_generator.ClickLeftButton();
 
+  // Evaluate an empty sentence to make sure that the event processing is done
+  // in the content.
+  ignore_result(content::EvalJs(contents, ";"));
+
   // Verify that the selected option has changed and the forth option is
   // selected.
   EXPECT_EQ(true, content::EvalJs(contents, "selectChanged;"));
