@@ -626,6 +626,10 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-003.html [ Failure ]
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 
+# [css-ui]
+# Layout team disagrees with the spec for this particular test.
+crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -4807,8 +4811,6 @@ crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
-
-crbug.com/746904 [ Win7 ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
 
 # Tests failing when enabling new modern media controls
 crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]

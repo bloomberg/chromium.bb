@@ -495,14 +495,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutSize MaxLayoutOverflow() const {
     return LayoutSize(LayoutOverflowRect().MaxX(), LayoutOverflowRect().MaxY());
   }
-  LayoutUnit LogicalLeftLayoutOverflow() const {
-    return StyleRef().IsHorizontalWritingMode() ? LayoutOverflowRect().X()
-                                                : LayoutOverflowRect().Y();
-  }
-  LayoutUnit LogicalRightLayoutOverflow() const {
-    return StyleRef().IsHorizontalWritingMode() ? LayoutOverflowRect().MaxX()
-                                                : LayoutOverflowRect().MaxY();
-  }
 
   LayoutRect VisualOverflowRect() const override;
   LayoutRect PhysicalVisualOverflowRect() const {

@@ -2482,8 +2482,7 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
         LogicalRightOffsetForLine(curr->LineTop(), indent_text);
     LayoutUnit block_left_edge =
         LogicalLeftOffsetForLine(curr->LineTop(), indent_text);
-    LayoutUnit line_box_edge = ltr ? curr->LogicalRightLayoutOverflow()
-                                   : curr->LogicalLeftLayoutOverflow();
+    LayoutUnit line_box_edge = ltr ? curr->LogicalRight() : curr->LogicalLeft();
     if ((ltr && line_box_edge > block_right_edge) ||
         (!ltr && line_box_edge < block_left_edge)) {
       // This line spills out of our box in the appropriate direction. Now we
