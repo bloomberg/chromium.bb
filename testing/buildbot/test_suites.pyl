@@ -3205,18 +3205,6 @@
       },
     },
 
-    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests': {
-      'webgl_conformance_d3d9_tests': {
-        'telemetry_test_name': 'webgl_conformance',
-        'args': [
-          '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=validating',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
-
     'gpu_fyi_and_optional_win_specific_gtests': {
       'angle_gles1_conformance_tests': {
         'args': ['--use-gpu-in-tests']
@@ -3338,6 +3326,26 @@
       },
     },
 
+    'gpu_gl_tests_validating': {
+      'gl_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          '--use-cmd-decoder=validating',
+        ],
+      },
+    },
+
+    'gpu_gles2_conform_d3d11_test': {
+      'gles2_conform_d3d11_test': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--use-angle=d3d11',
+          '--disable-gpu-sandbox',
+        ],
+        'test': 'gles2_conform_test',
+      },
+    },
+
     # Temporarily disabled because it is not used anywhere.
     # TODO(jmadill): Re-enable after upgrade. http://crbug.com/887241
     # 'gpu_noop_sleep_telemetry_test': {
@@ -3407,6 +3415,30 @@
           'shards': 2,
         },
         'android_swarming': {
+          'shards': 6,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_d3d11_validating_tests': {
+      'webgl_conformance_d3d11_validating': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating',
+        ],
+        'swarming': {
+          'shards': 6,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_d3d9_validating_tests': {
+      'webgl_conformance_d3d9_validating': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating',
+        ],
+        'swarming': {
           'shards': 6,
         },
       },
@@ -4531,22 +4563,20 @@
       'gpu_angle_unittests',
       'gpu_angle_white_box_tests',
       'gpu_fyi_and_optional_win_specific_gtests',
+      'gpu_gl_tests_validating',
+      'gpu_gles2_conform_d3d11_test',
+      'gpu_win_specific_gtests',
     ],
 
-    'gpu_angle_win_intel_telemetry_tests': [
+    'gpu_angle_win_intel_and_nvidia_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
       'gpu_fyi_only_win_intel_and_nvidia_release_specific_telemetry_tests',
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
-    ],
-
-    'gpu_angle_win_nvidia_telemetry_tests': [
-      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
-      'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_only_win_intel_and_nvidia_release_specific_telemetry_tests',
-      'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
-      'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_common_telemetry_tests': [
@@ -4673,18 +4703,18 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_fyi_win_amd_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_fyi_win_and_linux_release_telemetry_tests': [
@@ -4704,8 +4734,8 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_fyi_win_gtests': [
@@ -4736,11 +4766,11 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
-      'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_only_win_intel_and_nvidia_release_specific_telemetry_tests',
+      'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_nexus5x_telemetry_tests': [
@@ -4753,8 +4783,8 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
     'gpu_v8_desktop_telemetry_tests': [

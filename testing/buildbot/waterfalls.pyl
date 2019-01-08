@@ -1934,7 +1934,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
         },
       },
       'ANGLE GPU Win10 Release (NVIDIA)': {
@@ -1946,7 +1946,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_angle_win_nvidia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
         'alternate_swarming_dimensions': [
