@@ -89,7 +89,9 @@ SPECIAL_TESTS = {
     'scripts/cros_mark_as_stable_unittest': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
     'scripts/cros_portage_upgrade_unittest': INSIDE,
+    'scripts/cros_run_unit_tests_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
+    'scripts/gconv_strip_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
 
     # Tests that need to run outside the chroot.
