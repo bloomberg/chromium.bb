@@ -10,10 +10,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/browser/browsing_data/clear_site_data_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
@@ -296,9 +296,9 @@ void ClearSiteDataHandler::ExecuteClearingTask(const url::Origin& origin,
                                                bool clear_storage,
                                                bool clear_cache,
                                                base::OnceClosure callback) {
-  clear_site_data_utils::ClearSiteData(browser_context_getter_, origin,
-                                       clear_cookies, clear_storage,
-                                       clear_cache, std::move(callback));
+  ClearSiteData(browser_context_getter_, origin, clear_cookies, clear_storage,
+                clear_cache, true /*avoid_closing_connections*/,
+                std::move(callback));
 }
 
 // static

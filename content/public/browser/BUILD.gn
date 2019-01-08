@@ -96,6 +96,7 @@ jumbo_source_set("browser_sources") {
     "child_process_launcher_utils.h",
     "child_process_security_policy.h",
     "child_process_termination_info.h",
+    "clear_site_data_utils.h",
     "client_certificate_delegate.h",
     "color_chooser.h",
     "content_browser_client.cc",
