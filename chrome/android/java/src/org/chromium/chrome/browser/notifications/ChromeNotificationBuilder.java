@@ -83,6 +83,8 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setMediaStyle(MediaSessionCompat session, int[] actions,
             PendingIntent intent, boolean showCancelButton);
 
+    ChromeNotificationBuilder setCategory(String category);
+
     Notification buildWithBigContentView(RemoteViews bigView);
 
     Notification buildWithBigTextStyle(String bigText);

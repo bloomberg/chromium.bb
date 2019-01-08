@@ -67,6 +67,7 @@ public class ChannelDefinitions {
         String WEBAPP_ACTIONS = "webapp_actions";
         // TODO(crbug.com/700377): Deprecate the 'sites' channel.
         String SITES = "sites";
+        String VR = "vr";
     }
 
     @StringDef({ChannelGroupId.GENERAL, ChannelGroupId.SITES})
@@ -148,6 +149,13 @@ public class ChannelDefinitions {
                     new PredefinedChannel(ChannelId.WEBAPP_ACTIONS,
                             R.string.notification_category_fullscreen_controls,
                             NotificationManager.IMPORTANCE_MIN, ChannelGroupId.GENERAL));
+
+            // Not adding to startup channels because we want ChannelId.VR to be created on the
+            // first use, as not all users use VR. Channel must have high importance for
+            // notifications to show up in VR.
+            map.put(ChannelId.VR,
+                    new PredefinedChannel(ChannelId.VR, R.string.notification_category_vr,
+                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
 
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
