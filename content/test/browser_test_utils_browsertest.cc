@@ -82,7 +82,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteRedirectorBrowserTest,
 
 using EvalJsBrowserTest = ContentBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(EvalJsBrowserTest, EvalJsErrors) {
+// TODO(mslekova): Re-enable once test expectations are updated,
+// see chromium:916975
+IN_PROC_BROWSER_TEST_F(EvalJsBrowserTest, DISABLED_EvalJsErrors) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html"));
 
