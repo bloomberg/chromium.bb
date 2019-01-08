@@ -21,6 +21,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
+// CHROMIUM: re-mapped to sscanf to work around a clang bug that breaks
+// compilation on android x64
+
+#include <stdio.h>
+#define av_sscanf sscanf
+
+#if 0
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -968,3 +977,5 @@ int av_sscanf(const char *string, const char *format, ...)
     va_end(ap);
     return ret;
 }
+
+#endif
