@@ -51,38 +51,6 @@ class ServiceWorkerNavigationHandle;
 // commits.
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
-  // If |redirect_chain| is empty, then the redirect chain will be created to
-  // start with |url|. Otherwise |redirect_chain| is used as the starting point.
-  // |navigation_start| comes from the CommonNavigationParams associated with
-  // this navigation.
-  static std::unique_ptr<NavigationHandleImpl> Create(
-      const GURL& url,
-      const base::Optional<url::Origin>& initiator_origin,
-      const std::vector<GURL>& redirect_chain,
-      FrameTreeNode* frame_tree_node,
-      bool is_renderer_initiated,
-      bool is_same_document,
-      base::TimeTicks navigation_start,
-      int pending_nav_entry_id,
-      bool started_from_context_menu,
-      CSPDisposition should_check_main_world_csp,
-      bool is_form_submission,
-      std::unique_ptr<NavigationUIData> navigation_ui_data,
-      const std::string& method = std::string(),
-      net::HttpRequestHeaders request_headers = net::HttpRequestHeaders(),
-      scoped_refptr<network::ResourceRequestBody> resource_request_body =
-          nullptr,
-      const Referrer& sanitized_referrer = content::Referrer(),
-      bool has_user_gesture = false,
-      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK,
-      bool is_external_protocol = false,
-      blink::mojom::RequestContextType request_context_type =
-          blink::mojom::RequestContextType::UNSPECIFIED,
-      blink::WebMixedContentContextType mixed_content_context_type =
-          blink::WebMixedContentContextType::kBlockable,
-      const std::string& href_translate = std::string(),
-      base::TimeTicks input_start = base::TimeTicks());
-
   ~NavigationHandleImpl() override;
 
   // Used to track the state the navigation is currently in.
@@ -167,16 +135,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void Resume(NavigationThrottle* resuming_throttle);
   void CancelDeferredNavigation(NavigationThrottle* cancelling_throttle,
                                 NavigationThrottle::ThrottleCheckResult result);
-
-  // Simulates various calls on the NavigationHandle for testing.
-  // DEPRECATED: use NavigationSimulator to simulate a full navigation, or
-  // MockNavigationHandle.
-  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting();
-  NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
-      RenderFrameHost* render_frame_host,
-      const std::string& raw_response_header,
-      bool was_cached,
-      const net::ProxyServer& proxy_server);
 
   // Simulates the navigation resuming. Most callers should just let the
   // deferring NavigationThrottle do the resuming.
@@ -353,7 +311,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   void set_response_headers_for_testing(
       scoped_refptr<net::HttpResponseHeaders> response_headers) {
-    response_headers_ = response_headers;
+    response_headers_for_testing_ = response_headers;
   }
 
   void set_complete_callback_for_testing(
@@ -363,6 +321,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   CSPDisposition should_check_main_world_csp() const {
     return should_check_main_world_csp_;
+  }
+  void set_should_check_main_world_csp_for_testing(CSPDisposition disposition) {
+    should_check_main_world_csp_ = disposition;
   }
 
   const SourceLocation& source_location() const { return source_location_; }
@@ -393,8 +354,16 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
 
  private:
+  // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
+  // once NavigationHandleImpl has become a wrapper around NavigationRequest.
+  // Then remove them from friends.
   friend class NavigationHandleImplTest;
+  friend class NavigationRequest;
 
+  // If |redirect_chain| is empty, then the redirect chain will be created to
+  // start with |url|. Otherwise |redirect_chain| is used as the starting point.
+  // |navigation_start| comes from the CommonNavigationParams associated with
+  // this navigation.
   NavigationHandleImpl(
       const GURL& url,
       const base::Optional<url::Origin>& initiator_origin,
@@ -637,6 +606,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Set in ReadyToCommitNavigation.
   bool is_same_process_;
+
+  // Allows to override response_headers_ in tests.
+  // TODO(clamy): Clean this up once the architecture of unit tests is better.
+  scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

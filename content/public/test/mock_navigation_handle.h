@@ -66,7 +66,9 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(ShouldUpdateHistory, bool());
   MOCK_METHOD0(GetPreviousURL, const GURL&());
   MOCK_METHOD0(GetSocketAddress, net::HostPortPair());
-  MOCK_METHOD0(GetRequestHeaders, const net::HttpRequestHeaders&());
+  const net::HttpRequestHeaders& GetRequestHeaders() override {
+    return request_headers_;
+  }
   const net::HttpResponseHeaders* GetResponseHeaders() override {
     return response_headers_;
   }
@@ -108,6 +110,9 @@ class MockNavigationHandle : public NavigationHandle {
   }
   void set_has_committed(bool has_committed) { has_committed_ = has_committed; }
   void set_is_error_page(bool is_error_page) { is_error_page_ = is_error_page; }
+  void set_request_headers(const net::HttpRequestHeaders& request_headers) {
+    request_headers_ = request_headers;
+  }
   void set_response_headers(net::HttpResponseHeaders* reponse_headers) {
     response_headers_ = reponse_headers;
   }
@@ -136,6 +141,7 @@ class MockNavigationHandle : public NavigationHandle {
   std::vector<GURL> redirect_chain_;
   bool has_committed_ = false;
   bool is_error_page_ = false;
+  net::HttpRequestHeaders request_headers_;
   net::HttpResponseHeaders* response_headers_ = nullptr;
   net::SSLInfo ssl_info_;
   bool is_form_submission_ = false;

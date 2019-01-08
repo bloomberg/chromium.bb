@@ -68,12 +68,6 @@ int64_t CreateUniqueHandleID() {
   return ++unique_id_counter;
 }
 
-void UpdateThrottleCheckResult(
-    NavigationThrottle::ThrottleCheckResult* to_update,
-    NavigationThrottle::ThrottleCheckResult result) {
-  *to_update = result;
-}
-
 // LOG_NAVIGATION_TIMING_HISTOGRAM logs |value| for "Navigation.<histogram>" UMA
 // as well as supplementary UMAs (depending on |transition| and |is_background|)
 // for BackForward/Reload/NewNavigation variants.
@@ -141,42 +135,6 @@ void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
-    const GURL& url,
-    const base::Optional<url::Origin>& initiator_origin,
-    const std::vector<GURL>& redirect_chain,
-    FrameTreeNode* frame_tree_node,
-    bool is_renderer_initiated,
-    bool is_same_document,
-    base::TimeTicks navigation_start,
-    int pending_nav_entry_id,
-    bool started_from_context_menu,
-    CSPDisposition should_check_main_world_csp,
-    bool is_form_submission,
-    std::unique_ptr<NavigationUIData> navigation_ui_data,
-    const std::string& method,
-    net::HttpRequestHeaders request_headers,
-    scoped_refptr<network::ResourceRequestBody> resource_request_body,
-    const Referrer& sanitized_referrer,
-    bool has_user_gesture,
-    ui::PageTransition transition,
-    bool is_external_protocol,
-    blink::mojom::RequestContextType request_context_type,
-    blink::WebMixedContentContextType mixed_content_context_type,
-    const std::string& href_translate,
-    base::TimeTicks input_start) {
-  return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
-      url, initiator_origin, redirect_chain, frame_tree_node,
-      is_renderer_initiated, is_same_document, navigation_start,
-      pending_nav_entry_id, started_from_context_menu,
-      should_check_main_world_csp, is_form_submission,
-      std::move(navigation_ui_data), method, std::move(request_headers),
-      resource_request_body, sanitized_referrer, has_user_gesture, transition,
-      is_external_protocol, request_context_type, mixed_content_context_type,
-      href_translate, input_start));
-}
 
 NavigationHandleImpl::NavigationHandleImpl(
     const GURL& url,
@@ -451,6 +409,8 @@ const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
+  if (response_headers_for_testing_)
+    return response_headers_for_testing_.get();
   return response_headers_.get();
 }
 
@@ -518,40 +478,6 @@ void NavigationHandleImpl::CancelDeferredNavigation(
 void NavigationHandleImpl::RegisterThrottleForTesting(
     std::unique_ptr<NavigationThrottle> navigation_throttle) {
   throttles_.push_back(std::move(navigation_throttle));
-}
-
-NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::CallWillStartRequestForTesting() {
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillStartRequest(base::Bind(&UpdateThrottleCheckResult, &result));
-
-  // Reset the callback to ensure it will not be called later.
-  complete_callback_.Reset();
-  return result;
-}
-
-NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::CallWillProcessResponseForTesting(
-    RenderFrameHost* render_frame_host,
-    const std::string& raw_response_headers,
-    bool was_cached,
-    const net::ProxyServer& proxy_server) {
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders(raw_response_headers);
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  set_proxy_server(proxy_server);
-  WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
-                      headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
-                      net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
-                      /* should_replace_current_entry=*/false,
-                      /* is_download=*/false,
-                      /* is_stream=*/false,
-                      /* is_signed_exchange_inner_response=*/false, was_cached,
-                      base::Bind(&UpdateThrottleCheckResult, &result));
-
-  // Reset the callback to ensure it will not be called later.
-  complete_callback_.Reset();
-  return result;
 }
 
 void NavigationHandleImpl::CallResumeForTesting() {
