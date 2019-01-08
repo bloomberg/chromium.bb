@@ -1038,6 +1038,47 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
   g_object_unref(root_atk_object);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  root.child_ids.push_back(2);
+
+  AXNodeData child_node_data;
+  child_node_data.id = 2;
+  child_node_data.role = ax::mojom::Role::kButton;
+
+  Init(root, child_node_data);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AXNode* child_node = GetRootNode()->children()[0];
+  {
+    ActivationTester tester(root_atk_object);
+    GetPlatformNode(child_node)
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+    EXPECT_TRUE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+    EXPECT_TRUE(tester.IsActivatedInStateSet());
+  }
+
+  // Since the toplevel window is already active, we shouldn't see another
+  // activation event, but it should still be active.
+  {
+    ActivationTester tester(root_atk_object);
+    GetPlatformNode(child_node)
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+    EXPECT_TRUE(tester.IsActivatedInStateSet());
+  }
+
+  g_object_unref(root_atk_object);
+}
+
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   AXNodeData root;
   root.id = 1;
