@@ -251,10 +251,10 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
         result_format_,
         base::BindOnce(
             [](std::unique_ptr<CopyOutputResult>* result,
-               base::OnceClosure quit_closure,
+               const base::Closure& quit_closure,
                std::unique_ptr<CopyOutputResult> result_from_copier) {
               *result = std::move(result_from_copier);
-              std::move(quit_closure).Run();
+              quit_closure.Run();
             },
             &result, loop.QuitClosure()));
     if (scale_by_half_) {
