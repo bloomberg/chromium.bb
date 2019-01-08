@@ -57,37 +57,53 @@ class BlinkPlatformWithTaskEnvironment : public blink::Platform {
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformWithTaskEnvironment);
 };
 
-static int RunTests(base::TestSuite* test_suite) {
+class MediaBlinkTestSuite : public base::TestSuite {
+ public:
+  MediaBlinkTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+ private:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+
 #if defined(OS_ANDROID)
-  if (media::MediaCodecUtil::IsMediaCodecAvailable())
-    media::EnablePlatformDecoderSupport();
+    if (media::MediaCodecUtil::IsMediaCodecAvailable())
+      media::EnablePlatformDecoderSupport();
 #endif
 
-  // Run this here instead of main() to ensure an AtExitManager is already
-  // present.
-  media::InitializeMediaLibrary();
+    // Run this here instead of main() to ensure an AtExitManager is already
+    // present.
+    media::InitializeMediaLibrary();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-  gin::V8Initializer::LoadV8Natives();
+    gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
+    gin::V8Initializer::LoadV8Natives();
 #endif
 
 #if !defined(OS_IOS)
-  // Initialize mojo firstly to enable Blink initialization to use it.
-  mojo::core::Init();
+    // Initialize mojo firstly to enable Blink initialization to use it.
+    mojo::core::Init();
 #endif
 
-  BlinkPlatformWithTaskEnvironment platform_;
-  service_manager::BinderRegistry empty_registry;
-  blink::Initialize(&platform_, &empty_registry,
-                    platform_.GetMainThreadScheduler());
+    platform_ = std::make_unique<BlinkPlatformWithTaskEnvironment>();
+    blink::Initialize(platform_.get(), &empty_registry_,
+                      platform_->GetMainThreadScheduler());
+  }
 
-  return test_suite->Run();
-}
+  void Shutdown() override {
+    platform_.reset();
+    base::TestSuite::Shutdown();
+  }
+
+  std::unique_ptr<BlinkPlatformWithTaskEnvironment> platform_;
+  service_manager::BinderRegistry empty_registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaBlinkTestSuite);
+};
 
 int main(int argc, char** argv) {
-  base::TestSuite test_suite(argc, argv);
+  MediaBlinkTestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
       argc, argv,
-      base::BindRepeating(&RunTests, base::Unretained(&test_suite)));
+      base::BindRepeating(&MediaBlinkTestSuite::Run,
+                          base::Unretained(&test_suite)));
 }
