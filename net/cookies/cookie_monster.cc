@@ -806,7 +806,6 @@ void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
     // and when this ran.  The later parts of the conditional (everything but
     // the equivalence check) attempt to preserve this behavior.
     if (candidate->IsEquivalent(cookie) &&
-        candidate->CreationDate() == cookie.CreationDate() &&
         candidate->Value() == cookie.Value()) {
       InternalDeleteCookie(its.first, true, DELETE_COOKIE_EXPLICIT);
       result = 1u;
