@@ -85,40 +85,46 @@ function cropImage(testVolumeName, volumeType) {
   var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
   return launchedPromise.then(function(args) {
     var appId = args.appId;
-    return gallery.waitAndClickElement(appId,
-                                       '.gallery:not([locked]) button.crop').
-        then(function() {
+    return gallery
+        .waitAndClickElement(appId, '.gallery:not([locked]) button.crop')
+        .then(function() {
           return Promise.all([
             gallery.waitForElement(appId, '.crop-overlay')
           ]);
-        }).
-        then(function() {
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'queryAllElements', appId, ['.crop-aspect-ratio:focus']);
+        })
+        .then(function(result) {
+          // Tests that crop aspect ratio buttons hold no focus on launch
+          // crbug.com/655943
+          chrome.test.assertEq(0, result.length);
+        })
+        .then(function() {
           return gallery.fakeKeyDown(
               appId, 'body', 'Enter', false, false, false);
-        }).
-        then(function(ret) {
+        })
+        .then(function(ret) {
           chrome.test.assertTrue(ret);
           return Promise.all([
             gallery.waitForElementLost(appId, '.crop-overlay')
           ]);
-        }).
-        then(function() {
+        })
+        .then(function() {
           return gallery.waitForSlideImage(
               appId,
               534,
               400,
               'My Desktop Background');
-        }).
-        then(function() {
+        })
+        .then(function() {
           return gallery.waitAndClickElement(
               appId, '.gallery:not([locked]) button.undo');
-        }).
-        then(function() {
-           return gallery.waitForSlideImage(
-              appId,
-              800,
-              600,
-              'My Desktop Background');
+        })
+        .then(function() {
+          return gallery.waitForSlideImage(
+              appId, 800, 600, 'My Desktop Background');
         });
   });
 }
