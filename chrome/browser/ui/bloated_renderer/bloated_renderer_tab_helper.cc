@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -115,6 +116,9 @@ bool BloatedRendererTabHelper::CanReloadBloatedTab() {
 void BloatedRendererTabHelper::OnRendererIsBloated(
     content::WebContents* bloated_web_contents,
     const resource_coordinator::PageNavigationIdentity& page_navigation_id) {
+  if (!base::FeatureList::IsEnabled(features::kBloatedRendererDetection)) {
+    return;
+  }
   if (web_contents() != bloated_web_contents) {
     // Ignore if the notification is about a different tab.
     return;

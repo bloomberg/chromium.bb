@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bloated_renderer/bloated_renderer_tab_helper.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -13,12 +14,15 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 
 using BloatedRendererTabHelperBrowserTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest, ReloadBloatedTab) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBloatedRendererDetection);
   content::WindowedNotificationObserver load(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
