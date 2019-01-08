@@ -1606,17 +1606,8 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
   // This should only be used when compositing is not being used for this
   // WebView, and it is painting into the recording of its parent.
   DCHECK(!IsAcceleratedCompositingActive());
-  PageWidgetDelegate::PaintContent(*page_, canvas, rect,
+  PageWidgetDelegate::PaintContent(canvas, rect,
                                    *page_->DeprecatedLocalMainFrame());
-}
-
-void WebViewImpl::PaintContentIgnoringCompositing(cc::PaintCanvas* canvas,
-                                                  const WebRect& rect) {
-  // This is called on a composited WebViewImpl, but we will ignore it,
-  // producing all possible content of the WebViewImpl into the PaintCanvas.
-  DCHECK(IsAcceleratedCompositingActive());
-  PageWidgetDelegate::PaintContentIgnoringCompositing(
-      *page_, canvas, rect, *page_->DeprecatedLocalMainFrame());
 }
 
 void WebViewImpl::LayoutAndPaintAsync(base::OnceClosure callback) {

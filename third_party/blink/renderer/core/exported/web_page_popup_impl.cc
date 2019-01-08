@@ -420,7 +420,7 @@ void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
 void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,
                                     const WebRect& rect) {
   if (!closing_) {
-    PageWidgetDelegate::PaintContent(*page_, canvas, rect, MainFrame());
+    PageWidgetDelegate::PaintContent(canvas, rect, MainFrame());
   }
 }
 

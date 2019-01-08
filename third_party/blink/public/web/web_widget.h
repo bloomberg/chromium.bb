@@ -127,26 +127,17 @@ class WebWidget {
   virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
 
   // Called to paint the rectangular region within the WebWidget
-  // onto the specified canvas at (viewPort.x,viewPort.y).
+  // onto the specified canvas at (view_port.x, view_port.y).
   //
-  // Before calling PaintContent(), you must call
-  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle
-  // is clean. It is okay to call paint multiple times once the lifecycle is
-  // updated, assuming no other changes are made to the WebWidget (e.g., once
+  // Before calling PaintContent(), the caller must ensure the lifecycle of the
+  // widget's frame is clean by calling UpdateLifecycle(LifecycleUpdate::All).
+  // It is okay to call paint multiple times once the lifecycle is clean,
+  // assuming no other changes are made to the WebWidget (e.g., once
   // events are processed, it should be assumed that another call to
   // UpdateLifecycle is warranted before painting again). Paints starting from
   // the main LayoutView's property tree state, thus ignoring any transient
   // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
   virtual void PaintContent(cc::PaintCanvas*, const WebRect& view_port) {}
-
-  // Similar to PaintContent() but ignores compositing decisions, squashing all
-  // contents of the WebWidget into the output given to the cc::PaintCanvas.
-  //
-  // Before calling PaintContentIgnoringCompositing(), you must call
-  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle is
-  // clean.
-  virtual void PaintContentIgnoringCompositing(cc::PaintCanvas*,
-                                               const WebRect&) {}
 
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}

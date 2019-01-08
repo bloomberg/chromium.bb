@@ -86,14 +86,7 @@ class CORE_EXPORT PageWidgetDelegate {
                               WebWidget::LifecycleUpdateReason reason);
 
   // See documents of methods with the same names in FrameView class.
-  static void PaintContent(Page&,
-                           cc::PaintCanvas*,
-                           const WebRect&,
-                           LocalFrame& root);
-  static void PaintContentIgnoringCompositing(Page&,
-                                              cc::PaintCanvas*,
-                                              const WebRect&,
-                                              LocalFrame& root);
+  static void PaintContent(cc::PaintCanvas*, const WebRect&, LocalFrame& root);
   // See FIXME in the function body about nullptr |root|.
   static WebInputEventResult HandleInputEvent(
       PageWidgetEventHandler&,
