@@ -2485,13 +2485,6 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 
     if (!ref.get())
       return;
-
-    if (IsTopLevelWindow(hwnd()) &&
-        ((notification_code & sc_mask) == SC_MINIMIZE ||
-         (notification_code & sc_mask) == SC_RESTORE)) {
-      delegate_->HandleWindowMinimizedOrRestored(
-          (notification_code & sc_mask) == SC_RESTORE);
-    }
     in_size_loop_ = false;
   }
 }
