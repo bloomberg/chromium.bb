@@ -75,10 +75,10 @@ class WebGLObject : public ScriptWrappable {
   void OnAttached() { ++attachment_count_; }
   void OnDetached(gpu::gles2::GLES2Interface*);
 
-  // This indicates whether the client side issue a delete call already, not
-  // whether the OpenGL resource is deleted.
-  // object()==0 indicates the OpenGL resource is deleted.
-  bool IsDeleted() { return deleted_; }
+  // This indicates whether the client side has already issued a delete call,
+  // not whether the OpenGL resource is deleted. Object()==0, or !HasObject(),
+  // indicates that the OpenGL resource has been deleted.
+  bool MarkedForDeletion() { return marked_for_deletion_; }
 
   // True if this object belongs to the group or context.
   virtual bool Validate(const WebGLContextGroup*,
@@ -130,9 +130,11 @@ class WebGLObject : public ScriptWrappable {
 
   unsigned attachment_count_;
 
-  // Indicates whether the WebGL context's deletion function for this
-  // object (deleteBuffer, deleteTexture, etc.) has been called.
-  bool deleted_;
+  // Indicates whether the WebGL context's deletion function for this object
+  // (deleteBuffer, deleteTexture, etc.) has been called. It does *not* indicate
+  // whether the underlying OpenGL resource has been destroyed; !HasObject()
+  // indicates that.
+  bool marked_for_deletion_;
 
   // Indicates whether the destructor has been entered and we therefore
   // need to be careful in subclasses to not touch other on-heap objects.

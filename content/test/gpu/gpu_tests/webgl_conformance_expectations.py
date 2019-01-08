@@ -95,9 +95,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    # Need to implement new lifetime/deletion semantics.
-    self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
-
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844)
@@ -337,9 +334,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    # TODO(kbr): re-enable after fixing lifetime semantics. crbug.com/739604
-    # self.Fail('conformance/extensions/oes-vertex-array-object.html',
-    #     ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/glsl/bugs/' +
         'array-of-struct-with-int-first-position.html',
         ['win10', 'intel', 'opengl'], bug=680797)

@@ -95,9 +95,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-specification-order-bug.html',
         bug=905003) # owner:cwallez, test might be buggy
 
-    # Need to implement new lifetime/deletion semantics.
-    self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
-
     # The following actually passes on gl_passthrough and also Mac Intel with
     # command buffer.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +

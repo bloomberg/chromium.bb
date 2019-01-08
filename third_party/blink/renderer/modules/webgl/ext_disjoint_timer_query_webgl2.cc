@@ -37,13 +37,8 @@ void EXTDisjointTimerQueryWebGL2::queryCounterEXT(WebGLQuery* query,
   if (scoped.IsLost())
     return;
 
-  DCHECK(query);
-  if (query->IsDeleted() ||
-      !query->Validate(scoped.Context()->ContextGroup(), scoped.Context())) {
-    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
-                                        "invalid query");
+  if (!scoped.Context()->ValidateWebGLObject("queryCounterEXT", query))
     return;
-  }
 
   if (target != GL_TIMESTAMP_EXT) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",

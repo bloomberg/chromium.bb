@@ -688,7 +688,23 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Check if each enabled vertex attribute is bound to a buffer.
   bool ValidateRenderingState(const char*);
 
-  bool ValidateWebGLObject(const char*, WebGLObject*);
+  // Helper function for APIs which can legally receive null objects, including
+  // the bind* calls (bindBuffer, bindTexture, etc.) and useProgram. Checks that
+  // the object belongs to this context and that it's not marked for deletion.
+  // Returns false if the caller should return without further processing.
+  // Performs a context loss check internally.
+  // This returns true for null WebGLObject arguments!
+  bool ValidateNullableWebGLObject(const char* function_name, WebGLObject*);
+
+  // Validates the incoming WebGL object, which is assumed to be non-null.
+  // Checks that the object belongs to this context and that it's not marked for
+  // deletion. Performs a context loss check internally.
+  bool ValidateWebGLObject(const char* function_name, WebGLObject*);
+
+  // Validates the incoming WebGL program or shader, which is assumed to be
+  // non-null. OpenGL ES's validation rules differ for these types of objetcts
+  // compared to others. Performs a context loss check internally.
+  bool ValidateWebGLProgramOrShader(const char* function_name, WebGLObject*);
 
   // Adds a compressed texture format.
   void AddCompressedTextureFormat(GLenum);
@@ -1495,13 +1511,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function for delete* (deleteBuffer, deleteProgram, etc) functions.
   // Return false if caller should return without further processing.
   bool DeleteObject(WebGLObject*);
-
-  // Helper function for bind* (bindBuffer, bindTexture, etc) and useProgram.
-  // If the object has already been deleted, set deleted to true upon return.
-  // Return false if caller should return without further processing.
-  bool CheckObjectToBeBound(const char* function_name,
-                            WebGLObject*,
-                            bool& deleted);
 
   void DispatchContextLostEvent(TimerBase*);
   // Helper for restoration after context lost.
