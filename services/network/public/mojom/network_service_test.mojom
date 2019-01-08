@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_types.mojom";
@@ -77,5 +78,6 @@ interface NetworkServiceTest {
   // Gets the latest memory pressure level reported by the
   // MemoryPressureListener.
   [Sync]
-  GetLatestMemoryPressureLevel() => (MemoryPressureLevel memory_pressure_level);
+  GetLatestMemoryPressureLevel()
+      => (mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 };

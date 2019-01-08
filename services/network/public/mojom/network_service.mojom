@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -24,6 +25,9 @@ import "url/mojom/url.mojom";
 
 [EnableIf=is_ct_supported]
 import "services/network/public/mojom/signed_tree_head.mojom";
+
+[EnableIf=is_android]
+import "mojo/public/mojom/base/application_state.mojom";
 
 // The content/browser implementation of this SSLPrivateKey interface wraps the
 // scoped_refptr<net::SSLPrivateKey> that is received from
@@ -353,9 +357,9 @@ interface NetworkService {
   RemoveCorbExceptionForPlugin(uint32 process_id);
 
   // Called when the system is low on memory.
-  OnMemoryPressure(MemoryPressureLevel memory_pressure_level);
+  OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 
   // Called on state changes of the Android application.
   [EnableIf=is_android]
-  OnApplicationStateChange(ApplicationState state);
+  OnApplicationStateChange(mojo_base.mojom.ApplicationState state);
 };
