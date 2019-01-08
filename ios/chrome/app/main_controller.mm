@@ -2157,9 +2157,11 @@ enum class EnterTabSwitcherSnapshotResult {
 
 #pragma mark - TabModelObserver
 
-// Called when the number of tabs changes. Triggers the switcher view when
-// the last tab is closed on a device that uses the switcher.
-- (void)tabModelDidChangeTabCount:(TabModel*)notifiedTabModel {
+// Called when a Tab is removed. Triggers the switcher view when the last tab is
+// closed on a device that uses the switcher.
+- (void)tabModel:(TabModel*)notifiedTabModel
+    didRemoveTab:(Tab*)tab
+         atIndex:(NSUInteger)index {
   TabModel* currentTabModel = [self currentTabModel];
   // Do nothing on initialization.
   if (!currentTabModel)
