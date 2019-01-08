@@ -1033,9 +1033,6 @@ extern const char kSilentDebuggerExtensionApiDescription[];
 extern const char kSignedHTTPExchangeName[];
 extern const char kSignedHTTPExchangeDescription[];
 
-extern const char kSimpleCacheBackendName[];
-extern const char kSimpleCacheBackendDescription[];
-
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 

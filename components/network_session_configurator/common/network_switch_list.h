@@ -61,7 +61,3 @@ NETWORK_SWITCH(kTestingFixedHttpsPort, "testing-fixed-https-port")
 // TODO(mmenke): Can we just remove this?  host-resolver-rules is more generally
 // useful.
 NETWORK_SWITCH(kHostRules, "host-rules")
-
-// Uses experimental simple cache backend if possible when set to "on", and
-// blockfile backend when set to "off".
-NETWORK_SWITCH(kUseSimpleCacheBackend, "use-simple-cache-backend")
