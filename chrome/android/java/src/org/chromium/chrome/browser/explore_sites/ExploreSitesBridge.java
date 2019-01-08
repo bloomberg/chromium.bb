@@ -83,6 +83,15 @@ public class ExploreSitesBridge {
         return nativeGetVariation();
     }
 
+    public static boolean isEnabled(@ExploreSitesVariation int variation) {
+        return variation == ExploreSitesVariation.ENABLED
+                || variation == ExploreSitesVariation.PERSONALIZED;
+    }
+
+    public static boolean isExperimental(@ExploreSitesVariation int variation) {
+        return variation == ExploreSitesVariation.EXPERIMENT;
+    }
+
     @CalledByNative
     static void scheduleDailyTask() {
         ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);

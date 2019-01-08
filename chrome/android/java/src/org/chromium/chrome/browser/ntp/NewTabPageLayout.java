@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesSection;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesVariation;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
@@ -191,9 +190,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSearchBoxView = findViewById(R.id.search_box);
         insertSiteSectionView();
 
-        if (ExploreSitesBridge.getVariation() == ExploreSitesVariation.ENABLED) {
+        int variation = ExploreSitesBridge.getVariation();
+        if (ExploreSitesBridge.isEnabled(variation)) {
             mExploreSectionView = ((ViewStub) findViewById(R.id.explore_sites_stub)).inflate();
-        } else if (ExploreSitesBridge.getVariation() == ExploreSitesVariation.EXPERIMENT) {
+        } else if (ExploreSitesBridge.isExperimental(variation)) {
             ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
             exploreStub.setLayoutResource(R.layout.experimental_explore_sites_section);
             mExploreSectionView = exploreStub.inflate();
@@ -244,19 +244,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
         int variation = ExploreSitesBridge.getVariation();
-        switch (variation) {
-            case ExploreSitesVariation.ENABLED: // fall-through
-            case ExploreSitesVariation.PERSONALIZED:
-                mExploreSection = new ExploreSitesSection(mExploreSectionView, profile,
-                        mManager.getNavigationDelegate(),
-                        SuggestionsConfig.getTileStyle(mUiConfig));
-                break;
-            case ExploreSitesVariation.EXPERIMENT:
-                mExploreSection = new ExperimentalExploreSitesSection(
-                        mExploreSectionView, profile, mManager.getNavigationDelegate());
-                break;
-            case ExploreSitesVariation.DISABLED: // fall-through
-            default: // do nothing.
+        if (ExploreSitesBridge.isEnabled(variation)) {
+            mExploreSection = new ExploreSitesSection(mExploreSectionView, profile,
+                    mManager.getNavigationDelegate(), SuggestionsConfig.getTileStyle(mUiConfig));
+        } else if (ExploreSitesBridge.isExperimental(variation)) {
+            mExploreSection = new ExperimentalExploreSitesSection(
+                    mExploreSectionView, profile, mManager.getNavigationDelegate());
         }
 
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
@@ -476,7 +469,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         ViewGroup.LayoutParams layoutParams = mSiteSectionView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         // If the explore sites section exists, then space it more closely.
-        if (ExploreSitesBridge.getVariation() == ExploreSitesVariation.ENABLED) {
+        if (ExploreSitesBridge.isEnabled(ExploreSitesBridge.getVariation())) {
             ((MarginLayoutParams) layoutParams).bottomMargin =
                     getResources().getDimensionPixelOffset(
                             R.dimen.tile_grid_layout_vertical_spacing);
