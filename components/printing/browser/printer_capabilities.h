@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PRINTING_COMMON_PRINTER_CAPABILITIES_H_
-#define COMPONENTS_PRINTING_COMMON_PRINTER_CAPABILITIES_H_
+#ifndef COMPONENTS_PRINTING_BROWSER_PRINTER_CAPABILITIES_H_
+#define COMPONENTS_PRINTING_BROWSER_PRINTER_CAPABILITIES_H_
 
 #include <memory>
 #include <string>
@@ -39,4 +39,4 @@ base::Value GetSettingsOnBlockingPool(
 
 }  // namespace printing
 
-#endif  // COMPONENTS_PRINTING_COMMON_PRINTER_CAPABILITIES_H_
+#endif  // COMPONENTS_PRINTING_BROWSER_PRINTER_CAPABILITIES_H_

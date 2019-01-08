@@ -21,7 +21,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "components/crash/core/common/crash_keys.h"
-#include "components/printing/common/printer_capabilities.h"
+#include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/render_frame_host.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/page_range.h"

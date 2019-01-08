@@ -12,6 +12,8 @@ static_library("browser") {
     "print_manager.h",
     "print_manager_utils.cc",
     "print_manager_utils.h",
+    "printer_capabilities.cc",
+    "printer_capabilities.h",
   ]
 
   public_deps = [
@@ -20,10 +22,40 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//components/crash/core/common",
     "//components/printing/common",
     "//components/services/pdf_compositor/public/interfaces",
+    "//components/strings:components_strings_grit",
     "//printing",
     "//printing/common:common",
     "//services/service_manager/public/cpp",
+    "//ui/base",
+    "//ui/gfx/geometry",
   ]
+
+  if (is_mac) {
+    sources += [
+      "printer_capabilities_mac.h",
+      "printer_capabilities_mac.mm",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "printer_capabilities_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//components/printing/browser",
+    "//content/test:test_support",
+    "//printing:test_support",
+    "//testing/gtest",
+  ]
+
+  if (is_mac) {
+    sources += [ "printer_capabilities_mac_unittest.mm" ]
+  }
 }

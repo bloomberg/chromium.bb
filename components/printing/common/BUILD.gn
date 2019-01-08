@@ -8,51 +8,19 @@ static_library("common") {
     "cloud_print_cdd_conversion.h",
     "print_messages.cc",
     "print_messages.h",
-    "printer_capabilities.cc",
-    "printer_capabilities.h",
     "printing_param_traits_macros.h",
   ]
 
   deps = [
     "//base",
     "//components/cloud_devices/common:common",
-    "//components/crash/core/common",
-    "//components/strings:components_strings_grit",
     "//ipc",
     "//printing",
     "//printing/common:common",
     "//third_party/blink/public:blink_headers",
-    "//ui/base",
-    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
   ]
-
-  if (is_mac) {
-    sources += [
-      "printer_capabilities_mac.h",
-      "printer_capabilities_mac.mm",
-    ]
-  }
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "printer_capabilities_unittest.cc",
-  ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//content/test:test_support",
-    "//printing:test_support",
-    "//testing/gtest",
-  ]
-
-  if (is_mac) {
-    sources += [ "printer_capabilities_mac_unittest.mm" ]
-  }
 }
