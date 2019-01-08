@@ -13,6 +13,15 @@ cscope.out
 # Chromite virtualenv.
 *.egg-info/
 
+# Local eng changes to text editor config shouldn't show up in `git status`
+# and shouldn't be git add-able unless explictly running `git add -f file`
+/.dir-locals.el
+/.idea/
+/.exrc
+/.nvimrc
+/.vimrc
+/.vscode/
+
 # Obsolete
 /virtualenv/
 /.venv/
