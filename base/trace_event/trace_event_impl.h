@@ -15,7 +15,6 @@
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"

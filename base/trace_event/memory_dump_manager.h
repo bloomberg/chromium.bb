@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"

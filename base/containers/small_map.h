@@ -11,9 +11,9 @@
 #include <map>
 #include <new>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 
 namespace {
@@ -67,8 +67,8 @@ namespace base {
 //              Once the map grows beyond this size, the map type will be used
 //              instead.
 // EqualKey:  A functor which tests two keys for equality. If the wrapped map
-//            type has a "key_equal" member (hash_map does), then that will be
-//            used by default. If the wrapped map type has a strict weak
+//            type has a "key_equal" member (unordered_map does), then that will
+//            be used by default. If the wrapped map type has a strict weak
 //            ordering "key_compare" (std::map does), that will be used to
 //            implement equality by default.
 // MapInit: A functor that takes a NormalMap* and uses it to initialize the map.
@@ -132,31 +132,8 @@ struct select_equal_key {
   };
 };
 
-// Provide overrides to use operator== for key compare for the "normal" map and
-// hash map types. If you override the default comparator or allocator for a
-// map or hash_map, or use another type of map, this won't get used.
-//
-// If we switch to using std::unordered_map for base::hash_map, then the
-// hash_map specialization can be removed.
-template <typename KeyType, typename ValueType>
-struct select_equal_key<std::map<KeyType, ValueType>, false> {
-  struct equal_key {
-    bool operator()(const KeyType& left, const KeyType& right) {
-      return left == right;
-    }
-  };
-};
-template <typename KeyType, typename ValueType>
-struct select_equal_key<base::hash_map<KeyType, ValueType>, false> {
-  struct equal_key {
-    bool operator()(const KeyType& left, const KeyType& right) {
-      return left == right;
-    }
-  };
-};
-
 // Partial template specialization handles case where M::key_equal exists, e.g.,
-// hash_map<>.
+// unordered_map<>.
 template <typename M>
 struct select_equal_key<M, true> {
   typedef typename M::key_equal equal_key;
