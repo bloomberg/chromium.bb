@@ -17,6 +17,7 @@ namespace blink {
 
 class CustomElementDescriptor;
 class CustomElementRegistry;
+class ScriptCustomElementDefinitionData;
 class V8CustomElementAdoptedCallback;
 class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
@@ -35,36 +36,12 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       v8::Local<v8::Value> constructor);
 
   static ScriptCustomElementDefinition* Create(
-      ScriptState*,
-      CustomElementRegistry*,
+      const ScriptCustomElementDefinitionData& data,
       const CustomElementDescriptor&,
-      CustomElementDefinition::Id,
-      V8CustomElementConstructor* constructor,
-      V8VoidFunction* connected_callback,
-      V8VoidFunction* disconnected_callback,
-      V8CustomElementAdoptedCallback* adopted_callback,
-      V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-      V8CustomElementFormAssociatedCallback* form_associated_callback,
-      V8CustomElementDisabledStateChangedCallback*
-          disabled_state_changed_callback,
-      HashSet<AtomicString>&& observed_attributes,
-      const Vector<String>& disabled_features,
-      FormAssociationFlag form_association_flag);
+      CustomElementDefinition::Id);
 
-  ScriptCustomElementDefinition(
-      ScriptState*,
-      const CustomElementDescriptor&,
-      V8CustomElementConstructor* constructor,
-      V8VoidFunction* connected_callback,
-      V8VoidFunction* disconnected_callback,
-      V8CustomElementAdoptedCallback* adopted_callback,
-      V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-      V8CustomElementFormAssociatedCallback* form_associated_callback,
-      V8CustomElementDisabledStateChangedCallback*
-          disabled_state_changed_callback,
-      HashSet<AtomicString>&& observed_attributes,
-      const Vector<String>& disabled_features,
-      FormAssociationFlag form_association_flag);
+  ScriptCustomElementDefinition(const ScriptCustomElementDefinitionData& data,
+                                const CustomElementDescriptor&);
   ~ScriptCustomElementDefinition() override = default;
 
   void Trace(Visitor*) override;

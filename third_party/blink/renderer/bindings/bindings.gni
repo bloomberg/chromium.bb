@@ -77,6 +77,7 @@ bindings_core_v8_files =
                     "core/v8/script_custom_element_definition.h",
                     "core/v8/script_custom_element_definition_builder.cc",
                     "core/v8/script_custom_element_definition_builder.h",
+                    "core/v8/script_custom_element_definition_data.h",
                     "core/v8/script_event_listener.cc",
                     "core/v8/script_event_listener.h",
                     "core/v8/script_function.cc",
