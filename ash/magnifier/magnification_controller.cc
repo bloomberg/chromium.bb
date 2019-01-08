@@ -13,7 +13,7 @@
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
-#include "ash/magnifier/magnifier_scale_utils.h"
+#include "ash/magnifier/magnifier_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -83,18 +83,6 @@ void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
 
-ui::InputMethod* GetInputMethod(aura::Window* root_window) {
-  ui::IMEBridge* bridge = ui::IMEBridge::Get();
-  if (bridge && bridge->GetInputContextHandler())
-    return bridge->GetInputContextHandler()->GetInputMethod();
-
-  if (root_window->GetHost())
-    return root_window->GetHost()->GetInputMethod();
-
-  // Needed by a handful of browser tests that use MockInputMethod.
-  return Shell::GetRootWindowForNewWindows()->GetHost()->GetInputMethod();
-}
-
 }  // namespace
 
 class MagnificationController::GestureProviderClient
@@ -154,7 +142,7 @@ MagnificationController::~MagnificationController() {
 void MagnificationController::SetEnabled(bool enabled) {
   if (enabled) {
     if (!is_enabled_) {
-      input_method_ = GetInputMethod(root_window_);
+      input_method_ = magnifier_utils::GetInputMethod(root_window_);
       if (input_method_)
         input_method_->AddObserver(this);
     }
@@ -217,7 +205,7 @@ void MagnificationController::SetScale(float scale, bool animate) {
 }
 
 void MagnificationController::StepToNextScaleValue(int delta_index) {
-  SetScale(magnifier_scale_utils::GetNextMagnifierScaleValue(
+  SetScale(magnifier_utils::GetNextMagnifierScaleValue(
                delta_index, GetScale(), kNonMagnifiedScale, kMaxMagnifiedScale),
            true /* animate */);
 }
@@ -315,8 +303,11 @@ gfx::Transform MagnificationController::GetMagnifierTransform() const {
 }
 
 void MagnificationController::OnInputContextHandlerChanged() {
-  auto* new_input_method = GetInputMethod(root_window_);
-  if (!is_enabled_ || new_input_method == input_method_)
+  if (!is_enabled_)
+    return;
+
+  auto* new_input_method = magnifier_utils::GetInputMethod(root_window_);
+  if (new_input_method == input_method_)
     return;
 
   if (input_method_)
@@ -475,7 +466,7 @@ void MagnificationController::OnScrollEvent(ui::ScrollEvent* event) {
     }
 
     if (event->type() == ui::ET_SCROLL) {
-      SetScale(magnifier_scale_utils::GetScaleFromScroll(
+      SetScale(magnifier_utils::GetScaleFromScroll(
                    event->y_offset() * kScrollScaleChangeFactor, GetScale(),
                    kMaxMagnifiedScale, kNonMagnifiedScale),
                false /* animate */);

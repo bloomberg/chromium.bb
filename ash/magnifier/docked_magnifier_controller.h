@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
@@ -46,6 +47,7 @@ class ASH_EXPORT DockedMagnifierController
     : public mojom::DockedMagnifierController,
       public SessionObserver,
       public ui::EventHandler,
+      public ui::IMEBridgeObserver,
       public ui::InputMethodObserver,
       public views::WidgetObserver,
       public WindowTreeHostManager::Observer {
@@ -90,11 +92,15 @@ class ASH_EXPORT DockedMagnifierController
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
 
+  // ui::IMEBridgeObserver:
+  void OnRequestSwitchEngine() override {}
+  void OnInputContextHandlerChanged() override;
+
   // ui::InputMethodObserver:
   void OnFocus() override {}
   void OnBlur() override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnShowVirtualKeyboardIfEnabled() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
 
@@ -195,6 +201,9 @@ class ASH_EXPORT DockedMagnifierController
   // The pref service of the currently active user. Can be null in
   // ash_unittests.
   PrefService* active_user_pref_service_ = nullptr;
+
+  // The currently active input method, observed for caret bounds changes.
+  ui::InputMethod* input_method_ = nullptr;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
