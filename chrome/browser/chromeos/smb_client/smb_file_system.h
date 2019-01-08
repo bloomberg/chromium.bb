@@ -229,6 +229,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       int entires_count,
       base::ElapsedTimer metrics_timer);
 
+  // Requests updated credentials for the mount. Once the credentials have been
+  // updated, |reply| is executed.
+  void RequestUpdatedCredentials(base::OnceClosure reply);
+
   void HandleRequestUnmountCallback(
       storage::AsyncFileUtil::StatusCallback callback,
       smbprovider::ErrorType error);
@@ -316,6 +320,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       base::ElapsedTimer metrics_timer);
 
   int32_t GetMountId() const;
+
+  std::string GetMountPath() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
   base::WeakPtr<SmbProviderClient> GetWeakSmbProviderClient() const;

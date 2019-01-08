@@ -134,6 +134,11 @@ int32_t SmbFileSystem::GetMountId() const {
   return GetMountIdFromFileSystemId(file_system_info_.file_system_id());
 }
 
+std::string SmbFileSystem::GetMountPath() const {
+  return GetSharePathFromFileSystemId(file_system_info_.file_system_id())
+      .value();
+}
+
 SmbProviderClient* SmbFileSystem::GetSmbProviderClient() const {
   return chromeos::DBusThreadManager::Get()->GetSmbProviderClient();
 }
@@ -562,6 +567,10 @@ void SmbFileSystem::ContinueReadDirectory(
                                 read_dir_token, std::move(reply));
 
   EnqueueTask(std::move(task), operation_id);
+}
+
+void SmbFileSystem::RequestUpdatedCredentials(base::OnceClosure reply) {
+  request_creds_callback_.Run(GetMountPath(), GetMountId(), std::move(reply));
 }
 
 void SmbFileSystem::HandleRequestReadDirectoryCallback(
