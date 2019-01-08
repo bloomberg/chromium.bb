@@ -31,10 +31,6 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   int width, height;
   success &= list->GetInteger(0, &width);
   success &= list->GetInteger(1, &height);
-  success &= dict->GetList("Position", &list);
-  double position_x, position_y;
-  success &= list->GetDouble(0, &position_x);
-  success &= list->GetDouble(1, &position_y);
 
   bool draws_content;
   success &= dict->GetBoolean("DrawsContent", &draws_content);
@@ -86,7 +82,6 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   } else {  // Type "Layer" or "unknown"
     new_layer = Layer::Create();
   }
-  new_layer->SetPosition(gfx::PointF(position_x, position_y));
   new_layer->SetBounds(gfx::Size(width, height));
   new_layer->SetIsDrawable(draws_content);
 

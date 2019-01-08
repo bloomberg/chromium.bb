@@ -259,7 +259,6 @@ void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
   root->SetScrollable(inner_viewport_size);
   root->SetElementId(LayerIdToElementIdForTesting(root->id()));
   root->SetBounds(outer_viewport_size);
-  root->SetPosition(gfx::PointF());
   root->SetDrawsContent(false);
   root_clip->test_properties()->force_render_surface = true;
   root->test_properties()->is_container_for_fixed_position_layers = true;
@@ -267,7 +266,6 @@ void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
   outer_scroll->SetScrollable(outer_viewport_size);
   outer_scroll->SetElementId(LayerIdToElementIdForTesting(outer_scroll->id()));
   outer_scroll->SetBounds(scroll_layer_size);
-  outer_scroll->SetPosition(gfx::PointF());
   outer_scroll->SetDrawsContent(false);
   outer_scroll->test_properties()->is_container_for_fixed_position_layers =
       true;

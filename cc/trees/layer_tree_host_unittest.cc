@@ -3412,10 +3412,6 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     FakePictureLayerImpl* child = static_cast<FakePictureLayerImpl*>(
         impl->active_tree()->LayerById(child_layer_->id()));
 
-    // Positions remain in layout pixels.
-    EXPECT_EQ(gfx::PointF(), root->position());
-    EXPECT_EQ(gfx::PointF(2.f, 2.f), child->position());
-
     // Compute all the layer transforms for the frame.
     LayerTreeHostImpl::FrameData frame_data;
     impl->PrepareToDraw(&frame_data);

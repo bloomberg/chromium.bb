@@ -287,7 +287,7 @@ class OcclusionTrackerTest : public testing::Test {
                      const gfx::PointF& position,
                      const gfx::Size& bounds) {
     layer->test_properties()->transform = transform;
-    layer->SetPosition(position);
+    layer->test_properties()->position = position;
     layer->SetBounds(bounds);
   }
 

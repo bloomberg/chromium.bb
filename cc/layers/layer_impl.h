@@ -196,9 +196,6 @@ class CC_EXPORT LayerImpl {
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
 
-  void SetPosition(const gfx::PointF& position);
-  gfx::PointF position() const { return position_; }
-
   bool IsAffectedByPageScale() const;
 
   bool Is3dSorted() const { return GetSortingContextId() != 0; }
@@ -544,8 +541,6 @@ class CC_EXPORT LayerImpl {
   Region wheel_event_handler_region_;
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
-
-  gfx::PointF position_;
 
   int transform_tree_index_;
   int effect_tree_index_;

@@ -163,7 +163,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // specified in layer space, which excludes device scale and page scale
   // factors, and ignoring transforms for this layer or ancestor layers. The
   // root layer's position is not used as it always appears at the origin of
-  // the viewport.
+  // the viewport. When property trees are built by cc (when IsUsingLayerLists
+  // is false), position is used to update |offset_to_transform_parent|.
   void SetPosition(const gfx::PointF& position);
   const gfx::PointF& position() const { return inputs_.position; }
 
@@ -708,10 +709,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetEffectTreeIndex(int index);
   void SetScrollTreeIndex(int index);
 
-  // Internal to property tree construction. Set or get the position of this
-  // layer relative to the origin after transforming according to this layer's
-  // index into the transform tree. This translation is appended to the
-  // transform that comes from the transform tree for this layer.
+  // The position of this layer after transforming by the layer's transform
+  // node. When property trees are built by cc (when IsUsingLayerLists is false)
+  // this is set by property_tree_builder.cc.
   void SetOffsetToTransformParent(gfx::Vector2dF offset);
   gfx::Vector2dF offset_to_transform_parent() const {
     return offset_to_transform_parent_;
