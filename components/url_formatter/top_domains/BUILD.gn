@@ -93,6 +93,17 @@ source_set("common") {
   ]
 }
 
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "top_domain_util_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+}
+
 # TODO(crbug/915921): Combine this and the previous one into a
 # compiled_action_foreach target.
 compiled_action("generate_top_domains_for_edit_distance") {
