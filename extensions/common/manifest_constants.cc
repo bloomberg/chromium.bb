@@ -32,6 +32,10 @@ const char kCommands[] = "commands";
 const char kContentCapabilities[] = "content_capabilities";
 const char kContentScripts[] = "content_scripts";
 const char kContentSecurityPolicy[] = "content_security_policy";
+const char kContentSecurityPolicy_ExtensionPagesPath[] =
+    "content_security_policy.extension_pages";
+const char kContentSecurityPolicy_SandboxedPagesPath[] =
+    "content_security_policy.sandbox";
 const char kConvertedFromUserScript[] = "converted_from_user_script";
 const char kCss[] = "css";
 const char kCtrlKey[] = "ctrlKey";
@@ -732,6 +736,9 @@ const char kPluginsRequirementDeprecated[] =
     "The \"plugins\" requirement is deprecated.";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
+const char kSandboxPagesCSPKeyNotAllowed[] =
+    "The Content Security Policy for sandboxed pages should be specified in "
+    "'content_security_policy.sandbox'.";
 const char kRulesFileIsInvalid[] =
     "Invalid value for key '*.*': The provided path is invalid.";
 const char kTtsGenderIsDeprecated[] =

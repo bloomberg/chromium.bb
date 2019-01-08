@@ -55,9 +55,7 @@ class CSPHandler : public ManifestHandler {
 
  private:
   // Parses the "content_security_policy" dictionary in the manifest.
-  bool ParseCSPDictionary(Extension* extension,
-                          base::string16* error,
-                          const base::Value& csp_dict);
+  bool ParseCSPDictionary(Extension* extension, base::string16* error);
 
   // Parses the content security policy specified in the manifest for extension
   // pages.
