@@ -17,7 +17,7 @@ PASS document.styleSheets[0].cssRules[3].media.foo is 'bar'
 PASS document.styleSheets[0].cssRules[4].type is CSSRule.KEYFRAMES_RULE
 PASS document.styleSheets[0].cssRules[4].cssRules.foo is 'bar'
 PASS document.styleSheets[0].cssRules[4].cssRules[0].type is CSSRule.KEYFRAME_RULE
-FAIL document.styleSheets[0].cssRules[4].cssRules[0].style.foo should be bar (of type string). Was undefined (of type undefined).
+PASS document.styleSheets[0].cssRules[4].cssRules[0].style.foo is 'bar'
 PASS document.styleSheets[0].cssRules[5].type is CSSRule.PAGE_RULE
 PASS document.styleSheets[0].cssRules[5].style.foo is 'bar'
 PASS successfullyParsed is true

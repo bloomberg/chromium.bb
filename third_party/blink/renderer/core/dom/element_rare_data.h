@@ -220,8 +220,8 @@ class ElementRareData : public NodeRareData {
   std::unique_ptr<NamesMap> part_names_map_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
   TraceWrapperMember<AttrNodeList> attr_node_list_;
-  Member<InlineCSSStyleDeclaration> cssom_wrapper_;
-  Member<InlineStylePropertyMap> cssom_map_wrapper_;
+  TraceWrapperMember<InlineCSSStyleDeclaration> cssom_wrapper_;
+  TraceWrapperMember<InlineStylePropertyMap> cssom_map_wrapper_;
 
   Member<ElementAnimations> element_animations_;
   TraceWrapperMember<ElementIntersectionObserverData>
