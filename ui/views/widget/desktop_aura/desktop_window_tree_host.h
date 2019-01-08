@@ -187,6 +187,10 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Returns whether a VisibilityController should be created.
   virtual bool ShouldCreateVisibilityController() const = 0;
+
+  // Sets the bounds in screen coordinate DIPs (WindowTreeHost generally
+  // operates in pixels). This function is implemented in terms of Screen.
+  virtual void SetBoundsInDIP(const gfx::Rect& bounds);
 };
 
 }  // namespace views

@@ -24,8 +24,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
 
-  void SetBoundsInDIP(const gfx::Rect& bounds_in_dip);
-
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;

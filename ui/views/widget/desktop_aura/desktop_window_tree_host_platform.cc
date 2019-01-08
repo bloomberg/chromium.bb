@@ -72,14 +72,6 @@ DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
   DestroyDispatcher();
 }
 
-void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
-    const gfx::Rect& bounds_in_dip) {
-  DCHECK_NE(0, device_scale_factor());
-  SetBoundsInPixels(
-      gfx::ConvertRectToPixel(device_scale_factor(), bounds_in_dip),
-      viz::LocalSurfaceIdAllocation());
-}
-
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties =
       ConvertWidgetInitParamsToInitProperties(params);
