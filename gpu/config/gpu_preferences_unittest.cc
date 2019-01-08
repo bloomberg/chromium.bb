@@ -35,6 +35,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.disable_software_rasterizer);
   EXPECT_EQ(left.log_gpu_control_list_decisions,
             right.log_gpu_control_list_decisions);
+  EXPECT_EQ(left.enable_trace_export_events_to_etw,
+            right.enable_trace_export_events_to_etw);
   EXPECT_EQ(left.compile_shader_always_succeeds,
             right.compile_shader_always_succeeds);
   EXPECT_EQ(left.disable_gl_error_limit, right.disable_gl_error_limit);
@@ -125,6 +127,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_media_foundation_vea_on_windows7, true)
     GPU_PREFERENCES_FIELD(disable_software_rasterizer, true)
     GPU_PREFERENCES_FIELD(log_gpu_control_list_decisions, true)
+    GPU_PREFERENCES_FIELD(enable_trace_export_events_to_etw, true)
     GPU_PREFERENCES_FIELD(compile_shader_always_succeeds, true)
     GPU_PREFERENCES_FIELD(disable_gl_error_limit, true)
     GPU_PREFERENCES_FIELD(disable_glsl_translator, true)
