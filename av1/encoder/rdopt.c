@@ -3462,18 +3462,14 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 
 static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
                         BLOCK_SIZE bsize, TX_SIZE tx_size) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  assert(bsize == x->e_mbd.mi[0]->sb_type);
+  if (cm->tx_mode != TX_MODE_SELECT || !block_signals_txsize(bsize)) return 0;
 
-  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type)) {
-    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
-    const int depth = tx_size_to_depth(tx_size, bsize);
-    const int tx_size_ctx = get_tx_size_context(xd);
-    int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
-    return r_tx_size;
-  } else {
-    return 0;
-  }
+  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
+  const int depth = tx_size_to_depth(tx_size, bsize);
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int tx_size_ctx = get_tx_size_context(xd);
+  return x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 }
 
 static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
