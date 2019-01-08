@@ -26,6 +26,7 @@ rtc_static_library("rtc_task_runner") {
     "task_runner/taskrunner.cc",
     "task_runner/taskrunner.h",
   ]
+  deps = ["//base"]
 }
 
 rtc_static_library("rtc_xmllite") {
@@ -48,6 +49,7 @@ rtc_static_library("rtc_xmllite") {
   ]
 
   deps = [
+    "//base",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc_overrides:task_queue_impl",
   ]
@@ -92,6 +94,7 @@ rtc_static_library("rtc_xmpp") {
 
   deps = [
     ":rtc_xmllite",
+    "//base",
     "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//third_party/webrtc_overrides:task_queue_impl",
   ]

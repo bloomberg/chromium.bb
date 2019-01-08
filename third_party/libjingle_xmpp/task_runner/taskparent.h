@@ -14,8 +14,8 @@
 #include <memory>
 #include <set>
 
-#include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc/rtc_base/constructormagic.h"
+#include "base/macros.h"
+#include "base/logging.h"
 
 namespace rtc {
 
@@ -33,7 +33,7 @@ class TaskParent {
 
   bool AllChildrenDone();
   bool AnyChildError();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   bool IsChildTask(Task *task);
 #endif
 
@@ -54,7 +54,7 @@ class TaskParent {
   bool child_error_;
   typedef std::set<Task *> ChildSet;
   std::unique_ptr<ChildSet> children_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(TaskParent);
+  DISALLOW_COPY_AND_ASSIGN(TaskParent);
 };
 
 

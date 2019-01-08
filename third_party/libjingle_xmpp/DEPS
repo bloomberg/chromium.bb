@@ -1,3 +1,8 @@
+include_rules = [
+  "+base/logging.h",
+  "+base/macros.h",
+]
+
 specific_include_rules = {
   ".*_unittest\.cc": [
     "+testing",

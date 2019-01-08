@@ -12,9 +12,9 @@
 
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc/rtc_base/logging.h"
 
 namespace rtc {
 
@@ -47,8 +47,8 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   // but pointers to them will still be in the
   // "ChildSet copy" in TaskParent::AbortAllChildren.
   // Subsequent use of those task may cause data corruption or crashes.
-#if RTC_DCHECK_IS_ON
-  RTC_DCHECK(!abort_count_);
+#if DCHECK_IS_ON
+  DCHECK(!abort_count_);
 #endif
   // Running continues until all tasks are Blocked (ok for a small # of tasks)
   if (tasks_running_) {
@@ -81,11 +81,11 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
         need_timeout_recalc = true;
       }
 
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
       deleting_task_ = task;
 #endif
       delete task;
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
       deleting_task_ = NULL;
 #endif
       tasks_[i] = NULL;
@@ -144,7 +144,7 @@ int64_t TaskRunner::next_task_timeout() const {
 
 void TaskRunner::UpdateTaskTimeout(Task* task,
                                    int64_t previous_task_timeout_time) {
-  RTC_DCHECK(task != NULL);
+  DCHECK(task != NULL);
   int64_t previous_timeout_time = next_task_timeout();
   bool task_is_timeout_task = next_timeout_task_ != NULL &&
       task->unique_id() == next_timeout_task_->unique_id();

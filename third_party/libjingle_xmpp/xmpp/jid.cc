@@ -15,8 +15,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace buzz {
@@ -85,7 +85,7 @@ std::string Jid::Str() const {
   if (!node_name_.empty())
     ret = node_name_ + "@";
 
-  RTC_DCHECK(domain_name_ != STR_EMPTY);
+  DCHECK(domain_name_ != STR_EMPTY);
   ret += domain_name_;
 
   if (!resource_name_.empty())

@@ -15,8 +15,8 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace rtc {
@@ -46,7 +46,7 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
 
   void UpdateTaskTimeout(Task* task, int64_t previous_task_timeout_time);
 
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   bool is_ok_to_delete(Task* task) {
     return task == deleting_task_;
   }
@@ -89,7 +89,7 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
   std::vector<Task *> tasks_;
   Task *next_timeout_task_ = nullptr;
   bool tasks_running_ = false;
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   int abort_count_ = 0;
   Task* deleting_task_ = nullptr;
 #endif
