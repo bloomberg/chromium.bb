@@ -15,7 +15,6 @@ import android.provider.Settings;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -256,7 +255,7 @@ public class MainPreferences extends PreferenceFragment
     private void updatePasswordsPreference() {
         Preference passwordsPreference = findPreference(PREF_SAVED_PASSWORDS);
         passwordsPreference.setOnPreferenceClickListener(preference -> {
-            AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(
+            PreferencesLauncher.showPasswordSettings(
                     getActivity(), ManagePasswordsReferrer.CHROME_SETTINGS);
             return true;
         });
