@@ -439,42 +439,6 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
          local_to_border_box_transform_;
 }
 
-LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
-  // This is an open-coded aggregate of SVGLayoutSupport::localVisualRect
-  // and LayoutReplaced::localVisualRect. The reason for this is to optimize/
-  // minimize the visual rect when the box is not "decorated" (does not have
-  // background/border/etc., see
-  // LayoutSVGRootTest.VisualRectMappingWithViewportClipWithoutBorder).
-
-  // Return early for any cases where we don't actually paint.
-  if (!EnclosingLayer()->HasVisibleContent())
-    return LayoutRect();
-
-  // Compute the visual rect of the content of the SVG in the border-box
-  // coordinate space.
-  FloatRect content_visual_rect = VisualRectInLocalSVGCoordinates();
-  content_visual_rect =
-      local_to_border_box_transform_.MapRect(content_visual_rect);
-
-  // Apply initial viewport clip, overflow:visible content is added to
-  // visualOverflow but the most common case is that overflow is hidden, so
-  // always intersect.
-  content_visual_rect.Intersect(PixelSnappedBorderBoxRect());
-
-  LayoutRect visual_rect = EnclosingLayoutRect(content_visual_rect);
-  // If the box is decorated or is overflowing, extend it to include the
-  // border-box and overflow.
-  if (has_box_decoration_background_ || HasOverflowModel()) {
-    // The selectionRect can project outside of the overflowRect, so take their
-    // union for paint invalidation to avoid selection painting glitches.
-    LayoutRect decorated_visual_rect =
-        UnionRect(LocalSelectionRect(), VisualOverflowRect());
-    visual_rect.Unite(decorated_visual_rect);
-  }
-
-  return LayoutRect(EnclosingIntRect(visual_rect));
-}
-
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the
 // localToBorderBoxTransform to convert from SVG viewport coordinates to local

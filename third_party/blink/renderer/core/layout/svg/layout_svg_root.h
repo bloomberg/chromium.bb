@@ -142,8 +142,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  LayoutRect LocalVisualRectIgnoringVisibility() const override;
-
   void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
       TransformState&,
