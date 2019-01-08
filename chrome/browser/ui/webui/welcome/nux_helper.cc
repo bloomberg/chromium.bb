@@ -64,10 +64,8 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
     if (onboard_group.empty())
       return false;
 
-    // User will be tied to their original onboarding group, even after
-    // experiment ends.
-    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        "NaviOnboardingSynthetic", onboard_group);
+    // TODO(hcarmona): Re-enable synthetic trial reporting when we know more
+    // about https://crbug.com/919705
 
     return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
 #else
