@@ -30,6 +30,7 @@ extern const base::Feature kOfflinePagesCTSuppressNotificationsFeature;
 extern const base::Feature kOfflinePagesShowAlternateDinoPageFeature;
 extern const base::Feature kOfflineIndicatorFeature;
 extern const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature;
+extern const base::Feature kOnTheFlyMhtmlHashComputationFeature;
 
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.

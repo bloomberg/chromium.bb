@@ -2331,6 +2331,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
+    {"on-the-fly-mhtml-hash-computation",
+     flag_descriptions::kOnTheFlyMhtmlHashComputationName,
+     flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,

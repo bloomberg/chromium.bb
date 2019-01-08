@@ -1397,6 +1397,12 @@ const char kOnlyNewPasswordFormParsingName[] =
 const char kOnlyNewPasswordFormParsingDescription[] =
     "The old password form parsing is disabled";
 
+const char kOnTheFlyMhtmlHashComputationName[] =
+    "On-The-Fly MHTML Hash Computation";
+const char kOnTheFlyMhtmlHashComputationDescription[] =
+    "Save MHTML files to the target location and calculate their content "
+    "digests in one step.";
+
 const char kOopRasterizationName[] = "Out of process rasterization";
 const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "

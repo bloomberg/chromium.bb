@@ -476,6 +476,13 @@ const char kNoStartupWindow[]               = "no-startup-window";
 const char kNoSupervisedUserAcknowledgmentCheck[]  =
     "no-managed-user-acknowledgment-check";
 
+// Calculate the hash of an MHTML file as it is being saved.
+// The browser process will write the serialized MHTML contents to a file and
+// calculate its hash as it is streamed back from the renderer via a Mojo data
+// pipe.
+const char kOnTheFlyMhtmlHashComputation[] =
+    "on-the-fly-mhtml-hash-computation";
+
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 

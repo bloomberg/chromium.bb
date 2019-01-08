@@ -82,6 +82,9 @@ const base::Feature kOfflineIndicatorFeature{"OfflineIndicator",
 const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature{
     "OfflineIndicatorAlwaysHttpProbe", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOnTheFlyMhtmlHashComputationFeature{
+    "OnTheFlyMhtmlHashComputation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOfflineBookmarksEnabled() {
