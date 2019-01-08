@@ -406,7 +406,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Stores a record of the what was committed in this NavigationEntry's main
   // frame before it was replaced (e.g. by history.replaceState()).
-  void SetReplacedEntryData(const ReplacedNavigationEntryData& data) {
+  void set_replaced_entry_data(const ReplacedNavigationEntryData& data) {
     replaced_entry_data_ = data;
   }
 

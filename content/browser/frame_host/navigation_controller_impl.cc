@@ -276,7 +276,7 @@ void CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
   data.first_committed_url = replaced_entry.GetURL();
   data.first_timestamp = replaced_entry.GetTimestamp();
   data.first_transition_type = replaced_entry.GetTransitionType();
-  output_entry->SetReplacedEntryData(data);
+  output_entry->set_replaced_entry_data(data);
 }
 
 FrameMsg_Navigate_Type::Value GetNavigationType(
