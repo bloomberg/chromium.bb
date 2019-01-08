@@ -862,6 +862,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   internal_data->set_must_reset_scroll_and_scale_state(
       common_params.navigation_type ==
       FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+  internal_data->set_previews_state(common_params.previews_state);
   document_state->set_can_load_local_resources(
       commit_params.can_load_local_resources);
 
@@ -4353,8 +4354,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
   if (is_main_frame_) {
-    previews_state_ =
-        frame_->GetDocumentLoader()->GetRequest().GetPreviewsState();
+    previews_state_ = internal_data->previews_state();
     effective_connection_type_ =
         EffectiveConnectionTypeToWebEffectiveConnectionType(
             internal_data->effective_connection_type());
