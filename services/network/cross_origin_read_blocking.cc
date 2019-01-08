@@ -565,11 +565,11 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
     const ResourceResponse& response,
-    InitiatorLockCompatibility initiator_compatibility) {
+    base::Optional<url::Origin> request_initiator_site_lock) {
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
-  initiator_compatibility_ = initiator_compatibility;
+  request_initiator_site_lock_ = request_initiator_site_lock;
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
@@ -587,9 +587,20 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // that are inexpensive should be near the top.
   url::Origin target_origin = url::Origin::Create(request.url());
 
+  // Check if |target_origin| seems to match the factory lock in
+  // |request_initiator_site_lock_|.  If so, then treat this request as
+  // same-origin (even if |request.initiator()| might be cross-origin).  See
+  // also https://crbug.com/918660.
+  if (VerifyRequestInitiatorLock(request_initiator_site_lock_, target_origin) ==
+      InitiatorLockCompatibility::kCompatibleLock) {
+    return kAllow;
+  }
+
   // Treat a missing initiator as an empty origin to be safe, though we don't
   // expect this to happen.  Unfortunately, this requires a copy.
   url::Origin initiator;
+  initiator_compatibility_ = VerifyRequestInitiatorLock(
+      request_initiator_site_lock_, request.initiator());
   bool block_untrustworthy_initiator =
       ShouldEnforceInitiatorLock() &&
       initiator_compatibility_ == InitiatorLockCompatibility::kIncorrectLock;

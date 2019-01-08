@@ -593,6 +593,35 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                                "nosniff.xml - body\n");
 }
 
+// Tests that same-origin fetches (same-origin relative to the webpage the
+// content script is injected into) are allowed.  See also
+// https://crbug.com/918660.
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       FromProgrammaticContentScript_SameOrigin) {
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to a foo.com page.
+  GURL page_url = GetTestPageUrl("foo.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a same-origin XHR to foo.com.
+  base::HistogramTester histograms;
+  GURL same_origin_resource(
+      embedded_test_server()->GetURL("foo.com", "/nosniff.xml"));
+  std::string fetch_result =
+      FetchViaContentScript(same_origin_resource, active_web_contents());
+
+  // Verify that no blocking occurred.
+  EXPECT_THAT(fetch_result, ::testing::StartsWith("nosniff.xml - body"));
+  VerifyFetchFromContentScriptWasAllowed(histograms,
+                                         false /* expecting_sniffing */);
+}
+
 // Test that responses that would have been allowed by CORB anyway are not
 // reported to LogInitiatorSchemeBypassingDocumentBlocking.
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,

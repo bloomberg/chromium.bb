@@ -593,13 +593,12 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   //    (i.e. CanAccessDataForOrigin would only plug one hole in the
   //    non-NetworkService world)
   // 2) we hope that NetworkService will ship soon.
-  constexpr auto kInitiatorLockCompatibility =
-      network::InitiatorLockCompatibility::kCompatibleLock;
+  base::Optional<url::Origin> kInitiatorLock = base::nullopt;
 
   // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
-          *request(), response, kInitiatorLockCompatibility);
+          *request(), response, kInitiatorLock);
   if (analyzer_->ShouldAllow())
     return false;
 

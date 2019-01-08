@@ -247,7 +247,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // Sniffing state.
   std::unique_ptr<CrossOriginReadBlocking::ResponseAnalyzer> corb_analyzer_;
-  InitiatorLockCompatibility initiator_lock_compatibility_;
   bool is_more_corb_sniffing_needed_ = false;
   bool is_more_mime_sniffing_needed_ = false;
 
