@@ -63,6 +63,17 @@ void PrimeSyncEnd(int dmabuf_fd) {
 bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
+#if defined(CHROMECAST_BUILD)
+  switch (usage) {
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
+      // TODO(spang): Fix b/121148905 and turn these back on.
+      return false;
+    default:
+      break;
+  }
+#endif
+
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
       return format == gfx::BufferFormat::BGR_565 ||
