@@ -51,9 +51,6 @@
            previousTab:(Tab*)previousTab
                atIndex:(NSUInteger)index;
 
-// The number of Tabs in this TabModel changed.
-- (void)tabModelDidChangeTabCount:(TabModel*)model;
-
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
 

@@ -361,6 +361,9 @@ UIColor* BackgroundColor() {
 // toggle buttons states depending on the current layout mode.
 - (void)updateScrollViewFrameForTabSwitcherButton;
 
+// Updates the tab switcher button with the current tab count.
+- (void)updateTabCount;
+
 @end
 
 @implementation TabStripController
@@ -949,6 +952,8 @@ UIColor* BackgroundColor() {
   [self updateContentSizeAndRepositionViews];
   [self setNeedsLayoutWithAnimation];
   [self updateContentOffsetForTabIndex:modelIndex isNewTab:YES];
+
+  [self updateTabCount];
 }
 
 // Observer method.
@@ -986,6 +991,8 @@ UIColor* BackgroundColor() {
       }];
 
   [self setNeedsLayoutWithAnimation];
+
+  [self updateTabCount];
 }
 
 // Observer method.
@@ -1060,13 +1067,6 @@ UIColor* BackgroundColor() {
   [self tabModel:model didChangeTab:newTab];
 }
 
-- (void)tabModelDidChangeTabCount:(TabModel*)model {
-  [_tabSwitcherButton setTitle:TextForTabCount(model.count)
-                      forState:UIControlStateNormal];
-  [_tabSwitcherButton
-      setAccessibilityValue:[NSString stringWithFormat:@"%zd", model.count]];
-}
-
 #pragma mark -
 #pragma mark Views and Layout
 
@@ -1118,7 +1118,7 @@ UIColor* BackgroundColor() {
   [_tabSwitcherButton addTarget:self
                          action:@selector(recordUserMetrics:)
                forControlEvents:UIControlEventTouchUpInside];
-  [self tabModelDidChangeTabCount:_tabModel];
+  [self updateTabCount];
 
   SetA11yLabelAndUiAutomationName(_tabSwitcherButton,
                                   tabSwitcherButtonIdsAccessibilityLabel,
@@ -1345,6 +1345,14 @@ UIColor* BackgroundColor() {
     [_view bringSubviewToFront:_tabSwitcherButton];
   }
   [_tabStripView setFrame:tabFrame];
+}
+
+- (void)updateTabCount {
+  [_tabSwitcherButton setTitle:TextForTabCount(_tabModel.count)
+                      forState:UIControlStateNormal];
+  [_tabSwitcherButton
+      setAccessibilityValue:[NSString
+                                stringWithFormat:@"%zd", _tabModel.count]];
 }
 
 #pragma mark - TabStripViewLayoutDelegate
