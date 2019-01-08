@@ -14,7 +14,7 @@ bluetooth_test(async (t) => {
     await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
 
   await callWithTrustedClick(async () => {
-    let scan = await navigator.bluetooth.requestLEScan();
+    let scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
     assert_equals(scan.constructor.name, 'BluetoothLEScan');
   });
 
