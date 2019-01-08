@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
+import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ChromeSigninController;
@@ -368,8 +368,8 @@ public abstract class FirstRunFlowSequencer  {
 
             Intent intentToLaunchAfterFreComplete = fromIntent;
             String associatedAppNameForLightweightFre = null;
-            WebApkActivity.FreParams webApkFreParams =
-                    WebApkActivity.slowGenerateFreParamsIfIntentIsForWebApkActivity(fromIntent);
+            WebappLauncherActivity.FreParams webApkFreParams =
+                    WebappLauncherActivity.slowGenerateFreParamsIfIntentIsForWebApk(fromIntent);
             if (webApkFreParams != null) {
                 intentToLaunchAfterFreComplete =
                         webApkFreParams.getIntentToLaunchAfterFreComplete();

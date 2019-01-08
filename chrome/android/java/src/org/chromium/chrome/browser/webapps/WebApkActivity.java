@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -16,8 +14,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,48 +35,6 @@ public class WebApkActivity extends WebappActivity {
     @VisibleForTesting
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
-    /** WebAPK first run experience parameters. */
-    public static class FreParams {
-        private final Intent mIntentToLaunchAfterFreComplete;
-        private final String mShortName;
-
-        public FreParams(Intent intentToLaunchAfterFreComplete, String shortName) {
-            mIntentToLaunchAfterFreComplete = intentToLaunchAfterFreComplete;
-            mShortName = shortName;
-        }
-
-        /** Returns the intent launch when the user completes the first run experience. */
-        public Intent getIntentToLaunchAfterFreComplete() {
-            return mIntentToLaunchAfterFreComplete;
-        }
-
-        /** Returns the WebAPK's short name. */
-        public String webApkShortName() {
-            return mShortName;
-        }
-    }
-
-    /**
-     * Generates parameters for the WebAPK first run experience for the given intent. Returns null
-     * if the intent does not launch a WebApkActivity. This method is slow. It makes several
-     * PackageManager calls.
-     */
-    public static FreParams slowGenerateFreParamsIfIntentIsForWebApkActivity(Intent fromIntent) {
-        // Check for intents targeted at WebApkActivity, WebApkActivity0-9 and
-        // SameTaskWebApkActivity.
-        String targetActivityClassName = fromIntent.getComponent().getClassName();
-        if (!targetActivityClassName.startsWith(WebApkActivity.class.getName())
-                && !targetActivityClassName.equals(SameTaskWebApkActivity.class.getName())) {
-            return null;
-        }
-
-        WebApkInfo info = WebApkInfo.create(fromIntent);
-        return (info != null)
-                ? new FreParams(WebappLauncherActivity.createRelaunchWebApkIntent(fromIntent, info),
-                        info.shortName())
-                : null;
-    }
-
     @Override
     public int getActivityType() {
         return ActivityType.WEBAPK;
@@ -100,17 +54,6 @@ public class WebApkActivity extends WebappActivity {
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
         getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
-    }
-
-    @Override
-    public boolean shouldPreferLightweightFre(Intent intent) {
-        // We cannot use getWebApkPackageName() because {@link WebappActivity#preInflationStartup()}
-        // may not have been called yet.
-        String webApkPackageName =
-                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
-
-        // Use the lightweight FRE for unbound WebAPKs.
-        return webApkPackageName != null && !webApkPackageName.startsWith(WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override
