@@ -107,6 +107,10 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // True if a warning banner is shown.
   bool is_warning_banner_shown_ = false;
 
+  // True if full management disclosure method for the managed sessions is
+  // shown.
+  bool is_managed_session_disclosure_shown_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(LockDebugView);
 };
 

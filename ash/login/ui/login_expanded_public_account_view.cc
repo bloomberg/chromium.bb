@@ -194,6 +194,7 @@ class MonitoringWarningView : public NonAccessibleView {
         vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp, SK_ColorRED));
     image_->SetPreferredSize(
         gfx::Size(kMonitoringWarningIconSizeDp, kMonitoringWarningIconSizeDp));
+    image_->SetVisible(false);
     AddChildView(image_);
 
     const base::string16 label_text = l10n_util::GetStringUTF16(
@@ -223,6 +224,8 @@ class MonitoringWarningView : public NonAccessibleView {
   ~MonitoringWarningView() override = default;
 
  private:
+  friend class LoginExpandedPublicAccountView::TestApi;
+
   views::ImageView* image_;
   views::Label* label_;
 
@@ -611,6 +614,11 @@ LoginExpandedPublicAccountView::TestApi::selected_language_item() {
 LoginMenuView::Item
 LoginExpandedPublicAccountView::TestApi::selected_keyboard_item() {
   return view_->right_pane_->selected_keyboard_item_;
+}
+
+views::ImageView*
+LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
+  return view_->right_pane_->monitoring_warning_view_->image_;
 }
 
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
