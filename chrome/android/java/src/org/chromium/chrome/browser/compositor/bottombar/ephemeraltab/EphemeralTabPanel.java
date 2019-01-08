@@ -175,6 +175,7 @@ public class EphemeralTabPanel extends OverlayPanel {
      * @param isIncognito {@link True} if the panel is opened from an incognito tab.
      */
     public void requestOpenPanel(String url, String text, boolean isIncognito) {
+        if (isShowing()) closePanel(StateChangeReason.RESET, false);
         mIsIncognito = isIncognito;
         loadUrlInPanel(url);
         WebContents panelWebContents = getWebContents();
