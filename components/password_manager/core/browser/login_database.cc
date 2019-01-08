@@ -49,7 +49,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 20;
+const int kCurrentVersionNumber = 21;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -124,6 +124,14 @@ enum DatabaseInitError {
   COMMIT_TRANSACTION_ERROR,
 
   DATABASE_INIT_ERROR_COUNT,
+};
+
+// Struct to hold table builder for "logins", "sync_entities_metadata", and
+// "sync_model_metadata" tables.
+struct SQLTableBuilders {
+  SQLTableBuilder* logins;
+  SQLTableBuilder* sync_entities_metadata;
+  SQLTableBuilder* sync_model_metadata;
 };
 
 void BindAddStatement(const PasswordForm& form,
@@ -349,126 +357,137 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
   }
 }
 
-// Teaches |builder| about the different DB schemes in different versions.
-void InitializeBuilder(SQLTableBuilder* builder) {
+// Seals the version of the given builders. This is method should be always used
+// to seal versions of all builder to make sure all builders are at the same
+// version.
+void SealVersion(SQLTableBuilders builders, unsigned expected_version) {
+  unsigned logins_version = builders.logins->SealVersion();
+  DCHECK_EQ(expected_version, logins_version);
+
+  unsigned sync_entities_metadata_version =
+      builders.sync_entities_metadata->SealVersion();
+  DCHECK_EQ(expected_version, sync_entities_metadata_version);
+
+  unsigned sync_model_metadata_version =
+      builders.sync_model_metadata->SealVersion();
+  DCHECK_EQ(expected_version, sync_model_metadata_version);
+}
+
+// Teaches |builders| about the different DB schemes in different versions.
+void InitializeBuilders(SQLTableBuilders builders) {
   // Versions 0 and 1, which are the same.
-  builder->AddColumnToUniqueKey("origin_url", "VARCHAR NOT NULL");
-  builder->AddColumn("action_url", "VARCHAR");
-  builder->AddColumnToUniqueKey("username_element", "VARCHAR");
-  builder->AddColumnToUniqueKey("username_value", "VARCHAR");
-  builder->AddColumnToUniqueKey("password_element", "VARCHAR");
-  builder->AddColumn("password_value", "BLOB");
-  builder->AddColumn("submit_element", "VARCHAR");
-  builder->AddColumnToUniqueKey("signon_realm", "VARCHAR NOT NULL");
-  builder->AddColumn("ssl_valid", "INTEGER NOT NULL");
-  builder->AddColumn("preferred", "INTEGER NOT NULL");
-  builder->AddColumn("date_created", "INTEGER NOT NULL");
-  builder->AddColumn("blacklisted_by_user", "INTEGER NOT NULL");
-  builder->AddColumn("scheme", "INTEGER NOT NULL");
-  builder->AddIndex("logins_signon", {"signon_realm"});
-  builder->SealVersion();
-  unsigned version = builder->SealVersion();
-  DCHECK_EQ(1u, version);
+  builders.logins->AddColumnToUniqueKey("origin_url", "VARCHAR NOT NULL");
+  builders.logins->AddColumn("action_url", "VARCHAR");
+  builders.logins->AddColumnToUniqueKey("username_element", "VARCHAR");
+  builders.logins->AddColumnToUniqueKey("username_value", "VARCHAR");
+  builders.logins->AddColumnToUniqueKey("password_element", "VARCHAR");
+  builders.logins->AddColumn("password_value", "BLOB");
+  builders.logins->AddColumn("submit_element", "VARCHAR");
+  builders.logins->AddColumnToUniqueKey("signon_realm", "VARCHAR NOT NULL");
+  builders.logins->AddColumn("ssl_valid", "INTEGER NOT NULL");
+  builders.logins->AddColumn("preferred", "INTEGER NOT NULL");
+  builders.logins->AddColumn("date_created", "INTEGER NOT NULL");
+  builders.logins->AddColumn("blacklisted_by_user", "INTEGER NOT NULL");
+  builders.logins->AddColumn("scheme", "INTEGER NOT NULL");
+  builders.logins->AddIndex("logins_signon", {"signon_realm"});
+  SealVersion(builders, /*expected_version=*/0u);
+  SealVersion(builders, /*expected_version=*/1u);
 
   // Version 2.
-  builder->AddColumn("password_type", "INTEGER");
-  builder->AddColumn("possible_usernames", "BLOB");
-  version = builder->SealVersion();
-  DCHECK_EQ(2u, version);
+  builders.logins->AddColumn("password_type", "INTEGER");
+  builders.logins->AddColumn("possible_usernames", "BLOB");
+  SealVersion(builders, /*expected_version=*/2u);
 
   // Version 3.
-  builder->AddColumn("times_used", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(3u, version);
+  builders.logins->AddColumn("times_used", "INTEGER");
+  SealVersion(builders, /*expected_version=*/3u);
 
   // Version 4.
-  builder->AddColumn("form_data", "BLOB");
-  version = builder->SealVersion();
-  DCHECK_EQ(4u, version);
+  builders.logins->AddColumn("form_data", "BLOB");
+  SealVersion(builders, /*expected_version=*/4u);
 
   // Version 5.
-  builder->AddColumn("use_additional_auth", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(5u, version);
+  builders.logins->AddColumn("use_additional_auth", "INTEGER");
+  SealVersion(builders, /*expected_version=*/5u);
 
   // Version 6.
-  builder->AddColumn("date_synced", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(6u, version);
+  builders.logins->AddColumn("date_synced", "INTEGER");
+  SealVersion(builders, /*expected_version=*/6u);
 
   // Version 7.
-  builder->AddColumn("display_name", "VARCHAR");
-  builder->AddColumn("avatar_url", "VARCHAR");
-  builder->AddColumn("federation_url", "VARCHAR");
-  builder->AddColumn("is_zero_click", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(7u, version);
+  builders.logins->AddColumn("display_name", "VARCHAR");
+  builders.logins->AddColumn("avatar_url", "VARCHAR");
+  builders.logins->AddColumn("federation_url", "VARCHAR");
+  builders.logins->AddColumn("is_zero_click", "INTEGER");
+  SealVersion(builders, /*expected_version=*/7u);
 
   // Version 8.
-  version = builder->SealVersion();
-  DCHECK_EQ(8u, version);
+  SealVersion(builders, /*expected_version=*/8u);
   // Version 9.
-  version = builder->SealVersion();
-  DCHECK_EQ(9u, version);
+  SealVersion(builders, /*expected_version=*/9u);
   // Version 10.
-  builder->DropColumn("use_additional_auth");
-  version = builder->SealVersion();
-  DCHECK_EQ(10u, version);
+  builders.logins->DropColumn("use_additional_auth");
+  SealVersion(builders, /*expected_version=*/10u);
 
   // Version 11.
-  builder->RenameColumn("is_zero_click", "skip_zero_click");
-  version = builder->SealVersion();
-  DCHECK_EQ(11u, version);
+  builders.logins->RenameColumn("is_zero_click", "skip_zero_click");
+  SealVersion(builders, /*expected_version=*/11u);
 
   // Version 12.
-  builder->AddColumn("generation_upload_status", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(12u, version);
+  builders.logins->AddColumn("generation_upload_status", "INTEGER");
+  SealVersion(builders, /*expected_version=*/12u);
 
   // Version 13.
-  builder->SealVersion();
+  SealVersion(builders, /*expected_version=*/13u);
   // Version 14.
-  builder->RenameColumn("avatar_url", "icon_url");
-  version = builder->SealVersion();
-  DCHECK_EQ(14u, version);
+  builders.logins->RenameColumn("avatar_url", "icon_url");
+  SealVersion(builders, /*expected_version=*/14u);
 
   // Version 15.
-  version = builder->SealVersion();
-  DCHECK_EQ(15u, version);
+  SealVersion(builders, /*expected_version=*/15u);
   // Version 16.
-  version = builder->SealVersion();
-  DCHECK_EQ(16u, version);
+  SealVersion(builders, /*expected_version=*/16u);
   // Version 17.
-  version = builder->SealVersion();
-  DCHECK_EQ(17u, version);
+  SealVersion(builders, /*expected_version=*/17u);
 
   // Version 18.
-  builder->DropColumn("ssl_valid");
-  version = builder->SealVersion();
-  DCHECK_EQ(18u, version);
+  builders.logins->DropColumn("ssl_valid");
+  SealVersion(builders, /*expected_version=*/18u);
 
   // Version 19.
-  builder->DropColumn("possible_usernames");
-  builder->AddColumn("possible_username_pairs", "BLOB");
-  version = builder->SealVersion();
-  DCHECK_EQ(19u, version);
+  builders.logins->DropColumn("possible_usernames");
+  builders.logins->AddColumn("possible_username_pairs", "BLOB");
+  SealVersion(builders, /*expected_version=*/19u);
 
   // Version 20.
-  builder->AddColumnToPrimaryKey("id", "INTEGER");
-  version = builder->SealVersion();
-  DCHECK_EQ(20u, version);
+  builders.logins->AddColumnToPrimaryKey("id", "INTEGER");
+  SealVersion(builders, /*expected_version=*/20u);
 
-  DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builder->NumberOfColumns())
+  // Version 21.
+  builders.sync_entities_metadata->AddColumnToPrimaryKey("storage_key",
+                                                         "INTEGER");
+  builders.sync_entities_metadata->AddColumn("metadata", "VARCHAR NOT NULL");
+  builders.sync_model_metadata->AddColumnToPrimaryKey("id", "INTEGER");
+  builders.sync_model_metadata->AddColumn("model_metadata", "VARCHAR NOT NULL");
+  SealVersion(builders, /*expected_version=*/21u);
+
+  DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
          "here.";
 }
 
-// Call this after having called InitializeBuilder, to migrate the database from
-// the current version to kCurrentVersionNumber.
+// Call this after having called InitializeBuilders(), to migrate the database
+// from the current version to kCurrentVersionNumber.
 bool MigrateLogins(unsigned current_version,
-                   SQLTableBuilder* builder,
+                   SQLTableBuilders builders,
                    sql::Database* db) {
-  if (!builder->MigrateFrom(current_version, db))
+  if (!builders.logins->MigrateFrom(current_version, db))
+    return false;
+
+  if (!builders.sync_entities_metadata->MigrateFrom(current_version, db))
+    return false;
+
+  if (!builders.sync_model_metadata->MigrateFrom(current_version, db))
     return false;
 
   // Data changes, not covered by the schema migration above.
@@ -593,13 +612,35 @@ bool LoginDatabase::Init() {
     return false;
   }
 
-  SQLTableBuilder builder("logins");
-  InitializeBuilder(&builder);
-  InitializeStatementStrings(builder);
+  SQLTableBuilder logins_builder("logins");
+  SQLTableBuilder sync_entities_metadata_builder("sync_entities_metadata");
+  SQLTableBuilder sync_model_metadata_builder("sync_model_metadata");
+  SQLTableBuilders builders = {&logins_builder, &sync_entities_metadata_builder,
+                               &sync_model_metadata_builder};
+  InitializeBuilders(builders);
+  InitializeStatementStrings(logins_builder);
 
   if (!db_.DoesTableExist("logins")) {
-    if (!builder.CreateTable(&db_)) {
+    if (!logins_builder.CreateTable(&db_)) {
       VLOG(0) << "Failed to create the 'logins' table";
+      transaction.Rollback();
+      db_.Close();
+      return false;
+    }
+  }
+
+  if (!db_.DoesTableExist("sync_entities_metadata")) {
+    if (!sync_entities_metadata_builder.CreateTable(&db_)) {
+      VLOG(0) << "Failed to create the 'sync_entities_metadata' table";
+      transaction.Rollback();
+      db_.Close();
+      return false;
+    }
+  }
+
+  if (!db_.DoesTableExist("sync_model_metadata")) {
+    if (!sync_model_metadata_builder.CreateTable(&db_)) {
+      VLOG(0) << "Failed to create the 'sync_model_metadata' table";
       transaction.Rollback();
       db_.Close();
       return false;
@@ -615,7 +656,7 @@ bool LoginDatabase::Init() {
   // If the file on disk is an older database version, bring it up to date.
   if (migration_success && current_version < kCurrentVersionNumber) {
     migration_success = MigrateLogins(
-        base::checked_cast<unsigned>(current_version), &builder, &db_);
+        base::checked_cast<unsigned>(current_version), builders, &db_);
   }
   if (migration_success && current_version <= 15) {
     migration_success = stats_table_.MigrateToVersion(16);

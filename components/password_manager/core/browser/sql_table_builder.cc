@@ -272,7 +272,6 @@ bool SQLTableBuilder::CreateTable(sql::Database* db) const {
           base::JoinString(index.columns, ", ").c_str()));
     }
   }
-
   sql::Transaction transaction(db);
   return transaction.Begin() &&
          db->Execute(base::StringPrintf("CREATE TABLE %s (%s, %s)",
@@ -409,6 +408,11 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
       Append(column->name + " " + column->type, &new_names_of_existing_columns);
       Append(column->name, &new_names_of_existing_columns_without_types);
     }
+  }
+
+  if (old_names_of_existing_columns_without_types.empty()) {
+    // Table didn't exist in this version, and nothing to migrate.
+    return true;
   }
 
   if (needs_temp_table) {
