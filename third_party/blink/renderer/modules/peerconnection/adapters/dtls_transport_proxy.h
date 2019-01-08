@@ -38,6 +38,9 @@ class DtlsTransportProxy : public webrtc::DtlsTransportObserverInterface {
   // Constructs a DtlsTransportProxy.
   // The caller is responsible for keeping |dtls_transport| and |delegate|
   // alive until after the DtlsTransportProxy is deleted.
+  // The DtlsTransportProxy can be safely deleted after seeing the
+  // state |kClosed|, since this is the last event that can happen
+  // on the transport.
   static std::unique_ptr<DtlsTransportProxy> Create(
       LocalFrame& frame,
       scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
