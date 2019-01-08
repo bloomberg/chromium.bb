@@ -2978,10 +2978,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
     // The webstate view is getting resized because of fullscreen. Using its
     // superview ensure that we have a view with a with a consistent size.
-    return webState->GetView().superview;
-  } else {
-    return webState->GetView();
+    if (webState->GetView().superview)
+      return webState->GetView().superview;
   }
+  DCHECK(webState->GetView());
+  return webState->GetView();
 }
 
 #pragma mark - SnapshotGeneratorDelegate helpers
