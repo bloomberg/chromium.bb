@@ -158,9 +158,23 @@ LikelyFormFilling SendFillInformationToRenderer(
   //     fields.
   // (4) the current main frame origin is insecure and the FOAS on HTTP feature
   //     is active.
-  bool wait_for_username = client.IsIncognito() ||
-                           preferred_match->is_public_suffix_match ||
-                           !form_good_for_filling || enable_foas_on_http;
+  using WaitForUsernameReason =
+      PasswordFormMetricsRecorder::WaitForUsernameReason;
+  WaitForUsernameReason wait_for_username_reason =
+      WaitForUsernameReason::kDontWait;
+  if (client.IsIncognito()) {
+    wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
+  } else if (preferred_match->is_public_suffix_match) {
+    wait_for_username_reason = WaitForUsernameReason::kPublicSuffixMatch;
+  } else if (!form_good_for_filling) {
+    wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
+  } else if (enable_foas_on_http) {
+    wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
+  }
+  metrics_recorder->RecordFirstWaitForUsernameReason(wait_for_username_reason);
+
+  bool wait_for_username =
+      wait_for_username_reason != WaitForUsernameReason::kDontWait;
 
   if (wait_for_username) {
     metrics_recorder->SetManagerAction(

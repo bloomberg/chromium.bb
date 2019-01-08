@@ -108,7 +108,7 @@ enum class FillingResult {
   // credential. This happens for example if the session is an incognito
   // session, the credendial's URL matches the mainframe only via the PSL, the
   // site is on HTTP, or the form has no current password field.
-  // TODO(crbug.com/918846): Record root causes in a separate histogram.
+  // PasswordManager.FirstWaitForUsernameReason records the root causes.
   kWaitForUsername = 6,
   // No fillable elements were found, only possible for old form parser.
   kNoFillableElementsFound = 7,

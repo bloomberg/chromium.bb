@@ -216,6 +216,29 @@ class PasswordFormMetricsRecorder
     kMaxFormDifferencesValue = 1 << 4,
   };
 
+  // Used in UMA histogram, please do NOT reorder.
+  // Metric: "PasswordManager.FirstWaitForUsernameReason"
+  // This metric records why the browser instructs the renderer not to fill the
+  // credentials on page load but to wait for the user to confirm the credential
+  // to be filled. This decision is only recorded for the first time, the
+  // browser informs the renderer about credentials for a given form.
+  enum class WaitForUsernameReason {
+    // Credentials may be filled on page load.
+    kDontWait = 0,
+    // User is browsing in incognito mode.
+    kIncognitoMode = 1,
+    // A credential exists for a PSL matched site but not for the current
+    // security origin.
+    kPublicSuffixMatch = 2,
+    // Form is suspected to be a password change form. (Only recorded for old
+    // form parser)
+    kFormNotGoodForFilling = 3,
+    // User is on an HTTP site where passwords are filled on account selection
+    // (FOAS).
+    kFoasOnHTTP = 4,
+    kMaxValue = kFoasOnHTTP,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -336,6 +359,8 @@ class PasswordFormMetricsRecorder
 
   void RecordFormChangeBitmask(uint32_t bitmask);
 
+  void RecordFirstWaitForUsernameReason(WaitForUsernameReason reason);
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -437,6 +462,8 @@ class PasswordFormMetricsRecorder
   base::Optional<uint32_t> showed_manual_fallback_for_saving_;
 
   base::Optional<uint32_t> form_changes_bitmask_;
+
+  bool recorded_wait_for_username_reason_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

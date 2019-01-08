@@ -319,6 +319,15 @@ void PasswordFormMetricsRecorder::RecordFormChangeBitmask(uint32_t bitmask) {
     *form_changes_bitmask_ |= bitmask;
 }
 
+void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
+    WaitForUsernameReason reason) {
+  if (recorded_wait_for_username_reason_)
+    return;
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstWaitForUsernameReason",
+                            reason);
+  recorded_wait_for_username_reason_ = true;
+}
+
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
   return static_cast<int>(user_action_) +
          static_cast<int>(UserAction::kMax) *
