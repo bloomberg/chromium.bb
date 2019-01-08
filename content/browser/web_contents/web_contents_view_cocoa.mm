@@ -14,10 +14,8 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
-#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 
-using content::DraggingInfo;
 using content::DropData;
 using content::WebContentsImpl;
 using content::WebContentsViewMac;
@@ -59,33 +57,6 @@ using content::WebContentsViewMac;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
-}
-
-- (void)populateDraggingInfo:(DraggingInfo*)info
-          fromNSDraggingInfo:(id<NSDraggingInfo>)nsInfo {
-  NSPoint windowPoint = [nsInfo draggingLocation];
-
-  NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
-  NSRect viewFrame = [self frame];
-  info->location_in_view =
-      gfx::PointF(viewPoint.x, viewFrame.size.height - viewPoint.y);
-
-  NSPoint screenPoint =
-      ui::ConvertPointFromWindowToScreen([self window], windowPoint);
-  NSScreen* screen = [[self window] screen];
-  NSRect screenFrame = [screen frame];
-  info->location_in_screen =
-      gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y);
-
-  info->location_in_view = gfx::PointF(viewPoint.x, viewPoint.y);
-  info->location_in_screen = gfx::PointF(screenPoint.x, screenPoint.y);
-  NSPasteboard* pboard = [nsInfo draggingPasteboard];
-  if ([pboard containsURLDataConvertingTextToURL:YES]) {
-    GURL url;
-    ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
-    info->url.emplace(url);
-  }
-  info->operation_mask = [nsInfo draggingSourceOperationMask];
 }
 
 - (BOOL)allowsVibrancy {
@@ -214,10 +185,7 @@ using content::WebContentsViewMac;
   content::PopulateDropDataFromPasteboard(&dropData,
                                           [sender draggingPasteboard]);
   [dragDest_ setDropData:dropData];
-
-  DraggingInfo draggingInfo;
-  [self populateDraggingInfo:&draggingInfo fromNSDraggingInfo:sender];
-  return [dragDest_ draggingEntered:draggingInfo];
+  return [dragDest_ draggingEntered:sender view:self];
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
@@ -225,15 +193,11 @@ using content::WebContentsViewMac;
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  DraggingInfo draggingInfo;
-  [self populateDraggingInfo:&draggingInfo fromNSDraggingInfo:sender];
-  return [dragDest_ draggingUpdated:draggingInfo];
+  return [dragDest_ draggingUpdated:sender view:self];
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  DraggingInfo draggingInfo;
-  [self populateDraggingInfo:&draggingInfo fromNSDraggingInfo:sender];
-  return [dragDest_ performDragOperation:draggingInfo];
+  return [dragDest_ performDragOperation:sender view:self];
 }
 
 - (void)cancelDeferredClose {

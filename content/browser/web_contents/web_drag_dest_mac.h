@@ -33,27 +33,6 @@ namespace content {
 void CONTENT_EXPORT PopulateDropDataFromPasteboard(content::DropData* data,
                                                    NSPasteboard* pboard);
 
-// The data extracted from an NSDraggingInfo needed by draggingEntered,
-// draggingUpdated, and performDragOperation.
-// TODO(https://crbug.com/898608): Change this to be a mojo structure.
-struct CONTENT_EXPORT DraggingInfo {
-  DraggingInfo();
-  ~DraggingInfo();
-
-  // The dragging location in the NSView, with the origin in the upper-left.
-  gfx::PointF location_in_view;
-
-  // The dragging location in the NSScreen, with the origin in the upper-left.
-  gfx::PointF location_in_screen;
-
-  // The URL data from the drag, if any. Note that this is redundant in that it
-  // is already present in DropData. It is here because it is used by methods
-  // that don't use DropData.
-  base::Optional<GURL> url;
-
-  // The operation mask.
-  uint32_t operation_mask;
-};
 }
 
 // A class that handles tracking and event processing for a drag and drop
@@ -116,15 +95,17 @@ CONTENT_EXPORT
 // Messages to send during the tracking of a drag, ususally upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 - (void)setDropData:(const content::DropData&)dropData;
-- (NSDragOperation)draggingEntered:(const content::DraggingInfo&)info;
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info
+                              view:(NSView*)view;
 - (void)draggingExited;
-- (NSDragOperation)draggingUpdated:(const content::DraggingInfo&)info;
-- (BOOL)performDragOperation:(const content::DraggingInfo&)info;
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
+                              view:(NSView*)view;
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)info view:(NSView*)view;
 
 // Helper to call WebWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint().
 - (content::RenderWidgetHostImpl*)
-    GetRenderWidgetHostAtPoint:(const gfx::PointF&)viewPoint
-                 transformedPt:(gfx::PointF*)transformedPt;
+GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
+             transformedPt:(gfx::PointF*)transformedPt;
 
 // Sets |dragStartProcessID_| and |dragStartViewID_|.
 - (void)setDragStartTrackersForProcess:(int)processID;
