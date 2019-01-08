@@ -168,7 +168,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String integrity_;
   String importance_;
   network::mojom::ReferrerPolicy referrer_policy_;
-  Member<DOMTokenList> sizes_;
+  TraceWrapperMember<DOMTokenList> sizes_;
   Vector<IntSize> icon_sizes_;
   TraceWrapperMember<RelList> rel_list_;
   LinkRelAttribute rel_attribute_;
