@@ -1313,6 +1313,8 @@ jumbo_component("base") {
       "android/path_service_android.cc",
       "android/path_utils.cc",
       "android/path_utils.h",
+      "android/reached_code_profiler.cc",
+      "android/reached_code_profiler.h",
       "android/record_histogram.cc",
       "android/record_user_action.cc",
       "android/scoped_hardware_buffer_handle.cc",
@@ -1380,6 +1382,13 @@ jumbo_component("base") {
         "trace_event/cfi_backtrace_android.cc",
         "trace_event/cfi_backtrace_android.h",
       ]
+    }
+
+    if (current_cpu != "arm") {
+      # The reached code profiler is only supported on Android with 32-bit arm
+      # arch.
+      sources -= [ "android/reached_code_profiler.cc" ]
+      sources += [ "android/reached_code_profiler_stub.cc" ]
     }
 
     # This is actually a linker script, but it can be added to the link in the
