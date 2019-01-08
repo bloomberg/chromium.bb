@@ -433,6 +433,14 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   delegate->LoadResponseBody(long_body);
   scoped_task_environment_.RunUntilIdle();
 
+  // Send OnComplete() to the MimeSniffingURLLoader.
+  delegate->CompleteResponse();
+  scoped_task_environment_.RunUntilIdle();
+  // MimeSniffingURLLoader should not send OnComplete() to the destination
+  // client until it finished writing all the data.
+  EXPECT_FALSE(
+      delegate->destination_loader_client()->has_received_completion());
+
   // Read the half of the body. This unblocks MimeSniffingURLLoader to push the
   // rest of the body to the data pipe.
   uint32_t read_bytes = delegate->ReadResponseBody(long_body.size() / 2);
@@ -441,7 +449,6 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   // Read the rest of the body.
   read_bytes += delegate->ReadResponseBody(long_body.size() / 2);
   scoped_task_environment_.RunUntilIdle();
-  delegate->CompleteResponse();
   delegate->destination_loader_client()->RunUntilComplete();
 
   // Check if all data has been read.
