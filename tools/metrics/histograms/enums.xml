@@ -54399,6 +54399,12 @@ Full version information for the fingerprint enum values:
   <int value="10" label="Via ARC on Chrome OS"/>
 </enum>
 
+<enum name="WebappUninstallDialogAction">
+  <int value="0" label="Uninstall only"/>
+  <int value="1" label="Uninstall and remove data"/>
+  <int value="2" label="Dialog canceled"/>
+</enum>
+
 <enum name="WebAudioAutoplayStatus">
   <int value="0" label="The AudioContext failed to autoplay"/>
   <int value="1"
