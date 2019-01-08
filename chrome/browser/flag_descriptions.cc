@@ -1727,11 +1727,6 @@ const char kSignedHTTPExchangeDescription[] =
     "Enables Origin-Signed HTTP Exchanges support which is still in "
     "development. Warning: Enabling this may pose a security risk.";
 
-const char kSimpleCacheBackendName[] = "Simple Cache for HTTP";
-const char kSimpleCacheBackendDescription[] =
-    "The Simple Cache for HTTP is a new cache. It relies on the filesystem for "
-    "disk space allocation.";
-
 const char kSimplifyHttpsIndicatorName[] = "Simplify HTTPS indicator UI";
 const char kSimplifyHttpsIndicatorDescription[] =
     "Change the UI treatment for HTTPS pages.";

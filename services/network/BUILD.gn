@@ -356,6 +356,7 @@ source_set("tests") {
     "//base",
     "//components/network_session_configurator/browser",
     "//components/prefs:test_support",
+    "//components/variations:test_support",
     "//crypto:test_support",
     "//jingle:jingle_fake_socket",
     "//mojo/core/embedder",

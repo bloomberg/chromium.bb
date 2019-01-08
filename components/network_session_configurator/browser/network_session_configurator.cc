@@ -640,15 +640,6 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
 net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(
     const base::CommandLine& command_line) {
 #if !defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kUseSimpleCacheBackend)) {
-    const std::string opt_value =
-        command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
-    if (base::LowerCaseEqualsASCII(opt_value, "off"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
-    if (opt_value.empty() || base::LowerCaseEqualsASCII(opt_value, "on"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-  }
-
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
   if (base::StartsWith(experiment_name, "Disable",

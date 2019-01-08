@@ -730,26 +730,6 @@ TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
 #endif
 }
 
-TEST_F(NetworkSessionConfiguratorTest, UseSimpleCacheBackendOn) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(switches::kUseSimpleCacheBackend, "on");
-  EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
-            ChooseCacheType(command_line));
-}
-
-TEST_F(NetworkSessionConfiguratorTest, UseSimpleCacheBackendOff) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(switches::kUseSimpleCacheBackend, "off");
-#if !defined(OS_ANDROID)
-  EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
-            ChooseCacheType(command_line));
-#else  // defined(OS_ANDROID)
-  // Android always uses the simple cache.
-  EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
-            ChooseCacheType(command_line));
-#endif
-}
-
 TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialExperimentYes) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentYes");

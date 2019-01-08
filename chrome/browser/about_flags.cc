@@ -366,13 +366,6 @@ const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
      base::size(kAccountConsistencyDiceMigration), nullptr /* variation_id */}};
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-const FeatureEntry::Choice kSimpleCacheBackendChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     switches::kUseSimpleCacheBackend, "off"},
-    {flags_ui::kGenericExperimentChoiceEnabled,
-     switches::kUseSimpleCacheBackend, "on"}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1806,10 +1799,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGestureEditingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureEditing)},
 #endif  // OS_CHROMEOS
-    {"enable-simple-cache-backend", flag_descriptions::kSimpleCacheBackendName,
-     flag_descriptions::kSimpleCacheBackendDescription,
-     kOsWin | kOsMac | kOsLinux | kOsCrOS,
-     MULTI_VALUE_TYPE(kSimpleCacheBackendChoices)},
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",
      flag_descriptions::kDeviceDiscoveryNotificationsName,

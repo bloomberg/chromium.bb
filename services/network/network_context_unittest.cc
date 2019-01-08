@@ -721,8 +721,8 @@ TEST_F(NetworkContextTest, DiskCache) {
 // This makes sure that network_session_configurator::ChooseCacheType is
 // connected to NetworkContext.
 TEST_F(NetworkContextTest, SimpleCache) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseSimpleCacheBackend, "on");
+  base::FieldTrialList field_trials(nullptr);
+  base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentYes");
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
 
