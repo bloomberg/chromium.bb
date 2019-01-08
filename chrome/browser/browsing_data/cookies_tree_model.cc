@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -32,7 +33,9 @@
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -1175,12 +1178,8 @@ int CookiesTreeModel::GetSendForMessageID(const net::CanonicalCookie& cookie) {
 // Returns the set of icons for the nodes in the tree. You only need override
 // this if you don't want to use the default folder icons.
 void CookiesTreeModel::GetIcons(std::vector<gfx::ImageSkia>* icons) {
-  icons->push_back(*ui::ResourceBundle::GetSharedInstance()
-                        .GetNativeImageNamed(IDR_DEFAULT_FAVICON)
-                        .ToImageSkia());
-  icons->push_back(*ui::ResourceBundle::GetSharedInstance()
-                        .GetNativeImageNamed(IDR_COOKIES)
-                        .ToImageSkia());
+  icons->push_back(
+      gfx::CreateVectorIcon(kCookieIcon, 18, gfx::kChromeIconGrey));
   icons->push_back(*ui::ResourceBundle::GetSharedInstance()
                         .GetNativeImageNamed(IDR_COOKIE_STORAGE_ICON)
                         .ToImageSkia());
@@ -1192,8 +1191,6 @@ void CookiesTreeModel::GetIcons(std::vector<gfx::ImageSkia>* icons) {
 int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
   CookieTreeNode* ct_node = static_cast<CookieTreeNode*>(node);
   switch (ct_node->GetDetailedInfo().node_type) {
-    case CookieTreeNode::DetailedInfo::TYPE_HOST:
-      return ORIGIN;
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
       return COOKIE;
 
@@ -1209,6 +1206,7 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
     case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
       return DATABASE;
+    case CookieTreeNode::DetailedInfo::TYPE_HOST:
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
       return -1;
     default:
