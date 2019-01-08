@@ -270,18 +270,6 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
       ServiceState::kDisabled);
   EXPECT_EQ(service_client_->GetServiceState(Service::kContextualSearch),
             ServiceState::kDisabled);
-
-  // Consent is not revoked for the following services.
-  EXPECT_EQ(service_client_->GetServiceState(Service::kAlternateErrorPages),
-            ServiceState::kEnabled);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kMetricsReporting),
-            ServiceState::kEnabled);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kNetworkPrediction),
-            ServiceState::kEnabled);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kSearchSuggest),
-            ServiceState::kEnabled);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kSafeBrowsing),
-            ServiceState::kEnabled);
 }
 
 TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {

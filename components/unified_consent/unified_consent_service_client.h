@@ -18,18 +18,8 @@ namespace unified_consent {
 class UnifiedConsentServiceClient {
  public:
   enum class Service {
-    // Link Doctor error pages.
-    kAlternateErrorPages,
-    // Metrics reporting.
-    kMetricsReporting,
-    // Prediction of network actions.
-    kNetworkPrediction,
-    // Safe browsing.
-    kSafeBrowsing,
     // Extended safe browsing.
     kSafeBrowsingExtendedReporting,
-    // Search suggestions.
-    kSearchSuggest,
     // Spell checking.
     kSpellCheck,
     // Contextual search.

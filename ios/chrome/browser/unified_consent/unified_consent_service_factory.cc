@@ -53,10 +53,8 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   PrefService* user_pref_service = browser_state->GetPrefs();
-  PrefService* local_pref_service = GetApplicationContext()->GetLocalState();
   std::unique_ptr<unified_consent::UnifiedConsentServiceClient> service_client =
-      std::make_unique<UnifiedConsentServiceClientImpl>(user_pref_service,
-                                                        local_pref_service);
+      std::make_unique<UnifiedConsentServiceClientImpl>();
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
