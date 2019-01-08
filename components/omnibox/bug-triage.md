@@ -115,7 +115,7 @@ Follow [standard Chromium
 policies](https://www.chromium.org/for-testers/bug-reporting-guidelines/triage-best-practices).
 *Priority-2* represents wanted for this release but can be punted for a release.
 *Priority-3* are bugs not time sensitive.  There is an even-lower-priority
-state; see the *NextAction=01/08/2019* below.
+state; see the *NextAction=01/07/2020* below.
 
 If you aren't sure of the scope, severity, or implications of an issue, prefer
 to assign it a higher priority (*1* or *2*) and try to assign it to someone
