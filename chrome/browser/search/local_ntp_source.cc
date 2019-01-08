@@ -85,8 +85,6 @@ namespace {
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
-const char kAnimatedShareDoodleUrl[] =
-    "https://www.gstatic.com/logo/dev/ddljson_animated_share_button.json";
 const char kConfigDataFilename[] = "config.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 const char kGoogleUrl[] = "https://www.google.com/";
@@ -97,8 +95,6 @@ const char kNtpBackgroundCollectionScriptFilename[] =
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kPromoScriptFilename[] = "promo.js";
-const char kSimpleShareDoodleUrl[] =
-    "https://www.gstatic.com/logo/dev/ddljson_simple_share_button.json";
 const char kThemeCSSFilename[] = "theme.css";
 
 const struct Resource{
@@ -954,22 +950,10 @@ void LocalNtpSource::StartDataRequest(
                                    &force_doodle_param)) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-      // TODO(crbug.com/896461): Add share button to ddljson_desktop0.json and
-      // ddljson_desktop1.json then update links below.
-      if (force_doodle_param == "0") {
-        command_line->AppendSwitchASCII(
-            search_provider_logos::switches::kGoogleDoodleUrl,
-            kSimpleShareDoodleUrl);
-      } else if (force_doodle_param == "1") {
-        command_line->AppendSwitchASCII(
-            search_provider_logos::switches::kGoogleDoodleUrl,
-            kAnimatedShareDoodleUrl);
-      } else {
-        command_line->AppendSwitchASCII(
-            search_provider_logos::switches::kGoogleDoodleUrl,
-            "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
-                force_doodle_param + ".json");
-      }
+      command_line->AppendSwitchASCII(
+          search_provider_logos::switches::kGoogleDoodleUrl,
+          "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
+              force_doodle_param + ".json");
     }
 
     callback.Run(base::RefCountedString::TakeString(&html));
