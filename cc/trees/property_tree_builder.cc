@@ -988,7 +988,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
 
   bool requires_node =
       is_root || has_transparency || has_potential_opacity_animation ||
-      has_non_axis_aligned_clip || should_create_render_surface;
+      has_potential_filter_animation || has_non_axis_aligned_clip ||
+      should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
 
