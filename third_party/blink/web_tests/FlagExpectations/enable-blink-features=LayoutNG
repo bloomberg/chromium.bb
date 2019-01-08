@@ -60,6 +60,7 @@ crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2b.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/vert-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Pass ]
+crbug.com/613663 external/wpt/quirks/table-cell-width-calculation.html [ Pass ]
 
 # New failures are appended below by the script.
 crbug.com/728378 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
@@ -198,10 +199,6 @@ crbug.com/591099 external/wpt/css/css-writing-modes/line-box-height-vlr-021.xht 
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-height-vlr-023.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floats-006.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floats-014.xht [ Pass ]
-crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001q.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001r.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001s.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001t.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vlr-001.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/sizing-orthog-prct-vrl-in-htb-001.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-001.xht [ Pass ]
