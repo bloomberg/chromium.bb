@@ -24,8 +24,8 @@ HttpCredentialCleaner::HttpCredentialCleaner(
 
 HttpCredentialCleaner::~HttpCredentialCleaner() = default;
 
-bool HttpCredentialCleaner::ShouldRunCleanUp(PrefService* prefs) {
-  auto last = base::Time::FromDoubleT(prefs->GetDouble(
+bool HttpCredentialCleaner::NeedsCleaning() {
+  auto last = base::Time::FromDoubleT(prefs_->GetDouble(
       password_manager::prefs::kLastTimeObsoleteHttpCredentialsRemoved));
   return ((base::Time::Now() - last).InDays() >= kCleanUpDelayInDays);
 }
