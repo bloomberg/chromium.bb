@@ -98,17 +98,25 @@ void LocalCardMigrationDialogControllerImpl::UpdateCreditCardIcon(
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
+  AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SHOWN);
+
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   local_card_migration_dialog_->ShowDialog();
   UpdateIcon();
+  dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
+  AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SERVER_ERROR_SHOWN);
+
   local_card_migration_dialog_ =
       CreateLocalCardMigrationErrorDialogView(this, web_contents());
   UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
+  dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
 
 void LocalCardMigrationDialogControllerImpl::AddObserver(
@@ -138,9 +146,10 @@ const base::string16& LocalCardMigrationDialogControllerImpl::GetTipMessage()
 
 void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
     const std::vector<std::string>& selected_cards_guids) {
+  AutofillMetrics::LogLocalCardMigrationDialogUserSelectionPercentageMetric(
+      selected_cards_guids.size(), migratable_credit_cards_.size());
   AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
-      dialog_is_visible_duration_timer_.Elapsed(), selected_cards_guids.size(),
-      migratable_credit_cards_.size(),
+      dialog_is_visible_duration_timer_.Elapsed(),
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED);
 
   std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
@@ -153,8 +162,7 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
   AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
-      dialog_is_visible_duration_timer_.Elapsed(), 0,
-      migratable_credit_cards_.size(),
+      dialog_is_visible_duration_timer_.Elapsed(),
       AutofillMetrics::
           LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED);
 
@@ -165,11 +173,18 @@ void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
 }
 
 void LocalCardMigrationDialogControllerImpl::OnDoneButtonClicked() {
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(),
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_DONE_BUTTON_CLICKED);
   NotifyMigrationNoLongerAvailable();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
-  // TODO(crbug.com/867194): Add metrics.
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(),
+      AutofillMetrics::
+          LOCAL_CARD_MIGRATION_DIALOG_CLOSED_VIEW_CARDS_BUTTON_CLICKED);
+
   constexpr int kPaymentsProfileUserIndex = 0;
   OpenUrl(payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex));
   NotifyMigrationNoLongerAvailable();
@@ -179,8 +194,7 @@ void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked(
     const GURL& url) {
   OpenUrl(url);
   AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
-      dialog_is_visible_duration_timer_.Elapsed(), 0,
-      migratable_credit_cards_.size(),
+      dialog_is_visible_duration_timer_.Elapsed(),
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_LEGAL_MESSAGE_CLICKED);
 }
 
@@ -201,6 +215,10 @@ void LocalCardMigrationDialogControllerImpl::DeleteCard(
     view_state_ = LocalCardMigrationDialogState::kFinished;
     delete_local_card_callback_.Reset();
   }
+
+  AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+      dialog_is_visible_duration_timer_.Elapsed(),
+      AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_DELETE_CARD_ICON_CLICKED);
 }
 
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {

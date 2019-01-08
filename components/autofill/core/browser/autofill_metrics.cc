@@ -889,13 +889,15 @@ void AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
 // static
 void AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
     const base::TimeDelta& duration,
-    const int selected,
-    const int total,
     LocalCardMigrationDialogUserInteractionMetric metric) {
   DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS);
   base::UmaHistogramEnumeration(
       "Autofill.LocalCardMigrationDialogUserInteraction", metric,
       NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS);
+
+  // Do not log duration metrics for
+  // LOCAL_CARD_MIGRATION_DIALOG_DELETE_CARD_ICON_CLICKED, as it can happen
+  // multiple times in one dialog.
   std::string suffix;
   switch (metric) {
     case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED:
@@ -904,13 +906,22 @@ void AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
     case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED:
       suffix = "Denied";
       break;
+    case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_VIEW_CARDS_BUTTON_CLICKED:
+    case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_DONE_BUTTON_CLICKED:
+      suffix = "Closed";
+      break;
     default:
       return;
   }
-  base::UmaHistogramLongTimes("Autofill.LocalCardMigrationDialogActiveDuration",
-                              duration);
+
   base::UmaHistogramLongTimes(
       "Autofill.LocalCardMigrationDialogActiveDuration." + suffix, duration);
+}
+
+// static
+void AutofillMetrics::LogLocalCardMigrationDialogUserSelectionPercentageMetric(
+    int selected,
+    int total) {
   UMA_HISTOGRAM_PERCENTAGE(
       "Autofill.LocalCardMigrationDialogUserSelectionPercentage",
       100 * selected / total);
