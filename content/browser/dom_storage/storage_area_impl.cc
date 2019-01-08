@@ -84,8 +84,8 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
       commit_rate_limiter_(options.max_commits_per_hour,
                            base::TimeDelta::FromHours(1)),
       weak_ptr_factory_(this) {
-  bindings_.set_connection_error_handler(
-      base::Bind(&StorageAreaImpl::OnConnectionError, base::Unretained(this)));
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 StorageAreaImpl::~StorageAreaImpl() {
@@ -146,7 +146,7 @@ void StorageAreaImpl::EnableAggressiveCommitDelay() {
 void StorageAreaImpl::ScheduleImmediateCommit() {
   if (!on_load_complete_tasks_.empty()) {
     LoadMap(base::BindOnce(&StorageAreaImpl::ScheduleImmediateCommit,
-                           base::Unretained(this)));
+                           weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -240,9 +240,9 @@ void StorageAreaImpl::Put(
     const std::string& source,
     PutCallback callback) {
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Put, base::Unretained(this), key,
-                           value, client_old_value, source,
-                           std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::Put,
+                           weak_ptr_factory_.GetWeakPtr(), key, value,
+                           client_old_value, source, std::move(callback)));
     return;
   }
 
@@ -357,8 +357,9 @@ void StorageAreaImpl::Delete(
   // |client_old_value| can race. Thus any changes require checking for an
   // upgrade.
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Delete, base::Unretained(this),
-                           key, client_old_value, source, std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::Delete,
+                           weak_ptr_factory_.GetWeakPtr(), key,
+                           client_old_value, source, std::move(callback)));
     return;
   }
 
@@ -423,8 +424,9 @@ void StorageAreaImpl::DeleteAll(const std::string& source,
   // Don't check if a map upgrade is needed here and instead just create an
   // empty map ourself.
   if (!IsMapLoaded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::DeleteAll, base::Unretained(this),
-                           source, std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::DeleteAll,
+                           weak_ptr_factory_.GetWeakPtr(), source,
+                           std::move(callback)));
     return;
   }
 
@@ -468,7 +470,8 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
     return;
   }
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Get, base::Unretained(this), key,
+    LoadMap(base::BindOnce(&StorageAreaImpl::Get,
+                           weak_ptr_factory_.GetWeakPtr(), key,
                            std::move(callback)));
     return;
   }
@@ -486,7 +489,8 @@ void StorageAreaImpl::GetAll(
     GetAllCallback callback) {
   // The map must always be loaded for the KEYS_ONLY_WHEN_POSSIBLE mode.
   if (map_state_ != MapState::LOADED_KEYS_AND_VALUES) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::GetAll, base::Unretained(this),
+    LoadMap(base::BindOnce(&StorageAreaImpl::GetAll,
+                           weak_ptr_factory_.GetWeakPtr(),
                            std::move(complete_callback), std::move(callback)));
     return;
   }
