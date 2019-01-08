@@ -166,7 +166,20 @@ MediaFactory::MediaFactory(
     : render_frame_(render_frame),
       request_routing_token_cb_(std::move(request_routing_token_cb)) {}
 
-MediaFactory::~MediaFactory() {}
+MediaFactory::~MediaFactory() {
+  // Release the DecoderFactory to the media thread since it may still be in use
+  // there due to pending pipeline Stop() calls. Once each Stop() completes, no
+  // new tasks using the DecoderFactory will execute, so we don't need to worry
+  // about additional posted tasks from Stop().
+  if (decoder_factory_) {
+    // DeleteSoon() shouldn't ever fail, we should always have a RenderThread at
+    // this time and subsequently a media thread. To fail, the media thread must
+    // be dead/dying (which only happens at ~RenderThreadImpl), in which case
+    // the process is about to die anyways.
+    RenderThreadImpl::current()->GetMediaThreadTaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(decoder_factory_));
+  }
+}
 
 void MediaFactory::SetupMojo() {
   // Only do setup once.
