@@ -24,6 +24,14 @@ FakeClipboardRecentContent::GetRecentTextFromClipboard() {
   return clipboard_text_content_;
 }
 
+base::Optional<gfx::Image>
+FakeClipboardRecentContent::GetRecentImageFromClipboard() {
+  if (suppress_content_)
+    return base::nullopt;
+
+  return clipboard_image_content_;
+}
+
 base::TimeDelta FakeClipboardRecentContent::GetClipboardContentAge() const {
   return content_age_;
 }
@@ -37,6 +45,7 @@ void FakeClipboardRecentContent::SetClipboardURL(const GURL& url,
   DCHECK(url.is_valid());
   clipboard_url_content_ = url;
   clipboard_text_content_ = base::nullopt;
+  clipboard_image_content_ = base::nullopt;
   content_age_ = content_age;
   suppress_content_ = false;
 }
@@ -45,6 +54,17 @@ void FakeClipboardRecentContent::SetClipboardText(const base::string16& text,
                                                   base::TimeDelta content_age) {
   clipboard_url_content_ = base::nullopt;
   clipboard_text_content_ = text;
+  clipboard_image_content_ = base::nullopt;
+  content_age_ = content_age;
+  suppress_content_ = false;
+}
+
+void FakeClipboardRecentContent::SetClipboardImage(
+    const gfx::Image& image,
+    base::TimeDelta content_age) {
+  clipboard_url_content_ = base::nullopt;
+  clipboard_text_content_ = base::nullopt;
+  clipboard_image_content_ = image;
   content_age_ = content_age;
   suppress_content_ = false;
 }

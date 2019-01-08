@@ -89,6 +89,16 @@ ClipboardRecentContentIOS::GetRecentTextFromClipboard() {
   return base::SysNSStringToUTF16(text_from_pasteboard);
 }
 
+base::Optional<gfx::Image>
+ClipboardRecentContentIOS::GetRecentImageFromClipboard() {
+  UIImage* image_from_pasteboard = [implementation_ recentImageFromClipboard];
+  if (!image_from_pasteboard) {
+    return base::nullopt;
+  }
+
+  return gfx::Image(image_from_pasteboard);
+}
+
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {}
 
 base::TimeDelta ClipboardRecentContentIOS::GetClipboardContentAge() const {

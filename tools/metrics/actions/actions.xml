@@ -11516,6 +11516,11 @@ should be able to be added at any place in this file.
   <description>User pressed 'Scan QR Code' in the app menu.</description>
 </action>
 
+<action name="MobileMenuSearchCopiedImage">
+  <owner>rkgibson@google.com</owner>
+  <description>User pressed 'Search Copied Image' in the app menu.</description>
+</action>
+
 <action name="MobileMenuSettings">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Settings' in the app menu.</description>

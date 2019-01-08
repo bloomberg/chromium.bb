@@ -40,6 +40,8 @@ source_set("open_from_clipboard_impl") {
   assert_no_deps = [ "//base:i18n" ]
   if (is_ios) {
     configs += [ "//build/config/compiler:enable_arc" ]
+
+    libs = [ "MobileCoreServices.framework" ]
   }
 }
 
@@ -53,6 +55,7 @@ static_library("test_support") {
   deps = [
     ":open_from_clipboard",
     "//base",
+    "//ui/gfx:gfx",
     "//url",
   ]
 }

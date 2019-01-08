@@ -156,6 +156,17 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuScanQRCode"));
       [self.dispatcher showQRScanner];
       break;
+    case PopupMenuActionSearchCopiedImage: {
+      DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
+      RecordAction(UserMetricsAction("MobileMenuSearchCopiedImage"));
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      if (base::Optional<gfx::Image> image =
+              clipboardRecentContent->GetRecentImageFromClipboard()) {
+        [self.dispatcher searchByImage:[image.value().ToUIImage() copy]];
+      }
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected identifier";
       break;

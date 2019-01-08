@@ -68,6 +68,11 @@ ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
   return base::nullopt;
 }
 
+base::Optional<gfx::Image>
+ClipboardRecentContentGeneric::GetRecentImageFromClipboard() {
+  return base::nullopt;
+}
+
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {
   const base::Time last_modified_time =
       ui::Clipboard::GetForCurrentThread()->GetLastModifiedTime();

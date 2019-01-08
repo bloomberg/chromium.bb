@@ -17,12 +17,12 @@
 
 namespace {
 
-UIImage* TestUIImage() {
+UIImage* TestUIImage(UIColor* color = [UIColor redColor]) {
   CGRect frame = CGRectMake(0, 0, 1.0, 1.0);
   UIGraphicsBeginImageContext(frame.size);
 
   CGContextRef context = UIGraphicsGetCurrentContext();
-  CGContextSetFillColorWithColor(context, [UIColor redColor].CGColor);
+  CGContextSetFillColorWithColor(context, color.CGColor);
   CGContextFillRect(context, frame);
 
   UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
@@ -156,6 +156,11 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   void VerifyClipboardTextDoesNotExist() {
     EXPECT_FALSE(clipboard_content_->GetRecentTextFromClipboard().has_value());
   }
+
+  void VerifyIfClipboardImageExists(bool exists) {
+    EXPECT_EQ(clipboard_content_->GetRecentImageFromClipboard().has_value(),
+              exists);
+  }
 };
 
 TEST_F(ClipboardRecentContentIOSTest, SchemeFiltering) {
@@ -205,7 +210,9 @@ TEST_F(ClipboardRecentContentIOSTest, PasteboardURLObsolescence) {
   VerifyClipboardTextDoesNotExist();
 }
 
-TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboard) {
+// Checks that if the user suppresses content, no text will be returned,
+// and if the text changes, the new text will be returned again.
+TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardText) {
   SetPasteboardContent(kRecognizedURL);
 
   // Test that recent pasteboard data is provided.
@@ -240,6 +247,38 @@ TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboard) {
   VerifyClipboardTextExists(kRecognizedURL2);
 }
 
+// Checks that if the user suppresses content, no image will be returned,
+// and if the image changes, the new image will be returned again.
+TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardImage) {
+  SetPasteboardImage(TestUIImage());
+
+  // Test that recent pasteboard data is provided.
+  VerifyIfClipboardImageExists(true);
+
+  // Suppress the content of the pasteboard.
+  clipboard_content_->SuppressClipboardContent();
+
+  // Check that the pasteboard content is suppressed.
+  VerifyIfClipboardImageExists(false);
+
+  // Create a new clipboard content to test persistence.
+  ResetClipboardRecentContent(kAppSpecificScheme,
+                              base::TimeDelta::FromDays(10));
+
+  // Check that the pasteboard content is still suppressed.
+  VerifyIfClipboardImageExists(false);
+
+  // Check that even if the device is restarted, pasteboard content is
+  // still suppressed.
+  SimulateDeviceRestart();
+  VerifyIfClipboardImageExists(false);
+
+  // Check that if the pasteboard changes, the new content is not
+  // supressed anymore.
+  SetPasteboardImage(TestUIImage([UIColor greenColor]));
+  VerifyIfClipboardImageExists(true);
+}
+
 // Checks that if user copies something other than a string we don't cache the
 // string in pasteboard.
 TEST_F(ClipboardRecentContentIOSTest, AddingNonStringRemovesCachedString) {
@@ -248,6 +287,8 @@ TEST_F(ClipboardRecentContentIOSTest, AddingNonStringRemovesCachedString) {
   // Test that recent pasteboard data is provided as text and url.
   VerifyClipboardURLExists(kRecognizedURL);
   VerifyClipboardTextExists(kRecognizedURL);
+  // Image pasteboard should be empty
+  VerifyIfClipboardImageExists(false);
 
   // Overwrite pasteboard with an image.
   SetPasteboardImage(TestUIImage());
@@ -255,9 +296,13 @@ TEST_F(ClipboardRecentContentIOSTest, AddingNonStringRemovesCachedString) {
   // Url and text pasteboard should appear empty.
   VerifyClipboardURLDoesNotExist();
   VerifyClipboardTextDoesNotExist();
+  // Image pasteboard should be full
+  VerifyIfClipboardImageExists(true);
 
   // Tests that if URL is added again, pasteboard provides it normally.
   SetPasteboardContent(kRecognizedURL);
   VerifyClipboardURLExists(kRecognizedURL);
   VerifyClipboardTextExists(kRecognizedURL);
+  // Image pasteboard should be empty
+  VerifyIfClipboardImageExists(false);
 }

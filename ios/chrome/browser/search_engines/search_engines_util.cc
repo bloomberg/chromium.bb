@@ -112,4 +112,10 @@ void UpdateSearchEnginesIfNeeded(PrefService* preferences,
     new LoadedObserver(service);  // The observer manages its own lifetime.
 }
 
+bool SupportsSearchByImage(TemplateURLService* service) {
+  const TemplateURL* default_url = service->GetDefaultSearchProvider();
+  return default_url && !default_url->image_url().empty() &&
+         default_url->image_url_ref().IsValid(service->search_terms_data());
+}
+
 }  // namespace search_engines

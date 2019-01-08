@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -230,10 +231,12 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.mediator.engagementTracker =
       feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
   self.mediator.webStateList = self.webStateList;
-  self.mediator.popupMenu = tableViewController;
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
   self.mediator.bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+  self.mediator.templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.popupMenu = tableViewController;
 
   self.actionHandler = [[PopupMenuActionHandler alloc] init];
   self.actionHandler.baseViewController = self.baseViewController;

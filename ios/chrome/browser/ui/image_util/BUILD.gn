@@ -21,6 +21,7 @@ source_set("image_util") {
     "//ios/chrome/browser/web",
     "//ios/web",
     "//net",
+    "//third_party/google_toolbox_for_mac",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
