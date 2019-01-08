@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
 
@@ -64,10 +65,19 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
 
 ScriptPromise Serial::requestPort(ScriptState* script_state,
                                   const SerialPortRequestOptions* options) {
-  if (!GetExecutionContext()) {
+  auto* frame = GetFrame();
+  if (!frame) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kSecurityError,
+            "Must be handling a user gesture to show a permission request."));
   }
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);
