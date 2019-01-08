@@ -317,6 +317,13 @@ void FlushCacheThreadForTesting() {
   BackendImpl::FlushForTesting();
 }
 
+net::Error Backend::OpenOrCreateEntry(const std::string& key,
+                                      net::RequestPriority priority,
+                                      Entry** entry,
+                                      CompletionOnceCallback callback) {
+  return net::ERR_NOT_IMPLEMENTED;
+}
+
 int64_t Backend::CalculateSizeOfEntriesBetween(
     base::Time initial_time,
     base::Time end_time,

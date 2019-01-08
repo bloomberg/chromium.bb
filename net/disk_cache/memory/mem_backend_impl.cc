@@ -167,6 +167,19 @@ int32_t MemBackendImpl::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
 }
 
+net::Error MemBackendImpl::OpenOrCreateEntry(const std::string& key,
+                                             net::RequestPriority priority,
+                                             Entry** entry,
+                                             CompletionOnceCallback callback) {
+  net::Error rv = OpenEntry(key, priority, entry, CompletionOnceCallback());
+  if (rv == net::OK)
+    return rv;
+
+  // Key was not opened, try creating it instead.
+  rv = CreateEntry(key, priority, entry, CompletionOnceCallback());
+  return rv;
+}
+
 net::Error MemBackendImpl::OpenEntry(const std::string& key,
                                      net::RequestPriority request_priority,
                                      Entry** entry,

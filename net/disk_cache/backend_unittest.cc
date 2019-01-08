@@ -57,11 +57,10 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using testing::ByRef;
 using testing::Contains;
 using testing::Eq;
 using testing::Field;
-using testing::Contains;
-using testing::ByRef;
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -187,6 +186,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDisabledAPI();
 
   void BackendEviction();
+  void BackendOpenOrCreateEntry();
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -4701,4 +4701,45 @@ TEST_F(DiskCacheBackendTest, SimpleMaxSizeLimit) {
 
   size += 1;
   SetMaxSize(size, true /* should_succeed */);
+}
+
+void DiskCacheBackendTest::BackendOpenOrCreateEntry() {
+  InitCache();
+
+  disk_cache::Entry* entry1 = nullptr;
+  // Test that new key is created.
+  ASSERT_THAT(OpenOrCreateEntry("first", &entry1), IsOk());
+  ASSERT_TRUE(nullptr != entry1);
+
+  // Test that existing key is opened and its entry matches.
+  disk_cache::Entry* entry2 = nullptr;
+  ASSERT_THAT(OpenOrCreateEntry("first", &entry2), IsOk());
+  ASSERT_TRUE(nullptr != entry2);
+  ASSERT_EQ(entry1, entry2);
+
+  // Test that different keys' entries are not the same.
+  disk_cache::Entry* entry3 = nullptr;
+  ASSERT_THAT(OpenOrCreateEntry("second", &entry3), IsOk());
+  ASSERT_TRUE(nullptr != entry3);
+  ASSERT_NE(entry3, entry1);
+
+  // Test that a new entry can be created with the same key as a doomed entry.
+  entry3->Doom();
+  disk_cache::Entry* entry4 = nullptr;
+  ASSERT_THAT(OpenOrCreateEntry("second", &entry4), IsOk());
+  ASSERT_TRUE(nullptr != entry4);
+  ASSERT_NE(entry4, entry3);
+
+  // Verify the expected number of entries
+  ASSERT_EQ(2, cache_->GetEntryCount());
+
+  entry1->Close();
+  entry2->Close();
+  entry3->Close();
+  entry4->Close();
+}
+
+TEST_F(DiskCacheBackendTest, InMemoryOnlyOpenOrCreateEntry) {
+  SetMemoryOnlyMode();
+  BackendOpenOrCreateEntry();
 }
