@@ -1543,7 +1543,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
     ClientImageTransferCacheEntry image_entry(&pixmap, color_space.get(),
                                               image_data->needs_mips);
-    size_t size = image_entry.SerializedSize();
+    uint32_t size = image_entry.SerializedSize();
     void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
     if (data) {
       bool succeeded = image_entry.Serialize(

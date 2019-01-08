@@ -14,6 +14,7 @@ ClientColorSpaceTransferCacheEntry::ClientColorSpaceTransferCacheEntry(
   DCHECK(raster_color_space.color_space.IsValid());
   IPC::ParamTraits<gfx::ColorSpace>::Write(&pickle_,
                                            raster_color_space.color_space);
+  DCHECK_LE(pickle_.size(), UINT32_MAX);
 }
 
 ClientColorSpaceTransferCacheEntry::~ClientColorSpaceTransferCacheEntry() =
@@ -23,8 +24,8 @@ uint32_t ClientColorSpaceTransferCacheEntry::Id() const {
   return id_;
 }
 
-size_t ClientColorSpaceTransferCacheEntry::SerializedSize() const {
-  return pickle_.size();
+uint32_t ClientColorSpaceTransferCacheEntry::SerializedSize() const {
+  return static_cast<uint32_t>(pickle_.size());
 }
 
 bool ClientColorSpaceTransferCacheEntry::Serialize(

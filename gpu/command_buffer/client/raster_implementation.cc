@@ -115,7 +115,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
 
   size_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
                              char* memory) final {
-    size_t size = entry.SerializedSize();
+    uint32_t size = entry.SerializedSize();
     // Cap the entries inlined to a specific size.
     if (size <= ri_->max_inlined_entry_size_ && ri_->raster_mapped_buffer_) {
       size_t written = InlineEntry(entry, memory);
@@ -154,7 +154,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
     DCHECK(buffer->BelongsToBuffer(memory));
 
     size_t memory_offset = memory - static_cast<char*>(buffer->address());
-    size_t bytes_to_write = entry.SerializedSize();
+    uint32_t bytes_to_write = entry.SerializedSize();
     size_t bytes_remaining = buffer->size() - memory_offset;
     DCHECK_GT(bytes_to_write, 0u);
 
@@ -481,7 +481,7 @@ bool RasterImplementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return false;
 }
 
-void* RasterImplementation::MapTransferCacheEntry(size_t serialized_size) {
+void* RasterImplementation::MapTransferCacheEntry(uint32_t serialized_size) {
   // Prefer to use transfer buffer when possible, since transfer buffer
   // allocations are much cheaper.
   if (raster_mapped_buffer_ ||

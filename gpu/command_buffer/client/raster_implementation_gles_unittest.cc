@@ -206,7 +206,7 @@ class ContextSupportStub : public ContextSupport {
       uint32_t texture_id) override {
     return false;
   }
-  void* MapTransferCacheEntry(size_t serialized_size) override {
+  void* MapTransferCacheEntry(uint32_t serialized_size) override {
     mapped_transfer_cache_entry_.reset(new char[serialized_size]);
     return mapped_transfer_cache_entry_.get();
   }
