@@ -45,8 +45,6 @@ public class CompositorAnimator extends Animator {
     /** The list of frame update listeners for this animation. */
     private final ArrayList<AnimatorUpdateListener> mAnimatorUpdateListeners = new ArrayList<>();
 
-    private FloatProperty mFloatProperty;
-
     /**
      * A cached copy of the list of {@link AnimatorUpdateListener}s to prevent allocating a new list
      * every update.
@@ -137,7 +135,6 @@ public class CompositorAnimator extends Animator {
         animator.setDuration(durationMs);
         animator.addUpdateListener(
                 (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
-        animator.setFloatProperty(property);
         animator.setInterpolator(interpolator);
         return animator;
     }
@@ -232,17 +229,6 @@ public class CompositorAnimator extends Animator {
         mAnimatorUpdateListeners.add(listener);
     }
 
-    private void setFloatProperty(FloatProperty property) {
-        mFloatProperty = property;
-    }
-
-    /**
-     * @return Whether this animation is of the given FloatProperty.
-     */
-    public boolean isOfFloatProperty(FloatProperty property) {
-        return mFloatProperty == property;
-    }
-
     /**
      * @return Whether or not the animation has ended after being started. If the animation is
      *         started after ending, this value will be reset to true.
@@ -284,7 +270,6 @@ public class CompositorAnimator extends Animator {
     public void removeAllListeners() {
         mListeners.clear();
         mAnimatorUpdateListeners.clear();
-        mFloatProperty = null;
     }
 
     @Override
