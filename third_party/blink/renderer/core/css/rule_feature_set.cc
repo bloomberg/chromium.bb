@@ -395,19 +395,19 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
     InvalidationSetFeatures& features) {
   if (selector.Match() == CSSSelector::kTag &&
       selector.TagQName().LocalName() != CSSSelector::UniversalSelectorAtom()) {
-    features.tag_names.push_back(selector.TagQName().LocalName());
+    features.NarrowToTag(selector.TagQName().LocalName());
     return;
   }
   if (selector.Match() == CSSSelector::kId) {
-    features.ids.push_back(selector.Value());
+    features.NarrowToId(selector.Value());
     return;
   }
   if (selector.Match() == CSSSelector::kClass) {
-    features.classes.push_back(selector.Value());
+    features.NarrowToClass(selector.Value());
     return;
   }
   if (selector.IsAttributeSelector()) {
-    features.attributes.push_back(selector.Attribute().LocalName());
+    features.NarrowToAttribute(selector.Attribute().LocalName());
     return;
   }
   switch (selector.GetPseudoType()) {
@@ -600,7 +600,7 @@ RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
   // Don't add any features if one of the sub-selectors of does not contain
   // any invalidation set features. E.g. :-webkit-any(*, span).
   if (all_sub_selectors_have_features)
-    features.Add(any_features);
+    features.NarrowToFeatures(any_features);
   return kNormalInvalidation;
 }
 
@@ -1224,6 +1224,16 @@ void RuleFeatureSet::InvalidationSetFeatures::Add(
   invalidation_flags.Merge(other.invalidation_flags);
   content_pseudo_crossing |= other.content_pseudo_crossing;
   has_nth_pseudo |= other.has_nth_pseudo;
+}
+
+void RuleFeatureSet::InvalidationSetFeatures::NarrowToFeatures(
+    const InvalidationSetFeatures& other) {
+  unsigned size = Size();
+  unsigned other_size = other.Size();
+  if (size == 0 || (1 <= other_size && other_size < size)) {
+    ClearFeatures();
+    Add(other);
+  }
 }
 
 bool RuleFeatureSet::InvalidationSetFeatures::HasFeatures() const {

@@ -376,6 +376,25 @@ TEST_F(RuleFeatureSetTest, any) {
   ExpectNoInvalidation(invalidation_lists.siblings);
 }
 
+TEST_F(RuleFeatureSetTest, repeatedAny) {
+  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
+            CollectFeatures(":-webkit-any(.v, .w):-webkit-any(.x, .y, .z)"));
+
+  {
+    InvalidationLists invalidation_lists;
+    CollectInvalidationSetsForClass(invalidation_lists, "v");
+    ExpectSelfInvalidation(invalidation_lists.descendants);
+    ExpectNoInvalidation(invalidation_lists.siblings);
+  }
+
+  {
+    InvalidationLists invalidation_lists;
+    CollectInvalidationSetsForClass(invalidation_lists, "x");
+    ExpectSelfInvalidation(invalidation_lists.descendants);
+    ExpectNoInvalidation(invalidation_lists.siblings);
+  }
+}
+
 TEST_F(RuleFeatureSetTest, anyIdDescendant) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
             CollectFeatures(".a :-webkit-any(#b, #c)"));
@@ -383,6 +402,15 @@ TEST_F(RuleFeatureSetTest, anyIdDescendant) {
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");
   ExpectIdInvalidation("b", "c", invalidation_lists.descendants);
+}
+
+TEST_F(RuleFeatureSetTest, repeatedAnyDescendant) {
+  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
+            CollectFeatures(".a :-webkit-any(.v, .w):-webkit-any(.x, .y, .z)"));
+
+  InvalidationLists invalidation_lists;
+  CollectInvalidationSetsForClass(invalidation_lists, "a");
+  ExpectClassInvalidation("v", "w", invalidation_lists.descendants);
 }
 
 TEST_F(RuleFeatureSetTest, anyTagDescendant) {

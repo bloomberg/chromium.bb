@@ -202,6 +202,42 @@ class CORE_EXPORT RuleFeatureSet {
     bool HasFeatures() const;
     bool HasIdClassOrAttribute() const;
 
+    void NarrowToClass(const AtomicString& class_name) {
+      if (Size() == 1 && (!ids.IsEmpty() || !classes.IsEmpty()))
+        return;
+      ClearFeatures();
+      classes.push_back(class_name);
+    }
+    void NarrowToAttribute(const AtomicString& attribute) {
+      if (Size() == 1 &&
+          (!ids.IsEmpty() || !classes.IsEmpty() || !attributes.IsEmpty()))
+        return;
+      ClearFeatures();
+      attributes.push_back(attribute);
+    }
+    void NarrowToId(const AtomicString& id) {
+      if (Size() == 1 && !ids.IsEmpty())
+        return;
+      ClearFeatures();
+      ids.push_back(id);
+    }
+    void NarrowToTag(const AtomicString& tag_name) {
+      if (Size() == 1)
+        return;
+      ClearFeatures();
+      tag_names.push_back(tag_name);
+    }
+    void NarrowToFeatures(const InvalidationSetFeatures&);
+    void ClearFeatures() {
+      classes.clear();
+      attributes.clear();
+      ids.clear();
+      tag_names.clear();
+    }
+    unsigned Size() const {
+      return classes.size() + attributes.size() + ids.size() + tag_names.size();
+    }
+
     Vector<AtomicString> classes;
     Vector<AtomicString> attributes;
     Vector<AtomicString> ids;

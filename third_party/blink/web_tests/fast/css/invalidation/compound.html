@@ -120,95 +120,97 @@
 </div>
 
 <script>
-document.body.offsetTop;
+'use strict';
+const transparent = "rgba(0, 0, 0, 0)";
+const green = "rgb(0, 128, 0)";
+document.body.offsetTop; // force style calculation
 
 test(function() {
-    assert_true(!!window.internals, "This test only works with internals exposed present");
+    assert_true(!!window.internals, "This test only works with internals exposed");
 }, "internals are exposed");
 
 test(function() {
-    assert_equals(getComputedStyle(r1).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r1).backgroundColor, transparent, "Background color should initially be transparent");
 
     t1.className = "t1";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
-    assert_equals(getComputedStyle(r1).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
+    assert_equals(getComputedStyle(r1).backgroundColor, green, "Background color is green after class change");
 }, "Descendant with compound selector containing id");
 
 test(function() {
-    assert_equals(getComputedStyle(r2).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r2).backgroundColor, transparent, "Background color should initially be transparent");
 
     t2.className = "t2";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
-    assert_equals(getComputedStyle(r2).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
+    assert_equals(getComputedStyle(r2).backgroundColor, green, "Background color is green after class change");
 }, "Descendant with compound selector containing universal and id");
 
 test(function() {
-    assert_equals(getComputedStyle(r3).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r3).backgroundColor, transparent, "Background color should initially be transparent");
 
     t3.className = "t3";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
-    assert_equals(getComputedStyle(r3).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
+    assert_equals(getComputedStyle(r3).backgroundColor, green, "Background color is green after class change");
 }, "Descendant with compound selector");
 
 test(function() {
-    assert_equals(getComputedStyle(r4).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r4).backgroundColor, transparent, "Background color should initially be transparent");
 
     t4.className = "t4";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
-    assert_equals(getComputedStyle(r4).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
+    assert_equals(getComputedStyle(r4).backgroundColor, green, "Background color is green after class change");
 }, "Descendant with compound selector containing universal");
 
 test(function() {
-    assert_equals(getComputedStyle(r5a).backgroundColor, "rgba(0, 0, 0, 0)", "Background color a should initially be transparent");
-    assert_equals(getComputedStyle(r5b).backgroundColor, "rgba(0, 0, 0, 0)", "Background color b should initially be transparent");
+    assert_equals(getComputedStyle(r5a).backgroundColor, transparent, "Background color a should initially be transparent");
+    assert_equals(getComputedStyle(r5b).backgroundColor, transparent, "Background color b should initially be transparent");
 
     t5.className = "t5";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5, "Subtree style recalc");
-    assert_equals(getComputedStyle(r5a).backgroundColor, "rgb(0, 128, 0)", "Background color a is green after class change");
-    assert_equals(getComputedStyle(r5b).backgroundColor, "rgb(0, 128, 0)", "Background color b is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
+    assert_equals(getComputedStyle(r5a).backgroundColor, green, "Background color a is green after class change");
+    assert_equals(getComputedStyle(r5b).backgroundColor, green, "Background color b is green after class change");
 }, "Descendant with :-webkit-any containing compound selector");
 
 test(function() {
-    assert_equals(getComputedStyle(r6).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r6).backgroundColor, transparent, "Background color should initially be transparent");
 
     t6.className = "t6";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
-    assert_equals(getComputedStyle(r6).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
+    assert_equals(getComputedStyle(r6).backgroundColor, green, "Background color is green after class change");
 }, "Sibling with compound descendant containing id");
 
 test(function() {
-    assert_equals(getComputedStyle(r7).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r7).backgroundColor, transparent, "Background color should initially be transparent");
 
     t7.className = "t7";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
-    // TODO(ericwilligers): Update Blink's implementation of sibling selector invalidation, so the following passes:
-    assert_equals(getComputedStyle(r7).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
+    assert_equals(getComputedStyle(r7).backgroundColor, green, "Background color is green after class change");
 }, "Sibling with compound descendant");
 
 test(function() {
-    assert_equals(getComputedStyle(r8).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r8).backgroundColor, transparent, "Background color should initially be transparent");
 
     t8.className = "t8";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
-    assert_equals(getComputedStyle(r8).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
+    assert_equals(getComputedStyle(r8).backgroundColor, green, "Background color is green after class change");
 }, "Compound sibling selector containing id");
 
 test(function() {
-    assert_equals(getComputedStyle(r9).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
+    assert_equals(getComputedStyle(r9).backgroundColor, transparent, "Background color should initially be transparent");
 
     t9.className = "t9";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
-    assert_equals(getComputedStyle(r9).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
+    assert_equals(getComputedStyle(r9).backgroundColor, green, "Background color is green after class change");
 }, "Compound sibling selector");
 
 test(function() {
-    assert_equals(getComputedStyle(r10a).backgroundColor, "rgba(0, 0, 0, 0)", "Background color a should initially be transparent");
-    assert_equals(getComputedStyle(r10b).backgroundColor, "rgba(0, 0, 0, 0)", "Background color b should initially be transparent");
+    assert_equals(getComputedStyle(r10a).backgroundColor, transparent, "Background color a should initially be transparent");
+    assert_equals(getComputedStyle(r10b).backgroundColor, transparent, "Background color b should initially be transparent");
 
     t10.className = "t10";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5, "Subtree style recalc");
-    assert_equals(getComputedStyle(r10a).backgroundColor, "rgb(0, 128, 0)", "Background color a is green after class change");
-    assert_equals(getComputedStyle(r10b).backgroundColor, "rgb(0, 128, 0)", "Background color b is green after class change");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
+    assert_equals(getComputedStyle(r10a).backgroundColor, green, "Background color a is green after class change");
+    assert_equals(getComputedStyle(r10b).backgroundColor, green, "Background color b is green after class change");
 }, "Sibling with descendant :-webkit-any containing compound selector");
 
 </script>
