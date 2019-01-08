@@ -22,11 +22,6 @@ struct Referrer;
 - (instancetype)initWithBaseViewController:
     (UIViewController*)baseViewController;
 
-// Saves the image's |data|, with |metadata| to the system's album.
-// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
-- (void)saveImageData:(NSData*)data
-         withMetadata:(const image_fetcher::RequestMetadata&)metadata;
-
 // Fetches and saves the image at |url| to the system's album. |web_state| is
 // used for fetching image data by JavaScript and must not be nullptr.
 // |referrer| is used for download.

@@ -21,7 +21,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -458,9 +457,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The time at which |_lastTapPoint| was most recently set.
   CFTimeInterval _lastTapTime;
-
-  // The image fetcher used to save images and perform image-based searches.
-  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
 
   // The controller that shows the bookmarking UI after the user taps the star
   // button.
@@ -1888,8 +1884,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   for (NSUInteger index = 0; index < count; ++index)
     [self installDelegatesForTab:[self.tabModel tabAtIndex:index]];
 
-  _imageFetcher = std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
-      _browserState->GetSharedURLLoaderFactory());
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
   self.imageCopier = [[ImageCopier alloc] initWithBaseViewController:self];
 
@@ -3250,18 +3244,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
-      if (base::FeatureList::IsEnabled(kCopyImage)) {
         [weakSelf.imageSaver saveImageAtURL:imageUrl
                                    referrer:referrer
                                    webState:weakSelf.currentWebState];
-      } else {
-        // TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
-        [weakSelf saveImageAtURL:imageUrl referrer:referrer];
-      }
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Copy Image.
-    if (base::FeatureList::IsEnabled(kCopyImage)) {
       title =
           l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
       action = ^{
@@ -3272,7 +3260,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     webState:weakSelf.currentWebState];
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
-    }
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
@@ -3311,18 +3298,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                       defaultURL->short_name());
       action = ^{
         Record(ACTION_SEARCH_BY_IMAGE, isImage, isLink);
-        if (base::FeatureList::IsEnabled(kCopyImage)) {
           ImageFetchTabHelper* image_fetcher =
               ImageFetchTabHelper::FromWebState(self.currentWebState);
           DCHECK(image_fetcher);
           image_fetcher->GetImageData(imageUrl, referrer, ^(NSData* data) {
             [weakSelf searchByImageData:data atURL:imageUrl];
           });
-        } else {
-          // TODO(crbug.com/163201):Remove this when kCopyImage flag is
-          // removed.
-          [weakSelf searchByImageAtURL:imageUrl referrer:referrer];
-        }
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
     }
@@ -3380,26 +3361,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-// Performs a search with the image at the given url. The referrer is used to
-// download the image.
-// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
-- (void)searchByImageAtURL:(const GURL&)url
-                  referrer:(const web::Referrer)referrer {
-  DCHECK(url.is_valid());
-  __weak BrowserViewController* weakSelf = self;
-  const GURL image_source_url = url;
-  image_fetcher::ImageDataFetcherBlock callback =
-      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        DCHECK(data);
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [weakSelf searchByImageData:data atURL:image_source_url];
-        });
-      };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
-}
-
 // Performs a search using |data| and |imageURL| as inputs.
 - (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
   NSData* imageData = data;
@@ -3446,22 +3407,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                   openedByDOM:NO
                       atIndex:self.tabModel.count
                  inBackground:NO];
-}
-
-// Saves the image at the given URL on the system's album.  The referrer is used
-// to download the image.
-// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
-- (void)saveImageAtURL:(const GURL&)url
-              referrer:(const web::Referrer&)referrer {
-  DCHECK(url.is_valid());
-
-  image_fetcher::ImageDataFetcherBlock callback =
-      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        [self.imageSaver saveImageData:data withMetadata:metadata];
-      };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
 }
 
 #pragma mark - CRWWebStateObserver methods.

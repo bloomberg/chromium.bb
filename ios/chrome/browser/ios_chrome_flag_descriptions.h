@@ -176,10 +176,6 @@ extern const char kClosingLastIncognitoTabDescription[];
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];
 
-// Title and description for the flag to enable copying image.
-extern const char kCopyImageName[];
-extern const char kCopyImageDescription[];
-
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
