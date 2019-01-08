@@ -72,7 +72,6 @@ void QpackInstructionEncoder::Next(size_t max_encoded_bytes,
 
 void QpackInstructionEncoder::DoOpcode() {
   DCHECK_EQ(0u, byte_);
-  DCHECK_EQ(0, ~instruction_->opcode.mask & instruction_->opcode.value);
 
   byte_ = instruction_->opcode.value;
 

@@ -21,14 +21,15 @@ TEST(QpackStaticTableTest, Initialize) {
   QpackStaticTable table;
   EXPECT_FALSE(table.IsInitialized());
 
-  table.Initialize(kQpackStaticTable, QUIC_ARRAYSIZE(kQpackStaticTable));
+  table.Initialize(QpackStaticTableVector().data(),
+                   QpackStaticTableVector().size());
   EXPECT_TRUE(table.IsInitialized());
 
   auto static_entries = table.GetStaticEntries();
-  EXPECT_EQ(QUIC_ARRAYSIZE(kQpackStaticTable), static_entries.size());
+  EXPECT_EQ(QpackStaticTableVector().size(), static_entries.size());
 
   auto static_index = table.GetStaticIndex();
-  EXPECT_EQ(QUIC_ARRAYSIZE(kQpackStaticTable), static_index.size());
+  EXPECT_EQ(QpackStaticTableVector().size(), static_index.size());
 
   auto static_name_index = table.GetStaticNameIndex();
   std::set<QuicStringPiece> names;

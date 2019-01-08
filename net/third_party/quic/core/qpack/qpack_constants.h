@@ -74,7 +74,7 @@ struct QUIC_EXPORT_PRIVATE QpackInstruction {
 };
 
 // A language is a collection of instructions.  The order does not matter.
-// The set of instruction opcodes must cover all possible input.
+// Every possible input must match exactly one instruction.
 using QpackLanguage = std::vector<const QpackInstruction*>;
 
 // TODO(bnc): Move this into HpackVarintEncoder.

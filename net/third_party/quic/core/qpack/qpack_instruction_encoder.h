@@ -82,7 +82,7 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
   bool s_bit_;
   uint64_t varint_;
   uint64_t varint2_;
-  // The caller must keep the std::string that |name_| and |value_| point to
+  // The caller must keep the string that |name_| and |value_| point to
   // valid until they are encoded.
   QuicStringPiece name_;
   QuicStringPiece value_;

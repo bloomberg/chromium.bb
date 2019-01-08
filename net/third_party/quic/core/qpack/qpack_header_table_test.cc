@@ -98,7 +98,8 @@ TEST_F(QpackHeaderTableTest, LookupStaticEntry) {
   // 98 is the last entry.
   ExpectEntryAtIndex(/* is_static = */ true, 98, "x-frame-options",
                      "sameorigin");
-  assert(QUIC_ARRAYSIZE(kQpackStaticTable) == 99);
+
+  ASSERT_EQ(99u, QpackStaticTableVector().size());
   ExpectNoEntryAtIndex(/* is_static = */ true, 99);
 }
 
