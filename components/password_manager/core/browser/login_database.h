@@ -19,6 +19,9 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/sync_metadata_store.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 
@@ -40,10 +43,10 @@ extern const int kCompatibleVersionNumber;
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
-class LoginDatabase {
+class LoginDatabase : public syncer::SyncMetadataStore {
  public:
   explicit LoginDatabase(const base::FilePath& db_path);
-  virtual ~LoginDatabase();
+  ~LoginDatabase() override;
 
   // Actually creates/opens the database. If false is returned, no other method
   // should be called.
@@ -174,12 +177,26 @@ class LoginDatabase {
   // empty string if the row for this |form| is not found.
   std::string GetEncryptedPassword(const autofill::PasswordForm& form) const;
 
+  // syncer::SyncMetadataStore implementation.
+  bool UpdateSyncMetadata(syncer::ModelType model_type,
+                          const std::string& storage_key,
+                          const sync_pb::EntityMetadata& metadata) override;
+  bool ClearSyncMetadata(syncer::ModelType model_type,
+                         const std::string& storage_key) override;
+  bool UpdateModelTypeState(
+      syncer::ModelType model_type,
+      const sync_pb::ModelTypeState& model_type_state) override;
+  bool ClearModelTypeState(syncer::ModelType model_type) override;
+
   // Returns the id for the specified |form|.  Returns -1 if the row for this
   // |form| is not found.
   // TODO(crbug.com/902349): consider migrating away from this method and make
   // AddLogin() return the inserted id of the inserted item (probably using an
   // output parameter).
   int GetIdForTesting(const autofill::PasswordForm& form) const;
+
+  // Returns all the stored sync metadata. Returns null in case of failure.
+  std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadataForTesting();
 
   StatisticsTable& stats_table() { return stats_table_; }
 
@@ -250,6 +267,13 @@ class LoginDatabase {
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
+
+  // Reads all the stored sync entities metadata in a MetadataBatch. Returns
+  // nullptr in case of failure.
+  std::unique_ptr<syncer::MetadataBatch> GetAllSyncEntityMetadataForTesting();
+
+  // Reads the stored ModelTypeState. Returns nullptr in case of failure.
+  std::unique_ptr<sync_pb::ModelTypeState> GetModelTypeStateForTesting();
 
   // Overwrites |forms| with credentials retrieved from |statement|. If
   // |matched_form| is not null, filters out all results but those PSL-matching

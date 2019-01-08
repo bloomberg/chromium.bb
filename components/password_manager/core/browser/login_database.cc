@@ -22,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -35,6 +36,8 @@
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "sql/database.h"
@@ -1441,6 +1444,75 @@ std::string LoginDatabase::GetEncryptedPassword(
   return encrypted_password;
 }
 
+bool LoginDatabase::UpdateSyncMetadata(
+    syncer::ModelType model_type,
+    const std::string& storage_key,
+    const sync_pb::EntityMetadata& metadata) {
+  DCHECK_EQ(model_type, syncer::PASSWORDS);
+
+  int storage_key_int = 0;
+  if (!base::StringToInt(storage_key, &storage_key_int)) {
+    DLOG(ERROR) << "Invalid storage key. Failed to convert the storage key to "
+                   "an integer.";
+    return false;
+  }
+
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE,
+                             "INSERT OR REPLACE INTO sync_entities_metadata "
+                             "(storage_key, metadata) VALUES(?, ?)"));
+
+  s.BindInt(0, storage_key_int);
+  s.BindString(1, metadata.SerializeAsString());
+
+  return s.Run();
+}
+
+bool LoginDatabase::ClearSyncMetadata(syncer::ModelType model_type,
+                                      const std::string& storage_key) {
+  DCHECK_EQ(model_type, syncer::PASSWORDS);
+
+  int storage_key_int = 0;
+  if (!base::StringToInt(storage_key, &storage_key_int)) {
+    DLOG(ERROR) << "Invalid storage key. Failed to convert the storage key to "
+                   "an integer.";
+    return false;
+  }
+
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE,
+                             "DELETE FROM sync_entities_metadata WHERE "
+                             "storage_key=?"));
+  s.BindInt(0, storage_key_int);
+
+  return s.Run();
+}
+
+bool LoginDatabase::UpdateModelTypeState(
+    syncer::ModelType model_type,
+    const sync_pb::ModelTypeState& model_type_state) {
+  DCHECK_EQ(model_type, syncer::PASSWORDS);
+
+  // Make sure only one row is left by storing it in the entry with id=1
+  // every time.
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT OR REPLACE INTO sync_model_metadata (id, model_metadata) "
+      "VALUES(1, ?)"));
+  s.BindString(0, model_type_state.SerializeAsString());
+
+  return s.Run();
+}
+
+bool LoginDatabase::ClearModelTypeState(syncer::ModelType model_type) {
+  DCHECK_EQ(model_type, syncer::PASSWORDS);
+
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM sync_model_metadata WHERE id=1"));
+
+  return s.Run();
+}
+
 int LoginDatabase::GetIdForTesting(const PasswordForm& form) const {
   DCHECK(!id_statement_.empty());
   sql::Statement s(
@@ -1456,6 +1528,70 @@ int LoginDatabase::GetIdForTesting(const PasswordForm& form) const {
     return s.ColumnInt(0);
   }
   return -1;
+}
+
+std::unique_ptr<syncer::MetadataBatch>
+LoginDatabase::GetAllSyncMetadataForTesting() {
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      GetAllSyncEntityMetadataForTesting();
+  if (metadata_batch == nullptr) {
+    return nullptr;
+  }
+
+  std::unique_ptr<sync_pb::ModelTypeState> model_type_state =
+      GetModelTypeStateForTesting();
+  if (model_type_state == nullptr) {
+    return nullptr;
+  }
+
+  metadata_batch->SetModelTypeState(*model_type_state);
+  return metadata_batch;
+}
+
+std::unique_ptr<syncer::MetadataBatch>
+LoginDatabase::GetAllSyncEntityMetadataForTesting() {
+  auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+                                          "SELECT storage_key, metadata FROM "
+                                          "sync_entities_metadata"));
+
+  while (s.Step()) {
+    std::string storage_key = s.ColumnString(0);
+    std::string serialized_metadata = s.ColumnString(1);
+    sync_pb::EntityMetadata entity_metadata;
+    if (entity_metadata.ParseFromString(serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, entity_metadata);
+    } else {
+      DLOG(WARNING) << "Failed to deserialize PASSWORD model type "
+                       "sync_pb::EntityMetadata.";
+      return nullptr;
+    }
+  }
+  if (!s.Succeeded()) {
+    return nullptr;
+  }
+  return metadata_batch;
+}
+
+std::unique_ptr<sync_pb::ModelTypeState>
+LoginDatabase::GetModelTypeStateForTesting() {
+  auto state = std::make_unique<sync_pb::ModelTypeState>();
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT model_metadata FROM sync_model_metadata WHERE id=1"));
+
+  if (!s.Step()) {
+    if (s.Succeeded())
+      return state;
+    else
+      return nullptr;
+  }
+
+  std::string serialized_state = s.ColumnString(0);
+  if (state->ParseFromString(serialized_state)) {
+    return state;
+  }
+  return nullptr;
 }
 
 bool LoginDatabase::StatementToForms(

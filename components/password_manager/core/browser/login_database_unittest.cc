@@ -1809,6 +1809,90 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
                                    base::Bucket(5, 1)));
 }
 
+TEST_F(LoginDatabaseTest, NoMetadata) {
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      db().GetAllSyncMetadataForTesting();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+  EXPECT_EQ(0u, metadata_batch->TakeAllMetadata().size());
+  EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
+            metadata_batch->GetModelTypeState().SerializeAsString());
+}
+
+TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  // Storage keys must be integers.
+  const std::string kStorageKey1 = "1";
+  const std::string kStorageKey2 = "2";
+  metadata.set_sequence_number(1);
+
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey1, metadata));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+
+  EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
+
+  metadata.set_sequence_number(2);
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey2, metadata));
+
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      db().GetAllSyncMetadataForTesting();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+
+  EXPECT_TRUE(metadata_batch->GetModelTypeState().initial_sync_done());
+
+  syncer::EntityMetadataMap metadata_records =
+      metadata_batch->TakeAllMetadata();
+
+  EXPECT_EQ(metadata_records.size(), 2u);
+  EXPECT_EQ(metadata_records[kStorageKey1].sequence_number(), 1);
+  EXPECT_EQ(metadata_records[kStorageKey2].sequence_number(), 2);
+
+  // Now check that a model type state update replaces the old value
+  model_type_state.set_initial_sync_done(false);
+  EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
+
+  metadata_batch = db().GetAllSyncMetadataForTesting();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+  EXPECT_FALSE(metadata_batch->GetModelTypeState().initial_sync_done());
+}
+
+TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  const std::string kStorageKey = "1";
+  sync_pb::ModelTypeState model_type_state;
+
+  model_type_state.set_initial_sync_done(true);
+
+  metadata.set_client_tag_hash("client_hash");
+
+  // Write the data into the store.
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey, metadata));
+  EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
+  // Delete the data we just wrote.
+  EXPECT_TRUE(db().ClearSyncMetadata(syncer::PASSWORDS, kStorageKey));
+
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      db().GetAllSyncMetadataForTesting();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+
+  // It shouldn't be there any more.
+  syncer::EntityMetadataMap metadata_records =
+      metadata_batch->TakeAllMetadata();
+  EXPECT_EQ(metadata_records.size(), 0u);
+
+  // Now delete the model type state.
+  EXPECT_TRUE(db().ClearModelTypeState(syncer::PASSWORDS));
+  metadata_batch = db().GetAllSyncMetadataForTesting();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+
+  EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
+            metadata_batch->GetModelTypeState().SerializeAsString());
+}
+
 #if defined(OS_POSIX)
 // Only the current user has permission to read the database.
 //
