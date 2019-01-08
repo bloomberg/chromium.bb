@@ -14,7 +14,6 @@ import os
 import re
 import shutil
 import socket
-import time
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
@@ -32,10 +31,6 @@ from chromite.lib import retry_util
 
 class VMError(device.DeviceError):
   """Exception for VM errors."""
-
-
-class VMCreationError(VMError):
-  """Raised when failed to create a VM image."""
 
 
 def VMIsUpdatable(path):
@@ -72,8 +67,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       use the folder where |image| resides.
   """
   if not image and not board:
-    raise VMCreationError(
-        'Cannot create VM when both image and board are None.')
+    raise VMError('Cannot create VM when both image and board are None.')
 
   image_dir = os.path.dirname(image)
   src_path = dest_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
@@ -128,7 +122,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       if tempdir:
         osutils.RmDir(
             path_util.FromChrootPath(tempdir), ignore_missing=True)
-      raise VMCreationError(msg)
+      raise VMError(msg)
 
     if dest_dir:
       # Move VM from tempdir to dest_dir.
@@ -138,126 +132,9 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       osutils.RmDir(path_util.FromChrootPath(tempdir), ignore_missing=True)
 
   if not os.path.exists(dest_path):
-    raise VMCreationError(msg)
+    raise VMError(msg)
 
   return dest_path
-
-
-class VMStartupError(VMError):
-  """Raised when failed to start a VM instance."""
-
-
-class VMStopError(VMError):
-  """Raised when failed to stop a VM instance."""
-
-# TODO(achuith): Deprecate in favor of VM class below.
-class VMInstance(object):
-  """This is a wrapper of a VM instance."""
-
-  MAX_LAUNCH_ATTEMPTS = 5
-  TIME_BETWEEN_LAUNCH_ATTEMPTS = 30
-
-  # VM needs a longer timeout.
-  SSH_CONNECT_TIMEOUT = 120
-
-  def __init__(self, image_path, port=None, tempdir=None,
-               debug_level=logging.DEBUG):
-    """Initializes VMWrapper with a VM image path.
-
-    Args:
-      image_path: Path to the VM image.
-      port: SSH port of the VM.
-      tempdir: Temporary working directory.
-      debug_level: Debug level for logging.
-    """
-    self.image_path = image_path
-    self.tempdir = tempdir
-    self._tempdir_obj = None
-    if not self.tempdir:
-      self._tempdir_obj = osutils.TempDir(prefix='vm_wrapper', sudo_rm=True)
-      self.tempdir = self._tempdir_obj.tempdir
-    self.kvm_pid_path = os.path.join(self.tempdir, 'kvm.pid')
-    self.port = (remote_access.GetUnusedPort() if port is None
-                 else remote_access.NormalizePort(port))
-    self.debug_level = debug_level
-    self.ssh_settings = remote_access.CompileSSHConnectSettings(
-        ConnectTimeout=self.SSH_CONNECT_TIMEOUT)
-    self.agent = remote_access.RemoteAccess(
-        remote_access.LOCALHOST, self.tempdir, self.port,
-        debug_level=self.debug_level, interactive=False)
-    self.device_addr = 'ssh://%s:%d' % (remote_access.LOCALHOST, self.port)
-
-  def _Start(self):
-    """Run the command to start VM."""
-    cmd = [os.path.join(constants.CROSUTILS_DIR, 'bin', 'cros_start_vm'),
-           '--ssh_port', str(self.port),
-           '--image_path', self.image_path,
-           '--no_graphics',
-           '--kvm_pid', self.kvm_pid_path]
-    try:
-      self._RunCommand(cmd, capture_output=True)
-    except cros_build_lib.RunCommandError as e:
-      msg = 'VM failed to start'
-      logging.warning('%s: %s', msg, e)
-      raise VMStartupError(msg)
-
-  def Connect(self):
-    """Returns True if we can connect to VM via SSH."""
-    try:
-      self.agent.RemoteSh(['true'], connect_settings=self.ssh_settings)
-    except Exception:
-      return False
-
-    return True
-
-  def Stop(self, ignore_error=False):
-    """Stops a running VM.
-
-    Args:
-      ignore_error: If set True, do not raise an exception on error.
-    """
-    cmd = [os.path.join(constants.CROSUTILS_DIR, 'bin', 'cros_stop_vm'),
-           '--kvm_pid', self.kvm_pid_path]
-    result = self._RunCommand(cmd, capture_output=True, error_code_ok=True)
-    if result.returncode:
-      msg = 'Failed to stop VM'
-      if ignore_error:
-        logging.warning('%s: %s', msg, result.error)
-      else:
-        logging.error('%s: %s', msg, result.error)
-        raise VMStopError(msg)
-
-  def Start(self):
-    """Start VM and wait until we can ssh into it.
-
-    This command is more robust than just naively starting the VM as it will
-    try to start the VM multiple times if the VM fails to start up. This is
-    inspired by retry_until_ssh in crosutils/lib/cros_vm_lib.sh.
-    """
-    for _ in range(self.MAX_LAUNCH_ATTEMPTS):
-      try:
-        self._Start()
-      except VMStartupError:
-        logging.warning('VM failed to start.')
-        continue
-
-      if self.Connect():
-        # VM is started up successfully if we can connect to it.
-        break
-
-      logging.warning('Cannot connect to VM...')
-      self.Stop(ignore_error=True)
-      time.sleep(self.TIME_BETWEEN_LAUNCH_ATTEMPTS)
-    else:
-      raise VMStartupError('Max attempts (%d) to start VM exceeded.'
-                           % self.MAX_LAUNCH_ATTEMPTS)
-
-    logging.info('VM started at port %d', self.port)
-
-  def _RunCommand(self, *args, **kwargs):
-    """Runs a commmand on the host machine."""
-    kwargs.setdefault('debug_level', self.debug_level)
-    return cros_build_lib.RunCommand(*args, **kwargs)
 
 
 class VM(device.Device):
