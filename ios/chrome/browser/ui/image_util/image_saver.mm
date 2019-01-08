@@ -47,31 +47,6 @@
   return self;
 }
 
-// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
-- (void)saveImageData:(NSData*)data
-         withMetadata:(const image_fetcher::RequestMetadata&)metadata {
-  DCHECK(data);
-
-  if ([data length] == 0) {
-    [self
-        displayPrivacyErrorAlertOnMainQueue:
-            l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
-    return;
-  }
-
-  base::FilePath::StringType extension;
-
-  bool extensionSuccess =
-      net::GetPreferredExtensionForMimeType(metadata.mime_type, &extension);
-  if (!extensionSuccess || extension.length() == 0) {
-    extension = "png";
-  }
-
-  NSString* fileExtension =
-      [@"." stringByAppendingString:base::SysUTF8ToNSString(extension)];
-  [self managePermissionAndSaveImage:data withFileExtension:fileExtension];
-}
-
 - (void)saveImageAtURL:(const GURL&)url
               referrer:(const web::Referrer&)referrer
               webState:(web::WebState*)webState {

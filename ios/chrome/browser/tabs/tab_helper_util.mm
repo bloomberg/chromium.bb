@@ -97,9 +97,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FontSizeTabHelper::CreateForWebState(web_state);
   }
 
-  if (base::FeatureList::IsEnabled(kCopyImage)) {
-    ImageFetchTabHelper::CreateForWebState(web_state);
-  }
+  ImageFetchTabHelper::CreateForWebState(web_state);
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);

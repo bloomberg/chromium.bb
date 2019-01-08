@@ -223,10 +223,6 @@ const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
 
-const char kCopyImageName[] = "Copy Image";
-const char kCopyImageDescription[] =
-    "Enable copying image to system pasteboard via context menu.";
-
 const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "

@@ -14,9 +14,6 @@ extern const base::Feature kClosingLastIncognitoTab;
 // Feature to contain the NTP directly from browser container.
 extern const base::Feature kBrowserContainerContainsNTP;
 
-// Feature to copy image to system pasteboard via context menu.
-extern const base::Feature kCopyImage;
-
 // Feature to show most visited sites and collection shortcuts in the omnibox
 // popup instead of ZeroSuggest.
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
