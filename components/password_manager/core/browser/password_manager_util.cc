@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
@@ -173,12 +172,6 @@ void RemoveUselessCredentials(
   // TODO(https://crbug.com/887889): Remove the knowledge of the particular
   // preferences from this code.
 
-  const bool need_to_remove_blacklisted_duplicates = !prefs->GetBoolean(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved);
-  base::UmaHistogramBoolean(
-      "PasswordManager.BlacklistedSites.NeedRemoveBlacklistDuplicates",
-      need_to_remove_blacklisted_duplicates);
-
   const bool need_to_remove_invalid_credentials = !prefs->GetBoolean(
       password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved);
   base::UmaHistogramBoolean(
@@ -196,12 +189,6 @@ void RemoveUselessCredentials(
   if (need_to_remove_invalid_credentials) {
     cleaning_tasks_runner->AddCleaningTask(
         std::make_unique<password_manager::InvalidRealmCredentialCleaner>(
-            store, prefs));
-  }
-
-  if (need_to_remove_blacklisted_duplicates) {
-    cleaning_tasks_runner->AddCleaningTask(
-        std::make_unique<password_manager::BlacklistedDuplicatesCleaner>(
             store, prefs));
   }
 
