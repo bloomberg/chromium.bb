@@ -290,13 +290,27 @@ std::string LookalikeUrlNavigationObserver::GetSimilarDomainFromTop500(
           domain_and_registry)) {
     return std::string();
   }
+  const std::string domain_without_registry =
+      url_formatter::top_domains::HostnameWithoutRegistry(domain_and_registry);
 
   for (const std::string& skeleton :
        url_formatter::GetSkeletons(base::UTF8ToUTF16(domain_and_registry))) {
     for (const char* const top_domain_skeleton : kTop500) {
       if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(skeleton),
                                   base::UTF8ToUTF16(top_domain_skeleton))) {
-        return url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
+        const std::string top_domain =
+            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
+        DCHECK(!top_domain.empty());
+        // If the only difference between the navigated and top
+        // domains is the registry part, this is unlikely to be a spoofing
+        // attempt. Ignore this match and continue. E.g. If the navigated domain
+        // is google.com.tw and the top domain is google.com.tr, this won't
+        // produce a match.
+        const std::string top_domain_without_registry =
+            url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
+        if (domain_without_registry != top_domain_without_registry) {
+          return top_domain;
+        }
       }
     }
   }

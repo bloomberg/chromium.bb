@@ -15,26 +15,21 @@ namespace {
 // comparison. Shorter domains are ignored.
 const size_t kMinLengthForEditDistance = 5u;
 
-// Returns the portion of hostname without the registry part.
-// E.g. For hostname = "google.com", the registry is "com", and the return value
-// will be 6 (length of "google").
-size_t GetWithoutRegistryLength(const std::string& hostname) {
+}  // namespace
+
+std::string HostnameWithoutRegistry(const std::string& hostname) {
+  DCHECK(!hostname.empty());
   const size_t registry_size =
       net::registry_controlled_domains::PermissiveGetHostRegistryLength(
           hostname.c_str(),
           net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if (registry_size == 0) {
-    return hostname.size();
-  }
-  DCHECK_LE(registry_size, hostname.size() - 1);
-  return hostname.size() - registry_size - 1;
+  return hostname.substr(0, hostname.size() - registry_size);
 }
 
-}  // namespace
-
 bool IsEditDistanceCandidate(const std::string& hostname) {
-  return GetWithoutRegistryLength(hostname) >= kMinLengthForEditDistance;
+  return !hostname.empty() &&
+         HostnameWithoutRegistry(hostname).size() >= kMinLengthForEditDistance;
 }
 
 }  // namespace top_domains

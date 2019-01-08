@@ -337,6 +337,20 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
            LookalikeUrlNavigationObserver::MatchType::kEditDistance);
 }
 
+// Tests negative examples for the edit distance.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       Idn_TopDomainEditDistance_NoMatch) {
+  // Matches google.com.tr but only differs in registry.
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("google.com.tw", "/title1.html"));
+  CheckNoUkm();
+
+  // Matches ask.com but is too short.
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("asq.com", "/title1.html"));
+  CheckNoUkm();
+}
+
 // Navigate to a domain whose visual representation looks like a domain with a
 // site engagement score above a certain threshold. This should record metrics.
 // It should also show a "Did you mean to go to ..." infobar if configured via
