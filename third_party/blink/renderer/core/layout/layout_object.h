@@ -1327,9 +1327,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  LayoutObject* parent);
   void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
 
-  void FirstLineStyleDidChange(const ComputedStyle& old_style,
-                               const ComputedStyle& new_style);
-
   void ClearBaseComputedStyle();
 
   // This function returns an enclosing non-anonymous LayoutBlock for this
@@ -2388,7 +2385,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void UpdateShapeImage(const ShapeValue*, const ShapeValue*);
   void UpdateFillImages(const FillLayer* old_layers,
-                        const FillLayer& new_layers);
+                        const FillLayer* new_layers);
   void UpdateCursorImages(const CursorList* old_cursors,
                           const CursorList* new_cursors);
   void CheckCounterChanges(const ComputedStyle* old_style,
@@ -2434,8 +2431,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutView to return the owning LayoutObject in the containing frame.
   inline LayoutObject* ParentCrossingFrames() const;
 
-  void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
-  void ApplyFirstLineChanges(const ComputedStyle& old_style);
+  void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
+  void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
   LayoutRect VisualRectForInlineBox() const {
     return AdjustVisualRectForInlineBox(VisualRect());
