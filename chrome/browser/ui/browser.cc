@@ -1538,7 +1538,7 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   // back/forward navigations to the NTP are handled.  The visible entry can't
   // be used here, since back/forward navigations are not treated as  visible
   // entries to avoid URL spoofs.
-  const content::NavigationEntry* entry =
+  content::NavigationEntry* entry =
       source->GetController().GetPendingEntry()
           ? source->GetController().GetPendingEntry()
           : source->GetController().GetLastCommittedEntry();
@@ -1880,7 +1880,7 @@ gfx::Size Browser::GetSizeForNewRenderView(WebContents* web_contents) const {
   // or there's no pending entry, or navigating to a NTP page.
   if (size.IsEmpty() || bookmark_bar_state_ != BookmarkBar::DETACHED)
     return size;
-  const NavigationEntry* pending_entry =
+  NavigationEntry* pending_entry =
       web_contents->GetController().GetPendingEntry();
   if (pending_entry &&
       !search::IsNTPURL(pending_entry->GetVirtualURL(), profile_)) {

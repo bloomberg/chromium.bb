@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   ExpectSecurityIndicatorDowngrade(tab, 0u);
 
   // Check navigation entry state.
-  const NavigationController& controller = tab->GetController();
+  NavigationController& controller = tab->GetController();
   ASSERT_TRUE(controller.GetVisibleEntry());
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
   ASSERT_TRUE(controller.GetPendingEntry());

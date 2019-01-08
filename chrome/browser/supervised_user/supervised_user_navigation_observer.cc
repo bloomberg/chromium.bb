@@ -130,7 +130,7 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   entry->SetTimestamp(timestamp);
   auto serialized_entry = std::make_unique<sessions::SerializedNavigationEntry>(
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          blocked_navigations_.size(), *entry));
+          blocked_navigations_.size(), entry.get()));
   blocked_navigations_.push_back(std::move(serialized_entry));
 
   // Show the interstitial.

@@ -31,10 +31,9 @@ class TestExtendedInfoHandler : public ExtendedInfoHandler {
   explicit TestExtendedInfoHandler(const std::string& key) : key_(key) {}
   ~TestExtendedInfoHandler() override {}
 
-  std::string GetExtendedInfo(
-      const content::NavigationEntry& entry) const override {
+  std::string GetExtendedInfo(content::NavigationEntry* entry) const override {
     base::string16 data;
-    entry.GetExtraData(key_, &data);
+    entry->GetExtraData(key_, &data);
     return base::UTF16ToASCII(data);
   }
 
@@ -124,7 +123,7 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
 
   const SerializedNavigationEntry& navigation =
       ContentSerializedNavigationBuilder::FromNavigationEntry(
-          test_data::kIndex, *navigation_entry);
+          test_data::kIndex, navigation_entry.get());
 
   EXPECT_EQ(test_data::kIndex, navigation.index());
 
@@ -167,14 +166,14 @@ TEST_F(ContentSerializedNavigationBuilderTest,
 
   const SerializedNavigationEntry& default_navigation =
       ContentSerializedNavigationBuilder::FromNavigationEntry(
-          test_data::kIndex, *navigation_entry,
+          test_data::kIndex, navigation_entry.get(),
           ContentSerializedNavigationBuilder::DEFAULT);
   EXPECT_EQ(test_data::kEncodedPageState,
             default_navigation.encoded_page_state());
 
   const SerializedNavigationEntry& excluded_page_state_navigation =
       ContentSerializedNavigationBuilder::FromNavigationEntry(
-          test_data::kIndex, *navigation_entry,
+          test_data::kIndex, navigation_entry.get(),
           ContentSerializedNavigationBuilder::EXCLUDE_PAGE_STATE);
   EXPECT_TRUE(excluded_page_state_navigation.encoded_page_state().empty());
 }
@@ -190,7 +189,7 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
 
   const SerializedNavigationEntry& navigation =
       ContentSerializedNavigationBuilder::FromNavigationEntry(
-          test_data::kIndex, *old_navigation_entry);
+          test_data::kIndex, old_navigation_entry.get());
 
   const std::unique_ptr<content::NavigationEntry> new_navigation_entry(
       ContentSerializedNavigationBuilder::ToNavigationEntry(&navigation,
@@ -235,11 +234,11 @@ TEST_F(ContentSerializedNavigationBuilderTest, SetPasswordState) {
       content::NavigationEntry::Create());
 
   EXPECT_EQ(SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
-            GetPasswordStateFromNavigation(*entry));
+            GetPasswordStateFromNavigation(entry.get()));
   SetPasswordStateInNavigation(SerializedNavigationEntry::NO_PASSWORD_FIELD,
                                entry.get());
   EXPECT_EQ(SerializedNavigationEntry::NO_PASSWORD_FIELD,
-            GetPasswordStateFromNavigation(*entry));
+            GetPasswordStateFromNavigation(entry.get()));
 }
 
 }  // namespace sessions

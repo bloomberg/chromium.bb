@@ -28,7 +28,7 @@ OfflinePageInfoHandler::OfflinePageInfoHandler() {}
 OfflinePageInfoHandler::~OfflinePageInfoHandler() {}
 
 std::string OfflinePageInfoHandler::GetExtendedInfo(
-    const content::NavigationEntry& entry) const {
+    content::NavigationEntry* entry) const {
   std::string header_value =
       OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(entry);
   if (header_value.empty())

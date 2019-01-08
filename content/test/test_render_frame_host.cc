@@ -290,7 +290,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // behaves similarly to a reload and does not change the item and document
   // sequence numbers. Simulate this behavior here too.
   if (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED)) {
-    const NavigationEntryImpl* entry =
+    NavigationEntryImpl* entry =
         static_cast<NavigationEntryImpl*>(frame_tree_node()
                                               ->navigator()
                                               ->GetController()

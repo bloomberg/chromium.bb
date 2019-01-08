@@ -241,7 +241,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
     // actually in the renderer, but the virtual URL is the one
     // seen by the user. This may be very confusing for a user to see in a
     // permissions request.
-    const content::NavigationEntry* entry =
+    content::NavigationEntry* entry =
         web_contents->GetController().GetLastCommittedEntry();
     if (entry) {
       const GURL virtual_url = entry->GetVirtualURL();

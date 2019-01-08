@@ -27,7 +27,7 @@ class SESSIONS_EXPORT ExtendedInfoHandler {
 
   // Returns the data to write to disk for the specified NavigationEntry.
   virtual std::string GetExtendedInfo(
-      const content::NavigationEntry& entry) const = 0;
+      content::NavigationEntry* entry) const = 0;
 
   // Restores |info| which was obtained from a previous call to
   // GetExtendedInfo() to a NavigationEntry.
