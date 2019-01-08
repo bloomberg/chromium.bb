@@ -9,9 +9,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/gpu/GrTypes.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -30,20 +28,11 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
   // The resource size.
   gfx::Size size;
 
-  // the mipmap of the resource texture.
-  GrMipMapped mip_mapped = GrMipMapped::kNo;
-
-  // The origin type for the resource texture.
-  GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin;
-
   // ResourceFormat from the resource texture.
   ResourceFormat resource_format = RGBA_8888;
 
-  // The alpha type for the resource texture.
-  SkAlphaType alpha_type = kUnknown_SkAlphaType;
-
-  // The color space for the resource texture. It could be null.
-  sk_sp<SkColorSpace> color_space;
+  // The color space for the resource texture.
+  gfx::ColorSpace color_space;
 };
 
 }  // namespace viz
