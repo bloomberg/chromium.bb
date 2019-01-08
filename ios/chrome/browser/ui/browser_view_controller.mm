@@ -4561,6 +4561,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     didChangeActiveTab:(Tab*)newTab
            previousTab:(Tab*)previousTab
                atIndex:(NSUInteger)index {
+  if (previousTab) {
+    previousTab.webState->WasHidden();
+    [self dismissPopups];
+  }
+
   // TODO(rohitrao): tabSelected expects to always be called with a non-nil tab.
   // Currently this observer method is always called with a non-nil |newTab|,
   // but that may change in the future.  Remove this DCHECK when it does.
@@ -4636,11 +4641,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self animateNewTab:tab
         inForegroundWithCompletion:startVoiceSearchIfNecessary];
   }
-}
-
-- (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab {
-  tab.webState->WasHidden();
-  [self dismissPopups];
 }
 
 // Observer method, tab replaced.

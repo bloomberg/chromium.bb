@@ -388,11 +388,6 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
-TEST_F(BrowserViewControllerTest, TestTabDeselected) {
-  [bvc_ tabModel:nil didDeselectTab:tab_];
-  EXPECT_FALSE(webStateImpl_->IsVisible());
-}
-
 TEST_F(BrowserViewControllerTest, TestNativeContentController) {
   id<CRWNativeContent> controller =
       [bvc_ controllerForURL:GURL(kChromeUINewTabURL)
