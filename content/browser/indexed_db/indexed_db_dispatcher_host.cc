@@ -144,6 +144,11 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 void IndexedDBDispatcherHost::AddBinding(
     blink::mojom::IDBFactoryRequest request,
     const url::Origin& origin) {
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
+    return;
+  }
+
   bindings_.AddBinding(this, std::move(request), {origin});
 }
 
@@ -174,11 +179,6 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
@@ -193,11 +193,6 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
@@ -216,11 +211,6 @@ void IndexedDBDispatcherHost::Open(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
@@ -242,11 +232,6 @@ void IndexedDBDispatcherHost::DeleteDatabase(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(callbacks_info), IDBTaskRunner()));
@@ -262,11 +247,6 @@ void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallCompactionStatusCallbackOnIOThread,
       base::ThreadTaskRunnerHandle::Get(), std::move(mojo_callback));
@@ -283,11 +263,6 @@ void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
-  if (!IsValidOrigin(context.origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallAbortStatusCallbackOnIOThread, base::ThreadTaskRunnerHandle::Get(),
       std::move(mojo_callback));
