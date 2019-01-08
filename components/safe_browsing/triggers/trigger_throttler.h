@@ -39,8 +39,9 @@ enum class TriggerType {
   AD_SAMPLE = 2,
   GAIA_PASSWORD_REUSE = 3,
   SUSPICIOUS_SITE = 4,
+  APK_DOWNLOAD = 5,
   kMinTriggerType = SECURITY_INTERSTITIAL,
-  kMaxTriggerType = SUSPICIOUS_SITE,
+  kMaxTriggerType = APK_DOWNLOAD,
 };
 
 struct TriggerTypeHash {

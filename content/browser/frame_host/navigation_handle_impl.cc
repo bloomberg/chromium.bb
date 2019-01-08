@@ -457,7 +457,10 @@ const GURL& NavigationHandleImpl::GetPreviousURL() {
 }
 
 net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
-  DCHECK(state_ >= WILL_PROCESS_RESPONSE);
+  // This is CANCELING because although the data comes in after
+  // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
+  // after and the caller might want this value.
+  DCHECK(state_ >= CANCELING);
   return socket_address_;
 }
 

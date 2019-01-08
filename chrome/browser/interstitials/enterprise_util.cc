@@ -97,6 +97,7 @@ std::string GetThreatTypeStringForInterstitial(
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
     case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
     case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
+    case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
       NOTREACHED();
       break;
   }

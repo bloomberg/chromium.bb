@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/services_delegate_impl.h"
+#include "chrome/browser/safe_browsing/services_delegate_desktop.h"
 
 #include <utility>
 
@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,7 +23,7 @@ namespace safe_browsing {
 std::unique_ptr<ServicesDelegate> ServicesDelegate::Create(
     SafeBrowsingService* safe_browsing_service) {
   return base::WrapUnique(
-      new ServicesDelegateImpl(safe_browsing_service, nullptr));
+      new ServicesDelegateDesktop(safe_browsing_service, nullptr));
 }
 
 // static
@@ -30,10 +31,10 @@ std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
     SafeBrowsingService* safe_browsing_service,
     ServicesDelegate::ServicesCreator* services_creator) {
   return base::WrapUnique(
-      new ServicesDelegateImpl(safe_browsing_service, services_creator));
+      new ServicesDelegateDesktop(safe_browsing_service, services_creator));
 }
 
-ServicesDelegateImpl::ServicesDelegateImpl(
+ServicesDelegateDesktop::ServicesDelegateDesktop(
     SafeBrowsingService* safe_browsing_service,
     ServicesDelegate::ServicesCreator* services_creator)
     : safe_browsing_service_(safe_browsing_service),
@@ -41,11 +42,11 @@ ServicesDelegateImpl::ServicesDelegateImpl(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-ServicesDelegateImpl::~ServicesDelegateImpl() {
+ServicesDelegateDesktop::~ServicesDelegateDesktop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void ServicesDelegateImpl::InitializeCsdService(
+void ServicesDelegateDesktop::InitializeCsdService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(SAFE_BROWSING_CSD)
@@ -57,16 +58,16 @@ void ServicesDelegateImpl::InitializeCsdService(
 }
 
 ExtendedReportingLevel
-ServicesDelegateImpl::GetEstimatedExtendedReportingLevel() const {
+ServicesDelegateDesktop::GetEstimatedExtendedReportingLevel() const {
   return safe_browsing_service_->estimated_extended_reporting_by_prefs();
 }
 
 const scoped_refptr<SafeBrowsingDatabaseManager>&
-ServicesDelegateImpl::database_manager() const {
+ServicesDelegateDesktop::database_manager() const {
   return database_manager_;
 }
 
-void ServicesDelegateImpl::Initialize() {
+void ServicesDelegateDesktop::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!database_manager_set_for_tests_) {
@@ -93,14 +94,14 @@ void ServicesDelegateImpl::Initialize() {
           : CreateResourceRequestDetector());
 }
 
-void ServicesDelegateImpl::SetDatabaseManagerForTest(
+void ServicesDelegateDesktop::SetDatabaseManagerForTest(
     SafeBrowsingDatabaseManager* database_manager_to_set) {
   DCHECK(!database_manager_);
   database_manager_set_for_tests_ = true;
   database_manager_ = database_manager_to_set;
 }
 
-void ServicesDelegateImpl::ShutdownServices() {
+void ServicesDelegateDesktop::ShutdownServices() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The IO thread is going away, so make sure the ClientSideDetectionService
   // dtor executes now since it may call the dtor of URLFetcher which relies
@@ -117,7 +118,7 @@ void ServicesDelegateImpl::ShutdownServices() {
   download_service_.reset();
 }
 
-void ServicesDelegateImpl::RefreshState(bool enable) {
+void ServicesDelegateDesktop::RefreshState(bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (csd_service_)
     csd_service_->SetEnabledAndRefreshState(enable);
@@ -125,7 +126,7 @@ void ServicesDelegateImpl::RefreshState(bool enable) {
     download_service_->SetEnabled(enable);
 }
 
-void ServicesDelegateImpl::ProcessResourceRequest(
+void ServicesDelegateDesktop::ProcessResourceRequest(
     const ResourceRequestInfo* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (resource_request_detector_)
@@ -133,68 +134,70 @@ void ServicesDelegateImpl::ProcessResourceRequest(
 }
 
 std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
-ServicesDelegateImpl::CreatePreferenceValidationDelegate(Profile* profile) {
+ServicesDelegateDesktop::CreatePreferenceValidationDelegate(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return incident_service_->CreatePreferenceValidationDelegate(profile);
 }
 
-void ServicesDelegateImpl::RegisterDelayedAnalysisCallback(
+void ServicesDelegateDesktop::RegisterDelayedAnalysisCallback(
     const DelayedAnalysisCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   incident_service_->RegisterDelayedAnalysisCallback(callback);
 }
 
-void ServicesDelegateImpl::AddDownloadManager(
+void ServicesDelegateDesktop::AddDownloadManager(
     content::DownloadManager* download_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   incident_service_->AddDownloadManager(download_manager);
 }
 
-ClientSideDetectionService* ServicesDelegateImpl::GetCsdService() {
+ClientSideDetectionService* ServicesDelegateDesktop::GetCsdService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return csd_service_.get();
 }
 
-DownloadProtectionService* ServicesDelegateImpl::GetDownloadService() {
+DownloadProtectionService* ServicesDelegateDesktop::GetDownloadService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return download_service_.get();
 }
 
 scoped_refptr<SafeBrowsingDatabaseManager>
-ServicesDelegateImpl::CreateDatabaseManager() {
+ServicesDelegateDesktop::CreateDatabaseManager() {
   return V4LocalDatabaseManager::Create(
       SafeBrowsingService::GetBaseFilename(),
       base::BindRepeating(
-          &ServicesDelegateImpl::GetEstimatedExtendedReportingLevel,
+          &ServicesDelegateDesktop::GetEstimatedExtendedReportingLevel,
           base::Unretained(this)));
 }
 
 DownloadProtectionService*
-ServicesDelegateImpl::CreateDownloadProtectionService() {
+ServicesDelegateDesktop::CreateDownloadProtectionService() {
   return new DownloadProtectionService(safe_browsing_service_);
 }
 
 IncidentReportingService*
-ServicesDelegateImpl::CreateIncidentReportingService() {
+ServicesDelegateDesktop::CreateIncidentReportingService() {
   return new IncidentReportingService(safe_browsing_service_);
 }
 
-ResourceRequestDetector* ServicesDelegateImpl::CreateResourceRequestDetector() {
+ResourceRequestDetector*
+ServicesDelegateDesktop::CreateResourceRequestDetector() {
   return new ResourceRequestDetector(safe_browsing_service_->database_manager(),
                                      incident_service_->GetIncidentReceiver());
 }
 
-void ServicesDelegateImpl::StartOnIOThread(
+void ServicesDelegateDesktop::StartOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& v4_config) {
   database_manager_->StartOnIOThread(url_loader_factory, v4_config);
 }
 
-void ServicesDelegateImpl::StopOnIOThread(bool shutdown) {
+void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-void ServicesDelegateImpl::CreatePasswordProtectionService(Profile* profile) {
+void ServicesDelegateDesktop::CreatePasswordProtectionService(
+    Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
   auto it = password_protection_service_map_.find(profile);
@@ -205,7 +208,8 @@ void ServicesDelegateImpl::CreatePasswordProtectionService(Profile* profile) {
   password_protection_service_map_[profile] = std::move(service);
 }
 
-void ServicesDelegateImpl::RemovePasswordProtectionService(Profile* profile) {
+void ServicesDelegateDesktop::RemovePasswordProtectionService(
+    Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
   auto it = password_protection_service_map_.find(profile);
@@ -213,12 +217,23 @@ void ServicesDelegateImpl::RemovePasswordProtectionService(Profile* profile) {
     password_protection_service_map_.erase(it);
 }
 
-PasswordProtectionService* ServicesDelegateImpl::GetPasswordProtectionService(
-    Profile* profile) const {
+PasswordProtectionService*
+ServicesDelegateDesktop::GetPasswordProtectionService(Profile* profile) const {
   DCHECK(profile);
   auto it = password_protection_service_map_.find(profile);
   return it != password_protection_service_map_.end() ? it->second.get()
                                                       : nullptr;
+}
+
+// Only implemented on Android.
+void ServicesDelegateDesktop::CreateTelemetryService(Profile* profile) {}
+
+// Only implemented on Android.
+void ServicesDelegateDesktop::RemoveTelemetryService() {}
+
+// Only meaningful on Android.
+TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
+  return nullptr;
 }
 
 }  // namespace safe_browsing

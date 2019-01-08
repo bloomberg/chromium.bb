@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_STUB_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_STUB_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_ANDROID_SERVICES_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_SAFE_BROWSING_ANDROID_SERVICES_DELEGATE_ANDROID_H_
 
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 
 namespace safe_browsing {
 
-// Dummy ServicesDelegate implementation. Create via ServicesDelegate::Create().
-class ServicesDelegateStub : public ServicesDelegate {
+class AndroidTelemetryService;
+class TelemetryService;
+
+// Android ServicesDelegate implementation. Create via
+// ServicesDelegate::Create().
+class ServicesDelegateAndroid : public ServicesDelegate {
  public:
-  ServicesDelegateStub();
-  ~ServicesDelegateStub() override;
+  explicit ServicesDelegateAndroid(SafeBrowsingService* safe_browsing_service);
+  ~ServicesDelegateAndroid() override;
 
  private:
   // ServicesDelegate:
@@ -45,13 +49,22 @@ class ServicesDelegateStub : public ServicesDelegate {
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const override;
 
+  void CreateTelemetryService(Profile* profile) override;
+  void RemoveTelemetryService() override;
+  TelemetryService* GetTelemetryService() const override;
+
+  SafeBrowsingService* const safe_browsing_service_;
+
+  // The telemetry service tied to the current profile.
+  std::unique_ptr<AndroidTelemetryService> telemetry_service_;
+
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   // Has the database_manager been set for tests?
   bool database_manager_set_for_tests_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ServicesDelegateStub);
+  DISALLOW_COPY_AND_ASSIGN(ServicesDelegateAndroid);
 };
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_STUB_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_ANDROID_SERVICES_DELEGATE_ANDROID_H_
