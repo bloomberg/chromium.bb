@@ -753,13 +753,7 @@ bool DWriteFontProxyImpl::EnsureFontUniqueNameTable() {
     return false;
   }
 
-  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.Proxy.LookupTableBuildTime",
-                      base::TimeTicks::Now() - time_ticks);
-  // The size is usually tens of kilobytes, ~50kb on a standard Windows 10
-  // installation, 1MB should be a more than high enough upper limit.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "DirectWrite.Fonts.Proxy.LookupTableSize",
-      font_unique_name_table_memory_.mapping.size() / 1024, 1, 1000, 50);
+  // TODO(drott): Add UMA for table build time and table size.
 
   return true;
 }
