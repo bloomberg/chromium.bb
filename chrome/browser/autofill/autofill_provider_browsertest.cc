@@ -39,12 +39,11 @@ class MockAutofillProvider : public TestAutofillProvider {
   MockAutofillProvider() {}
   ~MockAutofillProvider() override {}
 
-  MOCK_METHOD5(OnFormSubmitted,
+  MOCK_METHOD4(OnFormSubmitted,
                void(AutofillHandlerProxy* handler,
                     const FormData& form,
                     bool,
-                    SubmissionSource,
-                    base::TimeTicks));
+                    SubmissionSource));
 
   MOCK_METHOD6(OnQueryFormFieldAutofill,
                void(AutofillHandlerProxy* handler,
@@ -66,8 +65,7 @@ class MockAutofillProvider : public TestAutofillProvider {
   void OnFormSubmittedImpl(AutofillHandlerProxy*,
                            const FormData& form,
                            bool success,
-                           SubmissionSource source,
-                           base::TimeTicks timestamp) {
+                           SubmissionSource source) {
     submitted_form_ = form;
   }
 
@@ -169,7 +167,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
         .WillOnce(
             testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
-    EXPECT_CALL(*autofill_provider_, OnFormSubmitted(_, _, _, _, _))
+    EXPECT_CALL(*autofill_provider_, OnFormSubmitted)
         .WillOnce(Invoke(autofill_provider_.get(),
                          &MockAutofillProvider::OnFormSubmittedImpl));
 
@@ -220,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        FrameDetachedOnFormlessSubmission) {
   CreateContentAutofillDriverFactoryForSubFrame();
   EXPECT_CALL(*autofill_provider_,
-              OnFormSubmitted(_, _, _, SubmissionSource::FRAME_DETACHED, _))
+              OnFormSubmitted(_, _, _, SubmissionSource::FRAME_DETACHED))
       .Times(1);
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -255,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        FrameDetachedOnFormSubmission) {
   CreateContentAutofillDriverFactoryForSubFrame();
   EXPECT_CALL(*autofill_provider_,
-              OnFormSubmitted(_, _, _, SubmissionSource::FORM_SUBMISSION, _))
+              OnFormSubmitted(_, _, _, SubmissionSource::FORM_SUBMISSION))
       .Times(1);
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(

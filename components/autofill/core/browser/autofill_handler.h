@@ -76,8 +76,7 @@ class AutofillHandler {
   // personal profile.
   void OnFormSubmitted(const FormData& form,
                        bool known_success,
-                       SubmissionSource source,
-                       base::TimeTicks timestamp);
+                       SubmissionSource source);
 
   // Invoked when |forms| has been detected.
   void OnFormsSeen(const std::vector<FormData>& forms,
@@ -135,8 +134,7 @@ class AutofillHandler {
 
   virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
-                                   SubmissionSource source,
-                                   base::TimeTicks timestamp) = 0;
+                                   SubmissionSource source) = 0;
 
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
                                         const FormFieldData& field,

@@ -36,8 +36,7 @@ class TestAutofillProvider : public AutofillProvider {
   void OnFormSubmitted(AutofillHandlerProxy* handler,
                        const FormData& form,
                        bool known_success,
-                       SubmissionSource source,
-                       base::TimeTicks timestamp) override {}
+                       SubmissionSource source) override {}
   void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) override;
   void OnFocusOnFormField(AutofillHandlerProxy* handler,
                           const FormData& form,

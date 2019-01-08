@@ -23,8 +23,7 @@ interface AutofillDriver {
   // succeeds if the form is removed.
   FormSubmitted(FormData form,
                 bool known_success,
-                SubmissionSource source,
-                mojo_base.mojom.TimeTicks timestamp);
+                SubmissionSource source);
 
   // Notification that a form field's value has changed.
   TextFieldDidChange(FormData form,

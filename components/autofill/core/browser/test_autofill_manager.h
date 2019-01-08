@@ -41,7 +41,6 @@ class TestAutofillManager : public AutofillManager {
                       bool observed_submission) override;
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
-      const base::TimeTicks& timestamp,
       bool observed_submission) override;
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
                                    const base::TimeTicks& interaction_time,
