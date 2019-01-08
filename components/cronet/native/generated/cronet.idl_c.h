@@ -40,6 +40,10 @@ typedef struct Cronet_UploadDataProvider Cronet_UploadDataProvider;
 typedef struct Cronet_UploadDataProvider* Cronet_UploadDataProviderPtr;
 typedef struct Cronet_UrlRequest Cronet_UrlRequest;
 typedef struct Cronet_UrlRequest* Cronet_UrlRequestPtr;
+typedef struct Cronet_RequestFinishedInfoListener
+    Cronet_RequestFinishedInfoListener;
+typedef struct Cronet_RequestFinishedInfoListener*
+    Cronet_RequestFinishedInfoListenerPtr;
 
 // Forward declare structs.
 typedef struct Cronet_Error Cronet_Error;
@@ -619,6 +623,56 @@ CRONET_EXPORT Cronet_UrlRequestPtr Cronet_UrlRequest_CreateWith(
     Cronet_UrlRequest_CancelFunc CancelFunc,
     Cronet_UrlRequest_IsDoneFunc IsDoneFunc,
     Cronet_UrlRequest_GetStatusFunc GetStatusFunc);
+
+///////////////////////
+// Abstract interface Cronet_RequestFinishedInfoListener is implemented by the
+// app.
+
+// There is no method to create a concrete implementation.
+
+// Destroy an instance of Cronet_RequestFinishedInfoListener.
+CRONET_EXPORT void Cronet_RequestFinishedInfoListener_Destroy(
+    Cronet_RequestFinishedInfoListenerPtr self);
+// Set and get app-specific Cronet_ClientContext.
+CRONET_EXPORT void Cronet_RequestFinishedInfoListener_SetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ClientContext client_context);
+CRONET_EXPORT Cronet_ClientContext
+Cronet_RequestFinishedInfoListener_GetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self);
+// Abstract interface Cronet_RequestFinishedInfoListener is implemented by the
+// app. The following concrete methods forward call to app implementation. The
+// app doesn't normally call them.
+CRONET_EXPORT
+Cronet_RESULT Cronet_RequestFinishedInfoListener_InitWithParams(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ExecutorPtr executor);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfoListener_OnRequestFinished(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info);
+CRONET_EXPORT
+Cronet_ExecutorPtr Cronet_RequestFinishedInfoListener_GetExecutor(
+    Cronet_RequestFinishedInfoListenerPtr self);
+// The app implements abstract interface Cronet_RequestFinishedInfoListener by
+// defining custom functions for each method.
+typedef Cronet_RESULT (*Cronet_RequestFinishedInfoListener_InitWithParamsFunc)(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ExecutorPtr executor);
+typedef void (*Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc)(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info);
+typedef Cronet_ExecutorPtr (
+    *Cronet_RequestFinishedInfoListener_GetExecutorFunc)(
+    Cronet_RequestFinishedInfoListenerPtr self);
+// The app creates an instance of Cronet_RequestFinishedInfoListener by
+// providing custom functions for each method.
+CRONET_EXPORT Cronet_RequestFinishedInfoListenerPtr
+Cronet_RequestFinishedInfoListener_CreateWith(
+    Cronet_RequestFinishedInfoListener_InitWithParamsFunc InitWithParamsFunc,
+    Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+        OnRequestFinishedFunc,
+    Cronet_RequestFinishedInfoListener_GetExecutorFunc GetExecutorFunc);
 
 ///////////////////////
 // Struct Cronet_Error.

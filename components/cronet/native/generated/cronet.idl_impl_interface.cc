@@ -873,3 +873,91 @@ Cronet_UrlRequestPtr Cronet_UrlRequest_CreateWith(
                                    FollowRedirectFunc, ReadFunc, CancelFunc,
                                    IsDoneFunc, GetStatusFunc);
 }
+
+// C functions of Cronet_RequestFinishedInfoListener that forward calls to C++
+// implementation.
+void Cronet_RequestFinishedInfoListener_Destroy(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  DCHECK(self);
+  return delete self;
+}
+
+void Cronet_RequestFinishedInfoListener_SetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ClientContext client_context) {
+  DCHECK(self);
+  self->set_client_context(client_context);
+}
+
+Cronet_ClientContext Cronet_RequestFinishedInfoListener_GetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  DCHECK(self);
+  return self->client_context();
+}
+
+Cronet_RESULT Cronet_RequestFinishedInfoListener_InitWithParams(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ExecutorPtr executor) {
+  DCHECK(self);
+  return self->InitWithParams(executor);
+}
+
+void Cronet_RequestFinishedInfoListener_OnRequestFinished(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info) {
+  DCHECK(self);
+  self->OnRequestFinished(request_info);
+}
+
+Cronet_ExecutorPtr Cronet_RequestFinishedInfoListener_GetExecutor(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  DCHECK(self);
+  return self->GetExecutor();
+}
+
+// Implementation of Cronet_RequestFinishedInfoListener that forwards calls to C
+// functions implemented by the app.
+class Cronet_RequestFinishedInfoListenerStub
+    : public Cronet_RequestFinishedInfoListener {
+ public:
+  Cronet_RequestFinishedInfoListenerStub(
+      Cronet_RequestFinishedInfoListener_InitWithParamsFunc InitWithParamsFunc,
+      Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+          OnRequestFinishedFunc,
+      Cronet_RequestFinishedInfoListener_GetExecutorFunc GetExecutorFunc)
+      : InitWithParamsFunc_(InitWithParamsFunc),
+        OnRequestFinishedFunc_(OnRequestFinishedFunc),
+        GetExecutorFunc_(GetExecutorFunc) {}
+
+  ~Cronet_RequestFinishedInfoListenerStub() override {}
+
+ protected:
+  Cronet_RESULT InitWithParams(Cronet_ExecutorPtr executor) override {
+    return InitWithParamsFunc_(this, executor);
+  }
+
+  void OnRequestFinished(Cronet_RequestFinishedInfoPtr request_info) override {
+    OnRequestFinishedFunc_(this, request_info);
+  }
+
+  Cronet_ExecutorPtr GetExecutor() override { return GetExecutorFunc_(this); }
+
+ private:
+  const Cronet_RequestFinishedInfoListener_InitWithParamsFunc
+      InitWithParamsFunc_;
+  const Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+      OnRequestFinishedFunc_;
+  const Cronet_RequestFinishedInfoListener_GetExecutorFunc GetExecutorFunc_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListenerStub);
+};
+
+Cronet_RequestFinishedInfoListenerPtr
+Cronet_RequestFinishedInfoListener_CreateWith(
+    Cronet_RequestFinishedInfoListener_InitWithParamsFunc InitWithParamsFunc,
+    Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+        OnRequestFinishedFunc,
+    Cronet_RequestFinishedInfoListener_GetExecutorFunc GetExecutorFunc) {
+  return new Cronet_RequestFinishedInfoListenerStub(
+      InitWithParamsFunc, OnRequestFinishedFunc, GetExecutorFunc);
+}
