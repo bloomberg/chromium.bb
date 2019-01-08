@@ -286,11 +286,6 @@ enum HeaderBehaviour {
   Overlap
 };
 
-bool IsURLAllowedInIncognito(const GURL& url) {
-  // Most URLs are allowed in incognito; the following is an exception.
-  return !(url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIHistoryHost);
-}
-
 // Snackbar category for browser view controller.
 NSString* const kBrowserViewControllerSnackbarCategory =
     @"BrowserViewControllerSnackbarCategory";
@@ -496,11 +491,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
-
-  // Stores whether the Tab currently inserted was a pre-rendered Tab. This
-  // is used to determine whether the pre-rendering animation should be played
-  // or not.
-  BOOL _insertedTabWasPrerenderedTab;
 
   // Forwards observer methods for all WebStates in the WebStateList to this
   // BrowserViewController object.
@@ -2444,8 +2434,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (![tab navigationManager])
     return;
 
-  if (_insertedTabWasPrerenderedTab &&
-      ![self.helper isToolbarLoading:self.currentWebState])
+  PrerenderService* prerenderService =
+      PrerenderServiceFactory::GetForBrowserState(self.browserState);
+  BOOL isPrerendered =
+      (prerenderService && prerenderService->IsLoadingPrerender());
+  if (isPrerendered && ![self.helper isToolbarLoading:self.currentWebState])
     [self.primaryToolbarCoordinator showPrerenderingAnimation];
 
   auto* findHelper = FindTabHelper::FromWebState(tab.webState);
@@ -3821,7 +3814,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Prerender tab does not have a toolbar, return |headerHeight| as promised by
   // API documentation.
-  if (_insertedTabWasPrerenderedTab)
+  PrerenderService* prerenderService =
+      PrerenderServiceFactory::GetForBrowserState(self.browserState);
+  if (prerenderService && prerenderService->IsLoadingPrerender())
     return self.headerHeight;
 
   UIView* topHeader = headers[0].view;
@@ -3927,101 +3922,29 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - UrlLoader (Public)
 
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
-  if (chromeParams.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
-    [self switchToTabWithParams:params];
-    return;
-  }
-
-  [[OmniboxGeolocationController sharedInstance]
-      locationBarDidSubmitURL:params.url
-                   transition:params.transition_type
-                 browserState:_browserState];
-
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
-  if (params.transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
-    BOOL isExpectingVoiceSearch = NO;
-    if (self.currentWebState) {
-      isExpectingVoiceSearch =
-          VoiceSearchNavigationTabHelper::FromWebState(self.currentWebState)
-              ->IsExpectingVoiceSearch();
+
+  switch (LoadURL(chromeParams, self.browserState, self.tabModel)) {
+    case URLLoadResult::SWITCH_TO_TAB: {
+      [self switchToTabWithParams:chromeParams.web_params];
+      break;
     }
-    new_tab_page_uma::RecordActionFromOmnibox(_browserState, params.url,
-                                              params.transition_type,
-                                              isExpectingVoiceSearch);
-  }
-
-  // NOTE: This check for the Crash Host URL is here to avoid the URL from
-  // ending up in the history causing the app to crash at every subsequent
-  // restart.
-  if (params.url.host() == kChromeUIBrowserCrashHost) {
-    [self induceBrowserCrash];
-    // In debug the app can continue working even after the CHECK. Adding a
-    // return avoids the crash url to be added to the history.
-    return;
-  }
-
-  // Set _insertedTabWasPrerenderedTab to YES, so that if a prerendered tab is
-  // inserted, the correct toolbar height is used and animations are played.
-  _insertedTabWasPrerenderedTab = YES;
-  // Ask the prerender service to load this URL if it can, and return if it does
-  // so.
-  PrerenderService* prerenderService =
-      PrerenderServiceFactory::GetForBrowserState(self.browserState);
-  if (prerenderService &&
-      prerenderService->MaybeLoadPrerenderedURL(
-          params.url, params.transition_type, self.tabModel)) {
-    _insertedTabWasPrerenderedTab = NO;
-    return;
-  }
-  _insertedTabWasPrerenderedTab = NO;
-
-  // Some URLs are not allowed while in incognito.  If we are in incognito and
-  // load a disallowed URL, instead create a new tab not in the incognito state.
-  if (_isOffTheRecord && !IsURLAllowedInIncognito(params.url)) {
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:params.url
-                                      referrer:web::Referrer()
-                                   inIncognito:NO
-                                  inBackground:NO
-                                      appendTo:kCurrentTab];
-    [self webPageOrderedOpen:command];
-    return;
-  }
-  BOOL typedOrGeneratedTransition =
-      PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_TYPED) ||
-      PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_GENERATED);
-  if (typedOrGeneratedTransition) {
-    LoadTimingTabHelper::FromWebState(self.currentWebState)
-        ->DidInitiatePageLoad();
-  }
-
-  // If this is a reload initiated from the omnibox.
-  // TODO(crbug.com/730192): Add DCHECK to verify that whenever urlToLood is the
-  // same as the old url, the transition type is ui::PAGE_TRANSITION_RELOAD.
-  if (PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_RELOAD)) {
-    self.tabModel.currentTab.navigationManager->Reload(
-        web::ReloadType::NORMAL, true /* check_for_repost */);
-    return;
-  }
-
-  Tab* currentTab = self.tabModel.currentTab;
-  DCHECK(currentTab);
-  currentTab.navigationManager->LoadURLWithParams(params);
-
-  // Deactivate the NTP immediately on a load to hide the NTP quickly, but after
-  // calling -LoadURLWithParams.  Otherwise, if the webState has never been
-  // visible (such as during startup with an NTP), it's possible the webView can
-  // trigger a unnecessary load for chrome://newtab.
-  if (self.currentWebState && params.url.GetOrigin() != kChromeUINewTabURL) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(self.currentWebState);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      NTPHelper->Deactivate();
+    case URLLoadResult::DISALLOWED_IN_INCOGNITO: {
+      OpenNewTabCommand* command =
+          [[OpenNewTabCommand alloc] initWithURL:chromeParams.web_params.url
+                                        referrer:web::Referrer()
+                                     inIncognito:NO
+                                    inBackground:NO
+                                        appendTo:kCurrentTab];
+      [self webPageOrderedOpen:command];
+      break;
     }
+    case URLLoadResult::INDUCED_CRASH:
+    case URLLoadResult::LOADED_PRERENDER:
+    case URLLoadResult::RELOADED:
+    case URLLoadResult::NORMAL_LOAD:
+      // Page load was handled, so nothing else to do.
+      break;
   }
 }
 
@@ -4088,15 +4011,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [animatedView animateFrom:command.originPoint
         toTabGridButtonWithCompletion:completionBlock];
   }
-}
-
-// Induce an intentional crash in the browser process.
-- (void)induceBrowserCrash {
-  CHECK(false);
-  // Call another function, so that the above CHECK can't be tail-call
-  // optimized. This ensures that this method's name will show up in the stack
-  // for easier identification.
-  CHECK(true);
 }
 
 // Switch to the tab corresponding to |params|.
