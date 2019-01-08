@@ -335,18 +335,6 @@ Polymer({
   hasCannotFreezeReasons_: function(item) {
     return item.cannotFreezeReasons.length != 0;
   },
-
-  /**
-   * Returns a string with the reasons an item cannot be frozen, for display in
-   * a tooltip.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
-   * @return {string} A string with the reasons.
-   * @private
-   */
-  cannotFreezeReasons_: function(item) {
-    return item.cannotFreezeReasons.join('<br />');
-  },
-
   /**
    * Tests whether an item has reasons why it cannot be discarded.
    * @param {mojom.TabDiscardsInfo} item The item in question.
@@ -356,17 +344,6 @@ Polymer({
    */
   hasCannotDiscardReasons_: function(item) {
     return item.cannotDiscardReasons.length != 0;
-  },
-
-  /**
-   * Returns a string with the reasons an item cannot be discarded, for display
-   * in a tooltip.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
-   * @return {string} A string with the reasons.
-   * @private
-   */
-  cannotDiscardReasons_: function(item) {
-    return item.cannotDiscardReasons.join('<br />');
   },
 
   /**
