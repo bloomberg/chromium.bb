@@ -89,10 +89,7 @@ void FakeCentral::SimulateAdvertisementReceived(
     observer.DeviceAdvertisementReceived(
         scan_result_ptr->device_address, scan_record->name, scan_record->name,
         scan_result_ptr->rssi, scan_record->tx_power->value,
-        device::BluetoothDevice::
-            kAppearanceNotPresent, /* TODO(crbug.com/588083)
-                                      Implement appearance
-                                    */
+        base::nullopt, /* TODO(crbug.com/588083) Implement appearance */
         uuids, service_data, manufacturer_data);
   }
 

@@ -144,10 +144,11 @@ struct WebBluetoothScanResult {
   WebBluetoothDevice device;
   string? name;
   array<bluetooth.mojom.UUID> uuids;
+  bool appearance_is_set;
   uint16 appearance;
-
-  // TODO(dougt): Make tx_power and rssi optional.
+  bool tx_power_is_set;
   uint8 tx_power;
+  bool rssi_is_set;
   uint8 rssi;
   map<uint16, array<uint8>> manufacturer_data;
   map<string, array<uint8>> service_data;

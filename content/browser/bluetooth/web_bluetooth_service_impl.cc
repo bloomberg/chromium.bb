@@ -238,7 +238,7 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
     const base::Optional<std::string>& advertisement_name,
     base::Optional<int8_t> rssi,
     base::Optional<int8_t> tx_power,
-    uint16_t appearance,
+    base::Optional<uint16_t> appearance,
     const device::BluetoothDevice::UUIDList& advertised_uuids,
     const device::BluetoothDevice::ServiceDataMap& service_data_map,
     const device::BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {
@@ -265,13 +265,20 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
     result->device = std::move(device);
 
     result->name = advertisement_name;
-    result->appearance = appearance;
 
-    // TODO(dougt) rssi and tx_power should be sent as optional.
+    // Note about the default value for these optional types. On the other side
+    // of this IPC, the receiver will be checking to see if |*_is_set| is true
+    // before using the value. Here we chose reasonable defaults in case the
+    // other side does something incorrect. We have to do this manual
+    // serialization because mojo does not support optional primitive types.
+    result->appearance_is_set = appearance.has_value();
+    result->appearance = appearance.value_or(/*not present=*/0xffc0);
 
-    // 128 (0x80) means invalid value
-    result->rssi = rssi.value_or(128);
-    result->tx_power = tx_power.value_or(128);
+    result->rssi_is_set = rssi.has_value();
+    result->rssi = rssi.value_or(/*invalid value=*/128);
+
+    result->tx_power_is_set = tx_power.has_value();
+    result->tx_power = tx_power.value_or(/*invalid value=*/128);
 
     std::vector<device::BluetoothUUID> uuids;
     for (auto& uuid : advertised_uuids)

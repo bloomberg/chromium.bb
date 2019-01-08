@@ -31,9 +31,9 @@ class BluetoothAdvertisingEvent final : public Event {
       BluetoothDevice* device,
       const String& name,
       const HeapVector<StringOrUnsignedLong>& uuids,
-      short appearance,
-      int8_t txPower,
-      int8_t rssi,
+      base::Optional<short> appearance,
+      base::Optional<int8_t> txPower,
+      base::Optional<int8_t> rssi,
       BluetoothManufacturerDataMap* manufacturer_data_map,
       BluetoothServiceDataMap* service_data_map) {
     return MakeGarbageCollected<BluetoothAdvertisingEvent>(
@@ -48,9 +48,9 @@ class BluetoothAdvertisingEvent final : public Event {
                             BluetoothDevice* device,
                             const String& name,
                             const HeapVector<StringOrUnsignedLong>& uuids,
-                            short appearance,
-                            int8_t txPower,
-                            int8_t rssi,
+                            base::Optional<short> appearance,
+                            base::Optional<int8_t> txPower,
+                            base::Optional<int8_t> rssi,
                             BluetoothManufacturerDataMap* manufacturer_data_map,
                             BluetoothServiceDataMap* service_data_map);
 

@@ -320,10 +320,21 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   auto* service_data =
       MakeGarbageCollected<BluetoothServiceDataMap>(result->service_data);
 
+  base::Optional<int8_t> rssi;
+  if (result->rssi_is_set)
+    rssi = result->rssi;
+
+  base::Optional<int8_t> tx_power;
+  if (result->tx_power_is_set)
+    tx_power = result->tx_power;
+
+  base::Optional<int16_t> appearance;
+  if (result->appearance_is_set)
+    appearance = result->appearance;
+
   auto* event = BluetoothAdvertisingEvent::Create(
       event_type_names::kAdvertisementreceived, bluetooth_device, result->name,
-      uuids, result->appearance, result->tx_power, result->rssi,
-      manufacturer_data, service_data);
+      uuids, appearance, tx_power, rssi, manufacturer_data, service_data);
   DispatchEvent(*event);
 }
 
