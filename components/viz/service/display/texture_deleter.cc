@@ -64,9 +64,9 @@ std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
 
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
-  ReleaseCallback run_impl_callback(
-      base::Bind(&TextureDeleter::RunDeleteTextureOnImplThread,
-                 weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get()));
+  ReleaseCallback run_impl_callback = base::BindOnce(
+      &TextureDeleter::RunDeleteTextureOnImplThread,
+      weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get());
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.
