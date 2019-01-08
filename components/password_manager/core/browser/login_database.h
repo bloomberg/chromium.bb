@@ -83,6 +83,10 @@ class LoginDatabase {
   // |form| was successfully removed from the database.
   bool RemoveLogin(const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
 
+  // Removes the form with |id| from the list of remembered password forms.
+  // Returns true if the form was successfully removed from the database.
+  bool RemoveLoginById(int id) WARN_UNUSED_RESULT;
+
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
   // delete in either direction.
@@ -170,6 +174,13 @@ class LoginDatabase {
   // empty string if the row for this |form| is not found.
   std::string GetEncryptedPassword(const autofill::PasswordForm& form) const;
 
+  // Returns the id for the specified |form|.  Returns -1 if the row for this
+  // |form| is not found.
+  // TODO(crbug.com/902349): consider migrating away from this method and make
+  // AddLogin() return the inserted id of the inserted item (probably using an
+  // output parameter).
+  int GetIdForTesting(const autofill::PasswordForm& form) const;
+
   StatisticsTable& stats_table() { return stats_table_; }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -185,6 +196,14 @@ class LoginDatabase {
   // On iOS, removes the keychain item that is used to store the
   // encrypted password for the supplied |form|.
   void DeleteEncryptedPassword(const autofill::PasswordForm& form);
+
+  // Similar to DeleteEncryptedPassword() but uses |id| to look for the
+  // password.
+  void DeleteEncryptedPasswordById(int id);
+
+  // Returns the encrypted password value for the specified |id|.  Returns an
+  // empty string if the row for this |form| is not found.
+  std::string GetEncryptedPasswordById(int id) const;
 #endif
 
   // Result values for encryption/decryption actions.
@@ -260,6 +279,7 @@ class LoginDatabase {
   std::string add_replace_statement_;
   std::string update_statement_;
   std::string delete_statement_;
+  std::string delete_by_id_statement_;
   std::string autosignin_statement_;
   std::string get_statement_;
   std::string get_statement_psl_;
@@ -270,6 +290,8 @@ class LoginDatabase {
   std::string synced_statement_;
   std::string blacklisted_statement_;
   std::string encrypted_statement_;
+  std::string encrypted_password_statement_by_id_;
+  std::string id_statement_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;

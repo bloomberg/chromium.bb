@@ -49,7 +49,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 19;
+const int kCurrentVersionNumber = 20;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -105,6 +105,7 @@ enum LoginDatabaseTableColumns {
   COLUMN_SKIP_ZERO_CLICK,
   COLUMN_GENERATION_UPLOAD_STATUS,
   COLUMN_POSSIBLE_USERNAME_PAIRS,
+  COLUMN_ID,
   COLUMN_NUM  // Keep this last.
 };
 
@@ -404,9 +405,11 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   DCHECK_EQ(7u, version);
 
   // Version 8.
-  builder->SealVersion();
+  version = builder->SealVersion();
+  DCHECK_EQ(8u, version);
   // Version 9.
   version = builder->SealVersion();
+  DCHECK_EQ(9u, version);
   // Version 10.
   builder->DropColumn("use_additional_auth");
   version = builder->SealVersion();
@@ -430,9 +433,11 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   DCHECK_EQ(14u, version);
 
   // Version 15.
-  builder->SealVersion();
+  version = builder->SealVersion();
+  DCHECK_EQ(15u, version);
   // Version 16.
-  builder->SealVersion();
+  version = builder->SealVersion();
+  DCHECK_EQ(16u, version);
   // Version 17.
   version = builder->SealVersion();
   DCHECK_EQ(17u, version);
@@ -447,6 +452,11 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   builder->AddColumn("possible_username_pairs", "BLOB");
   version = builder->SealVersion();
   DCHECK_EQ(19u, version);
+
+  // Version 20.
+  builder->AddColumnToPrimaryKey("id", "INTEGER");
+  version = builder->SealVersion();
+  DCHECK_EQ(20u, version);
 
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builder->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
@@ -991,6 +1001,17 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   return s.Run() && db_.GetLastChangeCount() > 0;
 }
 
+bool LoginDatabase::RemoveLoginById(int id) {
+#if defined(OS_IOS)
+  DeleteEncryptedPasswordById(id);
+#endif
+  DCHECK(!delete_by_id_statement_.empty());
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, delete_by_id_statement_.c_str()));
+  s.BindInt(0, id);
+  return s.Run() && db_.GetLastChangeCount() > 0;
+}
+
 bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
                                                base::Time delete_end) {
 #if defined(OS_IOS)
@@ -1379,6 +1400,23 @@ std::string LoginDatabase::GetEncryptedPassword(
   return encrypted_password;
 }
 
+int LoginDatabase::GetIdForTesting(const PasswordForm& form) const {
+  DCHECK(!id_statement_.empty());
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, id_statement_.c_str()));
+
+  s.BindString(0, form.origin.spec());
+  s.BindString16(1, form.username_element);
+  s.BindString16(2, form.username_value);
+  s.BindString16(3, form.password_element);
+  s.BindString(4, form.signon_realm);
+
+  if (s.Step()) {
+    return s.ColumnInt(0);
+  }
+  return -1;
+}
+
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
@@ -1485,6 +1523,8 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
                       all_unique_key_column_names;
   DCHECK(delete_statement_.empty());
   delete_statement_ = "DELETE FROM logins WHERE " + all_unique_key_column_names;
+  DCHECK(delete_by_id_statement_.empty());
+  delete_by_id_statement_ = "DELETE FROM logins WHERE id=?";
   DCHECK(autosignin_statement_.empty());
   autosignin_statement_ = "SELECT " + all_column_names +
                           " FROM logins "
@@ -1526,6 +1566,11 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   DCHECK(encrypted_statement_.empty());
   encrypted_statement_ =
       "SELECT password_value FROM logins WHERE " + all_unique_key_column_names;
+  DCHECK(encrypted_password_statement_by_id_.empty());
+  encrypted_password_statement_by_id_ =
+      "SELECT password_value FROM logins WHERE id=?";
+  DCHECK(id_statement_.empty());
+  id_statement_ = "SELECT id FROM logins WHERE " + all_unique_key_column_names;
 }
 
 bool LoginDatabase::IsUsingCleanupMechanism() const {

@@ -363,6 +363,31 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(0U, result.size());
 }
 
+TEST_F(LoginDatabaseTest, RemoveLoginsById) {
+  std::vector<std::unique_ptr<PasswordForm>> result;
+
+  // Verify the database is empty.
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+
+  // Example password form.
+  PasswordForm form;
+  GenerateExamplePasswordForm(&form);
+
+  // Add it and make sure it is there and that all the fields were retrieved
+  // correctly.
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(form, *result[0]);
+  result.clear();
+
+  int id = db().GetIdForTesting(form);
+  EXPECT_TRUE(db().RemoveLoginById(id));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+}
+
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   std::vector<std::unique_ptr<PasswordForm>> result;
 
@@ -1851,7 +1876,7 @@ TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
     sql::MetaTable meta_table;
     ASSERT_TRUE(connection.Open(database_path));
     ASSERT_TRUE(meta_table.Init(&connection, kCurrentVersionNumber + 1,
-                                kCompatibleVersionNumber + 1));
+                                kCurrentVersionNumber + 1));
   }
 
   // Now try to init the database with the file. The test succeeds if it does
@@ -2004,8 +2029,7 @@ TEST_P(LoginDatabaseMigrationTest, MigrationToVCurrent) {
   MigrationToVCurrent(base::StringPrintf("login_db_v%d.sql", version()));
 }
 
-class LoginDatabaseMigrationTestV9 : public LoginDatabaseMigrationTest {
-};
+class LoginDatabaseMigrationTestV9 : public LoginDatabaseMigrationTest {};
 
 // Tests migration from the alternative version #9, see crbug.com/423716.
 TEST_P(LoginDatabaseMigrationTestV9, V9WithoutUseAdditionalAuthField) {
