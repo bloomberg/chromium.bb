@@ -776,10 +776,17 @@ static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
       const double est_ld = md->a * sse + md->b;
       // Clamp estimated rate cost by INT_MAX / 2.
       // TODO(angiebird@google.com): find better solution than clamping.
-      *est_residue_cost =
-          fabs(est_ld) < 1e-2
-              ? INT_MAX / 2
-              : (int)AOMMIN(round((sse - md->dist_mean) / est_ld), INT_MAX / 2);
+      if (fabs(est_ld) < 1e-2) {
+        *est_residue_cost = INT_MAX / 2;
+      } else {
+        double est_residue_cost_dbl = ((sse - md->dist_mean) / est_ld);
+        if (est_residue_cost_dbl < 0) {
+          *est_residue_cost = 0;
+        } else {
+          *est_residue_cost =
+              (int)AOMMIN((int64_t)round(est_residue_cost_dbl), INT_MAX / 2);
+        }
+      }
       if (*est_residue_cost <= 0) {
         *est_residue_cost = 0;
         *est_dist = sse;
