@@ -1051,6 +1051,24 @@ void LayoutBlock::ClearPreviousVisualRects() {
   BlockPaintInvalidator(*this).ClearPreviousVisualRects();
 }
 
+void LayoutBlock::ImageChanged(WrappedImagePtr image,
+                               CanDeferInvalidation defer) {
+  LayoutBox::ImageChanged(image, defer);
+
+  if (!StyleRef().HasPseudoStyle(kPseudoIdFirstLine))
+    return;
+
+  if (auto* first_line_container = NearestInnerBlockWithFirstLine()) {
+    for (const auto* layer = &FirstLineStyleRef().BackgroundLayers(); layer;
+         layer = layer->Next()) {
+      if (layer->GetImage() && image == layer->GetImage()->Data()) {
+        first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();
+        break;
+      }
+    }
+  }
+}
+
 void LayoutBlock::RemovePositionedObjects(
     LayoutObject* o,
     ContainingBlockState containing_block_state) {
