@@ -15,5 +15,5 @@ enum LearningTaskType {
 // media/learning/public/learning_session.h
 interface LearningSession {
   // Add |example| to |task_type|.
-  AddExample(LearningTaskType task_type, TrainingExample example);
+  AddExample(LearningTaskType task_type, LabelledExample example);
 };

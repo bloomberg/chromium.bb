@@ -69,7 +69,7 @@ class LearningTaskControllerImplTest : public testing::Test {
 };
 
 TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
-  TrainingExample example;
+  LabelledExample example;
 
   // Adding the first n-1 examples shouldn't cause it to train a model.
   for (size_t i = 0; i < task_.min_data_set_size - 1; i++)

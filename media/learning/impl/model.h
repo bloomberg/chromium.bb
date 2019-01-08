@@ -6,7 +6,7 @@
 #define MEDIA_LEARNING_IMPL_MODEL_H_
 
 #include "base/component_export.h"
-#include "media/learning/common/training_example.h"
+#include "media/learning/common/labelled_example.h"
 #include "media/learning/impl/model.h"
 #include "media/learning/impl/target_distribution.h"
 

@@ -192,7 +192,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   std::vector<std::set<FeatureValue>> feature_values;
   feature_values.resize(training_data[0].features.size());
   for (size_t idx : training_idx) {
-    const TrainingExample& example = training_data[idx];
+    const LabelledExample& example = training_data[idx];
     // Record this target value to see if there is more than one.  We skip the
     // insertion if we've already determined that it's not constant.
     if (target_values.size() < 2)
@@ -315,7 +315,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   // the training data directly.
   double total_weight = 0.;
   for (size_t idx : training_idx) {
-    const TrainingExample& example = training_data[idx];
+    const LabelledExample& example = training_data[idx];
     total_weight += example.weight;
 
     // Get the value of the |index|-th feature for |example|.
@@ -417,7 +417,7 @@ FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
   FeatureValue v_min = training_data[training_idx[0]].features[split_index];
   FeatureValue v_max = training_data[training_idx[0]].features[split_index];
   for (size_t idx : training_idx) {
-    const TrainingExample& example = training_data[idx];
+    const LabelledExample& example = training_data[idx];
     // Get the value of the |split_index|-th feature for
     FeatureValue v_i = example.features[split_index];
     if (v_i < v_min)

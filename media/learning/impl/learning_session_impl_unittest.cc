@@ -19,11 +19,11 @@ class LearningSessionImplTest : public testing::Test {
    public:
     FakeLearningTaskController(const LearningTask& task) {}
 
-    void AddExample(const TrainingExample& example) override {
+    void AddExample(const LabelledExample& example) override {
       example_ = example;
     }
 
-    TrainingExample example_;
+    LabelledExample example_;
   };
 
   using ControllerVector = std::vector<FakeLearningTaskController*>;
@@ -63,11 +63,11 @@ TEST_F(LearningSessionImplTest, ExamplesAreForwardedToCorrectTask) {
   session_->RegisterTask(task_0_);
   session_->RegisterTask(task_1_);
 
-  TrainingExample example_0({FeatureValue(123), FeatureValue(456)},
+  LabelledExample example_0({FeatureValue(123), FeatureValue(456)},
                             TargetValue(1234));
   session_->AddExample(task_0_.name, example_0);
 
-  TrainingExample example_1({FeatureValue(321), FeatureValue(654)},
+  LabelledExample example_1({FeatureValue(321), FeatureValue(654)},
                             TargetValue(4321));
   session_->AddExample(task_1_.name, example_1);
   EXPECT_EQ(task_controllers_[0]->example_, example_0);

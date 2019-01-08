@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "media/learning/common/training_example.h"
+#include "media/learning/common/labelled_example.h"
 #include "media/learning/common/value.h"
 
 namespace media {
@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
   TargetDistribution& operator+=(const TargetValue& rhs);
 
   // Increment the distribution by |example|'s target value and weight.
-  TargetDistribution& operator+=(const TrainingExample& example);
+  TargetDistribution& operator+=(const LabelledExample& example);
 
   // Return the number of counts for |value|.
   size_t operator[](const TargetValue& value) const;

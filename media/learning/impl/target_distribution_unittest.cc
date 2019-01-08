@@ -148,8 +148,8 @@ TEST_F(TargetDistributionTest, UnequalDistributionsCompareAsNotEqual) {
   EXPECT_FALSE(distribution_ == distribution_2);
 }
 
-TEST_F(TargetDistributionTest, WeightedTrainingExamplesCountCorrectly) {
-  TrainingExample example = {{}, value_1};
+TEST_F(TargetDistributionTest, WeightedLabelledExamplesCountCorrectly) {
+  LabelledExample example = {{}, value_1};
   example.weight = counts_1;
   distribution_ += example;
 

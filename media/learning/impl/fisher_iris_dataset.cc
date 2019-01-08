@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace {
-struct IrisExample : public media::learning::TrainingExample {
+struct IrisExample : public media::learning::LabelledExample {
   IrisExample(float sepal_length,
               float sepal_width,
               float petal_length,

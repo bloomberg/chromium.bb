@@ -47,7 +47,7 @@ TEST_P(RandomTreeTest, EmptyTrainingDataWorks) {
 
 TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
   SetupFeatures(2);
-  TrainingExample example({FeatureValue(123), FeatureValue(456)},
+  LabelledExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
   TrainingData training_data;
   const size_t n_examples = 10;
@@ -65,7 +65,7 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
 
 TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
   SetupFeatures(2);
-  TrainingExample example({FeatureValue(123), FeatureValue(456)},
+  LabelledExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
   TrainingData training_data;
   const size_t n_examples = 10;
@@ -94,8 +94,8 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
 TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
   SetupFeatures(1);
   TrainingData training_data;
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(456)}, TargetValue(2));
   training_data.push_back(example_1);
   training_data.push_back(example_2);
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
@@ -127,7 +127,7 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
     for (int f2 = 0; f2 < 2; f2++) {
       for (int f3 = 0; f3 < 2; f3++) {
         for (int f4 = 0; f4 < 2; f4++) {
-          TrainingExample example(
+          LabelledExample example(
               {FeatureValue(f1), FeatureValue(f2), FeatureValue(f3),
                FeatureValue(f4)},
               TargetValue(f1 * 1 + f2 * 2 + f3 * 4 + f4 * 8));
@@ -143,7 +143,7 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
   EXPECT_NE(model.get(), nullptr);
 
   // Each example should have a distribution that selects the right value.
-  for (const TrainingExample& example : training_data) {
+  for (const LabelledExample& example : training_data) {
     TargetDistribution distribution =
         model->PredictDistribution(example.features);
     TargetValue singular_max;
@@ -155,8 +155,8 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
 TEST_P(RandomTreeTest, UnseparableTrainingData) {
   SetupFeatures(1);
   TrainingData training_data;
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(123)}, TargetValue(2));
   training_data.push_back(example_1);
   training_data.push_back(example_2);
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
@@ -179,8 +179,8 @@ TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
   // Verify how a previously unseen feature value is handled.
   SetupFeatures(1);
   TrainingData training_data;
-  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
-  TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
+  LabelledExample example_1({FeatureValue(123)}, TargetValue(1));
+  LabelledExample example_2({FeatureValue(456)}, TargetValue(2));
   training_data.push_back(example_1);
   training_data.push_back(example_2);
 
@@ -223,7 +223,7 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
   TrainingData training_data;
   const int feature_mult = 10;
   for (size_t i = 0; i < 4; i++) {
-    TrainingExample example({FeatureValue(i * feature_mult)}, TargetValue(i));
+    LabelledExample example({FeatureValue(i * feature_mult)}, TargetValue(i));
     training_data.push_back(example);
   }
 

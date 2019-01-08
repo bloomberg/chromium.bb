@@ -14,20 +14,20 @@
 namespace mojo {
 
 template <>
-class StructTraits<media::learning::mojom::TrainingExampleDataView,
-                   media::learning::TrainingExample> {
+class StructTraits<media::learning::mojom::LabelledExampleDataView,
+                   media::learning::LabelledExample> {
  public:
   static const std::vector<media::learning::FeatureValue>& features(
-      const media::learning::TrainingExample& e) {
+      const media::learning::LabelledExample& e) {
     return e.features;
   }
   static media::learning::TargetValue target_value(
-      const media::learning::TrainingExample& e) {
+      const media::learning::LabelledExample& e) {
     return e.target_value;
   }
 
-  static bool Read(media::learning::mojom::TrainingExampleDataView data,
-                   media::learning::TrainingExample* out_example);
+  static bool Read(media::learning::mojom::LabelledExampleDataView data,
+                   media::learning::LabelledExample* out_example);
 };
 
 template <>

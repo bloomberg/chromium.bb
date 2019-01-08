@@ -18,13 +18,13 @@ class MojoLearningSessionImplTest : public ::testing::Test {
   class FakeLearningSession : public ::media::learning::LearningSession {
    public:
     void AddExample(const std::string& task_name,
-                    const TrainingExample& example) override {
+                    const LabelledExample& example) override {
       most_recent_task_name_ = task_name;
       most_recent_example_ = example;
     }
 
     std::string most_recent_task_name_;
-    TrainingExample most_recent_example_;
+    LabelledExample most_recent_example_;
   };
 
  public:
@@ -50,8 +50,8 @@ class MojoLearningSessionImplTest : public ::testing::Test {
 };
 
 TEST_F(MojoLearningSessionImplTest, FeaturesAndTargetValueAreCopied) {
-  mojom::TrainingExamplePtr example_ptr = mojom::TrainingExample::New();
-  const TrainingExample example = {{Value(123), Value(456), Value(890)},
+  mojom::LabelledExamplePtr example_ptr = mojom::LabelledExample::New();
+  const LabelledExample example = {{Value(123), Value(456), Value(890)},
                                    TargetValue(1234)};
 
   learning_session_impl_->AddExample(task_type_, example);

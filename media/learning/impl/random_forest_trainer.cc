@@ -61,7 +61,7 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
       if (bagged_set.find(e) != bagged_set.end())
         continue;
 
-      const TrainingExample& example = training_data[e];
+      const LabelledExample& example = training_data[e];
 
       TargetDistribution predicted =
           tree->PredictDistribution(example.features);
@@ -83,7 +83,7 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   // Compute OOB accuracy.
   int num_correct = 0;
   for (auto& oob_pair : oob_distributions) {
-    const TrainingExample& example = training_data[oob_pair.first];
+    const LabelledExample& example = training_data[oob_pair.first];
     const TargetDistribution& distribution = oob_pair.second;
 
     // If there are no guesses, or if it's a tie, then count it as wrong.

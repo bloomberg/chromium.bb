@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
-#define MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
+#ifndef MEDIA_LEARNING_COMMON_LABELLED_EXAMPLE_H_
+#define MEDIA_LEARNING_COMMON_LABELLED_EXAMPLE_H_
 
 #include <initializer_list>
 #include <ostream>
@@ -23,25 +23,24 @@ namespace learning {
 // [1]=="url", etc.
 using FeatureVector = std::vector<FeatureValue>;
 
-// TODO(liberato): Rename.
-using weight_t = size_t;
+using WeightType = size_t;
 
 // One training example == group of feature values, plus the desired target.
-struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
-  TrainingExample();
-  TrainingExample(std::initializer_list<FeatureValue> init_list,
+struct COMPONENT_EXPORT(LEARNING_COMMON) LabelledExample {
+  LabelledExample();
+  LabelledExample(std::initializer_list<FeatureValue> init_list,
                   TargetValue target);
-  TrainingExample(const TrainingExample& rhs);
-  TrainingExample(TrainingExample&& rhs) noexcept;
-  ~TrainingExample();
+  LabelledExample(const LabelledExample& rhs);
+  LabelledExample(LabelledExample&& rhs) noexcept;
+  ~LabelledExample();
 
   // Comparisons ignore weight, because it's convenient.
-  bool operator==(const TrainingExample& rhs) const;
-  bool operator!=(const TrainingExample& rhs) const;
-  bool operator<(const TrainingExample& rhs) const;
+  bool operator==(const LabelledExample& rhs) const;
+  bool operator!=(const LabelledExample& rhs) const;
+  bool operator<(const LabelledExample& rhs) const;
 
-  TrainingExample& operator=(const TrainingExample& rhs);
-  TrainingExample& operator=(TrainingExample&& rhs);
+  LabelledExample& operator=(const LabelledExample& rhs);
+  LabelledExample& operator=(LabelledExample&& rhs);
 
   // Observed feature values.
   // Note that to interpret these values, you probably need to have the
@@ -51,7 +50,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
   // Observed output value, when given |features| as input.
   TargetValue target_value;
 
-  weight_t weight = 1u;
+  WeightType weight = 1u;
 
   // Copy / assignment is allowed.
 };
@@ -59,7 +58,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
 // TODO(liberato): This should probably move to impl/ .
 class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
  public:
-  using ExampleVector = std::vector<TrainingExample>;
+  using ExampleVector = std::vector<LabelledExample>;
   using const_iterator = ExampleVector::const_iterator;
 
   TrainingData();
@@ -69,7 +68,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   ~TrainingData();
 
   // Add |example| with weight |weight|.
-  void push_back(const TrainingExample& example) {
+  void push_back(const LabelledExample& example) {
     DCHECK_GT(example.weight, 0u);
     examples_.push_back(example);
     total_weight_ += example.weight;
@@ -82,7 +81,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   // Returns the number of instances, taking into account their weight.  For
   // example, if one adds an example with weight 2, then this will return two
   // more than it did before.
-  weight_t total_weight() const { return total_weight_; }
+  WeightType total_weight() const { return total_weight_; }
 
   const_iterator begin() const { return examples_.begin(); }
   const_iterator end() const { return examples_.end(); }
@@ -90,7 +89,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   bool is_unweighted() const { return examples_.size() == total_weight_; }
 
   // Provide the |i|-th example, over [0, size()).
-  const TrainingExample& operator[](size_t i) const { return examples_[i]; }
+  const LabelledExample& operator[](size_t i) const { return examples_[i]; }
 
   // Return a copy of this data with duplicate entries merged.  Example weights
   // will be summed.
@@ -99,13 +98,13 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
  private:
   ExampleVector examples_;
 
-  weight_t total_weight_ = 0u;
+  WeightType total_weight_ = 0u;
 
   // Copy / assignment is allowed.
 };
 
 COMPONENT_EXPORT(LEARNING_COMMON)
-std::ostream& operator<<(std::ostream& out, const TrainingExample& example);
+std::ostream& operator<<(std::ostream& out, const LabelledExample& example);
 
 COMPONENT_EXPORT(LEARNING_COMMON)
 std::ostream& operator<<(std::ostream& out, const FeatureVector& features);
@@ -113,4 +112,4 @@ std::ostream& operator<<(std::ostream& out, const FeatureVector& features);
 }  // namespace learning
 }  // namespace media
 
-#endif  // MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
+#endif  // MEDIA_LEARNING_COMMON_LABELLED_EXAMPLE_H_

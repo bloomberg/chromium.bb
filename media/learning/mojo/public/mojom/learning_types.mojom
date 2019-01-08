@@ -14,8 +14,8 @@ struct TargetValue {
   int64 value;
 };
 
-// learning::TrainingExample (common/training_example.h)
-struct TrainingExample {
+// learning::LabelledExample (common/training_example.h)
+struct LabelledExample {
   array<FeatureValue> features;
   TargetValue target_value;
 };

@@ -17,12 +17,12 @@ component("common") {
   defines = [ "IS_LEARNING_COMMON_IMPL" ]
 
   sources = [
+    "labelled_example.cc",
+    "labelled_example.h",
     "learning_session.cc",
     "learning_session.h",
     "learning_task.cc",
     "learning_task.h",
-    "training_example.cc",
-    "training_example.h",
     "value.cc",
     "value.h",
   ]
@@ -35,7 +35,7 @@ component("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "training_example_unittest.cc",
+    "labelled_example_unittest.cc",
     "value_unittest.cc",
   ]
 

@@ -7,10 +7,10 @@
 namespace mojo {
 
 // static
-bool StructTraits<media::learning::mojom::TrainingExampleDataView,
-                  media::learning::TrainingExample>::
-    Read(media::learning::mojom::TrainingExampleDataView data,
-         media::learning::TrainingExample* out_example) {
+bool StructTraits<media::learning::mojom::LabelledExampleDataView,
+                  media::learning::LabelledExample>::
+    Read(media::learning::mojom::LabelledExampleDataView data,
+         media::learning::LabelledExample* out_example) {
   out_example->features.clear();
   if (!data.ReadFeatures(&out_example->features))
     return false;
