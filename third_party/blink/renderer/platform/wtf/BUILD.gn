@@ -132,8 +132,6 @@ jumbo_component("wtf") {
     "std_lib_extras.h",
     "string_extras.h",
     "string_hasher.h",
-    "terminated_array.h",
-    "terminated_array_builder.h",
     "text/ascii_fast_path.h",
     "text/atomic_string.cc",
     "text/atomic_string.h",
