@@ -96,6 +96,7 @@ source_set("omnibox_internal") {
     "//base",
     "//components/favicon/ios",
     "//components/image_fetcher/ios",
+    "//components/open_from_clipboard:",
     "//components/resources",
     "//components/search_engines",
     "//components/security_state/core",

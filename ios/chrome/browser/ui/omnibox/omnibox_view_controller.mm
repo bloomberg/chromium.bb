@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
@@ -241,19 +243,21 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIMenuItem
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
-  // remove with flag kCopiedTextBehavior
+  // Remove with flag kCopiedTextBehavior
   if (action == @selector(pasteAndGo:)) {
     DCHECK(!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
     return UIPasteboard.generalPasteboard.string.length > 0;
   }
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
   if (action == @selector(visitCopiedLink:)) {
     DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
-    return pasteboard.hasURLs;
+    return clipboardRecentContent->GetRecentURLFromClipboard().has_value();
   }
   if (action == @selector(searchCopiedText:)) {
     DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
-    return !pasteboard.hasURLs && pasteboard.hasStrings;
+    return !clipboardRecentContent->GetRecentURLFromClipboard().has_value() &&
+           clipboardRecentContent->GetRecentTextFromClipboard().has_value();
   }
   return NO;
 }
@@ -269,8 +273,20 @@ const CGFloat kClearButtonSize = 28.0f;
 // Both actions are performed the same, but need to be enabled differently,
 // so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
-  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
-  NSString* query = pasteboard.URL.absoluteString ?: pasteboard.string;
+  NSString* query;
+  if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+    ClipboardRecentContent* clipboardRecentContent =
+        ClipboardRecentContent::GetInstance();
+    if (base::Optional<GURL> optional_url =
+            clipboardRecentContent->GetRecentURLFromClipboard()) {
+      query = base::SysUTF8ToNSString(optional_url.value().spec());
+    } else if (base::Optional<base::string16> optional_text =
+                   clipboardRecentContent->GetRecentTextFromClipboard()) {
+      query = base::SysUTF16ToNSString(optional_text.value());
+    }
+  } else {
+    query = UIPasteboard.generalPasteboard.string;
+  }
   [self.dispatcher loadQuery:query immediately:YES];
   [self.dispatcher cancelOmniboxEdit];
 }
