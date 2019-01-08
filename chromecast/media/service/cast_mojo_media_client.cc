@@ -49,8 +49,8 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
-    service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
-  return create_cdm_factory_cb_.Run();
+    service_manager::mojom::InterfaceProvider* host_interfaces) {
+  return create_cdm_factory_cb_.Run(host_interfaces);
 }
 
 }  // namespace media

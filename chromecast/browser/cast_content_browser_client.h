@@ -205,7 +205,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   }
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
-  virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory();
+  virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
+      service_manager::mojom::InterfaceProvider* host_interfaces);
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
  protected:
