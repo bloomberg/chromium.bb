@@ -763,6 +763,9 @@ void VrTestContext::CycleOrigin() {
       {GURL("http://subdomain.domain.com/"),
        security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
+      {GURL("http://中央大学.ಠ_ಠ.tw/"),
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
+       true, false},
   };
 
   static int state = 0;
