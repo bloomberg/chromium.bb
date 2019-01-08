@@ -180,6 +180,12 @@ chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
 chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds) {};
 
 /**
+ * When enabled, forwards key events to the Switch Access extension.
+ * @param {boolean} should_forward
+ */
+chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(should_forward) {};
+
+/**
  * Sets current ARC app to use native ARC support.
  * @param {boolean} enabled True for ChromeVox (native), false for TalkBack.
  */

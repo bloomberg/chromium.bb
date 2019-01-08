@@ -135,6 +135,17 @@ class AccessibilityPrivateSetSwitchAccessMenuStateFunction
                              ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE)
 };
 
+// API function that requests that key events be forwarded to the Switch
+// Access extension.
+class AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION(
+      "accessibilityPrivate.forwardKeyEventsToSwitchAccess",
+      ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS)
+};
+
 #endif  // defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

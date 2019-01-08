@@ -51,6 +51,7 @@ class TestAccessibilityController : ash::mojom::AccessibilityController {
       const std::vector<int>& keys_to_capture) override {}
   void ToggleDictationFromSource(
       ash::mojom::DictationToggleSource source) override {}
+  void ForwardKeyEventsToSwitchAccess(bool should_forward) override {}
 
   bool was_client_set() const { return was_client_set_; }
 

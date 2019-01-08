@@ -595,6 +595,11 @@ void AccessibilityController::SetSwitchAccessIgnoreVirtualKeyEvent(
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 
+void AccessibilityController::ForwardKeyEventsToSwitchAccess(
+    bool should_forward) {
+  switch_access_event_handler_->set_forward_key_events(should_forward);
+}
+
 void AccessibilityController::SetSwitchAccessEventHandlerDelegate(
     mojom::SwitchAccessEventHandlerDelegatePtr delegate) {
   switch_access_event_handler_delegate_ptr_ = std::move(delegate);

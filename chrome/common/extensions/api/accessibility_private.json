@@ -222,6 +222,18 @@
             "platforms": ["chromeos"]
       },
       {
+        "name": "forwardKeyEventsToSwitchAccess",
+        "type": "function",
+        "description": "When enabled, forwards key events to the Switch Access extension",
+        "parameters": [
+          {
+            "name": "shouldForward",
+            "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "setNativeChromeVoxArcSupportForCurrentApp",
         "type": "function",
         "description": "Sets current ARC app to use native ARC support.",
