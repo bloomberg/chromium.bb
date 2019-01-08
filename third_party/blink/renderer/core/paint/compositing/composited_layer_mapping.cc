@@ -235,8 +235,10 @@ std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
 
   graphics_layer->SetCompositingReasons(reasons);
   graphics_layer->SetSquashingDisallowedReasons(squashing_disallowed_reasons);
-  if (Node* owning_node = owning_layer_.GetLayoutObject().GetNode())
-    graphics_layer->SetOwnerNodeId(DOMNodeIds::IdForNode(owning_node));
+  if (Node* owning_node = owning_layer_.GetLayoutObject().GetNode()) {
+    graphics_layer->SetOwnerNodeId(
+        static_cast<int>(DOMNodeIds::IdForNode(owning_node)));
+  }
 
   return graphics_layer;
 }
