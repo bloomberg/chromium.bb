@@ -51,8 +51,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 
   blink::Manifest::ImageResource icon;
   icon.src = GURL(kAppIcon2);
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
+                  blink::Manifest::ImageResource::Purpose::BADGE};
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIcon3);
+  manifest.icons.push_back(icon);
+  // Add an icon without purpose ANY (expect to be ignored).
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::BADGE};
   manifest.icons.push_back(icon);
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info,

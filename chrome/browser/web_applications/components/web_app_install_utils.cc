@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+#include <utility>
+
+#include "base/stl_util.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
@@ -59,17 +62,30 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.theme_color)
     web_app_info->theme_color = *manifest.theme_color;
 
+  // Create the WebApplicationInfo icons list *outside* of |web_app_info|, so
+  // that we can decide later whether or not to replace the existing icons array
+  // (conditionally on whether there were any that didn't have purpose ANY).
+  std::vector<WebApplicationInfo::IconInfo> web_app_icons;
+  for (const auto& icon : manifest.icons) {
+    // An icon's purpose vector should never be empty (the manifest parser
+    // should have added ANY if there was no purpose specified in the manifest).
+    DCHECK(!icon.purpose.empty());
+
+    if (!base::ContainsValue(icon.purpose,
+                             blink::Manifest::ImageResource::Purpose::ANY)) {
+      continue;
+    }
+
+    // TODO(benwells): Take the declared icon density and sizes into account.
+    WebApplicationInfo::IconInfo info;
+    info.url = icon.src;
+    web_app_icons.push_back(info);
+  }
+
   // If any icons are specified in the manifest, they take precedence over any
   // we picked up from the web_app stuff.
-  if (!manifest.icons.empty()) {
-    web_app_info->icons.clear();
-    for (const auto& icon : manifest.icons) {
-      // TODO(benwells): Take the declared icon density and sizes into account.
-      WebApplicationInfo::IconInfo info;
-      info.url = icon.src;
-      web_app_info->icons.push_back(info);
-    }
-  }
+  if (!web_app_icons.empty())
+    web_app_info->icons = std::move(web_app_icons);
 }
 
 std::set<int> SizesToGenerate() {
