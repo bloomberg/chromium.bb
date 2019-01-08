@@ -28,6 +28,8 @@ class DEVICE_VR_EXPORT VrModuleDelegate {
   // install failed.
   virtual void InstallModule(
       base::OnceCallback<void(bool success)> on_finished) = 0;
+  // Shows UI to the user informing them about the module install result.
+  virtual void ShowInstallResult(bool success) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VrModuleDelegate);

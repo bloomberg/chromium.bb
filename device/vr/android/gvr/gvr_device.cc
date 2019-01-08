@@ -281,8 +281,8 @@ void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
   }
   if (!module_delegate->ModuleInstalled()) {
     module_delegate->InstallModule(
-        base::BindOnce(&GvrDevice::OnVrModuleInstalled, base::Unretained(this),
-                       std::move(on_finished)));
+        base::BindOnce(&GvrDevice::OnVrModuleInstalled,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(on_finished)));
     return;
   }
   OnVrModuleInstalled(std::move(on_finished), true);
@@ -290,6 +290,8 @@ void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
 
 void GvrDevice::OnVrModuleInstalled(base::OnceCallback<void(bool)> on_finished,
                                     bool success) {
+  DCHECK(VrModuleDelegate::Get());
+  VrModuleDelegate::Get()->ShowInstallResult(success);
   if (!success) {
     std::move(on_finished).Run(false);
     return;

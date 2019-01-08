@@ -168,14 +168,15 @@ public class ArCoreJavaUtils {
                 .show();
 
         ModuleInstaller.install("ar", success -> {
-            // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-            int mToastTextRes = success ? R.string.ar_module_install_success_text
-                                        : R.string.ar_module_install_failure_text;
-            Toast.makeText(ContextUtils.getApplicationContext(), mToastTextRes, Toast.LENGTH_SHORT)
-                    .show();
-
+            assert shouldRequestInstallArModule() != success;
             if (mNativeArCoreJavaUtils != 0) {
-                assert shouldRequestInstallArModule() == !success;
+                // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is
+                // spec'd.
+                int toastTextRes = success ? R.string.ar_module_install_success_text
+                                           : R.string.ar_module_install_failure_text;
+                Toast.makeText(
+                             ContextUtils.getApplicationContext(), toastTextRes, Toast.LENGTH_SHORT)
+                        .show();
                 nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, success);
             }
         });

@@ -20,6 +20,7 @@ class VrModuleProvider : public device::VrModuleDelegate {
   ~VrModuleProvider() override;
   bool ModuleInstalled() override;
   void InstallModule(base::OnceCallback<void(bool)> on_finished) override;
+  void ShowInstallResult(bool success) override;
 
   // Called by Java.
   void OnInstalledModule(JNIEnv* env,

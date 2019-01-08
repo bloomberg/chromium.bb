@@ -113,6 +113,15 @@ public class VrModuleProvider {
     }
 
     @CalledByNative
+    private static void showInstallResult(boolean success) {
+        // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
+        int toastTextRes = success ? R.string.vr_module_install_success_text
+                                   : R.string.vr_module_install_failure_text;
+        Toast.makeText(ContextUtils.getApplicationContext(), toastTextRes, Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    @CalledByNative
     /* package */ static boolean isModuleInstalled() {
         return !(getDelegateProvider() instanceof VrDelegateProviderFallback);
     }
@@ -136,11 +145,6 @@ public class VrModuleProvider {
             if (success) {
                 getDelegate().onNativeLibraryAvailable();
             }
-            // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-            int mToastTextRes = success ? R.string.vr_module_install_success_text
-                                        : R.string.vr_module_install_failure_text;
-            Toast.makeText(ContextUtils.getApplicationContext(), mToastTextRes, Toast.LENGTH_SHORT)
-                    .show();
             if (mNativeVrModuleProvider != 0) {
                 nativeOnInstalledModule(mNativeVrModuleProvider, success);
             }
