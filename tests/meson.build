@@ -52,7 +52,11 @@ exe_plugin_test = shared_library(
 
 deps_zuc = [ dep_libshared ]
 if get_option('test-junit-xml')
-	deps_zuc += [ dependency('libxml-2.0', version: '>= 2.6') ]
+	d = dependency('libxml-2.0', version: '>= 2.6', required: false)
+	if not d.found()
+		error('JUnit XML support requires libxml-2.0 >= 2.6 which was not found. Or, you can use \'-Dtest-junit-xml=false\'.')
+	endif
+	deps_zuc += d
 	config_h.set('ENABLE_JUNIT_XML', '1')
 endif
 
