@@ -18,7 +18,6 @@ class SamplingProfilerWrapper
   ~SamplingProfilerWrapper() override;
 
   void StartProfiling(size_t sampling_rate);
-  void StopProfiling();
 
  private:
   // base::PoissonAllocationSampler::SamplesObserver
