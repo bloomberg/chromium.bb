@@ -11,6 +11,7 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -148,6 +149,11 @@ AppManagementUI::AppManagementUI(content::WebUI* web_ui)
     content::URLDataSource::Add(profile,
                                 std::make_unique<apps::AppIconSource>(profile));
   }
+
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString(
+      "appListPreview", IDS_APP_MANAGEMENT_APP_LIST_PREVIEW);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 }
 
 AppManagementUI::~AppManagementUI() = default;
