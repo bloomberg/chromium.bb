@@ -240,12 +240,10 @@ class PLATFORM_EXPORT FetchContext
   // May return nullptr if a frame is not attached or detached.
   virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
 
-  // Returns a task runner intended for loading tasks. Should work even in a
-  // worker context, where FrameScheduler doesn't exist, but the returned
-  // base::SingleThreadTaskRunner will not work after the context detaches
-  // (after Detach() is called, this will return a generic timer suitable for
-  // post-detach actions like keepalive requests.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
+  // Returns a task runner intended for loading tasks. The returned
+  // base::SingleThreadTaskRunner will keep working even after the context
+  // detaches.
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
     return task_runner_;
   }
 
