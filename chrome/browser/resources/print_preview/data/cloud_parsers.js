@@ -111,7 +111,7 @@ cr.define('cloudprint', function() {
     const optionalParams = {
       account: account,
       tags: tags,
-      isOwned: arrayContains(tags, OWNED_TAG),
+      isOwned: tags.includes(OWNED_TAG),
       lastAccessTime:
           parseInt(json[CloudDestinationField.LAST_ACCESS], 10) || Date.now(),
       cloudID: id,
@@ -121,7 +121,7 @@ cr.define('cloudprint', function() {
     const cloudDest = new print_preview.Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,
         json[CloudDestinationField.DISPLAY_NAME],
-        arrayContains(tags, RECENT_TAG) /*isRecent*/, connectionStatus,
+        tags.includes(RECENT_TAG) /*isRecent*/, connectionStatus,
         optionalParams);
     if (json.hasOwnProperty(CloudDestinationField.CAPABILITIES)) {
       cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (

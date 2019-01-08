@@ -51,16 +51,17 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {string} origin Origin to match.
+     * @param {!print_preview.DestinationOrigin} origin Origin to match.
      * @return {boolean} Whether the origin is one of the {@code origins_}.
      */
     matchOrigin(origin) {
-      return arrayContains(this.origins_, origin);
+      return this.origins_.includes(origin);
     }
 
     /**
      * @param {string} id Id of the destination.
-     * @param {string} origin Origin of the destination.
+     * @param {!print_preview.DestinationOrigin} origin Origin of the
+     *     destination.
      * @return {boolean} Whether destination is the same as initial.
      */
     matchIdAndOrigin(id, origin) {
@@ -98,13 +99,11 @@ cr.define('print_preview', function() {
      * @private
      */
     isVirtualDestination_(destination) {
-      if (destination.origin == print_preview.DestinationOrigin.LOCAL) {
-        return arrayContains(
-            [print_preview.Destination.GooglePromotedId.SAVE_AS_PDF],
-            destination.id);
+      if (destination.origin === print_preview.DestinationOrigin.LOCAL) {
+        return destination.id ===
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
       }
-      return arrayContains(
-          [print_preview.Destination.GooglePromotedId.DOCS], destination.id);
+      return destination.id === print_preview.Destination.GooglePromotedId.DOCS;
     }
 
     /**

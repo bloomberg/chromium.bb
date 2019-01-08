@@ -607,12 +607,10 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is considered offline. */
     get isOffline() {
-      return arrayContains(
-          [
-            print_preview.DestinationConnectionStatus.OFFLINE,
-            print_preview.DestinationConnectionStatus.DORMANT
-          ],
-          this.connectionStatus_);
+      return [
+        print_preview.DestinationConnectionStatus.OFFLINE,
+        print_preview.DestinationConnectionStatus.DORMANT
+      ].includes(this.connectionStatus_);
     }
 
     /**

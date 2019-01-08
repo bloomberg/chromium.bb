@@ -3406,7 +3406,6 @@ test("unit_tests") {
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
       data += [
-        "$root_out_dir/test_data/chrome/browser/resources/print_preview/",
         "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
         "$root_out_dir/test_data/ui/webui/",
       ]

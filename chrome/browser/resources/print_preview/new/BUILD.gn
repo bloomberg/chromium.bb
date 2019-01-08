@@ -108,6 +108,7 @@ js_library("pages_settings") {
   deps = [
     ":input_behavior",
     ":settings_behavior",
+    "..:print_preview_utils",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:load_time_data",
   ]
@@ -241,7 +242,6 @@ js_library("preview_area") {
     ":settings_behavior",
     ":state",
     "..:native_layer",
-    "..:print_preview_utils",
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
