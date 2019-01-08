@@ -693,8 +693,6 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   //  0xXX: -127 to +127 dBm"
   // Core Specification Supplement (CSS) v7, Part 1.5
   // https://developer.apple.com/documentation/corebluetooth/cbadvertisementdatatxpowerlevelkey
-  // TODO(dougt): We shoud treat |tx_power| and |local_name| as optional as
-  // they do not have to be specified by the device.
   NSNumber* tx_power =
       [advertisement_data objectForKey:CBAdvertisementDataTxPowerLevelKey];
   int8_t clamped_tx_power = BluetoothDevice::ClampPower([tx_power intValue]);
@@ -709,10 +707,10 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
         base::SysNSStringToUTF8(local_name);
 
     observer.DeviceAdvertisementReceived(
-        device_mac->GetAddress(), device_name_opt, local_name_opt, rssi,
-        clamped_tx_power,
-        BluetoothDevice::kAppearanceNotPresent, /* TODO(crbug.com/588083)
-                                                   Implement appearance */
+        device_mac->GetAddress(), device_name_opt,
+        local_name == nil ? base::nullopt : local_name_opt, rssi,
+        tx_power == nil ? base::nullopt : base::make_optional(clamped_tx_power),
+        base::nullopt, /* TODO(crbug.com/588083) Implement appearance */
         advertised_uuids, service_data_map, manufacturer_data_map);
   }
 

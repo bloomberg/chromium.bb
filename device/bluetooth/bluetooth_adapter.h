@@ -132,7 +132,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
         const base::Optional<std::string>& advertisement_name,
         base::Optional<int8_t> rssi,
         base::Optional<int8_t> tx_power,
-        uint16_t appearance,
+        base::Optional<uint16_t> appearance,
         const BluetoothDevice::UUIDList& advertised_uuids,
         const BluetoothDevice::ServiceDataMap& service_data_map,
         const BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {}
