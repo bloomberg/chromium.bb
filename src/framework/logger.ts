@@ -73,9 +73,7 @@ export class CaseRecorder {
     this.result.status = this.failed ? "fail" :
         this.warned ? "warn" : "pass";
 
-    if (this.failed || this.warned) {
-      this.result.logs = this.logs;
-    }
+    this.result.logs = this.logs;
   }
 
   public log(msg: string) {
