@@ -147,6 +147,18 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         return ErrorRetryCommand::kRewriteWebViewURL;
       }
 
+      if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
+        GURL target_url;
+        if (wk_navigation_util::ExtractTargetURL(web_view_url, &target_url) &&
+            target_url == url_) {
+          // (10) Back/forward navigation to a restored session entry in offline
+          // mode. It is OK to consider this load succeeded for now because the
+          // failure delegate will be triggered again if the load fails.
+          state_ = ErrorRetryState::kNoNavigationError;
+          return ErrorRetryCommand::kDoNothing;
+        }
+      }
+
       // (5) This is either a reload of the original URL that succeeded in
       // WebView (either because it was already in Page Cache or the network
       // load succeded), or a back/forward of a previous WebUI error that is

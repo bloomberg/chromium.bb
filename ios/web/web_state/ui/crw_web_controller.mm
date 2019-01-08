@@ -5288,24 +5288,34 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   GURL webViewURL = net::GURLWithNSURL([_webView URL]);
 
+  if (![self isCurrentNavigationBackForward])
+    return;
+
+  web::NavigationContextImpl* existingContext =
+      [self contextForPendingMainFrameNavigationWithURL:webViewURL];
+
   // When traversing history restored from a previous session, WKWebView does
   // not fire 'pageshow', 'onload', 'popstate' or any of the
   // WKNavigationDelegate callbacks for back/forward navigation from an about:
-  // scheme placeholder URL to another entry. Loading state KVO is the only
-  // observable event in this scenario, so force a reload to trigger redirect
-  // from restore_session.html to the restored URL.
+  // scheme placeholder URL to another entry or if either of the redirect fails
+  // to load (e.g. in airplane mode). Loading state KVO is the only observable
+  // event in this scenario, so force a reload to trigger redirect from
+  // restore_session.html to the restored URL.
   bool previousURLHasAboutScheme =
       _documentURL.SchemeIs(url::kAboutScheme) ||
       IsPlaceholderUrl(_documentURL) ||
       web::GetWebClient()->IsAppSpecificURL(_documentURL);
+  bool is_back_forward_navigation =
+      existingContext &&
+      (existingContext->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      IsRestoreSessionUrl(webViewURL) && previousURLHasAboutScheme) {
-    [_webView reload];
-    return;
+      IsRestoreSessionUrl(webViewURL)) {
+    if (previousURLHasAboutScheme || is_back_forward_navigation) {
+      [_webView reload];
+      _loadPhase = web::LOAD_REQUESTED;
+      return;
+    }
   }
-
-  if (![self isCurrentNavigationBackForward])
-    return;
 
   // For failed navigations, WKWebView will sometimes revert to the previous URL
   // before committing the current navigation or resetting the web view's
@@ -5316,9 +5326,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       (webViewURL.is_empty() || webViewURL == _documentURL)) {
     return;
   }
-
-  web::NavigationContextImpl* existingContext =
-      [self contextForPendingMainFrameNavigationWithURL:webViewURL];
 
   if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
     // A fast back-forward navigation does not call |didCommitNavigation:|, so
