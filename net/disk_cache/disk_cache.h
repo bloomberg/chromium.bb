@@ -159,6 +159,27 @@ class NET_EXPORT Backend {
   // Returns the number of entries in the cache.
   virtual int32_t GetEntryCount() const = 0;
 
+  // Atomically attempts to open an existing entry based on |key|
+  // or, if none already exists will create a new entry.
+  // Upon success |entry| contains a pointer to either the existing object
+  // specified or its newly created entry. When the entry pointer is no longer
+  // needed, its Close method should be called. The return value is a net error
+  // code. If this method returns ERR_IO_PENDING, the |callback| will be
+  // invoked when the entry is available. The pointer to receive the |entry|
+  // must remain valid until the operation completes. The |priority| of the
+  // entry determines its priority in the background worker pools.
+  //
+  // This method should be the preferred way to obtain an entry over using
+  // OpenEntry() or CreateEntry() separately in order to simplify consumer
+  // logic
+  //
+  // Warning: Currently under development and not yet implemented in all cache
+  // backends.
+  virtual net::Error OpenOrCreateEntry(const std::string& key,
+                                       net::RequestPriority priority,
+                                       Entry** entry,
+                                       CompletionOnceCallback callback);
+
   // Opens an existing entry. Upon success, |entry| holds a pointer to an Entry
   // object representing the specified disk cache entry. When the entry pointer
   // is no longer needed, its Close method should be called. The return value is
