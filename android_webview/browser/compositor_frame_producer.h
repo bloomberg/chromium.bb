@@ -17,7 +17,7 @@ class CompositorFrameConsumer;
 
 class CompositorFrameProducer {
  public:
-  virtual base::WeakPtr<CompositorFrameProducer> GetWeakPtr();
+  virtual base::WeakPtr<CompositorFrameProducer> GetWeakPtr() = 0;
   virtual void ReturnUsedResources(
       const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
