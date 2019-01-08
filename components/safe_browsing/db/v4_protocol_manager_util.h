@@ -151,11 +151,14 @@ enum SBThreatType {
   // The page loaded a resource from the Suspicious Site list.
   SB_THREAT_TYPE_SUSPICIOUS_SITE,
 
-  // Enterprise password reuse detected on low reputation page,
+  // Enterprise password reuse detected on low reputation page.
   SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
 
   // Potential billing detected.
   SB_THREAT_TYPE_BILLING,
+
+  // Off-market APK file downloaded, which could be potentially dangerous.
+  SB_THREAT_TYPE_APK_DOWNLOAD,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;

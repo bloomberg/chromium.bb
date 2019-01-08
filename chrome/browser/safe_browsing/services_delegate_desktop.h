@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_DESKTOP_H_
+#define CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_DESKTOP_H_
 
 #include <memory>
 
@@ -23,11 +23,11 @@ struct V4ProtocolConfig;
 
 // Actual ServicesDelegate implementation. Create via
 // ServicesDelegate::Create().
-class ServicesDelegateImpl : public ServicesDelegate {
+class ServicesDelegateDesktop : public ServicesDelegate {
  public:
-  ServicesDelegateImpl(SafeBrowsingService* safe_browsing_service,
-                       ServicesDelegate::ServicesCreator* services_creator);
-  ~ServicesDelegateImpl() override;
+  ServicesDelegateDesktop(SafeBrowsingService* safe_browsing_service,
+                          ServicesDelegate::ServicesCreator* services_creator);
+  ~ServicesDelegateDesktop() override;
 
  private:
   // ServicesDelegate:
@@ -72,6 +72,10 @@ class ServicesDelegateImpl : public ServicesDelegate {
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const override;
 
+  void CreateTelemetryService(Profile* profile) override;
+  void RemoveTelemetryService() override;
+  TelemetryService* GetTelemetryService() const override;
+
   std::unique_ptr<ClientSideDetectionService> csd_service_;
   std::unique_ptr<DownloadProtectionService> download_service_;
   std::unique_ptr<IncidentReportingService> incident_service_;
@@ -93,9 +97,9 @@ class ServicesDelegateImpl : public ServicesDelegate {
   std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServicesDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServicesDelegateDesktop);
 };
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_DESKTOP_H_

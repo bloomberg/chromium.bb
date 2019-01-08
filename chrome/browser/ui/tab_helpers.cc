@@ -45,6 +45,7 @@
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
@@ -105,7 +106,6 @@
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/plugins/plugin_observer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
@@ -245,6 +245,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PreviewsUITabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
   ResourceLoadingHintsWebContentsObserver::CreateForWebContents(web_contents);
+  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
+      web_contents);
   safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
       profile, web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
@@ -300,8 +302,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PluginObserver::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
-  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
-      web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);

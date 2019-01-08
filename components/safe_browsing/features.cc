@@ -45,6 +45,9 @@ const base::Feature kForceEnableResetPasswordWebUI{
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTelemetryForApkDownloads{
+    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -73,6 +76,7 @@ constexpr struct {
     {&kCommittedSBInterstitials, true},
     {&kForceEnableResetPasswordWebUI, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
+    {&kTelemetryForApkDownloads, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},

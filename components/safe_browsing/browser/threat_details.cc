@@ -101,8 +101,19 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_SUSPICIOUS;
     case SB_THREAT_TYPE_BILLING:
       return ClientSafeBrowsingReportRequest::BILLING;
-    default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
-      NOTREACHED() << "We should not send report for threat type "
+    case SB_THREAT_TYPE_APK_DOWNLOAD:
+      return ClientSafeBrowsingReportRequest::APK_DOWNLOAD;
+    case SB_THREAT_TYPE_UNUSED:
+    case SB_THREAT_TYPE_SAFE:
+    case SB_THREAT_TYPE_URL_BINARY_MALWARE:
+    case SB_THREAT_TYPE_EXTENSION:
+    case SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
+    case SB_THREAT_TYPE_API_ABUSE:
+    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+    case SB_THREAT_TYPE_CSD_WHITELIST:
+    case DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+      // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
+      NOTREACHED() << "We should not send report for threat type: "
                    << threat_type;
       return ClientSafeBrowsingReportRequest::UNKNOWN;
   }
@@ -832,7 +843,8 @@ void ThreatDetails::MaybeFillReferrerChain() {
     return;
 
   if (!report_ ||
-      report_->type() != ClientSafeBrowsingReportRequest::URL_SUSPICIOUS) {
+      (report_->type() != ClientSafeBrowsingReportRequest::URL_SUSPICIOUS &&
+       report_->type() != ClientSafeBrowsingReportRequest::APK_DOWNLOAD)) {
     return;
   }
 
