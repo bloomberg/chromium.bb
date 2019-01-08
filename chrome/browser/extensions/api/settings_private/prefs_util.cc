@@ -284,6 +284,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[browsing_data::prefs::kLastClearBrowsingDataTab] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
+  // Accessibility.
+  (*s_whitelist)[::prefs::kAccessibilityImageLabelsEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
 #if defined(OS_CHROMEOS)
   // Accounts / Users / People.
   (*s_whitelist)[chromeos::kAccountsPrefAllowGuest] =

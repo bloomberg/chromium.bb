@@ -1016,6 +1016,10 @@ const char kDefaultBrowserSettingEnabled[] =
 const char kShowInternalAccessibilityTree[] =
     "accessibility.show_internal_accessibility_tree";
 
+// Additional features for image labels for accessibility.
+const char kAccessibilityImageLabelsEnabled[] =
+    "settings.a11y.enable_accessibility_image_labels";
+
 #if defined(OS_MACOSX)
 // Boolean that indicates whether the application should show the info bar
 // asking the user to set up automatic updates when Keystone promotion is

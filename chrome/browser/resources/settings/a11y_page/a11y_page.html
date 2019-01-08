@@ -16,6 +16,13 @@
 <dom-module id="settings-a11y-page">
   <template>
     <style include="settings-shared"></style>
+    <!-- TODO(katie): Remove hidden calculation before launch. -->
+    <settings-toggle-button
+        hidden$="[[!showExperimentalAccessibilityLabels_]]"
+        pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
+        label="$i18n{accessibleImageLabelsTitle}"
+        sub-label="$i18n{accessibleImageLabelsSubtitle}">
+    </settings-toggle-button>
 <if expr="chromeos">
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y" focus-config="[[focusConfig_]]">

@@ -168,6 +168,9 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
     {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
     {"a11yWebStore", IDS_SETTINGS_ACCESSIBILITY_WEB_STORE},
+    {"accessibleImageLabelsTitle", IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
+    {"accessibleImageLabelsSubtitle",
+     IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
     {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
     {"moreFeaturesLinkDescription",
      IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
@@ -314,24 +317,26 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
+  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
+  html_source->AddBoolean(
+      "showExperimentalA11yLabels",
+      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels));
+
 #if defined(OS_CHROMEOS)
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
   html_source->AddBoolean(
       "showExperimentalA11yFeatures",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityFeatures));
+      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityFeatures));
 
   html_source->AddBoolean(
       "showExperimentalAccessibilityAutoclick",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityAutoclick));
+      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityAutoclick));
 
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilitySwitchAccess));
+      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
 
   html_source->AddBoolean("dockedMagnifierFeatureEnabled",
                           ash::features::IsDockedMagnifierEnabled());
@@ -794,17 +799,15 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT}};
   AddLocalizedStringsBulk(html_source, kDisplayStrings,
                           base::size(kDisplayStrings));
+  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean("unifiedDesktopAvailable",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kEnableUnifiedDesktop));
+                          cmd.HasSwitch(::switches::kEnableUnifiedDesktop));
   html_source->AddBoolean("multiMirroringAvailable",
-                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kDisableMultiMirroring));
+                          !cmd.HasSwitch(::switches::kDisableMultiMirroring));
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTouchCalibrationSetting));
+      cmd.HasSwitch(chromeos::switches::kEnableTouchCalibrationSetting));
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
