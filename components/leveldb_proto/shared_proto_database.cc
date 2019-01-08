@@ -26,13 +26,9 @@ const char kGlobalMetadataKey[] = "__global";
 
 }  // namespace
 
-inline void RunInitCallbackOnCallingSequence(
-    Callbacks::InitCallback callback,
-    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-    bool success) {
-  callback_task_runner->PostTask(FROM_HERE,
-                                 base::BindOnce(std::move(callback), success));
-}
+// static
+const base::TimeDelta SharedProtoDatabase::kDelayToClearObsoleteDatabase =
+    base::TimeDelta::FromSeconds(120);
 
 inline void RunInitStatusCallbackOnCallingSequence(
     Callbacks::InitStatusCallback callback,
@@ -193,7 +189,8 @@ void SharedProtoDatabase::Init(
                        false /* corruption */);
 }
 
-void SharedProtoDatabase::ProcessInitRequests(Enums::InitStatus status) {
+void SharedProtoDatabase::ProcessOutstandingInitRequests(
+    Enums::InitStatus status) {
   // The pairs are stored as (callback, callback_task_runner).
   while (!outstanding_init_requests_.empty()) {
     auto request = std::move(outstanding_init_requests_.front());
@@ -222,7 +219,7 @@ void SharedProtoDatabase::InitMetadataDatabase(
     init_status_ = Enums::InitStatus::kError;
     callback_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), init_status_));
-    ProcessInitRequests(init_status_);
+    ProcessOutstandingInitRequests(init_status_);
     return;
   }
 
@@ -259,7 +256,7 @@ void SharedProtoDatabase::OnMetadataInitComplete(
     init_status_ = Enums::InitStatus::kError;
     RunInitStatusCallbackOnCallingSequence(
         std::move(callback), std::move(callback_task_runner), init_status_);
-    ProcessInitRequests(init_status_);
+    ProcessOutstandingInitRequests(init_status_);
     return;
   }
 
@@ -322,7 +319,7 @@ void SharedProtoDatabase::OnFinishCorruptionCountWrite(
     init_status_ = Enums::InitStatus::kError;
     RunInitStatusCallbackOnCallingSequence(
         std::move(callback), std::move(callback_task_runner), init_status_);
-    ProcessInitRequests(init_status_);
+    ProcessOutstandingInitRequests(init_status_);
     return;
   }
 
@@ -361,7 +358,7 @@ void SharedProtoDatabase::OnUpdateCorruptionCount(
       success ? Enums::InitStatus::kCorrupt : Enums::InitStatus::kError;
   RunInitStatusCallbackOnCallingSequence(
       std::move(callback), std::move(callback_task_runner), init_status_);
-  ProcessInitRequests(init_status_);
+  ProcessOutstandingInitRequests(init_status_);
 }
 
 void SharedProtoDatabase::OnDatabaseInit(
@@ -397,9 +394,26 @@ void SharedProtoDatabase::OnDatabaseInit(
   init_status_ = status;
   init_state_ = status == Enums::InitStatus::kOK ? InitState::kSuccess
                                                  : InitState::kFailure;
-  ProcessInitRequests(status);
+
   callback_task_runner->PostTask(FROM_HERE,
                                  base::BindOnce(std::move(callback), status));
+  ProcessOutstandingInitRequests(status);
+
+  if (init_state_ == InitState::kSuccess) {
+    // Create a ProtoLevelDBWrapper just like we create for each client, for
+    // deleting data from obsolete clients. It is fine to use the same wrapper
+    // to clear data from all clients. This object will be destroyed after
+    // clearing data for all these clients.
+    auto db_wrapper =
+        std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get());
+    Callbacks::UpdateCallback obsolete_cleared_callback = base::DoNothing();
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DestroyObsoleteSharedProtoDatabaseClients,
+                       std::move(db_wrapper),
+                       std::move(obsolete_cleared_callback)),
+        kDelayToClearObsoleteDatabase);
+  }
 }
 
 SharedProtoDatabase::~SharedProtoDatabase() {

@@ -59,6 +59,11 @@ class MockDB : public LevelDB {
                bool(const base::StringPairs&,
                     const KeyFilter&,
                     leveldb::Status*));
+  MOCK_METHOD4(UpdateWithRemoveFilter,
+               bool(const base::StringPairs&,
+                    const KeyFilter&,
+                    const std::string&,
+                    leveldb::Status*));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD2(LoadWithFilter,
                bool(const KeyFilter&, std::vector<std::string>*));
@@ -151,8 +156,6 @@ bool ZeroFilter(const std::string& key) {
   return key == "0";
 }
 
-}  // namespace
-
 EntryMap GetSmallModel() {
   EntryMap model;
 
@@ -167,6 +170,8 @@ EntryMap GetSmallModel() {
 
   return model;
 }
+
+}  // namespace
 
 void ExpectEntryPointersEquals(EntryMap expected,
                                const std::vector<TestProto>& actual) {
@@ -403,6 +408,36 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetSuccess) {
                                     base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(UniqueProtoDatabaseTest, TestDBRemoveKeys) {
+  const std::string kTestPrefix = "test_prefix";
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  auto mock_db = std::make_unique<MockDB>();
+  MockDatabaseCaller caller;
+
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
+  EXPECT_CALL(*mock_db, UpdateWithRemoveFilter(_, _, kTestPrefix, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(caller, InitStatusCallback(_));
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
+                        base::BindOnce(&MockDatabaseCaller::InitStatusCallback,
+                                       base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_update_entries;
+  auto expect_update_success = base::BindOnce(
+      [](base::OnceClosure signal, bool success) {
+        EXPECT_TRUE(success);
+        std::move(signal).Run();
+      },
+      run_update_entries.QuitClosure());
+  db_->RemoveKeysForTesting(
+      base::BindRepeating([](const std::string& str) { return true; }),
+      kTestPrefix, std::move(expect_update_success));
+  run_update_entries.Run();
 }
 
 class UniqueProtoDatabaseLevelDBTest : public testing::Test {

@@ -96,6 +96,10 @@ class UniqueProtoDatabase : public ProtoDatabase<T> {
 
   void Destroy(Callbacks::DestroyCallback callback) override;
 
+  void RemoveKeysForTesting(const LevelDB::KeyFilter& key_filter,
+                            const std::string& target_prefix,
+                            Callbacks::UpdateCallback callback);
+
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
 
   // Sets the identifier used by the underlying LevelDB wrapper to record
@@ -279,6 +283,14 @@ void UniqueProtoDatabase<T>::GetEntry(
 template <typename T>
 void UniqueProtoDatabase<T>::Destroy(Callbacks::DestroyCallback callback) {
   db_wrapper_->Destroy(std::move(callback));
+}
+
+template <typename T>
+void UniqueProtoDatabase<T>::RemoveKeysForTesting(
+    const LevelDB::KeyFilter& key_filter,
+    const std::string& target_prefix,
+    Callbacks::UpdateCallback callback) {
+  db_wrapper_->RemoveKeys(key_filter, target_prefix, std::move(callback));
 }
 
 template <typename T>

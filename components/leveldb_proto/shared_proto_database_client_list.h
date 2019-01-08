@@ -11,15 +11,19 @@
 
 namespace leveldb_proto {
 
-extern const char kFeatureEngagementClientName[];
+const char* const kFeatureEngagementName = "FeatureEngagement";
 
-extern const char* const kCurrentSharedProtoDatabaseClients[];
-extern const size_t kCurrentSharedProtoDatabaseClientsLength;
+// NOTE: The client names should not have partial or complete prefix overlap
+// with any other client name, current or obsolete. Internally the stored data
+// is grouped by the prefix of client name. These names cannot be renamed
+// without adding the old name to obsolete client list and such rename would
+// make the client be treated as a new client.
+const char* const kCurrentSharedProtoDatabaseClients[] = {
+    kFeatureEngagementName, nullptr};
 
-#ifdef SHARED_PROTO_DATABASE_CLIENT_LIST_USE_OBSOLETE_CLIENT_LIST
-extern const char* const kObsoleteSharedProtoDatabaseClients[];
-extern const size_t kObsoleteSharedProtoDatabaseClientsLength;
-#endif  // SHARED_PROTO_DATABASE_CLIENT_LIST_USE_OBSOLETE_CLIENT_LIST
+const char* const kObsoleteSharedProtoDatabaseClients[] = {
+    nullptr  // Marks the last element.
+};
 
 class SharedProtoDatabaseClientList {
  public:

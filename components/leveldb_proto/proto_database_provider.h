@@ -26,12 +26,11 @@ class ProtoDatabaseProvider : public KeyedService {
   static ProtoDatabaseProvider* Create(const base::FilePath& profile_dir);
 
   // |client_namespace| is the unique prefix to be used in the shared database
-  // if the database returned is a SharedDatabaseClient<T>.
-  // |type_prefix| is a unique prefix within the |client_namespace| to be used
-  // in the shared database if the database returned is a
-  // SharedProtoDatabaseClient<T>.
-  // |unique_db_dir|: the subdirectory this database should live in within
-  // the profile directory.
+  // if the database returned is a SharedDatabaseClient<T>. This name must be
+  // present in |kCurrentSharedProtoDatabaseClients|. |type_prefix| is a unique
+  // prefix within the |client_namespace| to be used in the shared database if
+  // the database returned is a SharedProtoDatabaseClient<T>. |unique_db_dir|:
+  // the subdirectory this database should live in within the profile directory.
   // |task_runner|: the SequencedTaskRunner to run all database operations on.
   // This isn't used by SharedProtoDatabaseClients since all calls using
   // the SharedProtoDatabase will run on its TaskRunner.

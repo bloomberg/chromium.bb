@@ -87,6 +87,10 @@ class SharedProtoDatabase
     std::string client_name;
   };
 
+  // Make sure to give enough time after startup so that we have less chance of
+  // affecting startup or navigations.
+  static const base::TimeDelta kDelayToClearObsoleteDatabase;
+
   // Private since we only want to create a singleton of it.
   SharedProtoDatabase(
       const std::string& client_name,
@@ -94,7 +98,7 @@ class SharedProtoDatabase
 
   virtual ~SharedProtoDatabase();
 
-  void ProcessInitRequests(Enums::InitStatus status);
+  void ProcessOutstandingInitRequests(Enums::InitStatus status);
 
   template <typename T>
   std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientInternal(
@@ -166,6 +170,11 @@ class SharedProtoDatabase
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
   LevelDB* GetLevelDBForTesting() const;
+
+  scoped_refptr<base::SequencedTaskRunner> database_task_runner_for_testing()
+      const {
+    return task_runner_;
+  }
 
   SEQUENCE_CHECKER(on_task_runner_);
 

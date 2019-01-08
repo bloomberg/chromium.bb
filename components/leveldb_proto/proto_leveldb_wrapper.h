@@ -106,6 +106,10 @@ class ProtoLevelDBWrapper {
   void GetEntry(const std::string& key,
                 typename Callbacks::Internal<T>::GetCallback callback);
 
+  void RemoveKeys(const LevelDB::KeyFilter& filter,
+                  const std::string& target_prefix,
+                  Callbacks::UpdateCallback callback);
+
   void Destroy(Callbacks::DestroyCallback callback);
 
   void RunInitCallback(Callbacks::InitCallback callback,
