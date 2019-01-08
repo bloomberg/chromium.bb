@@ -296,7 +296,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     MainThreadType main_thread_type,
     ExecutionMode execution_control_mode,
     NowSource now_source,
-    NotATraitTag)
+    trait_helpers::NotATraitTag)
     : main_thread_type_(main_thread_type),
       execution_control_mode_(execution_control_mode),
       mock_time_domain_(MockTimeDomain::Create(main_thread_type, now_source)),

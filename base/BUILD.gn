@@ -823,7 +823,6 @@ jumbo_component("base") {
     "task/task_scheduler/tracked_ref.h",
     "task/task_traits.cc",
     "task/task_traits.h",
-    "task/task_traits_details.h",
     "task/task_traits_extension.h",
     "task_runner.cc",
     "task_runner.h",
@@ -971,6 +970,7 @@ jumbo_component("base") {
     "trace_event/traced_value.h",
     "trace_event/tracing_agent.cc",
     "trace_event/tracing_agent.h",
+    "traits_bag.h",
     "tuple.h",
     "type_id.cc",
     "type_id.h",
@@ -2563,6 +2563,7 @@ test("base_unittests") {
     "trace_event/trace_event_system_stats_monitor_unittest.cc",
     "trace_event/trace_event_unittest.cc",
     "trace_event/traced_value_unittest.cc",
+    "traits_bag_unittest.cc",
     "tuple_unittest.cc",
     "type_id_unittest.cc",
     "unguessable_token_unittest.cc",
@@ -2850,6 +2851,7 @@ if (enable_nocompile_tests) {
       "task/task_traits_extension_unittest.nc",
       "task/task_traits_unittest.nc",
       "thread_annotations_unittest.nc",
+      "traits_bag_unittest.nc",
     ]
 
     deps = [

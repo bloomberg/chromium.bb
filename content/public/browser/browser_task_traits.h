@@ -41,11 +41,6 @@ struct NonNestable {};
 // Posting to a BrowserThread must only be done after it was initialized (ref.
 // BrowserMainLoop::CreateThreads() phase).
 class CONTENT_EXPORT BrowserTaskTraitsExtension {
-  using BrowserThreadIDFilter =
-      base::trait_helpers::RequiredEnumTraitFilter<BrowserThread::ID>;
-  using NonNestableFilter =
-      base::trait_helpers::BooleanTraitFilter<NonNestable>;
-
  public:
   static constexpr uint8_t kExtensionId =
       base::TaskTraitsExtensionStorage::kFirstEmbedderExtensionId;
@@ -63,10 +58,8 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr BrowserTaskTraitsExtension(ArgTypes... args)
       : browser_thread_(
-            base::trait_helpers::GetTraitFromArgList<BrowserThreadIDFilter>(
-                args...)),
-        nestable_(!base::trait_helpers::GetTraitFromArgList<NonNestableFilter>(
-            args...)) {}
+            base::trait_helpers::GetEnum<BrowserThread::ID>(args...)),
+        nestable_(!base::trait_helpers::HasTrait<NonNestable>(args...)) {}
 
   // Keep in sync with UiThreadTaskTraits.java
   constexpr base::TaskTraitsExtensionStorage Serialize() const {

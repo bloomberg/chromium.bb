@@ -10,8 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
-#include "base/task/task_traits.h"
 #include "base/time/time.h"
+#include "base/traits_bag.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -114,7 +114,7 @@ class ScopedTaskEnvironment {
   };
 
   // List of traits that are valid inputs for the constructor below.
-  struct ValidTrait : public base::TaskTraits::ValidTrait {
+  struct ValidTrait {
     ValidTrait(MainThreadType);
     ValidTrait(ExecutionMode);
     ValidTrait(NowSource);
@@ -127,10 +127,12 @@ class ScopedTaskEnvironment {
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   ScopedTaskEnvironment(ArgTypes... args)
       : ScopedTaskEnvironment(
-            GetEnum<MainThreadType, MainThreadType::DEFAULT>(args...),
-            GetEnum<ExecutionMode, ExecutionMode::ASYNC>(args...),
-            GetEnum<NowSource, NowSource::REAL_TIME>(args...),
-            NotATraitTag()) {}
+            trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
+                args...),
+            trait_helpers::GetEnum<ExecutionMode, ExecutionMode::ASYNC>(
+                args...),
+            trait_helpers::GetEnum<NowSource, NowSource::REAL_TIME>(args...),
+            trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed TaskScheduler tasks remain. Then, unregisters the
   // TaskScheduler and the (Thread|Sequenced)TaskRunnerHandle.
@@ -214,20 +216,10 @@ class ScopedTaskEnvironment {
   class MockTimeDomain;
   class TestTaskTracker;
 
-  // Helper to make the template constructor more readable.
-  template <typename Enum, Enum DefaultValue, typename... Args>
-  static constexpr auto GetEnum(Args... args) {
-    return trait_helpers::GetTraitFromArgList<
-        trait_helpers::EnumTraitFilter<Enum, DefaultValue>>(args...);
-  }
-
-  // Here to make sure the compiler always uses the template constructor.
-  struct NotATraitTag {};
-
   ScopedTaskEnvironment(MainThreadType main_thread_type,
                         ExecutionMode execution_control_mode,
                         NowSource now_source,
-                        NotATraitTag tag);
+                        trait_helpers::NotATraitTag tag);
 
   scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
