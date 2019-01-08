@@ -8,17 +8,13 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#if defined(WEBRTC_POSIX)
+#if defined(LIBJINGLE_XMPP_POSIX)
 #include <sys/time.h>
-#endif  // WEBRTC_POSIX
+#endif  // LIBJINGLE_XMPP_POSIX
 
-// TODO: Remove this once the cause of sporadic failures in these
-// tests is tracked down.
-#include <iostream>
-
-#if defined(WEBRTC_WIN)
+#if defined(LIBJINGLE_XMPP_WIN)
 #include "third_party/webrtc/rtc_base/win32.h"
-#endif  // WEBRTC_WIN
+#endif  // LIBJINGLE_XMPP_WIN
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"

@@ -107,15 +107,22 @@ rtc_static_library("rtc_xmpp") {
 }
 
 config("libjingle_xmpp_unittests_config") {
-  # GN orders flags on a target before flags from configs. The default config
-  # adds -Wall, and this flag have to be after -Wall -- so they need to
-  # come from a config and can"t be on the target directly.
+  defines = []
   if (is_clang) {
+    # GN orders flags on a target before flags from configs. The default config
+    # adds -Wall, and this flag have to be after -Wall -- so they need to
+    # come from a config and can"t be on the target directly.
     cflags = [
       "-Wno-missing-braces",
       "-Wno-sign-compare",
       "-Wno-unused-const-variable",
     ]
+  }
+  if (is_win) {
+    defines += [ "LIBJINGLE_XMPP_WIN" ]
+  }
+  if (is_posix || is_fuchsia) {
+    defines += [ "LIBJINGLE_XMPP_POSIX" ]
   }
 }
 
