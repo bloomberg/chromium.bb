@@ -85,9 +85,9 @@ void FindTabHelper::RestoreSearchTerm() {
   [controller_ restoreSearchTerm];
 }
 
-void FindTabHelper::NavigationItemCommitted(
+void FindTabHelper::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
+    web::NavigationContext* navigation_context) {
   StopFinding(nil);
 }
 
