@@ -139,7 +139,8 @@ class EgtestsApp(object):
     invert: type of filter(True - inclusive, False - exclusive).
   """
 
-  def __init__(self, egtests_app, filtered_tests=None, invert=False):
+  def __init__(self, egtests_app, filtered_tests=None, invert=False,
+               test_args=None, env_vars=None):
     """Initialize Egtests.
 
     Args:
@@ -149,6 +150,9 @@ class EgtestsApp(object):
          E.g.
           [ 'TestCaseClass1/testMethod1', 'TestCaseClass2/testMethod2']
       invert: type of filter(True - inclusive, False - exclusive).
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+      env_vars: List of environment variables to pass to the test itself.
 
     Raises:
       AppNotFoundError: If the given app does not exist
@@ -160,6 +164,8 @@ class EgtestsApp(object):
     self.module_name = os.path.splitext(os.path.basename(egtests_app))[0]
     self.filter = filtered_tests
     self.invert = invert
+    self.test_args = test_args
+    self.env_vars = env_vars
 
   def _xctest_path(self):
     """Gets xctest-file from egtests/PlugIns folder.
@@ -212,6 +218,12 @@ class EgtestsApp(object):
       else:
         xctestrun_data[module].update(
             {'OnlyTestIdentifiers': self.filter})
+    if self.env_vars:
+      xctestrun_data[module].update(
+          {'EnvironmentVariables': self.env_vars})
+    if self.test_args:
+      xctestrun_data[module].update(
+          {'CommandLineArguments': self.test_args})
     return xctestrun_data
 
 
@@ -249,7 +261,8 @@ class LaunchCommand(object):
     self.test_results = collections.OrderedDict()
     self.env = env
 
-  def _make_cmd_list_for_failed_tests(self, failed_results, out_dir):
+  def _make_cmd_list_for_failed_tests(self, failed_results, out_dir,
+                                      test_args=None, env_vars=None):
     """Makes cmd list based on failure results.
 
     Args:
@@ -259,6 +272,9 @@ class LaunchCommand(object):
               'egtests_app_name': [failed_test_case/test_methods]
           }
       out_dir: (str) An output path.
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+      env_vars: List of environment variables to pass to the test itself.
 
     Returns:
       List of Launch commands to re-run failed tests.
@@ -268,7 +284,9 @@ class LaunchCommand(object):
         egtests_app=self.egtests_app.egtests_path,
         filtered_tests=[test.replace(' ', '/') for test in
                         failed_results[os.path.basename(
-                            self.egtests_app.egtests_path)]])
+                            self.egtests_app.egtests_path)]],
+        test_args=test_args,
+        env_vars=env_vars)
     # Regenerates xctest run and gets a command.
     return self.command(eg_app, out_dir, self.destination, shards=1)
 
@@ -386,7 +404,9 @@ class LaunchCommand(object):
           'attempts'][-1]['failed']:
         cmd_list = self._make_cmd_list_for_failed_tests(
             self.test_results['attempts'][-1]['failed'],
-            outdir_attempt)
+            outdir_attempt,
+            test_args=self.egtests_app.test_args,
+            env_vars=self.egtests_app.env_vars)
       else:
         # If tests did not start, re-run the same command
         # but with different output folder.
@@ -578,7 +598,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     launch_commands = []
     for params in self.sharding_data:
       launch_commands.append(LaunchCommand(
-          EgtestsApp(params['app'], filtered_tests=params['test_cases']),
+          EgtestsApp(params['app'], filtered_tests=params['test_cases'],
+                     env_vars=self.env_vars, test_args=self.test_args),
           params['destination'],
           shards=params['shards'],
           retries=self.retries,
