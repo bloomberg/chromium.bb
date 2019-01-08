@@ -101,6 +101,9 @@ struct GPU_EXPORT GpuPreferences {
 
   bool log_gpu_control_list_decisions = false;
 
+  // Enable exporting of events to ETW (on Windows).
+  bool enable_trace_export_events_to_etw = false;
+
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.cc
 

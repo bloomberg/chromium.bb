@@ -95,6 +95,10 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kDisableSoftwareRasterizer);
   gpu_preferences.log_gpu_control_list_decisions =
       command_line->HasSwitch(switches::kLogGpuControlListDecisions);
+#if defined(OS_WIN)
+  gpu_preferences.enable_trace_export_events_to_etw =
+      command_line->HasSwitch(switches::kTraceExportEventsToETW);
+#endif
   GetUintFromSwitch(command_line, switches::kMaxActiveWebGLContexts,
                     &gpu_preferences.max_active_webgl_contexts);
   gpu_preferences.gpu_startup_dialog =
