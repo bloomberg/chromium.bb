@@ -105,12 +105,7 @@
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(self.webState);
-  UIView* snapshotView = [self.delegate snapshotGenerator:self
-                                      baseViewForWebState:self.webState];
-  CGRect snapshotFrame =
-      [self.webState->GetView() convertRect:[self snapshotFrame]
-                                   fromView:snapshotView];
-  if (CGRectIsEmpty(snapshotFrame)) {
+  if (![self canTakeSnapshot]) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                base::BindOnce(^{
@@ -119,11 +114,11 @@
     }
     return;
   }
-  CGSize size = snapshotFrame.size;
-  DCHECK(std::isnormal(size.width) && (size.width > 0))
-      << ": snapshotFrame.size.width=" << size.width;
-  DCHECK(std::isnormal(size.height) && (size.height > 0))
-      << ": snapshotFrame.size.height=" << size.height;
+  UIView* snapshotView = [self.delegate snapshotGenerator:self
+                                      baseViewForWebState:self.webState];
+  CGRect snapshotFrame =
+      [self.webState->GetView() convertRect:[self snapshotFrame]
+                                   fromView:snapshotView];
   NSArray<SnapshotOverlay*>* overlays =
       [self.delegate snapshotGenerator:self
            snapshotOverlaysForWebState:self.webState];
@@ -143,10 +138,9 @@
 }
 
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay {
-  CGRect frame = [self snapshotFrame];
-  if (CGRectIsEmpty(frame))
+  if (![self canTakeSnapshot])
     return nil;
-
+  CGRect frame = [self snapshotFrame];
   NSArray<SnapshotOverlay*>* overlays =
       shouldAddOverlay ? [self.delegate snapshotGenerator:self
                               snapshotOverlaysForWebState:self.webState]
@@ -168,43 +162,43 @@
 
 #pragma mark - Private methods
 
-// Returns the frame of the snapshot. Will return an empty rectangle if the
-// WebState is not ready to capture a snapshot.
-- (CGRect)snapshotFrame {
+// Returns NO if WebState or the view is not ready for snapshot.
+- (BOOL)canTakeSnapshot {
+  // This allows for easier unit testing of classes that use SnapshotGenerator.
+  if (!self.delegate)
+    return NO;
+
   // Do not generate a snapshot if web usage is disabled (as the WebState's
   // view is blank in that case).
   if (!self.webState->IsWebUsageEnabled())
-    return CGRectZero;
+    return NO;
 
-  // Do not generate a snapshot if the delegate says the WebState view is
-  // not ready (this generally mean a placeholder is displayed).
-  if (self.delegate && ![self.delegate snapshotGenerator:self
-                              canTakeSnapshotForWebState:self.webState])
-    return CGRectZero;
+  return [self.delegate snapshotGenerator:self
+               canTakeSnapshotForWebState:self.webState];
+}
 
+// Returns the frame of the snapshot.
+- (CGRect)snapshotFrame {
   UIView* view = [self.delegate snapshotGenerator:self
                               baseViewForWebState:self.webState];
   UIEdgeInsets headerInsets = [self.delegate snapshotGenerator:self
                                  snapshotEdgeInsetsForWebState:self.webState];
-  return UIEdgeInsetsInsetRect(view.bounds, headerInsets);
+  CGRect frame = UIEdgeInsetsInsetRect(view.bounds, headerInsets);
+  DCHECK(!CGRectIsEmpty(frame));
+  return frame;
 }
 
-// Takes a snapshot for the supplied view (which should correspond to the given
-// type of web view). Returns an autoreleased image cropped and scaled
-// appropriately. The image can also contain overlays (if |overlays| is not
-// nil and not empty).
+// Takes a snapshot for the supplied view. Returns an autoreleased image cropped
+// and scaled appropriately. The image can also contain overlays (if |overlays|
+// is not nil and not empty).
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
                            overlays:(NSArray<SnapshotOverlay*>*)overlays {
   DCHECK(view);
-  CGSize size = rect.size;
-  DCHECK(std::isnormal(size.width) && (size.width > 0))
-      << ": size.width=" << size.width;
-  DCHECK(std::isnormal(size.height) && (size.height > 0))
-      << ": size.height=" << size.height;
+  DCHECK(!CGRectIsEmpty(rect));
   const CGFloat kScale =
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
-  UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
+  UIGraphicsBeginImageContextWithOptions(rect.size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
   BOOL snapshotSuccess = YES;
   CGContextSaveGState(context);
@@ -229,18 +223,14 @@
 - (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
                            image:(const gfx::Image&)image
                            frame:(CGRect)frame {
+  DCHECK(!CGRectIsEmpty(frame));
   if (image.IsEmpty())
     return nil;
   if (overlays.count == 0)
     return image.ToUIImage();
-  CGSize size = frame.size;
-  DCHECK(std::isnormal(size.width) && (size.width > 0))
-      << ": size.width=" << size.width;
-  DCHECK(std::isnormal(size.height) && (size.height > 0))
-      << ": size.height=" << size.height;
   const CGFloat kScale =
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
-  UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
+  UIGraphicsBeginImageContextWithOptions(frame.size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
   CGContextSaveGState(context);
   [image.ToUIImage() drawAtPoint:CGPointZero];
