@@ -110,70 +110,13 @@ multidevice::RemoteDeviceRefList
 TetherHostFetcherImpl::GenerateHostDeviceList() {
   multidevice::RemoteDeviceRefList host_list;
 
-  TetherHostSource tether_host_source =
-      IsInLegacyHostMode() ? TetherHostSource::DEVICE_SYNC_CLIENT
-                           : TetherHostSource::MULTIDEVICE_SETUP_CLIENT;
-
-  if (tether_host_source == TetherHostSource::MULTIDEVICE_SETUP_CLIENT) {
-    multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
-        host_status_with_device = multidevice_setup_client_->GetHostStatus();
-    if (host_status_with_device.first ==
-        chromeos::multidevice_setup::mojom::HostStatus::kHostVerified) {
-      host_list.push_back(*host_status_with_device.second);
-    }
-    return host_list;
+  multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
+      host_status_with_device = multidevice_setup_client_->GetHostStatus();
+  if (host_status_with_device.first ==
+      chromeos::multidevice_setup::mojom::HostStatus::kHostVerified) {
+    host_list.push_back(*host_status_with_device.second);
   }
-
-  if (tether_host_source == TetherHostSource::DEVICE_SYNC_CLIENT) {
-    for (const multidevice::RemoteDeviceRef& remote_device_ref :
-         device_sync_client_->GetSyncedDevices()) {
-      multidevice::SoftwareFeatureState magic_tether_host_state =
-          remote_device_ref.GetSoftwareFeatureState(
-              chromeos::multidevice::SoftwareFeature::kInstantTetheringHost);
-      if (magic_tether_host_state ==
-              multidevice::SoftwareFeatureState::kSupported ||
-          magic_tether_host_state ==
-              multidevice::SoftwareFeatureState::kEnabled) {
-        host_list.push_back(remote_device_ref);
-      }
-    }
-    return host_list;
-  }
-
-  NOTREACHED();
   return host_list;
-}
-
-bool TetherHostFetcherImpl::IsInLegacyHostMode() {
-  if (!device_sync_client_->is_ready())
-    return false;
-
-  bool has_supported_tether_host = false;
-  for (const multidevice::RemoteDeviceRef& remote_device_ref :
-       device_sync_client_->GetSyncedDevices()) {
-    multidevice::SoftwareFeatureState better_together_host_state =
-        remote_device_ref.GetSoftwareFeatureState(
-            chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
-    // If there's any valid Better Together host, don't support legacy mode.
-    if (better_together_host_state ==
-            multidevice::SoftwareFeatureState::kSupported ||
-        better_together_host_state ==
-            multidevice::SoftwareFeatureState::kEnabled) {
-      return false;
-    }
-
-    multidevice::SoftwareFeatureState magic_tether_host_state =
-        remote_device_ref.GetSoftwareFeatureState(
-            chromeos::multidevice::SoftwareFeature::kInstantTetheringHost);
-    if (magic_tether_host_state ==
-            multidevice::SoftwareFeatureState::kSupported ||
-        magic_tether_host_state ==
-            multidevice::SoftwareFeatureState::kEnabled) {
-      has_supported_tether_host = true;
-    }
-  }
-
-  return has_supported_tether_host;
 }
 
 }  // namespace tether
