@@ -143,7 +143,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // function is called. If 0 is returned the id is invalid.
   int GLGetNumValuesReturned(int id) const;
 
-  static int ElementsPerGroup(int format, int type);
+  static uint32_t ElementsPerGroup(int format, int type);
   // Computes the size of a single group of elements from a format and type pair
   static uint32_t ComputeImageGroupSize(int format, int type);
 
@@ -171,7 +171,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
       uint32_t* opt_padded_row_size, uint32_t* opt_skip_size,
       uint32_t* opt_padding);
 
-  static size_t RenderbufferBytesPerPixel(int format);
+  static uint32_t RenderbufferBytesPerPixel(int format);
 
   static uint8_t StencilBitsPerPixel(int format);
 
@@ -182,21 +182,22 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // For example, GL_FLOAT_MAT3 returns 9.
   static uint32_t GetElementCountForUniformType(int type);
 
-  static size_t GetGLTypeSizeForTextures(uint32_t type);
+  static uint32_t GetGLTypeSizeForTextures(uint32_t type);
 
-  static size_t GetGLTypeSizeForBuffers(uint32_t type);
+  static uint32_t GetGLTypeSizeForBuffers(uint32_t type);
 
-  static size_t GetGroupSizeForBufferType(uint32_t count, uint32_t type);
+  static uint32_t GetGroupSizeForBufferType(uint32_t count, uint32_t type);
 
-  static size_t GetGLTypeSizeForPathCoordType(uint32_t type);
+  static uint32_t GetComponentCountForGLTransformType(uint32_t type);
+
+  static uint32_t GetCoefficientCountForGLPathFragmentInputGenMode(
+      uint32_t gen_mode);
+
+  static uint32_t GetGLTypeSizeForPathCoordType(uint32_t type);
+
+  static uint32_t GetGLTypeSizeForGLPathNameType(uint32_t type);
 
   static uint32_t GLErrorToErrorBit(uint32_t gl_error);
-
-  static size_t GetComponentCountForGLTransformType(uint32_t type);
-  static size_t GetGLTypeSizeForGLPathNameType(uint32_t type);
-
-  static size_t GetCoefficientCountForGLPathFragmentInputGenMode(
-      uint32_t gen_mode);
 
   static uint32_t GLErrorBitToGLError(uint32_t error_bit);
 
@@ -234,9 +235,9 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static std::string GetStringBool(uint32_t value);
   static std::string GetStringError(uint32_t value);
 
-  static size_t CalcClearBufferivDataCount(int buffer);
-  static size_t CalcClearBufferfvDataCount(int buffer);
-  static size_t CalcClearBufferuivDataCount(int buffer);
+  static uint32_t CalcClearBufferivDataCount(int buffer);
+  static uint32_t CalcClearBufferfvDataCount(int buffer);
+  static uint32_t CalcClearBufferuivDataCount(int buffer);
 
   static void MapUint64ToTwoUint32(
       uint64_t v64, uint32_t* v32_0, uint32_t* v32_1);

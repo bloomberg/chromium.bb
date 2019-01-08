@@ -3378,7 +3378,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     self.WriteClientGLCallLog(func, f)
 
     if self.__NeedsToCalcDataCount(func):
-      f.write("  size_t count = %sGLES2Util::Calc%sDataCount(%s);\n" %
+      f.write("  uint32_t count = %sGLES2Util::Calc%sDataCount(%s);\n" %
                  (_Namespace(), func.name, func.GetOriginalArgs()[0].name))
       f.write("  DCHECK_LE(count, %du);\n" % self.GetArrayCount(func))
       f.write("  if (count == 0) {\n")
@@ -3388,8 +3388,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       f.write("    return;\n")
       f.write("  }\n")
     else:
-      f.write("  size_t count = %d;" % self.GetArrayCount(func))
-    f.write("  for (size_t ii = 0; ii < count; ++ii)\n")
+      f.write("  uint32_t count = %d;" % self.GetArrayCount(func))
+    f.write("  for (uint32_t ii = 0; ii < count; ++ii)\n")
     f.write('    GPU_CLIENT_LOG("value[" << ii << "]: " << %s[ii]);\n' %
                func.GetLastOriginalArg().name)
     for arg in func.GetOriginalArgs():

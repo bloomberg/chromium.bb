@@ -795,8 +795,7 @@ void Texture::AddToSignature(
   DCHECK(signature);
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index),
-            face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
 
@@ -1018,8 +1017,7 @@ void Texture::SetLevelClearedRect(GLenum target,
                                   const gfx::Rect& cleared_rect) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index),
-            face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info =
@@ -1031,7 +1029,7 @@ void Texture::SetLevelClearedRect(GLenum target,
 void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
@@ -1199,8 +1197,7 @@ void Texture::SetLevelInfo(GLenum target,
                            const gfx::Rect& cleared_rect) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index),
-            face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   DCHECK_GE(width, 0);
@@ -1304,8 +1301,7 @@ void Texture::SetStreamTextureServiceId(GLuint service_id) {
 void Texture::MarkLevelAsInternalWorkaround(GLenum target, GLint level) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index),
-            face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info =
@@ -1786,7 +1782,7 @@ void Texture::SetLevelImageInternal(GLenum target,
   DCHECK(!stream_texture_image || stream_texture_image == image);
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
@@ -1821,7 +1817,7 @@ void Texture::SetLevelStreamTextureImage(GLenum target,
 void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
+  DCHECK_LT(face_index, face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
@@ -2718,7 +2714,7 @@ bool TextureManager::ValidateTexImage(ContextState* state,
           "pixel unpack buffer is not large enough");
       return false;
     }
-    size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
+    uint32_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
     DCHECK_LT(0u, type_size);
     if (offset % type_size != 0) {
       ERRORSTATE_SET_GL_ERROR(
@@ -3015,7 +3011,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
           "pixel unpack buffer is not large enough");
       return false;
     }
-    size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
+    uint32_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
     DCHECK_LT(0u, type_size);
     if (offset % type_size != 0) {
       ERRORSTATE_SET_GL_ERROR(
