@@ -26,6 +26,7 @@ public final class TaskIds {
     public static final int WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID = 83;
     public static final int WEBAPK_UPDATE_JOB_ID = 91;
     public static final int DOWNLOAD_RESUMPTION_JOB_ID = 55;
+    public static final int DOWNLOAD_AUTO_RESUMPTION_JOB_ID = 56;
     public static final int FEED_REFRESH_JOB_ID = 22;
     public static final int COMPONENT_UPDATE_JOB_ID = 2;
     public static final int DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID = 100;

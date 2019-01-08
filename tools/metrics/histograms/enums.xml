@@ -3534,6 +3534,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="15" label="Component update task"/>
   <int value="16" label="Deprecated Explore Sites refresh task"/>
   <int value="17" label="Explore Sites refresh task"/>
+  <int value="18" label="Download auto-resumption task"/>
 </enum>
 
 <enum name="BackgroundTracingState">

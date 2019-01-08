@@ -257,7 +257,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   base::Optional<download::DownloadEntry> GetInProgressEntry(
       download::DownloadItemImpl* download) override;
   bool IsOffTheRecord() const override;
-  bool IsActiveNetworkMetered() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
 
   // Drops a download before it is created.

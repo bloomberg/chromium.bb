@@ -38,6 +38,8 @@ class DownloadManagerService
       public content::NotificationObserver,
       public service_manager::Service {
  public:
+  static void CreateAutoResumptionHandler();
+
   static void OnDownloadCanceled(
       download::DownloadItem* download,
       DownloadController::DownloadCancelReason reason);

@@ -29,6 +29,7 @@ public class DownloadTaskScheduler {
     public static final String EXTRA_TASK_TYPE = "extra_task_type";
     static final long TWELVE_HOURS_IN_SECONDS = TimeUnit.HOURS.toSeconds(12);
     static final long FIVE_MINUTES_IN_SECONDS = TimeUnit.MINUTES.toSeconds(5);
+    static final long ONE_DAY_IN_SECONDS = TimeUnit.DAYS.toSeconds(1);
 
     @CalledByNative
     private static void scheduleTask(@DownloadTaskType int taskType,
@@ -69,6 +70,8 @@ public class DownloadTaskScheduler {
                 2 * FIVE_MINUTES_IN_SECONDS);
         scheduleTask(DownloadTaskType.CLEANUP_TASK, false, false, 0, TWELVE_HOURS_IN_SECONDS,
                 2 * TWELVE_HOURS_IN_SECONDS);
+        scheduleTask(DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK, false, false, 0,
+                FIVE_MINUTES_IN_SECONDS, ONE_DAY_IN_SECONDS);
     }
 
     private static int getTaskId(@DownloadTaskType int taskType) {
@@ -77,6 +80,8 @@ public class DownloadTaskScheduler {
                 return TaskIds.DOWNLOAD_SERVICE_JOB_ID;
             case DownloadTaskType.CLEANUP_TASK:
                 return TaskIds.DOWNLOAD_CLEANUP_JOB_ID;
+            case DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK:
+                return TaskIds.DOWNLOAD_AUTO_RESUMPTION_JOB_ID;
             default:
                 assert false;
                 return -1;
@@ -85,9 +90,16 @@ public class DownloadTaskScheduler {
 
     private static int getRequiredNetworkType(
             @DownloadTaskType int taskType, boolean requiresUnmeteredNetwork) {
-        if (taskType != DownloadTaskType.DOWNLOAD_TASK) return TaskInfo.NETWORK_TYPE_NONE;
-
-        return requiresUnmeteredNetwork ? TaskInfo.NETWORK_TYPE_UNMETERED
-                                        : TaskInfo.NETWORK_TYPE_ANY;
+        switch (taskType) {
+            case DownloadTaskType.CLEANUP_TASK:
+                return TaskInfo.NETWORK_TYPE_NONE;
+            case DownloadTaskType.DOWNLOAD_TASK: // intentional fall-through
+            case DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK:
+                return requiresUnmeteredNetwork ? TaskInfo.NETWORK_TYPE_UNMETERED
+                                                : TaskInfo.NETWORK_TYPE_ANY;
+            default:
+                assert false;
+                return TaskInfo.NETWORK_TYPE_ANY;
+        }
     }
 }

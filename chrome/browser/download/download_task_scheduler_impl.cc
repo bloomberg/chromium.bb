@@ -49,6 +49,11 @@ void DownloadTaskSchedulerImpl::CancelTask(
 
 void DownloadTaskSchedulerImpl::RunScheduledTask(
     download::DownloadTaskType task_type) {
+  if (task_type == download::DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK) {
+    NOTREACHED();
+    return;
+  }
+
   download::DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(context_);
   download_service->OnStartScheduledTask(

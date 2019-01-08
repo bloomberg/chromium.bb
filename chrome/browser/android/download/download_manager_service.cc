@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/android/download/service/download_task_scheduler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -23,6 +25,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/download/network/android/network_status_listener_android.h"
+#include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
@@ -66,6 +70,21 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
 }
 
 }  // namespace
+
+// static
+void DownloadManagerService::CreateAutoResumptionHandler() {
+  auto network_listener =
+      std::make_unique<download::NetworkStatusListenerAndroid>();
+  auto task_scheduler =
+      std::make_unique<download::android::DownloadTaskScheduler>();
+  auto task_manager =
+      std::make_unique<download::TaskManager>(std::move(task_scheduler));
+  auto config = std::make_unique<download::AutoResumptionHandler::Config>();
+  config->auto_resumption_size_limit =
+      DownloadUtils::GetAutoResumptionSizeLimit();
+  download::AutoResumptionHandler::Create(
+      std::move(network_listener), std::move(task_manager), std::move(config));
+}
 
 // static
 void DownloadManagerService::OnDownloadCanceled(
@@ -649,6 +668,22 @@ void DownloadManagerService::OnPendingDownloadsLoaded() {
   if (!in_progress_manager_ && !is_history_query_complete_)
     return;
   is_pending_downloads_loaded_ = true;
+
+  // Kick-off the auto-resumption handler.
+  content::DownloadManager::DownloadVector all_items;
+  if (in_progress_manager_) {
+    in_progress_manager_->GetAllDownloads(&all_items);
+  } else {
+    content::DownloadManager* manager = GetDownloadManager(false);
+    if (manager)
+      manager->GetAllDownloads(&all_items);
+  }
+
+  if (!download::AutoResumptionHandler::Get())
+    CreateAutoResumptionHandler();
+
+  download::AutoResumptionHandler::Get()->SetResumableDownloads(all_items);
+
   for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
        ++iter) {
     DownloadActionParams params = iter->second;
