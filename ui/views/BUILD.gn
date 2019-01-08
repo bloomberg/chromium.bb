@@ -679,6 +679,7 @@ jumbo_component("views") {
       "widget/desktop_aura/desktop_native_widget_aura.cc",
       "widget/desktop_aura/desktop_screen.cc",
       "widget/desktop_aura/desktop_screen_position_client.cc",
+      "widget/desktop_aura/desktop_window_tree_host.cc",
       "widget/focus_manager_event_handler.cc",
       "widget/native_widget_aura.cc",
       "widget/tooltip_manager_aura.cc",

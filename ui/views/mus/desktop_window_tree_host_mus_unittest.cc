@@ -916,4 +916,41 @@ TEST_F(DesktopWindowTreeHostMusTest, TransientChildMatchesParentVisibility) {
   transient_child->RemoveObserver(&observer);
 }
 
+// DesktopWindowTreeHostMusTest with --force-device-scale-factor=1.25.
+class DesktopWindowTreeHostMusTestFractionalDPI
+    : public DesktopWindowTreeHostMusTest {
+ public:
+  DesktopWindowTreeHostMusTestFractionalDPI() = default;
+  ~DesktopWindowTreeHostMusTestFractionalDPI() override = default;
+
+  // DesktopWindowTreeHostMusTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "1.25");
+    DesktopWindowTreeHostMusTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTestFractionalDPI);
+};
+
+TEST_F(DesktopWindowTreeHostMusTestFractionalDPI,
+       SetBoundsInDipWithFractionalScale) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  // These numbers are carefully chosen such that if enclosing rect is used
+  // the pixel values differ between the two. The WindowServcie assumes ceiling
+  // is used on the size, which is not impacted by the location.
+  const gfx::Rect bounds1(408, 48, 339, 296);
+  const int expected_pixel_height =
+      gfx::ScaleToCeiledSize(bounds1.size(), 1.25f).height();
+  widget->SetBounds(bounds1);
+  EXPECT_EQ(expected_pixel_height,
+            widget->GetNativeWindow()->GetHost()->GetBoundsInPixels().height());
+
+  const gfx::Rect bounds2(gfx::Point(408, 49), bounds1.size());
+  widget->SetBounds(bounds2);
+  EXPECT_EQ(expected_pixel_height,
+            widget->GetNativeWindow()->GetHost()->GetBoundsInPixels().height());
+}
+
 }  // namespace views

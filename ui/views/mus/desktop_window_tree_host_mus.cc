@@ -385,14 +385,6 @@ float DesktopWindowTreeHostMus::GetScaleFactor() const {
       .device_scale_factor();
 }
 
-void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
-  // Do not use ConvertRectToPixel, enclosing rects cause problems.
-  const gfx::Rect rect(
-      gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), GetScaleFactor()),
-      gfx::ScaleToCeiledSize(bounds_in_dip.size(), GetScaleFactor()));
-  SetBoundsInPixels(rect, viz::LocalSurfaceIdAllocation());
-}
-
 bool DesktopWindowTreeHostMus::IsWaitingForRestoreToComplete() const {
   return window_tree_host_window_observer_->is_waiting_for_restore();
 }
@@ -1013,6 +1005,14 @@ bool DesktopWindowTreeHostMus::ShouldUseDesktopNativeCursorManager() const {
 bool DesktopWindowTreeHostMus::ShouldCreateVisibilityController() const {
   // Window manager takes care of all top-level window animations.
   return false;
+}
+
+void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
+  // Do not use ConvertRectToPixel, enclosing rects cause problems.
+  const gfx::Rect rect(
+      gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), GetScaleFactor()),
+      gfx::ScaleToCeiledSize(bounds_in_dip.size(), GetScaleFactor()));
+  SetBoundsInPixels(rect, viz::LocalSurfaceIdAllocation());
 }
 
 void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {

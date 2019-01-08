@@ -59,8 +59,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // Helper function to get the scale factor.
   float GetScaleFactor() const;
 
-  void SetBoundsInDIP(const gfx::Rect& bounds_in_dip);
-
   // Returns true if the client area should be set on this.
   bool ShouldSendClientAreaToServer() const;
 
@@ -149,6 +147,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool ShouldUpdateWindowTransparency() const override;
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
+  void SetBoundsInDIP(const gfx::Rect& bounds_in_dip) override;
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;
