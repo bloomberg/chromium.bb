@@ -188,7 +188,9 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
-  // PosInSet and SetSize public methods
+  // PosInSet and SetSize public methods.
+  bool IsOrderedSetItem() const;
+  bool IsOrderedSet() const;
   int32_t GetPosInSet();
   int32_t GetSetSize();
 

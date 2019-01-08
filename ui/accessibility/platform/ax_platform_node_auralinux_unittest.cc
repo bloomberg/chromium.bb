@@ -589,11 +589,6 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectIntAttributes) {
                             ax::mojom::IntAttribute::kHierarchicalLevel,
                             "level");
   TestAtkObjectIntAttribute(root_node, root_atk_object,
-                            ax::mojom::IntAttribute::kSetSize, "setsize");
-  TestAtkObjectIntAttribute(root_node, root_atk_object,
-                            ax::mojom::IntAttribute::kPosInSet, "posinset");
-
-  TestAtkObjectIntAttribute(root_node, root_atk_object,
                             ax::mojom::IntAttribute::kAriaColumnCount,
                             "colcount", ax::mojom::Role::kTable);
   TestAtkObjectIntAttribute(root_node, root_atk_object,
@@ -1275,6 +1270,57 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkSelectionInterface) {
   ASSERT_EQ(atk_selection_get_selection_count(selection), 3);
 
   g_object_unref(root_atk_object);
+}
+
+// Tests GetPosInSet() and GetSetSize() functions of AXPlatformNodeBase.
+// PosInSet and SetSize must be tested separately from other IntAttributes
+// because they can be either assigned values or calculated dynamically.
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectSetSizePosInSet) {
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(4);
+  update.nodes[0].id = 1;
+  update.nodes[0].role = ax::mojom::Role::kRadioGroup;
+  update.nodes[0].child_ids = {2, 3, 4};
+  update.nodes[1].id = 2;
+  update.nodes[1].role =
+      ax::mojom::Role::kRadioButton;  // kRadioButton posinset = 2, setsize = 5.
+  update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 2);
+  update.nodes[2].id = 3;
+  update.nodes[2].role =
+      ax::mojom::Role::kRadioButton;  // kRadioButton posinset = 3, setsize = 5.
+  update.nodes[3].id = 4;
+  update.nodes[3].role =
+      ax::mojom::Role::kRadioButton;  // kRadioButton posinset = 5, stesize = 5
+  update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 5);
+  Init(update);
+
+  AXNode* radiobutton1 = GetRootNode()->children()[0];
+  AtkObject* radiobutton1_atk_object(AtkObjectFromNode(radiobutton1));
+  EXPECT_TRUE(ATK_IS_OBJECT(radiobutton1_atk_object));
+  g_object_ref(radiobutton1_atk_object);
+
+  AXNode* radiobutton2 = GetRootNode()->children()[1];
+  AtkObject* radiobutton2_atk_object(AtkObjectFromNode(radiobutton2));
+  EXPECT_TRUE(ATK_IS_OBJECT(radiobutton2_atk_object));
+  g_object_ref(radiobutton2_atk_object);
+
+  AXNode* radiobutton3 = GetRootNode()->children()[2];
+  AtkObject* radiobutton3_atk_object(AtkObjectFromNode(radiobutton3));
+  EXPECT_TRUE(ATK_IS_OBJECT(radiobutton3_atk_object));
+  g_object_ref(radiobutton3_atk_object);
+
+  // Notice that setsize was never assigned to any of the kRadioButtons, but was
+  // inferred.
+  EnsureAtkObjectHasAttributeWithValue(radiobutton1_atk_object, "posinset",
+                                       "2");
+  EnsureAtkObjectHasAttributeWithValue(radiobutton1_atk_object, "setsize", "5");
+  EnsureAtkObjectHasAttributeWithValue(radiobutton2_atk_object, "posinset",
+                                       "3");
+  EnsureAtkObjectHasAttributeWithValue(radiobutton2_atk_object, "setsize", "5");
+  EnsureAtkObjectHasAttributeWithValue(radiobutton3_atk_object, "posinset",
+                                       "5");
+  EnsureAtkObjectHasAttributeWithValue(radiobutton3_atk_object, "setsize", "5");
 }
 
 }  // namespace ui

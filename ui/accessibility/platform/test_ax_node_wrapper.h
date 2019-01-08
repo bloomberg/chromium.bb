@@ -57,7 +57,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
                                         int32_t dst_id) override;
   std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) override;
-
+  bool IsOrderedSetItem() const override;
+  bool IsOrderedSet() const override;
   int32_t GetPosInSet() const override;
   int32_t GetSetSize() const override;
 

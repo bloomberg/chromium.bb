@@ -915,6 +915,7 @@ void AXPlatformNodeBase::AddAttributeToList(
     const char* name,
     PlatformAttributeList* attributes) {
   DCHECK(attributes);
+
   auto maybe_value = ComputeAttribute(delegate_, attribute);
   if (maybe_value.has_value()) {
     std::string str_value = base::IntToString(maybe_value.value());

@@ -193,6 +193,14 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   return *dummy_unique_id;
 }
 
+bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsOrderedSet() const {
+  return false;
+}
+
 int32_t AXPlatformNodeDelegateBase::GetPosInSet() const {
   return 0;
 }
