@@ -340,8 +340,7 @@ const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
 
 bool SearchProvider::ShouldAppendExtraParams(
     const SearchSuggestionParser::SuggestResult& result) const {
-  return !result.from_keyword_provider() ||
-      providers_.default_provider().empty();
+  return !result.from_keyword() || providers_.default_provider().empty();
 }
 
 void SearchProvider::RecordDeletionResult(bool success) {
@@ -1001,8 +1000,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     SearchSuggestionParser::SuggestResult verbatim(
         /*suggestion=*/trimmed_verbatim,
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
-        verbatim_relevance, relevance_from_server,
+        /*subtype_identifier=*/0, /*from_keyword=*/false, verbatim_relevance,
+        relevance_from_server,
         /*input_text=*/trimmed_verbatim);
     if (has_answer)
       verbatim.SetAnswer(answer);
@@ -1027,7 +1026,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         SearchSuggestionParser::SuggestResult verbatim(
             /*suggestion=*/trimmed_verbatim,
             AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-            /*subtype_identifier=*/0, /*from_keyword_provider=*/true,
+            /*subtype_identifier=*/0, /*from_keyword=*/true,
             keyword_verbatim_relevance, keyword_relevance_from_server,
             /*input_text=*/trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
@@ -1436,10 +1435,10 @@ int SearchProvider::CalculateRelevanceForHistory(
 AutocompleteMatch SearchProvider::NavigationToMatch(
     const SearchSuggestionParser::NavigationResult& navigation) {
   base::string16 input;
-  const bool trimmed_whitespace = base::TrimWhitespace(
-      navigation.from_keyword_provider() ?
-          keyword_input_.text() : input_.text(),
-      base::TRIM_TRAILING, &input) != base::TRIM_NONE;
+  const bool trimmed_whitespace =
+      base::TrimWhitespace(
+          navigation.from_keyword() ? keyword_input_.text() : input_.text(),
+          base::TRIM_TRAILING, &input) != base::TRIM_NONE;
   AutocompleteMatch match(this, navigation.relevance(), false,
                           navigation.type());
   match.destination_url = navigation.url();
@@ -1500,6 +1499,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       kRelevanceFromServerKey,
       navigation.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey, kFalse);
+
+  match.from_keyword = navigation.from_keyword();
 
   return match;
 }

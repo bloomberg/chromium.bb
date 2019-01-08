@@ -482,6 +482,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   FillInURLAndContents(remaining_input, template_url, &match);
 
   match.keyword = keyword;
+  match.from_keyword = true;
   match.transition = ui::PAGE_TRANSITION_KEYWORD;
 
   return match;
