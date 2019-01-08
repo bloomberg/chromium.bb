@@ -78,7 +78,6 @@ js_library("invitation") {
 
 js_library("destination") {
   deps = [
-    "..:print_preview_utils",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]
