@@ -6,11 +6,13 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
@@ -19,22 +21,12 @@
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 
 namespace content {
 
 namespace {
 static const size_t kTestingMaxOpenCursors = 3;
-
-class SimpleComparator : public LevelDBComparator {
- public:
-  int Compare(const base::StringPiece& a,
-              const base::StringPiece& b) const override {
-    size_t len = std::min(a.size(), b.size());
-    return memcmp(a.begin(), b.begin(), len);
-  }
-  const char* Name() const override { return "temp_comparator"; }
-};
-
 }  // namespace
 
 class LevelDBTransactionTest : public testing::Test {
@@ -42,10 +34,17 @@ class LevelDBTransactionTest : public testing::Test {
   LevelDBTransactionTest() {}
   void SetUp() override {
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-    leveldb::Status s =
-        LevelDBDatabase::Open(temp_directory_.GetPath(), &comparator_,
-                              kTestingMaxOpenCursors, &leveldb_);
-    ASSERT_TRUE(s.ok());
+    scoped_refptr<LevelDBState> ldb_state;
+    leveldb::Status status;
+    std::tie(ldb_state, status, std::ignore) =
+        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDB(
+            temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
+            leveldb::BytewiseComparator());
+    EXPECT_TRUE(status.ok());
+    ASSERT_TRUE(ldb_state);
+    ASSERT_TRUE(ldb_state->db());
+    leveldb_ = std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr,
+                                                 kTestingMaxOpenCursors);
     ASSERT_TRUE(leveldb_);
   }
   void TearDown() override {}
@@ -96,7 +95,7 @@ class LevelDBTransactionTest : public testing::Test {
   }
 
   int Compare(const base::StringPiece& a, const base::StringPiece& b) const {
-    return comparator_.Compare(a, b);
+    return leveldb_->Comparator()->Compare(a, b);
   }
 
   LevelDBDatabase* db() { return leveldb_.get(); }
@@ -111,7 +110,6 @@ class LevelDBTransactionTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_directory_;
-  SimpleComparator comparator_;
   std::unique_ptr<LevelDBDatabase> leveldb_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBTransactionTest);

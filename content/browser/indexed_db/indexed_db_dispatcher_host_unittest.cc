@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -170,7 +171,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
             special_storage_policy_,
-            quota_manager_->proxy())),
+            quota_manager_->proxy(),
+            indexed_db::GetDefaultLevelDBFactory())),
         host_(new IndexedDBDispatcherHost(
             kFakeProcessId,
             context_impl_,

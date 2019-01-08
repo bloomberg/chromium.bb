@@ -22,6 +22,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -46,15 +47,18 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
   explicit MockIDBFactory(IndexedDBContextImpl* context)
       : MockIDBFactory(context, base::DefaultClock::GetInstance()) {}
   MockIDBFactory(IndexedDBContextImpl* context, base::Clock* clock)
-      : IndexedDBFactoryImpl(context, clock) {}
+      : IndexedDBFactoryImpl(context,
+                             indexed_db::GetDefaultLevelDBFactory(),
+                             clock) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const Origin& origin,
       const base::FilePath& data_directory) {
     IndexedDBDataLossInfo data_loss_info;
     bool disk_full;
     leveldb::Status s;
-    auto backing_store = OpenBackingStore(origin, data_directory,
-                                          &data_loss_info, &disk_full, &s);
+    scoped_refptr<IndexedDBBackingStore> backing_store;
+    std::tie(backing_store, s, data_loss_info, disk_full) =
+        OpenBackingStore(origin, data_directory);
     EXPECT_EQ(blink::mojom::IDBDataLoss::None, data_loss_info.status);
     return backing_store;
   }
@@ -86,7 +90,7 @@ class IndexedDBFactoryTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), /*special_storage_policy=*/nullptr,
-        quota_manager_proxy_.get());
+        quota_manager_proxy_.get(), indexed_db::GetDefaultLevelDBFactory());
   }
 
   void TearDown() override {
@@ -415,19 +419,21 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 class DiskFullFactory : public IndexedDBFactoryImpl {
  public:
   explicit DiskFullFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactoryImpl(context, base::DefaultClock::GetInstance()) {}
+      : IndexedDBFactoryImpl(context,
+                             indexed_db::GetDefaultLevelDBFactory(),
+                             base::DefaultClock::GetInstance()) {}
 
  private:
   ~DiskFullFactory() override {}
-  scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const Origin& origin,
-      const base::FilePath& data_directory,
-      IndexedDBDataLossInfo* data_loss_info,
-      bool* disk_full,
-      leveldb::Status* s) override {
-    *disk_full = true;
-    *s = leveldb::Status::IOError("Disk is full");
-    return scoped_refptr<IndexedDBBackingStore>();
+
+  std::tuple<scoped_refptr<IndexedDBBackingStore>,
+             leveldb::Status,
+             IndexedDBDataLossInfo,
+             bool /* disk_full */>
+  OpenBackingStore(const url::Origin& origin,
+                   const base::FilePath& data_directory) override {
+    return std::make_tuple(nullptr, leveldb::Status::IOError("Disk is full"),
+                           IndexedDBDataLossInfo(), true);
   }
 
   DISALLOW_COPY_AND_ASSIGN(DiskFullFactory);
