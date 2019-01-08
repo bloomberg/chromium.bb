@@ -664,9 +664,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   PenEventProcessor pen_processor_;
 
-  // Set to true if we are in the context of a sizing operation.
-  bool in_size_loop_;
-
   // Stores a pointer to the WindowEventTarget interface implemented by this
   // class. Allows callers to retrieve the interface pointer.
   std::unique_ptr<ui::ViewProp> prop_window_target_;
