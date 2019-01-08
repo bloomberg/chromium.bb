@@ -132,6 +132,7 @@ cr.define('settings_people_page_sync_page', function() {
       syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
       assertFalse(syncSection.hidden);
+      assertTrue(syncPage.$$('#sync-separator').hidden);
       assertFalse(otherItems.classList.contains('list-frame'));
       assertFalse(!!otherItems.querySelector('list-item'));
     });
@@ -149,6 +150,7 @@ cr.define('settings_people_page_sync_page', function() {
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertFalse(syncSection.hidden);
+      assertTrue(syncPage.$$('#sync-separator').hidden);
       assertTrue(otherItems.classList.contains('list-frame'));
       assertEquals(
           otherItems.querySelectorAll(':scope > .list-item').length, 4);
@@ -161,6 +163,7 @@ cr.define('settings_people_page_sync_page', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE
       };
       assertTrue(syncSection.hidden);
+      assertFalse(syncPage.$$('#sync-separator').hidden);
 
       // Test passphrase error state.
       syncPage.syncStatus = {
@@ -170,6 +173,7 @@ cr.define('settings_people_page_sync_page', function() {
         statusAction: settings.StatusAction.ENTER_PASSPHRASE
       };
       assertFalse(syncSection.hidden);
+      assertTrue(syncPage.$$('#sync-separator').hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignedOut', function() {
@@ -184,6 +188,7 @@ cr.define('settings_people_page_sync_page', function() {
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(syncSection.hidden);
+      assertFalse(syncPage.$$('#sync-separator').hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SyncDisabled', function() {
