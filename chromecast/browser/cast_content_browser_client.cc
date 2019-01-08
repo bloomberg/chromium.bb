@@ -323,8 +323,8 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
-std::unique_ptr<::media::CdmFactory>
-CastContentBrowserClient::CreateCdmFactory() {
+std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
+    service_manager::mojom::InterfaceProvider* host_interfaces) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
                                                  media_resource_tracker());

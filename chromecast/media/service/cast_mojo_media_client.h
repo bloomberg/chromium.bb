@@ -21,7 +21,8 @@ class VideoResolutionPolicy;
 class CastMojoMediaClient : public ::media::MojoMediaClient {
  public:
   using CreateCdmFactoryCB =
-      base::Callback<std::unique_ptr<::media::CdmFactory>()>;
+      base::RepeatingCallback<std::unique_ptr<::media::CdmFactory>(
+          service_manager::mojom::InterfaceProvider*)>;
 
   CastMojoMediaClient(CmaBackendFactory* backend_factory,
                       const CreateCdmFactoryCB& create_cdm_factory_cb,
