@@ -4385,18 +4385,18 @@
       Items not listed here will also be removed, if needed. Learn more about &lt;a href=&quot;<ph name="URL">$1<ex>https://www.google.com/chrome/browser/privacy/whitepaper.html#unwantedsoftware</ex></ph>&quot;&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXTENSIONS" desc="Introduces a bullet list containing the names of extensions to be removed by Chrome.">
-      Extensions:
+      Extensions to be removed:
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXTENSION_UNKNOWN" desc="Text for a list item among a list of extensions, where we could not determine the name of the extension being cleaned up.">
       Unknown extension with ID <ph name="EXTENSION_ID">$1<ex>exampleextensionababababcdcdcdcd</ex></ph>
     </message>
-    <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_FILES_AND_PROGRAMS" desc="Introduces a bullet list containing the names of files and programs to be removed by Chrome.">
-      Files and programs:
+    <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_FILES_AND_PROGRAMS" desc="Introduces a bullet list containing the names of files and programs to be quarantined by Chrome (i.e. removed from the original location, moved and archived in the Quarantine folder).">
+      Files and programs to be quarantined:
     </message>
-    <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_ITEMS_TO_BE_REMOVED" desc="Label for an expansion arrow. On expansion, the screen displays a list of files and programs that Chrome will remove. Placeholder can be 2 or more items.">
+    <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_ITEMS_TO_BE_REMOVED" desc="Label for an expansion arrow. On expansion, the screen displays a list of files and programs that Chrome will remove or quarantine. Placeholder can be 2 or more items.">
       {NUM_ITEMS, plural,
-        =1 {1 item to be removed}
-        other {# items to be removed}}
+        =1 {1 item}
+        other {# items}}
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_REGISTRY_ENTRIES" desc="Introduces a bullet list containing the names of registry entries to be removed/changed by Chrome.">
       Registry entries to be removed or changed:
