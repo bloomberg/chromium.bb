@@ -1820,10 +1820,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeviceDiscoveryNotificationsDescription, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
                                switches::kDisableDeviceDiscoveryNotifications)},
-    {"enable-print-preview-register-promos",
-     flag_descriptions::kPrintPreviewRegisterPromosName,
-     flag_descriptions::kPrintPreviewRegisterPromosDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)},
 #endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #if defined(OS_WIN)
     {"enable-cloud-print-xps", flag_descriptions::kCloudPrintXpsName,

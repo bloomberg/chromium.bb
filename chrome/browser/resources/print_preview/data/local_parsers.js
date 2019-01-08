@@ -14,7 +14,8 @@ cr.define('print_preview', function() {
    *       For LOCAL_PRINTER => print_preview.LocalDestinationInfo
    *       For PRIVET_PRINTER => print_preview.PrivetPrinterDescription
    *       For EXTENSION_PRINTER => print_preview.ProvisionalDestinationInfo
-   * @return {!Array<!print_preview.Destination> | !print_preview.Destination}
+   * @return {?print_preview.Destination} Only returns null if an invalid value
+   *     is provided for |type|.
    */
   function parseDestination(type, printer) {
     if (type === print_preview.PrinterType.LOCAL_PRINTER) {
@@ -30,7 +31,7 @@ cr.define('print_preview', function() {
           /** @type {!print_preview.ProvisionalDestinationInfo} */ (printer));
     }
     assertNotReached('Unknown printer type ' + type);
-    return [];
+    return null;
   }
 
   /**
@@ -61,33 +62,17 @@ cr.define('print_preview', function() {
   }
 
   /**
-   * Parses a privet destination as one or more local printers.
+   * Parses a privet destination as a local printer.
    * @param {!print_preview.PrivetPrinterDescription} destinationInfo Object
    *     that describes a privet printer.
-   * @return {!print_preview.Destination |
-   *          !Array<!print_preview.Destination>} Parsed destination info.
+   * @return {!print_preview.Destination} Parsed destination info.
    */
   function parsePrivetDestination(destinationInfo) {
-    const returnedPrinters = [];
-
-    if (destinationInfo.hasLocalPrinting) {
-      returnedPrinters.push(new print_preview.Destination(
-          destinationInfo.serviceName, print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
-          false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE,
-          {cloudID: destinationInfo.cloudID}));
-    }
-
-    if (destinationInfo.isUnregistered) {
-      returnedPrinters.push(new print_preview.Destination(
-          destinationInfo.serviceName, print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
-          false /*isRecent*/,
-          print_preview.DestinationConnectionStatus.UNREGISTERED));
-    }
-
-    return returnedPrinters.length === 1 ? returnedPrinters[0] :
-                                           returnedPrinters;
+    return new print_preview.Destination(
+        destinationInfo.serviceName, print_preview.DestinationType.LOCAL,
+        print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
+        false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE,
+        {cloudID: destinationInfo.cloudID});
   }
 
   /**

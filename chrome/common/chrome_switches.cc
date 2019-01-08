@@ -325,10 +325,6 @@ const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
 // Enables the Power overlay in Settings.
 const char kEnablePowerOverlay[]            = "enable-power-overlay";
 
-// Enables showing unregistered printers in print preview
-const char kEnablePrintPreviewRegisterPromos[] =
-    "enable-print-preview-register-promos";
-
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
 const char kExtensionContentVerification[] = "extension-content-verification";
