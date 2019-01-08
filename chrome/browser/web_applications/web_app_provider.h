@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
@@ -79,7 +80,13 @@ class WebAppProvider : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Fires when app registry becomes ready.
+  // Consider to use base::ObserverList or extensions::OneShotEvent if many
+  // subscribers needed.
+  void SetRegistryReadyCallback(base::OnceClosure callback);
+
   // Count a number of all apps which are installed by user (non-default).
+  // Requires app registry to be in a ready state.
   int CountUserInstalledApps() const;
 
  private:
@@ -87,6 +94,8 @@ class WebAppProvider : public KeyedService,
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.
   void CreateBookmarkAppsSubsystems(Profile* profile);
+
+  void OnRegistryReady();
 
   void OnScanForExternalWebApps(
       std::vector<web_app::PendingAppManager::AppInfo>);
@@ -107,6 +116,9 @@ class WebAppProvider : public KeyedService,
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  base::OnceClosure registry_ready_callback_;
+  bool registry_is_ready_ = false;
 
   Profile* profile_;
 

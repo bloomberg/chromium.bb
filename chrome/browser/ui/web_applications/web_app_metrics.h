@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_METRICS_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -45,6 +46,8 @@ class WebAppMetrics : public KeyedService, public SiteEngagementObserver {
   int num_user_installed_apps_ = kNumUserInstalledAppsNotCounted;
 
   Profile* profile_;
+
+  base::WeakPtrFactory<WebAppMetrics> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppMetrics);
 };
