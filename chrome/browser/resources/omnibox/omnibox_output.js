@@ -25,9 +25,6 @@ cr.define('omnibox_output', function() {
     constructor() {
       super('omnibox-output-template');
 
-      /** @type {!CopyDelegate} */
-      this.copyDelegate = new CopyDelegate(this);
-
       /** @type {!Array<!mojom.OmniboxResult>} */
       this.responses = [];
       /** @private {!Array<!OutputResultsGroup>} */
@@ -74,6 +71,12 @@ cr.define('omnibox_output', function() {
 
       this.updateVisibility_();
       this.updateFilterHighlights_();
+    }
+
+    /** @param {!Array<!mojom.OmniboxResult>} responses */
+    setAutocompleteResponses(responses) {
+      this.clearAutocompleteResponses();
+      responses.forEach(this.addAutocompleteResponse.bind(this));
     }
 
     /**
@@ -766,32 +769,6 @@ cr.define('omnibox_output', function() {
     /** @private @override */
     render_() {
       this.div_.textContent = this.value;
-    }
-  }
-
-  /** Responsible for setting clipboard contents. */
-  class CopyDelegate {
-    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
-    constructor(omniboxOutput) {
-      /** @private {!omnibox_output.OmniboxOutput} */
-      this.omniboxOutput_ = omniboxOutput;
-    }
-
-    copyTextOutput() {
-      this.copy_(this.omniboxOutput_.visibleTableText);
-    }
-
-    copyJsonOutput() {
-      this.copy_(JSON.stringify(this.omniboxOutput_.responses, null, 2));
-    }
-
-    /**
-     * @private
-     * @param {string} value
-     */
-    copy_(value) {
-      navigator.clipboard.writeText(value).catch(
-          error => console.error('unable to copy to clipboard:', error));
     }
   }
 
