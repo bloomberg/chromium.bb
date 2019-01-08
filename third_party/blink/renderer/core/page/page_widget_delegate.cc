@@ -73,17 +73,13 @@ void PageWidgetDelegate::UpdateLifecycle(
   }
 }
 
-static void PaintContentInternal(Page& page,
-                                 cc::PaintCanvas* canvas,
-                                 const WebRect& rect,
-                                 LocalFrame& root,
-                                 const GlobalPaintFlags global_paint_flags) {
+void PageWidgetDelegate::PaintContent(cc::PaintCanvas* canvas,
+                                      const WebRect& rect,
+                                      LocalFrame& root) {
   if (rect.IsEmpty())
     return;
 
-  // FIXME: device scale factor settings are layering violations and should
-  // not be used within Blink paint code.
-  float scale_factor = page.DeviceScaleFactorDeprecated();
+  float scale_factor = root.DevicePixelRatio();
   canvas->save();
   canvas->scale(scale_factor, scale_factor);
 
@@ -96,7 +92,7 @@ static void PaintContentInternal(Page& page,
 
     PaintRecordBuilder builder;
     builder.Context().SetDeviceScaleFactor(scale_factor);
-    view->PaintOutsideOfLifecycle(builder.Context(), global_paint_flags,
+    view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase,
                                   CullRect(dirty_rect));
     builder.EndRecording(
         *canvas,
@@ -108,22 +104,6 @@ static void PaintContentInternal(Page& page,
   }
 
   canvas->restore();
-}
-
-void PageWidgetDelegate::PaintContent(Page& page,
-                                      cc::PaintCanvas* canvas,
-                                      const WebRect& rect,
-                                      LocalFrame& root) {
-  PaintContentInternal(page, canvas, rect, root, kGlobalPaintNormalPhase);
-}
-
-void PageWidgetDelegate::PaintContentIgnoringCompositing(
-    Page& page,
-    cc::PaintCanvas* canvas,
-    const WebRect& rect,
-    LocalFrame& root) {
-  PaintContentInternal(page, canvas, rect, root,
-                       kGlobalPaintFlattenCompositingLayers);
 }
 
 WebInputEventResult PageWidgetDelegate::HandleInputEvent(
