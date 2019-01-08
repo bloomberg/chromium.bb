@@ -29,6 +29,10 @@
         font-size: var(--cr-title-text_-_font-size);
       }
 
+      #sync-separator {
+        border-bottom: var(--settings-separator-line);
+      }
+
       #create-password-box {
         /* In order to line up with the encryption radio box text. */
         margin-inline-start: var(--settings-indent-width);
@@ -48,6 +52,7 @@
 
       #existingPassphrase {
         border-bottom: var(--settings-separator-line);
+        border-top: var(--settings-separator-line);
         /* This particular list frame is not indented. */
         padding-inline-start: var(--settings-box-row-padding);
       }
@@ -146,6 +151,8 @@
         </div>
       </div>
     </template>
+
+    <div id="sync-separator" hidden="[[!syncSectionDisabled_]]"></div>
 
     <div id="sync-section" hidden="[[syncSectionDisabled_]]">
       <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
