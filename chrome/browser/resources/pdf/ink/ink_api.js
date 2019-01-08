@@ -47,6 +47,10 @@ class InkAPI {
     // TODO(dstockwell): Use Ink api to convert `tool` to `Brush`
     this.embed_.setTool(tool);
   }
+
+  dispatchPointerEvent(type, init) {
+    // TODO(dstockwell): dispatch to #ink-engine
+  }
 }
 
 /**

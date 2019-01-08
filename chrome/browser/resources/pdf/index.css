@@ -20,14 +20,21 @@ viewer-pdf-toolbar {
   z-index: 4;
 }
 
+#content {
+  height: 100%;
+  position: fixed;
+  width: 100%;
+  z-index: 1;
+}
+
+
 viewer-ink-host,
 #plugin {
   height: 100%;
-  position: fixed;
+  position: absolute;
   /* The viewer implements a custom pinch zoom. */
   touch-action: pan-x pan-y;
   width: 100%;
-  z-index: 1;
 }
 
 #sizer {

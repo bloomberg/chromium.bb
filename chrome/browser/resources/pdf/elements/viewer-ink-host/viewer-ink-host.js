@@ -25,11 +25,110 @@ Polymer({
   /** @private {State} */
   state_: State.IDLE,
 
+  /** @private {PointerEvent} */
+  activePointer_: null,
+
+  /**
+   * Whether we should suppress pointer events due to a gesture,
+   * eg. pinch-zoom.
+   *
+   * @private {boolean}
+   */
+  pointerGesture_: false,
+
+  listeners: {
+    pointerdown: 'onPointerDown_',
+    pointerup: 'onPointerUpOrCancel_',
+    pointermove: 'onPointerMove_',
+    pointercancel: 'onPointerUpOrCancel_',
+    pointerleave: 'onPointerLeave_',
+  },
+
   /** @param {AnnotationTool} tool */
   setAnnotationTool(tool) {
     this.tool_ = tool;
     if (this.state_ == State.ACTIVE) {
       this.ink_.setAnnotationTool(tool);
+    }
+  },
+
+  /** @param {PointerEvent} e */
+  isActivePointer_: function(e) {
+    return this.activePointer_ && this.activePointer_.pointerId == e.pointerId;
+  },
+
+  /**
+   * Dispatches a pointer event to Ink.
+   *
+   * @param {PointerEvent} e
+   */
+  dispatchPointerEvent_: function(e) {
+    // TODO(dstockwell) come up with a solution to propagate e.timeStamp.
+    this.ink_.dispatchPointerEvent(e.type, {
+      pointerId: e.pointerId,
+      pointerType: e.pointerType,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      pressure: e.pressure,
+      buttons: e.buttons,
+    });
+  },
+
+  onPointerDown_: function(e) {
+    if (e.pointerType == 'mouse' && e.buttons != 1 || this.pointerGesture_) {
+      return;
+    }
+
+    if (this.activePointer_) {
+      if (this.activePointer_.pointerType == 'touch' &&
+          e.pointerType == 'touch') {
+        // A multi-touch gesture has started with the active pointer. Cancel
+        // the active pointer and suppress further events until it is released.
+        this.pointerGesture_ = true;
+        this.ink_.dispatchPointerEvent('pointercancel', {
+          pointerId: this.activePointer_.pointerId,
+          pointerType: this.activePointer_.pointerType,
+        });
+      }
+      return;
+    }
+
+    this.activePointer_ = e;
+    this.dispatchPointerEvent_(e);
+  },
+
+  /** @param {PointerEvent} e */
+  onPointerLeave_: function(e) {
+    if (e.pointerType != 'mouse' || !this.isActivePointer_(e)) {
+      return;
+    }
+    this.onPointerUpOrCancel_(new PointerEvent('pointerup', e));
+  },
+
+  /** @param {PointerEvent} e */
+  onPointerUpOrCancel_: function(e) {
+    if (!this.isActivePointer_(e)) {
+      return;
+    }
+    this.activePointer_ = null;
+    if (!this.pointerGesture_) {
+      this.dispatchPointerEvent_(e);
+    }
+    this.pointerGesture_ = false;
+  },
+
+  /** @param {PointerEvent} e */
+  onPointerMove_: function(e) {
+    if (!this.isActivePointer_(e) || this.pointerGesture_) {
+      return;
+    }
+
+    let events = e.getCoalescedEvents();
+    if (events.length == 0) {
+      events = [e];
+    }
+    for (const event of events) {
+      this.dispatchPointerEvent_(event);
     }
   },
 
