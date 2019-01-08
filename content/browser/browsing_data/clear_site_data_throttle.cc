@@ -13,13 +13,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
-#include "content/browser/browsing_data/clear_site_data_utils.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -416,10 +416,11 @@ void ClearSiteDataThrottle::ExecuteClearingTask(const url::Origin& origin,
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          &clear_site_data_utils::ClearSiteData,
+          &ClearSiteData,
           base::BindRepeating(&GetBrowserContext, request_info->GetChildID(),
                               request_info->GetWebContentsGetterForRequest()),
           origin, clear_cookies, clear_storage, clear_cache,
+          true /*avoid_closing_connections*/,
           base::BindOnce(&JumpFromUIToIOThread, std::move(callback))));
 }
 
