@@ -40841,11 +40841,30 @@ Called by update_net_trust_anchors.py.-->
     Renderer was instructed to wait until user has manually picked a credential.
     This happens for example if the session is an incognito session, the
     credendial's URL matches the mainframe only via the PSL, the site is on
-    HTTP, or the form has no current password field. TODO(crbug.com/918846):
-    Record root causes in a separate histogram.
+    HTTP, or the form has no current password field.
+    PasswordManager.FirstWaitForUsernameReason records the root causes.
   </int>
   <int value="7" label="No fillable elements found">
     No fillable elements were found, only possible for the old form parser.
+  </int>
+</enum>
+
+<enum name="PasswordManagerFirstWaitForUsernameReason">
+  <int value="0" label="Don't wait"/>
+  <int value="1" label="Incognito mode">
+    User is browsing in incognito mode.
+  </int>
+  <int value="2" label="Public suffix match">
+    A credential exists for a PSL matched site but not for the current security
+    origin.
+  </int>
+  <int value="3" label="Form not good for filling">
+    Form is suspected to be a password change form. (Only recorded for old form
+    parser)
+  </int>
+  <int value="4" label="FOAS on HTTP">
+    User is on an HTTP site where passwords are filled on account selection
+    (FOAS).
   </int>
 </enum>
 
