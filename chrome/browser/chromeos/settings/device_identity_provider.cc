@@ -38,9 +38,7 @@ void DeviceIdentityProvider::SetActiveAccountId(const std::string& account_id) {
     // anyways. Therefore, this shouldn't be a problem in practice.
     // TODO(crbug.com/919788): Change the sync code to only call this method
     // when sync is actually running.
-    LOG_IF(WARNING, account_id != robot_account_id)
-        << "Account ids mismatch, account_id:\"" << account_id
-        << "\" robot_account_id: \"" << robot_account_id << "\"";
+    LOG_IF(WARNING, account_id != robot_account_id) << "Account ids mismatch.";
   }
   return;
 }
