@@ -14,6 +14,7 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/android/jni_int_wrapper.h"
+#include "base/stl_util.h"  // For base::size().
 
 
 // Step 1: Forward declarations (classes).
@@ -64,7 +65,7 @@ static const JNINativeMethod kMethods_org_chromium_TestJni_00024MyOtherInnerClas
 
 JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
   const int kMethods_org_chromium_TestJniSize =
-      arraysize(kMethods_org_chromium_TestJni);
+      base::size(kMethods_org_chromium_TestJni);
   if (env->RegisterNatives(
       org_chromium_TestJni_clazz(env),
       kMethods_org_chromium_TestJni,
@@ -77,7 +78,7 @@ JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
 
 
   const int kMethods_org_chromium_TestJni_00024MyOtherInnerClassSize =
-      arraysize(kMethods_org_chromium_TestJni_00024MyOtherInnerClass);
+      base::size(kMethods_org_chromium_TestJni_00024MyOtherInnerClass);
   if (env->RegisterNatives(
       org_chromium_TestJni_00024MyOtherInnerClass_clazz(env),
       kMethods_org_chromium_TestJni_00024MyOtherInnerClass,
