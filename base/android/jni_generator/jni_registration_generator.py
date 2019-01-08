@@ -124,7 +124,7 @@ ${KMETHODS}
 };
 
 JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
-  const int number_of_methods = arraysize(kMethods_${ESCAPED_PROXY_CLASS});
+  const int number_of_methods = base::size(kMethods_${ESCAPED_PROXY_CLASS});
 
   base::android::ScopedJavaLocalRef<jclass> native_clazz = base::android::GetClass(env, "${PROXY_CLASS}");
   if (env->RegisterNatives(
@@ -238,6 +238,7 @@ def CreateFromDict(registration_dict, use_hash):
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/android/jni_int_wrapper.h"
+#include "base/stl_util.h"  // For base::size().
 
 
 // Step 1: Forward declarations (classes).
@@ -482,7 +483,7 @@ ${NATIVES}\
     """Returns the shared implementation for RegisterNatives."""
     template = string.Template("""\
   const int kMethods_${JAVA_CLASS}Size =
-      arraysize(${NAMESPACE}kMethods_${JAVA_CLASS});
+      base::size(${NAMESPACE}kMethods_${JAVA_CLASS});
   if (env->RegisterNatives(
       ${JAVA_CLASS}_clazz(env),
       ${NAMESPACE}kMethods_${JAVA_CLASS},
