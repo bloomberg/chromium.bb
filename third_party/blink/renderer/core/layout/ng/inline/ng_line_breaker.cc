@@ -62,10 +62,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
                                                  !break_token->TextOffset())) &&
                                node.CanContainFirstFormattedLine()),
       use_first_line_style_(is_first_formatted_line_ &&
-                            node.GetLayoutBox()
-                                ->GetDocument()
-                                .GetStyleEngine()
-                                .UsesFirstLineRules()),
+                            node.UseFirstLineStyle()),
       in_line_height_quirks_mode_(node.InLineHeightQuirksMode()),
       items_data_(node.ItemsData(use_first_line_style_)),
       mode_(mode),
