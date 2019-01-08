@@ -2716,6 +2716,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "on-the-fly-mhtml-hash-computation",
+    "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "openvr",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

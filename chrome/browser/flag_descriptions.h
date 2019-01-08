@@ -848,6 +848,9 @@ extern const char kOmniboxUISwapTitleAndUrlDescription[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleName[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleDescription[];
 
+extern const char kOnTheFlyMhtmlHashComputationName[];
+extern const char kOnTheFlyMhtmlHashComputationDescription[];
+
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
