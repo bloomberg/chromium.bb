@@ -1301,11 +1301,14 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (!GetOobeUI())
     return;
 
-  if (screen_needed) {
+  const auto* skip_screen_key = oobe_configuration_.FindKeyOfType(
+      configuration::kSkipHIDDetection, base::Value::Type::BOOLEAN);
+  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
+
+  if (screen_needed && !skip_screen)
     ShowHIDDetectionScreen();
-  } else {
+  else
     ShowWelcomeScreen();
-  }
 }
 
 void WizardController::UpdateOobeConfiguration() {

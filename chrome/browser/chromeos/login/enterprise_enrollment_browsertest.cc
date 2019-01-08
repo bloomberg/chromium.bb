@@ -36,6 +36,12 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "services/device/public/cpp/hid/fake_input_service_linux.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/input_service.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
@@ -560,6 +566,11 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };
 
+// This test case will use
+// src/chromeos/test/data/oobe_configuration/<TestName>.json file as
+// OOBE configuration for each of the tests and verify that relevant parts
+// of OOBE automation took place. OOBE WebUI will not be started until
+// LoadConfiguration() is called to allow configure relevant stubs.
 class EnterpriseEnrollmentConfigurationTest
     : public EnterpriseEnrollmentTestBase {
  public:
@@ -694,6 +705,54 @@ class EnterpriseEnrollmentConfigurationTest
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
+};
+
+// EnterpriseEnrollmentConfigurationTest with no input devices.
+class EnterpriseEnrollmentConfigurationTestNoHID
+    : public EnterpriseEnrollmentConfigurationTest {
+ public:
+  using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
+
+  EnterpriseEnrollmentConfigurationTestNoHID() {
+    fake_input_service_manager_ =
+        std::make_unique<device::FakeInputServiceLinux>();
+
+    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+        device::mojom::kServiceName,
+        base::BindRepeating(
+            &device::FakeInputServiceLinux::Bind,
+            base::Unretained(fake_input_service_manager_.get())));
+  }
+
+  ~EnterpriseEnrollmentConfigurationTestNoHID() override {
+    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+        device::mojom::InputDeviceManager>(device::mojom::kServiceName);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    EnterpriseEnrollmentConfigurationTest::SetUpInProcessBrowserTestFixture();
+
+    mock_adapter_ = new testing::NiceMock<device::MockBluetoothAdapter>();
+
+    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+    EXPECT_CALL(*mock_adapter_, IsPresent())
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_adapter_, IsPowered())
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_adapter_, GetDevices())
+        .WillRepeatedly(
+            testing::Return(device::BluetoothAdapter::ConstDeviceList()));
+
+    // Note: The SecureChannel service, which is never destroyed until the
+    // browser process is killed, utilizes |mock_adapter_|.
+    testing::Mock::AllowLeak(mock_adapter_.get());
+  }
+
+ private:
+  std::unique_ptr<device::FakeInputServiceLinux> fake_input_service_manager_;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTestNoHID);
 };
 
 #if defined(MEMORY_SANITIZER)
@@ -1121,6 +1180,22 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   ExecutePendingJavaScript();
   EXPECT_TRUE(IsStepDisplayed("success"));
+}
+
+// Check that HID detection screen is shown if it is not specified by
+// configuration.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTestNoHID,
+                       TestLeaveWelcomeScreen) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+}
+
+// Check that HID detection screen is really skipped and rest of configuration
+// is applied.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTestNoHID,
+                       TestSkipHIDDetection) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 }
 
 }  // namespace chromeos
