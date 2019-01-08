@@ -15,7 +15,7 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/taskbar_decorator_win.cc"
+#include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
