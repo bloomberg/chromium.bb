@@ -780,6 +780,10 @@ static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
           fabs(est_ld) < 1e-2
               ? INT_MAX / 2
               : (int)AOMMIN(round((sse - md->dist_mean) / est_ld), INT_MAX / 2);
+      if (*est_residue_cost <= 0) {
+        *est_residue_cost = 0;
+        *est_dist = sse;
+      }
     }
     return 1;
   }
@@ -9286,20 +9290,15 @@ static int64_t motion_mode_rd(
                                                  &est_residue_cost, &est_dist);
         (void)has_est_rd;
         assert(has_est_rd);
-        est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
-        if (est_rd * 0.8 > *best_est_rd) {
-          mbmi->ref_frame[1] = ref_frame_1;
-          continue;
-        }
       } else if (cpi->sf.inter_mode_rd_model_estimation == 2) {
         model_rd_sb_fn[MODELRD_TYPE_MOTION_MODE_RD](
             cpi, bsize, x, xd, 0, num_planes - 1, mi_row, mi_col,
             &est_residue_cost, &est_dist, NULL, &curr_sse, NULL, NULL, NULL);
-        est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
-        if (est_rd * 0.75 > AOMMIN(ref_best_rd, *best_est_rd)) {
-          mbmi->ref_frame[1] = ref_frame_1;
-          continue;
-        }
+      }
+      est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
+      if (est_rd * 0.8 > *best_est_rd) {
+        mbmi->ref_frame[1] = ref_frame_1;
+        continue;
       }
       const int mode_rate = rd_stats->rate;
       rd_stats->rate += est_residue_cost;
@@ -9330,7 +9329,7 @@ static int64_t motion_mode_rd(
       ref_best_rd = AOMMIN(ref_best_rd, curr_rd);
       *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-      if (cpi->sf.inter_mode_rd_model_estimation) {
+      if (cpi->sf.inter_mode_rd_model_estimation == 1) {
         const int skip_ctx = av1_get_skip_context(xd);
         inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats->sse,
                              rd_stats->dist,
