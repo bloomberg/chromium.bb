@@ -14,9 +14,11 @@
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "net/base/data_url.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -250,10 +252,21 @@ void TestRenderFrame::BeginNavigation(
       ((GetWebFrame()->Parent() && info->form.IsNull()) ||
        next_request_url_override_.has_value())) {
     // RenderViewTest::LoadHTML immediately commits navigation for the main
-    // frame. However if the loaded html has a subframe,
+    // frame. However if the loaded html has an empty or data subframe,
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
-    frame_->CommitNavigation(blink::WebNavigationParams::CreateFromInfo(*info),
+    GURL url = info->url_request.Url();
+    auto navigation_params = std::make_unique<blink::WebNavigationParams>();
+    navigation_params->request = blink::WebURLRequest(url);
+    if (!url.IsAboutBlank() && url != content::kAboutSrcDocURL) {
+      std::string mime_type, charset, data;
+      bool success = net::DataURL::Parse(url, &mime_type, &charset, &data);
+      CHECK(success);
+      navigation_params->data = blink::WebData(data.c_str(), data.length());
+      navigation_params->mime_type = blink::WebString::FromUTF8(mime_type);
+      navigation_params->text_encoding = blink::WebString::FromUTF8(charset);
+    }
+    frame_->CommitNavigation(std::move(navigation_params),
                              nullptr /* extra_data */);
     return;
   }
