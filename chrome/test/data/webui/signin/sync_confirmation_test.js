@@ -55,11 +55,11 @@ cr.define('signin_sync_confirmation', function() {
       'Get Google smarts in Chrome',
       'Sync your bookmarks, passwords, history, and more on all your devices',
       'Google may use your history to personalize Search, ads, and other ' +
-          'Google services.',
+          'Google services',
       'Fix spelling errors with enhanced spell check',
-      'The text you type in text fields will be sent to Google.',
+      'The text you type in text fields will be sent to Google',
       'Help improve Chrome and its security',
-      'Sends some system information and page content to Google anonymously.'
+      'Sends some system information and page content to Google anonymously'
     ];
 
 
