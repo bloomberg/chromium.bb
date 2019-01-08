@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_MOCK_H_
-#define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_MOCK_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_SETTINGS_PASSWORD_UI_VIEW_MOCK_H_
+#define CHROME_BROWSER_UI_PASSWORDS_SETTINGS_PASSWORD_UI_VIEW_MOCK_H_
 
 #include <memory>
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
-#include "chrome/browser/ui/passwords/password_ui_view.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockPasswordUIView : public PasswordUIView {
@@ -39,4 +39,4 @@ class MockPasswordUIView : public PasswordUIView {
   DISALLOW_COPY_AND_ASSIGN(MockPasswordUIView);
 };
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_MOCK_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_SETTINGS_PASSWORD_UI_VIEW_MOCK_H_

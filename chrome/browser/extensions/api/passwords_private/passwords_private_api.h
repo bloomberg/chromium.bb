@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {

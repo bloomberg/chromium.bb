@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 
 #include <stddef.h>
 #include <utility>
@@ -13,8 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/ui/passwords/password_ui_view.h"
-#include "chrome/browser/ui/passwords/password_ui_view_mock.h"
+#include "chrome/browser/ui/passwords/settings/password_ui_view.h"
+#include "chrome/browser/ui/passwords/settings/password_ui_view_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
