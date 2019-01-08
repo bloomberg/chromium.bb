@@ -17,7 +17,7 @@
 
   const profile = message.result.profile;
   const foundTheSample = profile.samples.some(sample =>
-    sample.stack.some(frame => frame.includes('addEventListener')));
+    sample.stack.some(frame => frame.includes('AddEventListener')));
   testRunner.log('Found sample: ' + foundTheSample);
   if (!foundTheSample)
     testRunner.log(profile);
