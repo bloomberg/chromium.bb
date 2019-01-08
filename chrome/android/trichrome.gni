@@ -57,6 +57,11 @@ template("trichrome_library_apk_tmpl") {
     version_name = chrome_version_name
     version_code = trichrome_version_code
 
+    # TODO(torne): using these resources just to get a temporary icon
+    deps = [
+      "//android_webview:system_webview_resources",
+    ]
+
     # Only try to generate the native library version in configurations that
     # include a native library.
     if (!android_64bit_target_cpu || build_apk_secondary_abi) {
