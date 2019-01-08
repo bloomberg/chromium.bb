@@ -217,9 +217,6 @@ TEST(InvalidRealmCredentialCleanerTest,
     ASSERT_TRUE(StoreContains(password_store.get(), https_form_to_match));
 
     TestingPrefServiceSimple prefs;
-    // Prevent cleaning of duplicated blacklist entries.
-    prefs.registry()->RegisterBooleanPref(
-        prefs::kDuplicatedBlacklistedCredentialsRemoved, true);
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
@@ -359,9 +356,6 @@ TEST(InvalidRealmCredentialCleanerTest,
     ASSERT_TRUE(StoreContains(password_store.get(), https_form));
 
     TestingPrefServiceSimple prefs;
-    // Prevent cleaning of duplicated blacklist entries.
-    prefs.registry()->RegisterBooleanPref(
-        prefs::kDuplicatedBlacklistedCredentialsRemoved, true);
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
@@ -401,9 +395,6 @@ TEST(InvalidRealmCredentialCleanerTest,
 
   scoped_task_environment.RunUntilIdle();
   TestingPrefServiceSimple prefs;
-  // Prevent cleaning of duplicated blacklist entries.
-  prefs.registry()->RegisterBooleanPref(
-      prefs::kDuplicatedBlacklistedCredentialsRemoved, true);
   prefs.registry()->RegisterBooleanPref(
       prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 

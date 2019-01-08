@@ -170,10 +170,6 @@ TEST(PasswordManagerUtil,
 
     TestingPrefServiceSimple prefs;
     prefs.registry()->RegisterBooleanPref(
-        password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
-        false);
-
-    prefs.registry()->RegisterBooleanPref(
         password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved,
         false);
 
@@ -185,13 +181,6 @@ TEST(PasswordManagerUtil,
     EXPECT_FALSE(
         StoreContains(password_store.get(), invalid_blacklisted_duplicate));
 
-    // One of them has to be removed.
-    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
-              StoreContains(password_store.get(), http_blacklisted_duplicate));
-    // One of them has to be removed.
-    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
-              StoreContains(password_store.get(), https_blacklisted_duplicate));
-
     RemoveUselessCredentials(password_store, &prefs, 0, base::NullCallback());
     scoped_task_environment.RunUntilIdle();
 
@@ -199,10 +188,6 @@ TEST(PasswordManagerUtil,
     EXPECT_FALSE(StoreContains(password_store.get(), invalid_blacklisted));
     EXPECT_FALSE(
         StoreContains(password_store.get(), invalid_blacklisted_duplicate));
-    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
-              StoreContains(password_store.get(), http_blacklisted_duplicate));
-    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
-              StoreContains(password_store.get(), https_blacklisted_duplicate));
 
     password_store->ShutdownOnUIThread();
     scoped_task_environment.RunUntilIdle();

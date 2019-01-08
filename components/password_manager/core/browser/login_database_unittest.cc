@@ -1571,8 +1571,6 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
                                       0, 1);
-  histogram_tester.ExpectUniqueSample("PasswordManager.BlacklistedDuplicates",
-                                      2, 1);
 }
 
 // This test will check that adding a blacklist entry is prevented due to an

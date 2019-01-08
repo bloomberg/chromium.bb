@@ -70,9 +70,6 @@ extern const char kSyncPasswordHash[];
 // int>.<16 char salt>".
 extern const char kSyncPasswordLengthAndHashSalt[];
 
-// Whether Chrome deleted blacklisted credentials that were duplicated.
-extern const char kDuplicatedBlacklistedCredentialsRemoved[];
-
 // Whether Chrome deleted credentials that had wrong signon_realm.
 extern const char kCredentialsWithWrongSignonRealmRemoved[];
 
