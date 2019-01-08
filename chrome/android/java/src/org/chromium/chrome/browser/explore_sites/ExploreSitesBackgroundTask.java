@@ -63,7 +63,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.EXPLORE_SITES_REFRESH_JOB_ID;
-        if (ExploreSitesBridge.getVariation() != ExploreSitesVariation.ENABLED) {
+        if (ExploreSitesBridge.isEnabled(ExploreSitesBridge.getVariation())) {
             cancelTask();
             return;
         }
