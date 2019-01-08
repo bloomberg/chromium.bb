@@ -20,7 +20,8 @@ namespace device {
 namespace {
 
 constexpr float kDefaultIPD = 0.06f;  // Default average IPD.
-constexpr double kTimeBetweenPollingEventsSeconds = 0.25;
+constexpr base::TimeDelta kPollingInterval =
+    base::TimeDelta::FromSecondsD(0.25);
 
 mojom::VRFieldOfViewPtr OpenVRFovToWebVRFov(vr::IVRSystem* vr_system,
                                             vr::Hmd_Eye eye) {
@@ -134,15 +135,6 @@ OpenVRDevice::OpenVRDevice()
       gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
       weak_ptr_factory_(this) {
-  // Initialize OpenVR.
-  openvr_ = std::make_unique<OpenVRWrapper>(false /* presenting */);
-  if (!openvr_->IsInitialized()) {
-    openvr_ = nullptr;
-    return;
-  }
-
-  SetVRDisplayInfo(CreateVRDisplayInfo(openvr_->GetSystem(), GetId()));
-
   render_loop_ = std::make_unique<OpenVRRenderLoop>();
 
   OnPollingEvents();
@@ -183,6 +175,11 @@ void OpenVRDevice::Shutdown() {
 void OpenVRDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
+  if (!EnsureValidDisplayInfo()) {
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
   if (!options->immersive) {
     ReturnNonImmersiveSession(std::move(callback));
     return;
@@ -228,6 +225,28 @@ void OpenVRDevice::RequestSession(
                                 std::move(options), std::move(my_callback)));
 }
 
+void OpenVRDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+  EnsureValidDisplayInfo();
+  std::move(callback).Run();
+}
+
+bool OpenVRDevice::EnsureValidDisplayInfo() {
+  // Ensure we have had a valid display_info set at least once.
+  if (!have_real_display_info_) {
+    DCHECK(!openvr_);
+    // Initialize OpenVR.
+    openvr_ = std::make_unique<OpenVRWrapper>(false /* presenting */);
+    if (!openvr_->IsInitialized()) {
+      openvr_ = nullptr;
+      return false;
+    }
+
+    SetVRDisplayInfo(CreateVRDisplayInfo(openvr_->GetSystem(), GetId()));
+    have_real_display_info_ = true;
+  }
+  return have_real_display_info_;
+}
+
 void OpenVRDevice::OnPresentationEnded() {
   if (!openvr_) {
     openvr_ = std::make_unique<OpenVRWrapper>(false /* presenting */);
@@ -262,6 +281,10 @@ void OpenVRDevice::OnRequestSessionResult(
   session->display_info = display_info_.Clone();
 
   std::move(callback).Run(std::move(session), std::move(session_controller));
+}
+
+bool OpenVRDevice::IsAvailable() {
+  return vr::VR_IsRuntimeInstalled() && vr::VR_IsHmdPresent();
 }
 
 void OpenVRDevice::GetIsolatedXRGamepadProvider(
@@ -325,6 +348,12 @@ void OpenVRDevice::OnGetInlineFrameData(
 
 // Only deal with events that will cause displayInfo changes for now.
 void OpenVRDevice::OnPollingEvents() {
+  main_thread_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&OpenVRDevice::OnPollingEvents,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kPollingInterval);
+
   if (!openvr_)
     return;
 
@@ -352,12 +381,6 @@ void OpenVRDevice::OnPollingEvents() {
 
   if (is_changed)
     SetVRDisplayInfo(CreateVRDisplayInfo(openvr_->GetSystem(), GetId()));
-
-  main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&OpenVRDevice::OnPollingEvents,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSecondsD(kTimeBetweenPollingEventsSeconds));
 }
 
 }  // namespace device

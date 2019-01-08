@@ -19,14 +19,14 @@
 
 namespace vr {
 
-VRUiHostImpl::VRUiHostImpl(device::mojom::VRDisplayInfoPtr info,
+VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
-    : compositor_(std::move(compositor)), info_(std::move(info)) {
+    : compositor_(std::move(compositor)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
   BrowserXRRuntime* runtime =
-      XRRuntimeManager::GetInstance()->GetRuntime(info_->id);
+      XRRuntimeManager::GetInstance()->GetRuntime(device_id);
   if (runtime) {
     runtime->AddObserver(this);
   }
@@ -50,10 +50,10 @@ VRUiHostImpl::~VRUiHostImpl() {
 
 // static
 std::unique_ptr<VRUiHost> VRUiHostImpl::Create(
-    device::mojom::VRDisplayInfoPtr info,
+    device::mojom::XRDeviceId device_id,
     device::mojom::XRCompositorHostPtr compositor) {
   DVLOG(1) << __func__;
-  return std::make_unique<VRUiHostImpl>(std::move(info), std::move(compositor));
+  return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
 }
 
 void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
@@ -112,6 +112,7 @@ void VRUiHostImpl::StartUiRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
+  DCHECK(info_);
   ui_rendering_thread_ = std::make_unique<VRBrowserRendererThreadWin>();
   ui_rendering_thread_->Start();
   ui_rendering_thread_->SetVRDisplayInfo(info_.Clone());

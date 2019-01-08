@@ -16,20 +16,22 @@
 
 namespace {
 // Poll for device add/remove every 5 seconds.
-int kTimeBetweenPollingEventsSeconds = 5;
+constexpr base::TimeDelta kTimeBetweenPollingEvents =
+    base::TimeDelta::FromSecondsD(5);
 }  // namespace
 
 void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
                                                      bool check_oculus) {
 #if BUILDFLAG(ENABLE_OCULUS_VR)
   if (check_oculus) {
-    bool oculus_available = device::OculusDevice::IsHwAvailable();
+    bool oculus_available = (oculus_device_ && oculus_device_->IsAvailable()) ||
+                            device::OculusDevice::IsHwAvailable();
     if (oculus_available && !oculus_device_) {
       oculus_device_ = std::make_unique<device::OculusDevice>();
       client_->OnDeviceAdded(oculus_device_->BindXRRuntimePtr(),
                              oculus_device_->BindGamepadFactory(),
                              oculus_device_->BindCompositorHost(),
-                             oculus_device_->GetVRDisplayInfo());
+                             oculus_device_->GetId());
     } else if (oculus_device_ && !oculus_available) {
       client_->OnDeviceRemoved(oculus_device_->GetId());
       oculus_device_ = nullptr;
@@ -39,13 +41,15 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
 
 #if BUILDFLAG(ENABLE_OPENVR)
   if (check_openvr) {
-    bool openvr_available = device::OpenVRDevice::IsHwAvailable();
+    bool openvr_available =
+        (openvr_device_ && !openvr_device_->IsAvailable()) ||
+        device::OpenVRDevice::IsHwAvailable();
     if (openvr_available && !openvr_device_) {
       openvr_device_ = std::make_unique<device::OpenVRDevice>();
       client_->OnDeviceAdded(openvr_device_->BindXRRuntimePtr(),
                              openvr_device_->BindGamepadFactory(),
                              openvr_device_->BindCompositorHost(),
-                             openvr_device_->GetVRDisplayInfo());
+                             openvr_device_->GetId());
     } else if (openvr_device_ && !openvr_available) {
       client_->OnDeviceRemoved(openvr_device_->GetId());
       openvr_device_ = nullptr;
@@ -60,7 +64,7 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
         base::BindOnce(&IsolatedXRRuntimeProvider::PollForDeviceChanges,
                        weak_ptr_factory_.GetWeakPtr(), check_openvr,
                        check_oculus),
-        base::TimeDelta::FromSecondsD(kTimeBetweenPollingEventsSeconds));
+        kTimeBetweenPollingEvents);
   }
 }
 

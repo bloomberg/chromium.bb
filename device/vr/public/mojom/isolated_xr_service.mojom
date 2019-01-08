@@ -181,7 +181,7 @@ interface IsolatedXRRuntimeProviderClient {
   OnDeviceAdded(XRRuntime runtime,
       IsolatedXRGamepadProviderFactory gamepad_factory,
       XRCompositorHost compositor_host,
-      device.mojom.VRDisplayInfo display_info);
+      device.mojom.XRDeviceId device_id);
 
   // Called when runtimes become unavailable - for example if the hardware is
   // disconnected or the APIs notify us that they are shutting down.

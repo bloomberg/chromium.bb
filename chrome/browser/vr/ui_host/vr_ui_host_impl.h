@@ -22,13 +22,13 @@ class VRUiHostImpl : public VRUiHost,
                      public PermissionRequestManager::Observer,
                      public BrowserXRRuntimeObserver {
  public:
-  VRUiHostImpl(device::mojom::VRDisplayInfoPtr info,
+  VRUiHostImpl(device::mojom::XRDeviceId device_id,
                device::mojom::XRCompositorHostPtr compositor);
   ~VRUiHostImpl() override;
 
   // Factory for use with VRUiHost::{Set,Get}Factory
   static std::unique_ptr<VRUiHost> Create(
-      device::mojom::VRDisplayInfoPtr info,
+      device::mojom::XRDeviceId device_id,
       device::mojom::XRCompositorHostPtr compositor);
 
  private:
