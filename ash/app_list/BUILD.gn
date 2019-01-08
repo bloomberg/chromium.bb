@@ -86,8 +86,6 @@ component("app_list") {
     "views/suggestion_chip_container_view.h",
     "views/suggestion_chip_view.cc",
     "views/suggestion_chip_view.h",
-    "views/suggestions_container_view.cc",
-    "views/suggestions_container_view.h",
     "views/top_icon_animation_view.cc",
     "views/top_icon_animation_view.h",
   ]
