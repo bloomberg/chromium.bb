@@ -9,7 +9,7 @@
 Polymer({
   is: 'site-entry',
 
-  behaviors: [SiteSettingsBehavior],
+  behaviors: [SiteSettingsBehavior, cr.ui.FocusRowBehavior],
 
   properties: {
     /**
