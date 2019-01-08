@@ -10,8 +10,8 @@ const test_desc = 'requestLEScan calls do not consume user gestures.';
 
 bluetooth_test(() => navigator.bluetooth.test.simulateCentral({ state: 'powered-on' })
       .then(() => callWithTrustedClick(() => {
-      let first = navigator.bluetooth.requestLEScan();
-      let second = navigator.bluetooth.requestLEScan();
+      let first = navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
+      let second = navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
       return Promise.all([
         first.then(scan => assert_equals(
           scan.constructor.name, 'BluetoothLEScan')),

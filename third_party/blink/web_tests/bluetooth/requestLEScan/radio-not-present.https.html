@@ -12,7 +12,7 @@ const expected = new DOMException('Bluetooth adapter not available.',
 
 bluetooth_test(() => navigator.bluetooth.test.simulateCentral({state: 'absent'})
     .then(() => assert_promise_rejects_with_message(
-        requestLEScanWithTrustedClick(),
+        requestLEScanWithTrustedClick({acceptAllAdvertisements: true}),
         expected, 'Bluetooth adapter is not present.')),
     test_desc);
 </script>
