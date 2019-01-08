@@ -1359,7 +1359,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
-  layer->SetPosition(inputs_.position);
   layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
       should_flatten_screen_space_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);

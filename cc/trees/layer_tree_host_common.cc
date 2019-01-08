@@ -572,9 +572,6 @@ void CalculateDrawPropertiesInternal(
           gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
       float page_scale_factor_for_root =
           combine_dsf_and_psf ? inputs->page_scale_factor : 1.f;
-      // SetRootTransformsAndScales will be incorrect if the root layer has
-      // non-zero position, so ensure it is zero.
-      DCHECK(inputs->root_layer->position().IsOrigin());
       property_trees->transform_tree.SetRootTransformsAndScales(
           inputs->device_scale_factor, page_scale_factor_for_root,
           inputs->device_transform);

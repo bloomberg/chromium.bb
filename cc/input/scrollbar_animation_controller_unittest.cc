@@ -108,12 +108,12 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
     v_scrollbar_layer_->SetBounds(gfx::Size(kThumbThickness, kTrackLength));
-    v_scrollbar_layer_->SetPosition(gfx::PointF(90, 0));
+    v_scrollbar_layer_->test_properties()->position = gfx::PointF(90, 0);
     v_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     v_scrollbar_layer_->test_properties()->opacity_can_animate = true;
 
     h_scrollbar_layer_->SetBounds(gfx::Size(kTrackLength, kThumbThickness));
-    h_scrollbar_layer_->SetPosition(gfx::PointF(0, 90));
+    h_scrollbar_layer_->test_properties()->position = gfx::PointF(0, 90);
     h_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     h_scrollbar_layer_->test_properties()->opacity_can_animate = true;
 

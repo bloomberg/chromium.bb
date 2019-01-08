@@ -56,6 +56,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerStickyPositionConstraint sticky_position_constraint;
   gfx::Point3F transform_origin;
   gfx::Transform transform;
+  gfx::PointF position;
   LayerImpl* scroll_parent;
   LayerImpl* clip_parent;
   std::unique_ptr<std::set<LayerImpl*>> clip_children;

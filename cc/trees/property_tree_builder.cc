@@ -202,6 +202,14 @@ static const gfx::Transform& Transform(LayerImpl* layer) {
   return layer->test_properties()->transform;
 }
 
+static const gfx::PointF& Position(Layer* layer) {
+  return layer->position();
+}
+
+static const gfx::PointF& Position(LayerImpl* layer) {
+  return layer->test_properties()->position;
+}
+
 // Methods to query state from the AnimationHost ----------------------
 template <typename LayerType>
 bool OpacityIsAnimating(const MutatorHost& host, LayerType* layer) {
@@ -472,8 +480,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
 
   if (!requires_node) {
     data_for_children->should_flatten |= ShouldFlattenTransform(layer);
-    gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
-                                  Transform(layer).To2dTranslation();
+    gfx::Vector2dF local_offset =
+        Position(layer).OffsetFromOrigin() + Transform(layer).To2dTranslation();
     gfx::Vector2dF source_to_parent;
     if (source_index != parent_index) {
       gfx::Transform to_parent;
@@ -539,14 +547,13 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
         is_page_scale_layer ? page_scale_factor_ : 1.f;
     // SetRootTransformsAndScales will be incorrect if the root layer has
     // non-zero position, so ensure it is zero.
-    DCHECK(layer->position().IsOrigin());
+    DCHECK(Position(layer).IsOrigin());
     transform_tree_.SetRootTransformsAndScales(
         transform_tree_.device_scale_factor(), page_scale_factor_for_root,
         device_transform_);
   } else {
     node->source_offset = source_offset;
-    node->update_post_local_transform(layer->position(),
-                                      TransformOrigin(layer));
+    node->update_post_local_transform(Position(layer), TransformOrigin(layer));
   }
 
   if (is_overscroll_elasticity_layer) {
@@ -1368,7 +1375,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
         page_scale_is_root_layer ? page_scale_factor_ : 1.f;
     // SetRootTransformsAndScales will be incorrect if the root layer has
     // non-zero position, so ensure it is zero.
-    DCHECK(root_layer_->position().IsOrigin());
+    DCHECK(Position(root_layer_).IsOrigin());
     transform_tree_.SetRootTransformsAndScales(
         device_scale_factor, page_scale_factor_for_root, device_transform_);
     return;
