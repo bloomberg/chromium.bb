@@ -971,38 +971,67 @@ unsigned ShapeResult::RunInfo::LimitNumGlyphs(
     const bool is_ltr,
     const hb_glyph_info_t* glyph_infos) {
   unsigned num_glyphs = *num_glyphs_in_out;
+  CHECK_GT(num_glyphs, 0u);
 
   // If there were larger character indexes than kMaxCharacterIndex, reduce
   // num_glyphs so that all character indexes can fit to kMaxCharacterIndex.
   // Because code points and glyphs are not always 1:1, we need to check the
   // first and the last cluster.
+  const hb_glyph_info_t* left_glyph_info = &glyph_infos[start_glyph];
+  const hb_glyph_info_t* right_glyph_info = &left_glyph_info[num_glyphs - 1];
   unsigned start_cluster;
   if (is_ltr) {
-    start_cluster = glyph_infos[start_glyph].cluster;
-    unsigned last_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
-    unsigned last_character_index = last_cluster - start_cluster;
-    if (UNLIKELY(last_character_index >
-                 HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
-      // Make sure the end is a cluster boundary.
-      do {
-        num_glyphs--;
-        num_characters_ = last_character_index;
-        last_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
-        last_character_index = last_cluster - start_cluster;
-      } while (last_character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex);
+    start_cluster = left_glyph_info->cluster;
+    unsigned last_cluster = right_glyph_info->cluster;
+    unsigned max_cluster =
+        start_cluster + HarfBuzzRunGlyphData::kMaxCharacterIndex;
+    if (UNLIKELY(last_cluster > max_cluster)) {
+      // Limit at |max_cluster| in LTR. If |max_cluster| is 100:
+      //   0 1 2 ... 98 99 99 101 101 103 ...
+      //                     ^ limit here.
+      // Find |glyph_info| where |cluster| <= |max_cluster|.
+      const hb_glyph_info_t* limit_glyph_info = std::upper_bound(
+          left_glyph_info, right_glyph_info + 1, max_cluster,
+          [](unsigned cluster, const hb_glyph_info_t& glyph_info) {
+            return cluster < glyph_info.cluster;
+          });
+      --limit_glyph_info;
+      CHECK_GT(limit_glyph_info, left_glyph_info);
+      CHECK_LT(limit_glyph_info, right_glyph_info);
+      DCHECK_LE(limit_glyph_info->cluster, max_cluster);
+      // Adjust |right_glyph_info| and recompute dependent variables.
+      right_glyph_info = limit_glyph_info;
+      num_glyphs = right_glyph_info - left_glyph_info + 1;
+      num_characters_ = right_glyph_info[1].cluster - start_cluster;
     }
   } else {
-    start_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
-    const unsigned last_cluster = glyph_infos[start_glyph].cluster;
-    unsigned last_character_index = last_cluster - start_cluster;
-    if (UNLIKELY(last_character_index >
-                 HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
-      do {
-        num_glyphs--;
-        num_characters_ = last_character_index;
-        start_cluster = glyph_infos[start_glyph + num_glyphs - 1].cluster;
-        last_character_index = last_cluster - start_cluster;
-      } while (last_character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex);
+    start_cluster = right_glyph_info->cluster;
+    unsigned last_cluster = left_glyph_info->cluster;
+    unsigned max_cluster =
+        start_cluster + HarfBuzzRunGlyphData::kMaxCharacterIndex;
+    if (UNLIKELY(last_cluster > max_cluster)) {
+      // Limit the right edge, which is in the reverse order in RTL.
+      // If |min_cluster| is 3:
+      //   103 102 ... 4 4 2 2 ...
+      //                  ^ limit here.
+      // Find |glyph_info| where |cluster| >= |min_cluster|.
+      unsigned min_cluster =
+          last_cluster - HarfBuzzRunGlyphData::kMaxCharacterIndex;
+      DCHECK_LT(start_cluster, min_cluster);
+      const hb_glyph_info_t* limit_glyph_info = std::upper_bound(
+          left_glyph_info, right_glyph_info + 1, min_cluster,
+          [](unsigned cluster, const hb_glyph_info_t& glyph_info) {
+            return cluster > glyph_info.cluster;
+          });
+      --limit_glyph_info;
+      CHECK_GT(limit_glyph_info, left_glyph_info);
+      CHECK_LT(limit_glyph_info, right_glyph_info);
+      DCHECK_GE(limit_glyph_info->cluster, min_cluster);
+      // Adjust |right_glyph_info| and recompute dependent variables.
+      right_glyph_info = limit_glyph_info;
+      start_cluster = right_glyph_info->cluster;
+      num_glyphs = right_glyph_info - left_glyph_info + 1;
+      num_characters_ = last_cluster - right_glyph_info[1].cluster;
     }
   }
 
