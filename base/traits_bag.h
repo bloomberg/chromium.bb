@@ -155,11 +155,19 @@ struct RequiredEnumTraitFilter : public BasicTraitFilter<ArgType> {
 //   ValidTraits(MyTrait);
 //   ...
 // };
+//
+// You can 'inherit' valid traits like so:
+//
+// struct MoreValidTraits {
+//   MoreValidTraits(ValidTraits);  // Pull in traits from ValidTraits.
+//   MoreValidTraits(MyOtherTrait);
+//   ...
+// };
 template <class ValidTraits, class... ArgTypes>
 struct AreValidTraits
     : std::integral_constant<
           bool,
-          all_of({std::is_convertible<ArgTypes, ValidTraits>::value...})> {};
+          all_of({std::is_constructible<ValidTraits, ArgTypes>::value...})> {};
 
 // Helper to make getting an enum from a trait more readable.
 template <typename Enum, typename... Args>

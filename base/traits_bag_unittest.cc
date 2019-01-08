@@ -126,5 +126,19 @@ TEST(TraitsBagTest, RequiredEnum) {
   EXPECT_EQ(c.enum_trait_a, EnumTraitA::C);
 }
 
+TEST(TraitsBagTest, ValidTraitInheritance) {
+  struct ValidTraitsA {
+    ValidTraitsA(EnumTraitA);
+  };
+
+  struct ValidTraitsB {
+    ValidTraitsB(ValidTraitsA);
+    ValidTraitsB(EnumTraitB);
+  };
+
+  static_assert(AreValidTraits<ValidTraitsA, EnumTraitA>(), "");
+  static_assert(AreValidTraits<ValidTraitsB, EnumTraitA, EnumTraitB>(), "");
+}
+
 }  // namespace trait_helpers
 }  // namespace base
