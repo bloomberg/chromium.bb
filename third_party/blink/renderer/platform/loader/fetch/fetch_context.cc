@@ -105,7 +105,9 @@ void FetchContext::DispatchDidReceiveResponse(unsigned long,
                                               Resource*,
                                               ResourceResponseType) {}
 
-void FetchContext::DispatchDidReceiveData(unsigned long, const char*, size_t) {}
+void FetchContext::DispatchDidReceiveData(unsigned long,
+                                          const char*,
+                                          uint64_t) {}
 
 void FetchContext::DispatchDidReceiveEncodedData(unsigned long, size_t) {}
 

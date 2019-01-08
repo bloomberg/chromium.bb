@@ -112,7 +112,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void DidDownloadData(int /*dataLength*/) override;
+  void DidDownloadData(unsigned long long /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
   void DidFinishLoading(unsigned long /*identifier*/) override;
@@ -241,7 +241,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidDownloadData(
-    int data_length) {
+    unsigned long long data_length) {
   if (!client_)
     return;
 

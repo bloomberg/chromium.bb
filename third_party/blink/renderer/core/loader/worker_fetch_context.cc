@@ -286,7 +286,7 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
 
 void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                 const char* data,
-                                                size_t data_length) {
+                                                uint64_t data_length) {
   probe::didReceiveData(Probe(), identifier, nullptr, data, data_length);
 }
 

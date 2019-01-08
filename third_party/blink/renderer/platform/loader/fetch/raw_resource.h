@@ -134,7 +134,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                         std::unique_ptr<WebDataConsumerHandle>) override;
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
-  void DidDownloadData(int) override;
+  void DidDownloadData(unsigned long long) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&,
@@ -198,7 +198,7 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
     return true;
   }
   virtual void RedirectBlocked() {}
-  virtual void DataDownloaded(Resource*, int) {}
+  virtual void DataDownloaded(Resource*, unsigned long long) {}
   virtual void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with
   // null if creating the blob failed for some reason (but the download itself

@@ -189,7 +189,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void DidReceiveData(const char* data, unsigned data_length) override;
   // When responseType is set to "blob", didDownloadData() is called instead
   // of didReceiveData().
-  void DidDownloadData(int data_length) override;
+  void DidDownloadData(unsigned long long data_length) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void DidFinishLoading(unsigned long identifier) override;
   void DidFail(const ResourceError&) override;

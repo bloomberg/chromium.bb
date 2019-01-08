@@ -280,7 +280,7 @@ void RawResource::DidSendData(unsigned long long bytes_sent,
     c->DataSent(this, bytes_sent, total_bytes_to_be_sent);
 }
 
-void RawResource::DidDownloadData(int data_length) {
+void RawResource::DidDownloadData(unsigned long long data_length) {
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->DataDownloaded(this, data_length);

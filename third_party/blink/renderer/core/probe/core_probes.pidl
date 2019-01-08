@@ -93,7 +93,7 @@ interface CoreProbes {
   void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
   void markResourceAsCached(LocalFrame*, DocumentLoader*, unsigned long identifier);
   void didReceiveResourceResponse(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void didReceiveData(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const char* data, size_t dataLength);
+  void didReceiveData(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const char* data, uint64_t dataLength);
   void didReceiveBlob(CoreProbeSink*, unsigned long identifier, DocumentLoader*, BlobDataHandle*);
   void didReceiveEncodedDataLength(CoreProbeSink*, DocumentLoader* loader, unsigned long identifier, size_t encodedDataLength);
   void didFinishLoading(CoreProbeSink*, unsigned long identifier, DocumentLoader*, TimeTicks finishTime, int64_t encoded_data_length, int64_t decodedBodyLength, bool should_report_corb_blocking);

@@ -421,7 +421,8 @@ void ResourceMultiBufferDataProvider::DidReceiveData(const char* data,
   // Beware, this object might be deleted here.
 }
 
-void ResourceMultiBufferDataProvider::DidDownloadData(int dataLength) {
+void ResourceMultiBufferDataProvider::DidDownloadData(
+    unsigned long long dataLength) {
   NOTIMPLEMENTED();
 }
 

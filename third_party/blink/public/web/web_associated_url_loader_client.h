@@ -20,7 +20,7 @@ class WebAssociatedURLLoaderClient {
   virtual void DidSendData(unsigned long long bytes_sent,
                            unsigned long long total_bytes_to_be_sent) {}
   virtual void DidReceiveResponse(const WebURLResponse&) {}
-  virtual void DidDownloadData(int data_length) {}
+  virtual void DidDownloadData(unsigned long long data_length) {}
   virtual void DidReceiveData(const char* data, int data_length) {}
   virtual void DidReceiveCachedMetadata(const char* data, int data_length) {}
   virtual void DidFinishLoading() {}

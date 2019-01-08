@@ -55,7 +55,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   void DidSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
-  void DidDownloadData(int data_length) override;
+  void DidDownloadData(unsigned long long data_length) override;
   void DidReceiveData(const char* data, int data_length) override;
   void DidReceiveCachedMetadata(const char* data, int dataLength) override;
   void DidFinishLoading() override;
