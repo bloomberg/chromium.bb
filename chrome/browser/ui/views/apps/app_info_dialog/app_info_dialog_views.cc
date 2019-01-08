@@ -50,7 +50,12 @@ namespace {
 
 // The color of the separator used inside the dialog - should match the app
 // list's app_list::kDialogSeparatorColor
-const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
+constexpr SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+// The elevation used for dialog shadow effect.
+constexpr int kDialogShadowElevation = 24;
+#endif
 
 }  // namespace
 
@@ -72,6 +77,8 @@ void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
   views::Widget::InitParams params =
       views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,
                                                        app_info_bounds);
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  params.shadow_elevation = kDialogShadowElevation;
   dialog_widget->Init(params);
   // The title is not shown on the dialog, but it is used for overview mode.
   dialog_widget->GetNativeWindow()->SetTitle(base::UTF8ToUTF16(app->name()));
