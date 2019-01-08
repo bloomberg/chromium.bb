@@ -117,7 +117,7 @@ void FakeConciergeClient::GetContainerSshKeys(
 void FakeConciergeClient::AttachUsbDevice(base::ScopedFD fd,
     const vm_tools::concierge::AttachUsbDeviceRequest& request,
     DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback) {
-  attach_usb_device_called = true;
+  attach_usb_device_called_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -127,7 +127,7 @@ void FakeConciergeClient::AttachUsbDevice(base::ScopedFD fd,
 void FakeConciergeClient::DetachUsbDevice(
     const vm_tools::concierge::DetachUsbDeviceRequest& request,
     DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback) {
-  detach_usb_device_called = true;
+  detach_usb_device_called_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -137,7 +137,7 @@ void FakeConciergeClient::DetachUsbDevice(
 void FakeConciergeClient::ListUsbDevices(
     const vm_tools::concierge::ListUsbDeviceRequest& request,
     DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback) {
-  list_usb_devices_called = true;
+  list_usb_devices_called_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

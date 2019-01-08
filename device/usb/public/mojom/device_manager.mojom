@@ -7,6 +7,7 @@ module device.mojom;
 import "device/usb/public/mojom/device.mojom";
 import "device/usb/public/mojom/device_enumeration_options.mojom";
 import "device/usb/public/mojom/device_manager_client.mojom";
+import "mojo/public/mojom/base/file.mojom";
 
 interface UsbDeviceManager {
   // Retrieves information about all devices available to the DeviceManager
@@ -21,6 +22,16 @@ interface UsbDeviceManager {
   // Requests a device by guid.
   GetDevice(string guid, UsbDevice& device_request,
             UsbDeviceClient? device_client);
+
+  // Check whether permission_broker will allow a future Open call for
+  // a given USB device to succeed.
+  [EnableIf=is_chromeos]
+  CheckAccess(string guid) => (bool success);
+
+  // Attempt to open a USB device using permission_broker and return
+  // a file descriptor.
+  [EnableIf=is_chromeos]
+  OpenFileDescriptor(string guid) => (mojo_base.mojom.File? fd);
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.

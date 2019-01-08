@@ -35,6 +35,8 @@ FakeUsbDeviceInfo::FakeUsbDeviceInfo(uint16_t usb_version,
   device_info_.device_version_major = device_version >> 8;
   device_info_.device_version_minor = device_version >> 4 & 0xf;
   device_info_.device_version_subminor = device_version & 0xf;
+  device_info_.bus_number = 0;
+  device_info_.port_number = 0;
   device_info_.vendor_id = vendor_id;
   device_info_.product_id = product_id;
   device_info_.manufacturer_name = base::UTF8ToUTF16(manufacturer_string);

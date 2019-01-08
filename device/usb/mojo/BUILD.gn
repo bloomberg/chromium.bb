@@ -23,4 +23,8 @@ source_set("mojo") {
     "//mojo/public/cpp/bindings",
     "//net",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/dbus:dbus" ]
+  }
 }
