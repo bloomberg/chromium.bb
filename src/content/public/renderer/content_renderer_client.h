@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
+#include "content/common/frame_sink_provider.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -459,6 +460,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // 'msg' and return 'true'. If the function does not handle the message,
   // it should return 'false' without deleting 'msg'.
   virtual bool Dispatch(IPC::Message* msg);
+
+  virtual bool BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
 };
 
 }  // namespace content
