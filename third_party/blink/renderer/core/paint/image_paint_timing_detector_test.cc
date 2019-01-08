@@ -71,15 +71,17 @@ class ImagePaintTimingDetectorTest
   }
 
   TimeTicks LargestPaintStoredResult() {
-    return GetPaintTimingDetector()
-        .GetImagePaintTimingDetector()
-        .largest_image_paint_;
+    ImageRecord* record = GetPaintTimingDetector()
+                              .GetImagePaintTimingDetector()
+                              .largest_image_paint_;
+    return !record ? base::TimeTicks() : record->first_paint_time_after_loaded;
   }
 
   TimeTicks LastPaintStoredResult() {
-    return GetPaintTimingDetector()
-        .GetImagePaintTimingDetector()
-        .last_image_paint_;
+    ImageRecord* record = GetPaintTimingDetector()
+                              .GetImagePaintTimingDetector()
+                              .last_image_paint_;
+    return !record ? base::TimeTicks() : record->first_paint_time_after_loaded;
   }
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {

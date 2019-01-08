@@ -36,8 +36,15 @@ struct PaintTiming {
   // (Experimental) Time when the page's largest image is painted.
   mojo_base.mojom.TimeDelta? largest_image_paint;
 
+  // (Experimental) Size of the largest image of the largest image paint, by
+  // Size = Height * Width.
+  uint64 largest_image_paint_size;
+
   // (Experimental) Time when the page's last image is painted.
   mojo_base.mojom.TimeDelta? last_image_paint;
+
+  // (Experimental) Size of the last image of the last image paint.
+  uint64 last_image_paint_size;
 
   // (Experimental) Time when the page's largest text is painted.
   mojo_base.mojom.TimeDelta? largest_text_paint;

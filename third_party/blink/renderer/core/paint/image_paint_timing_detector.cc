@@ -131,27 +131,28 @@ void ImagePaintTimingDetector::PopulateTraceValue(
 }
 
 void ImagePaintTimingDetector::OnLargestImagePaintDetected(
-    const ImageRecord& largest_image_record) {
-  largest_image_paint_ = largest_image_record.first_paint_time_after_loaded;
+    ImageRecord* largest_image_record) {
+  DCHECK(largest_image_record);
+  largest_image_paint_ = largest_image_record;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  PopulateTraceValue(*value, largest_image_record,
+  PopulateTraceValue(*value, *largest_image_record,
                      ++largest_image_candidate_index_max_);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
       "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-      largest_image_record.first_paint_time_after_loaded, "data",
+      largest_image_record->first_paint_time_after_loaded, "data",
       std::move(value));
-  frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
 }
 
 void ImagePaintTimingDetector::OnLastImagePaintDetected(
-    const ImageRecord& last_image_record) {
-  last_image_paint_ = last_image_record.first_paint_time_after_loaded;
+    ImageRecord* last_image_record) {
+  DCHECK(last_image_record);
+  last_image_paint_ = last_image_record;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  PopulateTraceValue(*value, last_image_record,
+  PopulateTraceValue(*value, *last_image_record,
                      ++last_image_candidate_index_max_);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
       "loading", "LastImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-      last_image_record.first_paint_time_after_loaded, "data",
+      last_image_record->first_paint_time_after_loaded, "data",
       std::move(value));
   frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
 }
@@ -165,19 +166,14 @@ void ImagePaintTimingDetector::Analyze() {
   //   result unless it's a new candidate.
   ImageRecord* largest_image_record = FindLargestPaintCandidate();
   bool new_candidate_detected = false;
-  if (largest_image_record &&
-      !largest_image_record->first_paint_time_after_loaded.is_null() &&
-      largest_image_record->first_paint_time_after_loaded !=
-          largest_image_paint_) {
+  if (largest_image_record && largest_image_record != largest_image_paint_) {
     new_candidate_detected = true;
-    OnLargestImagePaintDetected(*largest_image_record);
+    OnLargestImagePaintDetected(largest_image_record);
   }
   ImageRecord* last_image_record = FindLastPaintCandidate();
-  if (last_image_record &&
-      !last_image_record->first_paint_time_after_loaded.is_null() &&
-      last_image_record->first_paint_time_after_loaded != last_image_paint_) {
+  if (last_image_record && last_image_record != last_image_paint_) {
     new_candidate_detected = true;
-    OnLastImagePaintDetected(*last_image_record);
+    OnLastImagePaintDetected(last_image_record);
   }
   if (new_candidate_detected) {
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
@@ -214,17 +210,13 @@ void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
     detached_ids_.insert(node_id);
 
     if (id_record_map_.size() - detached_ids_.size() == 0) {
-      const bool largest_image_paint_invalidated =
-          largest_image_paint_ != base::TimeTicks();
-      const bool last_image_paint_invalidated =
-          last_image_paint_ != base::TimeTicks();
-      if (largest_image_paint_invalidated)
-        largest_image_paint_ = base::TimeTicks();
-      if (last_image_paint_invalidated)
-        last_image_paint_ = base::TimeTicks();
-      if (largest_image_paint_invalidated || last_image_paint_invalidated) {
-        frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-      }
+      // If either largest_image_paint_ or last_image_paint_ will change to
+      // nullptr, update performance timing.
+      if (!largest_image_paint_ && !last_image_paint_)
+        return;
+      largest_image_paint_ = nullptr;
+      last_image_paint_ = nullptr;
+      frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
     }
   }
 }

@@ -109,12 +109,17 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // TODO(crbug.com/848639): This function is exposed as an experiment, and if
   // not useful, this function can be removed.
   unsigned long long FirstMeaningfulPaintCandidate() const;
-  // The time of the first paint after the largest image within viewport being
-  // fully loaded.
+  // Largest Image Paint is the first paint after the largest image within
+  // viewport being fully loaded. LargestImagePaint and LargestImagePaintSize
+  // are the time and size of it.
   unsigned long long LargestImagePaint() const;
-  // The time of the first paint after the last image within viewport being
-  // fully loaded.
+  uint64_t LargestImagePaintSize() const;
+  // Last Image Paint is the first paint after the last image within viewport
+  // being fully loaded. LastImagePaint and LastImagePaintSize are the time and
+  // size of it.
   unsigned long long LastImagePaint() const;
+  uint64_t LastImagePaintSize() const;
+  // The time of the first paint of the largest text within viewport.
   // Largest Text Paint is the first paint after the largest text within
   // viewport being painted. LargestTextPaint and LargestTextPaintSize
   // are the time and size of it.
