@@ -13,7 +13,7 @@ overflowwithhandler: layer(0,0 785x623) has hit test rect (14,221 273x20)
 
 divInsideNonScrollableLayer: layer(0,0 785x671) has hit test rect (14,273 273x10)
 
-divInsideCompositedLayer: layer(0,10 273x22) has hit test rect (0,10 273x12)
+divInsideCompositedLayer: layer(14,305 273x22) has hit test rect (0,10 273x12)
 
 overflowwithborder: layer(0,0 785x767) has hit test rect (13,336 290x50)
 
