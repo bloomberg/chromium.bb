@@ -774,11 +774,6 @@ bool DownloadManagerImpl::IsOffTheRecord() const {
   return browser_context_->IsOffTheRecord();
 }
 
-bool DownloadManagerImpl::IsActiveNetworkMetered() const {
-  // TODO(shaktisahu): Call ChromeDownloadManagerDelegate to get this.
-  return false;
-}
-
 void DownloadManagerImpl::ReportBytesWasted(
     download::DownloadItemImpl* download) {
   in_progress_manager_->ReportBytesWasted(download);
