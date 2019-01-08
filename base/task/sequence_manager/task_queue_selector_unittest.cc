@@ -49,50 +49,14 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
   using TaskQueueSelector::ChooseOldestWithPriority;
   using TaskQueueSelector::delayed_work_queue_sets;
   using TaskQueueSelector::immediate_work_queue_sets;
+  using TaskQueueSelector::kMaxHighPriorityStarvationScore;
+  using TaskQueueSelector::kMaxLowPriorityStarvationScore;
+  using TaskQueueSelector::kMaxNormalPriorityStarvationScore;
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
+  using TaskQueueSelector::SmallPriorityQueue;
 
   TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread)
       : TaskQueueSelector(associated_thread) {}
-
-  // Returns the number of highest priority tasks needed to starve high priority
-  // task.
-  static constexpr size_t NumberOfHighestPriorityToStarveHighPriority() {
-    return (kMaxHighPriorityStarvationScore +
-            kSmallScoreIncrementForHighPriorityStarvation - 1) /
-           kSmallScoreIncrementForHighPriorityStarvation;
-  }
-
-  // Returns the number of highest priority tasks needed to starve normal
-  // priority tasks.
-  static constexpr size_t NumberOfHighestPriorityToStarveNormalPriority() {
-    return (kMaxNormalPriorityStarvationScore +
-            kSmallScoreIncrementForNormalPriorityStarvation - 1) /
-           kSmallScoreIncrementForNormalPriorityStarvation;
-  }
-
-  // Returns the number of high priority tasks needed to starve normal priority
-  // tasks.
-  static constexpr size_t NumberOfHighPriorityToStarveNormalPriority() {
-    return (kMaxNormalPriorityStarvationScore +
-            kLargeScoreIncrementForNormalPriorityStarvation - 1) /
-           kLargeScoreIncrementForNormalPriorityStarvation;
-  }
-
-  // Returns the number of highest priority tasks needed to starve low priority
-  // ones.
-  static constexpr size_t NumberOfHighestPriorityToStarveLowPriority() {
-    return (kMaxLowPriorityStarvationScore +
-            kSmallScoreIncrementForLowPriorityStarvation - 1) /
-           kSmallScoreIncrementForLowPriorityStarvation;
-  }
-
-  // Returns the number of high/normal priority tasks needed to starve low
-  // priority ones.
-  static constexpr size_t NumberOfHighAndNormalPriorityToStarveLowPriority() {
-    return (kMaxLowPriorityStarvationScore +
-            kLargeScoreIncrementForLowPriorityStarvation - 1) /
-           kLargeScoreIncrementForLowPriorityStarvation;
-  }
 };
 
 class TaskQueueSelectorTest : public testing::Test {
@@ -552,12 +516,13 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[1].get(),
                              TaskQueue::kHighestPriority);
 
+  constexpr const size_t kNumberOfHighestPriorityToStarveHighPriority =
+      TaskQueueSelectorForTest::kMaxHighPriorityStarvationScore;
+
   // Run a number of highest priority tasks needed to starve high priority
   // tasks (when present).
   for (size_t num_tasks = 0;
-       num_tasks <=
-       TaskQueueSelectorForTest::NumberOfHighestPriorityToStarveHighPriority();
-       num_tasks++) {
+       num_tasks <= kNumberOfHighestPriorityToStarveHighPriority; num_tasks++) {
     ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
     // Don't remove task from queue to simulate the queue is still full.
   }
@@ -584,11 +549,14 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[1].get(),
                              TaskQueue::kHighestPriority);
 
+  constexpr const size_t kNumberOfHighestPriorityToStarveNormalPriority =
+      TaskQueueSelectorForTest::kMaxHighPriorityStarvationScore +
+      TaskQueueSelectorForTest::kMaxNormalPriorityStarvationScore;
+
   // Run a number of highest priority tasks needed to starve normal priority
   // tasks (when present).
   for (size_t num_tasks = 0;
-       num_tasks <= TaskQueueSelectorForTest::
-                        NumberOfHighestPriorityToStarveNormalPriority();
+       num_tasks <= kNumberOfHighestPriorityToStarveNormalPriority;
        num_tasks++) {
     ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
     // Don't remove task from queue to simulate the queue is still full.
@@ -597,12 +565,13 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
 
+  constexpr const size_t kNumberOfHighPriorityToStarveNormalPriority =
+      TaskQueueSelectorForTest::kMaxNormalPriorityStarvationScore;
+
   // Run a number of high priority tasks needed to starve normal priority
   // tasks (when present).
   for (size_t num_tasks = 0;
-       num_tasks <=
-       TaskQueueSelectorForTest::NumberOfHighPriorityToStarveNormalPriority();
-       num_tasks++) {
+       num_tasks <= kNumberOfHighPriorityToStarveNormalPriority; num_tasks++) {
     ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
     // Don't remove task from queue to simulate the queue is still full.
   }
@@ -629,12 +598,15 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[1].get(),
                              TaskQueue::kHighestPriority);
 
+  constexpr const size_t kNumberOfHighestPriorityToStarveLowPriority =
+      TaskQueueSelectorForTest::kMaxHighPriorityStarvationScore +
+      TaskQueueSelectorForTest::kMaxNormalPriorityStarvationScore +
+      TaskQueueSelectorForTest::kMaxLowPriorityStarvationScore;
+
   // Run a number of highest priority tasks needed to starve low priority
   // tasks (when present).
   for (size_t num_tasks = 0;
-       num_tasks <=
-       TaskQueueSelectorForTest::NumberOfHighestPriorityToStarveLowPriority();
-       num_tasks++) {
+       num_tasks <= kNumberOfHighestPriorityToStarveLowPriority; num_tasks++) {
     ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
     // Don't remove task from queue to simulate the queue is still full.
   }
@@ -642,11 +614,14 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kNormalPriority);
 
+  constexpr const size_t kNumberOfHighAndNormalPriorityToStarveLowPriority =
+      TaskQueueSelectorForTest::kMaxNormalPriorityStarvationScore +
+      TaskQueueSelectorForTest::kMaxLowPriorityStarvationScore;
+
   // Run a number of high/normal priority tasks needed to starve low priority
   // tasks (when present).
   for (size_t num_tasks = 0;
-       num_tasks <= TaskQueueSelectorForTest::
-                        NumberOfHighAndNormalPriorityToStarveLowPriority();
+       num_tasks <= kNumberOfHighAndNormalPriorityToStarveLowPriority;
        num_tasks++) {
     ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
     // Don't remove task from queue to simulate the queue is still full.
@@ -832,6 +807,169 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
 INSTANTIATE_TEST_CASE_P(ChooseOldestWithPriorityTest,
                         ChooseOldestWithPriorityTest,
                         testing::ValuesIn(kChooseOldestWithPriorityTestCases));
+
+class SmallPriorityQueueTest : public testing::Test {
+ public:
+  TaskQueueSelectorForTest::SmallPriorityQueue queue_;
+
+  std::vector<uint8_t> PopAllIds() {
+    std::vector<uint8_t> result;
+    while (!queue_.empty()) {
+      result.push_back(queue_.min_id());
+      queue_.erase(queue_.min_id());
+    }
+    return result;
+  }
+};
+
+TEST_F(SmallPriorityQueueTest, Insert) {
+  EXPECT_TRUE(queue_.empty());
+
+  EXPECT_FALSE(queue_.IsInQueue(1));
+  queue_.insert(1000, 1);
+  EXPECT_TRUE(queue_.IsInQueue(1));
+  EXPECT_EQ(1, queue_.min_id());
+  EXPECT_FALSE(queue_.empty());
+
+  EXPECT_FALSE(queue_.IsInQueue(2));
+  queue_.insert(1002, 2);
+  EXPECT_TRUE(queue_.IsInQueue(2));
+  EXPECT_EQ(1, queue_.min_id());
+
+  EXPECT_FALSE(queue_.IsInQueue(3));
+  queue_.insert(999, 3);
+  EXPECT_TRUE(queue_.IsInQueue(3));
+  EXPECT_EQ(3, queue_.min_id());
+
+  EXPECT_FALSE(queue_.IsInQueue(4));
+  queue_.insert(1003, 4);
+  EXPECT_TRUE(queue_.IsInQueue(4));
+  EXPECT_EQ(3, queue_.min_id());
+}
+
+TEST_F(SmallPriorityQueueTest, EraseMin) {
+  queue_.insert(1000, 1);
+  queue_.insert(1002, 2);
+  queue_.insert(999, 3);
+  queue_.insert(1003, 4);
+
+  EXPECT_EQ(3, queue_.min_id());
+  EXPECT_TRUE(queue_.IsInQueue(4));
+
+  queue_.erase(4);
+  EXPECT_FALSE(queue_.IsInQueue(4));
+  EXPECT_EQ(3, queue_.min_id());
+  EXPECT_TRUE(queue_.IsInQueue(3));
+
+  queue_.erase(3);
+  EXPECT_FALSE(queue_.IsInQueue(3));
+  EXPECT_EQ(1, queue_.min_id());
+  EXPECT_TRUE(queue_.IsInQueue(2));
+
+  queue_.erase(2);
+  EXPECT_FALSE(queue_.IsInQueue(2));
+  EXPECT_EQ(1, queue_.min_id());
+  EXPECT_TRUE(queue_.IsInQueue(1));
+
+  queue_.erase(1);
+  EXPECT_FALSE(queue_.IsInQueue(1));
+  EXPECT_TRUE(queue_.empty());
+}
+
+TEST_F(SmallPriorityQueueTest, EraseMiddle) {
+  queue_.insert(100, 1);
+  queue_.insert(101, 2);
+  queue_.insert(102, 3);
+  queue_.insert(103, 4);
+  queue_.insert(104, 5);
+
+  queue_.erase(3);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 4, 5));
+}
+
+TEST_F(SmallPriorityQueueTest, EraseAllButOne) {
+  queue_.insert(100, 1);
+  queue_.insert(101, 2);
+  queue_.insert(102, 3);
+  queue_.insert(103, 4);
+  queue_.insert(104, 5);
+
+  queue_.erase(5);
+  queue_.erase(1);
+  queue_.erase(3);
+  queue_.erase(2);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(4));
+}
+
+TEST_F(SmallPriorityQueueTest, ChangeMinKeyNoOrderDifference) {
+  queue_.insert(100, 1);
+  queue_.insert(101, 2);
+  queue_.insert(102, 3);
+  queue_.insert(105, 4);
+  queue_.insert(106, 5);
+
+  queue_.ChangeMinKey(99);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 3, 4, 5));
+}
+
+TEST_F(SmallPriorityQueueTest, ChangeMinKeyToMiddle) {
+  queue_.insert(100, 1);
+  queue_.insert(101, 2);
+  queue_.insert(102, 3);
+  queue_.insert(105, 4);
+  queue_.insert(106, 5);
+
+  queue_.ChangeMinKey(103);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 1, 4, 5));
+}
+
+TEST_F(SmallPriorityQueueTest, ChangeMinKeyToLast) {
+  queue_.insert(100, 1);
+  queue_.insert(101, 2);
+  queue_.insert(102, 3);
+  queue_.insert(105, 4);
+  queue_.insert(106, 5);
+
+  queue_.ChangeMinKey(107);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 4, 5, 1));
+}
+
+TEST_F(SmallPriorityQueueTest, StableSortingOrder) {
+  queue_.insert(100, 1);
+  queue_.insert(100, 2);
+  queue_.insert(100, 3);
+  queue_.insert(100, 4);
+  queue_.insert(100, 5);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 3, 4, 5));
+}
+
+TEST_F(SmallPriorityQueueTest, StableSortingOrderRemoveMiddle) {
+  queue_.insert(100, 1);
+  queue_.insert(100, 2);
+  queue_.insert(100, 3);
+  queue_.insert(100, 4);
+  queue_.insert(100, 5);
+  queue_.erase(3);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 4, 5));
+}
+
+TEST_F(SmallPriorityQueueTest, StableSortingOrderChangeMinToLast) {
+  queue_.insert(100, 1);
+  queue_.insert(100, 2);
+  queue_.insert(100, 3);
+  queue_.insert(100, 4);
+  queue_.insert(100, 5);
+  queue_.ChangeMinKey(101);
+
+  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 4, 5, 1));
+}
 
 }  // namespace task_queue_selector_unittest
 }  // namespace internal
