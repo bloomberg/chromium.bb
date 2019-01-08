@@ -79,15 +79,14 @@ class SamplingState {
 // easy to do there is no reason to pay the extra cost.
 SamplingState sampling_state;
 
-// Returns the global allocator singleton used by the shims.
-GuardedPageAllocator& GetGpa() {
-  static base::NoDestructor<GuardedPageAllocator> gpa;
-  return *gpa;
-}
+// The global allocator singleton used by the shims. Implemented as a global
+// pointer instead of a function-local static to avoid initialization checks
+// for every access.
+GuardedPageAllocator* gpa = nullptr;
 
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
   if (UNLIKELY(sampling_state.Sample()))
-    if (void* allocation = GetGpa().Allocate(size))
+    if (void* allocation = gpa->Allocate(size))
       return allocation;
 
   return self->next->alloc_function(self->next, size, context);
@@ -104,7 +103,7 @@ void* AllocZeroInitializedFn(const AllocatorDispatch* self,
       return nullptr;
 
     size_t total_size = checked_total.ValueOrDie();
-    if (void* allocation = GetGpa().Allocate(total_size)) {
+    if (void* allocation = gpa->Allocate(total_size)) {
       memset(allocation, 0, total_size);
       return allocation;
     }
@@ -119,7 +118,7 @@ void* AllocAlignedFn(const AllocatorDispatch* self,
                      size_t size,
                      void* context) {
   if (UNLIKELY(sampling_state.Sample()))
-    if (void* allocation = GetGpa().Allocate(size, alignment))
+    if (void* allocation = gpa->Allocate(size, alignment))
       return allocation;
 
   return self->next->alloc_aligned_function(self->next, alignment, size,
@@ -133,29 +132,28 @@ void* ReallocFn(const AllocatorDispatch* self,
   if (UNLIKELY(!address))
     return AllocFn(self, size, context);
 
-  if (LIKELY(!GetGpa().PointerIsMine(address)))
+  if (LIKELY(!gpa->PointerIsMine(address)))
     return self->next->realloc_function(self->next, address, size, context);
 
   if (!size) {
-    GetGpa().Deallocate(address);
+    gpa->Deallocate(address);
     return nullptr;
   }
 
-  void* new_alloc = GetGpa().Allocate(size);
+  void* new_alloc = gpa->Allocate(size);
   if (!new_alloc)
     new_alloc = self->next->alloc_function(self->next, size, context);
   if (!new_alloc)
     return nullptr;
 
-  memcpy(new_alloc, address,
-         std::min(size, GetGpa().GetRequestedSize(address)));
-  GetGpa().Deallocate(address);
+  memcpy(new_alloc, address, std::min(size, gpa->GetRequestedSize(address)));
+  gpa->Deallocate(address);
   return new_alloc;
 }
 
 void FreeFn(const AllocatorDispatch* self, void* address, void* context) {
-  if (UNLIKELY(GetGpa().PointerIsMine(address)))
-    return GetGpa().Deallocate(address);
+  if (UNLIKELY(gpa->PointerIsMine(address)))
+    return gpa->Deallocate(address);
 
   self->next->free_function(self->next, address, context);
 }
@@ -163,8 +161,8 @@ void FreeFn(const AllocatorDispatch* self, void* address, void* context) {
 size_t GetSizeEstimateFn(const AllocatorDispatch* self,
                          void* address,
                          void* context) {
-  if (UNLIKELY(GetGpa().PointerIsMine(address)))
-    return GetGpa().GetRequestedSize(address);
+  if (UNLIKELY(gpa->PointerIsMine(address)))
+    return gpa->GetRequestedSize(address);
 
   return self->next->get_size_estimate_function(self->next, address, context);
 }
@@ -198,11 +196,11 @@ void FreeDefiniteSizeFn(const AllocatorDispatch* self,
                         void* address,
                         size_t size,
                         void* context) {
-  if (UNLIKELY(GetGpa().PointerIsMine(address))) {
+  if (UNLIKELY(gpa->PointerIsMine(address))) {
     // TODO(vtsyrklevich): Perform this check in GuardedPageAllocator and report
     // failed checks using the same pipeline.
-    CHECK_EQ(size, GetGpa().GetRequestedSize(address));
-    GetGpa().Deallocate(address);
+    CHECK_EQ(size, gpa->GetRequestedSize(address));
+    gpa->Deallocate(address);
     return;
   }
 
@@ -214,7 +212,7 @@ static void* AlignedMallocFn(const AllocatorDispatch* self,
                              size_t alignment,
                              void* context) {
   if (UNLIKELY(sampling_state.Sample()))
-    if (void* allocation = GetGpa().Allocate(size, alignment))
+    if (void* allocation = gpa->Allocate(size, alignment))
       return allocation;
 
   return self->next->aligned_malloc_function(self->next, size, alignment,
@@ -229,33 +227,32 @@ static void* AlignedReallocFn(const AllocatorDispatch* self,
   if (UNLIKELY(!address))
     return AlignedMallocFn(self, size, alignment, context);
 
-  if (LIKELY(!GetGpa().PointerIsMine(address)))
+  if (LIKELY(!gpa->PointerIsMine(address)))
     return self->next->aligned_realloc_function(self->next, address, size,
                                                 alignment, context);
 
   if (!size) {
-    GetGpa().Deallocate(address);
+    gpa->Deallocate(address);
     return nullptr;
   }
 
-  void* new_alloc = GetGpa().Allocate(size, alignment);
+  void* new_alloc = gpa->Allocate(size, alignment);
   if (!new_alloc)
     new_alloc = self->next->aligned_malloc_function(self->next, size, alignment,
                                                     context);
   if (!new_alloc)
     return nullptr;
 
-  memcpy(new_alloc, address,
-         std::min(size, GetGpa().GetRequestedSize(address)));
-  GetGpa().Deallocate(address);
+  memcpy(new_alloc, address, std::min(size, gpa->GetRequestedSize(address)));
+  gpa->Deallocate(address);
   return new_alloc;
 }
 
 static void AlignedFreeFn(const AllocatorDispatch* self,
                           void* address,
                           void* context) {
-  if (UNLIKELY(GetGpa().PointerIsMine(address)))
-    return GetGpa().Deallocate(address);
+  if (UNLIKELY(gpa->PointerIsMine(address)))
+    return gpa->Deallocate(address);
 
   self->next->aligned_free_function(self->next, address, context);
 }
@@ -280,20 +277,21 @@ AllocatorDispatch g_allocator_dispatch = {
 
 // We expose the allocator singleton for unit tests.
 GWP_ASAN_EXPORT GuardedPageAllocator& GetGpaForTesting() {
-  return GetGpa();
+  return *gpa;
 }
 
 void InstallAllocatorHooks(size_t max_allocated_pages,
                            size_t total_pages,
                            size_t sampling_frequency) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  GetGpa().Init(max_allocated_pages, total_pages);
-  RegisterAllocatorAddress(GetGpa().GetCrashKeyAddress());
+  gpa = new GuardedPageAllocator();
+  gpa->Init(max_allocated_pages, total_pages);
+  RegisterAllocatorAddress(gpa->GetCrashKeyAddress());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
   ignore_result(g_allocator_dispatch);
-  ignore_result(&GetGpa);
+  ignore_result(gpa);
   DLOG(WARNING) << "base::allocator shims are unavailable for GWP-ASan.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
