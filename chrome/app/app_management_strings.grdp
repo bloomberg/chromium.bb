@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <grit-part>
+  <message name="IDS_APP_MANAGEMENT_APP_LIST_PREVIEW" desc="A label that summarizes a list of apps by naming up to 3 apps, finishing with 'X more apps' for the rest.">
+    {COUNT, plural,
+     =0 {None}
+     =1 {<ph name="APP_1">$1<ex>Gmail</ex></ph>}
+     =2 {<ph name="APP_1">$1<ex>Gmail</ex></ph> and <ph name="APP_2">$2<ex>Youtube</ex></ph>}
+     =3 {<ph name="APP_1">$1<ex>Gmail</ex></ph>, <ph name="APP_2">$2<ex>Youtube</ex></ph>, and <ph name="APP_3">$3<ex>Calendar</ex></ph>}
+     =4 {<ph name="APP_1">$1<ex>Gmail</ex></ph>, <ph name="APP_2">$2<ex>Youtube</ex></ph>, <ph name="APP_3">$3<ex>Calendar</ex></ph>, and 1 other app}
+     other {<ph name="APP_1">$1<ex>Gmail</ex></ph>, <ph name="APP_2">$2<ex>Youtube</ex></ph>, <ph name="APP_3">$3<ex>Calendar</ex></ph>, and <ph name="EXTRA_APPS">$4<ex>4</ex></ph> other apps}}
+  </message>
   <message name="IDS_APP_MANAGEMENT_APP_LIST_TITLE" desc="Title of app list card on main app management page.">
     Recently opened apps
   </message>

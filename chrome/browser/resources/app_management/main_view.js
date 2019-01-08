@@ -50,16 +50,17 @@ Polymer({
      * List of apps with the notification permission.
      * @private {Array<appManagement.mojom.App>}
      */
-     notificationApps_: {
+    notificationApps_: {
       type: Array,
       value: function() {
         const apps = [];
         for (let i = 0; i < NUMBER_OF_APPS_DISPLAYED_DEFAULT; i++) {
-          apps.push(
-          app_management.FakePageHandler.createApp('Notified' + i));
+          apps.push(app_management.FakePageHandler.createApp(
+              'Notified' + i, {title: 'App' + i}));
         }
         return apps;
       },
+      observer: 'getNotificationSublabel_',
     },
   },
 
@@ -112,12 +113,53 @@ Polymer({
   },
 
   /**
-   * @param {Array<appManagement.mojom.App>} notificationApps
-   * @return {string}
+   * Show a string with apps' |title|(s) previewed into a label, with each
+   * title ellipsised if too long.
    * @private
    */
-   getNotificationSublabel_: function(notificationApps){
-    return loadTimeData.getStringF(
-        'notificationSublabel', notificationApps.length);
-   }
+  getNotificationSublabel_: async function() {
+    const /** @type {string} */ label = await cr.sendWithPromise(
+        'getPluralString', 'appListPreview', this.notificationApps_.length);
+
+    const substitutions = [];
+    for (let i = 0;
+         i < APP_LIST_PREVIEW_APP_TITLES && i < this.notificationApps_.length;
+         i++) {
+      substitutions.push(this.notificationApps_[i].title);
+    }
+
+    // Add X more apps if the length is more than APP_LIST_PREVIEW_APP_TITLES.
+    if (this.notificationApps_.length >= APP_LIST_PREVIEW_APP_TITLES + 1) {
+      substitutions.push(
+          this.notificationApps_.length - APP_LIST_PREVIEW_APP_TITLES);
+    }
+    // Only APP_LIST_PREVIEW_APP_TITLES of apps' titles get ellipsised
+    // if too long. the element after that is "X other apps"
+    const placeholder = APP_LIST_PREVIEW_APP_TITLES + 1;
+    const pieces =
+        loadTimeData.getSubstitutedStringPieces(label, ...substitutions)
+            .map(function(p) {
+              // Make the titles of app collapsible but make the number in the
+              // "X other app(s)" part non-collapsible.
+              p.collapsible = !!p.arg && p.arg != '$' + placeholder;
+              return p;
+            });
+    // Create <span> for each app title previewed,
+    // making certain text fragments collapsible.
+    const textContainer = this.$['notifications-sublabel'];
+    textContainer.textContent = '';
+    for (const p of pieces) {
+      if (p.value.length == 0) {
+        return;
+      }
+
+      const span = document.createElement('span');
+      span.textContent = p.value;
+      if (p.collapsible) {
+        span.classList.add('collapsible');
+      }
+
+      textContainer.appendChild(span);
+    }
+  },
 });

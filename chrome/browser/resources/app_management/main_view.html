@@ -37,6 +37,22 @@
       .permission-row-sublabel {
         display: flex;
         flex-direction: column;
+        overflow: hidden;
+      }
+
+      .collapsible {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #notifications-sublabel {
+        display: flex;
+        overflow: hidden;
+      }
+
+      #notifications-sublabel > span {
+        white-space: pre;
       }
     </style>
 
@@ -64,19 +80,17 @@
     </div>
 
     <div class="card-container">
-      <div class="permission-row">
+      <span class="permission-row">
         <div class="permission-row-sublabel">
           <div class="header-text">
               $i18n{notifications}
           </div>
-          <div class="secondary-text">
-              [[getNotificationSublabel_(notificationApps_)]]
-          </div>
+          <div id="notifications-sublabel" class="secondary-text"></div>
         </div>
         <paper-icon-button-light class="subpage-arrow" actionable>
           <button></button>
         </paper-icon-button-light>
-      </div>
+      </span>
     </div>
   </template>
   <script src="main_view.js"></script>
