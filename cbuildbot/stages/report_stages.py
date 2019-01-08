@@ -416,6 +416,10 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     config = self._run.config
     build_root = self._build_root
 
+    # Workspace builders use a different buildroot for overlays.
+    if config.workspace_branch and self._run.options.workspace:
+      build_root = self._run.options.workspace
+
     logging.info('Build re-executions have finished. Chromite source '
                  'will not be modified for remainder of run.')
     logging.info("config['important']=%s", config['important'])
