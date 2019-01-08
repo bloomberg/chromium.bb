@@ -13,6 +13,8 @@ module.exports = {
   },
   'rules': {
     // Enabled checks.
+    'brace-style': ['error', '1tbs'],
+    'curly': ['error', 'multi-line', 'consistent'],
     'no-extra-semi': 'error',
     'no-new-wrappers': 'error',
     'no-restricted-properties': [
