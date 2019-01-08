@@ -35,7 +35,14 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
   state_.total_pages = total_pages;
 
   state_.page_size = base::GetPageSize();
-  CHECK(MapPages());
+
+  void* region = MapRegion();
+  if (!region)
+    PLOG(FATAL) << "Failed to reserve allocator region";
+
+  state_.pages_base_addr = reinterpret_cast<uintptr_t>(region);
+  state_.first_page_addr = state_.pages_base_addr + state_.page_size;
+  state_.pages_end_addr = state_.pages_base_addr + RegionSize();
 
   {
     // Obtain this lock exclusively to satisfy the thread-safety annotations,
@@ -52,7 +59,7 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
 
 GuardedPageAllocator::~GuardedPageAllocator() {
   if (state_.total_pages) {
-    UnmapPages();
+    UnmapRegion();
     DeallocateStackTraces();
   }
 }
@@ -119,6 +126,10 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
   return state_.data[slot].alloc_size;
+}
+
+size_t GuardedPageAllocator::RegionSize() const {
+  return (2 * state_.total_pages + 1) * state_.page_size;
 }
 
 size_t GuardedPageAllocator::ReserveSlot() {
