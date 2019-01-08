@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/magnifier/magnifier_scale_utils.h"
+#include "ash/magnifier/magnifier_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-namespace magnifier_scale_utils {
+namespace magnifier_utils {
 namespace {
 
 TEST(MagnifierScaleUtilsTest, AdjustScaleFromScroll) {
@@ -64,5 +64,5 @@ TEST(MagnifierScaleUtilsTest, GetNextMagnifierScaleValue) {
 }
 
 }  // namespace
-}  // namespace magnifier_scale_utils
+}  // namespace magnifier_utils
 }  // namespace ash

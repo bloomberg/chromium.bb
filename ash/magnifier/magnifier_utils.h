@@ -2,13 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MAGNIFIER_MAGNIFIER_SCALE_UTILS_H_
-#define ASH_MAGNIFIER_MAGNIFIER_SCALE_UTILS_H_
+#ifndef ASH_MAGNIFIER_MAGNIFIER_UTILS_H_
+#define ASH_MAGNIFIER_MAGNIFIER_UTILS_H_
 
 #include "ash/ash_export.h"
 
+namespace aura {
+class Window;
+}
+
+namespace ui {
+class InputMethod;
+}
+
 namespace ash {
-namespace magnifier_scale_utils {
+namespace magnifier_utils {
 
 // Factor of magnification scale. For example, when this value is 1.189, scale
 // value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
@@ -43,7 +51,10 @@ float ASH_EXPORT GetNextMagnifierScaleValue(int delta_index,
                                             float min_scale,
                                             float max_scale);
 
-}  // namespace magnifier_scale_utils
+// Returns the active InputMethod, or that associated with |root_window|.
+ui::InputMethod* GetInputMethod(aura::Window* root_window);
+
+}  // namespace magnifier_utils
 }  // namespace ash
 
-#endif  // ASH_MAGNIFIER_MAGNIFIER_SCALE_UTILS_H_
+#endif  // ASH_MAGNIFIER_MAGNIFIER_UTILS_H_
