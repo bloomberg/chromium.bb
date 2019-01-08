@@ -306,8 +306,13 @@ public class OmniboxTestUtils {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return (doesUrlBarHaveFocus(urlBar) == active)
-                        && (isKeyboardActiveForView(urlBar) == active);
+                if (doesUrlBarHaveFocus(urlBar) != active) {
+                    updateFailureReason("URL Bar did not have expected focus: " + active);
+                    return false;
+                }
+                updateFailureReason(
+                        "The keyboard did not reach the expected active state: " + active);
+                return isKeyboardActiveForView(urlBar) == active;
             }
         });
     }

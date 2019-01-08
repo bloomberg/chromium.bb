@@ -92,13 +92,12 @@ public class UrlBarTest {
     }
 
     private void toggleFocusAndIgnoreImeOperations(final UrlBar urlBar, final boolean gainFocus) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                OmniboxTestUtils.toggleUrlBarFocus(urlBar, gainFocus);
-                if (gainFocus) startIgnoringImeUntilRestart(urlBar);
-            }
-        });
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, gainFocus);
+        if (gainFocus) {
+            ThreadUtils.runOnUiThreadBlocking(() -> startIgnoringImeUntilRestart(urlBar));
+            CriteriaHelper.pollUiThread(() -> urlBar.getInputConnection() != null,
+                    "Input connection never initialized for URL bar.");
+        }
     }
 
     private void runInputConnectionMethodOnUiThreadBlocking(final Runnable runnable) {
