@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_properties.h"
 
 namespace ash {
 
@@ -63,6 +64,13 @@ void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetAccessibleName());
 }
 
+void ActionableView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  SetProperty(
+      views::kHighlightPathKey,
+      TrayPopupUtils::CreateHighlightPath(ink_drop_style_, this).release());
+  Button::OnBoundsChanged(previous_bounds);
+}
+
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {
   return TrayPopupUtils::CreateInkDrop(this);
 }
@@ -76,10 +84,6 @@ std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()
 std::unique_ptr<views::InkDropHighlight>
 ActionableView::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(ink_drop_style_, this);
-}
-
-std::unique_ptr<views::InkDropMask> ActionableView::CreateInkDropMask() const {
-  return TrayPopupUtils::CreateInkDropMask(ink_drop_style_, this);
 }
 
 void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {

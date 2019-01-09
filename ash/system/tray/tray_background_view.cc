@@ -463,14 +463,8 @@ void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   path->addRoundRect(gfx::RectToSkRect(GetBackgroundBounds()), border_radius,
                      border_radius);
   SetProperty(views::kHighlightPathKey, path.release());
-  ActionableView::OnBoundsChanged(previous_bounds);
-}
-
-std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
-    const {
-  // Bypass ActionableView to use the default ink-drop mask created from the
-  // highlight path.
-  return Button::CreateInkDropMask();
+  // Bypass ActionableView::OnBoundsChanged which sets its own highlight path.
+  Button::OnBoundsChanged(previous_bounds);
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {
