@@ -3310,22 +3310,14 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
 }  // namespace
 
-#if defined(OS_WIN)
-// https://crbug.com/882458
-#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
-  DISABLED_CursorUpdateReceivedFromCrossSiteIframe
-#else
-#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
-  CursorUpdateReceivedFromCrossSiteIframe
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
+                       CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
+                       CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
