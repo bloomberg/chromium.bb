@@ -47,8 +47,7 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   ~SurfaceTextureGLOwner() override;
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
-  GLuint texture_id_;
-  // The context and surface that were used to create |texture_id_|.
+  // The context and surface that were used to create |surface_texture_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   // When SetReleaseTimeToNow() was last called. i.e., when the last
