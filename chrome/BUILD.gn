@@ -1582,6 +1582,7 @@ group("extra_resources") {
       "//chrome/browser/resources/chromeos/chromevox",
       "//chrome/browser/resources/chromeos/select_to_speak:build",
       "//chrome/browser/resources/chromeos/switch_access:build",
+      "//third_party/ink:ink_resources",
     ]
   }
 

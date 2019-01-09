@@ -377,9 +377,11 @@
     "includes": [25600],
     "structures": [25700],
   },
-
+  "third_party/ink/ink_resources.grd": {
+    "includes": [25900],
+  },
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
-    "messages": [25900],
+    "messages": [25910],
   },
 
   "ui/base/test/ui_base_test_resources.grd": {
