@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
-#include "third_party/blink/renderer/core/fetch/buffering_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
@@ -535,22 +534,12 @@ void FetchManager::Loader::DidReceiveResponse(
   FetchResponseData* response_data = nullptr;
   SRIBytesConsumer* sri_consumer = nullptr;
   if (fetch_request_data_->Integrity().IsEmpty()) {
-    BytesConsumer* bytes_consumer =
-        MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-            GetExecutionContext(), std::move(handle));
-    if (!response.CacheControlContainsNoStore()) {
-      // BufferingBytesConsumer reads chunks from |bytes_consumer| as soon as
-      // they get available to relieve backpressure.
-      //
-      // https://fetch.spec.whatwg.org/#fetching
-      // The user agent should ignore the suspension request if the ongoing
-      // fetch is updating the response in the HTTP cache for the request.
-      bytes_consumer =
-          MakeGarbageCollected<BufferingBytesConsumer>(bytes_consumer);
-    }
     response_data = FetchResponseData::CreateWithBuffer(
-        MakeGarbageCollected<BodyStreamBuffer>(script_state, bytes_consumer,
-                                               signal_));
+        MakeGarbageCollected<BodyStreamBuffer>(
+            script_state,
+            MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
+                ExecutionContext::From(script_state), std::move(handle)),
+            signal_));
   } else {
     sri_consumer = MakeGarbageCollected<SRIBytesConsumer>();
     response_data = FetchResponseData::CreateWithBuffer(

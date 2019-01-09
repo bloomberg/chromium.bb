@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/renderer/fixed_received_data.h"
 
 namespace content {
 
@@ -265,8 +266,10 @@ class SharedMemoryDataConsumerHandle::Context final
 };
 
 SharedMemoryDataConsumerHandle::Writer::Writer(
-    const scoped_refptr<Context>& context)
-    : context_(context) {}
+    const scoped_refptr<Context>& context,
+    BackpressureMode mode)
+    : context_(context), mode_(mode) {
+}
 
 SharedMemoryDataConsumerHandle::Writer::~Writer() {
   Close();
@@ -290,9 +293,14 @@ void SharedMemoryDataConsumerHandle::Writer::AddData(
     }
 
     needs_notification = context_->IsEmpty();
-    // Transfers |data| in order to apply backpressure.
-    context_->Push(
-        std::make_unique<DelegateThreadSafeReceivedData>(std::move(data)));
+    std::unique_ptr<RequestPeer::ThreadSafeReceivedData> data_to_pass;
+    if (mode_ == kApplyBackpressure) {
+      data_to_pass =
+          std::make_unique<DelegateThreadSafeReceivedData>(std::move(data));
+    } else {
+      data_to_pass = std::make_unique<FixedReceivedData>(data.get());
+    }
+    context_->Push(std::move(data_to_pass));
   }
 
   if (needs_notification) {
@@ -432,14 +440,16 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::EndRead(size_t read_size) {
 }
 
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
+    BackpressureMode mode,
     std::unique_ptr<Writer>* writer)
-    : SharedMemoryDataConsumerHandle(base::OnceClosure(), writer) {}
+    : SharedMemoryDataConsumerHandle(mode, base::OnceClosure(), writer) {}
 
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
+    BackpressureMode mode,
     base::OnceClosure on_reader_detached,
     std::unique_ptr<Writer>* writer)
     : context_(new Context(std::move(on_reader_detached))) {
-  writer->reset(new Writer(context_));
+  writer->reset(new Writer(context_, mode));
 }
 
 SharedMemoryDataConsumerHandle::~SharedMemoryDataConsumerHandle() {

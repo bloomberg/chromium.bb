@@ -841,8 +841,15 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
   if (use_stream_on_response_) {
+    SharedMemoryDataConsumerHandle::BackpressureMode mode =
+        SharedMemoryDataConsumerHandle::kDoNotApplyBackpressure;
+    if (info.headers &&
+        info.headers->HasHeaderValue("Cache-Control", "no-store")) {
+      mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
+    }
+
     auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
-        base::BindOnce(&Context::CancelBodyStreaming, this),
+        mode, base::BindOnce(&Context::CancelBodyStreaming, this),
         &body_stream_writer_);
 
     // Here |body_stream_writer_| has an indirect reference to |this| and that
