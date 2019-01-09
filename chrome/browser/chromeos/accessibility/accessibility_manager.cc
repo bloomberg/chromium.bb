@@ -83,7 +83,6 @@
 #include "mash/public/mojom/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -1330,13 +1329,6 @@ void AccessibilityManager::PostLoadChromeVox() {
         chromevox_panel_->GetWidget(),
         base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
                        base::Unretained(this))));
-  }
-
-  // TODO(beccahughes): Remove once we have moved to a feature.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          media_session::switches::kEnableAudioFocus)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
   }
 
   audio_focus_manager_ptr_->SetEnforcementMode(

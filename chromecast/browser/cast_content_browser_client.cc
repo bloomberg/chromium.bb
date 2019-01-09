@@ -190,20 +190,19 @@ CastContentBrowserClient::CastContentBrowserClient(
     : cast_browser_main_parts_(nullptr),
       url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
-  // TODO(awolter): Remove this once the feature is on by default.
-  const std::string extra_enable_features =
+  cast_feature_list_creator_->SetExtraEnableFeatures({
+    ::media::kInternalMediaSession,
 #if defined(OS_ANDROID)
-      features::kAudioServiceAudioStreams.name;
-#else
-      std::string();
+        // TODO(awolter): Remove this once the feature is on by default.
+        features::kAudioServiceAudioStreams,
 #endif
-  cast_feature_list_creator_->SetExtraEnableFeatures(extra_enable_features);
+  });
+
   // TODO(mdellaquila): This feature has to be disabled because it causes
   // significantly higher power consumption while flinging media files.
   // Remove this after fixing the bug: b/111363899
-  const std::string extra_disable_features =
-      ::media::kUseModernMediaControls.name;
-  cast_feature_list_creator_->SetExtraDisableFeatures(extra_disable_features);
+  cast_feature_list_creator_->SetExtraDisableFeatures(
+      {::media::kUseModernMediaControls});
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {

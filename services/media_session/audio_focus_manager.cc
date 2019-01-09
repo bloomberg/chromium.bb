@@ -12,7 +12,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace media_session {
@@ -20,8 +20,12 @@ namespace media_session {
 namespace {
 
 mojom::EnforcementMode GetDefaultEnforcementMode() {
-  if (IsAudioFocusEnabled() && IsAudioFocusEnforcementEnabled())
-    return mojom::EnforcementMode::kSingleGroup;
+  if (base::FeatureList::IsEnabled(features::kAudioFocusEnforcement)) {
+    if (base::FeatureList::IsEnabled(features::kAudioFocusSessionGrouping))
+      return mojom::EnforcementMode::kSingleGroup;
+    return mojom::EnforcementMode::kSingleSession;
+  }
+
   return mojom::EnforcementMode::kNone;
 }
 

@@ -60,7 +60,7 @@
 #include "services/device/device_service.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/media_session/media_session_service.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
@@ -618,7 +618,8 @@ ServiceManagerContext::ServiceManagerContext(
                            service_manager_thread_task_runner_,
                            base::BindRepeating(&metrics::CreateMetricsService));
 
-  if (media_session::IsMediaSessionEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
     RegisterInProcessService(packaged_services_connection_.get(),
                              media_session::mojom::kServiceName,
                              base::SequencedTaskRunnerHandle::Get(),

@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -230,7 +229,6 @@ class AudioFocusManagerTest
     audio_focus_ptr_.FlushForTesting();
   }
 
-  base::test::ScopedCommandLine command_line_;
   base::test::ScopedTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 

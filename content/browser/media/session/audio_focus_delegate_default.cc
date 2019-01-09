@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -29,15 +29,12 @@ base::UnguessableToken GetAudioFocusGroupId(MediaSessionImpl* session) {
   if (session->audio_focus_group_id() != base::UnguessableToken::Null())
     return session->audio_focus_group_id();
 
-  // If it is enabled then use a shared audio focus group id for the whole
-  // browser. This will mean that tabs will share audio focus.
-  if (base::FeatureList::IsEnabled(media::kUseGroupedBrowserAudioFocus)) {
-    static const base::NoDestructor<base::UnguessableToken> token(
-        base::UnguessableToken::Create());
-    return *token;
-  }
-
-  return base::UnguessableToken::Create();
+  // Use a shared audio focus group id for the whole browser. This will means
+  // that tabs will share audio focus if the enforcement mode is set to
+  // kSingleGroup.
+  static const base::NoDestructor<base::UnguessableToken> token(
+      base::UnguessableToken::Create());
+  return *token;
 }
 
 // AudioFocusDelegateDefault is the default implementation of
@@ -93,7 +90,8 @@ AudioFocusDelegate::AudioFocusResult
 AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!media_session::IsAudioFocusEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
     audio_focus_type_ = audio_focus_type;
     return AudioFocusDelegate::AudioFocusResult::kSuccess;
   }
@@ -163,8 +161,10 @@ void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type) {
 void AudioFocusDelegateDefault::EnsureServiceConnection() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!media_session::IsAudioFocusEnabled())
+  if (!base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
     return;
+  }
 
   if (audio_focus_ptr_.is_bound() && !audio_focus_ptr_.encountered_error())
     return;

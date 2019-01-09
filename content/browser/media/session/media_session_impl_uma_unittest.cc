@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/media/session/media_session_player_observer.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
@@ -70,8 +71,17 @@ class MediaSessionImplUmaTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
+
+    test_service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
+
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
     StartPlayer();
+  }
+
+  void TearDown() override {
+    test_service_manager_context_.reset();
+    RenderViewHostImplTestHarness::TearDown();
   }
 
  protected:
@@ -91,6 +101,10 @@ class MediaSessionImplUmaTest : public RenderViewHostImplTestHarness {
 
   std::unique_ptr<MockMediaSessionPlayerObserver> player_;
   base::HistogramTester histogram_tester_;
+
+ private:
+  std::unique_ptr<content::TestServiceManagerContext>
+      test_service_manager_context_;
 };
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUISuspend) {
