@@ -292,11 +292,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       const base::TimeTicks& start_time,
       int32_t* kbps) const WARN_UNUSED_RESULT;
 
-  // Returns the list of intervals at which the accuracy of network quality
-  // prediction should be recorded. Virtualized for testing.
-  virtual const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
-      const;
-
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
@@ -532,10 +527,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Tick clock used by the network quality estimator.
   const base::TickClock* tick_clock_;
-
-  // Intervals after the main frame request arrives at which accuracy of network
-  // quality prediction is recorded.
-  std::vector<base::TimeDelta> accuracy_recording_intervals_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;

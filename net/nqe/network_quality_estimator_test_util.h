@@ -187,12 +187,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     end_to_end_rtt_observation_count_at_last_ect_computation_ = count;
   }
 
-  void SetAccuracyRecordingIntervals(
-      const std::vector<base::TimeDelta>& accuracy_recording_intervals);
-
-  const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
-      const override;
-
   // Returns the number of entries in |net_log_| that have type set to |type|.
   int GetEntriesCount(NetLogEventType type) const;
 
@@ -259,9 +253,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   NetworkChangeNotifier::ConnectionType current_network_type_;
   std::string current_network_id_;
-
-  bool accuracy_recording_intervals_set_;
-  std::vector<base::TimeDelta> accuracy_recording_intervals_;
 
   // If set, GetRecentHttpRTT() would return one of the set values.
   // |start_time_null_http_rtt_| is returned if the |start_time| is null.
