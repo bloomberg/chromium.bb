@@ -81,96 +81,6 @@ bool RequestSchemeIsHTTPOrHTTPS(const URLRequest& request) {
   return request.url().is_valid() && request.url().SchemeIsHTTPOrHTTPS();
 }
 
-// Returns the suffix of the histogram that should be used for recording the
-// accuracy when the observed RTT is |observed_rtt|. The width of the intervals
-// are in exponentially increasing order.
-const char* GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
-  const int32_t rtt_milliseconds = observed_rtt.InMilliseconds();
-  DCHECK_GE(rtt_milliseconds, 0);
-
-  // The values here should remain synchronized with the suffixes specified in
-  // histograms.xml.
-  static const char* const kSuffixes[] = {
-      "0_20",     "20_60",     "60_140",    "140_300",      "300_620",
-      "620_1260", "1260_2540", "2540_5100", "5100_Infinity"};
-  for (size_t i = 0; i < base::size(kSuffixes) - 1; ++i) {
-    if (rtt_milliseconds <= (20 * (2 << i) - 20))
-      return kSuffixes[i];
-  }
-  return kSuffixes[base::size(kSuffixes) - 1];
-}
-
-// Returns the suffix of the histogram that should be used for recording the
-// accuracy when the observed throughput in kilobits per second is
-// |observed_throughput_kbps|. The width of the intervals are in exponentially
-// increasing order.
-const char* GetHistogramSuffixObservedThroughput(
-    const int32_t& observed_throughput_kbps) {
-  DCHECK_GE(observed_throughput_kbps, 0);
-
-  // The values here should remain synchronized with the suffixes specified in
-  // histograms.xml.
-  static const char* const kSuffixes[] = {
-      "0_20",     "20_60",     "60_140",    "140_300",      "300_620",
-      "620_1260", "1260_2540", "2540_5100", "5100_Infinity"};
-  for (size_t i = 0; i < base::size(kSuffixes) - 1; ++i) {
-    if (observed_throughput_kbps <= (20 * (2 << i) - 20))
-      return kSuffixes[i];
-  }
-  return kSuffixes[base::size(kSuffixes) - 1];
-}
-
-void RecordRTTAccuracy(base::StringPiece prefix,
-                       int32_t metric,
-                       base::TimeDelta measuring_duration,
-                       base::TimeDelta observed_rtt) {
-  const std::string histogram_name =
-      base::StringPrintf("%s.EstimatedObservedDiff.%s.%d.%s", prefix.data(),
-                         metric >= 0 ? "Positive" : "Negative",
-                         static_cast<int32_t>(measuring_duration.InSeconds()),
-                         GetHistogramSuffixObservedRTT(observed_rtt));
-
-  base::HistogramBase* histogram = base::Histogram::FactoryGet(
-      histogram_name, 1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(std::abs(metric));
-}
-
-void RecordThroughputAccuracy(const char* prefix,
-                              int32_t metric,
-                              base::TimeDelta measuring_duration,
-                              int32_t observed_throughput_kbps) {
-  const std::string histogram_name = base::StringPrintf(
-      "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
-      metric >= 0 ? "Positive" : "Negative",
-      static_cast<int32_t>(measuring_duration.InSeconds()),
-      GetHistogramSuffixObservedThroughput(observed_throughput_kbps));
-
-  base::HistogramBase* histogram = base::Histogram::FactoryGet(
-      histogram_name, 1, 1000 * 1000 /* 1 Gbps */, 50 /* Number of buckets */,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(std::abs(metric));
-}
-
-void RecordEffectiveConnectionTypeAccuracy(
-    const char* prefix,
-    int32_t metric,
-    base::TimeDelta measuring_duration,
-    EffectiveConnectionType observed_effective_connection_type) {
-  const std::string histogram_name =
-      base::StringPrintf("%s.EstimatedObservedDiff.%s.%d.%s", prefix,
-                         metric >= 0 ? "Positive" : "Negative",
-                         static_cast<int32_t>(measuring_duration.InSeconds()),
-                         DeprecatedGetNameForEffectiveConnectionType(
-                             observed_effective_connection_type));
-
-  base::HistogramBase* histogram = base::Histogram::FactoryGet(
-      histogram_name, 0, EFFECTIVE_CONNECTION_TYPE_LAST,
-      EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(std::abs(metric));
-}
-
 nqe::internal::NetworkID DoGetCurrentNetworkID() {
   // It is possible that the connection type changed between when
   // GetConnectionType() was called and when the API to determine the
@@ -297,11 +207,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                  base::Unretained(this)),
       tick_clock_));
 
-  // Record accuracy after a 15 second interval. The values used here must
-  // remain in sync with the suffixes specified in
-  // tools/metrics/histograms/histograms.xml.
-  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(15));
-
   GatherEstimatesForNextConnectionType();
 }
 
@@ -350,11 +255,6 @@ NetworkQualityEstimator::~NetworkQualityEstimator() {
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-const std::vector<base::TimeDelta>&
-NetworkQualityEstimator::GetAccuracyRecordingIntervals() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return accuracy_recording_intervals_;
-}
 
 void NetworkQualityEstimator::NotifyStartTransaction(
     const URLRequest& request) {
@@ -373,20 +273,6 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     ComputeEffectiveConnectionType();
     effective_connection_type_at_last_main_frame_ = effective_connection_type_;
     estimated_quality_at_last_main_frame_ = network_quality_;
-
-    // Post the tasks which will run in the future and record the estimation
-    // accuracy based on the observations received between now and the time of
-    // task execution. Posting the task at different intervals makes it
-    // possible to measure the accuracy by comparing the estimate with the
-    // observations received over intervals of varying durations.
-    for (const base::TimeDelta& measuring_delay :
-         GetAccuracyRecordingIntervals()) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&NetworkQualityEstimator::RecordAccuracyAfterMainFrame,
-                     weak_ptr_factory_.GetWeakPtr(), measuring_delay),
-          measuring_delay);
-    }
   } else {
     MaybeComputeEffectiveConnectionType();
   }
@@ -500,93 +386,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
 void NetworkQualityEstimator::NotifyBytesRead(const URLRequest& request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   throughput_analyzer_->NotifyBytesRead(request);
-}
-
-void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
-    base::TimeDelta measuring_duration) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(0, measuring_duration.InMilliseconds() % 1000);
-  DCHECK(ContainsValue(GetAccuracyRecordingIntervals(), measuring_duration));
-
-  const base::TimeTicks now = tick_clock_->NowTicks();
-
-  // Return if the time since |last_main_frame_request_| is less than
-  // |measuring_duration|. This may happen if another main frame request started
-  // during last |measuring_duration|. Returning here ensures that we do not
-  // take inaccurate readings.
-  if (now - last_main_frame_request_ < measuring_duration)
-    return;
-
-  // Return if the time since |last_main_frame_request_| is off by a factor of
-  // 2. This can happen if the task is executed much later than its scheduled
-  // time. Returning here ensures that we do not take inaccurate readings.
-  if (now - last_main_frame_request_ > 2 * measuring_duration)
-    return;
-
-  // Do not record accuracy if there was a connection change since the last main
-  // frame request.
-  if (last_main_frame_request_ <= last_connection_change_)
-    return;
-
-  base::TimeDelta recent_http_rtt;
-  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
-                    last_main_frame_request_, &recent_http_rtt, nullptr)) {
-    recent_http_rtt = nqe::internal::InvalidRTT();
-  }
-
-  if (estimated_quality_at_last_main_frame_.http_rtt() !=
-          nqe::internal::InvalidRTT() &&
-      recent_http_rtt != nqe::internal::InvalidRTT()) {
-    const int estimated_observed_diff_milliseconds =
-        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds() -
-        recent_http_rtt.InMilliseconds();
-
-    RecordRTTAccuracy("NQE.Accuracy.HttpRTT",
-                      estimated_observed_diff_milliseconds, measuring_duration,
-                      recent_http_rtt);
-  }
-
-  base::TimeDelta recent_transport_rtt;
-  if (estimated_quality_at_last_main_frame_.transport_rtt() !=
-          nqe::internal::InvalidRTT() &&
-      GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
-                   last_main_frame_request_, &recent_transport_rtt, nullptr)) {
-    const int estimated_observed_diff_milliseconds =
-        estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds() -
-        recent_transport_rtt.InMilliseconds();
-
-    RecordRTTAccuracy("NQE.Accuracy.TransportRTT",
-                      estimated_observed_diff_milliseconds, measuring_duration,
-                      recent_transport_rtt);
-  }
-
-  int32_t recent_downstream_throughput_kbps;
-  if (estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
-          nqe::internal::INVALID_RTT_THROUGHPUT &&
-      GetRecentDownlinkThroughputKbps(last_main_frame_request_,
-                                      &recent_downstream_throughput_kbps)) {
-    const int estimated_observed_diff =
-        estimated_quality_at_last_main_frame_.downstream_throughput_kbps() -
-        recent_downstream_throughput_kbps;
-
-    RecordThroughputAccuracy("NQE.Accuracy.DownstreamThroughputKbps",
-                             estimated_observed_diff, measuring_duration,
-                             recent_downstream_throughput_kbps);
-  }
-
-  EffectiveConnectionType recent_effective_connection_type =
-      GetRecentEffectiveConnectionType(last_main_frame_request_);
-  if (effective_connection_type_at_last_main_frame_ !=
-          EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
-      recent_effective_connection_type != EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-    const int estimated_observed_diff =
-        static_cast<int>(effective_connection_type_at_last_main_frame_) -
-        static_cast<int>(recent_effective_connection_type);
-
-    RecordEffectiveConnectionTypeAccuracy(
-        "NQE.Accuracy.EffectiveConnectionType", estimated_observed_diff,
-        measuring_duration, recent_effective_connection_type);
-  }
 }
 
 void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,

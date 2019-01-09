@@ -56,7 +56,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
           net_log->bound().net_log()),
       net_log_(std::move(net_log)),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
-      accuracy_recording_intervals_set_(false),
       embedded_test_server_(base::FilePath(kTestFilePath)),
       suppress_notifications_for_testing_(suppress_notifications_for_testing) {
   SetUseLocalHostRequestsForTesting(allow_local_host_requests_for_tests);
@@ -74,7 +73,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     : NetworkQualityEstimator(std::move(params), net_log->bound().net_log()),
       net_log_(std::move(net_log)),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
-      accuracy_recording_intervals_set_(false),
       embedded_test_server_(base::FilePath(kTestFilePath)),
       suppress_notifications_for_testing_(false) {
 }
@@ -254,20 +252,6 @@ base::TimeDelta TestNetworkQualityEstimator::GetRTTEstimateInternal(
 
   return NetworkQualityEstimator::GetRTTEstimateInternal(
       start_time, observation_category, percentile, observations_count);
-}
-
-void TestNetworkQualityEstimator::SetAccuracyRecordingIntervals(
-    const std::vector<base::TimeDelta>& accuracy_recording_intervals) {
-  accuracy_recording_intervals_set_ = true;
-  accuracy_recording_intervals_ = accuracy_recording_intervals;
-}
-
-const std::vector<base::TimeDelta>&
-TestNetworkQualityEstimator::GetAccuracyRecordingIntervals() const {
-  if (accuracy_recording_intervals_set_)
-    return accuracy_recording_intervals_;
-
-  return NetworkQualityEstimator::GetAccuracyRecordingIntervals();
 }
 
 int TestNetworkQualityEstimator::GetEntriesCount(NetLogEventType type) const {
