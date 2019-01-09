@@ -982,11 +982,7 @@ function init() {
       ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
     }
 
-    if (configData.isCustomBackgroundsEnabled ||
-        configData.isCustomLinksEnabled) {
-      customBackgrounds.init(showErrorNotification, hideNotification);
-    }
-
+    customBackgrounds.init(showErrorNotification, hideNotification);
 
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;

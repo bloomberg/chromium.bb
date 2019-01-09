@@ -130,8 +130,7 @@ class TestThemeInfoObserver : public InstantServiceObserver {
 class LocalNTPCustomBackgroundsTest : public InProcessBrowserTest {
  public:
   LocalNTPCustomBackgroundsTest() {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kNtpBackgrounds}, {});
+    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
   }
 
  private:
@@ -333,8 +332,7 @@ class LocalNTPCustomBackgroundsThemeTest
     : public extensions::ExtensionBrowserTest {
  public:
   LocalNTPCustomBackgroundsThemeTest() {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kNtpBackgrounds}, {});
+    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
   }
 
  protected:

@@ -22,13 +22,6 @@
 using testing::Eq;
 using testing::StartsWith;
 
-namespace {
-
-// The options to be added to end of an image URL, specifying resolution, etc.
-constexpr char kImageOptions[] = "=imageOptions";
-
-}  // namespace
-
 class NtpBackgroundServiceTest : public testing::Test {
  public:
   NtpBackgroundServiceTest()
@@ -46,9 +39,7 @@ class NtpBackgroundServiceTest : public testing::Test {
     testing::Test::SetUp();
 
     service_ = std::make_unique<NtpBackgroundService>(
-        identity_env_.identity_manager(), test_shared_loader_factory_,
-        base::nullopt, base::nullopt, base::nullopt, base::nullopt,
-        kImageOptions);
+        identity_env_.identity_manager(), test_shared_loader_factory_);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -189,7 +180,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
   collection_image.asset_id = image.asset_id();
   collection_image.thumbnail_image_url =
       GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
-  collection_image.image_url = GURL(image.image_url() + kImageOptions);
+  collection_image.image_url =
+      GURL(image.image_url() + service()->GetImageOptionsForTesting());
   collection_image.attribution.push_back(image.attribution(0).text());
   collection_image.attribution_action_url = GURL(image.action_url());
 
@@ -243,7 +235,8 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   collection_image.asset_id = image.asset_id();
   collection_image.thumbnail_image_url =
       GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
-  collection_image.image_url = GURL(image.image_url() + kImageOptions);
+  collection_image.image_url =
+      GURL(image.image_url() + service()->GetImageOptionsForTesting());
   collection_image.attribution.push_back(image.attribution(0).text());
 
   EXPECT_FALSE(service()->collection_info().empty());
@@ -479,7 +472,7 @@ TEST_F(NtpBackgroundServiceTest, CheckValidAndInvalidBackdropUrls) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->IsValidBackdropUrl(
-      GURL("https://wallpapers.co/some_image=imageOptions")));
+      GURL(image.image_url() + service()->GetImageOptionsForTesting())));
 
   EXPECT_FALSE(service()->IsValidBackdropUrl(
       GURL("http://wallpapers.co/some_image=imageOptions")));

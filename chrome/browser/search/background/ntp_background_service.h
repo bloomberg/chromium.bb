@@ -37,12 +37,7 @@ class NtpBackgroundService : public KeyedService {
  public:
   NtpBackgroundService(
       identity::IdentityManager* const identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const base::Optional<GURL>& collections_api_url_override,
-      const base::Optional<GURL>& collection_images_api_url_override,
-      const base::Optional<GURL>& albums_api_url_override,
-      const base::Optional<GURL>& photos_api_base_url_override,
-      const base::Optional<std::string>& image_options_override);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~NtpBackgroundService() override;
 
   // KeyedService implementation.
@@ -115,6 +110,7 @@ class NtpBackgroundService : public KeyedService {
   // Returns the currently cached AlbumPhotos, if any.
   const std::vector<AlbumPhoto>& album_photos() const { return album_photos_; }
 
+  std::string GetImageOptionsForTesting();
   GURL GetCollectionsLoadURLForTesting() const;
   GURL GetImagesURLForTesting() const;
   GURL GetAlbumsURLForTesting() const;

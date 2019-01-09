@@ -24,6 +24,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace {
+base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
+  base::DictionaryValue background_info;
+  background_info.SetKey("background_url", base::Value(background_url.spec()));
+  background_info.SetKey("attribution_line_1", base::Value(std::string()));
+  background_info.SetKey("attribution_line_2", base::Value(std::string()));
+  background_info.SetKey("attribution_action_url", base::Value(std::string()));
+
+  return background_info;
+}
+}  // namespace
+
 using InstantServiceTest = InstantUnitTestBase;
 
 class InstantServiceTestCustomLinksEnabled : public InstantServiceTest {
@@ -37,31 +49,6 @@ class InstantServiceTestCustomLinksEnabled : public InstantServiceTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantServiceTestCustomLinksEnabled);
-};
-
-class InstantServiceTestCustomBackgroundsEnabled : public InstantServiceTest {
- public:
-  InstantServiceTestCustomBackgroundsEnabled() {
-    scoped_feature_list_.InitAndEnableFeature(features::kNtpBackgrounds);
-  }
-  ~InstantServiceTestCustomBackgroundsEnabled() override {}
-
-  base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
-    base::DictionaryValue background_info;
-    background_info.SetKey("background_url",
-                           base::Value(background_url.spec()));
-    background_info.SetKey("attribution_line_1", base::Value(std::string()));
-    background_info.SetKey("attribution_line_2", base::Value(std::string()));
-    background_info.SetKey("attribution_action_url",
-                           base::Value(std::string()));
-
-    return background_info;
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantServiceTestCustomBackgroundsEnabled);
 };
 
 TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
@@ -129,7 +116,7 @@ TEST_F(InstantServiceTestCustomLinksEnabled,
   EXPECT_FALSE(instant_service_->ResetCustomLinks());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {
+TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
 
@@ -141,20 +128,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
-  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
-  const GURL kUrl("https://www.foo.com");
-
-  instant_service_->UpdateThemeInfo();
-  instant_service_->SetCustomBackgroundURL(kUrl);
-
-  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
-  EXPECT_EQ(GURL(), theme_info->custom_background_url);
-  EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
-}
-
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       SetCustomBackgroundURLInvalidURL) {
+TEST_F(InstantServiceTest, SetCustomBackgroundURLInvalidURL) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kInvalidUrl("foo");
   const GURL kValidUrl("https://www.foo.com");
@@ -171,8 +145,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       SetCustomBackgroundURLWithAttributions) {
+TEST_F(InstantServiceTest, SetCustomBackgroundURLWithAttributions) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
@@ -192,8 +165,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       ChangingSearchProviderClearsThemeInfoAndPref) {
+TEST_F(InstantServiceTest, ChangingSearchProviderClearsThemeInfoAndPref) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
@@ -235,8 +207,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       LocalBackgroundImageCopyCreated) {
+TEST_F(InstantServiceTest, LocalBackgroundImageCopyCreated) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("chrome-search://local-ntp/background.jpg");
 
@@ -259,7 +230,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
+TEST_F(InstantServiceTest,
        ChangingSearchProviderRemovesLocalBackgroundImageCopy) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   base::FilePath profile_path = profile()->GetPath();
@@ -281,8 +252,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       SettingUrlRemovesLocalBackgroundImageCopy) {
+TEST_F(InstantServiceTest, SettingUrlRemovesLocalBackgroundImageCopy) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
 
@@ -306,8 +276,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   ASSERT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       CustomBackgroundAttributionActionUrlReset) {
+TEST_F(InstantServiceTest, CustomBackgroundAttributionActionUrlReset) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
@@ -348,8 +317,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled,
-       UpdatingPrefUpdatesThemeInfo) {
+TEST_F(InstantServiceTest, UpdatingPrefUpdatesThemeInfo) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrlFoo("https://www.foo.com");
   const GURL kUrlBar("https://www.bar.com");
@@ -375,7 +343,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled, NoLocalFileExists) {
+TEST_F(InstantServiceTest, NoLocalFileExists) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
 
@@ -394,7 +362,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, NoLocalFileExists) {
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFileExists) {
+TEST_F(InstantServiceTest, LocalFileExists) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
 
@@ -419,7 +387,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFileExists) {
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFilePrefSet) {
+TEST_F(InstantServiceTest, LocalFilePrefSet) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
 
@@ -438,7 +406,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, LocalFilePrefSet) {
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTestCustomBackgroundsEnabled, ValidateBackdropUrls) {
+TEST_F(InstantServiceTest, ValidateBackdropUrls) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kBackdropUrl1("https://www.foo.com");
   const GURL kBackdropUrl2("https://www.bar.com");

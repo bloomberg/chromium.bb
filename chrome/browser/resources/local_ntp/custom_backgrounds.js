@@ -198,14 +198,6 @@ customBackgrounds.hideCustomLinkNotification;
  * their respective features.
  */
 customBackgrounds.setMenuVisibility = function() {
-  // Hide the settings menu if:
-  // - Custom links and custom backgrounds are not enabled.
-  if (!configData.isCustomLinksEnabled &&
-      !configData.isCustomBackgroundsEnabled) {
-    $(customBackgrounds.IDS.EDIT_BG).hidden = true;
-    return;
-  }
-
   // Reset all hidden values.
   $(customBackgrounds.IDS.EDIT_BG).hidden = false;
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = false;
@@ -213,15 +205,6 @@ customBackgrounds.setMenuVisibility = function() {
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = false;
   $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = false;
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = false;
-
-  // Custom backgrounds is disabled or a theme is installed, hide all custom
-  // background options.
-  if (!configData.isCustomBackgroundsEnabled) {
-    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
-    $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
-    $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
-    $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = true;
-  }
 
   // Custom links is disabled, hide all custom link options.
   if (!configData.isCustomLinksEnabled) {
@@ -999,9 +982,7 @@ customBackgrounds.init = function(
   if (configData.isCustomLinksEnabled) {
     customBackgrounds.initCustomLinksItems(hideCustomLinkNotification);
   }
-  if (configData.isCustomBackgroundsEnabled) {
-    customBackgrounds.initCustomBackgrounds(showErrorNotification);
-  }
+  customBackgrounds.initCustomBackgrounds(showErrorNotification);
 };
 
 /**

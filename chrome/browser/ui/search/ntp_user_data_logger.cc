@@ -573,22 +573,17 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.NewTab", load_time);
   }
 
-  if (features::IsCustomBackgroundsEnabled()) {
-    if (!is_google) {
-      // TODO(crbug.com/869931): This is only emitted upon search engine change.
-      LogBackgroundCustomizationAvailability(
-          BackgroundCustomization::
-              BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-    } else if (is_theme_configured) {
-      LogBackgroundCustomizationAvailability(
-          BackgroundCustomization::BACKGROUND_CUSTOMIZATION_UNAVAILABLE_THEME);
-    } else {
-      LogBackgroundCustomizationAvailability(
-          BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
-    }
+  if (!is_google) {
+    // TODO(crbug.com/869931): This is only emitted upon search engine change.
+    LogBackgroundCustomizationAvailability(
+        BackgroundCustomization::
+            BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
+  } else if (is_theme_configured) {
+    LogBackgroundCustomizationAvailability(
+        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_UNAVAILABLE_THEME);
   } else {
     LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_UNAVAILABLE_FEATURE);
+        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
   }
 
   if (features::IsCustomLinksEnabled()) {
