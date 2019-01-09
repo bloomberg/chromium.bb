@@ -5727,6 +5727,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="The label of the tab context menu item for share this tab to other devices.">
           Send to my devices
         </message>
+        <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="The label of the tab context menu item for creating a new tab group and adding a single tab to it.">
+          Add to new group
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
@@ -5767,6 +5770,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
+        </message>
+        <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="In Title Case: The label of the tab context menu item for creating a new tab group and adding a single tab to it.">
+          Add Tab to New Group
         </message>
         <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="In Title Case: The label of the tab context menu item for share this tab to other devices.">
           Send To My Devices

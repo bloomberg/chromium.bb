@@ -2606,3 +2606,173 @@ TEST_F(TabStripModelTest, MoveWebContentsAt) {
 
   strip.CloseAllTabs();
 }
+
+TEST_F(TabStripModelTest, NewTabsUngrouped) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+
+  EXPECT_EQ(strip.GetTabGroupForTab(0), nullptr);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+
+  strip.AddToNewGroup({0});
+
+  EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{
+      strip.GetWebContentsAt(0), strip.GetWebContentsAt(1),
+      strip.GetWebContentsAt(2), strip.GetWebContentsAt(3)};
+  strip.AddToNewGroup({0, 1, 2, 3});
+  const TabGroupData* first_group = strip.GetTabGroupForTab(0);
+
+  strip.AddToNewGroup({1, 2});
+
+  EXPECT_EQ(strip.GetTabGroupForTab(0), first_group);
+  EXPECT_EQ(strip.GetTabGroupForTab(1), first_group);
+  EXPECT_NE(strip.GetTabGroupForTab(2), first_group);
+  EXPECT_EQ(strip.GetTabGroupForTab(2), strip.GetTabGroupForTab(3));
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[3]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+  EXPECT_EQ(strip.GetWebContentsAt(3), orig[2]);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupReorders) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{strip.GetWebContentsAt(0),
+                                 strip.GetWebContentsAt(1),
+                                 strip.GetWebContentsAt(2)};
+
+  strip.AddToNewGroup({0, 2});
+
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+  EXPECT_EQ(strip.GetTabGroupForTab(0), strip.GetTabGroupForTab(1));
+  EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
+  EXPECT_EQ(strip.GetTabGroupForTab(2), nullptr);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupPins) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{strip.GetWebContentsAt(0),
+                                 strip.GetWebContentsAt(1)};
+  strip.SetTabPinned(0, true);
+  strip.AddToNewGroup({0, 1});
+
+  EXPECT_TRUE(strip.IsTabPinned(1));
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[1]);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupPinsAndReorders) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{strip.GetWebContentsAt(0),
+                                 strip.GetWebContentsAt(1),
+                                 strip.GetWebContentsAt(2)};
+  strip.SetTabPinned(0, true);
+
+  strip.AddToNewGroup({0, 2});
+
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabRight) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{
+      strip.GetWebContentsAt(0), strip.GetWebContentsAt(1),
+      strip.GetWebContentsAt(2), strip.GetWebContentsAt(3)};
+  strip.SetTabPinned(0, true);
+  strip.SetTabPinned(1, true);
+  strip.SetTabPinned(2, true);
+  strip.AddToNewGroup({0, 1, 2});
+
+  strip.AddToNewGroup({1, 3});
+
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+  EXPECT_EQ(strip.GetWebContentsAt(3), orig[3]);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabLeft) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  std::vector<WebContents*> orig{
+      strip.GetWebContentsAt(0), strip.GetWebContentsAt(1),
+      strip.GetWebContentsAt(2), strip.GetWebContentsAt(3),
+      strip.GetWebContentsAt(4)};
+  strip.SetTabPinned(0, true);
+  strip.SetTabPinned(1, true);
+  strip.SetTabPinned(2, true);
+  strip.SetTabPinned(3, true);
+  strip.AddToNewGroup({0, 1, 2});
+
+  strip.AddToNewGroup({1, 3, 4});
+
+  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
+  EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
+  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
+  EXPECT_EQ(strip.GetWebContentsAt(3), orig[3]);
+  EXPECT_EQ(strip.GetWebContentsAt(4), orig[4]);
+
+  strip.ActivateTabAt(0, true);
+  strip.CloseAllTabs();
+}
