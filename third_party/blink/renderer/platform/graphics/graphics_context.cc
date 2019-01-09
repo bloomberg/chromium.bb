@@ -910,7 +910,6 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  image_flags.setAntiAlias(ShouldAntialias());
   if (ShouldApplyHighContrastFilterToImage(*image))
     image_flags.setColorFilter(high_contrast_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
@@ -946,7 +945,6 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
-  image_flags.setAntiAlias(ShouldAntialias());
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);
