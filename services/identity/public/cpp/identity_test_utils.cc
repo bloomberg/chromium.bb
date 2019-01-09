@@ -310,6 +310,33 @@ bool AreAllCredentialsLoaded(IdentityManager* identity_manager) {
   return identity_manager->GetTokenService()->AreAllCredentialsLoaded();
 }
 
+void SetCookieAccounts(IdentityManager* identity_manager,
+                       network::TestURLLoaderFactory* test_url_loader_factory,
+                       const std::vector<CookieParams>& cookie_accounts) {
+  // Convert |cookie_accounts| to the format list_accounts_test_utils wants.
+  std::vector<signin::CookieParams> gaia_cookie_accounts;
+  for (const CookieParams& params : cookie_accounts) {
+    gaia_cookie_accounts.push_back({params.email, params.gaia_id,
+                                    /*valid=*/true, /*signed_out=*/false,
+                                    /*verified=*/true});
+  }
+
+  base::RunLoop run_loop;
+  OneShotIdentityManagerObserver cookie_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED);
+
+  signin::SetListAccountsResponseWithParams(gaia_cookie_accounts,
+                                            test_url_loader_factory);
+
+  GaiaCookieManagerService* cookie_manager =
+      identity_manager->GetGaiaCookieManagerService();
+  cookie_manager->set_list_accounts_stale_for_testing(true);
+  cookie_manager->ListAccounts(nullptr, nullptr);
+
+  run_loop.Run();
+}
+
 void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
                        IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts) {

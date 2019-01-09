@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/secondary_account_sync_test.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -185,9 +185,9 @@ std::unique_ptr<autofill::PaymentsCustomerData> GetPaymentsCustomerData(
 }  // namespace
 
 class SingleClientWalletSyncTest : public UssWalletSwitchToggler,
-                                   public SyncTest {
+                                   public SecondaryAccountSyncTest {
  public:
-  SingleClientWalletSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientWalletSyncTest() {}
   ~SingleClientWalletSyncTest() override {}
 
  protected:
@@ -1065,14 +1065,9 @@ class SingleClientWalletSecondaryAccountSyncTest
   }
   ~SingleClientWalletSecondaryAccountSyncTest() override {}
 
-  void SetUpInProcessBrowserTestFixture() override {
-    fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
-  }
-
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
-    secondary_account_helper::InitNetwork();
+    InitNetwork();
 #endif  // defined(OS_CHROMEOS)
   }
 
@@ -1080,9 +1075,6 @@ class SingleClientWalletSecondaryAccountSyncTest
 
  private:
   base::test::ScopedFeatureList features_;
-
-  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
-      fake_gaia_cookie_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSecondaryAccountSyncTest);
 };
@@ -1108,7 +1100,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
       {CreateDefaultSyncWalletCard(), CreateDefaultSyncPaymentsCustomerData()});
 
   // Set up Sync in transport mode for a non-primary account.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  SignInSecondaryAccount(profile(), "user@email.com");
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
@@ -1137,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
 
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
-  secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  MakeAccountPrimary(profile(), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
@@ -1180,7 +1172,7 @@ IN_PROC_BROWSER_TEST_F(
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
 
   // Set up Sync in transport mode for a non-primary account.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  SignInSecondaryAccount(profile(), "user@email.com");
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
@@ -1206,7 +1198,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(0U, GetServerCards(profile_data).size());
 
   // Simulate the user opting in to full Sync: First, make the account primary.
-  secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  MakeAccountPrimary(profile(), "user@email.com");
 
   // Now start actually configuring Sync.
   auto setup_handle = GetSyncService(0)->GetSetupInProgressHandle();
