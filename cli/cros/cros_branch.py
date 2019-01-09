@@ -19,18 +19,65 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import repo_util
-from collections import namedtuple
 
 import os
 import re
 
-# For the purposes of branching, Chrome OS version is completely defined by
-# release milestone and build number.
-Version = namedtuple('Version', ['milestone', 'build_number'])
-
 
 class BranchError(Exception):
   """Raised whenever any branch operation fails."""
+
+
+def AbsoluteProjectPath(relative_path):
+  """Returns the absolute path of a project on disk.
+
+  Args:
+    relative_path: Relative path to the project, e.g. 'chromite/'
+
+  Returns:
+    The absolute path to the project.
+  """
+  return os.path.join(constants.SOURCE_ROOT, relative_path)
+
+
+def ReadVersionInfo():
+  """Returns VersionInfo for the current checkout."""
+  return manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+
+
+def CanBranchProject(project):
+  """Determines if the given project is branchable.
+
+  Args:
+    project: A repo_manifest.Project.
+
+  Returns:
+    True if the project should branch.
+  """
+  site_params = config_lib.GetSiteParams()
+  remote = project.Remote().GitName()
+  # The preferred way to specify branchability is by adding a "branch-mode"
+  # annotation on the project in the manifest. Of course, only one project
+  # in the manifest actually does this. ¯\_(ツ)_/¯
+  explicit_mode = project.Annotations().get('branch-mode', None)
+  if not explicit_mode:
+    # The legacy method is to peek at the project's remote.
+    return (remote in site_params.CROS_REMOTES and
+            remote in site_params.BRANCHABLE_PROJECTS and
+            re.match(site_params.BRANCHABLE_PROJECTS[remote], project.name))
+  return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_CREATE
+
+
+def BranchableProjects(manifest):
+  """Finds all branchable projects in the manifest.
+
+  Args:
+    manifest: A repo_manifest.Manifest object.
+
+  Returns:
+    List of branchable projects.
+  """
+  return filter(CanBranchProject, manifest.Projects())
 
 
 class Branch(object):
@@ -47,41 +94,8 @@ class Branch(object):
     self._name = name or self.GenerateName()
     self._repo = repo_util.Repository(constants.SOURCE_ROOT)
 
-    site_params = config_lib.DefaultSiteParameters()
-    self._manifest_versions_root = os.path.join(
-        constants.SOURCE_ROOT, site_params['INTERNAL_MANIFEST_VERSIONS_PATH'])
-    self._cros_remotes = site_params['CROS_REMOTES']
-    self._branchable_project_patterns = site_params['BRANCHABLE_PROJECTS']
-
-  def _CanBranchProject(self, project):
-    """Determines if the given project is branchable.
-
-    Args:
-      project: A repo_manifest.Project.
-
-    Returns:
-      True if the project should branch.
-    """
-    remote = project.Remote().GitName()
-    # The preferred way to specify branchability is by adding a "branch-mode"
-    # annotation on the project in the manifest. Of course, only one project
-    # in the manifest actually does this. ¯\_(ツ)_/¯
-    explicit_mode = project.Annotations().get('branch-mode', None)
-    if not explicit_mode:
-      # The legacy method is to peek at the project's remote.
-      return (remote in self._cros_remotes and
-              remote in self._branchable_project_patterns and
-              re.match(self._branchable_project_patterns[remote], project.name))
-    return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_CREATE
-
-  @staticmethod
-  def Version():
-    """Returns the synced milestone."""
-    vinfo = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
-    return Version(vinfo.chrome_branch, vinfo.build_number)
-
   def GenerateName(self):
-    return '%s-%s.B' % (self._kind, self.Version().build_number)
+    return '%s-%s.B' % (self._kind, ReadVersionInfo().build_number)
 
   def Create(self, version, push=False, force=False):
     """Creates a new branch from the given version.
@@ -95,27 +109,25 @@ class Branch(object):
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
 
+    site_params = config_lib.GetSiteParams()
+
     # Sync to the manifest version.
     logging.info('Syncing to manifest version %s', version)
     cros_build_lib.RunCommand(
         [
             os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
             '--repo-root', constants.SOURCE_ROOT, '--manifest-versions-int',
-            self._manifest_versions_root, '--version', version
+            AbsoluteProjectPath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
+            '--version', version
         ],
         quiet=True)
 
     # Create local git branches. If a local branch with the same name exists
     # in any project, it is overwritten.
     logging.info('Will create branch %s for all viable projects.', self._name)
-    projects = [
-        project for project in self._repo.Manifest().Projects()
-        if self._CanBranchProject(project)
-    ]
-    for project in projects:
+    for project in BranchableProjects(self._repo.Manifest()):
       git.CreateBranch(
-          os.path.join(constants.SOURCE_ROOT, project.Path()), self._name,
-          project.Revision())
+          AbsoluteProjectPath(project.Path()), self._name, project.Revision())
 
 
 class ReleaseBranch(Branch):
@@ -125,7 +137,8 @@ class ReleaseBranch(Branch):
     super(ReleaseBranch, self).__init__('release', name)
 
   def GenerateName(self):
-    return '%s-R%s-%s.B' % ((self._kind,) + self.Version())
+    vinfo = ReadVersionInfo()
+    return '%s-R%s-%s.B' % (self._kind, vinfo.chrome_branch, vinfo.build_number)
 
 
 class FactoryBranch(Branch):
