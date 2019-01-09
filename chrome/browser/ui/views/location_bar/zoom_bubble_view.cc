@@ -219,7 +219,9 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   if (is_fullscreen)
     zoom_bubble_->AdjustForFullscreen(browser->window()->GetBounds());
 
-  zoom_bubble_->ShowForReason(reason);
+  // Do not announce hotkey for refocusing inactive Zoom bubble as it
+  // disappears after a short timeout.
+  zoom_bubble_->ShowForReason(reason, /* allow_refocus_alert */ false);
   zoom_bubble_->UpdateZoomIconVisibility();
 }
 
