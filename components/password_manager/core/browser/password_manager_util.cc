@@ -69,6 +69,11 @@ password_manager::SyncState GetPasswordSyncState(
   return password_manager::NOT_SYNCING;
 }
 
+bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service) {
+  return GetPasswordSyncState(sync_service) ==
+         password_manager::SYNCING_NORMAL_ENCRYPTION;
+}
+
 void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
                     std::vector<std::unique_ptr<PasswordForm>>* duplicates,
                     std::vector<std::vector<PasswordForm*>>* tag_groups) {
