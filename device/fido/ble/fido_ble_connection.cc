@@ -100,7 +100,10 @@ const BluetoothRemoteGattService* GetFidoService(
   }
 
   for (const auto* service : device->GetGattServices()) {
-    if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID))
+    // This assumes that no device is representing as both a FIDO BLE
+    // and a caBLE device.
+    if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
+        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128))
       return service;
   }
 
