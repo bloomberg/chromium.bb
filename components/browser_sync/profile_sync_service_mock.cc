@@ -72,10 +72,6 @@ bool ProfileSyncServiceMock::IsPassphraseRequired() const {
   return user_settings_.IsPassphraseRequired();
 }
 
-bool ProfileSyncServiceMock::IsFirstSetupComplete() const {
-  return user_settings_.IsFirstSetupComplete();
-}
-
 syncer::PassphraseType ProfileSyncServiceMock::GetPassphraseType() const {
   return user_settings_.GetPassphraseType();
 }

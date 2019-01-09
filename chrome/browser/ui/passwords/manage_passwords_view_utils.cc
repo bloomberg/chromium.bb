@@ -160,7 +160,8 @@ base::string16 GetDisplayFederation(const autofill::PasswordForm& form) {
 bool IsSyncingAutosignSetting(Profile* profile) {
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return (sync_service && sync_service->IsFirstSetupComplete() &&
+  return (sync_service &&
+          sync_service->GetUserSettings()->IsFirstSetupComplete() &&
           sync_service->IsSyncFeatureActive() &&
           sync_service->GetActiveDataTypes().Has(syncer::PRIORITY_PREFERENCES));
 }

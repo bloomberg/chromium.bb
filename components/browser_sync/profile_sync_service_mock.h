@@ -92,8 +92,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                     const std::string& message));
 
   // ProfileSyncService overrides.
-  bool IsFirstSetupComplete() const override;
-
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
 
   syncer::PassphraseType GetPassphraseType() const override;

@@ -288,7 +288,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
     return;
   }
 
-  if (sync_service->IsFirstSetupComplete()) {
+  if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     // Sync is set up. Report whether the user has chosen to sync themes.
     dict->SetBoolean(kSyncThemes,
                      sync_service->GetUserSettings()->GetChosenDataTypes().Has(

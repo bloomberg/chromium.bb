@@ -103,8 +103,9 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     browser_sync::ProfileSyncService* service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
-    if (service->CanSyncFeatureStart() && (service->IsFirstSetupComplete() ||
-                                           browser_defaults::kSyncAutoStarts)) {
+    if (service->CanSyncFeatureStart() &&
+        (service->GetUserSettings()->IsFirstSetupComplete() ||
+         browser_defaults::kSyncAutoStarts)) {
       done_closure_ = std::move(done_closure);
       AddObservers();
     } else {

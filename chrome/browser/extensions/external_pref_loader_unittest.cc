@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -34,7 +35,6 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
 
   // FakeSyncService:
   int GetDisableReasons() const override { return disable_reasons_; }
-  bool IsFirstSetupComplete() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     switch (synced_types_) {
       case SyncedTypes::ALL:
@@ -128,6 +128,8 @@ TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
   TestSyncService* test_service = static_cast<TestSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
+  ON_CALL(*test_service->GetUserSettingsMock(), IsFirstSetupComplete())
+      .WillByDefault(testing::Return(true));
 
   base::RunLoop run_loop;
   scoped_refptr<ExternalPrefLoader> loader(
