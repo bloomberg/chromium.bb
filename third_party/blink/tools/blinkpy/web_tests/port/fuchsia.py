@@ -82,8 +82,11 @@ WEB_TESTS_PATH_PREFIX = '/' + WEB_TESTS_LAST_COMPONENT
 # content/shell/app/blink_test_platform_support_fuchsia.cc .
 FONTS_DEVICE_PATH = '/system/fonts'
 
-# Number of content_shell instances to run in parallel.
-MAX_WORKERS = 8
+# Number of CPU cores in qemu.
+CPU_CORES = 4
+
+# Number of content_shell instances to run in parallel. 2 per CPU core.
+MAX_WORKERS = CPU_CORES * 2
 
 PROCESS_START_TIMEOUT = 20
 
@@ -117,13 +120,13 @@ class SubprocessOutputLogger(object):
     def close(self):
         self._process.kill()
 
-
 class _TargetHost(object):
     def __init__(self, build_path, ports_to_forward):
         try:
             self._target = None
             self._target = qemu_target.QemuTarget(
-                build_path, 'x64', require_kvm=True, ram_size_mb=8192)
+                build_path, 'x64', cpu_cores=CPU_CORES, system_log_file=None,
+                require_kvm=True, ram_size_mb=8192)
             self._target.Start()
             self._setup_target(build_path, ports_to_forward)
         except:
@@ -163,13 +166,17 @@ class _TargetHost(object):
             raise Exception('Failed to install content_shell: %s' % \
                             '\n'.join(output))
 
+        # Process will be forked for each worker, which may make QemuTarget
+        # unusable (e.g. waitpid() for qemu process returns ECHILD after
+        # fork() ). Save command runner before fork()ing, to use it later to
+        # connect to the target.
+        self.target_command_runner = self._target.GetCommandRunner()
 
-    def run_command(self, *args, **kvargs):
-        return self._target.RunCommandPiped(*args,
-                                            stdin=subprocess.PIPE,
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE,
-                                            **kvargs)
+    def run_command(self, command):
+        return self.target_command_runner.RunCommandPiped(
+            command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
     def cleanup(self):
         if self._target:
             # TODO(sergeyu): Currently __init__() always starts Qemu, so we can
@@ -272,7 +279,9 @@ class ChromiumFuchsiaDriver(driver.Driver):
             port, worker_number, no_timeout)
 
     def _base_cmd_line(self):
-        return ['run', 'content_shell']
+        return ['run',
+                'fuchsia-pkg://fuchsia.com/content_shell#meta/content_shell.cmx',
+                '--ozone-platform=headless']
 
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumFuchsiaDriver, self)._command_from_driver_input(

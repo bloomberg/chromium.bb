@@ -28,6 +28,7 @@ class Target(object):
     self._started = False
     self._dry_run = False
     self._target_cpu = target_cpu
+    self._command_runner = None
 
   # Functions used by the Python context manager for teardown.
   def __enter__(self):
@@ -52,6 +53,19 @@ class Target(object):
 
     return True
 
+  def GetCommandRunner(self):
+    """Returns CommandRunner that can be used to execute commands on the
+    target. Most clients should prefer RunCommandPiped() and RunCommand()."""
+
+    self._AssertIsStarted()
+
+    if self._command_runner == None:
+      host, port = self._GetEndpoint()
+      self._command_runner = \
+          remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
+
+    return self._command_runner
+
   def RunCommandPiped(self, command, **kwargs):
     """Starts a remote command and immediately returns a Popen object for the
     command. The caller may interact with the streams, inspect the status code,
@@ -66,22 +80,16 @@ class Target(object):
 
     Note: method does not block."""
 
-    self._AssertIsStarted()
     logging.debug('running (non-blocking) \'%s\'.' % ' '.join(command))
-    host, port = self._GetEndpoint()
-    return remote_cmd.RunPipedSsh(self._GetSshConfigPath(), host, port, command,
-                                  **kwargs)
+    return self.GetCommandRunner().RunCommandPiped(command, **kwargs)
 
   def RunCommand(self, command, silent=False):
     """Executes a remote command and waits for it to finish executing.
 
     Returns the exit code of the command."""
 
-    self._AssertIsStarted()
     logging.debug('running \'%s\'.' % ' '.join(command))
-    host, port = self._GetEndpoint()
-    return remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, command,
-                             silent)
+    return self.GetCommandRunner().RunCommand(command, silent)
 
   def PutFile(self, source, dest, recursive=False):
     """Copies a file from the local filesystem to the target filesystem.
@@ -101,12 +109,9 @@ class Target(object):
     recursive: If true, performs a recursive copy."""
 
     assert type(sources) is tuple or type(sources) is list
-    self._AssertIsStarted()
-    host, port = self._GetEndpoint()
     logging.debug('copy local:%s => remote:%s' % (sources, dest))
-    command = remote_cmd.RunScp(self._GetSshConfigPath(), host, port,
-                                sources, dest, remote_cmd.COPY_TO_TARGET,
-                                recursive)
+    self.GetCommandRunner().RunScp(sources, dest, remote_cmd.COPY_TO_TARGET,
+                                   recursive)
 
   def GetFile(self, source, dest):
     """Copies a file from the target filesystem to the local filesystem.
@@ -125,8 +130,8 @@ class Target(object):
     self._AssertIsStarted()
     host, port = self._GetEndpoint()
     logging.debug('copy remote:%s => local:%s' % (sources, dest))
-    return remote_cmd.RunScp(self._GetSshConfigPath(), host, port,
-                             sources, dest, remote_cmd.COPY_FROM_TARGET)
+    return self.GetCommandRunner().RunScp(sources, dest,
+                                          remote_cmd.COPY_FROM_TARGET)
 
   def _GetEndpoint(self):
     """Returns a (host, port) tuple for the SSH connection to the target."""
@@ -146,8 +151,8 @@ class Target(object):
 
     for retry in xrange(retries + 1):
       host, port = self._GetEndpoint()
-      if remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, ['true'],
-                           True) == 0:
+      runner = remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
+      if runner.RunCommand(['true'], True) == 0:
         logging.info('Connected!')
         self._started = True
         return True
