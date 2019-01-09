@@ -11,6 +11,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -36,9 +37,10 @@ class AudioDevicesPrefHandler;
 
 // This class is not thread safe. The public functions should be called on
 // browser main thread.
-class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
-                                         public AudioPrefObserver,
-                                         public media::VideoCaptureObserver {
+class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
+    : public CrasAudioClient::Observer,
+      public AudioPrefObserver,
+      public media::VideoCaptureObserver {
  public:
   typedef std::
       priority_queue<AudioDevice, std::vector<AudioDevice>, AudioDeviceCompare>

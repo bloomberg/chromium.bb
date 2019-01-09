@@ -81,6 +81,7 @@ source_set("chromeos") {
     "//chrome/services/file_util/public/cpp",
     "//chromeos",
     "//chromeos/assistant:buildflags",
+    "//chromeos/audio",
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/components/multidevice",

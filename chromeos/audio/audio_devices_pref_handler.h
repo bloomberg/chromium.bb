@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_H_
 #define CHROMEOS_AUDIO_AUDIO_DEVICES_PREF_HANDLER_H_
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/audio/audio_pref_observer.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
@@ -16,7 +16,7 @@ struct AudioDevice;
 // Interface that handles audio preference related work, reads and writes
 // audio preferences, and notifies AudioPrefObserver for audio preference
 // changes.
-class CHROMEOS_EXPORT AudioDevicesPrefHandler
+class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandler
     : public base::RefCountedThreadSafe<AudioDevicesPrefHandler> {
  public:
   // Integer because C++ does not allow static const double in header files.

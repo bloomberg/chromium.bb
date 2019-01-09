@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/audio_node.h"
 
 namespace chromeos {
@@ -35,7 +35,7 @@ enum AudioDeviceType {
   AUDIO_TYPE_OTHER,
 };
 
-struct CHROMEOS_EXPORT AudioDevice {
+struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
   AudioDevice();
   explicit AudioDevice(const AudioNode& node);
   AudioDevice(const AudioDevice& other);

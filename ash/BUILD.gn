@@ -1363,6 +1363,9 @@ component("ash") {
     "//cc/paint:paint",
     "//chromeos",
     "//chromeos/assistant:buildflags",
+
+    # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
+    "//chromeos/audio",
     "//chromeos/components/multidevice/logging",
 
     # TODO(stevenjb): Remove cryptohome dependency. htps://crbug.com/918922.
@@ -1550,6 +1553,9 @@ static_library("ash_shell_lib_with_content") {
     "//base:i18n",
     "//chrome:packed_resources",
     "//chromeos",
+
+    # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
+    "//chromeos/audio",
     "//components/discardable_memory/public/interfaces",
     "//components/services/font:lib",
     "//components/services/font/public/interfaces",
@@ -1923,6 +1929,9 @@ test("ash_unittests") {
     "//chromeos",
     "//chromeos:test_support",
     "//chromeos:test_support_without_gmock",
+
+    # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
+    "//chromeos/audio",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/services/assistant:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
@@ -2192,6 +2201,9 @@ static_library("test_support") {
     "//cc:test_support",
     "//chromeos",
     "//chromeos:test_support_without_gmock",
+
+    # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
+    "//chromeos/audio",
 
     # TODO(stevenjb): Remove cryptohome dependency. htps://crbug.com/918922.
     "//chromeos/cryptohome",

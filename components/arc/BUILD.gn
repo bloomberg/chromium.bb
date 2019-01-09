@@ -80,6 +80,7 @@ static_library("arc") {
     "//ash/public/cpp",
     "//base",
     "//chromeos",
+    "//chromeos/audio",
     "//chromeos/cryptohome",
     "//chromeos/dbus:login_manager_proto",
     "//chromeos/dbus:power_manager_proto",
