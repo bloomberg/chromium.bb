@@ -236,7 +236,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
-  Page* GetPage() const { return page_.Get(); }
+  Page* GetPage() const { return AsView().page.Get(); }
 
   WebDevToolsAgentImpl* MainFrameDevToolsAgentImpl();
 
@@ -555,6 +555,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
     // Can be null (e.g. unittests, shared workers, etc.)
     WebViewClient* client;
+    Persistent<Page> page;
   } as_view_;
 
   // These member variables should not be accessed within calls to WebView
@@ -575,8 +576,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   IntSize min_auto_size_;
   // The upper bound on the size when auto-resizing.
   IntSize max_auto_size_;
-
-  Persistent<Page> page_;
 
   // An object that can be used to manipulate m_page->settings() without linking
   // against WebCore. This is lazily allocated the first time GetWebSettings()
