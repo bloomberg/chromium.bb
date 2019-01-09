@@ -1,7 +1,7 @@
 <html>
   <body>
     <iframe name="blank" src="about:blank"></iframe>
-    <iframe name="js" src="javascript:'<html><\/html>'"></iframe>
+    <iframe name="js" src="javascript:'<script src=included_script.js></script>'"></iframe>
     <iframe name="srcdoc" srcdoc="<script src='included_script.js'></script>"></iframe>
   </body>
   <script>
@@ -16,11 +16,6 @@
     grandChild.name = "grandChild";
     grandChild.src = "frame_with_included_script.html";
     blankFrame.contentDocument.body.appendChild(grandChild);
-
-    let jsFrame = document.getElementsByName("js")[0];
-    let script2 = document.createElement("script");
-    script2.src = "included_script.js";
-    jsFrame.contentDocument.body.appendChild(script2);
 
     // Add a frame with a data URL, making sure it loads a script pointing to
     // the right host and port.
