@@ -130,9 +130,11 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
           event_type_names::kEnterpictureinpicture,
           WrapPersistent(picture_in_picture_window_.Get())));
 
-  element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
-      WTF::BindRepeating(&PictureInPictureWindow::OnResize,
-                         WrapPersistent(picture_in_picture_window_.Get())));
+  if (element->GetWebMediaPlayer()) {
+    element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
+        WTF::BindRepeating(&PictureInPictureWindow::OnResize,
+                           WrapPersistent(picture_in_picture_window_.Get())));
+  }
 
   if (resolver)
     resolver->Resolve(picture_in_picture_window_);
