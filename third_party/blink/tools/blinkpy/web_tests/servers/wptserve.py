@@ -24,11 +24,11 @@ class WPTServe(server_base.ServerBase):
         ws_port, wss_port = (9001, 9444)
         self._name = 'wptserve'
         self._log_prefixes = ('access_log', 'error_log')
-        self._mappings = [{'port': http_port},
-                          {'port': http_alt_port},
-                          {'port': https_port, 'sslcert': True},
-                          {'port': ws_port},
-                          {'port': wss_port, 'sslcert': True}]
+        self._mappings = [{'port': http_port, 'scheme': 'http'},
+                          {'port': http_alt_port, 'scheme': 'http'},
+                          {'port': https_port, 'scheme': 'https', 'sslcert': True},
+                          {'port': ws_port, 'scheme': 'ws'},
+                          {'port': wss_port, 'scheme': 'wss', 'sslcert': True}]
 
         # TODO(burnik): We can probably avoid PID files for WPT in the future.
         fs = self._filesystem

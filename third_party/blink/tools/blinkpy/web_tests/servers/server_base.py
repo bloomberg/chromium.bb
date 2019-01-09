@@ -251,13 +251,14 @@ class ServerBase(object):
         for mapping in self._mappings:
             s = socket.socket()
             port = mapping['port']
+            scheme = mapping['scheme']
             try:
                 s.connect(('localhost', port))
-                _log.debug('Server running on %d', port)
+                _log.info('Server running on %s://localhost:%d', scheme, port)
             except IOError as error:
                 if error.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug('Server NOT running on %d: %s', port, error)
+                _log.debug('Server NOT running on %s://localhost:%d : %s', scheme, port, error)
                 return False
             finally:
                 s.close()
