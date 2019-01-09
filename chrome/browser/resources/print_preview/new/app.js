@@ -38,7 +38,16 @@ Polymer({
     },
 
     /** @private {string} */
-    activeUser_: String,
+    activeUser_: {
+      type: String,
+      observer: 'onActiveUserChanged_',
+    },
+
+    /** @private {!print_preview.CloudPrintState} */
+    cloudPrintState_: {
+      type: Number,
+      value: print_preview.CloudPrintState.DISABLED,
+    },
 
     /** @private {boolean} */
     controlsDisabled_: {
@@ -394,12 +403,8 @@ Polymer({
 
     this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
     this.invitationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
-    if (this.$.destinationSettings.isDialogOpen()) {
-      this.destinationStore_.startLoadCloudDestinations();
-      if (this.activeUser_) {
-        this.invitationStore_.startLoadingInvitations(this.activeUser_);
-      }
-    }
+    assert(this.cloudPrintState_ === print_preview.CloudPrintState.DISABLED);
+    this.cloudPrintState_ = print_preview.CloudPrintState.ENABLED;
   },
 
   /** @private */
@@ -611,10 +616,11 @@ Polymer({
     if (event.detail.status == 0) {
       return;  // Ignore, the system does not have internet connectivity.
     }
-    if (event.detail.status == 403) {
-      if (!this.isInAppKioskMode_) {
-        this.$.destinationSettings.showCloudPrintPromo();
-      }
+    if (event.detail.status == 403 && !this.isInAppKioskMode_) {
+      // Should not have sent a message to Cloud Print if cloud print is
+      // disabled.
+      assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
+      this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
     } else {
       this.errorMessage_ = event.detail.message;
       this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
@@ -713,6 +719,12 @@ Polymer({
    */
   onAccountChange_: function(e) {
     this.$.userInfo.updateActiveUser(e.detail);
+  },
+
+  /** @private */
+  onActiveUserChanged_: function() {
+    assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
+    this.cloudPrintState_ = print_preview.CloudPrintState.SIGNED_IN;
   },
 });
 })();

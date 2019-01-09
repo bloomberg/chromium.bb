@@ -10,6 +10,12 @@ Polymer({
   properties: {
     activeUser: String,
 
+    /** @type {!print_preview.CloudPrintState} */
+    cloudPrintState: {
+      type: Number,
+      observer: 'onCloudPrintStateChanged_',
+    },
+
     /** @type {!print_preview.Destination} */
     destination: Object,
 
@@ -42,12 +48,6 @@ Polymer({
     },
 
     /** @private {boolean} */
-    showCloudPrintPromo_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private {boolean} */
     stale_: {
       type: Boolean,
       computed: 'computeStale_(destination)',
@@ -70,6 +70,21 @@ Polymer({
   /** @private */
   onDestinationSet_: function() {
     this.loadingDestination_ = !this.destination || !this.destination.id;
+  },
+
+  /** @private */
+  onCloudPrintStateChanged_: function() {
+    if (this.cloudPrintState !== print_preview.CloudPrintState.ENABLED) {
+      return;
+    }
+
+    const destinationDialog = this.$$('print-preview-destination-dialog');
+    if (destinationDialog && destinationDialog.isOpen()) {
+      this.destinationStore.startLoadCloudDestinations();
+      if (this.activeUser) {
+        this.invitationStore.startLoadingInvitations(this.activeUser);
+      }
+    }
   },
 
   /**
@@ -103,16 +118,6 @@ Polymer({
     }
     const dialog = this.$.destinationDialog.get();
     dialog.show();
-  },
-
-  showCloudPrintPromo: function() {
-    this.showCloudPrintPromo_ = true;
-  },
-
-  /** @return {boolean} Whether the destinations dialog is open. */
-  isDialogOpen: function() {
-    const destinationDialog = this.$$('print-preview-destination-dialog');
-    return destinationDialog && destinationDialog.isOpen();
   },
 
   /**

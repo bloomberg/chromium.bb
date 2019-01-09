@@ -13,6 +13,7 @@
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
+<link rel="import" href="../data/user_info.html">
 <link rel="import" href="destination_dialog.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
@@ -124,11 +125,11 @@
     <cr-lazy-render id="destinationDialog">
       <template>
         <print-preview-destination-dialog
+            cloud-print-state="[[cloudPrintState]]"
             destination-store="[[destinationStore]]"
             invitation-store="[[invitationStore]]"
             recent-destinations="[[recentDestinations]]"
             active-user="[[activeUser]]" users="[[users]]"
-            show-cloud-print-promo="{{showCloudPrintPromo_}}"
             on-close="onDialogClose_">
         </print-preview-destination-dialog>
       </template>

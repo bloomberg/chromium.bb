@@ -24,6 +24,7 @@
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation.html">
 <link rel="import" href="../data/invitation_store.html">
+<link rel="import" href="../data/user_info.html">
 <link rel="import" href="destination_list.html">
 <link rel="import" href="print_preview_search_box.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -198,7 +199,8 @@
       </div>
       <div id="promos" slot="footer">
         <div class="promo" id="cloudprintPromo"
-            hidden$="[[!showCloudPrintPromo]]">
+            hidden$="[[!shouldShowCloudPrintPromo_(
+                cloudPrintPromoDismissed_, cloudPrintState)]]">
           <iron-icon icon="print-preview:cloud-queue" alt=""></iron-icon>
           <div class="promo-text"></div>
           <paper-icon-button-light id="cloudPrintClose" class="icon-clear">
