@@ -13,11 +13,16 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(OS_CHROMEOS)
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "services/identity/public/cpp/accounts_mutator_impl.h"
 #endif
 
 namespace {
@@ -31,6 +36,19 @@ std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
   return std::make_unique<identity::PrimaryAccountMutatorImpl>(
       AccountTrackerServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile));
+#else
+  return nullptr;
+#endif
+}
+
+// Helper function returning a newly constructed AccountsMutator for
+// |profile|. May return null if mutation of accounts is not supported on the
+// current platform.
+std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
+    Profile* profile) {
+#if !defined(OS_ANDROID)
+  return std::make_unique<identity::AccountsMutatorImpl>(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
 #else
   return nullptr;
 #endif
@@ -53,7 +71,8 @@ class IdentityManagerWrapper : public KeyedService,
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             AccountTrackerServiceFactory::GetForProfile(profile),
             GaiaCookieManagerServiceFactory::GetForProfile(profile),
-            BuildPrimaryAccountMutator(profile)) {}
+            BuildPrimaryAccountMutator(profile),
+            BuildAccountsMutator(profile)) {}
 };
 
 IdentityManagerFactory::IdentityManagerFactory()

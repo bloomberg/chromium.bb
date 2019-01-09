@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/accounts_mutator_impl.h"
 
 #include "base/message_loop/message_loop.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/accounts_mutator_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -39,9 +39,9 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer {
 }  // namespace
 
 namespace identity {
-class AccountsMutatorTest : public testing::Test {
+class AccountsMutatorImplTest : public testing::Test {
  public:
-  AccountsMutatorTest()
+  AccountsMutatorImplTest()
       : token_service_(&pref_service_),
         token_service_observer_(&token_service_),
         accounts_mutator_(&token_service_) {
@@ -54,19 +54,19 @@ class AccountsMutatorTest : public testing::Test {
     return &token_service_observer_;
   }
 
-  AccountsMutator* accounts_mutator() { return &accounts_mutator_; }
+  AccountsMutatorImpl* accounts_mutator() { return &accounts_mutator_; }
 
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   FakeProfileOAuth2TokenService token_service_;
   TestTokenServiceObserver token_service_observer_;
-  AccountsMutator accounts_mutator_;
+  AccountsMutatorImpl accounts_mutator_;
 
-  DISALLOW_COPY_AND_ASSIGN(AccountsMutatorTest);
+  DISALLOW_COPY_AND_ASSIGN(AccountsMutatorImplTest);
 };
 
-TEST_F(AccountsMutatorTest, Basic) {
+TEST_F(AccountsMutatorImplTest, Basic) {
   // Should not crash.
 }
 

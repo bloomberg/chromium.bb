@@ -11,11 +11,16 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(OS_CHROMEOS)
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "services/identity/public/cpp/accounts_mutator_impl.h"
 #endif
 
 namespace identity {
@@ -201,18 +206,21 @@ IdentityTestEnvironment::IdentityTestEnvironment(
   if (identity_manager) {
     raw_identity_manager_ = identity_manager;
   } else {
+    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator;
+    std::unique_ptr<AccountsMutator> accounts_mutator;
 #if !defined(OS_CHROMEOS)
-    std::unique_ptr<PrimaryAccountMutator> account_mutator =
-        std::make_unique<PrimaryAccountMutatorImpl>(
-            account_tracker_service_,
-            static_cast<SigninManager*>(signin_manager_));
-#else
-    std::unique_ptr<PrimaryAccountMutator> account_mutator;
+    primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
+        account_tracker_service_, static_cast<SigninManager*>(signin_manager_));
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    accounts_mutator = std::make_unique<AccountsMutatorImpl>(token_service_);
 #endif
 
     owned_identity_manager_ = std::make_unique<IdentityManager>(
         signin_manager_, token_service_, account_tracker_service_,
-        gaia_cookie_manager_service_, std::move(account_mutator));
+        gaia_cookie_manager_service_, std::move(primary_account_mutator),
+        std::move(accounts_mutator));
   }
 
   this->identity_manager()->AddDiagnosticsObserver(this);

@@ -15,7 +15,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/scope_set.h"
 
 #if !defined(OS_CHROMEOS)
@@ -42,6 +41,7 @@ class ArcSupportHostTest;
 
 namespace identity {
 
+class AccountsMutator;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
 
@@ -169,7 +169,8 @@ class IdentityManager : public SigninManagerBase::Observer,
       ProfileOAuth2TokenService* token_service,
       AccountTrackerService* account_tracker_service,
       GaiaCookieManagerService* gaia_cookie_manager_service,
-      std::unique_ptr<PrimaryAccountMutator> primary_account_mutator);
+      std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
+      std::unique_ptr<AccountsMutator> accounts_mutator);
   ~IdentityManager() override;
 
   // Provides access to the extended information of the user's primary account.
@@ -283,7 +284,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   PrimaryAccountMutator* GetPrimaryAccountMutator();
 
   // Returns pointer to the object used to seed accounts and mutate state of
-  // accounts' refresh tokens. Guaranteed to be non-null.
+  // accounts' refresh tokens, if supported on the current platform. Otherwise,
+  // returns null.
   AccountsMutator* GetAccountsMutator();
 
   // Methods to register or remove observers.
@@ -406,9 +408,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // account state is not supported on the current platform.
   std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
 
-  // AccountsMutator instance. Guaranteed to be non-null, as this
-  // functionality is supported on all platforms.
-  AccountsMutator accounts_mutator_;
+  // AccountsMutator instance. May be null if mutation of accounts is not
+  // supported on the current platform.
+  std::unique_ptr<AccountsMutator> accounts_mutator_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
