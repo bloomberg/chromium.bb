@@ -401,7 +401,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
 // Verify that lower values of metadata are not sent to the sync server when
 // local metadata is updated.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
-       DontSendLowerValueToServerOnSingleChange) {
+       DISABLED_DontSendLowerValueToServerOnSingleChange) {
   table()->SetServerProfiles({CreateServerProfileWithUseStats(
       kAddr1ServerId, /*use_count=*/2, /*use_date=*/5)});
   table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
@@ -424,7 +424,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 // Verify that one-off addition of metadata is not sent to the sync
 // server. Metadata add and delete trigger multiple changes notification
 // instead.
-TEST_F(AutofillWalletMetadataSyncBridgeTest, DontAddToServerOnSingleChange) {
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       DISABLED_DontAddToServerOnSingleChange) {
   table()->SetServerProfiles({CreateServerProfileWithUseStats(
       kAddr1ServerId, /*use_count=*/1, /*use_date=*/2)});
   table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
@@ -447,7 +448,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, DontAddToServerOnSingleChange) {
 // Verify that higher values of metadata are sent to the sync server when local
 // metadata is updated.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
-       SendHigherValuesToServerOnLocalSingleChange) {
+       DISABLED_SendHigherValuesToServerOnLocalSingleChange) {
   table()->SetServerProfiles({CreateServerProfileWithUseStats(
       kAddr1ServerId, /*use_count=*/1, /*use_date=*/2)});
   table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(

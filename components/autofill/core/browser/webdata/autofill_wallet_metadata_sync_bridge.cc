@@ -134,7 +134,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 
-  LoadDataCacheAndMetadata();
+  LoadMetadata();
 }
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {}
@@ -236,56 +236,19 @@ void AutofillWalletMetadataSyncBridge::AutofillMultipleChanged() {
 
 void AutofillWalletMetadataSyncBridge::SyncUpUpdatedEntity(
     std::unique_ptr<EntityData> entity_after_change) {
-  std::string storage_key = GetStorageKey(*entity_after_change);
-  auto it = cache_.find(storage_key);
-
-  // This *changed* entity should already be in the cache, ignore otherwise.
-  if (it == cache_.end())
-    return;
-
-  const WalletMetadataSpecifics& specifics_before = it->second;
-  const WalletMetadataSpecifics& specifics_after =
-      entity_after_change->specifics.wallet_metadata();
-
-  if (specifics_before.use_count() < specifics_after.use_count() &&
-      specifics_before.use_date() < specifics_after.use_date()) {
-    std::unique_ptr<MetadataChangeList> metadata_change_list =
-        CreateMetadataChangeList();
-    cache_[storage_key] = specifics_after;
-    change_processor()->Put(storage_key, std::move(entity_after_change),
-                            metadata_change_list.get());
-  }
+  NOTIMPLEMENTED();
 }
 
 AutofillTable* AutofillWalletMetadataSyncBridge::GetAutofillTable() {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
 }
 
-void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
+void AutofillWalletMetadataSyncBridge::LoadMetadata() {
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load AutofillWebDatabase."});
     return;
-  }
-
-  // Load the data cache.
-  std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  std::vector<std::unique_ptr<CreditCard>> cards;
-  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
-      !GetAutofillTable()->GetServerCreditCards(&cards)) {
-    change_processor()->ReportError(
-        {FROM_HERE, "Failed reading autofill data from WebDatabase."});
-    return;
-  }
-  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
-    cache_[GetStorageKeyForMetadataId(entry->GetMetadata().id)] =
-        CreateMetadataEntityDataFromAutofillServerProfile(*entry)
-            ->specifics.wallet_metadata();
-  }
-  for (const std::unique_ptr<CreditCard>& entry : cards) {
-    cache_[GetStorageKeyForMetadataId(entry->GetMetadata().id)] =
-        CreateMetadataEntityDataFromCard(*entry)->specifics.wallet_metadata();
   }
 
   // Load the metadata and send to the processor.
