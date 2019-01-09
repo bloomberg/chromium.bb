@@ -541,7 +541,7 @@ static int mov_write_eac3_tag(AVIOContext *pb, MOVTrack *track)
         return AVERROR(EINVAL);
 
     info = track->eac3_priv;
-    size = 2 + 4 * (info->num_ind_sub + 1);
+    size = 2 + ((34 * (info->num_ind_sub + 1) + 7) >> 3);
     buf = av_malloc(size);
     if (!buf) {
         size = AVERROR(ENOMEM);
@@ -563,12 +563,12 @@ static int mov_write_eac3_tag(AVIOContext *pb, MOVTrack *track)
         put_bits(&pbc, 4, info->substream[i].num_dep_sub);
         if (!info->substream[i].num_dep_sub) {
             put_bits(&pbc, 1, 0); /* reserved */
-            size--;
         } else {
             put_bits(&pbc, 9, info->substream[i].chan_loc);
         }
     }
     flush_put_bits(&pbc);
+    size = put_bits_count(&pbc) >> 3;
 
     avio_wb32(pb, size + 8);
     ffio_wfourcc(pb, "dec3");
@@ -1611,8 +1611,6 @@ static unsigned int validate_codec_tag(const AVCodecTag *const *tags,
 
 static unsigned int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
 {
-    unsigned int tag;
-
     if (is_cover_image(track->st))
         return ff_codec_get_tag(codec_cover_image_tags, track->par->codec_id);
 
@@ -1623,12 +1621,11 @@ static unsigned int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
             av_log(s, AV_LOG_WARNING, "Warning, extension is not .m4a nor .m4v "
                    "Quicktime/Ipod might not play the file\n");
 
-    if (track->mode == MODE_MOV)
-        tag = mov_get_codec_tag(s, track);
-    else
-        tag = validate_codec_tag(s->oformat->codec_tag, track->par->codec_tag,
-                                 track->par->codec_id);
-    return tag;
+    if (track->mode == MODE_MOV) {
+        return mov_get_codec_tag(s, track);
+    } else
+        return validate_codec_tag(s->oformat->codec_tag, track->par->codec_tag,
+                                  track->par->codec_id);
 }
 
 /** Write uuid atom.

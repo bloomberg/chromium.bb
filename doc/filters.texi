@@ -955,6 +955,8 @@ select inverted half of sine wave
 select double-exponential seat
 @item desi
 select double-exponential sigmoid
+@item losi
+select logistic sigmoid
 @end table
 @end table
 
@@ -1070,17 +1072,17 @@ Apply arbitrary expressions to samples in frequency domain.
 @table @option
 @item real
 Set frequency domain real expression for each separate channel separated
-by '|'. Default is "1".
+by '|'. Default is "re".
 If the number of input channels is greater than the number of
 expressions, the last specified expression is used for the remaining
 output channels.
 
 @item imag
 Set frequency domain imaginary expression for each separate channel
-separated by '|'. If not set, @var{real} option is used.
+separated by '|'. Default is "im".
 
 Each expression in @var{real} and @var{imag} can contain the following
-constants:
+constants and functions:
 
 @table @option
 @item sr
@@ -1100,6 +1102,18 @@ number of channels
 
 @item pts
 current frame pts
+
+@item re
+current real part of frequency bin of current channel
+
+@item im
+current imaginary part of frequency bin of current channel
+
+@item real(b, ch)
+Return the value of real part of frequency bin at location (@var{bin},@var{channel})
+
+@item imag(b, ch)
+Return the value of imaginary part of frequency bin at location (@var{bin},@var{channel})
 @end table
 
 @item win_size
@@ -1137,7 +1151,7 @@ window function will be picked. Default is @code{0.75}.
 @item
 Leave almost only low frequencies in audio:
 @example
-afftfilt="1-clip((b/nb)*b,0,1)"
+afftfilt="'real=re * (1-clip((b/nb)*b,0,1))':imag='im * (1-clip((b/nb)*b,0,1))'"
 @end example
 @end itemize
 
@@ -1147,7 +1161,7 @@ afftfilt="1-clip((b/nb)*b,0,1)"
 Apply an arbitrary Frequency Impulse Response filter.
 
 This filter is designed for applying long FIR filters,
-up to 30 seconds long.
+up to 60 seconds long.
 
 It can be used as component for digital crossover filters,
 room equalization, cross talk cancellation, wavefield synthesis,
@@ -1171,15 +1185,39 @@ Set wet gain. This sets final output gain.
 @item length
 Set Impulse Response filter length. Default is 1, which means whole IR is processed.
 
-@item again
+@item gtype
 Enable applying gain measured from power of IR.
+
+Set which approach to use for auto gain measurement.
+
+@table @option
+@item none
+Do not apply any gain.
+
+@item peak
+select peak gain, very conservative approach. This is default value.
+
+@item dc
+select DC gain, limited application.
+
+@item gn
+select gain to noise approach, this is most popular one.
+@end table
+
+@item irgain
+Set gain to be applied to IR coefficients before filtering.
+Allowed range is 0 to 1. This gain is applied after any gain applied with @var{gtype} option.
+
+@item irfmt
+Set format of IR stream. Can be @code{mono} or @code{input}.
+Default is @code{input}.
 
 @item maxir
 Set max allowed Impulse Response filter duration in seconds. Default is 30 seconds.
 Allowed range is 0.1 to 60 seconds.
 
 @item response
-Show IR frequency reponse, magnitude and phase in additional video stream.
+Show IR frequency reponse, magnitude(magenta) and phase(green) and group delay(yellow) in additional video stream.
 By default it is disabled.
 
 @item channel
@@ -1188,6 +1226,19 @@ displayed. This option is used only when @var{response} is enabled.
 
 @item size
 Set video stream size. This option is used only when @var{response} is enabled.
+
+@item rate
+Set video stream frame rate. This option is used only when @var{response} is enabled.
+
+@item minp
+Set minimal partition size used for convolution. Default is @var{16}.
+Allowed range is from @var{16} to @var{65536}.
+Lower values decreases latency at cost of higher CPU usage.
+
+@item maxp
+Set maximal partition size used for convolution. Default is @var{65536}.
+Allowed range is from @var{16} to @var{65536}.
+Lower values decreases latency at cost of higher CPU usage.
 @end table
 
 @subsection Examples
@@ -4317,6 +4368,19 @@ you may wish to increase the value to account for background noise.
 Can be specified in dB (in case "dB" is appended to the specified value)
 or amplitude ratio. Default value is @code{0}.
 
+@item start_silence
+Specify max duration of silence at beginning that will be kept after
+trimming. Default is 0, which is equal to trimming all samples detected
+as silence.
+
+@item start_mode
+Specify mode of detection of silence end in start of multi-channel audio.
+Can be @var{any} or @var{all}. Default is @var{any}.
+With @var{any}, any sample that is detected as non-silence will cause
+stopped trimming of silence.
+With @var{all}, only if all channels are detected as non-silence will cause
+stopped trimming of silence.
+
 @item stop_periods
 Set the count for trimming silence from the end of audio.
 To remove silence from the middle of a file, specify a @var{stop_periods}
@@ -4338,11 +4402,18 @@ the end of audio.
 Can be specified in dB (in case "dB" is appended to the specified value)
 or amplitude ratio. Default value is @code{0}.
 
-@item leave_silence
-This indicates that @var{stop_duration} length of audio should be left intact
-at the beginning of each period of silence.
-For example, if you want to remove long pauses between words but do not want
-to remove the pauses completely. Default value is @code{0}.
+@item stop_silence
+Specify max duration of silence at end that will be kept after
+trimming. Default is 0, which is equal to trimming all samples detected
+as silence.
+
+@item stop_mode
+Specify mode of detection of silence start in end of multi-channel audio.
+Can be @var{any} or @var{all}. Default is @var{any}.
+With @var{any}, any sample that is detected as non-silence will cause
+stopped trimming of silence.
+With @var{all}, only if all channels are detected as non-silence will cause
+stopped trimming of silence.
 
 @item detection
 Set how is silence detected. Can be @code{rms} or @code{peak}. Second is faster
@@ -4350,7 +4421,8 @@ and works better with digital silence which is exactly 0.
 Default value is @code{rms}.
 
 @item window
-Set ratio used to calculate size of window for detecting silence.
+Set duration in number of seconds used to calculate size of window in number
+of samples for detecting silence.
 Default value is @code{0.02}. Allowed range is from @code{0} to @code{10}.
 @end table
 
@@ -4362,14 +4434,14 @@ The following example shows how this filter can be used to start a recording
 that does not contain the delay at the start which usually occurs between
 pressing the record button and the start of the performance:
 @example
-silenceremove=1:5:0.02
+silenceremove=start_periods=1:start_duration=5:start_threshold=0.02
 @end example
 
 @item
 Trim all silence encountered from beginning to end where there is more than 1
 second of silence in audio:
 @example
-silenceremove=0:0:0:-1:1:-90dB
+silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-90dB
 @end example
 @end itemize
 
@@ -5323,6 +5395,49 @@ Set number of samples per each frame.
 Set window function to be used when generating FIR coefficients.
 @end table
 
+@section sinc
+
+Generate a sinc kaiser-windowed low-pass, high-pass, band-pass, or band-reject FIR coefficients.
+
+The resulting stream can be used with @ref{afir} filter for filtering the audio signal.
+
+The filter accepts the following options:
+
+@table @option
+@item sample_rate, r
+Set sample rate, default is 44100.
+
+@item nb_samples, n
+Set number of samples per each frame. Default is 1024.
+
+@item hp
+Set high-pass frequency. Default is 0.
+
+@item lp
+Set low-pass frequency. Default is 0.
+If high-pass frequency is lower than low-pass frequency and low-pass frequency
+is higher than 0 then filter will create band-pass filter coefficients,
+otherwise band-reject filter coefficients.
+
+@item phase
+Set filter phase response. Default is 50. Allowed range is from 0 to 100.
+
+@item beta
+Set Kaiser window beta.
+
+@item att
+Set stop-band attenuation. Default is 120dB, allowed range is from 40 to 180 dB.
+
+@item round
+Enable rounding, by default is disabled.
+
+@item hptaps
+Set number of taps for high-pass filter.
+
+@item lptaps
+Set number of taps for low-pass filter.
+@end table
+
 @section sine
 
 Generate an audio signal made of a sine wave with amplitude 1/8.
@@ -6073,6 +6188,26 @@ Only deinterlace frames marked as interlaced.
 The default value is @code{all}.
 @end table
 
+@section chromahold
+Remove all color information for all colors except for certain one.
+
+The filter accepts the following options:
+
+@table @option
+@item color
+The color which will not be replaced with neutral chroma.
+
+@item similarity
+Similarity percentage with the above color.
+0.01 matches only the exact key color, while 1.0 matches everything.
+
+@item yuv
+Signals that the color passed is already in YUV instead of RGB.
+
+Literal colors like "green" or "red" don't make sense with this enabled anymore.
+This can be used to pass exact YUV values as hexadecimal numbers.
+@end table
+
 @section chromakey
 YUV colorspace color/chroma keying.
 
@@ -6117,6 +6252,23 @@ Overlay a greenscreen-video on top of a static black background.
 ffmpeg -f lavfi -i color=c=black:s=1280x720 -i video.mp4 -shortest -filter_complex "[1:v]chromakey=0x70de77:0.1:0.2[ckout];[0:v][ckout]overlay[out]" -map "[out]" output.mkv
 @end example
 @end itemize
+
+@section chromashift
+Shift chroma pixels horizontally and/or vertically.
+
+The filter accepts the following options:
+@table @option
+@item cbh
+Set amount to shift chroma-blue horizontally.
+@item cbv
+Set amount to shift chroma-blue vertically.
+@item crh
+Set amount to shift chroma-red horizontally.
+@item crv
+Set amount to shift chroma-red vertically.
+@item edge
+Set edge mode, can be @var{smear}, default, or @var{warp}.
+@end table
 
 @section ciescope
 
@@ -7625,6 +7777,30 @@ had noise.
 @end table
 
 The @code{deconvolve} filter also supports the @ref{framesync} options.
+
+@section dedot
+
+Reduce cross-luminance (dot-crawl) and cross-color (rainbows) from video.
+
+It accepts the following options:
+
+@table @option
+@item m
+Set mode of operation. Can be combination of @var{dotcrawl} for cross-luminance reduction and/or
+@var{rainbows} for cross-color reduction.
+
+@item lt
+Set spatial luma threshold. Lower values increases reduction of cross-luminance.
+
+@item tl
+Set tolerance for temporal luma. Higher values increases reduction of cross-luminance.
+
+@item tc
+Set tolerance for chroma temporal variation. Higher values increases reduction of cross-color.
+
+@item ct
+Set temporal chroma threshold. Lower values increases reduction of cross-color.
+@end table
 
 @section deflate
 
@@ -9893,6 +10069,35 @@ Select frame after every @code{step} frames.
 Allowed values are positive integers higher than 0. Default value is @code{1}.
 @end table
 
+@section freezedetect
+
+Detect frozen video.
+
+This filter logs a message and sets frame metadata when it detects that the
+input video has no significant change in content during a specified duration.
+Video freeze detection calculates the mean average absolute difference of all
+the components of video frames and compares it to a noise floor.
+
+The printed times and duration are expressed in seconds. The
+@code{lavfi.freezedetect.freeze_start} metadata key is set on the first frame
+whose timestamp equals or exceeds the detection duration and it contains the
+timestamp of the first frame of the freeze. The
+@code{lavfi.freezedetect.freeze_duration} and
+@code{lavfi.freezedetect.freeze_end} metadata keys are set on the first frame
+after the freeze.
+
+The filter accepts the following options:
+
+@table @option
+@item noise, n
+Set noise tolerance. Can be specified in dB (in case "dB" is appended to the
+specified value) or as a difference ratio between 0 and 1. Default is -60dB, or
+0.001.
+
+@item duration, d
+Set freeze duration until notification (default is 2 seconds).
+@end table
+
 @anchor{frei0r}
 @section frei0r
 
@@ -10010,6 +10215,8 @@ Default is @code{-1}.
 @end table
 
 @section geq
+
+Apply generic equation to each pixel.
 
 The filter accepts the following options:
 
@@ -10187,6 +10394,63 @@ gradfun=radius=8
 @end example
 
 @end itemize
+
+@section graphmonitor, agraphmonitor
+Show various filtergraph stats.
+
+With this filter one can debug complete filtergraph.
+Especially issues with links filling with queued frames.
+
+The filter accepts the following options:
+
+@table @option
+@item size, s
+Set video output size. Default is @var{hd720}.
+
+@item opacity, o
+Set video opacity. Default is @var{0.9}. Allowed range is from @var{0} to @var{1}.
+
+@item mode, m
+Set output mode, can be @var{fulll} or @var{compact}.
+In @var{compact} mode only filters with some queued frames have displayed stats.
+
+@item flags, f
+Set flags which enable which stats are shown in video.
+
+Available values for flags are:
+@table @samp
+@item queue
+Display number of queued frames in each link.
+
+@item frame_count_in
+Display number of frames taken from filter.
+
+@item frame_count_out
+Display number of frames given out from filter.
+
+@item pts
+Display current filtered frame pts.
+
+@item time
+Display current filtered frame time.
+
+@item timebase
+Display time base for filter link.
+
+@item format
+Display used format for filter link.
+
+@item size
+Display video size or number of audio channels in case of audio used by filter link.
+
+@item rate
+Display video frame rate or sample rate in case of audio used by filter link.
+@end table
+
+@item rate, r
+Set upper limit for video rate of output stream, Default value is @var{25}.
+This guarantee that output video frame rate will not be higher than this value.
+@end table
 
 @section greyedge
 A color constancy variation filter which estimates scene illumination via grey edge algorithm
@@ -10438,6 +10702,7 @@ A floating point number which specifies chroma temporal strength. It defaults to
 @var{luma_tmp}*@var{chroma_spatial}/@var{luma_spatial}.
 @end table
 
+@anchor{hwdownload}
 @section hwdownload
 
 Download hardware frames to system memory.
@@ -10528,6 +10793,7 @@ ways if there are any additional constraints on that filter's output.
 Do not use it without fully understanding the implications of its use.
 @end table
 
+@anchor{hwupload}
 @section hwupload
 
 Upload system memory frames to hardware surfaces.
@@ -11133,7 +11399,9 @@ Set the file path to be used to store logs.
 Set the format of the log file (xml or json).
 
 @item enable_transform
-Enables transform for computing vmaf.
+This option can enable/disable the @code{score_transform} applied to the final predicted VMAF score,
+if you have specified score_transform option in the input parameter file passed to @code{run_vmaf_training.py}
+Default value: @code{false}
 
 @item phone_model
 Invokes the phone model which will generate VMAF scores higher than in the
@@ -11172,7 +11440,7 @@ ffmpeg -i main.mpg -i ref.mpg -lavfi libvmaf -f null -
 
 Example with options:
 @example
-ffmpeg -i main.mpg -i ref.mpg -lavfi libvmaf="psnr=1:enable-transform=1" -f null -
+ffmpeg -i main.mpg -i ref.mpg -lavfi libvmaf="psnr=1:log_fmt=json" -f null -
 @end example
 
 @section limiter
@@ -11210,6 +11478,28 @@ Set maximal size in number of frames. Default is 0.
 Set first frame of loop. Default is 0.
 @end table
 
+@subsection Examples
+
+@itemize
+@item
+Loop single first frame infinitely:
+@example
+loop=loop=-1:size=1:start=0
+@end example
+
+@item
+Loop single first frame 10 times:
+@example
+loop=loop=10:size=1:start=0
+@end example
+
+@item
+Loop 10 first frames 5 times:
+@example
+loop=loop=5:size=10:start=0
+@end example
+@end itemize
+
 @section lut1d
 
 Apply a 1D LUT to an input video.
@@ -11236,8 +11526,12 @@ Available values are:
 Use values from the nearest defined point.
 @item linear
 Interpolate values using the linear interpolation.
+@item cosine
+Interpolate values using the cosine interpolation.
 @item cubic
 Interpolate values using the cubic interpolation.
+@item spline
+Interpolate values using the spline interpolation.
 @end table
 @end table
 
@@ -11466,6 +11760,10 @@ set second pixel component expression
 set third pixel component expression
 @item c3
 set fourth pixel component expression, corresponds to the alpha component
+
+@item d
+set output bit depth, only available for @code{lut2} filter. By default is 0,
+which means bit depth is automatically picked from first input format.
 @end table
 
 Each of them specifies the expression to use for computing the lookup table for
@@ -14044,6 +14342,31 @@ trim=end=5,reverse
 @end example
 @end itemize
 
+@section rgbashift
+Shift R/G/B/A pixels horizontally and/or vertically.
+
+The filter accepts the following options:
+@table @option
+@item rh
+Set amount to shift red horizontally.
+@item rv
+Set amount to shift red vertically.
+@item gh
+Set amount to shift green horizontally.
+@item gv
+Set amount to shift green vertically.
+@item bh
+Set amount to shift blue horizontally.
+@item bv
+Set amount to shift blue vertically.
+@item ah
+Set amount to shift alpha horizontally.
+@item av
+Set amount to shift alpha vertically.
+@item edge
+Set edge mode, can be @var{smear}, default, or @var{warp}.
+@end table
+
 @section roberts
 Apply roberts cross operator to input video stream.
 
@@ -14854,6 +15177,125 @@ Mark the frame as top-field-first.
 
 @item prog
 Mark the frame as progressive.
+@end table
+@end table
+
+@anchor{setparams}
+@section setparams
+
+Force frame parameter for the output video frame.
+
+The @code{setparams} filter marks interlace and color range for the
+output frames. It does not change the input frame, but only sets the
+corresponding property, which affects how the frame is treated by
+filters/encoders.
+
+@table @option
+@item field_mode
+Available values are:
+
+@table @samp
+@item auto
+Keep the same field property (default).
+
+@item bff
+Mark the frame as bottom-field-first.
+
+@item tff
+Mark the frame as top-field-first.
+
+@item prog
+Mark the frame as progressive.
+@end table
+
+@item range
+Available values are:
+
+@table @samp
+@item auto
+Keep the same color range property (default).
+
+@item unspecified, unknown
+Mark the frame as unspecified color range.
+
+@item limited, tv, mpeg
+Mark the frame as limited range.
+
+@item full, pc, jpeg
+Mark the frame as full range.
+@end table
+
+@item color_primaries
+Set the color primaries.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same color primaries property (default).
+
+@item bt709
+@item unknown
+@item bt470m
+@item bt470bg
+@item smpte170m
+@item smpte240m
+@item film
+@item bt2020
+@item smpte428
+@item smpte431
+@item smpte432
+@item jedec-p22
+@end table
+
+@item color_trc
+Set the color transfert.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same color trc property (default).
+
+@item bt709
+@item unknown
+@item bt470m
+@item bt470bg
+@item smpte170m
+@item smpte240m
+@item linear
+@item log100
+@item log316
+@item iec61966-2-4
+@item bt1361e
+@item iec61966-2-1
+@item bt2020-10
+@item bt2020-12
+@item smpte2084
+@item smpte428
+@item arib-std-b67
+@end table
+
+@item colorspace
+Set the colorspace.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same colorspace property (default).
+
+@item gbr
+@item bt709
+@item unknown
+@item fcc
+@item bt470bg
+@item smpte170m
+@item smpte240m
+@item ycgco
+@item bt2020nc
+@item bt2020c
+@item smpte2085
+@item chroma-derived-nc
+@item chroma-derived-c
+@item ictcp
 @end table
 @end table
 
@@ -16338,6 +16780,7 @@ tmix=frames=3:weights="-1 2 -1":scale=1
 @end example
 @end itemize
 
+@anchor{tonemap}
 @section tonemap
 Tone map colors from different dynamic ranges.
 
@@ -16443,6 +16886,46 @@ This option works only if the input frame has a supported color tag.
 Override signal/nominal/reference peak with this value. Useful when the
 embedded peak information in display metadata is not reliable or when tone
 mapping from a lower range to a higher range.
+@end table
+
+@section tpad
+
+Temporarily pad video frames.
+
+The filter accepts the following options:
+
+@table @option
+@item start
+Specify number of delay frames before input video stream.
+
+@item stop
+Specify number of padding frames after input video stream.
+Set to -1 to pad indefinitely.
+
+@item start_mode
+Set kind of frames added to beginning of stream.
+Can be either @var{add} or @var{clone}.
+With @var{add} frames of solid-color are added.
+With @var{clone} frames are clones of first frame.
+
+@item stop_mode
+Set kind of frames added to end of stream.
+Can be either @var{add} or @var{clone}.
+With @var{add} frames of solid-color are added.
+With @var{clone} frames are clones of last frame.
+
+@item start_duration, stop_duration
+Specify the duration of the start/stop delay. See
+@ref{time duration syntax,,the Time duration section in the ffmpeg-utils(1) manual,ffmpeg-utils}
+for the accepted syntax.
+These options override @var{start} and @var{stop}.
+
+@item color
+Specify the color of the padded area. For the syntax of this option,
+check the @ref{color syntax,,"Color" section in the ffmpeg-utils
+manual,ffmpeg-utils}.
+
+The default value of @var{color} is "black".
 @end table
 
 @anchor{transpose}
@@ -17164,6 +17647,35 @@ and ones with constant delta pts.
 If there was frames with variable delta, than it will also show min and max delta
 encountered.
 
+@section vibrance
+
+Boost or alter saturation.
+
+The filter accepts the following options:
+@table @option
+@item intensity
+Set strength of boost if positive value or strength of alter if negative value.
+Default is 0. Allowed range is from -2 to 2.
+
+@item rbal
+Set the red balance. Default is 1. Allowed range is from -10 to 10.
+
+@item gbal
+Set the green balance. Default is 1. Allowed range is from -10 to 10.
+
+@item bbal
+Set the blue balance. Default is 1. Allowed range is from -10 to 10.
+
+@item rlum
+Set the red luma coefficient.
+
+@item glum
+Set the green luma coefficient.
+
+@item blum
+Set the blue luma coefficient.
+@end table
+
 @anchor{vignette}
 @section vignette
 
@@ -17540,11 +18052,124 @@ Set the scaling dimension: @code{2} for @code{2xBR}, @code{3} for
 Default is @code{3}.
 @end table
 
+@section xstack
+Stack video inputs into custom layout.
+
+All streams must be of same pixel format.
+
+The filter accept the following option:
+
+@table @option
+@item inputs
+Set number of input streams. Default is 2.
+
+@item layout
+Specify layout of inputs.
+This option requires the desired layout configuration to be explicitly set by the user.
+This sets position of each video input in output. Each input
+is separated by '|'.
+The first number represents the column, and the second number represents the row.
+Numbers start at 0 and are separated by '_'. Optionally one can use wX and hX,
+where X is video input from which to take width or height.
+Multiple values can be used when separated by '+'. In such
+case values are summed together.
+
+@item shortest
+If set to 1, force the output to terminate when the shortest input
+terminates. Default value is 0.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Display 4 inputs into 2x2 grid,
+note that if inputs are of different sizes unused gaps might appear,
+as not all of output video is used.
+@example
+xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0
+@end example
+
+@item
+Display 4 inputs into 1x4 grid,
+note that if inputs are of different sizes unused gaps might appear,
+as not all of output video is used.
+@example
+xstack=inputs=4:layout=0_0|0_h0|0_h0+h1|0_h0+h1+h2
+@end example
+
+@item
+Display 9 inputs into 3x3 grid,
+note that if inputs are of different sizes unused gaps might appear,
+as not all of output video is used.
+@example
+xstack=inputs=9:layout=w3_0|w3_h0+h2|w3_h0|0_h4|0_0|w3+w1_0|0_h1+h2|w3+w1_h0|w3+w1_h1+h2
+@end example
+@end itemize
+
 @anchor{yadif}
 @section yadif
 
 Deinterlace the input video ("yadif" means "yet another deinterlacing
 filter").
+
+It accepts the following parameters:
+
+
+@table @option
+
+@item mode
+The interlacing mode to adopt. It accepts one of the following values:
+
+@table @option
+@item 0, send_frame
+Output one frame for each frame.
+@item 1, send_field
+Output one frame for each field.
+@item 2, send_frame_nospatial
+Like @code{send_frame}, but it skips the spatial interlacing check.
+@item 3, send_field_nospatial
+Like @code{send_field}, but it skips the spatial interlacing check.
+@end table
+
+The default value is @code{send_frame}.
+
+@item parity
+The picture field parity assumed for the input interlaced video. It accepts one
+of the following values:
+
+@table @option
+@item 0, tff
+Assume the top field is first.
+@item 1, bff
+Assume the bottom field is first.
+@item -1, auto
+Enable automatic detection of field parity.
+@end table
+
+The default value is @code{auto}.
+If the interlacing is unknown or the decoder does not export this information,
+top field first will be assumed.
+
+@item deint
+Specify which frames to deinterlace. Accept one of the following
+values:
+
+@table @option
+@item 0, all
+Deinterlace all frames.
+@item 1, interlaced
+Only deinterlace frames marked as interlaced.
+@end table
+
+The default value is @code{all}.
+@end table
+
+@section yadif_cuda
+
+Deinterlace the input video using the @ref{yadif} algorithm, but implemented
+in CUDA so that it can work as part of a GPU accelerated pipeline with nvdec
+and/or nvenc.
 
 It accepts the following parameters:
 
@@ -17966,6 +18591,585 @@ pixel format "yuv422p" @var{hsub} is 2 and @var{vsub} is 1.
 @end table
 
 @c man end VIDEO FILTERS
+
+@chapter OpenCL Video Filters
+@c man begin OPENCL VIDEO FILTERS
+
+Below is a description of the currently available OpenCL video filters.
+
+To enable compilation of these filters you need to configure FFmpeg with
+@code{--enable-opencl}.
+
+Running OpenCL filters requires you to initialize a hardware device and to pass that device to all filters in any filter graph.
+@table @option
+
+@item -init_hw_device opencl[=@var{name}][:@var{device}[,@var{key=value}...]]
+Initialise a new hardware device of type @var{opencl} called @var{name}, using the
+given device parameters.
+
+@item -filter_hw_device @var{name}
+Pass the hardware device called @var{name} to all filters in any filter graph.
+
+@end table
+
+For more detailed information see @url{https://www.ffmpeg.org/ffmpeg.html#Advanced-Video-options}
+
+@itemize
+@item
+Example of choosing the first device on the second platform and running avgblur_opencl filter with default parameters on it.
+@example
+-init_hw_device opencl=gpu:1.0 -filter_hw_device gpu -i INPUT -vf "hwupload, avgblur_opencl, hwdownload" OUTPUT
+@end example
+@end itemize
+
+Since OpenCL filters are not able to access frame data in normal memory, all frame data needs to be uploaded(@ref{hwupload}) to hardware surfaces connected to the appropriate device before being used and then downloaded(@ref{hwdownload}) back to normal memory. Note that @ref{hwupload} will upload to a surface with the same layout as the software frame, so it may be necessary to add a @ref{format} filter immediately before to get the input into the right format and @ref{hwdownload} does not support all formats on the output - it may be necessary to insert an additional @ref{format} filter immediately following in the graph to get the output in a supported format.
+
+@section avgblur_opencl
+
+Apply average blur filter.
+
+The filter accepts the following options:
+
+@table @option
+@item sizeX
+Set horizontal radius size.
+Range is @code{[1, 1024]} and default value is @code{1}.
+
+@item planes
+Set which planes to filter. Default value is @code{0xf}, by which all planes are processed.
+
+@item sizeY
+Set vertical radius size. Range is @code{[1, 1024]} and default value is @code{0}. If zero, @code{sizeX} value will be used.
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply average blur filter with horizontal and vertical size of 3, setting each pixel of the output to the average value of the 7x7 region centered on it in the input. For pixels on the edges of the image, the region does not extend beyond the image boundaries, and so out-of-range coordinates are not used in the calculations.
+@example
+-i INPUT -vf "hwupload, avgblur_opencl=3, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section boxblur_opencl
+
+Apply a boxblur algorithm to the input video.
+
+It accepts the following parameters:
+
+@table @option
+
+@item luma_radius, lr
+@item luma_power, lp
+@item chroma_radius, cr
+@item chroma_power, cp
+@item alpha_radius, ar
+@item alpha_power, ap
+
+@end table
+
+A description of the accepted options follows.
+
+@table @option
+@item luma_radius, lr
+@item chroma_radius, cr
+@item alpha_radius, ar
+Set an expression for the box radius in pixels used for blurring the
+corresponding input plane.
+
+The radius value must be a non-negative number, and must not be
+greater than the value of the expression @code{min(w,h)/2} for the
+luma and alpha planes, and of @code{min(cw,ch)/2} for the chroma
+planes.
+
+Default value for @option{luma_radius} is "2". If not specified,
+@option{chroma_radius} and @option{alpha_radius} default to the
+corresponding value set for @option{luma_radius}.
+
+The expressions can contain the following constants:
+@table @option
+@item w
+@item h
+The input width and height in pixels.
+
+@item cw
+@item ch
+The input chroma image width and height in pixels.
+
+@item hsub
+@item vsub
+The horizontal and vertical chroma subsample values. For example, for the
+pixel format "yuv422p", @var{hsub} is 2 and @var{vsub} is 1.
+@end table
+
+@item luma_power, lp
+@item chroma_power, cp
+@item alpha_power, ap
+Specify how many times the boxblur filter is applied to the
+corresponding plane.
+
+Default value for @option{luma_power} is 2. If not specified,
+@option{chroma_power} and @option{alpha_power} default to the
+corresponding value set for @option{luma_power}.
+
+A value of 0 will disable the effect.
+@end table
+
+@subsection Examples
+
+Apply boxblur filter, setting each pixel of the output to the average value of box-radiuses @var{luma_radius}, @var{chroma_radius}, @var{alpha_radius} for each plane respectively. The filter will apply @var{luma_power}, @var{chroma_power}, @var{alpha_power} times onto the corresponding plane. For pixels on the edges of the image, the radius does not extend beyond the image boundaries, and so out-of-range coordinates are not used in the calculations.
+
+@itemize
+@item
+Apply a boxblur filter with the luma, chroma, and alpha radius
+set to 2 and luma, chroma, and alpha power set to 3. The filter will run 3 times with box-radius set to 2 for every plane of the image.
+@example
+-i INPUT -vf "hwupload, boxblur_opencl=luma_radius=2:luma_power=3, hwdownload" OUTPUT
+-i INPUT -vf "hwupload, boxblur_opencl=2:3, hwdownload" OUTPUT
+@end example
+
+@item
+Apply a boxblur filter with luma radius set to 2, luma_power to 1, chroma_radius to 4, chroma_power to 5, alpha_radius to 3 and alpha_power to 7.
+
+For the luma plane, a 2x2 box radius will be run once.
+
+For the chroma plane, a 4x4 box radius will be run 5 times.
+
+For the alpha plane, a 3x3 box radius will be run 7 times.
+@example
+-i INPUT -vf "hwupload, boxblur_opencl=2:1:4:5:3:7, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section convolution_opencl
+
+Apply convolution of 3x3, 5x5, 7x7 matrix.
+
+The filter accepts the following options:
+
+@table @option
+@item 0m
+@item 1m
+@item 2m
+@item 3m
+Set matrix for each plane.
+Matrix is sequence of 9, 25 or 49 signed numbers.
+Default value for each plane is @code{0 0 0 0 1 0 0 0 0}.
+
+@item 0rdiv
+@item 1rdiv
+@item 2rdiv
+@item 3rdiv
+Set multiplier for calculated value for each plane.
+If unset or 0, it will be sum of all matrix elements.
+The option value must be an float number greater or equal to @code{0.0}. Default value is @code{1.0}.
+
+@item 0bias
+@item 1bias
+@item 2bias
+@item 3bias
+Set bias for each plane. This value is added to the result of the multiplication.
+Useful for making the overall image brighter or darker.
+The option value must be an float number greater or equal to @code{0.0}. Default value is @code{0.0}.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Apply sharpen:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0:0 -1 0 -1 5 -1 0 -1 0, hwdownload" OUTPUT
+@end example
+
+@item
+Apply blur:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1 1 1 1 1 1 1 1 1:1/9:1/9:1/9:1/9, hwdownload" OUTPUT
+@end example
+
+@item
+Apply edge enhance:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=0 0 0 -1 1 0 0 0 0:0 0 0 -1 1 0 0 0 0:0 0 0 -1 1 0 0 0 0:0 0 0 -1 1 0 0 0 0:5:1:1:1:0:128:128:128, hwdownload" OUTPUT
+@end example
+
+@item
+Apply edge detect:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=0 1 0 1 -4 1 0 1 0:0 1 0 1 -4 1 0 1 0:0 1 0 1 -4 1 0 1 0:0 1 0 1 -4 1 0 1 0:5:5:5:1:0:128:128:128, hwdownload" OUTPUT
+@end example
+
+@item
+Apply laplacian edge detector which includes diagonals:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=1 1 1 1 -8 1 1 1 1:1 1 1 1 -8 1 1 1 1:1 1 1 1 -8 1 1 1 1:1 1 1 1 -8 1 1 1 1:5:5:5:1:0:128:128:0, hwdownload" OUTPUT
+@end example
+
+@item
+Apply emboss:
+@example
+-i INPUT -vf "hwupload, convolution_opencl=-2 -1 0 -1 1 1 0 1 2:-2 -1 0 -1 1 1 0 1 2:-2 -1 0 -1 1 1 0 1 2:-2 -1 0 -1 1 1 0 1 2, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section dilation_opencl
+
+Apply dilation effect to the video.
+
+This filter replaces the pixel by the local(3x3) maximum.
+
+It accepts the following options:
+
+@table @option
+@item threshold0
+@item threshold1
+@item threshold2
+@item threshold3
+Limit the maximum change for each plane. Range is @code{[0, 65535]} and default value is @code{65535}.
+If @code{0}, plane will remain unchanged.
+
+@item coordinates
+Flag which specifies the pixel to refer to.
+Range is @code{[0, 255]} and default value is @code{255}, i.e. all eight pixels are used.
+
+Flags to local 3x3 coordinates region centered on @code{x}:
+
+    1 2 3
+
+    4 x 5
+
+    6 7 8
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply dilation filter with threshold0 set to 30, threshold1 set 40, threshold2 set to 50 and coordinates set to 231, setting each pixel of the output to the local maximum between pixels: 1, 2, 3, 6, 7, 8 of the 3x3 region centered on it in the input. If the difference between input pixel and local maximum is more then threshold of the corresponding plane, output pixel will be set to input pixel + threshold of corresponding plane.
+@example
+-i INPUT -vf "hwupload, dilation_opencl=30:40:50:coordinates=231, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section erosion_opencl
+
+Apply erosion effect to the video.
+
+This filter replaces the pixel by the local(3x3) minimum.
+
+It accepts the following options:
+
+@table @option
+@item threshold0
+@item threshold1
+@item threshold2
+@item threshold3
+Limit the maximum change for each plane. Range is @code{[0, 65535]} and default value is @code{65535}.
+If @code{0}, plane will remain unchanged.
+
+@item coordinates
+Flag which specifies the pixel to refer to.
+Range is @code{[0, 255]} and default value is @code{255}, i.e. all eight pixels are used.
+
+Flags to local 3x3 coordinates region centered on @code{x}:
+
+    1 2 3
+
+    4 x 5
+
+    6 7 8
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply erosion filter with threshold0 set to 30, threshold1 set 40, threshold2 set to 50 and coordinates set to 231, setting each pixel of the output to the local minimum between pixels: 1, 2, 3, 6, 7, 8 of the 3x3 region centered on it in the input. If the difference between input pixel and local minimum is more then threshold of the corresponding plane, output pixel will be set to input pixel - threshold of corresponding plane.
+@example
+-i INPUT -vf "hwupload, erosion_opencl=30:40:50:coordinates=231, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section overlay_opencl
+
+Overlay one video on top of another.
+
+It takes two inputs and has one output. The first input is the "main" video on which the second input is overlaid.
+This filter requires same memory layout for all the inputs. So, format conversion may be needed.
+
+The filter accepts the following options:
+
+@table @option
+
+@item x
+Set the x coordinate of the overlaid video on the main video.
+Default value is @code{0}.
+
+@item y
+Set the x coordinate of the overlaid video on the main video.
+Default value is @code{0}.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Overlay an image LOGO at the top-left corner of the INPUT video. Both inputs are yuv420p format.
+@example
+-i INPUT -i LOGO -filter_complex "[0:v]hwupload[a], [1:v]format=yuv420p, hwupload[b], [a][b]overlay_opencl, hwdownload" OUTPUT
+@end example
+@item
+The inputs have same memory layout for color channels , the overlay has additional alpha plane, like INPUT is yuv420p, and the LOGO is yuva420p.
+@example
+-i INPUT -i LOGO -filter_complex "[0:v]hwupload[a], [1:v]format=yuva420p, hwupload[b], [a][b]overlay_opencl, hwdownload" OUTPUT
+@end example
+
+@end itemize
+
+@section prewitt_opencl
+
+Apply the Prewitt operator (@url{https://en.wikipedia.org/wiki/Prewitt_operator}) to input video stream.
+
+The filter accepts the following option:
+
+@table @option
+@item planes
+Set which planes to filter. Default value is @code{0xf}, by which all planes are processed.
+
+@item scale
+Set value which will be multiplied with filtered result.
+Range is @code{[0.0, 65535]} and default value is @code{1.0}.
+
+@item delta
+Set value which will be added to filtered result.
+Range is @code{[-65535, 65535]} and default value is @code{0.0}.
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply the Prewitt operator with scale set to 2 and delta set to 10.
+@example
+-i INPUT -vf "hwupload, prewitt_opencl=scale=2:delta=10, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section roberts_opencl
+Apply the Roberts cross operator (@url{https://en.wikipedia.org/wiki/Roberts_cross}) to input video stream.
+
+The filter accepts the following option:
+
+@table @option
+@item planes
+Set which planes to filter. Default value is @code{0xf}, by which all planes are processed.
+
+@item scale
+Set value which will be multiplied with filtered result.
+Range is @code{[0.0, 65535]} and default value is @code{1.0}.
+
+@item delta
+Set value which will be added to filtered result.
+Range is @code{[-65535, 65535]} and default value is @code{0.0}.
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply the Roberts cross operator with scale set to 2 and delta set to 10
+@example
+-i INPUT -vf "hwupload, roberts_opencl=scale=2:delta=10, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section sobel_opencl
+
+Apply the Sobel operator (@url{https://en.wikipedia.org/wiki/Sobel_operator}) to input video stream.
+
+The filter accepts the following option:
+
+@table @option
+@item planes
+Set which planes to filter. Default value is @code{0xf}, by which all planes are processed.
+
+@item scale
+Set value which will be multiplied with filtered result.
+Range is @code{[0.0, 65535]} and default value is @code{1.0}.
+
+@item delta
+Set value which will be added to filtered result.
+Range is @code{[-65535, 65535]} and default value is @code{0.0}.
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Apply sobel operator with scale set to 2 and delta set to 10
+@example
+-i INPUT -vf "hwupload, sobel_opencl=scale=2:delta=10, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@section tonemap_opencl
+
+Perform HDR(PQ/HLG) to SDR conversion with tone-mapping.
+
+It accepts the following parameters:
+
+@table @option
+@item tonemap
+Specify the tone-mapping operator to be used. Same as tonemap option in @ref{tonemap}.
+
+@item param
+Tune the tone mapping algorithm. same as param option in @ref{tonemap}.
+
+@item desat
+Apply desaturation for highlights that exceed this level of brightness. The
+higher the parameter, the more color information will be preserved. This
+setting helps prevent unnaturally blown-out colors for super-highlights, by
+(smoothly) turning into white instead. This makes images feel more natural,
+at the cost of reducing information about out-of-range colors.
+
+The default value is 0.5, and the algorithm here is a little different from
+the cpu version tonemap currently. A setting of 0.0 disables this option.
+
+@item threshold
+The tonemapping algorithm parameters is fine-tuned per each scene. And a threshold
+is used to detect whether the scene has changed or not. If the distance beween
+the current frame average brightness and the current running average exceeds
+a threshold value, we would re-calculate scene average and peak brightness.
+The default value is 0.2.
+
+@item format
+Specify the output pixel format.
+
+Currently supported formats are:
+@table @var
+@item p010
+@item nv12
+@end table
+
+@item range, r
+Set the output color range.
+
+Possible values are:
+@table @var
+@item tv/mpeg
+@item pc/jpeg
+@end table
+
+Default is same as input.
+
+@item primaries, p
+Set the output color primaries.
+
+Possible values are:
+@table @var
+@item bt709
+@item bt2020
+@end table
+
+Default is same as input.
+
+@item transfer, t
+Set the output transfer characteristics.
+
+Possible values are:
+@table @var
+@item bt709
+@item bt2020
+@end table
+
+Default is bt709.
+
+@item matrix, m
+Set the output colorspace matrix.
+
+Possible value are:
+@table @var
+@item bt709
+@item bt2020
+@end table
+
+Default is same as input.
+
+@end table
+
+@subsection Example
+
+@itemize
+@item
+Convert HDR(PQ/HLG) video to bt2020-transfer-characteristic p010 format using linear operator.
+@example
+-i INPUT -vf "format=p010,hwupload,tonemap_opencl=t=bt2020:tonemap=linear:format=p010,hwdownload,format=p010" OUTPUT
+@end example
+@end itemize
+
+@section unsharp_opencl
+
+Sharpen or blur the input video.
+
+It accepts the following parameters:
+
+@table @option
+@item luma_msize_x, lx
+Set the luma matrix horizontal size.
+Range is @code{[1, 23]} and default value is @code{5}.
+
+@item luma_msize_y, ly
+Set the luma matrix vertical size.
+Range is @code{[1, 23]} and default value is @code{5}.
+
+@item luma_amount, la
+Set the luma effect strength.
+Range is @code{[-10, 10]} and default value is @code{1.0}.
+
+Negative values will blur the input video, while positive values will
+sharpen it, a value of zero will disable the effect.
+
+@item chroma_msize_x, cx
+Set the chroma matrix horizontal size.
+Range is @code{[1, 23]} and default value is @code{5}.
+
+@item chroma_msize_y, cy
+Set the chroma matrix vertical size.
+Range is @code{[1, 23]} and default value is @code{5}.
+
+@item chroma_amount, ca
+Set the chroma effect strength.
+Range is @code{[-10, 10]} and default value is @code{0.0}.
+
+Negative values will blur the input video, while positive values will
+sharpen it, a value of zero will disable the effect.
+
+@end table
+
+All parameters are optional and default to the equivalent of the
+string '5:5:1.0:5:5:0.0'.
+
+@subsection Examples
+
+@itemize
+@item
+Apply strong luma sharpen effect:
+@example
+-i INPUT -vf "hwupload, unsharp_opencl=luma_msize_x=7:luma_msize_y=7:luma_amount=2.5, hwdownload" OUTPUT
+@end example
+
+@item
+Apply a strong blur of both luma and chroma parameters:
+@example
+-i INPUT -vf "hwupload, unsharp_opencl=7:7:-2:7:7:-2, hwdownload" OUTPUT
+@end example
+@end itemize
+
+@c man end OPENCL VIDEO FILTERS
 
 @chapter Video Sources
 @c man begin VIDEO SOURCES
@@ -19256,7 +20460,11 @@ time graph to observe the loudness evolution. The graphic contains the logged
 message mentioned above, so it is not printed anymore when this option is set,
 unless the verbose logging is set. The main graphing area contains the
 short-term loudness (3 seconds of analysis), and the gauge on the right is for
-the momentary loudness (400 milliseconds).
+the momentary loudness (400 milliseconds), but can optionally be configured
+to instead display short-term loudness (see @var{gauge}).
+
+The green area marks a  +/- 1LU target range around the target loudness
+(-23LUFS by default, unless modified through @var{target}).
 
 More information about the Loudness Recommendation EBU R128 on
 @url{http://tech.ebu.ch/loudness}.
@@ -19333,6 +20541,23 @@ Multi-channel input files are not affected by this option.
 @item panlaw
 Set a specific pan law to be used for the measurement of dual mono files.
 This parameter is optional, and has a default value of -3.01dB.
+
+@item target
+Set a specific target level (in LUFS) used as relative zero in the visualization.
+This parameter is optional and has a default value of -23LUFS as specified
+by EBU R128. However, material published online may prefer a level of -16LUFS
+(e.g. for use with podcasts or video platforms).
+
+@item gauge
+Set the value displayed by the gauge. Valid values are @code{momentary} and s
+@code{shortterm}. By default the momentary value will be used, but in certain
+scenarios it may be more useful to observe the short term value instead (e.g.
+live mixing).
+
+@item scale
+Sets the display scale for the loudness. Valid parameters are @code{absolute}
+(in LUFS) or @code{relative} (LU) relative to the target. This only affects the
+video output, not the summary or continuous log output.
 @end table
 
 @subsection Examples
@@ -20517,6 +21742,7 @@ It accepts the following values:
 @item cauchy
 @item parzen
 @item poisson
+@item bohman
 @end table
 Default is @code{hanning}.
 
@@ -20617,6 +21843,16 @@ each channel is displayed using the fruit color scheme
 each channel is displayed using the cool color scheme
 @item magma
 each channel is displayed using the magma color scheme
+@item green
+each channel is displayed using the green color scheme
+@item viridis
+each channel is displayed using the viridis color scheme
+@item plasma
+each channel is displayed using the plasma color scheme
+@item cividis
+each channel is displayed using the cividis color scheme
+@item terrain
+each channel is displayed using the terrain color scheme
 @end table
 
 Default value is @samp{channel}.
@@ -20673,6 +21909,7 @@ It accepts the following values:
 @item cauchy
 @item parzen
 @item poisson
+@item bohman
 @end table
 
 Default value is @code{hann}.
@@ -20696,6 +21933,18 @@ Set which data to display. Can be @code{magnitude}, default or @code{phase}.
 @item rotation
 Set color rotation, must be in [-1.0, 1.0] range.
 Default value is @code{0}.
+
+@item start
+Set start frequency from which to display spectrogram. Default is @code{0}.
+
+@item stop
+Set stop frequency to which to display spectrogram. Default is @code{0}.
+
+@item fps
+Set upper frame rate limit. Default is @code{auto}, unlimited.
+
+@item legend
+Draw time and frequency axes and legends. Default is disabled.
 @end table
 
 The usage is very similar to the showwaves filter; see the examples in that
@@ -20768,6 +22017,16 @@ each channel is displayed using the fruit color scheme
 each channel is displayed using the cool color scheme
 @item magma
 each channel is displayed using the magma color scheme
+@item green
+each channel is displayed using the green color scheme
+@item viridis
+each channel is displayed using the viridis color scheme
+@item plasma
+each channel is displayed using the plasma color scheme
+@item cividis
+each channel is displayed using the cividis color scheme
+@item terrain
+each channel is displayed using the terrain color scheme
 @end table
 Default value is @samp{intensity}.
 
@@ -20822,6 +22081,7 @@ It accepts the following values:
 @item cauchy
 @item parzen
 @item poisson
+@item bohman
 @end table
 Default value is @code{hann}.
 
@@ -20839,6 +22099,12 @@ Draw time and frequency axes and legends. Default is enabled.
 @item rotation
 Set color rotation, must be in [-1.0, 1.0] range.
 Default value is @code{0}.
+
+@item start
+Set start frequency from which to display spectrogram. Default is @code{0}.
+
+@item stop
+Set stop frequency to which to display spectrogram. Default is @code{0}.
 @end table
 
 @subsection Examples
