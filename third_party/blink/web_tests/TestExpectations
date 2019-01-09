@@ -4330,8 +4330,6 @@ crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-tim
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
 
-crbug.com/912574 virtual/threaded/animations/responsive/transform-responsive-neutral-keyframe.html [ Crash ]
-
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
 

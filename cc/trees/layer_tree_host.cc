@@ -1718,12 +1718,12 @@ void LayerTreeHost::SetElementScrollOffsetMutated(
 }
 
 void LayerTreeHost::ElementIsAnimatingChanged(
-    ElementId element_id,
+    const PropertyToElementIdMap& element_id_map,
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
-  property_trees()->ElementIsAnimatingChanged(mutator_host(), element_id,
+  property_trees()->ElementIsAnimatingChanged(mutator_host(), element_id_map,
                                               list_type, mask, state, true);
 }
 
