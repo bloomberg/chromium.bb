@@ -643,7 +643,6 @@ void Tab::SetClosing(bool closing) {
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
-  const bool touch_ui = MD::touch_ui();
   // If theme provider is not yet available, return the default button
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
@@ -653,9 +652,7 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
-      return touch_ui ? theme_provider->GetColor(
-                            ThemeProperties::COLOR_TAB_ALERT_AUDIO)
-                      : button_color_;
+      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_ALERT_AUDIO);
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
       return theme_provider->GetColor(
