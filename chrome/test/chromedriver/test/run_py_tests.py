@@ -1512,6 +1512,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '/chromedriver/shadow_dom_test.html'))
     elem = self._driver.FindElement("css", "* /deep/ #olderButton")
     self.assertTrue(elem.IsDisplayed())
+    elem2 = self._driver.FindElement("css", "* /deep/ #hostContent")
+    self.assertTrue(elem2.IsDisplayed())
     self._driver.ExecuteScript(
         'document.querySelector("#outerDiv").style.display="None";')
     self.assertFalse(elem.IsDisplayed())
