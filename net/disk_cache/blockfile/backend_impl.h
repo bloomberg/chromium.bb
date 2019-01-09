@@ -277,6 +277,10 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   // Backend implementation.
   net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
+  net::Error OpenOrCreateEntry(const std::string& key,
+                               net::RequestPriority request_priority,
+                               Entry** entry,
+                               CompletionOnceCallback callback) override;
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,
                        Entry** entry,
