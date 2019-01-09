@@ -2,6 +2,7 @@
 
 #include "arccmt.cpp"
 
+namespace third_party_unrar {
 
 Archive::Archive(RAROptions *InitCmd)
 {
@@ -346,3 +347,5 @@ FileHandle Archive::GetTempFileHandle() {
   return hTempFile;
 }
 #endif
+
+}  // namespace third_party_unrar

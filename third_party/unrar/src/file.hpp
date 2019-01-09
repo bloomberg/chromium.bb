@@ -1,6 +1,8 @@
 #ifndef _RAR_FILE_
 #define _RAR_FILE_
 
+namespace third_party_unrar {
+
 #define FILE_USE_OPEN
 
 #ifdef _WIN_ALL
@@ -148,5 +150,7 @@ class File
 #endif
     }
 };
+
+}  // namespace third_party_unrar
 
 #endif

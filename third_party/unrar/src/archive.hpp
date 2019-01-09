@@ -1,6 +1,8 @@
 #ifndef _RAR_ARCHIVE_
 #define _RAR_ARCHIVE_
 
+namespace third_party_unrar {
+
 class PPack;
 class RawRead;
 class RawWrite;
@@ -158,5 +160,6 @@ class Archive:public File
     wchar FirstVolumeName[NM];
 };
 
+}  // namespace third_party_unrar
 
 #endif

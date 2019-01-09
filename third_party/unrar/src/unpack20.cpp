@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 void Unpack::CopyString20(uint Length,uint Distance)
 {
   LastDist=OldDist[OldDistPtr++]=Distance;
@@ -379,3 +381,5 @@ byte Unpack::DecodeAudio(int Delta)
   }
   return (byte)Ch;
 }
+
+}  // namespace third_party_unrar

@@ -9,10 +9,6 @@
 
 namespace third_party_unrar {
 
-using ::Archive;
-using ::CmdExtract;
-using ::CommandData;
-
 static const int kUnrarEndarcHead = HEAD_ENDARC;
 static const int kUnrarFileHead = HEAD_FILE;
 }  // namespace third_party_unrar

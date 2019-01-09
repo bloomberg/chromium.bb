@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 ScanTree::ScanTree(StringList *FileMasks,RECURSE_MODE Recurse,bool GetLinks,SCAN_DIRS GetDirs)
 {
   ScanTree::FileMasks=FileMasks;
@@ -487,3 +489,5 @@ void ScanTree::ScanError(bool &Error)
     ErrHandler.SysErrMsg();
   }
 }
+
+}  // namespace third_party_unrar

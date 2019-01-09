@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 ComprDataIO::ComprDataIO()
 {
 #ifndef RAR_NOCRYPT
@@ -318,3 +320,5 @@ void ComprDataIO::SetUnpackToMemory(byte *Addr,uint Size)
   UnpackToMemoryAddr=Addr;
   UnpackToMemorySize=Size;
 }
+
+}  // namespace third_party_unrar

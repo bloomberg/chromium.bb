@@ -1,6 +1,8 @@
 #ifndef _RAR_TIMEFN_
 #define _RAR_TIMEFN_
 
+namespace third_party_unrar {
+
 struct RarLocalTime
 {
   uint Year;
@@ -61,5 +63,7 @@ class RarTime
 
 const wchar *GetMonthName(int Month);
 bool IsLeapYear(int Year);
+
+}  // namespace third_party_unrar
 
 #endif

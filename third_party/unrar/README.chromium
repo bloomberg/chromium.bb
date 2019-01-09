@@ -30,3 +30,5 @@ Notable changes from upstream:
 - Remove some static initializers.
 - Pass a file handle to a temporary file with write permission, so the archive
   can be extracted inside the sandbox for analysis.
+- Put all symbols into a namespace third_party_unrar to avoid polluting global
+  namespace. (Apply add_namespaces.patch)

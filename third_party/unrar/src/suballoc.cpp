@@ -5,6 +5,8 @@
  *  Contents: memory allocation routines                                    *
  ****************************************************************************/
 
+namespace third_party_unrar {
+
 static const uint UNIT_SIZE=Max(sizeof(RARPPM_CONTEXT),sizeof(RARPPM_MEM_BLK));
 static const uint FIXED_UNIT_SIZE=12;
 
@@ -293,3 +295,5 @@ void SubAllocator::FreeUnits(void* ptr,int OldNU)
 {
   InsertNode(ptr,Units2Indx[OldNU-1]);
 }
+
+}  // namespace third_party_unrar

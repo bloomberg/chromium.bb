@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 CmdExtract::CmdExtract(CommandData *Cmd)
 {
   CmdExtract::Cmd=Cmd;
@@ -1189,3 +1191,5 @@ bool CmdExtract::CheckUnpVer(Archive &Arc,const wchar *ArcFileName)
   }
   return !WrongVer;
 }
+
+}  // namespace third_party_unrar

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 StringList::StringList()
 {
   Reset();
@@ -149,3 +151,5 @@ void StringList::RestorePosition()
   }
 }
 #endif
+
+}  // namespace third_party_unrar

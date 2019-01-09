@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 #define UNP_READ_SIZE_MT        0x400000
 #define UNP_BLOCKS_PER_THREAD          2
 
@@ -653,3 +655,5 @@ bool Unpack::UnpackLargeBlock(UnpackThreadData &D)
   }
   return true;
 }
+
+}  // namespace third_party_unrar

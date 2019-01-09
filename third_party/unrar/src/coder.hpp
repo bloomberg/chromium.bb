@@ -2,6 +2,7 @@
  *  Contents: 'Carryless rangecoder' by Dmitry Subbotin                     *
  ****************************************************************************/
 
+namespace third_party_unrar {
 
 class RangeCoder
 {
@@ -21,3 +22,5 @@ class RangeCoder
 
     Unpack *UnpackRead;
 };
+
+}  // namespace third_party_unrar

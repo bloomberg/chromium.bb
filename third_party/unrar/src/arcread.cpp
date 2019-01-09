@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 size_t Archive::ReadHeader()
 {
   // Once we failed to decrypt an encrypted block, there is no reason to
@@ -1482,3 +1484,5 @@ bool Archive::ReadSubData(Array<byte> *UnpData,File *DestFile)
   }
   return true;
 }
+
+}  // namespace third_party_unrar

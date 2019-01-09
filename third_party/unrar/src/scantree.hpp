@@ -1,6 +1,8 @@
 #ifndef _RAR_SCANTREE_
 #define _RAR_SCANTREE_
 
+namespace third_party_unrar {
+
 enum SCAN_DIRS 
 { 
   SCAN_SKIPDIRS,     // Skip directories, but recurse for files if recursion mode is enabled.
@@ -74,5 +76,7 @@ class ScanTree
       ErrDirSpecPathLength=Lengths;
     }
 };
+
+}  // namespace third_party_unrar
 
 #endif

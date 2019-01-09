@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 bool ExtractHardlink(wchar *NameNew,wchar *NameExisting,size_t NameExistingSize)
 {
   SlashToNative(NameExisting,NameExisting,NameExistingSize); // Not needed for RAR 5.1+ archives.
@@ -37,3 +39,4 @@ bool ExtractHardlink(wchar *NameNew,wchar *NameExisting,size_t NameExistingSize)
 #endif
 }
 
+}

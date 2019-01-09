@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 void Unpack::Unpack5(bool Solid)
 {
   FileExtracted=true;
@@ -683,3 +685,5 @@ void Unpack::InitFilters()
 {
   Filters.SoftReset();
 }
+
+}  // namespace third_party_unrar
