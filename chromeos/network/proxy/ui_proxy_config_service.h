@@ -45,11 +45,6 @@ class CHROMEOS_EXPORT UIProxyConfigService {
   // * A user specified proxy associated with |network_guid|.
   void GetProxyConfig(const std::string& network_guid, UIProxyConfig* config);
 
-  // Called from the UI to update the user proxy configuration for
-  // |network_guid|. The proxy specified by |config| is stored by Shill.
-  void SetProxyConfig(const std::string& network_guid,
-                      const UIProxyConfig& config);
-
   // Returns true if there is a default network and it has a proxy configuration
   // with mode == MODE_FIXED_SERVERS.
   bool HasDefaultNetworkProxyConfigured();

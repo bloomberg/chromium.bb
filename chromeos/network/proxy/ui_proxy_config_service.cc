@@ -115,8 +115,7 @@ void UIProxyConfigService::UpdateFromPrefs(const std::string& network_guid) {
   DetermineEffectiveConfig(*network);
   VLOG(1) << "Current ui network: " << network->name() << ", "
           << ModeToString(current_ui_config_.mode) << ", "
-          << ProxyPrefs::ConfigStateToDebugString(current_ui_config_.state)
-          << ", modifiable:" << current_ui_config_.user_modifiable;
+          << ProxyPrefs::ConfigStateToDebugString(current_ui_config_.state);
 }
 
 void UIProxyConfigService::GetProxyConfig(const std::string& network_guid,
@@ -124,33 +123,6 @@ void UIProxyConfigService::GetProxyConfig(const std::string& network_guid,
   if (network_guid != current_ui_network_guid_)
     UpdateFromPrefs(network_guid);
   *config = current_ui_config_;
-}
-
-void UIProxyConfigService::SetProxyConfig(const std::string& network_guid,
-                                          const UIProxyConfig& config) {
-  current_ui_network_guid_ = network_guid;
-  current_ui_config_ = config;
-  if (current_ui_network_guid_.empty())
-    return;
-
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          current_ui_network_guid_);
-  if (!network || !network->IsInProfile()) {
-    NET_LOG(ERROR) << "No configured NetworkState for guid: "
-                   << current_ui_network_guid_;
-    return;
-  }
-
-  // Store config for this network.
-  base::Value proxy_config_value(config.ToPrefProxyConfig());
-
-  VLOG(1) << "Set proxy for " << current_ui_network_guid_ << " to "
-          << proxy_config_value;
-
-  ProxyConfigDictionary proxy_config_dict(std::move(proxy_config_value));
-  proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
-  current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 }
 
 bool UIProxyConfigService::HasDefaultNetworkProxyConfigured() {
@@ -203,14 +175,9 @@ void UIProxyConfigService::DetermineEffectiveConfig(
   // Store effective proxy into |current_ui_config_|.
   current_ui_config_.FromNetProxyConfig(effective_config.value());
   current_ui_config_.state = effective_config_state;
-  if (ProxyConfigServiceImpl::PrefPrecedes(effective_config_state)) {
-    current_ui_config_.user_modifiable = false;
-  } else if (!IsNetworkProxySettingsEditable(onc_source)) {
+  if (!ProxyConfigServiceImpl::PrefPrecedes(effective_config_state) &&
+      !IsNetworkProxySettingsEditable(onc_source)) {
     current_ui_config_.state = ProxyPrefs::CONFIG_POLICY;
-    current_ui_config_.user_modifiable = false;
-  } else {
-    current_ui_config_.user_modifiable = !ProxyConfigServiceImpl::IgnoreProxy(
-        profile_prefs_, network.profile_path(), onc_source);
   }
 }
 
