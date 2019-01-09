@@ -12,196 +12,231 @@ import os
 from chromite.cbuildbot.manifest_version import VersionInfo
 from chromite.cli import command_unittest
 from chromite.cli.cros.cros_branch import Branch
-from chromite.cli.cros.cros_branch import BranchableProjects
 from chromite.cli.cros.cros_branch import BranchCommand
+from chromite.cli.cros.cros_branch import CanBranchProject
+from chromite.cli.cros.cros_branch import CanPinProject
 from chromite.cli.cros.cros_branch import FactoryBranch
 from chromite.cli.cros.cros_branch import FirmwareBranch
-from chromite.cli.cros.cros_branch import ManifestRepo
+from chromite.cli.cros.cros_branch import ManifestRepository
 from chromite.cli.cros.cros_branch import ReleaseBranch
 from chromite.cli.cros.cros_branch import StabilizeBranch
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import partial_mock
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
 
 
-class BranchableProjectsTest(cros_test_lib.TestCase):
-  """Tests for BranchableProjects helper."""
+class ManifestTestCase(cros_test_lib.MockTestCase):
+  """Test case requiring manifest test data."""
 
-  MANIFEST_CONTENTS = '''\
+  PATH = 'path/to'
+  MANIFEST_OUTER_XML = '''\
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest>
+<manifest>%s</manifest>
+  '''
+  MANIFEST_BASE_FILE = 'official.xml'
+  MANIFEST_BASE_PATH = os.path.join(PATH, MANIFEST_BASE_FILE)
+  MANIFEST_BASE_XML = '''
   <remote fetch="https://chromium.googlesource.com"
           name="cros"
           review="chromium-review.googlesource.com"/>
 
   <default remote="cros" revision="refs/heads/master" sync-j="8"/>
 
-  <project groups="minilayout,buildtools"
-           name="chromiumos/chromite"
-           path="chromite"
-           revision="refs/heads/special-branch"/>
-
+  <!-- Test legacy heristic to determine branching strategy for projects. -->
+  <project name="chromiumos/chromite"
+           path="path/to/chromite"
+           revision="refs/heads/chromite"/>
   <project name="chromiumos/special"
-           path="src/special-new"
-           revision="new-special-branch"/>
-
+           path="path/to/special-new"
+           revision="refs/heads/special-new"/>
   <project name="chromiumos/special"
-           path="src/special-old"
-           revision="old-special-branch" />
-
-  <!-- Test the explicitly specified branching strategy for projects. -->
-  <project name="chromiumos/external-explicitly-pinned"
-           path="explicit-external"
-           revision="refs/heads/master">
-    <annotation name="branch-mode" value="pin" />
-  </project>
-
-  <project name="chromiumos/external-explicitly-unpinned"
-           path="explicit-unpinned"
-           revision="refs/heads/master">
-    <annotation name="branch-mode" value="tot" />
-  </project>
-
-  <project name="chromiumos/external-explicitly-pinned-sha1"
-           path="explicit-external-sha1"
-           revision="12345">
-    <annotation name="branch-mode" value="pin" />
-  </project>
-
-  <project name="chromiumos/external-explicitly-unpinned-sha1"
-           path="explicit-unpinned-sha1"
-           revision="12345">
-    <annotation name="branch-mode" value="tot" />
-  </project>
-
-  <!-- The next two projects test legacy heristic to determine branching
-       strategy for projects -->
+           path="path/to/special-old"
+           revision="refs/heads/special-old"/>
   <project name="faraway/external"
-           path="external"
-           revision="refs/heads/master" />
-
-  <project name="faraway/unpinned"
-           path="unpinned"
-           revision="refs/heads/master"
-           pin="False" />
-
-</manifest>
+           path="path/to/external"
+           revision="refs/heads/pinned"/>
   '''
-
-  def testBranchableProjects(self):
-    manifest = repo_manifest.Manifest.FromString(self.MANIFEST_CONTENTS)
-    projects = [project.Path() for project in BranchableProjects(manifest)]
-    self.assertEqual(len(projects), 3)
-    self.assertIn('chromite', projects)
-    self.assertIn('src/special-old', projects)
-    self.assertIn('src/special-new', projects)
-
-
-class ManifestRepoTest(cros_test_lib.MockTestCase):
-  """Tests for ManifestRepo functions."""
-  PATH = 'path/'
-  MANIFEST_FILE = 'manifest.xml'
-  MANIFEST_PATH = os.path.join(PATH, MANIFEST_FILE)
-  MANIFEST_CONTENT = '''\
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <remote fetch="https://chromium.googlesource.com"
-          name="cros"
-          review="chromium-review.googlesource.com"/>
-  <default remote="cros" revision="refs/heads/master"/>
-  <include name="included.xml"/>
-  <project name="chromiumos/branchable"/>
-  <project name="chromiumos/not-branchable">
-    <annotation name="branch-mode" value="tot"/>
+  MANIFEST_INCLUDED_FILE = 'included.xml'
+  MANIFEST_INCLUDED_PATH = os.path.join(PATH, MANIFEST_INCLUDED_FILE)
+  MANIFEST_INCLUDED_XML = '''
+  <!-- Test the explicitly specified branching strategy for projects. -->
+  <project name="chromiumos/explicit-branch"
+           path="path/to/explicit-branch"
+           revision="refs/heads/explicit-branch">
+    <annotation name="branch-mode" value="create"/>
   </project>
-</manifest>
-  '''
-  INCLUDED_FILE = 'included.xml'
-  INCLUDED_PATH = os.path.join(PATH, INCLUDED_FILE)
-  INCLUDED_CONTENT = '''\
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <remote fetch="https://chrome-internal.googlesource.com"
-          name="cros-internal"
-          review="chrome-internal-review.googlesource.com"/>
-  <default remote="cros-internal" revision="refs/heads/master"/>
-  <project name="chromeos/included-branchable"/>
-  <project name="chromeos/included-not-branchable">
+  <project name="chromiumos/external-explicitly-pinned"
+           path="path/to/explicit-external"
+           revision="refs/heads/pinned">
     <annotation name="branch-mode" value="pin"/>
   </project>
-</manifest>
+  <project name="faraway/external-explicitly-unpinned"
+           path="path/to/explicit-unpinned">
+    <annotation name="branch-mode" value="tot"/>
+  </project>
   '''
-  NEW_REF = 'you-must-be-new-around-here'
-  MANIFESTS = {MANIFEST_PATH: MANIFEST_CONTENT, INCLUDED_PATH: INCLUDED_CONTENT}
+  INCLUDES_XML = '''<include name="included.xml"/>'''
+  MANIFEST_BASE_FULL_XML = MANIFEST_OUTER_XML % (
+      INCLUDES_XML + MANIFEST_BASE_XML)
+  MANIFEST_INCLUDED_FULL_XML = MANIFEST_OUTER_XML % MANIFEST_INCLUDED_XML
+  MANIFEST_FULL_FILE = 'manifest.xml'
+  MANIFEST_FULL_PATH = os.path.join(PATH, MANIFEST_FULL_FILE)
+  MANIFEST_FULL_XML = MANIFEST_OUTER_XML % (
+      MANIFEST_BASE_XML + MANIFEST_INCLUDED_XML)
+  MANIFEST_TABLE = {
+      MANIFEST_BASE_FILE: MANIFEST_BASE_FULL_XML,
+      MANIFEST_INCLUDED_FILE: MANIFEST_INCLUDED_FULL_XML,
+      MANIFEST_FULL_FILE: MANIFEST_FULL_XML,
+  }
+  PINNED_PROJECTS = ('explicit-external', 'external')
+  TOT_PROJECTS = ('explicit-unpinned',)
+  MULTI_CHECKOUT_PROJECTS = ('special-old', 'special-new')
+  SINGLE_CHECKOUT_PROJECTS = ('chromite', 'explicit-branch')
+  BRANCHED_PROJECTS = SINGLE_CHECKOUT_PROJECTS + MULTI_CHECKOUT_PROJECTS
+  PINNED_BRANCH = git.NormalizeRef('pinned')
+  TOT_BRANCH = git.NormalizeRef('master')
 
-  def FromFileMock(self, source, allow_unsupported_features):
-    return repo_manifest.Manifest.FromString(self.MANIFESTS[source],
-                                             allow_unsupported_features)
+  def PathFor(self, pid):
+    """Return the test project's path.
+
+    Args:
+      pid: The test project ID (e.g. 'chromite').
+
+    Returns:
+      Path to the project, always of the form '<test path>/<project ID>'.
+    """
+    return os.path.join(self.PATH, pid)
+
+  def RevisionFor(self, pid):
+    """Return the test project's revision.
+
+    Args:
+      pid: The test project ID (e.g. 'chromite')
+
+    Returns:
+      Reivision for the project, always of form 'refs/heads/<project ID>'.
+    """
+    return git.NormalizeRef(pid)
+
+  def FromFileMock(self, source, allow_unsupported_features=False):
+    """Forward repo_manifest.FromFile to repo_manifest.FromString.
+
+    Args:
+      source: Path to the test manifest. Used to look up XML in a table.
+      allow_unsupported_features: See repo_manifest.Manifest.
+
+    Returns:
+      repo_manifest.Manifest created from test data.
+    """
+    return repo_manifest.Manifest.FromString(
+        self.MANIFEST_TABLE[os.path.basename(source)],
+        allow_unsupported_features=allow_unsupported_features)
 
   def setUp(self):
-    self.manifest_repo = ManifestRepo(self.PATH)
+    self.full_manifest = self.FromFileMock(self.MANIFEST_FULL_PATH)
     self.PatchObject(repo_manifest.Manifest, 'FromFile', self.FromFileMock)
+    self.PatchObject(
+        repo_util.Repository,
+        'Manifest',
+        return_value=repo_manifest.Manifest.FromString(self.MANIFEST_FULL_XML))
+
+
+class UtilitiesTest(ManifestTestCase):
+  """Tests for all top-level utility functions."""
+
+  def testCanBranchProject(self):
+    projects = filter(CanBranchProject, self.full_manifest.Projects())
+    self.assertItemsEqual([p.Path() for p in projects],
+                          map(self.PathFor, self.BRANCHED_PROJECTS))
+
+  def testCanPinProject(self):
+    projects = filter(CanPinProject, self.full_manifest.Projects())
+    self.assertItemsEqual([p.Path() for p in projects],
+                          map(self.PathFor, self.PINNED_PROJECTS))
+
+  def testTotMutualExclusivity(self):
+    is_tot = lambda proj: not (CanPinProject(proj) or CanBranchProject(proj))
+    projects = filter(is_tot, self.full_manifest.Projects())
+    self.assertItemsEqual([p.Path() for p in projects],
+                          map(self.PathFor, self.TOT_PROJECTS))
+
+
+class ManifestRepositoryTest(ManifestTestCase):
+  """Tests for ManifestRepository functions."""
+
+  def setUp(self):
+    self.manifest_repo = ManifestRepository(self.PATH)
+    self.PatchObject(git, 'GetGitRepoRevision', return_value=self.PINNED_BRANCH)
 
   def testManifestPath(self):
     self.assertEqual(
-        self.manifest_repo.ManifestPath(self.MANIFEST_FILE), self.MANIFEST_PATH)
+        self.manifest_repo.ManifestPath(self.MANIFEST_BASE_FILE),
+        self.MANIFEST_BASE_PATH)
     self.assertEqual(
-        self.manifest_repo.ManifestPath(self.INCLUDED_FILE), self.INCLUDED_PATH)
+        self.manifest_repo.ManifestPath(self.MANIFEST_INCLUDED_FILE),
+        self.MANIFEST_INCLUDED_PATH)
 
-  def testListManifests(self):
-    found = self.manifest_repo.ListManifests([self.MANIFEST_FILE])
-    self.assertIn(self.MANIFEST_PATH, found)
-    self.assertIn(self.INCLUDED_PATH, found)
+  def testListManifestsSingleFileNoIncludes(self):
+    found = self.manifest_repo.ListManifests([self.MANIFEST_INCLUDED_FILE])
+    self.assertItemsEqual([self.MANIFEST_INCLUDED_PATH], found)
 
-    found = self.manifest_repo.ListManifests([self.INCLUDED_FILE])
-    self.assertIn(self.INCLUDED_PATH, found)
+  def testListManifestsSingleFileWithIncludes(self):
+    found = self.manifest_repo.ListManifests([self.MANIFEST_BASE_FILE])
+    expected = [self.MANIFEST_BASE_PATH, self.MANIFEST_INCLUDED_PATH]
+    self.assertItemsEqual(expected, found)
 
+  def testListManifestsMultipleFilesWithIncludes(self):
     found = self.manifest_repo.ListManifests(
-        [self.MANIFEST_FILE, self.INCLUDED_FILE])
-    self.assertIn(self.MANIFEST_PATH, found)
-    self.assertIn(self.INCLUDED_PATH, found)
+        [self.MANIFEST_BASE_FILE, self.MANIFEST_INCLUDED_FILE])
+    expected = [self.MANIFEST_BASE_PATH, self.MANIFEST_INCLUDED_PATH]
+    self.assertItemsEqual(expected, found)
 
   def testRepairManifest(self):
-    manifest = self.manifest_repo.RepairManifest(self.MANIFEST_PATH,
-                                                 self.NEW_REF)
-    self.assertEqual(
-        manifest.GetUniqueProject('chromiumos/branchable').Revision(),
-        'refs/heads/' + self.NEW_REF)
-    self.assertEqual(
-        manifest.GetUniqueProject('chromiumos/not-branchable').Revision(),
-        'refs/heads/master')
+    branches = {
+        self.PathFor(project): self.RevisionFor(project)
+        for project in self.BRANCHED_PROJECTS
+    }
+    manifest = self.manifest_repo.RepairManifest(self.MANIFEST_FULL_PATH,
+                                                 branches)
+    self.assertIsNone(manifest.Default().revision)
+    self.assertIsNone(manifest.GetRemote('cros').revision)
+    for project in manifest.Projects():
+      project_id = os.path.basename(project.path)
+      if project_id in self.PINNED_PROJECTS:
+        self.assertEqual(project.revision, self.PINNED_BRANCH)
+      elif project_id in self.TOT_PROJECTS:
+        self.assertEqual(project.revision, self.TOT_BRANCH)
+      else:
+        self.assertEqual(project.revision, self.RevisionFor(project_id))
 
 
-class BranchTest(cros_test_lib.MockTestCase):
+class BranchTest(ManifestTestCase):
   """Establishes environment for testing sublcasses of Branch."""
 
   MILESTONE = '12'
   VERSION = '3.4.5'
-  MANIFEST = '''\
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <remote fetch="https://chromium.googlesource.com"
-          name="cros"
-          review="chromium-review.googlesource.com"/>
-  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
-  <project name="chromiumos/manifest"
-          path="path/manifest"
-          revision="refs/heads/manifest-branch"/>
-  <project name="chromiumos/chromite"
-          path="path/chromite"
-          revision="refs/heads/chromite-branch"/>
-  <project name="chromiumos/not-branchable"
-          path="path/not-branchable"
-          revision="refs/heads/master">
-    <annotation name="branch-mode" value="tot"/>
-  </project>
-</manifest>
-  '''
   BRANCH_NAME = 'branch'
 
   def CreateInstance(self):
     return Branch('fake-kind', self.BRANCH_NAME)
+
+  def AssertSynced(self, version):
+    self.rc_mock.assertCommandContains(
+        [partial_mock.ListRegex('.*/repo_sync_manifest'), '--version', version])
+
+  def AssertProjectBranched(self, project, branch):
+    self.rc_mock.assertCommandContains(
+        ['git', 'checkout', '-B', branch,
+         self.RevisionFor(project)],
+        cwd=partial_mock.ListRegex('.*/%s' % self.PathFor(project)))
+
+  def AssertProjectNotBranched(self, project):
+    self.rc_mock.assertCommandContains(
+        ['git', 'checkout', '-B'],
+        cwd=partial_mock.ListRegex('.*/%s' % self.PathFor(project)),
+        expected=False)
 
   def setUp(self):
     self.rc_mock = cros_test_lib.RunCommandMock()
@@ -209,16 +244,12 @@ class BranchTest(cros_test_lib.MockTestCase):
     self.StartPatcher(self.rc_mock)
 
     self.PatchObject(
-        repo_util.Repository,
-        'Manifest',
-        return_value=repo_manifest.Manifest.FromString(self.MANIFEST))
-    self.PatchObject(
         VersionInfo,
         'from_repo',
         return_value=VersionInfo(self.VERSION, self.MILESTONE))
 
-    # ManifestRepo is tested separately, so mock it out.
-    self.PatchObject(ManifestRepo, 'RepairManifestsOnDisk')
+    # ManifestRepository is tested separately, so mock it out.
+    self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
 
     # Instance must be created last for patches to be applied.
     self.inst = self.CreateInstance()
@@ -227,21 +258,17 @@ class BranchTest(cros_test_lib.MockTestCase):
     self.inst.Create(self.VERSION)
 
     # Assert that local checkout was synced to correct version.
-    self.rc_mock.assertCommandContains([
-        partial_mock.ListRegex('.*/repo_sync_manifest'), '--version',
-        self.VERSION
-    ])
+    self.AssertSynced(self.VERSION)
 
     # Assert that all branchable projects were branched.
-    for project in ('manifest', 'chromite'):
-      self.rc_mock.assertCommandContains(
-          [
-              'git', 'checkout', '-B', self.BRANCH_NAME,
-              'refs/heads/%s-branch' % project
-          ],
-          cwd=partial_mock.ListRegex('.*/path/%s' % project))
+    for proj in self.SINGLE_CHECKOUT_PROJECTS:
+      self.AssertProjectBranched(proj, self.BRANCH_NAME)
+    for proj in self.MULTI_CHECKOUT_PROJECTS:
+      self.AssertProjectBranched(proj, '%s-%s' % (self.BRANCH_NAME, proj))
+    for proj in self.PINNED_PROJECTS + self.TOT_PROJECTS:
+      self.AssertProjectNotBranched(proj)
 
-    # Assuming ManifestRepo did its job, make sure repairs were committed.
+    # Assuming ManifestRepository did its job, make sure repairs are committed.
     for manifest_project in ('manifest', 'manifest-internal'):
       self.rc_mock.assertCommandContains(
           ['git', 'commit', '-a'],

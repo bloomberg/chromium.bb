@@ -46,42 +46,52 @@ def ReadVersionInfo():
   return manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
 
 
+def BranchMode(project):
+  """Returns the project's explicit branch mode, if specified."""
+  return project.Annotations().get('branch-mode', None)
+
+
 def CanBranchProject(project):
-  """Determines if the given project is branchable.
+  """Returns true if the project can be branched.
+
+  The preferred way to specify branchability is by adding a "branch-mode"
+  annotation on the project in the manifest. Of course, only one project
+  in the manifest actually does this.
+
+  The legacy method is to peek at the project's remote.
 
   Args:
-    project: A repo_manifest.Project.
+    project: The repo_manifest.Project in question.
 
   Returns:
-    True if the project should branch.
+    True if the project is not pinned or ToT.
   """
   site_params = config_lib.GetSiteParams()
   remote = project.Remote().GitName()
-  # The preferred way to specify branchability is by adding a "branch-mode"
-  # annotation on the project in the manifest. Of course, only one project
-  # in the manifest actually does this. ¯\_(ツ)_/¯
-  explicit_mode = project.Annotations().get('branch-mode', None)
+  explicit_mode = BranchMode(project)
   if not explicit_mode:
-    # The legacy method is to peek at the project's remote.
     return (remote in site_params.CROS_REMOTES and
             remote in site_params.BRANCHABLE_PROJECTS and
             re.match(site_params.BRANCHABLE_PROJECTS[remote], project.name))
   return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_CREATE
 
 
-def BranchableProjects(manifest):
-  """Finds all branchable projects in the manifest.
+def CanPinProject(project):
+  """Returns true if the project can be pinned.
 
   Args:
-    manifest: A repo_manifest.Manifest object.
+    project: The repo_manifest.Project in question.
 
   Returns:
-    List of branchable projects.
+    True if the project is pinned.
   """
-  return filter(CanBranchProject, manifest.Projects())
+  explicit_mode = BranchMode(project)
+  if not explicit_mode:
+    return not CanBranchProject(project)
+  return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_PIN
 
 
-class ManifestRepo(object):
+class ManifestRepository(object):
   """Represents a git repository of manifest XML files."""
 
   def __init__(self, path):
@@ -131,39 +141,62 @@ class ManifestRepo(object):
       pending.extend([inc.name for inc in self.ReadManifest(path).Includes()])
     return found
 
-  def RepairManifest(self, path, ref):
+  def RepairManifest(self, path, branches):
     """Reads the manifest at the given path and repairs it in memory.
+
+    Because humans rarely read branched manifests, this function optimizes for
+    code readability and explicitly sets revision on every project in the
+    manifest, deleting any defaults.
 
     Args:
       path: Path to the manifest.
-      ref: New ref for branchable projects.
+      branches: Dict mapping project path to branch name.
 
     Returns:
       The repaired repo_manifest.Manifest object.
     """
     manifest = self.ReadManifest(path)
-    ref = git.NormalizeRef(ref)
 
-    # TODO(evanhernandez): Repair defaults, pinned projects, etc.
-    for project in BranchableProjects(manifest):
-      project.revision = ref
+    # Delete the default revision if specified by original manifest.
+    default = manifest.Default()
+    if default.revision:
+      del default.revision
+
+    # Delete remote revisions if specified by original manifest.
+    for remote in manifest.Remotes():
+      if remote.revision:
+        del remote.revision
+
+    # Update all project revisions.
+    for project in manifest.Projects():
+      path = project.Path()
+      if CanBranchProject(project):
+        project.revision = git.NormalizeRef(branches[path])
+      elif CanPinProject(project):
+        project.revision = git.GetGitRepoRevision(AbsoluteProjectPath(path))
+      else:
+        project.revision = git.NormalizeRef('master')
+
+      if project.upstream:
+        del project.upstream
 
     return manifest
 
-  def RepairManifestsOnDisk(self, ref):
-    """Sets the ref for branchable projects in given manifests.
+  def RepairManifestsOnDisk(self, branches):
+    """Repairs the revision and upstream attributes of manifest elements.
 
-    This method is "deep" because it processes includes.
+    The original manifests are overwritten by the repaired manifests.
+    Note this method is "deep" because it processes includes.
 
     Args:
-      ref: The new ref for branchable projects.
+      branches: Dict mapping project path to branch name.
     """
-    logging.info('Repairing %s to use branch %s', self._path, ref)
+    logging.info('Repairing manifest repository %s', self._path)
     manifest_paths = self.ListManifests(
         [constants.DEFAULT_MANIFEST, constants.OFFICIAL_MANIFEST])
     for path in manifest_paths:
       logging.info('Repairing manifest file %s', path)
-      self.RepairManifest(path, ref).Write(path)
+      self.RepairManifest(path, branches).Write(path)
 
 
 class Branch(object):
@@ -179,6 +212,25 @@ class Branch(object):
     self._kind = kind
     self._name = name or self.GenerateName()
     self._repo = repo_util.Repository(constants.SOURCE_ROOT)
+
+  def _ProjectBranchName(self, project, manifest):
+    """Determine's the git branch name for the project.
+
+    Args:
+      project: The repo_manfest.Project in question.
+      manifest: The corresponding repo_manifest.Manifest.
+
+    Returns:
+      The branch name for the project.
+    """
+    # If project has only one checkout, the base branch name is fine.
+    checkouts = sum(project.name == cand.name for cand in manifest.Projects())
+    if checkouts == 1:
+      return self._name
+    # Otherwise, the project branch name needs a suffix. We append its
+    # upstream or revision to distinguish it from other checkouts.
+    suffix = git.StripRefs(project.upstream or project.Revision())
+    return '%s-%s' % (self._name, suffix)
 
   def GenerateName(self):
     return '%s-%s.B' % (self._kind, ReadVersionInfo().build_number)
@@ -207,18 +259,22 @@ class Branch(object):
             '--version', version
         ],
         quiet=True)
+    manifest = self._repo.Manifest()
 
     # Create local git branches. If a local branch with the same name exists
     # in any project, it is overwritten.
     logging.info('Will create branch %s for all viable projects.', self._name)
-    for project in BranchableProjects(self._repo.Manifest()):
-      git.CreateBranch(
-          AbsoluteProjectPath(project.Path()), self._name, project.Revision())
+    branches = {}
+    for project in filter(CanBranchProject, manifest.Projects()):
+      path = project.Path()
+      branch = self._ProjectBranchName(project, manifest)
+      branches[path] = branch
+      git.CreateBranch(AbsoluteProjectPath(path), branch, project.Revision())
 
     # Modify manifests so that all branchable projects point to new branch.
     for repo_name in ('manifest', 'manifest-internal'):
       manifest_repo_path = AbsoluteProjectPath(repo_name)
-      ManifestRepo(manifest_repo_path).RepairManifestsOnDisk(self._name)
+      ManifestRepository(manifest_repo_path).RepairManifestsOnDisk(branches)
       git.RunGit(
           manifest_repo_path,
           ['commit', '-a', '-m',
