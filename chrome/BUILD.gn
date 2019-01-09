@@ -1039,8 +1039,9 @@ if (is_win) {
       ]
     }
 
-    bundle_data("widevine_cdm_library_manifest") {
+    bundle_data("widevine_cdm_library_manifest_and_license_files") {
       sources = [
+        "$root_out_dir/WidevineCdm/LICENSE",
         "$root_out_dir/WidevineCdm/manifest.json",
       ]
       outputs = [
@@ -1056,7 +1057,7 @@ if (is_win) {
     if (bundle_widevine_cdm) {
       deps = [
         ":widevine_cdm_library_binaries",
-        ":widevine_cdm_library_manifest",
+        ":widevine_cdm_library_manifest_and_license_files",
       ]
     }
   }
