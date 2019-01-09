@@ -78,8 +78,8 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
     bucket = buckets_.back().get();
   }
 
-  size_t index_in_bucket = 0;
-  for (size_t i = 0; i < kSyncsPerBucket; i++) {
+  uint32_t index_in_bucket = 0;
+  for (uint32_t i = 0; i < kSyncsPerBucket; i++) {
     if (!bucket->in_use_query_syncs[i]) {
       index_in_bucket = i;
       break;

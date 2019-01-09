@@ -403,7 +403,7 @@ TEST_F(QueryTrackerTest, ManyQueries) {
   const int32_t kToken = 46;
   const uint32_t kResult = 456;
 
-  const size_t kTestSize = 4000;
+  const uint32_t kTestSize = 4000;
   static_assert(kTestSize > QuerySyncManager::kSyncsPerBucket,
                 "We want to use more than one bucket");
   // Create lots of queries.
