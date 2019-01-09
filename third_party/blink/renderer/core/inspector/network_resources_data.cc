@@ -298,10 +298,10 @@ NetworkResourcesData::PrepareToAddResourceData(const String& request_id,
 
 void NetworkResourcesData::MaybeAddResourceData(const String& request_id,
                                                 const char* data,
-                                                size_t data_length) {
+                                                uint64_t data_length) {
   if (ResourceData* resource_data =
           PrepareToAddResourceData(request_id, data_length)) {
-    resource_data->AppendData(data, data_length);
+    resource_data->AppendData(data, SafeCast<size_t>(data_length));
   }
 }
 
