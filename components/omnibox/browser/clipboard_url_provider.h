@@ -33,6 +33,9 @@ class ClipboardURLProvider : public AutocompleteProvider {
   // If there is text copied to the clipboard, use it to create a match.
   base::Optional<AutocompleteMatch> CreateTextMatch(
       const AutocompleteInput& input);
+  // If there is an image copied to the clipboard, use it to create a match.
+  base::Optional<AutocompleteMatch> CreateImageMatch(
+      const AutocompleteInput& input);
 
   AutocompleteProviderClient* client_;
   ClipboardRecentContent* clipboard_content_;

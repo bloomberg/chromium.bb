@@ -44,7 +44,10 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   if (!input.from_omnibox_focus())
     return;
 
-  base::Optional<AutocompleteMatch> optional_match = CreateURLMatch(input);
+  base::Optional<AutocompleteMatch> optional_match = CreateImageMatch(input);
+  if (!optional_match) {
+    optional_match = CreateURLMatch(input);
+  }
   if (!optional_match) {
     optional_match = CreateTextMatch(input);
   }
@@ -161,6 +164,43 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
   AutocompleteMatch::ClassifyLocationInString(
       base::string16::npos, 0, match.description.length(),
       ACMatchClassification::NONE, &match.description_class);
+
+  return match;
+}
+
+base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
+    const AutocompleteInput& input) {
+  // Only try image match if feature is enabled
+  if (!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+    return base::nullopt;
+  }
+
+  // Make sure current provider supports image search
+  TemplateURLService* url_service = client_->GetTemplateURLService();
+  const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
+
+  if (!default_url || default_url->image_url().empty() ||
+      !default_url->image_url_ref().IsValid(url_service->search_terms_data())) {
+    return base::nullopt;
+  }
+
+  if (!clipboard_content_->GetRecentImageFromClipboard()) {
+    return base::nullopt;
+  }
+
+  // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
+  AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
+
+  match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
+  AutocompleteMatch::ClassifyLocationInString(
+      base::string16::npos, 0, match.description.length(),
+      ACMatchClassification::NONE, &match.description_class);
+
+  match.contents.assign(l10n_util::GetStringFUTF16(IDS_SEARCH_WEB_FOR_IMAGE,
+                                                   default_url->short_name()));
+  AutocompleteMatch::ClassifyLocationInString(
+      base::string16::npos, 0, match.contents.length(),
+      ACMatchClassification::NONE, &match.contents_class);
 
   return match;
 }
