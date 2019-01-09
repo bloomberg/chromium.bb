@@ -6,26 +6,58 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 
-// static
-const base::TimeDelta ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration =
+namespace {
+
+// These parameters start with "x_" to indicate that the IPH backend should
+// ignore these.
+const char kTabMinimumActiveDurationParamName[] =
+    "x_tab_minimum_active_duration";
+const char kNewTabOpenedTimeoutParamName[] = "x_new_tab_opened_timeout";
+
+// Default timeouts, if a field trial isn't present (only used for interactive
+// testing).
+const base::TimeDelta kDefaultTabMinimumActiveDuration =
     base::TimeDelta::FromSeconds(10);
-// static
-const base::TimeDelta ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout =
+const base::TimeDelta kDefaultNewTabOpenedTimeout =
     base::TimeDelta::FromSeconds(10);
+
+base::Optional<base::TimeDelta> GetTimeoutFromFieldTrialParam(
+    const std::string& name) {
+  std::string str = base::GetFieldTrialParamValueByFeature(
+      feature_engagement::kIPHReopenTabFeature, name);
+  int timeout_seconds = 0;
+  if (str.size() > 0) {
+    base::StringToInt(str, &timeout_seconds);
+    DCHECK_GT(timeout_seconds, 0);
+    return base::TimeDelta::FromSeconds(timeout_seconds);
+  }
+
+  return base::Optional<base::TimeDelta>();
+}
+
+}  // namespace
 
 ReopenTabInProductHelpTrigger::ReopenTabInProductHelpTrigger(
     feature_engagement::Tracker* tracker,
     const base::TickClock* clock)
-    : tracker_(tracker), clock_(clock), trigger_state_(NO_ACTIONS_SEEN) {
+    : tracker_(tracker),
+      clock_(clock),
+      tab_minimum_active_duration_(
+          GetTimeoutFromFieldTrialParam(kTabMinimumActiveDurationParamName)
+              .value_or(kDefaultTabMinimumActiveDuration)),
+      new_tab_opened_timeout_(
+          GetTimeoutFromFieldTrialParam(kNewTabOpenedTimeoutParamName)
+              .value_or(kDefaultNewTabOpenedTimeout)),
+      trigger_state_(NO_ACTIONS_SEEN) {
   DCHECK(tracker);
   DCHECK(clock);
-
-  // Timeout must be non-zero.
-  DCHECK(!kNewTabOpenedTimeout.is_zero());
 }
 
 ReopenTabInProductHelpTrigger::~ReopenTabInProductHelpTrigger() = default;
@@ -44,7 +76,7 @@ void ReopenTabInProductHelpTrigger::ActiveTabClosed(
 
   DCHECK(active_duration >= base::TimeDelta());
   // We only go to the next state if the closing tab was active for long enough.
-  if (active_duration >= kTabMinimumActiveDuration) {
+  if (active_duration >= tab_minimum_active_duration_) {
     trigger_state_ = ACTIVE_TAB_CLOSED;
     time_of_last_step_ = clock_->NowTicks();
   }
@@ -56,7 +88,7 @@ void ReopenTabInProductHelpTrigger::NewTabOpened() {
 
   const base::TimeDelta elapsed_time = clock_->NowTicks() - time_of_last_step_;
 
-  if (elapsed_time < kNewTabOpenedTimeout) {
+  if (elapsed_time < new_tab_opened_timeout_) {
     tracker_->NotifyEvent(feature_engagement::events::kReopenTabConditionsMet);
     if (tracker_->ShouldTriggerHelpUI(
             feature_engagement::kIPHReopenTabFeature)) {
@@ -71,6 +103,19 @@ void ReopenTabInProductHelpTrigger::NewTabOpened() {
 void ReopenTabInProductHelpTrigger::HelpDismissed() {
   tracker_->Dismissed(feature_engagement::kIPHReopenTabFeature);
   ResetTriggerState();
+}
+
+// static
+std::map<std::string, std::string>
+ReopenTabInProductHelpTrigger::GetFieldTrialParamsForTest(
+    int tab_minimum_active_duration_seconds,
+    int new_tab_opened_timeout_seconds) {
+  std::map<std::string, std::string> params;
+  params[kTabMinimumActiveDurationParamName] =
+      base::NumberToString(tab_minimum_active_duration_seconds);
+  params[kNewTabOpenedTimeoutParamName] =
+      base::NumberToString(new_tab_opened_timeout_seconds);
+  return params;
 }
 
 void ReopenTabInProductHelpTrigger::ResetTriggerState() {
