@@ -220,7 +220,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'Headings', function() {
   });
 });
 
-TEST_F('ChromeVoxOutputE2ETest', 'Audio', function() {
+// TODO(crbug.com/901725): test is flaky.
+TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
   this.runWithLoadedTree('<audio src="foo.mp3" controls></audio>',
     function(root) {
       var el = root.find({role: 'button'});
