@@ -190,9 +190,9 @@ class PasswordDropdownModel : public ui::ComboboxModel {
 std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
     views::ButtonListener* listener,
     bool are_passwords_revealed) {
-  std::unique_ptr<views::ToggleImageButton> button(
-      new views::ToggleImageButton(listener));
+  auto button = std::make_unique<views::ToggleImageButton>(listener);
   button->SetFocusForPlatform();
+  button->SetInstallFocusRingOnFocus(true);
   button->set_request_focus_on_press(true);
   button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_SHOW_PASSWORD));
