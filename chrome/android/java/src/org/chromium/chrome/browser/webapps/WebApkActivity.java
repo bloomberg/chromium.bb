@@ -36,11 +36,6 @@ public class WebApkActivity extends WebappActivity {
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
     @Override
-    public int getActivityType() {
-        return ActivityType.WEBAPK;
-    }
-
-    @Override
     public @WebappScopePolicy.Type int scopePolicy() {
         return WebappScopePolicy.Type.STRICT;
     }
@@ -57,7 +52,7 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public String getNativeClientPackageName() {
+    public String getWebApkPackageName() {
         return getWebappInfo().webApkPackageName();
     }
 

@@ -73,7 +73,7 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
         }
 
         // This will be null for Webapps or bound WebAPKs.
-        String packageName = activity.getNativeClientPackageName();
+        String packageName = activity.getWebApkPackageName();
         // Show for unbound WebAPKs.
         return packageName != null
                 && !packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
