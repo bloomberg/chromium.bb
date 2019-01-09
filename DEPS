@@ -2670,6 +2670,34 @@ hooks = [
                'src/third_party/libovr/src',
     ],
   },
+  # Download ink resources for chromeos.
+  {
+    'name': 'ink-build',
+    'pattern': '.',
+    'condition': 'checkout_chromeos',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--num_threads=4',
+                '--bucket', 'chromium-ink',
+                '-d', 'src/third_party/ink/build',
+    ],
+  },
+  # Download ink resources for chromeos.
+  {
+    'name': 'ink-build-wasm',
+    'pattern': '.',
+    'condition': 'checkout_chromeos',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--num_threads=4',
+                '--bucket', 'chromium-ink',
+                '-d', 'src/third_party/ink/build/wasm',
+    ],
+  },
   {
     # Pull doclava binaries if building for Android.
     'name': 'doclava',
