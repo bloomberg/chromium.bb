@@ -158,15 +158,6 @@ bookmarks::BookmarkModel* BundleSyncClient::GetBookmarkModel() {
 
 }  // namespace
 
-void RegisterPrefsForProfileSyncService(
-    user_prefs::PrefRegistrySyncable* registry) {
-  syncer::SyncPrefs::RegisterProfilePrefs(registry);
-  AccountTrackerService::RegisterPrefs(registry);
-  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
-  SigninManagerBase::RegisterProfilePrefs(registry);
-  SigninManagerBase::RegisterPrefs(registry);
-}
-
 ProfileSyncServiceBundle::SyncClientBuilder::~SyncClientBuilder() = default;
 
 ProfileSyncServiceBundle::SyncClientBuilder::SyncClientBuilder(
@@ -211,7 +202,7 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
     : db_thread_(base::SequencedTaskRunnerHandle::Get()),
       identity_test_env_(&test_url_loader_factory_) {
-  RegisterPrefsForProfileSyncService(pref_service_.registry());
+  syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   identity_provider_ = std::make_unique<invalidation::ProfileIdentityProvider>(
       identity_manager());
