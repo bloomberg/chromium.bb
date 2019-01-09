@@ -49,6 +49,8 @@ class ExtensionApps : public apps::mojom::Publisher,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
   // extensions::ExtensionRegistryObserver overrides.
   // TODO(crbug.com/826982): implement.

@@ -37,6 +37,8 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   Profile* profile_;

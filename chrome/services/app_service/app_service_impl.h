@@ -42,6 +42,9 @@ class AppServiceImpl : public apps::mojom::AppService {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void SetPermission(apps::mojom::AppType app_type,
+                     const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);

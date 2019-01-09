@@ -89,6 +89,16 @@ void AppServiceImpl::Launch(apps::mojom::AppType app_type,
   iter->second->Launch(app_id, event_flags, launch_source, display_id);
 }
 
+void AppServiceImpl::SetPermission(apps::mojom::AppType app_type,
+                                   const std::string& app_id,
+                                   apps::mojom::PermissionPtr permission) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->SetPermission(app_id, std::move(permission));
+}
+
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
   publishers_.erase(app_type);
 }

@@ -33,6 +33,11 @@ interface AppService {
       int32 event_flags,
       LaunchSource launch_source,
       int64 display_id);
+
+  SetPermission(
+      AppType app_type,
+      string app_id,
+      Permission permission);
 };
 
 interface Publisher {
@@ -52,6 +57,10 @@ interface Publisher {
       int32 event_flags,
       LaunchSource launch_source,
       int64 display_id);
+
+  SetPermission(
+      string app_id,
+      Permission permission);
 };
 
 interface Subscriber {

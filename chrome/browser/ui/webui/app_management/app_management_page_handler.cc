@@ -15,11 +15,17 @@
 namespace {
 
 app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update) {
+  std::vector<apps::mojom::PermissionPtr> permissions;
+  for (const auto& permission : update.Permissions()) {
+    permissions.push_back(permission->Clone());
+  }
+
   return app_management::mojom::App::New(
       update.AppId(), update.AppType(), update.Name(),
       base::nullopt /*description*/,
       apps::mojom::OptionalBool::kUnknown /*is_pinned*/,
-      base::nullopt /*version*/, base::nullopt /*size*/);
+      base::nullopt /*version*/, base::nullopt /*size*/,
+      std::move(permissions));
 }
 
 }  // namespace
