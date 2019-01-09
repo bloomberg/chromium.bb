@@ -311,7 +311,9 @@ class GpuSandboxedProcessLauncherDelegate
   bool DisableDefaultPolicy() override { return true; }
 
   enum GPUAppContainerEnableState{
-      AC_ENABLED = 0, AC_DISABLED_GL = 1, AC_DISABLED_FORCE = 2,
+      AC_ENABLED = 0,
+      AC_DISABLED_GL = 1,
+      AC_DISABLED_FORCE = 2,
       MAX_ENABLE_STATE = 3,
   };
 
@@ -345,7 +347,6 @@ class GpuSandboxedProcessLauncherDelegate
                             sandbox::USER_LIMITED);
       service_manager::SandboxWin::SetJobLevel(
           cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
@@ -362,23 +363,19 @@ class GpuSandboxedProcessLauncherDelegate
               JOB_OBJECT_UILIMIT_EXITWINDOWS |
               JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
           policy);
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
 
-    // Check if we are running on the winlogon desktop and use an alternative
-    // desktop in this case as a low integrity gpu process will not be allowed
-    // to access the winlogon desktop (gpu process integrity has to be at least
-    // medium in order to be able to access the winlogon desktop normally).
-    // NOTE: This will effectively disable all video rendering to the screen
-    // unless Chrome is run with the --disable-gpu switch.
-    HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-    if (thread_desktop) {
-      base::string16 desktop_name =
-          sandbox::GetWindowObjectName(thread_desktop);
-      if (!lstrcmpi(desktop_name.c_str(), L"winlogon"))
-        policy->SetAlternateDesktop(false);
-      ::CloseDesktop(thread_desktop);
-    }
+    // Check if we are running on the winlogon desktop and set a delayed
+    // integrity in this case. This is needed because a low integrity gpu
+    // process will not be allowed to access the winlogon desktop (gpu process
+    // integrity has to be at least medium in order to be able to access the
+    // winlogon desktop normally). So instead, let the gpu process start with
+    // the normal integrity and delay the switch to low integrity until after
+    // the gpu process has started and has access to the desktop.
+    if (ShouldSetDelayedIntegrity())
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    else
+      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
 
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
@@ -416,6 +413,19 @@ class GpuSandboxedProcessLauncherDelegate
   bool UseOpenGLRenderer() {
     return cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
            gl::kGLImplementationDesktopName;
+  }
+
+  bool ShouldSetDelayedIntegrity() {
+    if (UseOpenGLRenderer())
+      return true;
+
+    HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
+    if (!thread_desktop)
+      return false;
+
+    base::string16 desktop_name = sandbox::GetWindowObjectName(thread_desktop);
+    ::CloseDesktop(thread_desktop);
+    return !lstrcmpi(desktop_name.c_str(), L"winlogon");
   }
 
   base::CommandLine cmd_line_;
