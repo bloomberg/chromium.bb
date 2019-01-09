@@ -1816,4 +1816,23 @@ TEST(AutofillProfileTest, IsDeletable) {
   EXPECT_FALSE(profile.IsDeletable());
 }
 
+// Tests that the two profiles can be compared for validation purposes.
+TEST(AutofillProfileTest, EqualsForClientValidationPurpose) {
+  AutofillProfile profile = test::GetFullProfile();
+
+  AutofillProfile profile2(profile);
+  profile2.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("different@email.com"));
+
+  AutofillProfile profile3(profile);
+  profile3.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("Alice Munro"));
+
+  // For client validation purposes,
+  // profile2 != profile, because they differ in the email, which is validated
+  // by the client.
+  // profile3 == profile, because they only differ in name, and name is not
+  // validated by the client.
+  EXPECT_FALSE(profile.EqualsForClientValidationPurpose(profile2));
+  EXPECT_TRUE(profile.EqualsForClientValidationPurpose(profile3));
+}
+
 }  // namespace autofill
