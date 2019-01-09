@@ -75,8 +75,7 @@ CONTENT_SHELL_PACKAGE_PATH = 'gen/content/shell/content_shell/content_shell.far'
 # WEB_TEST_PATH_PREFIX should be matched to the local directory name of
 # web_tests because some tests and test_runner find test root directory
 # with it.
-PERF_TEST_PATH_PREFIX = '/PerformanceTests'
-WEB_TESTS_PATH_PREFIX = '/' + WEB_TESTS_LAST_COMPONENT
+WEB_TESTS_PATH_PREFIX = '/third_party/blink/' + WEB_TESTS_LAST_COMPONENT
 
 # Paths to the directory where the fonts are copied to. Must match the path in
 # content/shell/app/blink_test_platform_support_fuchsia.cc .
@@ -85,8 +84,8 @@ FONTS_DEVICE_PATH = '/system/fonts'
 # Number of CPU cores in qemu.
 CPU_CORES = 4
 
-# Number of content_shell instances to run in parallel. 2 per CPU core.
-MAX_WORKERS = CPU_CORES * 2
+# Number of content_shell instances to run in parallel. 1 per CPU core.
+MAX_WORKERS = CPU_CORES
 
 PROCESS_START_TIMEOUT = 20
 
@@ -249,14 +248,24 @@ class FuchsiaPort(base.Port):
         # Run a single qemu instance.
         return min(MAX_WORKERS, requested_num_workers)
 
+    def default_timeout_ms(self):
+        # Use 20s timeout instead of the default 6s. This is necessary because
+        # the tests are executed in qemu, so they run slower compared to other
+        # platforms.
+        return 20 * 1000
+
     def requires_http_server(self):
         """HTTP server is always required to avoid copying the tests to the VM.
         """
         return True
 
     def start_http_server(self, additional_dirs, number_of_drivers):
-        additional_dirs[PERF_TEST_PATH_PREFIX] = self._perf_tests_dir()
+        additional_dirs['/third_party/blink/PerformanceTests'] = \
+            self._perf_tests_dir()
         additional_dirs[WEB_TESTS_PATH_PREFIX] = self.web_tests_dir()
+        additional_dirs['/gen'] = self.generated_sources_directory()
+        additional_dirs['/third_party/blink'] = \
+            self._path_from_chromium_base('third_party', 'blink')
         super(FuchsiaPort, self).start_http_server(
             additional_dirs, number_of_drivers)
 

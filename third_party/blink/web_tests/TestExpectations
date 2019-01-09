@@ -5195,19 +5195,14 @@ crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-hre
 
 crbug.com/813216 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
 
-# Media tests are timing out on Fuchsia.
-crbug.com/778467 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Timeout ]
-crbug.com/778467 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Timeout ]
-crbug.com/778467 [ Fuchsia ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-play.html [ Timeout ]
-
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
-# Minute differences in scroll bar rendering.
-crbug.com/811565 [ Fuchsia ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Failure Pass ]
-crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug1188.html [ Failure Pass ]
-crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Failure Pass ]
-crbug.com/811565 [ Fuchsia ] tables/mozilla/core/bloomberg.html [ Failure Pass ]
+# These tests load resources from file:///gen/... .
+crbug.com/919639 [ Fuchsia ] device_orientation/motion/add-listener-from-callback.html [ Failure ]
+crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
+crbug.com/919639 [ Fuchsia ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
+crbug.com/919639 [ Fuchsia ] webmidi/permission.html [ Failure ]
 
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
