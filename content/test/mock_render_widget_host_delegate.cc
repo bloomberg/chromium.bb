@@ -39,6 +39,16 @@ void MockRenderWidgetHostDelegate::Paste() {}
 
 void MockRenderWidgetHostDelegate::SelectAll() {}
 
+void MockRenderWidgetHostDelegate::CreateInputEventRouter() {
+  rwh_input_event_router_ =
+      std::make_unique<RenderWidgetHostInputEventRouter>();
+}
+
+RenderWidgetHostInputEventRouter*
+MockRenderWidgetHostDelegate::GetInputEventRouter() {
+  return rwh_input_event_router_.get();
+}
+
 RenderWidgetHostImpl* MockRenderWidgetHostDelegate::GetFocusedRenderWidgetHost(
     RenderWidgetHostImpl* widget_host) {
   return !!focused_widget_ ? focused_widget_ : widget_host;
