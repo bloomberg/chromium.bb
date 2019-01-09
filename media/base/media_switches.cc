@@ -267,12 +267,8 @@ const base::Feature kMojoVideoDecoder {
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allow playback of encrypted media through the D3D11 decoder.  Requires
-// D3D11VideoDecoder to be enabled also.
-const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable VP9 decoding in the D3D11VideoDecoder.
+// Enable VP9 decoding in the D3D11VideoDecoder. Requires D3D11VideoDecoder to
+// be enabled also.
 const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 

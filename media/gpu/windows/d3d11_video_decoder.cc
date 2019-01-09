@@ -782,7 +782,10 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
 
   bool encrypted_stream = config.is_encrypted();
 
-  if (encrypted_stream && !base::FeatureList::IsEnabled(kD3D11EncryptedMedia)) {
+  // Support of encrypted stream requires kHardwareSecureDecryption feature to
+  // be enabled.
+  if (encrypted_stream &&
+      !base::FeatureList::IsEnabled(kHardwareSecureDecryption)) {
     ReportNotSupportedReason(NotSupportedReason::kEncryptedMedia);
     return false;
   }
