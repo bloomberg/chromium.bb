@@ -59,8 +59,8 @@ class DownloadManagerCoordinatorImpl
                 OfflineContentAggregatorFactory.forProfile(profile),
                 mDeleteCoordinator::showSnackbar, mSelectionDelegate, this ::notifyFilterChanged,
                 createDateOrderedListObserver());
-        mToolbarCoordinator = new ToolbarCoordinator(
-                mActivity, this, mListCoordinator, mSelectionDelegate, config.isSeparateActivity);
+        mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
+                mSelectionDelegate, config.isSeparateActivity, profile);
 
         initializeView();
         RecordUserAction.record("Android.DownloadManager.Open");

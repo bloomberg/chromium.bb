@@ -245,7 +245,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mToolbar.setInfoMenuItem(mInfoMenuId);
 
-        if (isLocationEnabled) ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar);
+        if (isLocationEnabled) {
+            ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar, Profile.getLastUsedProfile());
+        }
 
         mSelectableListLayout.configureWideDisplayStyle();
         mHistoryAdapter.initialize(mBackendProvider, mSelectableListLayout.getUiConfig());
