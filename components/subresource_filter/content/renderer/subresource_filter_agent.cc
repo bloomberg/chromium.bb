@@ -199,24 +199,6 @@ void SubresourceFilterAgent::OnDestruct() {
 }
 
 void SubresourceFilterAgent::DidCreateNewDocument() {
-  if (!first_document_)
-    return;
-  first_document_ = false;
-
-  // Local subframes will first navigate to kAboutBlankURL. Frames created by
-  // the browser initialize the LocalFrame before creating
-  // RenderFrameObservers, so the about:blank document isn't observed. We only
-  // care about local subframes.
-  if (IsAdSubframe() && GetDocumentURL() == url::kAboutBlankURL)
-    SendFrameIsAdSubframe();
-}
-
-void SubresourceFilterAgent::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
-    ui::PageTransition transition) {
-  if (is_same_document_navigation)
-    return;
-
   // Filter may outlive us, so reset the ad tracker.
   if (filter_for_last_committed_load_)
     filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
@@ -225,6 +207,20 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   // TODO(csharrison): Use WebURL and WebSecurityOrigin for efficiency here,
   // which require changes to the unit tests.
   const GURL& url = GetDocumentURL();
+
+  if (first_document_) {
+    first_document_ = false;
+
+    // Local subframes will first navigate to kAboutBlankURL. Frames created by
+    // the browser initialize the LocalFrame before creating
+    // RenderFrameObservers, so the about:blank document isn't observed. We only
+    // care about local subframes.
+    if (url == url::kAboutBlankURL) {
+      if (IsAdSubframe())
+        SendFrameIsAdSubframe();
+      return;
+    }
+  }
 
   bool use_parent_activation = !IsMainFrame() && ShouldUseParentActivation(url);
 

@@ -139,14 +139,13 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
   void StartLoadWithoutSettingActivationState() {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
-    agent_as_rfo()->DidCommitProvisionalLoad(
-        false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
+    agent_as_rfo()->DidCreateNewDocument();
   }
 
   void PerformSameDocumentNavigationWithoutSettingActivationLevel() {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
-    agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
+    // No DidCreateNewDocument, since same document navigations by definition
+    // don't create a new document.
     // No DidFinishLoad is called in this case.
   }
 
@@ -163,8 +162,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
       AdFrameType ad_type = AdFrameType::kNonAd) {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
     agent()->ActivateForNextCommittedLoad(state.Clone(), ad_type);
-    agent_as_rfo()->DidCommitProvisionalLoad(
-        false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
+    agent_as_rfo()->DidCreateNewDocument();
   }
 
   void FinishLoad() { agent_as_rfo()->DidFinishLoad(); }
@@ -606,11 +604,15 @@ TEST_F(SubresourceFilterAgentTest, DryRun_SendsFrameIsAdSubframe) {
   EXPECT_CALL(*agent(), GetDocumentURL())
       .WillOnce(::testing::Return(GURL("about:blank")));
   agent_as_rfo()->DidCreateNewDocument();
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillOnce(::testing::Return(GURL("about:blank")));
   agent_as_rfo()->DidCreateNewDocument();
 }
 
 TEST_F(SubresourceFilterAgentTest, DryRun_DoesNotSendFrameIsAdSubframe) {
   ExpectNoSendFrameIsAdSubframe();
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillOnce(::testing::Return(GURL("about:blank")));
   agent_as_rfo()->DidCreateNewDocument();
 }
 
