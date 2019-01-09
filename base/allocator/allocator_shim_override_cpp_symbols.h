@@ -57,3 +57,57 @@ SHIM_ALWAYS_EXPORT void operator delete(void* p, size_t) __THROW {
 SHIM_ALWAYS_EXPORT void operator delete[](void* p, size_t) __THROW {
   ShimCppDelete(p);
 }
+
+SHIM_ALWAYS_EXPORT void* operator new(std::size_t size,
+                                      std::align_val_t alignment) {
+  return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
+}
+
+SHIM_ALWAYS_EXPORT void* operator new(std::size_t size,
+                                      std::align_val_t alignment,
+                                      const std::nothrow_t&) __THROW {
+  return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
+}
+
+SHIM_ALWAYS_EXPORT void operator delete(void* p, std::align_val_t)__THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void operator delete(void* p,
+                                        std::size_t size,
+                                        std::align_val_t)__THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void operator delete(void* p,
+                                        std::align_val_t,
+                                        const std::nothrow_t&)__THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void* operator new[](std::size_t size,
+                                        std::align_val_t alignment) __THROW {
+  return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
+}
+
+SHIM_ALWAYS_EXPORT void* operator new[](std::size_t size,
+                                        std::align_val_t alignment,
+                                        const std::nothrow_t&) __THROW {
+  return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
+}
+
+SHIM_ALWAYS_EXPORT void operator delete[](void* p, std::align_val_t) __THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void operator delete[](void* p,
+                                          std::size_t size,
+                                          std::align_val_t) __THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void operator delete[](void* p,
+                                          std::align_val_t,
+                                          const std::nothrow_t&) __THROW {
+  ShimCppDelete(p);
+}

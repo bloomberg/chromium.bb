@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(thomasanderson): Remove this once building with C++17 or later.
+#if !defined(__cpp_aligned_new) || __cpp_aligned_new < 201606
+// We want to define std::align_val_t, but some versions of libc++ define it in
+// C++14 mode anyway.  Since it's not possible to detect exact libc++ versions,
+// explicitly disable the std::align_val_t definition so we can define it.
+#define _LIBCPP_HAS_NO_ALIGNED_ALLOCATION 1
+#define _LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION 1
+#include <stddef.h>
+namespace std {
+enum class align_val_t : size_t {};
+}
+#endif
+
 #include "base/allocator/allocator_shim.h"
 
 #include <errno.h>
@@ -158,6 +171,20 @@ ALWAYS_INLINE void* ShimCppNew(size_t size) {
     context = malloc_default_zone();
 #endif
     ptr = chain_head->alloc_function(chain_head, size, context);
+  } while (!ptr && CallNewHandler(size));
+  return ptr;
+}
+
+ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
+  const allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  void* ptr;
+  do {
+    void* context = nullptr;
+#if defined(OS_MACOSX)
+    context = malloc_default_zone();
+#endif
+    ptr = chain_head->alloc_aligned_function(chain_head, size, alignment,
+                                             context);
   } while (!ptr && CallNewHandler(size));
   return ptr;
 }
