@@ -134,6 +134,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
                            TouchMoveWithNonTouchMoveUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithoutSequenceHandlerFiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag);
 
   friend class TouchTimeoutHandler;
 
@@ -164,7 +166,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
     kFilteredNoNonstationaryPointers = 3,
     kFilteredNoHandlerForSequence = 4,
     kMaxValue = kFilteredNoHandlerForSequence,
-
   };
 
   // Filter touches prior to forwarding to the renderer, e.g., if the renderer

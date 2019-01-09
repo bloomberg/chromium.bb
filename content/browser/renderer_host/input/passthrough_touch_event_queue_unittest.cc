@@ -15,11 +15,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/base_event_utils.h"
@@ -1919,6 +1921,24 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::
                 kFilteredNoHandlerForSequence,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest,
+       TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kSkipPassthroughTouchEventQueueFilter);
+
+  OnHasTouchEventHandlers(false);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.ReleasePoint(id);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
             FilterBeforeForwarding(event));
 }
 

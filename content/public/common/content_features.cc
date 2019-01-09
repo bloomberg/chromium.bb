@@ -449,6 +449,12 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Skips the passthrough touch event queue filter, ensuring that all touch
+// events that reach the queue will be passed onto the renderer compositor
+// process as long as the page hasn't timed out.
+const base::Feature kSkipPassthroughTouchEventQueueFilter{
+    "SkipPassthroughTouchEventQueueFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we
 // have an iframe attribute to declaratively allow user activation propagation
