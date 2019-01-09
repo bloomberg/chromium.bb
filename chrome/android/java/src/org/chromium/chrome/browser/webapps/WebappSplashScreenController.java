@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.webapps.WebappActivity.ActivityType;
 import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
@@ -60,7 +59,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
     private String mAppName;
 
-    private @ActivityType int mActivityType;
+    private boolean mIsForWebApk;
 
     private ObserverList<SplashscreenObserver> mObservers;
 
@@ -71,10 +70,9 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     /** Shows the splash screen. */
-    public void showSplashScreen(
-            @ActivityType int activityType, ViewGroup parentView, final WebappInfo webappInfo) {
-        mActivityType = activityType;
+    public void showSplashScreen(ViewGroup parentView, final WebappInfo webappInfo) {
         mParentView = parentView;
+        mIsForWebApk = webappInfo.isForWebApk();
         mAppName = webappInfo.name();
 
         Context context = ContextUtils.getApplicationContext();
@@ -94,7 +92,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
                         ? WebappUma.SplashScreenColorStatus.CUSTOM
                         : WebappUma.SplashScreenColorStatus.DEFAULT);
 
-        if (activityType == WebappActivity.ActivityType.WEBAPK) {
+        if (mIsForWebApk) {
             initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
             return;
         }
@@ -167,7 +165,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
             boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
             boolean isFragmentNavigation, Integer pageTransition, int errorCode,
             int httpStatusCode) {
-        if (mActivityType == WebappActivity.ActivityType.WEBAPP || !isInMainFrame) return;
+        if (!mIsForWebApk || !isInMainFrame) return;
 
         mErrorCode = errorCode;
         switch (mErrorCode) {
@@ -188,7 +186,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     protected boolean canHideSplashScreen() {
-        if (mActivityType == WebappActivity.ActivityType.WEBAPP) return true;
+        if (!mIsForWebApk) return true;
         return mErrorCode != NetError.ERR_INTERNET_DISCONNECTED
                 && mErrorCode != NetError.ERR_NETWORK_CHANGED;
     }
@@ -222,8 +220,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
         mOfflineDialog = new WebappOfflineDialog();
-        mOfflineDialog.show(tab.getActivity(), mAppName,
-                mActivityType == WebappActivity.ActivityType.WEBAPK, errorCode);
+        mOfflineDialog.show(tab.getActivity(), mAppName, mIsForWebApk, errorCode);
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */

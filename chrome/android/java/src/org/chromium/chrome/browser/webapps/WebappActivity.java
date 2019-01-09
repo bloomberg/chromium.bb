@@ -232,7 +232,7 @@ public class WebappActivity extends SingleTabActivity {
         if (tab.getUrl().isEmpty()) {
             loadUrl(mWebappInfo, tab);
         } else {
-            if (getActivityType() != ActivityType.WEBAPK && NetworkChangeNotifier.isOnline()) {
+            if (!mWebappInfo.isForWebApk() && NetworkChangeNotifier.isOnline()) {
                 tab.reloadIgnoringCache();
             }
         }
@@ -485,7 +485,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     protected void onDeferredStartupWithNullStorage() {
-        if (getActivityType() != ActivityType.WEBAPK) return;
+        if (!mWebappInfo.isForWebApk()) return;
 
         // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
         // for WebAPKs since we need to store metadata for updates and disclosure notifications.
@@ -558,7 +558,7 @@ public class WebappActivity extends SingleTabActivity {
                 enterImmersiveMode();
             }
             ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            mSplashController.showSplashScreen(getActivityType(), contentView, mWebappInfo);
+            mSplashController.showSplashScreen(contentView, mWebappInfo);
         }
     }
 
@@ -703,20 +703,10 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     /**
-     * @return The actual activity type of {@link WebappActivity}, which to be one of the values in
-     * {@link ActivityType}.
-     *
-     * This function is needed because Webapp and WebAPKs both use {@link WebappActivity}.
-     */
-    public @ActivityType int getActivityType() {
-        return ActivityType.WEBAPP;
-    }
-
-    /**
      * @return The package name if this Activity is associated with an APK. Null if there is no
      *         associated Android native client.
      */
-    public @Nullable String getNativeClientPackageName() {
+    public @Nullable String getWebApkPackageName() {
         return null;
     }
 
@@ -876,7 +866,7 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     protected TabDelegate createTabDelegate(boolean incognito) {
-        return new WebappTabDelegate(incognito, getActivityType(), getNativeClientPackageName());
+        return new WebappTabDelegate(incognito, mWebappInfo);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
