@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 108 tests; 90 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS PaymentRequest interface: existence and properties of interface object
 PASS PaymentRequest interface object length
