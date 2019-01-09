@@ -978,6 +978,11 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
   if (!IsValidModelIndex(model_index))
     return;
 
+  // If we're not allowed to close this tab for whatever reason, we should not
+  // proceed.
+  if (!controller_->BeforeCloseTab(model_index, source))
+    return;
+
   if (!in_tab_close_ && IsAnimating()) {
     // Cancel any current animations. We do this as remove uses the current
     // ideal bounds and we need to know ideal bounds is in a good state.

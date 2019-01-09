@@ -276,6 +276,27 @@ void BrowserTabStripController::AddSelectionFromAnchorTo(int model_index) {
   model_->AddSelectionFromAnchorTo(model_index);
 }
 
+bool BrowserTabStripController::BeforeCloseTab(int model_index,
+                                               CloseTabSource source) {
+  // Only consider pausing the close operation if this is the last remaining
+  // tab (since otherwise closing it won't close the browser window).
+  if (GetCount() > 1)
+    return true;
+
+  // Closing this tab will close the current window. See if the browser wants to
+  // prompt the user before the browser is allowed to close.
+  const Browser::WarnBeforeClosingResult result =
+      browser_view_->browser()->MaybeWarnBeforeClosing(base::BindOnce(
+          [](TabStrip* tab_strip, int model_index, CloseTabSource source,
+             Browser::WarnBeforeClosingResult result) {
+            if (result == Browser::WarnBeforeClosingResult::kOkToClose)
+              tab_strip->CloseTab(tab_strip->tab_at(model_index), source);
+          },
+          base::Unretained(tabstrip_), model_index, source));
+
+  return result == Browser::WarnBeforeClosingResult::kOkToClose;
+}
+
 void BrowserTabStripController::CloseTab(int model_index,
                                          CloseTabSource source) {
   // Cancel any pending tab transition.
