@@ -46,7 +46,7 @@ void BitmapImageMetrics::CountImageOrientation(
 }
 
 void BitmapImageMetrics::CountImageJpegDensity(int image_min_side,
-                                               int64_t density_centi_bpp) {
+                                               uint64_t density_centi_bpp) {
   // Values are reported in the range 0.01 to 10 bpp, in different metrics
   // depending on the image category (small, medium, large).
   if (image_min_side >= 1000) {

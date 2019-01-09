@@ -2721,8 +2721,8 @@ GLenum WebGLImageConversion::ComputeImageSizeInBytes(
   }
 
   unsigned padding = 0;
-  base::CheckedNumeric<uint32_t> checked_residual =
-      checked_value % params.alignment;
+  base::CheckedNumeric<uint32_t> checked_residual = checked_value;
+  checked_residual %= static_cast<uint32_t>(params.alignment);
   if (!checked_residual.IsValid()) {
     return GL_INVALID_VALUE;
   }

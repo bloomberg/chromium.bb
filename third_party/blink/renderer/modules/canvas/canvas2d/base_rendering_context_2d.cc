@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -1767,9 +1768,12 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
       CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == kF16CanvasPixelFormat) {
-    size_t data_length =
-        data->Size().Area() * context_color_params.BytesPerPixel();
-    std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
+    base::CheckedNumeric<size_t> data_length = data->Size().Area();
+    data_length *= context_color_params.BytesPerPixel();
+    if (!data_length.IsValid())
+      return;
+    std::unique_ptr<uint8_t[]> converted_pixels(
+        new uint8_t[data_length.ValueOrDie()]);
     if (data->ImageDataInCanvasColorSettings(
             ColorParams().ColorSpace(), PixelFormat(), converted_pixels.get(),
             kRGBAColorType)) {
