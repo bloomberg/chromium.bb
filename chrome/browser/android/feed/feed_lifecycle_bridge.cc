@@ -54,7 +54,9 @@ void FeedLifecycleBridge::OnURLsDeleted(
     return;
   }
 
-  if (deletion_info.IsAllHistory() || deletion_info.deleted_rows().size() > 0) {
+  // If a user deletes a single URL, we don't consider this a clear user intent
+  // to clear our data.
+  if (deletion_info.IsAllHistory() || deletion_info.deleted_rows().size() > 1) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FeedLifecycleBridge_onHistoryDeleted(env);
   }
