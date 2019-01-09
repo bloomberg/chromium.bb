@@ -5,6 +5,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
+    featureSplit="vr"
     package="{{manifest_package}}">
 
     <!-- The VR module is only supported on Android L+. -->
