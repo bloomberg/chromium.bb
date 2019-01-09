@@ -151,7 +151,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
-#include "ui/android/buildflags.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "ui/message_center/public/cpp/features.h"
@@ -2581,13 +2580,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordsKeyboardAccessoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kPasswordsKeyboardAccessory)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
-    {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
-     flag_descriptions::kAndroidNightModeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidNightMode)},
-#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"passwords-migrate-linux-to-login-db",

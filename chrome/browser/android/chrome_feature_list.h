@@ -14,7 +14,6 @@ namespace android {
 // Alphabetical:
 extern const base::Feature kAdjustWebApkInstallationSpace;
 extern const base::Feature kAllowRemoteContextForNotifications;
-extern const base::Feature kAndroidNightMode;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;

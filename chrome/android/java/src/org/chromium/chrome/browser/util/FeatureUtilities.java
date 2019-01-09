@@ -75,7 +75,6 @@ public class FeatureUtilities {
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
-    private static Boolean sIsNightModeAvailable;
 
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
@@ -188,7 +187,6 @@ public class FeatureUtilities {
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheInflateToolbarOnBackgroundThread();
-        cacheNightModeAvailable();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -351,32 +349,6 @@ public class FeatureUtilities {
         return sIsBottomToolbarEnabled
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                            ContextUtils.getApplicationContext());
-    }
-
-    /**
-     * Cache whether or not night mode is available (i.e. night mode experiment is enabled) so on
-     * next startup, the value can be made available immediately.
-     */
-    public static void cacheNightModeAvailable() {
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE));
-    }
-
-    /**
-     * @return Whether or not night mode experiment is enabled (i.e. night mode experiment is
-     *         enabled).
-     */
-    public static boolean isNightModeAvailable() {
-        if (sIsNightModeAvailable == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsNightModeAvailable = prefManager.readBoolean(
-                        ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, false);
-            }
-        }
-        return sIsNightModeAvailable;
     }
 
     /**

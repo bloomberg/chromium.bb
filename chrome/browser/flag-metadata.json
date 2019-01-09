@@ -719,11 +719,6 @@
     "expiry_milestone": 73
   },
   {
-    "name": "enable-android-night-mode",
-    "owners": [ "huayinz", "twellington", "tedchoc" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-android-pay-integration-v1",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
