@@ -11,32 +11,21 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace autofill_assistant {
 // Class implements UiController, Client and starts the Controller.
-class UiControllerAndroid : public UiController,
-                            public Client,
-                            public AccessTokenFetcher {
+class UiControllerAndroid : public UiController {
  public:
-  UiControllerAndroid(
-      JNIEnv* env,
-      jobject jcaller,
-      const base::android::JavaParamRef<jobject>& webContents,
-      const base::android::JavaParamRef<jobjectArray>& parameterNames,
-      const base::android::JavaParamRef<jobjectArray>& parameterValues,
-      const base::android::JavaParamRef<jstring>& locale,
-      const base::android::JavaParamRef<jstring>& countryCode);
+  // pointers to |web_contents|, |client| and |ui_delegate| must remain valid
+  // for the lifetime of this instance.
+  UiControllerAndroid(content::WebContents* web_contents,
+                      Client* client,
+                      UiDelegate* ui_delegate);
   ~UiControllerAndroid() override;
 
   // Overrides UiController:
-  void SetUiDelegate(UiDelegate* ui_delegate) override;
   void ShowStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
   void ShowOverlay() override;
@@ -68,23 +57,8 @@ class UiControllerAndroid : public UiController,
   std::string GetDebugContext() const override;
   void ExpandBottomSheet() override;
 
-  // Overrides Client:
-  std::string GetApiKey() override;
-  AccessTokenFetcher* GetAccessTokenFetcher() override;
-  autofill::PersonalDataManager* GetPersonalDataManager() override;
-  std::string GetServerUrl() override;
-  UiController* GetUiController() override;
-
-  // Overrides AccessTokenFetcher
-  void FetchAccessToken(
-      base::OnceCallback<void(bool, const std::string&)>) override;
-  void InvalidateAccessToken(const std::string& access_token) override;
-
   // Called by Java.
-  void Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& jcaller,
-             const base::android::JavaParamRef<jstring>& initialUrlString);
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void UpdateTouchableArea(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
   void OnUserInteractionInsideTouchableArea(
@@ -114,10 +88,6 @@ class UiControllerAndroid : public UiController,
       const base::android::JavaParamRef<jstring>& jpayer_phone,
       const base::android::JavaParamRef<jstring>& jpayer_email,
       jboolean jis_terms_and_services_accepted);
-  void OnAccessToken(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jcaller,
-                     jboolean success,
-                     const base::android::JavaParamRef<jstring>& access_token);
   void OnShowDetails(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jcaller,
                      jboolean success);
@@ -129,23 +99,17 @@ class UiControllerAndroid : public UiController,
       const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
+  Client* const client_;
+  UiDelegate* const ui_delegate_;
+
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>
       java_autofill_assistant_ui_controller_;
 
-  // UI delegate can be nullptr before SetUiDelegate.
-  UiDelegate* ui_delegate_;
-  content::BrowserContext* browser_context_;
-
   base::OnceCallback<void(const std::string&)> choice_callback_;
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
-  std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
-  base::OnceCallback<void(bool, const std::string&)>
-      fetch_access_token_callback_;
   base::OnceCallback<void(bool)> show_details_callback_;
-
-  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

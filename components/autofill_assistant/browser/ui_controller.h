@@ -36,9 +36,6 @@ class UiController {
 
   virtual ~UiController() = default;
 
-  // Set assistant UI delegate called by assistant UI controller.
-  virtual void SetUiDelegate(UiDelegate* ui_delegate) = 0;
-
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 

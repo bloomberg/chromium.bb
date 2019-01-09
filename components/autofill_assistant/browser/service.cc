@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -53,6 +54,17 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
 }  // namespace
 
 namespace autofill_assistant {
+
+// static
+std::unique_ptr<Service> Service::Create(content::BrowserContext* context,
+                                         Client* client) {
+  GURL server_url(client->GetServerUrl());
+  DCHECK(server_url.is_valid());
+
+  return std::make_unique<Service>(
+      client->GetApiKey(), server_url, context, client->GetAccessTokenFetcher(),
+      client->GetLocale(), client->GetCountryCode());
+}
 
 Service::Service(const std::string& api_key,
                  const GURL& server_url,

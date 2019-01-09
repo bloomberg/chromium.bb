@@ -133,6 +133,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetModernViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractAutofillAssistantUiController.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AnimatedProgressBar.java",
+  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantFacade.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequest.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPreferencesUtil.java",

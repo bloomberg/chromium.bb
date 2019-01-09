@@ -11,12 +11,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.HashMap;
@@ -60,69 +56,42 @@ public class AutofillAssistantFacade {
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
-        startInternal(activity, /* controller= */ null);
+        startWithCallback(activity, (canStart) -> {
+            if (canStart) {
+                initiateAutofillAssistant(activity);
+            }
+        });
     }
 
+    /**
+     * Decides whether to start Autofill Assistant. If necessary, start the first-time screen
+     * to let the user choose.
+     */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    static void startInternal(
-            ChromeActivity activity, @Nullable AbstractAutofillAssistantUiController controller) {
-        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
-        parameters.remove(PARAMETER_ENABLED);
-
-        final AbstractAutofillAssistantUiController targetController = controller == null
-                ? new AutofillAssistantUiController(activity, parameters)
-                : controller;
+    static void startWithCallback(ChromeActivity activity, Callback<Boolean> startCallback) {
         if (canStart(activity.getInitialIntent())) {
-            initiateAutofillAssistant(activity, parameters, targetController);
+            startCallback.onResult(true);
             return;
         }
         if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-            FirstRunScreen.show(activity, (result) -> {
-                if (result) initiateAutofillAssistant(activity, parameters, targetController);
-            });
+            FirstRunScreen.show(activity, startCallback);
             return;
         }
-
         // We don't have consent to start Autofill Assistant and cannot show initial screen.
-        // Do nothing.
+        startCallback.onResult(false);
     }
 
     /**
      * Instantiates all essential Autofill Assistant components and starts it.
      */
-    private static void initiateAutofillAssistant(ChromeActivity activity,
-            Map<String, String> parameters, AbstractAutofillAssistantUiController controller) {
-        UiDelegateHolder delegateHolder = new UiDelegateHolder(
-                new AutofillAssistantUiDelegate(activity, controller), controller);
-        initTabObservers(activity, delegateHolder);
+    private static void initiateAutofillAssistant(ChromeActivity activity) {
+        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
+        parameters.remove(PARAMETER_ENABLED);
+        String initialUrl = activity.getInitialIntent().getDataString();
 
-        controller.init(delegateHolder, Details.makeFromParameters(parameters));
-    }
-
-    private static void initTabObservers(ChromeActivity activity, UiDelegateHolder delegateHolder) {
-        // Shut down Autofill Assistant when the tab is detached from the activity.
-        //
-        // Note: For now this logic assumes that |activity| is a CustomTabActivity.
-        Tab activityTab = activity.getActivityTab();
-        activityTab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (!isAttached) {
-                    activityTab.removeObserver(this);
-                    delegateHolder.shutdown();
-                }
-            }
-        });
-
-        // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
-        TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
-        currentTabModel.addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                currentTabModel.removeObserver(this);
-                delegateHolder.giveUp();
-            }
-        });
+        AutofillAssistantClient client =
+                AutofillAssistantClient.fromWebContents(activity.getActivityTab().getWebContents());
+        client.start(initialUrl, parameters, activity.getInitialIntent().getExtras());
     }
 
     /** Return the value if the given boolean parameter from the extras. */
@@ -132,7 +101,7 @@ public class AutofillAssistantFacade {
     }
 
     /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
-    private static Map<String, String> extractParameters(@Nullable Bundle extras) {
+    static Map<String, String> extractParameters(@Nullable Bundle extras) {
         Map<String, String> result = new HashMap<>();
         if (extras != null) {
             for (String key : extras.keySet()) {

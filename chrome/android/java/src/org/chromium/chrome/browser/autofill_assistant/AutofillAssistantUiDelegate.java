@@ -52,6 +52,11 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
@@ -253,13 +258,53 @@ class AutofillAssistantUiDelegate {
         int BUTTON_HAIRLINE = 2;
     }
 
+    /** Starts the UI with the given controller. */
+    static UiDelegateHolder start(
+            ChromeActivity activity, AbstractAutofillAssistantUiController controller) {
+        UiDelegateHolder delegateHolder = new UiDelegateHolder(
+                new AutofillAssistantUiDelegate(activity, controller), controller);
+        initForCustomTab(activity, delegateHolder);
+        Details initialDetails = controller.getDetails();
+        if (!initialDetails.isEmpty()) {
+            delegateHolder.performUiOperation(
+                    (uiDelegate) -> uiDelegate.showDetails(initialDetails));
+        }
+        return delegateHolder;
+    }
+
+    private static void initForCustomTab(ChromeActivity activity, UiDelegateHolder delegateHolder) {
+        if (!(activity instanceof CustomTabActivity)) {
+            return;
+        }
+        Tab activityTab = activity.getActivityTab();
+        activityTab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                if (!isAttached) {
+                    activityTab.removeObserver(this);
+                    delegateHolder.shutdown();
+                }
+            }
+        });
+
+        // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
+        TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
+        currentTabModel.addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+                currentTabModel.removeObserver(this);
+                delegateHolder.giveUp();
+            }
+        });
+    }
+
     /**
      * Constructs an assistant UI delegate.
      *
      * @param activity The ChromeActivity
      * @param client The client to forward events to
      */
-    public AutofillAssistantUiDelegate(ChromeActivity activity, Client client) {
+    private AutofillAssistantUiDelegate(ChromeActivity activity, Client client) {
         mActivity = activity;
         mClient = client;
 

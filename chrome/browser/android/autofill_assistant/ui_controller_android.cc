@@ -23,7 +23,6 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/signin/core/browser/account_info.h"
@@ -40,86 +39,23 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 
 namespace autofill_assistant {
-namespace switches {
-const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
-}  // namespace switches
 
-namespace {
-
-const base::FeatureParam<std::string> kAutofillAssistantServerUrl{
-    &chrome::android::kAutofillAssistant, "url",
-    "https://automate-pa.googleapis.com"};
-
-// Time between two attempts to destroy the controller.
-static constexpr base::TimeDelta kDestroyRetryInterval =
-    base::TimeDelta::FromSeconds(2);
-
-// Builds a map from two Java arrays of strings with the same length.
-std::unique_ptr<std::map<std::string, std::string>> BuildParametersFromJava(
-    JNIEnv* env,
-    const JavaRef<jobjectArray>& names,
-    const JavaRef<jobjectArray>& values) {
-  std::vector<std::string> names_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, names, &names_vector);
-  std::vector<std::string> values_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, values,
-                                                     &values_vector);
-  DCHECK_EQ(names_vector.size(), values_vector.size());
-  auto parameters = std::make_unique<std::map<std::string, std::string>>();
-  for (size_t i = 0; i < names_vector.size(); ++i) {
-    parameters->insert(std::make_pair(names_vector[i], values_vector[i]));
-  }
-  return parameters;
-}
-
-}  // namespace
-
-UiControllerAndroid::UiControllerAndroid(
-    JNIEnv* env,
-    jobject jcaller,
-    const JavaParamRef<jobject>& webContents,
-    const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues,
-    const JavaParamRef<jstring>& jlocale,
-    const JavaParamRef<jstring>& jcountryCode)
-    : ui_delegate_(nullptr), weak_ptr_factory_(this) {
-  java_autofill_assistant_ui_controller_.Reset(env, jcaller);
-
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(webContents);
+UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
+                                         Client* client,
+                                         UiDelegate* ui_delegate)
+    : client_(client), ui_delegate_(ui_delegate) {
   DCHECK(web_contents);
-  browser_context_ = web_contents->GetBrowserContext();
-
-  auto locale = base::android::ConvertJavaStringToUTF8(jlocale);
-  std::string country_code;
-  if (jcountryCode)
-    country_code = base::android::ConvertJavaStringToUTF8(jcountryCode);
-
-  Controller::CreateForWebContents(
-      web_contents, base::WrapUnique(this),
-      BuildParametersFromJava(env, parameterNames, parameterValues), locale,
-      country_code);
-  DCHECK(ui_delegate_);
+  DCHECK(client);
+  DCHECK(ui_delegate);
+  java_autofill_assistant_ui_controller_ =
+      Java_AutofillAssistantUiController_createAndStartUi(
+          AttachCurrentThread(), web_contents->GetJavaWebContents(),
+          reinterpret_cast<intptr_t>(this));
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
-  Java_AutofillAssistantUiController_onNativeDestroy(
+  Java_AutofillAssistantUiController_clearNativePtr(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::Start(JNIEnv* env,
-                                const JavaParamRef<jobject>& jcaller,
-                                const JavaParamRef<jstring>& initialUrlString) {
-  GURL initialUrl =
-      GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
-  ui_delegate_->Start(initialUrl);
-}
-
-// This interface must be called before everything else in this class except the
-// constructor.
-void UiControllerAndroid::SetUiDelegate(UiDelegate* ui_delegate) {
-  ui_delegate_ = ui_delegate;
-  DCHECK(ui_delegate_);
 }
 
 void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
@@ -273,7 +209,9 @@ void UiControllerAndroid::OnGetPaymentInformation(
       auto guid = payment_info->card->billing_address_id();
       if (!guid.empty()) {
         autofill::AutofillProfile* profile =
-            GetPersonalDataManager()->GetProfileByGUID(guid);
+            autofill::PersonalDataManagerFactory::GetForProfile(
+                ProfileManager::GetLastUsedProfile())
+                ->GetProfileByGUID(guid);
         if (profile != nullptr)
           payment_info->billing_address =
               std::make_unique<autofill::AutofillProfile>(*profile);
@@ -301,33 +239,12 @@ void UiControllerAndroid::OnGetPaymentInformation(
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
 }
 
-void UiControllerAndroid::OnAccessToken(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jboolean success,
-    const JavaParamRef<jstring>& access_token) {
-  if (fetch_access_token_callback_) {
-    std::move(fetch_access_token_callback_)
-        .Run(success, base::android::ConvertJavaStringToUTF8(access_token));
-  }
-}
-
 void UiControllerAndroid::OnShowDetails(JNIEnv* env,
                                         const JavaParamRef<jobject>& jcaller,
                                         jboolean jcan_continue) {
   if (show_details_callback_) {
     std::move(show_details_callback_).Run(jcan_continue);
   }
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-UiControllerAndroid::GetPrimaryAccountName(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
-  AccountInfo account_info = IdentityManagerFactory::GetForProfile(
-                                 Profile::FromBrowserContext(browser_context_))
-                                 ->GetPrimaryAccountInfo();
-  return base::android::ConvertUTF8ToJavaString(env, account_info.email);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
@@ -398,6 +315,8 @@ void UiControllerAndroid::GetPaymentInformation(
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onRequestPaymentInformation(
       env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(env,
+                                             client_->GetAccountEmailAddress()),
       payment_options->request_shipping, payment_options->request_payer_name,
       payment_options->request_payer_phone,
       payment_options->request_payer_email,
@@ -446,6 +365,12 @@ void UiControllerAndroid::HideProgressBar() {
       env, java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::Stop(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  client_->Stop();
+}
+
 void UiControllerAndroid::UpdateTouchableArea(bool enabled,
                                               const std::vector<RectF>& areas) {
   JNIEnv* env = AttachCurrentThread();
@@ -469,85 +394,4 @@ void UiControllerAndroid::ExpandBottomSheet() {
 std::string UiControllerAndroid::GetDebugContext() const {
   return ui_delegate_->GetDebugContext();
 }
-
-std::string UiControllerAndroid::GetApiKey() {
-  std::string api_key;
-  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
-    api_key = chrome::GetChannel() == version_info::Channel::STABLE
-                  ? google_apis::GetAPIKey()
-                  : google_apis::GetNonStableAPIKey();
-  }
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAutofillAssistantServerKey)) {
-    api_key = command_line->GetSwitchValueASCII(
-        switches::kAutofillAssistantServerKey);
-  }
-  return api_key;
-}
-
-AccessTokenFetcher* UiControllerAndroid::GetAccessTokenFetcher() {
-  return this;
-}
-
-autofill::PersonalDataManager* UiControllerAndroid::GetPersonalDataManager() {
-  return autofill::PersonalDataManagerFactory::GetForProfile(
-      ProfileManager::GetLastUsedProfile());
-}
-
-std::string UiControllerAndroid::GetServerUrl() {
-  return kAutofillAssistantServerUrl.Get();
-}
-
-UiController* UiControllerAndroid::GetUiController() {
-  return this;
-}
-
-void UiControllerAndroid::FetchAccessToken(
-    base::OnceCallback<void(bool, const std::string&)> callback) {
-  DCHECK(!fetch_access_token_callback_);
-
-  fetch_access_token_callback_ = std::move(callback);
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_fetchAccessToken(
-      env, java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::InvalidateAccessToken(
-    const std::string& access_token) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_invalidateAccessToken(
-      env, java_autofill_assistant_ui_controller_,
-      base::android::ConvertUTF8ToJavaString(env, access_token));
-}
-
-void UiControllerAndroid::Destroy(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj) {
-  if (!ui_delegate_->Terminate()) {
-    // This is a safety net and should be removed once all uses of
-    // base::Unretained in the execution and script tracking has been removed.
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&UiControllerAndroid::Destroy,
-                       weak_ptr_factory_.GetWeakPtr(), base::Unretained(env),
-                       base::ConstRef(obj)),
-        kDestroyRetryInterval);
-    return;
-  }
-  ui_delegate_->OnDestroy();
-}
-
-static jlong JNI_AutofillAssistantUiController_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobject>& webContents,
-    const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues,
-    const JavaParamRef<jstring>& jlocale,
-    const JavaParamRef<jstring>& jcountryCode) {
-  auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
-      env, jcaller, webContents, parameterNames, parameterValues, jlocale,
-      jcountryCode);
-  return reinterpret_cast<intptr_t>(ui_controller_android);
-}
-
 }  // namespace autofill_assistant.

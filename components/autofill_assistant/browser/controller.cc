@@ -50,23 +50,34 @@ static const char* const kTrueValue = "true";
 
 }  // namespace
 
-// static
-void Controller::CreateForWebContents(
-    content::WebContents* web_contents,
-    std::unique_ptr<Client> client,
-    std::unique_ptr<std::map<std::string, std::string>> parameters,
-    const std::string& locale,
-    const std::string& country_code) {
-  // Get the key early since |client| will be invalidated when moved below.
-  GURL server_url(client->GetServerUrl());
-  DCHECK(server_url.is_valid());
+Controller::Controller(content::WebContents* web_contents,
+                       Client* client,
+                       std::unique_ptr<WebController> web_controller,
+                       std::unique_ptr<Service> service)
+    : content::WebContentsObserver(web_contents),
+      client_(client),
+      web_controller_(std::move(web_controller)),
+      service_(std::move(service)),
+      memory_(std::make_unique<ClientMemory>()),
+      touchable_element_area_(web_controller_.get()),
+      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
+                                                      /* listener= */ this)),
+      weak_ptr_factory_(this) {
+  // Only set the controller as the delegate if web_contents does not yet have
+  // one.
+  // TODO(crbug.com/806868): Find a better way to get a loading progress instead
+  // of using the controller as a web_contents delegate. It may interfere with
+  // an already existing delegate.
+  if (web_contents->GetDelegate() == nullptr) {
+    clear_web_contents_delegate_ = true;
+    web_contents->SetDelegate(this);
+  }
+}
 
-  std::unique_ptr<Service> service = std::make_unique<Service>(
-      client->GetApiKey(), server_url, web_contents->GetBrowserContext(),
-      client->GetAccessTokenFetcher(), locale, country_code);
-  new Controller(web_contents, std::move(client),
-                 WebController::CreateForWebContents(web_contents),
-                 std::move(service), std::move(parameters));
+Controller::~Controller() {
+  if (clear_web_contents_delegate_) {
+    web_contents()->SetDelegate(nullptr);
+  }
 }
 
 Service* Controller::GetService() {
@@ -86,7 +97,7 @@ ClientMemory* Controller::GetClientMemory() {
 }
 
 const std::map<std::string, std::string>& Controller::GetParameters() {
-  return *parameters_;
+  return parameters_;
 }
 
 autofill::PersonalDataManager* Controller::GetPersonalDataManager() {
@@ -102,43 +113,6 @@ void Controller::SetTouchableElementArea(
   touchable_element_area_.SetElements(elements);
 }
 
-Controller::Controller(
-    content::WebContents* web_contents,
-    std::unique_ptr<Client> client,
-    std::unique_ptr<WebController> web_controller,
-    std::unique_ptr<Service> service,
-    std::unique_ptr<std::map<std::string, std::string>> parameters)
-    : content::WebContentsObserver(web_contents),
-      client_(std::move(client)),
-      web_controller_(std::move(web_controller)),
-      service_(std::move(service)),
-      parameters_(std::move(parameters)),
-      memory_(std::make_unique<ClientMemory>()),
-      touchable_element_area_(web_controller_.get()),
-      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
-                                                      /* listener= */ this)),
-      weak_ptr_factory_(this) {
-  DCHECK(parameters_);
-
-  // Only set the controller as the delegate if web_contents does not yet have
-  // one.
-  // TODO(crbug.com/806868): Find a better way to get a loading progress instead
-  // of using the controller as a web_contents delegate. It may interfere with
-  // an already existing delegate.
-  if (web_contents->GetDelegate() == nullptr) {
-    clear_web_contents_delegate_ = true;
-    web_contents->SetDelegate(this);
-  }
-
-  GetUiController()->SetUiDelegate(this);
-}
-
-Controller::~Controller() {
-  if (clear_web_contents_delegate_) {
-    web_contents()->SetDelegate(nullptr);
-  }
-}
-
 void Controller::GetOrCheckScripts(const GURL& url) {
   if (!started_ || script_tracker_->running()) {
     return;
@@ -148,7 +122,7 @@ void Controller::GetOrCheckScripts(const GURL& url) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
     service_->GetScriptsForUrl(
-        url, *parameters_,
+        url, parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
     script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
@@ -342,7 +316,7 @@ bool Controller::MaybeAutostartScript(
 void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
   if (has_cookie) {
     // This code is only active with the experiment parameter.
-    parameters_->insert(
+    parameters_.insert(
         std::make_pair(kWebsiteVisitedBeforeParameterName, kTrueValue));
     OnSetCookie(initial_url, has_cookie);
     return;
@@ -377,8 +351,14 @@ void Controller::FinishStart(const GURL& initial_url) {
       base::Unretained(GetUiController())));
 }
 
-void Controller::Start(const GURL& initialUrl) {
-  DCHECK(initialUrl.is_valid());
+void Controller::Start(const GURL& initialUrl,
+                       const std::map<std::string, std::string>& parameters) {
+  if (started_) {
+    NOTREACHED();
+    return;
+  }
+
+  parameters_ = parameters;
   if (IsCookieExperimentEnabled()) {
     GetWebController()->HasCookie(
         base::BindOnce(&Controller::OnGetCookie,
@@ -392,10 +372,6 @@ void Controller::Start(const GURL& initialUrl) {
 void Controller::OnClickOverlay() {
   GetUiController()->HideOverlay();
   // TODO(crbug.com/806868): Stop executing scripts.
-}
-
-void Controller::OnDestroy() {
-  delete this;
 }
 
 bool Controller::Terminate() {
@@ -425,7 +401,7 @@ std::string Controller::GetDebugContext() {
   base::Value dict(base::Value::Type::DICTIONARY);
 
   std::vector<base::Value> parameters_js;
-  for (const auto& entry : *parameters_) {
+  for (const auto& entry : parameters_) {
     base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
     parameter_js.SetKey(entry.first, base::Value(entry.second));
     parameters_js.push_back(std::move(parameter_js));
@@ -543,10 +519,6 @@ void Controller::RenderProcessGone(base::TerminationStatus status) {
   GetUiController()->Shutdown();
 }
 
-void Controller::WebContentsDestroyed() {
-  OnDestroy();
-}
-
 void Controller::LoadProgressChanged(content::WebContents* source,
                                      double progress) {
   int percent = 100 * progress;
@@ -565,8 +537,8 @@ void Controller::LoadProgressChanged(content::WebContents* source,
 }
 
 bool Controller::IsCookieExperimentEnabled() const {
-  auto iter = parameters_->find(kCookieExperimentName);
-  return iter != parameters_->end() && iter->second == "1";
+  auto iter = parameters_.find(kCookieExperimentName);
+  return iter != parameters_.end() && iter->second == "1";
 }
 
 }  // namespace autofill_assistant

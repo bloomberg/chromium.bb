@@ -4,22 +4,14 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.accounts.Account;
-import android.content.Context;
 import android.graphics.RectF;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.telephony.TelephonyManager;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -28,7 +20,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -36,70 +27,48 @@ import java.util.Map;
  */
 @JNINamespace("autofill_assistant")
 public class AutofillAssistantUiController extends AbstractAutofillAssistantUiController {
-    /** OAuth2 scope that RPCs require. */
-    private static final String AUTH_TOKEN_TYPE =
-            "oauth2:https://www.googleapis.com/auth/userinfo.profile";
-    private static final String PARAMETER_USER_EMAIL = "USER_EMAIL";
-
     private final WebContents mWebContents;
-    private final String mInitialUrl;
 
     // TODO(crbug.com/806868): Move mCurrentDetails and mStatusMessage to a Model (refactor to MVC).
     private Details mCurrentDetails = Details.EMPTY_DETAILS;
     private String mStatusMessage;
 
     /** Native pointer to the UIController. */
-    private long mUiControllerAndroid;
+    private long mNativeUiController;
 
     private UiDelegateHolder mUiDelegateHolder;
 
     /**
-     * Indicates whether {@link mAccount} has been initialized.
-     */
-    private boolean mAccountInitialized;
-
-    /**
-     * Account that was used to initiate AutofillAssistant.
+     * Creates the UI Controller and UI.
      *
-     * <p>This account is used to  authenticate when sending RPCs and as default account for Payment
-     * Request. Not relevant until the accounts have been fetched, and mAccountInitialized set to
-     * true. Can still be null after the accounts are fetched, in which case authentication is
-     * disabled.
+     * @param webContents WebContents the controller is associated to
+     * @param mNativeUiController native autofill_assistant::NativeUiController instance
      */
-    @Nullable
-    private Account mAccount;
+    @CalledByNative
+    private static AutofillAssistantUiController createAndStartUi(
+            WebContents webContents, long nativeUiController) {
+        ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+        assert activity != null;
+        // TODO(crbug.com/806868): Keep details on the native side and get rid of this duplicated,
+        // misplaced, call to extractParameters.
+        Details details = Details.makeFromParameters(
+                AutofillAssistantFacade.extractParameters(activity.getInitialIntent().getExtras()));
+        AutofillAssistantUiController controller =
+                new AutofillAssistantUiController(webContents, nativeUiController, details);
+        controller.mUiDelegateHolder = AutofillAssistantUiDelegate.start(activity, controller);
+        return controller;
+    }
 
-    /** If set, fetch the access token once the accounts are fetched. */
-    private boolean mShouldFetchAccessToken;
-
-    /**
-     * Construct Autofill Assistant UI controller.
-     *
-     * @param activity The ChromeActivity of the controller associated with.
-     */
-    public AutofillAssistantUiController(ChromeActivity activity, Map<String, String> parameters) {
-        mWebContents = activity.getActivityTab().getWebContents();
-        mInitialUrl = activity.getInitialIntent().getDataString();
-
-        mUiControllerAndroid =
-                nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
-                        parameters.values().toArray(new String[parameters.size()]),
-                        LocaleUtils.getDefaultLocaleString(), getCountryIso());
-
-        chooseAccountAsync(
-                parameters.get(PARAMETER_USER_EMAIL), activity.getInitialIntent().getExtras());
+    private AutofillAssistantUiController(
+            WebContents webContents, long nativeUiController, Details details) {
+        mWebContents = webContents;
+        mNativeUiController = nativeUiController;
+        mCurrentDetails = details;
     }
 
     @CalledByNative
-    private void onNativeDestroy() {
-        mUiControllerAndroid = 0;
-    }
-
-    @Override
-    public void init(UiDelegateHolder delegateHolder, Details details) {
-        mUiDelegateHolder = delegateHolder;
-        maybeUpdateDetails(details);
-        if (mUiControllerAndroid != 0) nativeStart(mUiControllerAndroid, mInitialUrl);
+    private void clearNativePtr() {
+        mNativeUiController = 0;
     }
 
     @Override
@@ -124,55 +93,55 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
 
     @Override
     public void updateTouchableArea() {
-        if (mUiControllerAndroid != 0) nativeUpdateTouchableArea(mUiControllerAndroid);
+        if (mNativeUiController != 0) nativeUpdateTouchableArea(mNativeUiController);
     }
 
     @Override
     public void onUserInteractionInsideTouchableArea() {
-        if (mUiControllerAndroid != 0)
-            nativeOnUserInteractionInsideTouchableArea(mUiControllerAndroid);
+        if (mNativeUiController != 0)
+            nativeOnUserInteractionInsideTouchableArea(mNativeUiController);
     }
 
     @Override
     public void onScriptSelected(String scriptPath) {
-        if (mUiControllerAndroid != 0) nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
+        if (mNativeUiController != 0) nativeOnScriptSelected(mNativeUiController, scriptPath);
     }
 
     @Override
     public void onChoice(byte[] serverPayload) {
-        if (mUiControllerAndroid != 0) nativeOnChoice(mUiControllerAndroid, serverPayload);
+        if (mNativeUiController != 0) nativeOnChoice(mNativeUiController, serverPayload);
     }
 
     @Override
     public void onAddressSelected(String guid) {
-        if (mUiControllerAndroid != 0) nativeOnAddressSelected(mUiControllerAndroid, guid);
+        if (mNativeUiController != 0) nativeOnAddressSelected(mNativeUiController, guid);
     }
 
     @Override
     public void onCardSelected(String guid) {
-        if (mUiControllerAndroid != 0) nativeOnCardSelected(mUiControllerAndroid, guid);
+        if (mNativeUiController != 0) nativeOnCardSelected(mNativeUiController, guid);
     }
 
     @Override
     public void onDetailsAcknowledged(Details displayedDetails, boolean canContinue) {
         mCurrentDetails = displayedDetails;
-        if (mUiControllerAndroid != 0) nativeOnShowDetails(mUiControllerAndroid, canContinue);
+        if (mNativeUiController != 0) nativeOnShowDetails(mNativeUiController, canContinue);
     }
 
     @Override
     public String getDebugContext() {
-        if (mUiControllerAndroid == 0) return "";
-        return nativeOnRequestDebugContext(mUiControllerAndroid);
+        if (mNativeUiController == 0) return "";
+        return nativeOnRequestDebugContext(mNativeUiController);
     }
 
     @Override
     public void onCompleteShutdown() {
-        if (mUiControllerAndroid != 0) nativeDestroy(mUiControllerAndroid);
+        if (mNativeUiController != 0) nativeStop(mNativeUiController);
     }
 
     @CalledByNative
     private void onAllowShowingSoftKeyboard(boolean allowed) {
-        this.mUiDelegateHolder.performUiOperation(
+        mUiDelegateHolder.performUiOperation(
                 uiDelegate -> uiDelegate.allowShowingSoftKeyboard(allowed));
     }
 
@@ -275,9 +244,9 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
     }
 
     @CalledByNative
-    private void onRequestPaymentInformation(boolean requestShipping, boolean requestPayerName,
-            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType, String title,
-            String[] supportedBasicCardNetworks) {
+    private void onRequestPaymentInformation(String defaultEmail, boolean requestShipping,
+            boolean requestPayerName, boolean requestPayerPhone, boolean requestPayerEmail,
+            int shippingType, String title, String[] supportedBasicCardNetworks) {
         PaymentOptions paymentOptions = new PaymentOptions();
         paymentOptions.requestShipping = requestShipping;
         paymentOptions.requestPayerName = requestPayerName;
@@ -285,15 +254,13 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
         paymentOptions.requestPayerEmail = requestPayerEmail;
         paymentOptions.shippingType = shippingType;
 
-        String defaultEmail = mAccount != null ? mAccount.name : "";
-
         mUiDelegateHolder.performUiOperation(uiDelegate -> {
             uiDelegate.showPaymentRequest(mWebContents, paymentOptions, title,
                     supportedBasicCardNetworks, defaultEmail, (selectedPaymentInformation -> {
                         uiDelegate.closePaymentRequest();
                         if (selectedPaymentInformation.succeed) {
-                            if (mUiControllerAndroid != 0) {
-                                nativeOnGetPaymentInformation(mUiControllerAndroid,
+                            if (mNativeUiController != 0) {
+                                nativeOnGetPaymentInformation(mNativeUiController,
                                         selectedPaymentInformation.succeed,
                                         selectedPaymentInformation.card,
                                         selectedPaymentInformation.address,
@@ -320,8 +287,8 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
     void maybeUpdateDetails(Details newDetails) {
         if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
             // No update on UI needed.
-            if (mUiControllerAndroid != 0) {
-                nativeOnShowDetails(mUiControllerAndroid, /* canContinue= */ true);
+            if (mNativeUiController != 0) {
+                nativeOnShowDetails(mNativeUiController, /* canContinue= */ true);
             }
             return;
         }
@@ -377,134 +344,13 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
                 uiDelegate -> { uiDelegate.updateTouchableArea(enabled, boxes); });
     }
 
-
-    @CalledByNative
-    private void fetchAccessToken() {
-        if (!mAccountInitialized) {
-            // Still getting the account list. Fetch the token as soon as an account is available.
-            mShouldFetchAccessToken = true;
-            return;
-        }
-        if (mAccount == null) {
-            if (mUiControllerAndroid != 0) nativeOnAccessToken(mUiControllerAndroid, true, "");
-            return;
-        }
-
-        OAuth2TokenService.getAccessToken(
-                mAccount, AUTH_TOKEN_TYPE, new OAuth2TokenService.GetAccessTokenCallback() {
-                    @Override
-                    public void onGetTokenSuccess(String token) {
-                        if (mUiControllerAndroid != 0) {
-                            nativeOnAccessToken(mUiControllerAndroid, true, token);
-                        }
-                    }
-
-                    @Override
-                    public void onGetTokenFailure(boolean isTransientError) {
-                        if (!isTransientError && mUiControllerAndroid != 0) {
-                            nativeOnAccessToken(mUiControllerAndroid, false, "");
-                        }
-                    }
-                });
-    }
-
-    @CalledByNative
-    private void invalidateAccessToken(String accessToken) {
-        if (mAccount == null) {
-            return;
-        }
-
-        OAuth2TokenService.invalidateAccessToken(accessToken);
-    }
-
     @CalledByNative
     private void expandBottomSheet() {
         mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::expandBottomSheet);
     }
 
-    /** Choose an account to authenticate as for making RPCs to the backend. */
-    private void chooseAccountAsync(@Nullable String accountFromParameter, Bundle extras) {
-        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
-            if (mUiControllerAndroid == 0) return;
-            if (accounts.size() == 1) {
-                // If there's only one account, there aren't any doubts.
-                onAccountChosen(accounts.get(0));
-                return;
-            }
-            Account signedIn =
-                    findAccountByName(accounts, nativeGetPrimaryAccountName(mUiControllerAndroid));
-            if (signedIn != null) {
-                // TODO(crbug.com/806868): Compare against account name from extras and complain if
-                // they don't match.
-                onAccountChosen(signedIn);
-                return;
-            }
-
-            if (accountFromParameter != null) {
-                Account account = findAccountByName(accounts, accountFromParameter);
-                if (account != null) {
-                    onAccountChosen(account);
-                    return;
-                }
-            }
-
-            for (String extra : extras.keySet()) {
-                // TODO(crbug.com/806868): Deprecate ACCOUNT_NAME.
-                if (extra.endsWith("ACCOUNT_NAME")) {
-                    Account account = findAccountByName(accounts, extras.getString(extra));
-                    if (account != null) {
-                        onAccountChosen(account);
-                        return;
-                    }
-                }
-            }
-            onAccountChosen(null);
-        });
-    }
-
-    private void onAccountChosen(@Nullable Account account) {
-        mAccount = account;
-        mAccountInitialized = true;
-        // TODO(crbug.com/806868): Consider providing a way of signing in this case, to enforce
-        // that all calls are authenticated.
-
-        if (mShouldFetchAccessToken) {
-            mShouldFetchAccessToken = false;
-            fetchAccessToken();
-        }
-    }
-
-    private static Account findAccountByName(List<Account> accounts, String name) {
-        for (int i = 0; i < accounts.size(); i++) {
-            Account account = accounts.get(i);
-            if (account.name.equals(name)) {
-                return account;
-            }
-        }
-        return null;
-    }
-
-    /** Returns the country that the device is currently located in. This currently only works
-     * for devices with active SIM cards. For a more general solution, we should probably use
-     * the LocationManager together with the Geocoder.*/
-    private String getCountryIso() {
-        TelephonyManager telephonyManager =
-                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.TELEPHONY_SERVICE);
-
-        // According to API, location for CDMA networks is unreliable
-        if (telephonyManager != null
-                && telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA)
-            return telephonyManager.getNetworkCountryIso();
-        else
-            return null;
-    }
-
     // native methods.
-    private native long nativeInit(WebContents webContents, String[] parameterNames,
-            String[] parameterValues, String locale, String countryCode);
-    private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
-    private native void nativeDestroy(long nativeUiControllerAndroid);
+    private native void nativeStop(long nativeUiControllerAndroid);
     private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnUserInteractionInsideTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
@@ -517,8 +363,5 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
             @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
             @Nullable String payerPhone, @Nullable String payerEmail,
             boolean isTermsAndConditionsAccepted);
-    private native void nativeOnAccessToken(
-            long nativeUiControllerAndroid, boolean success, String accessToken);
-    private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);
     private native String nativeOnRequestDebugContext(long nativeUiControllerAndroid);
 }
