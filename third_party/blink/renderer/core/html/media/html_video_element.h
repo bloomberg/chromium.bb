@@ -153,6 +153,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&) const override;
+  const KURL& SourceURL() const override { return currentSrc(); }
   bool IsHTMLVideoElement() const override { return true; }
   // Video elements currently always go through RAM when used as a canvas image
   // source.

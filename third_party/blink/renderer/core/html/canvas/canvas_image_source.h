@@ -78,6 +78,7 @@ class CORE_EXPORT CanvasImageSource {
       const FloatSize& default_object_size) const {
     return ElementSize(default_object_size);
   }
+  virtual const KURL& SourceURL() const { return BlankURL(); }
   virtual bool IsOpaque() const { return false; }
   virtual bool IsAccelerated() const = 0;
 
