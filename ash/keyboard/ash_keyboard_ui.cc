@@ -14,12 +14,10 @@
 #include "ash/shell.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
-#include "base/scoped_observer.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "services/ws/remote_view_host/server_remote_view_host.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_bridge.h"
@@ -30,7 +28,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace {
@@ -44,10 +41,9 @@ namespace ash {
 ////////////////////////////////////////////////////////////////////////////////
 // AshKeyboardView
 
-class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
-                                       public aura::WindowObserver {
+class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView {
  public:
-  explicit AshKeyboardView(aura::Window* context) : scoped_observer_(this) {
+  explicit AshKeyboardView(aura::Window* context) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     InitWidget(context);
 
@@ -70,7 +66,6 @@ class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
       server_remote_view_host_ = new ws::ServerRemoteViewHost(
           Shell::Get()->window_service_owner()->window_service());
       AddChildView(server_remote_view_host_);
-      scoped_observer_.Add(server_remote_view_host_->embedding_root());
     }
     server_remote_view_host_->EmbedUsingToken(
         token, ws::mojom::kEmbedFlagEmbedderControlsVisibility,
@@ -85,30 +80,6 @@ class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
   // views::WidgetDelegateView:
   const char* GetClassName() const override { return "AshKeyboardView"; }
   void DeleteDelegate() override {}
-
-  // aura::WindowObserver:
-  void OnWindowAdded(aura::Window* new_window) override {
-    if (new_window->parent() == server_remote_view_host_->embedding_root())
-      scoped_observer_.Add(new_window);
-  }
-  void OnWillRemoveWindow(aura::Window* window) override {
-    if (window->parent() == server_remote_view_host_->embedding_root())
-      scoped_observer_.Remove(window);
-  }
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    if (window == server_remote_view_host_->embedding_root())
-      return;
-
-    // This happens when the client requests to resize the keyboard window,
-    // typically through window.resizeTo in JS. Ash keyboard window bounds
-    // should be updated to reflect the request.
-    gfx::Rect new_bounds_in_screen = new_bounds;
-    ::wm::ConvertRectToScreen(window->parent(), &new_bounds_in_screen);
-    GetWidget()->SetBounds(new_bounds_in_screen);
-  }
 
   aura::Window* window() { return GetWidget()->GetNativeView(); }
 
@@ -126,7 +97,6 @@ class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
 
   std::unique_ptr<views::Widget> widget_;
   ws::ServerRemoteViewHost* server_remote_view_host_ = nullptr;
-  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardView);
 };
