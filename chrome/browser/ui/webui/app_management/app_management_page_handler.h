@@ -26,6 +26,8 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 
   // app_management::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
 
  private:
   // apps::AppRegistryCache::Observer overrides:

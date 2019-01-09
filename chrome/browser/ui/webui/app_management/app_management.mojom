@@ -29,6 +29,8 @@ interface PageHandlerFactory {
 // Browser interface.
 interface PageHandler {
   GetApps() => (array<App> apps);
+  SetPermission(string app_id,
+                apps.mojom.Permission permission);
 };
 
 // Frontend interface.

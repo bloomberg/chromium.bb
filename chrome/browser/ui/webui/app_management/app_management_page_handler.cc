@@ -58,6 +58,19 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
   std::move(callback).Run(std::move(apps));
 }
 
+void AppManagementPageHandler::SetPermission(
+    const std::string& app_id,
+    apps::mojom::PermissionPtr permission) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+
+  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
+  // incognito
+  if (!proxy)
+    return;
+
+  proxy->SetPermission(app_id, std::move(permission));
+}
+
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
