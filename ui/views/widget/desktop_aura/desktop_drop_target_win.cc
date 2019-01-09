@@ -78,6 +78,9 @@ DWORD DesktopDropTargetWin::OnDragOver(IDataObject* data_object,
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
   if (delegate)
     drag_operation = delegate->OnDragUpdated(*event);
+
+  UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
+                        drag_operation != ui::DragDropTypes::DRAG_NONE);
   return ui::DragDropTypes::DragOperationToDropEffect(drag_operation);
 }
 
