@@ -160,9 +160,7 @@ void AttestationFlow::StartEnroll(const base::Closure& on_failure,
   async_caller_->AsyncTpmAttestationCreateEnrollRequest(
       server_proxy_->GetType(),
       base::Bind(&AttestationFlow::SendEnrollRequestToPCA,
-                 weak_factory_.GetWeakPtr(),
-                 on_failure,
-                 next_task));
+                 weak_factory_.GetWeakPtr(), on_failure, next_task));
 }
 
 void AttestationFlow::SendEnrollRequestToPCA(const base::Closure& on_failure,
@@ -178,11 +176,8 @@ void AttestationFlow::SendEnrollRequestToPCA(const base::Closure& on_failure,
 
   // Send the request to the Privacy CA.
   server_proxy_->SendEnrollRequest(
-      data,
-      base::Bind(&AttestationFlow::SendEnrollResponseToDaemon,
-                 weak_factory_.GetWeakPtr(),
-                 on_failure,
-                 next_task));
+      data, base::Bind(&AttestationFlow::SendEnrollResponseToDaemon,
+                       weak_factory_.GetWeakPtr(), on_failure, next_task));
 }
 
 void AttestationFlow::SendEnrollResponseToDaemon(
@@ -199,12 +194,9 @@ void AttestationFlow::SendEnrollResponseToDaemon(
 
   // Forward the response to the attestation service to complete enrollment.
   async_caller_->AsyncTpmAttestationEnroll(
-      server_proxy_->GetType(),
-      data,
-      base::Bind(&AttestationFlow::OnEnrollComplete,
-                 weak_factory_.GetWeakPtr(),
-                 on_failure,
-                 next_task));
+      server_proxy_->GetType(), data,
+      base::Bind(&AttestationFlow::OnEnrollComplete, weak_factory_.GetWeakPtr(),
+                 on_failure, next_task));
 }
 
 void AttestationFlow::OnEnrollComplete(const base::Closure& on_failure,
@@ -230,8 +222,8 @@ void AttestationFlow::StartCertificateRequest(
     bool generate_new_key,
     const CertificateCallback& callback) {
   AttestationKeyType key_type = GetKeyTypeForProfile(certificate_profile);
-  std::string key_name = GetKeyNameForProfile(certificate_profile,
-                                              request_origin);
+  std::string key_name =
+      GetKeyNameForProfile(certificate_profile, request_origin);
   if (generate_new_key) {
     // Get the attestation service to create a Privacy CA certificate request.
     async_caller_->AsyncTpmAttestationCreateCertRequest(
