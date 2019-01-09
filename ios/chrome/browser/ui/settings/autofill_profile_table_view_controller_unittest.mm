@@ -81,7 +81,8 @@ TEST_F(AutofillProfileTableViewControllerTest, TestInitialization) {
 }
 
 // Adding a single address results in an address section.
-TEST_F(AutofillProfileTableViewControllerTest, TestOneProfile) {
+// TODO(crbug.com/919967): Reenable this test.
+TEST_F(AutofillProfileTableViewControllerTest, DISABLED_TestOneProfile) {
   AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
   CreateController();
   CheckController();
@@ -93,7 +94,9 @@ TEST_F(AutofillProfileTableViewControllerTest, TestOneProfile) {
 }
 
 // Deleting the only profile results in item deletion and section deletion.
-TEST_F(AutofillProfileTableViewControllerTest, TestOneProfileItemDeleted) {
+// TODO(crbug.com/919968): Reenable this test.
+TEST_F(AutofillProfileTableViewControllerTest,
+       DISABLED_TestOneProfileItemDeleted) {
   AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
   CreateController();
   CheckController();
