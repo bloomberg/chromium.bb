@@ -104,6 +104,11 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
+  void LoadKeysAndEntriesInRange(
+      const std::string& start,
+      const std::string& end,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
 
   void LoadKeys(Callbacks::LoadKeysCallback callback) override;
   void LoadKeys(const std::string& target_prefix,
@@ -531,6 +536,21 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
 
   db_->LoadKeysAndEntriesWithFilter(filter, options, target_prefix,
                                     std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesInRange(
+    const std::string& start,
+    const std::string& end,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
+  if (!db_) {
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), false,
+                       std::make_unique<std::map<std::string, T>>()));
+    return;
+  }
+
+  db_->LoadKeysAndEntriesInRange(start, end, std::move(callback));
 }
 
 template <typename T>

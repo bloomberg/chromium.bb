@@ -79,6 +79,15 @@ class LevelDB {
       const leveldb::ReadOptions& options,
       const std::string& target_prefix);
 
+  // Retrieves keys and values, starting at key |start_key|, includes keys when
+  // |filter| return true and stops when |while_callback| returns false.
+  virtual bool LoadKeysAndEntriesWhile(
+      const KeyFilter& filter,
+      std::map<std::string, std::string>* keys_entries,
+      const leveldb::ReadOptions& options,
+      const std::string& start_key,
+      const KeyFilter& while_callback);
+
   virtual bool LoadKeys(std::vector<std::string>* keys);
   virtual bool LoadKeys(const std::string& target_prefix,
                         std::vector<std::string>* keys);
