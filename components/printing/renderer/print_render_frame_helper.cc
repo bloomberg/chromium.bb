@@ -337,12 +337,16 @@ blink::WebPlugin* GetPlugin(const blink::WebLocalFrame* frame) {
              : nullptr;
 }
 
-bool PrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
-                            const blink::WebNode& node) {
+bool IsPrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
+                              const blink::WebNode& node) {
   if (!node.IsNull())
     return true;
   blink::WebPlugin* plugin = GetPlugin(frame);
   return plugin && plugin->SupportsPaginatedPrint();
+}
+
+bool IsPrintingFrameset(const blink::WebLocalFrame* frame) {
+  return frame->GetDocument().Body().TagName().Equals("FRAMESET");
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -824,7 +828,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
       should_print_selection_only_(params.selection_only),
       weak_ptr_factory_(this) {
   PrintMsg_Print_Params print_params = params;
-  bool source_is_pdf = PrintingNodeOrPdfFrame(frame, node_to_print_);
+  bool source_is_pdf = IsPrintingNodeOrPdfFrame(frame, node_to_print_);
   if (!should_print_selection_only_) {
     bool fit_to_page =
         ignore_css_margins && IsWebPrintScalingOptionFitToPage(print_params);
@@ -865,7 +869,7 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
 
   // Plugins do not need to be resized. Resizing the PDF plugin causes a
   // flicker in the top left corner behind the preview. See crbug.com/739973.
-  if (PrintingNodeOrPdfFrame(frame(), node_to_print_))
+  if (IsPrintingNodeOrPdfFrame(frame(), node_to_print_))
     return;
 
   // Backup size and offset if it's a local frame.
@@ -995,7 +999,7 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
     return;
 
   // Do not restore plugins, since they are not resized.
-  if (PrintingNodeOrPdfFrame(frame(), node_to_print_))
+  if (IsPrintingNodeOrPdfFrame(frame(), node_to_print_))
     return;
 
   blink::WebView* web_view = frame_.GetFrame()->View();
@@ -1266,7 +1270,16 @@ void PrintRenderFrameHelper::OnPrintPreview(
 void PrintRenderFrameHelper::PrepareFrameForPreviewDocument() {
   reset_prep_frame_view_ = false;
 
-  if (!print_pages_params_ || CheckForCancel()) {
+  if (!print_pages_params_ ||
+      IsPrintingFrameset(print_preview_context_.source_frame())) {
+    print_preview_context_.set_error(PREVIEW_ERROR_ZERO_PAGES);
+    DidFinishPrinting(FAIL_PREVIEW);
+    return;
+  }
+
+  if (CheckForCancel()) {
+    // No need to set an error, since |notify_browser_of_print_failure_| is
+    // false.
     DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
@@ -1625,6 +1638,11 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
 
   FrameReference frame_ref(frame);
 
+  if (IsPrintingFrameset(frame)) {
+    DidFinishPrinting(FAIL_PRINT);
+    return;
+  }
+
   int expected_page_count = 0;
   if (!CalculateNumberOfPages(frame, node, &expected_page_count)) {
     DidFinishPrinting(FAIL_PRINT_INIT);
@@ -1757,8 +1775,8 @@ void PrintRenderFrameHelper::PrintPages() {
 
   RecordSiteIsolationPrintMetrics(prep_frame_view_->frame());
 
-  bool is_pdf = PrintingNodeOrPdfFrame(prep_frame_view_->frame(),
-                                       prep_frame_view_->node());
+  bool is_pdf = IsPrintingNodeOrPdfFrame(prep_frame_view_->frame(),
+                                         prep_frame_view_->node());
   if (!PrintPagesNative(prep_frame_view_->frame(), page_count, is_pdf)) {
     LOG(ERROR) << "Printing failed.";
     return DidFinishPrinting(FAIL_PRINT);
@@ -1874,7 +1892,7 @@ bool PrintRenderFrameHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
                                                     const blink::WebNode& node,
                                                     int* number_of_pages) {
   DCHECK(frame);
-  bool fit_to_paper_size = !PrintingNodeOrPdfFrame(frame, node);
+  bool fit_to_paper_size = !IsPrintingNodeOrPdfFrame(frame, node);
   if (!InitPrintSettings(fit_to_paper_size)) {
     notify_browser_of_print_failure_ = false;
     Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
@@ -1932,7 +1950,7 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     return false;
   }
 
-  bool source_is_html = !PrintingNodeOrPdfFrame(frame, node);
+  bool source_is_html = !IsPrintingNodeOrPdfFrame(frame, node);
   if (!source_is_html) {
     modified_job_settings.MergeDictionary(job_settings);
     modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
@@ -1998,11 +2016,11 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
   params.has_selection = frame->HasSelection();
   params.expected_pages_count = expected_pages_count;
   MarginType margin_type = DEFAULT_MARGINS;
-  if (PrintingNodeOrPdfFrame(frame, node))
+  if (IsPrintingNodeOrPdfFrame(frame, node))
     margin_type = GetMarginsForPdf(frame, node, print_pages_params_->params);
   params.margin_type = margin_type;
   params.is_scripted = is_scripted;
-  params.is_modifiable = !PrintingNodeOrPdfFrame(frame, node);
+  params.is_modifiable = !IsPrintingNodeOrPdfFrame(frame, node);
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 
@@ -2481,7 +2499,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::ClearContext() {
 
 void PrintRenderFrameHelper::PrintPreviewContext::CalculateIsModifiable() {
   // The only kind of node we can print right now is a PDF node.
-  is_modifiable_ = !PrintingNodeOrPdfFrame(source_frame(), source_node_);
+  is_modifiable_ = !IsPrintingNodeOrPdfFrame(source_frame(), source_node_);
 }
 
 void PrintRenderFrameHelper::SetPrintPagesParams(
