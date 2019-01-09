@@ -167,6 +167,10 @@ void TestNavigationManager::Restore(
   NOTREACHED();
 }
 
+bool TestNavigationManager::IsRestoreSessionInProgress() const {
+  return false;
+}
+
 void TestNavigationManager::AddRestoreCompletionCallback(
     base::OnceClosure callback) {
   NOTREACHED();

@@ -142,12 +142,6 @@ class NavigationManagerImpl : public NavigationManager {
                                            NSString* state_object,
                                            ui::PageTransition transition) = 0;
 
-  // Returns true after session restoration has started, until the first
-  // post-restore navigation is finished. Returns true when first post-restore
-  // navigation is started, even though technically session restoration is
-  // complete.
-  virtual bool IsRestoreSessionInProgress() const = 0;
-
   // Sets the index of the pending navigation item. -1 means no navigation or a
   // new navigation.
   virtual void SetPendingItemIndex(int index) = 0;
