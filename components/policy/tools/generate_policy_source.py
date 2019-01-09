@@ -887,6 +887,7 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '#include <memory>\n'
           '\n'
           '#include "base/logging.h"\n'
+          '#include "base/stl_util.h"  // base::size()\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
           '#include "components/policy/proto/cloud_policy.pb.h"\n'
@@ -1027,7 +1028,7 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '  // Offsetting |it| from |begin| here obtains the index we\'re\n'
           '  // looking for.\n'
           '  size_t index = it - begin;\n'
-          '  CHECK_LT(index, arraysize(kChromePolicyDetails));\n'
+          '  CHECK_LT(index, base::size(kChromePolicyDetails));\n'
           '  return kChromePolicyDetails + index;\n'
           '}\n\n')
 
