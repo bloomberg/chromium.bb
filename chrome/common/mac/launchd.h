@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "chrome/common/mac/service_management.h"
 
 class Launchd {
  public:
@@ -33,11 +34,14 @@ class Launchd {
 
   virtual ~Launchd();
 
-  // Return a dictionary with the launchd entries for job labeled |name|.
-  virtual CFDictionaryRef CopyJobDictionary(CFStringRef label);
+  virtual bool GetJobInfo(const std::string& label,
+                          mac::services::JobInfo* info);
 
-  // Return a dictionary for launchd process.
-  virtual CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error);
+  // Checks in with launchd, retrieving |info| in the process. The |socket_key|
+  // argument is the name of a socket to extract from the job's sockets
+  // dictionary (see launchd.plist(5)).
+  virtual bool CheckIn(const std::string& socket_key,
+                       mac::services::JobCheckinInfo* info);
 
   // Remove a launchd process from launchd.
   virtual bool RemoveJob(const std::string& label);
