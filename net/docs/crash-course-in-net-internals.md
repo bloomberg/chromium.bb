@@ -87,18 +87,17 @@ include (excluding HTTP2 [SPDY]/QUIC):
 
 * URL_REQUEST:  This corresponds to the URLRequest object.  It includes events
 from all the URLRequestJobs, HttpCache::Transactions, NetworkTransactions,
-HttpStreamFactoryImpl::Requests, HttpStream implementations, and
-HttpStreamParsers used to service a response.  If the URL_REQUEST follows HTTP
-redirects, it will include each redirect.  This is a lot of stuff, but generally
-only one object is doing work at a time.  This event source includes the full
-URL and generally includes the request / response headers (except when the cache
-handles the response).
+HttpStreamRequests, HttpStream implementations, and HttpStreamParsers used to
+service a response.  If the URL_REQUEST follows HTTP redirects, it will include
+each redirect.  This is a lot of stuff, but generally only one object is doing
+work at a time.  This event source includes the full URL and generally includes
+the request / response headers (except when the cache handles the response).
 
-* HTTP_STREAM_JOB:  This corresponds to HttpStreamFactoryImpl::Job (note that
-one Request can have multiple Jobs).  It also includes its proxy and DNS
-lookups.  HTTP_STREAM_JOB log events are separate from URL_REQUEST because two
-stream jobs may be created and races against each other, in some cases -- one
-for QUIC, and one for HTTP.
+* HTTP_STREAM_JOB:  This corresponds to HttpStreamFactory::Job (note that one
+  Request can have multiple Jobs).  It also includes its proxy and DNS lookups.
+  HTTP_STREAM_JOB log events are separate from URL_REQUEST because two stream
+  jobs may be created and races against each other, in some cases -- one for
+  QUIC, and one for HTTP.
 
     One of the final events of this source, before the
     HTTP_STREAM_JOB_BOUND_TO_REQUEST event, indicates how an HttpStream was
