@@ -449,18 +449,27 @@ Status ChromiumWritableFile::Flush() {
 Status ChromiumWritableFile::Sync() {
   TRACE_EVENT0("leveldb", "WritableFile::Sync");
 
+  // leveldb's implicit contract for Sync() is that if this instance is for a
+  // manifest file then the directory is also sync'ed, to ensure new files
+  // referred to by the manifest are in the filesystem.
+  //
+  // This needs to happen before the manifest file is flushed to disk, to
+  // avoid crashing in a state where the manifest refers to files that are not
+  // yet on disk.
+  //
+  // See leveldb's env_posix.cc.
+  if (file_type_ == kManifest) {
+    Status status = SyncParent();
+    if (!status.ok())
+      return status;
+  }
+
   if (!file_.Flush()) {
     base::File::Error error = base::File::GetLastFileError();
     uma_logger_->RecordErrorAt(kWritableFileSync);
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileSync, error);
   }
-
-  // leveldb's implicit contract for Sync() is that if this instance is for a
-  // manifest file then the directory is also sync'ed. See leveldb's
-  // env_posix.cc.
-  if (file_type_ == kManifest)
-    return SyncParent();
 
   return Status::OK();
 }
