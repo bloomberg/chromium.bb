@@ -183,6 +183,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=781668)
+    self.Flaky('conformance2/vertex_arrays/vertex-array-object.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=920265)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
@@ -1304,6 +1306,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/' +
         'generate-mipmap-with-large-base-level.html',
         ['linux', ('amd', 0x6613)], bug=913301)
+    self.Skip('conformance2/uniforms/' +
+        'incompatible-texture-type-for-sampler.html',
+        ['linux', ('amd', 0x6613)], bug=809237)
 
     ####################
     # Android failures #
