@@ -51,7 +51,7 @@ AppManagementMainViewTest.prototype = {
   ]),
 };
 
-TEST_F('AppManagementMainViewTest', 'All', function() {
+TEST_F('AppManagementMainViewTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

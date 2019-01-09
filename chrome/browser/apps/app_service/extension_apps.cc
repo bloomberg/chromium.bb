@@ -155,6 +155,54 @@ void ExtensionApps::Launch(const std::string& app_id,
       display_id);
 }
 
+void ExtensionApps::SetPermission(const std::string& app_id,
+                                  apps::mojom::PermissionPtr permission) {
+  if (!profile_) {
+    return;
+  }
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+
+  if (!extension->from_bookmark()) {
+    return;
+  }
+
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  DCHECK(host_content_settings_map);
+
+  const GURL url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+
+  ContentSettingsType permission_type =
+      static_cast<ContentSettingsType>(permission->permission_id);
+  if (!base::ContainsValue(kSupportedPermissionTypes, permission_type)) {
+    return;
+  }
+
+  DCHECK_EQ(permission->value_type,
+            apps::mojom::PermissionValueType::kTriState);
+  ContentSetting permission_value = CONTENT_SETTING_DEFAULT;
+  switch (static_cast<apps::mojom::TriState>(permission->value)) {
+    case apps::mojom::TriState::kAllow:
+      permission_value = CONTENT_SETTING_ALLOW;
+      break;
+    case apps::mojom::TriState::kAsk:
+      permission_value = CONTENT_SETTING_ASK;
+      break;
+    case apps::mojom::TriState::kBlock:
+      permission_value = CONTENT_SETTING_BLOCK;
+      break;
+    default:  // Return if value is invalid.
+      return;
+  }
+
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, url, permission_type, std::string() /* resource identifier */,
+      permission_value);
+}
+
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {

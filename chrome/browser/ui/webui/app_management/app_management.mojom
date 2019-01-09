@@ -13,12 +13,13 @@ struct App {
 
   // The fields below may be omitted because this struct is also used to signal
   // updates.
-
   string? title;
+
   string? description;
   apps.mojom.OptionalBool is_pinned;
   string? version;
   string? size;
+  array<apps.mojom.Permission> permissions;
 };
 
 interface PageHandlerFactory {
@@ -42,4 +43,15 @@ enum TestPermissionType {
   LOCATION,
   CAMERA,
   MICROPHONE,
+};
+
+// This enum takes the important permission values from the
+// contents_settings_type.h ContentSettingsType enum. The App Publisher is
+// required to provide these values so the WebUI can map permission ID to
+// permission value.
+enum PwaPermissionType {
+  CONTENT_SETTINGS_TYPE_GEOLOCATION = 5,
+  CONTENT_SETTINGS_TYPE_NOTIFICATIONS = 6,
+  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC = 9,
+  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA = 10,
 };
