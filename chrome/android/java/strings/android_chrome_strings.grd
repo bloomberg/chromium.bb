@@ -3111,7 +3111,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Find in page
       </message>
       <message name="IDS_FIND_IN_PAGE_COUNT" translateable="false">
-        %1$d/%2$d
+        <ph name="RESULT_NUMBER">%1$d<ex>3</ex></ph>/<ph name="TOTAL_RESULTS">%2$d<ex>10</ex></ph>
       </message>
       <message name="IDS_ACCESSIBLE_FIND_IN_PAGE_COUNT" desc="Accessible text to be spoken when the user is doing a find in page so they know how many results are on the page and which one is active.">
         Result <ph name="RESULT_NUMBER">%1$d<ex>3</ex></ph> of <ph name="TOTAL_RESULTS">%2$d<ex>10</ex></ph>
