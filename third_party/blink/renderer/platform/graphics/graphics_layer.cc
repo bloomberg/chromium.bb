@@ -437,10 +437,9 @@ void GraphicsLayer::UpdateContentsRect() {
     const auto& offset = GetContentsOffsetFromTransformNode();
     contents_layer->SetOffsetToTransformParent(
         gfx::Vector2dF(offset.X(), offset.Y()));
-  } else {
-    contents_layer->SetPosition(
-        FloatPoint(contents_rect_.X(), contents_rect_.Y()));
   }
+  contents_layer->SetPosition(
+      FloatPoint(contents_rect_.X(), contents_rect_.Y()));
   if (!image_layer_) {
     contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
   } else {

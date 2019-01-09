@@ -700,14 +700,9 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
         inner_viewport_scroll_layer_->CcLayer()->element_id());
   }
 
-  // Use the GraphicsLayer to position the scrollbars. This is not needed with
-  // BlinkGenPropertyTrees because the cc::Layer's offset_to_transform_parent is
-  // set directly with GraphicsLayer::SetLayerState instead of being calculated
-  // from the cc::Layer's position.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    const auto& position = ScrollbarOffset(orientation);
-    scrollbar_graphics_layer->SetPosition(FloatPoint(position));
-  }
+  // Use the GraphicsLayer to position the scrollbars.
+  const auto& position = ScrollbarOffset(orientation);
+  scrollbar_graphics_layer->SetPosition(FloatPoint(position));
 
   const auto& size = ScrollbarSize(orientation);
   scrollbar_graphics_layer->SetSize(gfx::Size(size));
