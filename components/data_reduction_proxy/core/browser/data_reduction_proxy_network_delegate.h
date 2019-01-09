@@ -152,13 +152,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       const net::ProxyInfo& proxy_info,
       const net::ProxyRetryInfoMap& proxy_retry_info) const;
 
-  // May add Brotli to Accept Encoding request header if |proxy_info| contains
-  // a proxy server that is expected to support Brotli encoding.
-  void MaybeAddBrotliToAcceptEncodingHeader(
-      const net::ProxyInfo& proxy_info,
-      net::HttpRequestHeaders* request_headers,
-      const net::URLRequest& request) const;
-
   // May add chrome-proxy-ect header to |request_headers| if adding of
   // chrome-proxy-ect is enabled via field trial and a valid estimate of
   // network quality is available. This method should be called only when the

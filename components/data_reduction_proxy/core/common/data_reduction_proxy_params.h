@@ -86,9 +86,6 @@ bool IsQuicEnabledForNonCoreProxies();
 
 const char* GetQuicFieldTrialName();
 
-// Returns true if Brotli should be added to the accept-encoding header.
-bool IsBrotliAcceptEncodingEnabled();
-
 // If the Data Reduction Proxy is used for a page load, the URL for the
 // Data Reduction Proxy Pageload Metrics service.
 GURL GetPingbackURL();
