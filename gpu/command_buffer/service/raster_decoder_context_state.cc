@@ -277,6 +277,7 @@ void RasterDecoderContextState::RestoreState(
     const gles2::ContextState* prev_state) {
   PessimisticallyResetGrContext();
   context_state_->RestoreState(prev_state);
+  need_context_state_reset = false;
 }
 
 void RasterDecoderContextState::RestoreGlobalState() const {

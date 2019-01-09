@@ -88,9 +88,7 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   std::vector<uint8_t> scratch_deserialization_buffer_;
 
   // |need_context_state_reset| is set whenever Skia may have altered the
-  // driver's GL state. It signals the need to restore driver GL state to
-  // |state_| before executing commands that do not
-  // PermitsInconsistentContextState.
+  // driver's GL state.
   bool need_context_state_reset = false;
 
   // base::trace_event::MemoryDumpProvider implementation.
