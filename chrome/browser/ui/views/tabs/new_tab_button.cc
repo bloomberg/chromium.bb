@@ -350,6 +350,6 @@ SkPath NewTabButton::GetBorderPath(const gfx::Point& origin,
 }
 
 void NewTabButton::UpdateInkDropBaseColor() {
-  set_ink_drop_base_color(color_utils::BlendTowardOppositeLuma(
-      GetButtonFillColor(), SK_AlphaOPAQUE));
+  set_ink_drop_base_color(
+      color_utils::GetColorWithMaxContrast(GetButtonFillColor()));
 }

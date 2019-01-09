@@ -256,7 +256,7 @@ void MdTextButton::UpdateColors() {
         HasFocus() ? ui::NativeTheme::kColorId_ProminentButtonFocusedColor
                    : ui::NativeTheme::kColorId_ProminentButtonColor);
     if (is_disabled) {
-      bg_color = color_utils::BlendTowardOppositeLuma(
+      bg_color = color_utils::BlendTowardMaxContrast(
           bg_color, gfx::kDisabledControlAlpha);
     }
   }

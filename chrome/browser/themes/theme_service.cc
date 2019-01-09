@@ -568,7 +568,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return color_utils::GetReadableColor(
           SK_ColorWHITE, GetColor(kLabelBackground, incognito));
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
-      return color_utils::BlendTowardOppositeLuma(
+      return color_utils::BlendTowardMaxContrast(
           GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
       return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
@@ -694,8 +694,7 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
   SkColor separator_color = SK_ColorWHITE;
   if (color_utils::GetRelativeLuminance(tab_color) >=
       color_utils::GetRelativeLuminance(frame_color)) {
-    separator_color =
-        color_utils::BlendTowardOppositeLuma(separator_color, SK_AlphaOPAQUE);
+    separator_color = color_utils::GetColorWithMaxContrast(separator_color);
   }
 
   SkAlpha alpha = color_utils::FindBlendValueForContrastRatio(
@@ -706,8 +705,7 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
     return SkColorSetA(separator_color, alpha);
   }
 
-  separator_color =
-      color_utils::BlendTowardOppositeLuma(separator_color, SK_AlphaOPAQUE);
+  separator_color = color_utils::GetColorWithMaxContrast(separator_color);
 
   // If the above call failed to create sufficient contrast, the frame color is
   // already very dark or very light.  Since separators are only used when the

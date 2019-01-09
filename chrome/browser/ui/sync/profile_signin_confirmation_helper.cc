@@ -50,7 +50,7 @@ SkColor GetSigninConfirmationPromptBarColor(ui::NativeTheme* theme,
                                             SkAlpha alpha) {
   static const SkColor kBackgroundColor =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  return color_utils::BlendTowardOppositeLuma(kBackgroundColor, alpha);
+  return color_utils::BlendTowardMaxContrast(kBackgroundColor, alpha);
 }
 
 bool HasBeenShutdown(Profile* profile) {

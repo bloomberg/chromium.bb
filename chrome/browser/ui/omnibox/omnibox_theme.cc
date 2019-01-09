@@ -88,7 +88,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // The spec calls for transparent black (or white) overlays for hover (8%)
       // and select (6%), which can overlap (for 14%). Pre-blend these with the
       // background for the best text AA result.
-      return color_utils::BlendTowardOppositeLuma(
+      return color_utils::BlendTowardMaxContrast(
           base_color,
           gfx::ToRoundedInt(GetOmniboxStateOpacity(state) * SK_AlphaOPAQUE));
     }

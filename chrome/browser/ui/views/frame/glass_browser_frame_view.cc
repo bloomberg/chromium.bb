@@ -66,11 +66,9 @@ constexpr char GlassBrowserFrameView::kClassName[];
 
 SkColor GlassBrowserFrameView::GetReadableFeatureColor(
     SkColor background_color) {
-  // BlendTowardOppositeLuma or IsDark isn't used here because those functions
-  // may use a different value for the dark/light threshold or the upper/lower
-  // bounds to which the color is blended. This will ensure the results of this
-  // function remain unchanged should those other functions behave differently.
-  // This algorithm matches the behaviour for native Windows caption buttons.
+  // color_utils::BlendTowardMaxContrast()/IsDark() aren't used here because
+  // they switch based on the Chrome light/dark endpoints, while we want to use
+  // the system native behavior below.
   return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
                                                       : SK_ColorBLACK;
 }
@@ -621,7 +619,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   const SkColor titlebar_color = GetTitlebarColor();
   const SkColor inactive_border_color =
       color_utils::IsDark(titlebar_color)
-          ? color_utils::BlendTowardOppositeLuma(titlebar_color, 0x0F)
+          ? color_utils::BlendTowardMaxContrast(titlebar_color, 0x0F)
           : SkColorSetRGB(0xAA, 0xAA, 0xAA);
   flags.setColor(
       ShouldPaintAsActive()

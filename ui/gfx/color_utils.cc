@@ -307,9 +307,12 @@ bool IsDark(SkColor color) {
   return GetRelativeLuminance(color) < g_luminance_midpoint;
 }
 
-SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha) {
-  return AlphaBlend(IsDark(color) ? SK_ColorWHITE : g_darkest_color, color,
-                    alpha);
+SkColor GetColorWithMaxContrast(SkColor color) {
+  return IsDark(color) ? SK_ColorWHITE : g_darkest_color;
+}
+
+SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha) {
+  return AlphaBlend(GetColorWithMaxContrast(color), color, alpha);
 }
 
 SkColor GetThemedAssetColor(SkColor theme_color) {
@@ -346,12 +349,11 @@ SkColor PickContrastingColor(SkColor foreground1,
 
 SkColor GetColorWithMinimumContrast(SkColor default_foreground,
                                     SkColor background) {
-  const SkColor blend_direction =
-      BlendTowardOppositeLuma(background, SK_AlphaOPAQUE);
+  const SkColor contrasting_color = GetColorWithMaxContrast(background);
   const SkAlpha alpha = GetBlendValueWithMinimumContrast(
-      default_foreground, blend_direction, background,
+      default_foreground, contrasting_color, background,
       kMinimumReadableContrastRatio);
-  return AlphaBlend(blend_direction, default_foreground, alpha);
+  return AlphaBlend(contrasting_color, default_foreground, alpha);
 }
 
 SkAlpha GetBlendValueWithMinimumContrast(SkColor source,
@@ -426,7 +428,7 @@ bool IsInvertedColorScheme() {
 SkColor DeriveDefaultIconColor(SkColor text_color) {
   // Lighten dark colors and brighten light colors. The alpha value here (0x4c)
   // is chosen to generate a value close to GoogleGrey700 from GoogleGrey900.
-  return BlendTowardOppositeLuma(text_color, 0x4c);
+  return BlendTowardMaxContrast(text_color, 0x4c);
 }
 
 std::string SkColorToRgbaString(SkColor color) {
