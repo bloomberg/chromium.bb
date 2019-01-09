@@ -17,7 +17,7 @@ cca.views = cca.views || {};
 /**
  * Creates the base controller of settings view.
  * @param {string} selector Selector text of the view's root element.
- * @param {Object.<string|function(Event=)>} itemHandlers Click-handlers
+ * @param {Object<string|function(Event=)>} itemHandlers Click-handlers
  *     mapped by element ids.
  * @extends {cca.views.View}
  * @constructor

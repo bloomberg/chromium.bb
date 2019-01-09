@@ -17,7 +17,7 @@ cca.nav = cca.nav || {};
 /**
  * All views stacked in ascending z-order (DOM order) for navigation, and only
  * the topmost visible view is active (clickable/focusable).
- * @type {Array.<cca.views.View>}
+ * @type {Array<cca.views.View>}
  */
 cca.nav.views_ = [];
 
@@ -29,7 +29,7 @@ cca.nav.topmostIndex_ = -1;
 
 /**
  * Sets up navigation for all views, e.g. camera-view, dialog-view, etc.
- * @param {Array.<cca.views.View>} views All views in ascending z-order.
+ * @param {Array<cca.views.View>} views All views in ascending z-order.
  */
 cca.nav.setup = function(views) {
   cca.nav.views_ = views;

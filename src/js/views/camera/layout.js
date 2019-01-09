@@ -64,7 +64,7 @@ cca.views.camera.Layout = function() {
 
 /**
  * CSS rules.
- * @type {Array.<CSSRule>}
+ * @type {Array<CSSRule>}
  * @private
  */
 cca.views.camera.Layout.cssRules_ =
@@ -83,7 +83,7 @@ cca.views.camera.Layout.cssStyle_ = function(selector) {
 
 /**
  * Updates the video element size for previewing in the window.
- * @return {Array.<number>} Letterbox size in [width, height].
+ * @return {Array<number>} Letterbox size in [width, height].
  * @private
  */
 cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
