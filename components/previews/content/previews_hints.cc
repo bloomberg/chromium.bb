@@ -312,6 +312,16 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     return nullptr;
   }
 
+  std::unique_ptr<PreviewsHints> hints = CreateFromHintsConfiguration(*config);
+
+  // Completed processing hints data without crashing so clear sentinel.
+  DeleteSentinelFile(sentinel_path);
+  return hints;
+}
+
+// static
+std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
+    const optimization_guide::proto::Configuration& config) {
   std::unique_ptr<PreviewsHints> hints(new PreviewsHints());
   HintCache::Data hint_cache_data;
 
@@ -320,7 +330,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   size_t total_page_patterns_with_resource_loading_hints_received = 0;
   size_t total_resource_loading_hints_received = 0;
   // Process hint configuration.
-  for (const auto& hint : config->hints()) {
+  for (const auto& hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
     if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
@@ -368,10 +378,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   }
 
   // Extract any supported large scale blacklists from the configuration.
-  hints->ParseOptimizationFilters(*config);
+  hints->ParseOptimizationFilters(config);
 
-  // Completed processing hints data without crashing so clear sentinel.
-  DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
       !hints->hint_cache_
           ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints

@@ -80,6 +80,8 @@ class PreviewsOptimizationGuide
   void OnHintsComponentAvailable(
       const optimization_guide::HintsComponentInfo& info) override;
 
+  PreviewsHints* GetHintsForTesting() { return hints_.get(); }
+
  private:
   // Updates the hints to the latest hints sent by the Component Updater.
   void UpdateHints(std::unique_ptr<PreviewsHints> hints);

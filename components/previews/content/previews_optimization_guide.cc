@@ -4,7 +4,9 @@
 
 #include "components/previews/content/previews_optimization_guide.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -14,9 +16,43 @@
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
+#include "components/previews/core/previews_switches.h"
 #include "url/gurl.h"
 
 namespace previews {
+
+namespace {
+
+// Attempts to parse a base64 encoded Optimization Guide Configuration proto
+// from the command line. If no proto is given or if it is encoded incorrectly,
+// nullptr is returned.
+std::unique_ptr<optimization_guide::proto::Configuration>
+ParseHintsProtoFromCommandLine() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kHintsProtoOverride))
+    return nullptr;
+
+  std::string b64_pb =
+      cmd_line->GetSwitchValueASCII(switches::kHintsProtoOverride);
+
+  std::string binary_pb;
+  if (!base::Base64Decode(b64_pb, &binary_pb)) {
+    LOG(ERROR) << "Invalid base64 encoding of the Hints Proto Override";
+    return nullptr;
+  }
+
+  std::unique_ptr<optimization_guide::proto::Configuration>
+      proto_configuration =
+          std::make_unique<optimization_guide::proto::Configuration>();
+  if (!proto_configuration->ParseFromString(binary_pb)) {
+    LOG(ERROR) << "Invalid proto provided to the Hints Proto Override";
+    return nullptr;
+  }
+
+  return proto_configuration;
+}
+
+}  // namespace
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
@@ -27,7 +63,22 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
-  optimization_guide_service_->AddObserver(this);
+
+  // Check if there is a valid hint proto given on the command line first. We
+  // don't normally expect one, but if one is provided then use that and do not
+  // register as an observer as the opt_guide service.
+  std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
+      ParseHintsProtoFromCommandLine();
+  if (manual_config) {
+    base::PostTaskAndReplyWithResult(
+        background_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&PreviewsHints::CreateFromHintsConfiguration,
+                       *manual_config),
+        base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    optimization_guide_service_->AddObserver(this);
+  }
 }
 
 PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
