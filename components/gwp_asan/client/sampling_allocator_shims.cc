@@ -4,9 +4,6 @@
 
 #include "components/gwp_asan/client/sampling_allocator_shims.h"
 
-#include <limits>
-#include <random>
-
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/compiler_specific.h"
@@ -36,8 +33,7 @@ namespace {
 using base::allocator::AllocatorDispatch;
 
 // Class that encapsulates the current sampling state. Sampling is performed
-// using a poisson distribution and the sampling counter is stored in thread-
-// local storage.
+// using a counter stored in thread-local storage.
 class SamplingState {
  public:
   constexpr SamplingState() {}
@@ -49,30 +45,41 @@ class SamplingState {
     sampling_frequency_ = sampling_frequency;
   }
 
-  // Count down the number of samples remaining until it reaches zero, and then
-  // get new sample count. Returns true when an allocation should be sampled.
+  // Return true if this allocation should be sampled.
   bool Sample() {
+    // For a new thread the initial TLS value will be zero, we do not want to
+    // sample on zero as it will always sample the first allocation on thread
+    // creation and heavily bias allocations towards that particular call site.
+    //
+    // Instead, use zero to mean 'get a new counter value' and one to mean
+    // that this allocation should be sampled.
     size_t samples_left = TLSGetValue(tls_key_);
-    if (UNLIKELY(!samples_left)) {
-      TLSSetValue(tls_key_, NextSample());
-      return true;
-    }
+    if (UNLIKELY(!samples_left))
+      samples_left = NextSample();
 
     TLSSetValue(tls_key_, samples_left - 1);
-    return false;
+    return (samples_left == 1);
   }
 
  private:
-  size_t NextSample() const {
-    // Sample from a poisson distribution with a mean of the sampling frequency.
-    std::poisson_distribution<size_t> distribution(sampling_frequency_);
-    base::RandomBitGenerator generator;
-    // Clamp return values to [1, SIZE_MAX].
-    return std::max<size_t>(1, distribution(generator));
+  // Sample a single allocations in every chunk of |sampling_frequency_|
+  // allocations.
+  //
+  // TODO(https://crbug.com/919207): Replace with std::geometric_distribution
+  // once the LLVM floating point codegen issue in the linked bug is fixed.
+  size_t NextSample() {
+    size_t random = base::RandInt(1, sampling_frequency_ + 1);
+    size_t next_sample = increment_ + random;
+    increment_ = sampling_frequency_ + 1 - random;
+    return next_sample;
   }
 
   TLSKey tls_key_ = 0;
-  size_t sampling_frequency_ = std::numeric_limits<size_t>::max();
+  size_t sampling_frequency_ = 0;
+
+  // Stores the number of allocations we need to skip to reach the end of the
+  // current chunk of |sampling_frequency_| allocations.
+  size_t increment_ = 0;
 };
 
 // By being implemented as a global with inline method definitions, method calls
