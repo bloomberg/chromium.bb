@@ -6,6 +6,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import ChromeVersionBeforeM
 
 
 class Bypass(IntegrationTest):
@@ -147,6 +148,7 @@ class Bypass(IntegrationTest):
   # Verify that when Chrome receives a 4xx response through a Data Reduction
   # Proxy that doesn't set a proper via header, Chrome bypasses all proxies and
   # retries the request over direct.
+  @ChromeVersionBeforeM(67)
   def testMissingViaHeader4xxBypass(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
