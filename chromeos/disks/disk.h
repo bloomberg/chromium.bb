@@ -8,14 +8,14 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
 namespace disks {
 
-class CHROMEOS_EXPORT Disk {
+class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
  public:
   class Builder;
 
@@ -166,7 +166,7 @@ class CHROMEOS_EXPORT Disk {
   std::string base_mount_path_;
 };
 
-class CHROMEOS_EXPORT Disk::Builder {
+class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk::Builder {
  public:
   Builder();
   ~Builder();
