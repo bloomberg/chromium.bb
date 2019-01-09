@@ -130,9 +130,11 @@ void AvatarToolbarButton::UpdateText() {
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
     if (incognito_window_count > 1) {
       text = base::IntToString16(incognito_window_count);
-      // TODO(http://crbug.com/896235): Update to select from theme colors and
-      // use GetColorWithMinimumContrast to guarantee readability.
-      color = gfx::kGoogleGrey900;
+      SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      if (GetThemeProvider()) {
+        color = GetThemeProvider()->GetColor(
+            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      }
     }
   } else if (sync_state == SyncState::kError) {
     color = gfx::kGoogleRed600;
@@ -164,6 +166,11 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
         signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
         event.IsKeyEvent());
   }
+}
+
+void AvatarToolbarButton::OnThemeChanged() {
+  UpdateIcon();
+  UpdateText();
 }
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {
@@ -293,15 +300,8 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
   const int icon_size = ui::MaterialDesignController::touch_ui() ? 24 : 20;
 
-  SkColor icon_color;
-  if (IsIncognitoCounterActive() &&
-      BrowserList::GetIncognitoSessionsActiveForProfile(profile_) > 1) {
-    // TODO(http://crbug.com/896235): Update to select from theme colors.
-    icon_color = gfx::kGoogleGrey900;
-  } else {
-    icon_color = GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  }
+  SkColor icon_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 
   if (IsIncognito())
     return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);

@@ -58,6 +58,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "google_pay_logo.icon",
     "horizontal_menu.icon",
     "incognito.icon",
+    "incognito_circle.icon",
     "input.icon",
     "key.icon",
     "laptop.icon",

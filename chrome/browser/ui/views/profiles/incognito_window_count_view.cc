@@ -7,17 +7,15 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/separator.h"
+#include "ui/views/layout/box_layout.h"
 
 // static
 void IncognitoWindowCountView::ShowBubble(views::Button* anchor_button,
@@ -42,6 +40,7 @@ IncognitoWindowCountView::IncognitoWindowCountView(views::Button* anchor_button,
   set_parent_window(
       platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
 
+  set_margins(gfx::Insets());
   views::BubbleDialogDelegateView::CreateBubble(this)->Show();
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::INCOGNITO_WINDOW_COUNTER);
@@ -54,53 +53,40 @@ void IncognitoWindowCountView::OnBrowserRemoved(Browser* browser) {
     delete this;
 }
 
-base::string16 IncognitoWindowCountView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_INCOGNITO_WINDOW_COUNTER_TITLE);
-}
-
 int IncognitoWindowCountView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 IncognitoWindowCountView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
-  if (ui::DIALOG_BUTTON_OK) {
-    return l10n_util::GetPluralStringFUTF16(
-        IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON, incognito_window_count_);
-  }
-  return NULL;
-}
-
-bool IncognitoWindowCountView::ShouldShowCloseButton() const {
-  return true;
-}
-
-bool IncognitoWindowCountView::ShouldShowWindowIcon() const {
-  return true;
-}
-
-gfx::ImageSkia IncognitoWindowCountView::GetWindowIcon() {
-  // TODO(http://crbug.com/896235): Update color and size based on theme and UX
-  // feedback.
-  return gfx::CreateVectorIcon(kIncognitoIcon, 24, gfx::kGoogleGrey050);
-}
-
-bool IncognitoWindowCountView::Close() {
-  // By default, closing the dialog would call Accept(), which would result in
-  // data loss, so we intentionally just do nothing and close the dialog.
-  return true;
-}
-
-bool IncognitoWindowCountView::Accept() {
-  BrowserList::CloseAllBrowsersWithIncognitoProfile(
-      browser_->profile(), base::DoNothing(), base::DoNothing(),
-      false /* skip_beforeunload */);
-  return true;
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void IncognitoWindowCountView::Init() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-  AddChildView(new views::Label(l10n_util::GetPluralStringFUTF16(
-      IDS_INCOGNITO_WINDOW_COUNTER_MESSAGE, incognito_window_count_)));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  auto incognito_icon = std::make_unique<views::ImageView>();
+  // TODO(https://crbug.com/896235): Try replacing |kIncognitoCircleIcon| with
+  // drawing a circle under |kIncognitoIcon| and removing the circled icon.
+  incognito_icon->SetImage(
+      gfx::CreateVectorIcon(kIncognitoCircleIcon, 40, gfx::kGoogleGrey100));
+
+  // TODO(https://crbug.com/915120): This Button is never clickable. Replace
+  // by an alternative list item.
+  HoverButton* title_line = new HoverButton(
+      nullptr, std::move(incognito_icon),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_WINDOW_COUNTER_TITLE),
+      l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNTER_MESSAGE,
+                                       incognito_window_count_));
+  title_line->SetState(views::Button::ButtonState::STATE_DISABLED);
+
+  AddChildView(title_line);
+  AddChildView(new views::Separator());
+
+  AddChildView(new HoverButton(
+      this, gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON)));
+}
+
+void IncognitoWindowCountView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
+  BrowserList::CloseAllBrowsersWithIncognitoProfile(
+      browser_->profile(), base::DoNothing(), base::DoNothing(),
+      false /* skip_beforeunload */);
 }
