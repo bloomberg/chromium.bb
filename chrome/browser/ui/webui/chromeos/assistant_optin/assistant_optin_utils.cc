@@ -13,7 +13,6 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
