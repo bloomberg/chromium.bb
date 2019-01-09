@@ -34,7 +34,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(
       binding_(this),
       surface_embedder_binding_(this),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
+          ::features::IsSurfaceSynchronizationEnabled()),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : viz::FrameSinkId()) {
