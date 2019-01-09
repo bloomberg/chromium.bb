@@ -86,8 +86,6 @@ class TabWebContentsDelegateAndroid
   blink::WebSecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void RequestAppBannerFromDevTools(
-      content::WebContents* web_contents) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
   void UpdateUserGestureCarryoverInfo(

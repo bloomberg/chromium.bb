@@ -602,10 +602,6 @@
                 ]
             },
             {
-                "name": "requestAppBanner",
-                "experimental": true
-            },
-            {
                 "name": "getLayoutMetrics",
                 "description": "Returns metrics relating to the layouting of the page, such as viewport bounds/scale.",
                 "returns": [

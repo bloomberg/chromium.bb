@@ -436,14 +436,6 @@ blink::WebSecurityStyle TabWebContentsDelegateAndroid::GetSecurityStyle(
                                           security_style_explanations);
 }
 
-void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
-    content::WebContents* web_contents) {
-  banners::AppBannerManagerAndroid* manager =
-      banners::AppBannerManagerAndroid::FromWebContents(web_contents);
-  DCHECK(manager);
-  manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
-}
-
 void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {

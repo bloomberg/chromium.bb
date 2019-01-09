@@ -498,8 +498,6 @@ class Browser : public TabStripModelObserver,
       content::RenderFrameHost* frame,
       std::vector<blink::mojom::SerialPortFilterPtr> filters,
       content::SerialChooser::Callback callback) override;
-  void RequestAppBannerFromDevTools(
-      content::WebContents* web_contents) override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,

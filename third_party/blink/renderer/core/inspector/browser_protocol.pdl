@@ -5229,8 +5229,6 @@ domain Page
     parameters
       ScriptIdentifier identifier
 
-  experimental command requestAppBanner
-
   # Acknowledges that a screencast frame has been received by the frontend.
   experimental command screencastFrameAck
     parameters

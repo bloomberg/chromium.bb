@@ -375,9 +375,6 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
   return Java_WebContentsDelegateAndroid_isFullscreenForTabOrPending(env, obj);
 }
 
-void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(
-    content::WebContents* web_contents) {}
-
 void WebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {}

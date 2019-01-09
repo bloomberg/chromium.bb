@@ -146,8 +146,6 @@ class PageHandler : public DevToolsDomainHandler,
   Response HandleJavaScriptDialog(bool accept,
                                   Maybe<std::string> prompt_text) override;
 
-  Response RequestAppBanner() override;
-
   Response BringToFront() override;
 
   Response SetDownloadBehavior(const std::string& behavior,
