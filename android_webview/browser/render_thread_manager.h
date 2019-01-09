@@ -10,6 +10,7 @@
 #include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -55,6 +56,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void DrawOnRT(bool save_restore, HardwareRendererDrawParams* params);
   void DestroyHardwareRendererOnRT(bool save_restore);
 
+  // May be created on either thread.
   class InsideHardwareReleaseReset {
    public:
     explicit InsideHardwareReleaseReset(
@@ -72,16 +74,27 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // RT thread method.
   bool HasFrameForHardwareRendererOnRT() const;
+  bool IsInsideHardwareRelease() const;
+  void SetInsideHardwareRelease(bool inside);
 
   // UI thread methods.
   void UpdateParentDrawConstraintsOnUI();
-  bool IsInsideHardwareRelease() const;
-  void SetInsideHardwareRelease(bool inside);
+  void CheckUiCallsAllowed() const {
+#if DCHECK_IS_ON()
+    DCHECK(ui_calls_allowed_);
+#endif  // DCHECK_IS_ON()
+  }
 
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
   base::WeakPtr<CompositorFrameProducer> producer_weak_ptr_;
   base::WeakPtr<RenderThreadManager> ui_thread_weak_ptr_;
+#if DCHECK_IS_ON()
+  // Becomes false after lifetime of this object transitions from being
+  // shared by both UI and RT, to being owned by a single thread and only RT
+  // methods and destructor are allowed after.
+  bool ui_calls_allowed_ = true;
+#endif  // DCHECK_IS_ON()
 
   // Accessed by RT thread.
   std::unique_ptr<HardwareRenderer> hardware_renderer_;

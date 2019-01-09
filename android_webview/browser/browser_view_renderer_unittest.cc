@@ -501,7 +501,7 @@ class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
 
   void CheckResults() override {
     window_->Detach();
-    functor_->OnWindowDetached();
+    functor_->ReleaseOnUIWithInvoke();
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&SwitchLayerTreeFrameSinkIdTest::PostedCheckResults,
@@ -560,6 +560,43 @@ class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
 };
 
 RENDERING_TEST_F(RenderThreadManagerDeletionTest);
+
+class RenderThreadManagerDeletionOnRTTest : public ResourceRenderingTest {
+  std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
+      int frame_number) override {
+    if (frame_number > 0) {
+      return nullptr;
+    }
+
+    const uint32_t layer_tree_frame_sink_id = 0u;
+    const viz::ResourceId resource_id =
+        static_cast<viz::ResourceId>(frame_number);
+
+    std::unique_ptr<content::SynchronousCompositor::Frame> frame(
+        new content::SynchronousCompositor::Frame);
+    frame->layer_tree_frame_sink_id = layer_tree_frame_sink_id;
+    frame->frame = ConstructFrame(resource_id);
+    ++expected_return_count_[layer_tree_frame_sink_id][resource_id];
+    return frame;
+  }
+
+  void CheckResults() override {
+    functor_->ReleaseOnUIWithoutInvoke(
+        base::BindOnce(&RenderThreadManagerDeletionOnRTTest::PostedCheckResults,
+                       base::Unretained(this)));
+  }
+
+  void PostedCheckResults() {
+    // Make sure resources for the last frame are returned.
+    EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
+    EndTest();
+  }
+
+ private:
+  LayerTreeFrameSinkResourceCountMap expected_return_count_;
+};
+
+RENDERING_TEST_F(RenderThreadManagerDeletionOnRTTest);
 
 class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
   std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(

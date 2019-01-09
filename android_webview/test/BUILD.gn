@@ -63,7 +63,7 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
     "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
     "shell/src/org/chromium/android_webview/shell/AwShellSwitches.java",
-    "shell/src/org/chromium/android_webview/shell/DrawGL.java",
+    "shell/src/org/chromium/android_webview/shell/DrawFn.java",
     "shell/src/org/chromium/android_webview/test/AwTestContainerView.java",
     "shell/src/org/chromium/android_webview/test/AwTestRunnerActivity.java",
     "shell/src/org/chromium/android_webview/test/AwJUnit4ClassRunner.java",
@@ -73,10 +73,7 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
 
-  shared_libraries = [
-    ":libdrawgl",
-    ":libstandalonelibwebviewchromium",
-  ]
+  shared_libraries = [ ":libstandalonelibwebviewchromium" ]
 
   native_lib_version_rule = "//build/util:chrome_version_json"
   _native_lib_file =
@@ -132,10 +129,12 @@ shared_library("libstandalonelibwebviewchromium") {
   testonly = true
   sources = [
     "../lib/webview_entry_point.cc",
+    "shell/src/draw_gl/draw_fn.cc",
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
     "//android_webview:common",
+    "//base",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",
     "//content/public/test/android:content_native_test_support",
@@ -381,11 +380,4 @@ generate_jni("android_webview_unittests_jni") {
     "../unittestjava/src/org/chromium/android_webview/unittest/InputStreamUnittest.java",
     "../unittestjava/src/org/chromium/android_webview/unittest/MockAwContentsClientBridge.java",
   ]
-}
-
-shared_library("libdrawgl") {
-  sources = [
-    "shell/src/draw_gl/draw_gl.cc",
-  ]
-  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
 }

@@ -58,6 +58,9 @@ class FakeWindow {
   void RequestDrawGL(FakeFunctor* functor);
 
   bool on_draw_hardware_pending() const { return on_draw_hardware_pending_; }
+  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner() {
+    return render_thread_loop_;
+  }
 
  private:
   class ScopedMakeCurrent;
@@ -109,10 +112,13 @@ class FakeFunctor {
   void Invoke(WindowHooks* hooks);
 
   CompositorFrameConsumer* GetCompositorFrameConsumer();
-  void OnWindowDetached();
+  void ReleaseOnUIWithInvoke();
+
+  void ReleaseOnUIWithoutInvoke(base::OnceClosure callback);
 
  private:
   bool RequestInvokeGL(bool wait_for_completion);
+  void ReleaseOnRT(base::OnceClosure callback);
 
   FakeWindow* window_;
   std::unique_ptr<RenderThreadManager> render_thread_manager_;

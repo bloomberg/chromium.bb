@@ -57,6 +57,7 @@ import android.widget.TextView;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.android_webview.AwDrawFnImpl;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
@@ -2480,6 +2481,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         @Override
         public AwContents.NativeDrawGLFunctor createGLFunctor(long context) {
             return new DrawGLFunctor(context, mFactory.getWebViewDelegate());
+        }
+
+        @Override
+        public AwDrawFnImpl.DrawFnAccess getDrawFnAccess() {
+            return null;
         }
     }
 

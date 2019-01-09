@@ -5,5 +5,8 @@
 package com.android.webview.chromium;
 
 class DrawFunctor {
+    public static long getDrawFnFunctionTable() {
+        return nativeGetFunctionTable();
+    }
     private static native long nativeGetFunctionTable();
 }
