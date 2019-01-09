@@ -50,10 +50,6 @@ class NewPasswordFormManager;
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel, public FormSubmissionObserver {
  public:
-  // Expresses which navigation entry to use to check whether password manager
-  // is enabled.
-  enum class NavigationEntryToCheck { LAST_COMMITTED, VISIBLE };
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
@@ -177,8 +173,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   }
 
 #endif
-
-  NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
 
   // Reports the priority of a PasswordGenerationRequirementsSpec for a
   // generated password. See
@@ -347,12 +341,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // The user-visible URL from the last time a password was provisionally saved.
   GURL main_frame_url_;
-
-  // |entry_to_check_| specifies which navigation entry is relevant for
-  // determining if password manager is enabled. The last commited one is
-  // relevant for HTML forms, the visible one is for HTTP auth.
-  NavigationEntryToCheck entry_to_check_ =
-      NavigationEntryToCheck::LAST_COMMITTED;
 
   const bool is_new_form_parsing_for_saving_enabled_;
 

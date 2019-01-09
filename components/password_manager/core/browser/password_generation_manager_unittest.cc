@@ -128,7 +128,7 @@ class FakePasswordRequirementsSpecFetcher
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(GetPasswordSyncState, SyncState());
-  MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD0(IsIncognito, bool());
 
   explicit MockPasswordManagerClient(std::unique_ptr<PrefService> prefs)
@@ -199,7 +199,7 @@ class PasswordGenerationManagerTest : public testing::Test {
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
   // Enabling the PasswordManager and password sync should cause generation to
   // be enabled, unless the sync is with a custom passphrase.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
@@ -216,7 +216,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
   // Disabling the PasswordManager should cause generation to be disabled even
   // if syncing is enabled.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
@@ -231,7 +231,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 // stored and that domain-wide password requirements are fetched as well.
 TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
   // Setup so that IsGenerationEnabled() returns true.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
@@ -339,7 +339,7 @@ TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
 
 TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   // Setup so that IsGenerationEnabled() returns true.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
@@ -444,7 +444,7 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
 TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   // Disable password manager by going incognito. Even though password
   // syncing is enabled, generation should still be disabled.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
   PrefService* prefs = client_->GetPrefs();

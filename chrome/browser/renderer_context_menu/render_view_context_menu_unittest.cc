@@ -608,6 +608,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
       web_contents())
       ->RenderFrameCreated(web_contents()->GetMainFrame());
 
+  NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
@@ -628,6 +629,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
       web_contents())
       ->RenderFrameCreated(web_contents()->GetMainFrame());
 
+  NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(

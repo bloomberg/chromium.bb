@@ -130,7 +130,7 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
 
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
+  if (!client_->IsSavingAndFillingEnabled(driver_->GetLastCommittedURL())) {
     if (logger)
       logger->LogMessage(Logger::STRING_GENERATION_DISABLED_SAVING_DISABLED);
     return false;

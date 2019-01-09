@@ -378,7 +378,7 @@ PasswordManager::~PasswordManager() {
 }
 
 void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
-  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
@@ -389,7 +389,7 @@ void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
 
 void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
                                                  const PasswordForm& form) {
-  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
   PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
     form_manager->PresaveGeneratedPassword(form);
@@ -403,7 +403,7 @@ void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
 
 void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
                                                   const PasswordForm& form) {
-  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
 
   PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
   if (form_manager)
@@ -415,7 +415,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
     const PasswordForm& form,
     const base::string16& generation_element,
     bool is_manually_triggered) {
-  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
 
   PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
@@ -453,7 +453,7 @@ void PasswordManager::ProvisionallySavePassword(
                             form);
   }
 
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
+  if (!client_->IsSavingAndFillingEnabled(form.origin)) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_DISABLED, form.origin,
         logger.get());
@@ -530,7 +530,6 @@ void PasswordManager::ProvisionallySavePassword(
 }
 
 void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
-  entry_to_check_ = NavigationEntryToCheck::LAST_COMMITTED;
   pending_login_managers_.clear();
 
   if (form_may_be_submitted) {
@@ -657,7 +656,7 @@ void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (!client_->GetPasswordStore()->IsAbleToSavePasswords() ||
-      !client_->IsSavingAndFillingEnabledForCurrentPage() ||
+      !client_->IsSavingAndFillingEnabled(password_form.origin) ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(password_form) ||
       !client_->GetStoreResultFilter()->ShouldSave(password_form))
     return;
@@ -724,20 +723,6 @@ void PasswordManager::CreatePendingLoginManagers(
     CreateFormManagers(driver, forms);
   }
 
-  const PasswordForm::Scheme effective_form_scheme =
-      forms.empty() ? PasswordForm::SCHEME_HTML : forms.front().scheme;
-  switch (effective_form_scheme) {
-    case PasswordForm::SCHEME_HTML:
-    case PasswordForm::SCHEME_OTHER:
-    case PasswordForm::SCHEME_USERNAME_ONLY:
-      entry_to_check_ = NavigationEntryToCheck::LAST_COMMITTED;
-      break;
-    case PasswordForm::SCHEME_BASIC:
-    case PasswordForm::SCHEME_DIGEST:
-      entry_to_check_ = NavigationEntryToCheck::VISIBLE;
-      break;
-  }
-
   // Record whether or not this top-level URL has at least one password field.
   client_->AnnotateNavigationEntry(!forms.empty());
 
@@ -765,9 +750,6 @@ void PasswordManager::CreatePendingLoginManagers(
         metrics_util::CertificateError::COUNT);
   }
 
-  if (!client_->IsFillingEnabledForCurrentPage())
-    return;
-
   if (logger) {
     logger->LogNumber(Logger::STRING_OLD_NUMBER_LOGIN_MANAGERS,
                       pending_login_managers_.size());
@@ -788,6 +770,8 @@ void PasswordManager::CreatePendingLoginManagers(
     // SpdyProxy authentication, as indicated by the realm.
     if (base::EndsWith(form.signon_realm, kSpdyProxyRealm,
                        base::CompareCase::SENSITIVE))
+      continue;
+    if (!client_->IsFillingEnabled(form.origin))
       continue;
 
     bool old_manager_found = false;
@@ -845,6 +829,8 @@ void PasswordManager::CreateFormManagers(
     // NewPasswordFormManger instance.
     if (form.is_gaia_with_skip_save_password_form)
       continue;
+    if (!client_->IsFillingEnabled(form.origin))
+      continue;
     NewPasswordFormManager* manager =
         FindMatchedManager(form.form_data, form_managers_, driver);
 
@@ -880,7 +866,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
+  if (!client_->IsSavingAndFillingEnabled(submitted_form.origin)) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.origin,
         logger.get());

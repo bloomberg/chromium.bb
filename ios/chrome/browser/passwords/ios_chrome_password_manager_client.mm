@@ -161,11 +161,11 @@ void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
   helper_.NotifyStorePasswordCalled();
 }
 
-bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
-    const {
+bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabled(
+    const GURL& url) const {
   return *saving_passwords_enabled_ && !IsIncognito() &&
          !net::IsCertStatusError(GetMainFrameCertStatus()) &&
-         IsFillingEnabledForCurrentPage();
+         IsFillingEnabled(url);
 }
 
 const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {

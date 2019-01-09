@@ -2905,6 +2905,33 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BasicAuthSeparateRealms) {
   password_manager->RemoveObserver(&mock_login_model_observer);
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ProxyAuthFilling) {
+  GURL test_page = embedded_test_server()->GetURL("/auth-basic");
+
+  // Save credentials for "testrealm" in the store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm creds;
+  creds.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  creds.origin = test_page;
+  creds.signon_realm = embedded_test_server()->base_url().spec() + "testrealm";
+  creds.password_value = base::ASCIIToUTF16("pw");
+  creds.username_value = base::ASCIIToUTF16("temp");
+  password_store->AddLogin(creds);
+
+  content::NavigationController* controller = &WebContents()->GetController();
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_page, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  auth_needed_waiter.Wait();
+
+  BubbleObserver(WebContents()).WaitForManagementState();
+}
+
 // Test whether the password form which is loaded as hidden is autofilled
 // correctly. This happens very often in situations when in order to sign-in the
 // user clicks a sign-in button and a hidden passsword form becomes visible.

@@ -7,15 +7,15 @@
 
 namespace password_manager {
 
-bool PasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage() const {
+bool PasswordManagerClient::IsSavingAndFillingEnabled(const GURL& url) const {
   return true;
 }
 
-bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
+bool PasswordManagerClient::IsFillingEnabled(const GURL& url) const {
   return true;
 }
 
-bool PasswordManagerClient::IsFillingFallbackEnabledForCurrentPage() const {
+bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 

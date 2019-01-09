@@ -88,4 +88,8 @@ bool WebViewPasswordManagerDriver::IsMainFrame() const {
   // On IOS only processing of password forms in main frame is implemented.
   return true;
 }
+
+GURL WebViewPasswordManagerDriver::GetLastCommittedURL() const {
+  return delegate_.lastCommittedURL;
+}
 }  // namespace ios_web_view
