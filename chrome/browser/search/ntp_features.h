@@ -17,9 +17,6 @@ extern const base::Feature kPromosOnLocalNtp;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
 
-// Returns whether New Tab Page custom links are enabled.
-bool IsCustomLinksEnabled();
-
 }  // namespace features
 
 #endif  // CHROME_BROWSER_SEARCH_NTP_FEATURES_H_

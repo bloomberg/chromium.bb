@@ -800,9 +800,6 @@ extern const char kNtlmV2EnabledName[];
 extern const char kNtlmV2EnabledDescription[];
 #endif
 
-extern const char kNtpCustomLinksName[];
-extern const char kNtpCustomLinksDescription[];
-
 extern const char kNumRasterThreadsName[];
 extern const char kNumRasterThreadsDescription[];
 extern const char kNumRasterThreadsOne[];

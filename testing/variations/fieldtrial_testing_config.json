@@ -2596,25 +2596,6 @@
             ]
         }
     ],
-    "NTPBirthdayFeatures": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "//0": "Ramps up Beta to 50%",
-                    "name": "NewTabPageM69AllBirthday_Beta_Enabled_V2",
-                    "enable_features": [
-                        "NewTabPageCustomLinks"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPLaunchAfterInactivity": [
         {
             "platforms": [

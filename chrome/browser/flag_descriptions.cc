@@ -1299,11 +1299,6 @@ const char kNtlmV2EnabledDescription[] =
     "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
 #endif
 
-const char kNtpCustomLinksName[] = "New Tab Page Custom Links";
-const char kNtpCustomLinksDescription[] =
-    "Enable customization of shortcuts on the New Tab Page and replaces Most "
-    "Visited.";
-
 const char kNumRasterThreadsName[] = "Number of raster threads";
 const char kNumRasterThreadsDescription[] =
     "Specify the number of raster threads.";

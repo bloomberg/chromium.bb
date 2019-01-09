@@ -62,6 +62,17 @@ const int kDefaultMostVisitedItemCount = 1;
 // ntp_tiles::CustomLinksManager.
 const int kDefaultCustomLinkMaxCount = 10;
 
+// Returns the RenderFrameHost corresponding to the most visited iframe in the
+// given |tab|. |tab| must correspond to an NTP.
+content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
+  for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
+    if (frame->GetFrameName() == "mv-single") {
+      return frame;
+    }
+  }
+  return nullptr;
+}
+
 class TestMostVisitedObserver : public InstantServiceObserver {
  public:
   explicit TestMostVisitedObserver(InstantService* service)
@@ -508,52 +519,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
 }
 
-class LocalNTPRTLTest : public LocalNTPTest {
- public:
-  LocalNTPRTLTest() {}
-
- private:
-  void SetUpCommandLine(base::CommandLine* cmdline) override {
-    cmdline->AppendSwitchASCII(switches::kForceUIDirection,
-                               switches::kForceDirectionRTL);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
-  // Open an NTP.
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  // Check that the "dir" attribute on the main "html" element says "rtl".
-  std::string dir;
-  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
-      active_tab, "document.documentElement.dir", &dir));
-  EXPECT_EQ("rtl", dir);
-}
-
-// Returns the RenderFrameHost corresponding to the most visited iframe in the
-// given |tab|. |tab| must correspond to an NTP.
-content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
-  for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
-    if (frame->GetFrameName() == "mv-single") {
-      return frame;
-    }
-  }
-  return nullptr;
-}
-
-class LocalNTPMDTest : public LocalNTPTest {
- public:
-  LocalNTPMDTest()
-      : LocalNTPTest(
-            /*enabled_features=*/{features::kUseGoogleLocalNtp},
-            /*disabled_features=*/{ntp_tiles::kNtpCustomLinks}) {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPMDTest, LoadsMDIframe) {
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -576,49 +542,28 @@ IN_PROC_BROWSER_TEST_F(LocalNTPMDTest, LoadsMDIframe) {
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.md-favicon.failed-favicon').length",
       &failed_favicons));
+  // Check if only one add button exists in the frame. This will be included in
+  // the total favicon count.
+  int add_button_favicon = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.md-add-icon').length",
+      &add_button_favicon));
+  EXPECT_EQ(1, add_button_favicon);
 
   // First, sanity check that the numbers line up (none of the css classes was
   // renamed, etc).
-  EXPECT_EQ(total_favicons, succeeded_favicons + failed_favicons);
+  EXPECT_EQ(total_favicons,
+            succeeded_favicons + add_button_favicon + failed_favicons);
 
   // Since we're in a non-signed-in, fresh profile with no history, there should
   // be the default TopSites tiles (see history::PrepopulatedPage).
   // Check that there is at least one tile, and that all of them loaded their
   // images successfully.
-  EXPECT_EQ(total_favicons, succeeded_favicons);
+  EXPECT_EQ(total_favicons, succeeded_favicons + add_button_favicon);
   EXPECT_EQ(0, failed_favicons);
 }
 
-class LocalNTPCustomLinksTest : public LocalNTPTest {
- public:
-  LocalNTPCustomLinksTest()
-      : LocalNTPTest(
-            /*enabled_features=*/{features::kUseGoogleLocalNtp,
-                                  ntp_tiles::kNtpCustomLinks},
-            /*disabled_features=*/{}) {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, ShowsAddCustomLinkButton) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-
-  // Get the iframe and check that the tiles loaded correctly.
-  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
-
-  // Check if only one add button exists in the iframe.
-  bool has_add_button = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "document.querySelectorAll('.md-add-icon').length == 1",
-      &has_add_button));
-  EXPECT_TRUE(has_add_button);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
-                       DontShowAddCustomLinkButtonWhenMaxLinks) {
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, DontShowAddCustomLinkButtonWhenMaxLinks) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -655,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
   EXPECT_TRUE(no_add_button);
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, Reorder) {
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -724,6 +669,29 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, Reorder) {
           "].innerText",
       &new_title));
   EXPECT_EQ(new_title, title);
+}
+
+class LocalNTPRTLTest : public LocalNTPTest {
+ public:
+  LocalNTPRTLTest() {}
+
+ private:
+  void SetUpCommandLine(base::CommandLine* cmdline) override {
+    cmdline->AppendSwitchASCII(switches::kForceUIDirection,
+                               switches::kForceDirectionRTL);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
+  // Open an NTP.
+  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  // Check that the "dir" attribute on the main "html" element says "rtl".
+  std::string dir;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.documentElement.dir", &dir));
+  EXPECT_EQ("rtl", dir);
 }
 
 // A minimal implementation of an interstitial page.

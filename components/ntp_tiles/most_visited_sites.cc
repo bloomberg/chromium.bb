@@ -446,8 +446,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       continue;
 
     NTPTile tile;
-    tile.title = IsCustomLinksEnabled() ? GenerateShortTitle(visited.title)
-                                        : visited.title;
+    tile.title =
+        custom_links_ ? GenerateShortTitle(visited.title) : visited.title;
     tile.url = visited.url;
     tile.source = TileSource::TOP_SITES;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
@@ -513,7 +513,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
 
     NTPTile tile;
     tile.title =
-        IsCustomLinksEnabled()
+        custom_links_
             ? GenerateShortTitle(base::UTF8ToUTF16(suggestion_pb.title()))
             : base::UTF8ToUTF16(suggestion_pb.title());
     tile.url = url;
@@ -706,7 +706,7 @@ void MostVisitedSites::OnCustomLinksChanged() {
 
 void MostVisitedSites::BuildCustomLinks(
     const std::vector<CustomLinksManager::Link>& links) {
-  DCHECK(IsCustomLinksEnabled());
+  DCHECK(custom_links_);
 
   NTPTilesVector tiles;
   size_t num_tiles = std::min(links.size(), kMaxNumCustomLinks);

@@ -3805,12 +3805,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalProductivityFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"ntp-custom-links", flag_descriptions::kNtpCustomLinksName,
-     flag_descriptions::kNtpCustomLinksDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_tiles::kNtpCustomLinks)},
-#endif  // OS_WIN || OS_MACOSX || OS_LINUX
-
 #if defined(OS_ANDROID)
     {"enable-display-cutout-api", flag_descriptions::kDisplayCutoutAPIName,
      flag_descriptions::kDisplayCutoutAPIDescription, kOsAndroid,
