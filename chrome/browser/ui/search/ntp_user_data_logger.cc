@@ -586,19 +586,14 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
         BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
   }
 
-  if (features::IsCustomLinksEnabled()) {
-    if (!is_google) {
-      // TODO(crbug.com/869931): This is only emitted upon search engine change.
-      LogShortcutCustomizationAvailability(
-          ShortcutCustomization::
-              SHORTCUT_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-    } else {
-      LogShortcutCustomizationAvailability(
-          ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
-    }
+  if (!is_google) {
+    // TODO(crbug.com/869931): This is only emitted upon search engine change.
+    LogShortcutCustomizationAvailability(
+        ShortcutCustomization::
+            SHORTCUT_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
   } else {
     LogShortcutCustomizationAvailability(
-        ShortcutCustomization::SHORTCUT_CUSTOMIZATION_UNAVAILABLE_FEATURE);
+        ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
   }
 
   if (CustomBackgroundIsConfigured()) {

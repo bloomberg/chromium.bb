@@ -205,11 +205,6 @@ customBackgrounds.setMenuVisibility = function() {
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = false;
   $(customBackgrounds.IDS.EDIT_BG_DIVIDER).hidden = false;
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = false;
-
-  // Custom links is disabled, hide all custom link options.
-  if (!configData.isCustomLinksEnabled) {
-    $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden = true;
-  }
 };
 
 /**
@@ -979,9 +974,7 @@ customBackgrounds.init = function(
     }
   };
 
-  if (configData.isCustomLinksEnabled) {
-    customBackgrounds.initCustomLinksItems(hideCustomLinkNotification);
-  }
+  customBackgrounds.initCustomLinksItems(hideCustomLinkNotification);
   customBackgrounds.initCustomBackgrounds(showErrorNotification);
 };
 

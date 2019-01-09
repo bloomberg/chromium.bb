@@ -188,23 +188,19 @@ InstantService::InstantService(Profile* profile)
 
     // Determine if we are using a third-party NTP. Custom links should only be
     // enabled for the default NTP.
-    if (features::IsCustomLinksEnabled()) {
-      TemplateURLService* template_url_service =
-          TemplateURLServiceFactory::GetForProfile(profile_);
-      if (template_url_service) {
-        search_provider_observer_ = std::make_unique<SearchProviderObserver>(
-            template_url_service,
-            base::BindRepeating(&InstantService::OnSearchProviderChanged,
-                                weak_ptr_factory_.GetWeakPtr()));
-        custom_links_enabled = search_provider_observer_->is_google();
-      }
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile_);
+    if (template_url_service) {
+      search_provider_observer_ = std::make_unique<SearchProviderObserver>(
+          template_url_service,
+          base::BindRepeating(&InstantService::OnSearchProviderChanged,
+                              weak_ptr_factory_.GetWeakPtr()));
+      custom_links_enabled = search_provider_observer_->is_google();
     }
 
     // 9 tiles are required for the custom links feature in order to balance the
-    // Most Visited rows (this is due to an additional "Add" button). Otherwise,
-    // Most Visited should return the regular 8 tiles.
-    most_visited_sites_->SetMostVisitedURLsObserver(
-        this, features::IsCustomLinksEnabled() ? 9 : 8);
+    // Most Visited rows (this is due to an additional "Add" button).
+    most_visited_sites_->SetMostVisitedURLsObserver(this, 9);
     most_visited_sites_->EnableCustomLinks(custom_links_enabled);
   }
 
@@ -472,7 +468,6 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
 }
 
 void InstantService::OnSearchProviderChanged(bool is_google) {
-  DCHECK(features::IsCustomLinksEnabled());
   DCHECK(most_visited_sites_);
   most_visited_sites_->EnableCustomLinks(is_google);
 }
@@ -502,9 +497,8 @@ void InstantService::OnURLsAvailable(
 void InstantService::OnIconMadeAvailable(const GURL& site_url) {}
 
 void InstantService::NotifyAboutMostVisitedItems() {
-  bool is_custom_links = features::IsCustomLinksEnabled() && most_visited_sites_
-                             ? most_visited_sites_->IsCustomLinksInitialized()
-                             : false;
+  bool is_custom_links =
+      (most_visited_sites_ && most_visited_sites_->IsCustomLinksInitialized());
   for (InstantServiceObserver& observer : observers_)
     observer.MostVisitedItemsChanged(most_visited_items_, is_custom_links);
 }

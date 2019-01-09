@@ -554,11 +554,6 @@ class LocalNtpSource::SearchConfigurationProvider
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
 
-    if (is_google) {
-      config_data.SetBoolean("isCustomLinksEnabled",
-                             features::IsCustomLinksEnabled());
-    }
-
     // Serialize the dictionary.
     std::string js_text;
     JSONStringValueSerializer serializer(&js_text);

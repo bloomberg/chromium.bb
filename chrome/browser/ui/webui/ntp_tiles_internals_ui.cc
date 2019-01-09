@@ -88,7 +88,11 @@ bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
       return false;
 #endif
     case ntp_tiles::TileSource::CUSTOM_LINKS:
-      return ntp_tiles::IsCustomLinksEnabled();
+#if !defined(OS_ANDROID)
+      return true;
+#else
+      return false;
+#endif
   }
   NOTREACHED();
   return false;

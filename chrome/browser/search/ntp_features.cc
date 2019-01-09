@@ -5,7 +5,6 @@
 #include "chrome/browser/search/ntp_features.h"
 
 #include "build/build_config.h"
-#include "components/ntp_tiles/constants.h"
 #include "ui/base/ui_base_features.h"
 
 namespace features {
@@ -25,9 +24,5 @@ const base::Feature kSearchSuggestionsOnLocalNtp{
 // Enables using the local NTP if Google is the default search engine.
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsCustomLinksEnabled() {
-  return ntp_tiles::IsCustomLinksEnabled();
-}
 
 }  // namespace features

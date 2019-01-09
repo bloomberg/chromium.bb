@@ -539,9 +539,8 @@ function reloadTiles() {
 
   var pages = ntpApiHandle.mostVisited;
   var cmds = [];
-  let maxNumTiles = configData.isCustomLinksEnabled ?
-      MAX_NUM_TILES_CUSTOM_LINKS :
-      MAX_NUM_TILES_MOST_VISITED;
+  let maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
+                                              MAX_NUM_TILES_MOST_VISITED;
   for (var i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
     cmds.push({cmd: 'tile', rid: pages[i].rid});
   }
@@ -740,7 +739,7 @@ function onUndo() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     ntpApiHandle.undoCustomLinkAction();
   } else if (lastBlacklistedTile != null) {
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedTile);
@@ -756,7 +755,7 @@ function onRestoreAll() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     ntpApiHandle.resetCustomLinks();
   } else {
     ntpApiHandle.undoAllMostVisitedDeletions();
@@ -850,29 +849,29 @@ function handlePostMessage(event) {
   var args = event.data;
   if (cmd === 'loaded') {
     tilesAreLoaded = true;
-    if (configData.isGooglePage && !$('one-google-loader')) {
-      // Load the OneGoogleBar script. It'll create a global variable name "og"
-      // which is a dict corresponding to the native OneGoogleBarData type.
-      // We do this only after all the tiles have loaded, to avoid slowing down
-      // the main page load.
-      var ogScript = document.createElement('script');
-      ogScript.id = 'one-google-loader';
-      ogScript.src = 'chrome-search://local-ntp/one-google.js';
-      document.body.appendChild(ogScript);
-      ogScript.onload = function() {
-        injectOneGoogleBar(og);
-      };
-    }
-    if (configData.isGooglePage && !$('promo-loader')) {
-      var promoScript = document.createElement('script');
-      promoScript.id = 'promo-loader';
-      promoScript.src = 'chrome-search://local-ntp/promo.js';
-      document.body.appendChild(promoScript);
-      promoScript.onload = function() {
-        injectPromo(promo);
-      };
-    }
-    if (configData.isCustomLinksEnabled) {
+    if (configData.isGooglePage) {
+      if (!$('one-google-loader')) {
+        // Load the OneGoogleBar script. It'll create a global variable name
+        // "og" which is a dict corresponding to the native OneGoogleBarData
+        // type. We do this only after all the tiles have loaded, to avoid
+        // slowing down the main page load.
+        var ogScript = document.createElement('script');
+        ogScript.id = 'one-google-loader';
+        ogScript.src = 'chrome-search://local-ntp/one-google.js';
+        document.body.appendChild(ogScript);
+        ogScript.onload = function() {
+          injectOneGoogleBar(og);
+        };
+      }
+      if (!$('promo-loader')) {
+        var promoScript = document.createElement('script');
+        promoScript.id = 'promo-loader';
+        promoScript.src = 'chrome-search://local-ntp/promo.js';
+        document.body.appendChild(promoScript);
+        promoScript.onload = function() {
+          injectPromo(promo);
+        };
+      }
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
           .classList.toggle(
               customBackgrounds.CLASSES.OPTION_DISABLED,
@@ -881,7 +880,7 @@ function handlePostMessage(event) {
           (args.showRestoreDefault ? 0 : -1);
     }
   } else if (cmd === 'tileBlacklisted') {
-    if (configData.isCustomLinksEnabled) {
+    if (configData.isGooglePage) {
       showNotification(configData.translatedStrings.linkRemovedMsg);
     } else {
       showNotification(
@@ -952,7 +951,7 @@ function init() {
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
   restoreAllLink.textContent =
-      (configData.isCustomLinksEnabled ?
+      (configData.isGooglePage ?
            configData.translatedStrings.restoreDefaultLinks :
            configData.translatedStrings.restoreThumbnailsShort);
 
@@ -974,11 +973,9 @@ function init() {
   if (configData.isGooglePage) {
     enableMDIcons();
 
-    if (configData.isCustomLinksEnabled) {
-      ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
-      ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
-      ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
-    }
+    ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
+    ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
+    ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
 
     customBackgrounds.init(showErrorNotification, hideNotification);
 
@@ -1087,7 +1084,7 @@ function createIframes() {
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     args.push('enableCustomLinks=1');
     args.push(
         'addLink=' +
@@ -1113,7 +1110,7 @@ function createIframes() {
     sendThemeInfoToMostVisitedIframe();
   };
 
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     // Collect arguments for the edit custom link iframe.
     let clArgs = [];
 

@@ -788,10 +788,9 @@ void NewTabPageBindings::DeleteMostVisitedItem(v8::Isolate* isolate,
     return;
 
   // Treat the Most Visited item as a custom link if called from the Most
-  // Visited or edit custom link iframes, and if custom links is enabled. This
-  // will initialize custom links if they have not already been initialized.
-  if (ntp_tiles::IsCustomLinksEnabled() &&
-      HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
+  // Visited or edit custom link iframes. This will initialize custom links if
+  // they have not already been initialized.
+  if (HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl))) {
     search_box->DeleteCustomLink(*rid);
     search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_REMOVE);
   } else {
@@ -843,8 +842,6 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
 void NewTabPageBindings::UpdateCustomLink(int rid,
                                           const std::string& url,
                                           const std::string& title) {
-  if (!ntp_tiles::IsCustomLinksEnabled())
-    return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
@@ -875,8 +872,6 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
 
 // static
 void NewTabPageBindings::ReorderCustomLink(int rid, int new_pos) {
-  if (!ntp_tiles::IsCustomLinksEnabled())
-    return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
@@ -885,8 +880,6 @@ void NewTabPageBindings::ReorderCustomLink(int rid, int new_pos) {
 
 // static
 void NewTabPageBindings::UndoCustomLinkAction() {
-  if (!ntp_tiles::IsCustomLinksEnabled())
-    return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
@@ -896,8 +889,6 @@ void NewTabPageBindings::UndoCustomLinkAction() {
 
 // static
 void NewTabPageBindings::ResetCustomLinks() {
-  if (!ntp_tiles::IsCustomLinksEnabled())
-    return;
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;

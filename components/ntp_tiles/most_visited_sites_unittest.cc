@@ -428,7 +428,8 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
     icon_cacher_ = icon_cacher.get();
 
     // Custom links needs to be nullptr when MostVisitedSites is created, unless
-    // the custom links feature (kNtpCustomLinks) is enabled.
+    // the custom links feature is enabled. Custom links is disabled for
+    // Android, iOS, and third-party NTPs.
     std::unique_ptr<StrictMock<MockCustomLinksManager>> mock_custom_links;
     if (is_custom_links_enabled_) {
       mock_custom_links =
@@ -1056,7 +1057,6 @@ TEST(MostVisitedSitesTest, ShouldDeduplicateDomainByReplacingMobilePrefixes) {
 class MostVisitedSitesWithCustomLinksTest : public MostVisitedSitesTest {
  public:
   MostVisitedSitesWithCustomLinksTest() {
-    feature_list_.InitAndEnableFeature(kNtpCustomLinks);
     EnableCustomLinks();
     RecreateMostVisitedSites();
   }
@@ -1100,9 +1100,6 @@ class MostVisitedSitesWithCustomLinksTest : public MostVisitedSitesTest {
     EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
         .WillOnce(SaveArg<0>(sections));
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_P(MostVisitedSitesWithCustomLinksTest,

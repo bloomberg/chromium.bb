@@ -38,19 +38,6 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
 
 using InstantServiceTest = InstantUnitTestBase;
 
-class InstantServiceTestCustomLinksEnabled : public InstantServiceTest {
- public:
-  InstantServiceTestCustomLinksEnabled() {
-    scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kNtpCustomLinks);
-  }
-  ~InstantServiceTestCustomLinksEnabled() override {}
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantServiceTestCustomLinksEnabled);
-};
-
 TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ntp_tiles::NTPTile some_tile;
   some_tile.source = ntp_tiles::TileSource::TOP_SITES;
@@ -98,7 +85,7 @@ TEST_F(InstantServiceTest, DeleteThumbnailDataIfExists) {
   EXPECT_FALSE(base::PathExists(database_dir));
 }
 
-TEST_F(InstantServiceTestCustomLinksEnabled,
+TEST_F(InstantServiceTest,
        DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   EXPECT_TRUE(instant_service_->UndoCustomLinkAction());
@@ -107,8 +94,7 @@ TEST_F(InstantServiceTestCustomLinksEnabled,
   EXPECT_FALSE(instant_service_->UndoCustomLinkAction());
 }
 
-TEST_F(InstantServiceTestCustomLinksEnabled,
-       DisableResetCustomLinksForNonGoogleSearchProvider) {
+TEST_F(InstantServiceTest, DisableResetCustomLinksForNonGoogleSearchProvider) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   EXPECT_TRUE(instant_service_->ResetCustomLinks());
 
