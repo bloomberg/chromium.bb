@@ -451,6 +451,10 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
                                              void* address,
                                              AllocatorType type,
                                              const char* context) {
+  // Failed allocation? Skip the sample.
+  if (UNLIKELY(!address))
+    return;
+
   size_t mean_interval = subtle::NoBarrier_Load(&g_sampling_interval);
   size_t samples = accumulated_bytes / mean_interval;
   accumulated_bytes %= mean_interval;
