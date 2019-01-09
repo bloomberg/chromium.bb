@@ -20,6 +20,9 @@ var directoryChangedListeners;
 /** @type {!Object<string,!MockDirectoryEntry>} */
 var fakeFileSystemURLEntries;
 
+/** @type {!FileSystem} */
+var driveFileSystem;
+
 /**
  * Mock metrics.
  * @type {!Object}
@@ -67,6 +70,20 @@ function setUp() {
   window.webkitResolveLocalFileSystemURL = (url, callback) => {
     callback(fakeFileSystemURLEntries[url]);
   };
+
+  driveFileSystem = assert(volumeManager.volumeInfoList.item(0).fileSystem);
+  fakeFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives');
+
+  // The initial resolution for Drive roots will fail since the paths were not
+  // ready so trigger another attempt after adding populating
+  // fakeFileSystemURLEntries.
+  /** @type {VolumeInfoImpl} */ (volumeManager.volumeInfoList.item(0))
+      .restartResolveDisplayRootForTest();
 }
 
 /**
@@ -126,11 +143,6 @@ function getDirectoryTreeItemLabels(directoryTree) {
  *     test result.
  */
 function testCreateDirectoryTree(callback) {
-  // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-
   // Populate the directory tree with the mock filesystem.
   var directoryTree = createElements();
   DirectoryTree.decorate(
@@ -182,10 +194,6 @@ function testCreateDirectoryTree(callback) {
 function testCreateDirectoryTreeWithTeamDrive(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
   var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives');
   fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
 
@@ -233,12 +241,6 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
  *     test result.
  */
 function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
-  // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives');
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
@@ -290,11 +292,6 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
  */
 function testCreateDirectoryTreeWithComputers(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
-      new MockDirectoryEntry(driveFileSystem, '/Computers');
   fakeFileSystemURLEntries['filesystem:drive/Comuters/My Laptop'] =
       new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
 
@@ -342,12 +339,6 @@ function testCreateDirectoryTreeWithComputers(callback) {
  *     test result.
  */
 function testCreateDirectoryTreeWithEmptyComputers(callback) {
-  // Setup entries returned by fakeFileSystemURLResults.
-  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
-      new MockDirectoryEntry(driveFileSystem, '/Computers');
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
@@ -402,15 +393,8 @@ function testCreateDirectoryTreeWithEmptyComputers(callback) {
  */
 function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives');
   fakeFileSystemURLEntries ['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
-  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
-      new MockDirectoryEntry(driveFileSystem, '/Computers');
   fakeFileSystemURLEntries['filesystem:drive/Comuters/My Laptop'] =
       new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
 
@@ -506,11 +490,6 @@ function testUpdateSubElementsFromListSections() {
  * up to/disappear from the list correctly.
  */
 function testUpdateSubElementsFromList() {
-  // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-
   // Populate the directory tree with the mock filesystem.
   var directoryTree = createElements();
   DirectoryTree.decorate(
@@ -603,12 +582,6 @@ function testUpdateSubElementsFromList() {
  *     test result.
  */
 function testAddFirstTeamDrive(callback) {
-  // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives');
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
@@ -665,10 +638,6 @@ function testAddFirstTeamDrive(callback) {
 function testRemoveLastTeamDrive(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
   var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives');
   fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
 
@@ -729,12 +698,6 @@ function testRemoveLastTeamDrive(callback) {
  *     test result.
  */
 function testAddFirstComputer(callback) {
-  // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
-      new MockDirectoryEntry(driveFileSystem, '/Computers');
   // No directories exist under Computers
 
   // Populate the directory tree with the mock filesystem.
@@ -794,10 +757,6 @@ function testAddFirstComputer(callback) {
 function testRemoveLastComputer(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
   var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
-  fakeFileSystemURLEntries['filesystem:drive/Computers'] =
-      new MockDirectoryEntry(driveFileSystem, '/Computers');
   fakeFileSystemURLEntries['filesystem:drive/Computers/a'] =
       new MockDirectoryEntry(driveFileSystem, '/Computers/a');
 
@@ -860,9 +819,6 @@ function testRemoveLastComputer(callback) {
  */
 function testInsideMyDriveAndInsideDrive(callback) {
   // Setup My Drive and Downloads and one folder inside each of them.
-  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
-  fakeFileSystemURLEntries['filesystem:drive/root'] =
-      new MockDirectoryEntry(driveFileSystem, '/root');
   fakeFileSystemURLEntries['filesystem:drive/root/folder1'] =
       new MockDirectoryEntry(driveFileSystem, '/root/folder1');
   const downloadsFileSystem = volumeManager.volumeInfoList.item(1).fileSystem;

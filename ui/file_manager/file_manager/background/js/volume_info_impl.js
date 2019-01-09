@@ -59,9 +59,6 @@ function VolumeInfoImpl(
   /** @type {Object<!FakeEntry>} */
   this.fakeEntries_ = {};
 
-  /** @type {Promise<!DirectoryEntry>} */
-  this.displayRootPromise_ = null;
-
   if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
     this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] =
         new FakeEntry(
@@ -90,6 +87,9 @@ function VolumeInfoImpl(
   this.source_ = source;
   this.diskFileSystemType_ = diskFileSystemType;
   this.iconSet_ = iconSet;
+
+  /** @type {Promise<!DirectoryEntry>} */
+  this.displayRootPromise_ = this.resolveDisplayRootImpl_();
 }
 
 VolumeInfoImpl.prototype = /** @struct */ {
@@ -294,43 +294,49 @@ VolumeInfoImpl.prototype.resolveComputersRoot_ = function() {
 };
 
 /**
+ * Returns a promise that resolves when the display root is resolved.
+ * @return {Promise<!DirectoryEntry>} Volume type.
+ */
+VolumeInfoImpl.prototype.resolveDisplayRootImpl_ = function() {
+  // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
+  // remove this if logic.
+  if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
+    if (this.fileSystem_) {
+      this.displayRoot_ = this.fileSystem_.root;
+      return Promise.resolve(this.displayRoot_);
+    } else {
+      return Promise.reject(this.error);
+    }
+  }
+  // For Drive, we need to resolve.
+  var displayRootURL = this.fileSystem_.root.toURL() + 'root';
+  return Promise
+      .all([
+        VolumeInfoImpl.resolveFileSystemUrl_(displayRootURL),
+        this.resolveTeamDrivesRoot_(),
+        this.resolveComputersRoot_(),
+      ])
+      .then(([displayRoot]) => {
+        // Store the obtained displayRoot.
+        this.displayRoot_ = displayRoot;
+        return displayRoot;
+      });
+};
+
+/**
+ * Restarts the process of resolving the display root for this volume.
+ */
+VolumeInfoImpl.prototype.restartResolveDisplayRootForTest = function() {
+  this.displayRootPromise_ = this.resolveDisplayRootImpl_();
+};
+
+/**
  * @override
  */
-VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
-                                                       opt_onFailure) {
-  if (!this.displayRootPromise_) {
-    // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
-    // remove this if logic. Call opt_onSuccess() always, instead.
-    if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
-      if (this.fileSystem_) {
-        this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
-            Promise.resolve(this.fileSystem_.root));
-      } else {
-        this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
-            Promise.reject(this.error));
-      }
-    } else {
-      // For Drive, we need to resolve.
-      var displayRootURL = this.fileSystem_.root.toURL() + 'root';
-      this.displayRootPromise_ =
-          Promise
-              .all([
-                VolumeInfoImpl.resolveFileSystemUrl_(displayRootURL),
-                this.resolveTeamDrivesRoot_(),
-                this.resolveComputersRoot_(),
-              ])
-              .then(([root]) => {
-                return root;
-              });
-    }
-
-    // Store the obtained displayRoot.
-    this.displayRootPromise_.then(function(displayRoot) {
-      this.displayRoot_ = displayRoot;
-    }.bind(this));
-  }
+VolumeInfoImpl.prototype.resolveDisplayRoot = function(
+    opt_onSuccess, opt_onFailure) {
   if (opt_onSuccess) {
     this.displayRootPromise_.then(opt_onSuccess, opt_onFailure);
   }
-  return this.displayRootPromise_;
+  return assert(this.displayRootPromise_);
 };
