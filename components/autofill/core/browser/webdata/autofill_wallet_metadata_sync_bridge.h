@@ -88,9 +88,9 @@ class AutofillWalletMetadataSyncBridge
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
 
-  // Synchronously load |cache_| and sync metadata from the autofill table
-  // and pass the latter to the processor so that it can start tracking changes.
-  void LoadDataCacheAndMetadata();
+  // Synchronously load sync metadata from the autofill table and pass it to the
+  // processor so that it can start tracking changes.
+  void LoadMetadata();
 
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.
@@ -105,11 +105,6 @@ class AutofillWalletMetadataSyncBridge
 
   ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncBridge>
       scoped_observer_;
-
-  // Cache of the data (local data + data that hasn't synced down yet); keyed by
-  // storage keys. Needed for figuring out what to sync up when larger changes
-  // happen in the local database.
-  std::unordered_map<std::string, sync_pb::WalletMetadataSpecifics> cache_;
 
   // Indicates whether we should rely on wallet data being actively synced. If
   // true, the bridge will prune metadata entries without corresponding wallet
