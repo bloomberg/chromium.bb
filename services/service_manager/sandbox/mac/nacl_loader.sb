@@ -20,7 +20,8 @@
 
 (allow iokit-open
   (iokit-user-client-class "IOSurfaceSendRight")
-  (iokit-user-client-class "RootDomainUserClient"))
+  (iokit-user-client-class "RootDomainUserClient")
+)
 
 (allow file-read-data
   (subpath "/usr/share/locale")
@@ -28,8 +29,10 @@
   (path (string-append
           (user-homedir-path "/Library/Preferences/")
           (param bundle-id)
-          ".plist")))
+          ".plist"))
+)
 
 (allow mach-lookup
+  (global-name "com.apple.PowerManagement.control")
   (global-name "com.apple.system.notification_center")
-  (global-name "com.apple.PowerManagement.control"))
+)
