@@ -1,6 +1,8 @@
 #ifndef _RAR_UNPACK_
 #define _RAR_UNPACK_
 
+namespace third_party_unrar {
+
 // Maximum allowed number of compressed bits processed in quick mode.
 #define MAX_QUICK_DECODE_BITS      10
 
@@ -403,5 +405,7 @@ class Unpack:PackDef
       return Inp.InBuf[Inp.InAddr++];
     }
 };
+
+}  // namespace third_party_unrar
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef _RAR_STRLIST_
 #define _RAR_STRLIST_
 
+namespace third_party_unrar {
+
 class StringList
 {
   private:
@@ -27,5 +29,7 @@ class StringList
     void SavePosition();
     void RestorePosition();
 };
+
+}  // namespace third_party_unrar
 
 #endif

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 bool ReadTextFile(
   const wchar *Name,
   StringList *List,
@@ -166,3 +168,5 @@ RAR_CHARSET DetectTextEncoding(const byte *Data,size_t DataSize)
 
   return RCH_DEFAULT;
 }
+
+}  // namespace third_party_unrar

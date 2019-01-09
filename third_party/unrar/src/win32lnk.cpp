@@ -1,5 +1,7 @@
 #define SYMLINK_FLAG_RELATIVE 1
 
+namespace third_party_unrar {
+
 typedef struct _REPARSE_DATA_BUFFER {
   ULONG  ReparseTag;
   USHORT ReparseDataLength;
@@ -172,3 +174,5 @@ bool CreateReparsePoint(CommandData *Cmd,const wchar *Name,FileHeader *hd)
     SetFileAttr(Name,hd->FileAttr);
   return true;
 }
+
+}  // namespace third_party_unrar

@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 bool Archive::GetComment(Array<wchar> *CmtData)
 {
   if (!MainComment)
@@ -168,4 +170,4 @@ void Archive::ViewComment()
   }
 }
 
-
+}  // namespace third_party_unrar

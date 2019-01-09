@@ -7,6 +7,8 @@
 
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 void ErrorHandler::Clean()
 {
   ExitCode=RARX_SUCCESS;
@@ -411,3 +413,5 @@ void ErrorHandler::SetSystemErrorCode(int Code)
   errno=Code;
 #endif
 }
+
+}  // namespace third_party_unrar

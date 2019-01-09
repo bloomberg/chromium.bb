@@ -1,6 +1,8 @@
 #ifndef _RAR_RECVOL_
 #define _RAR_RECVOL_
 
+namespace third_party_unrar {
+
 #define REV5_SIGN      "Rar!\x1aRev"
 #define REV5_SIGN_SIZE             8
 
@@ -83,5 +85,7 @@ class RecVolumes5
 
 bool RecVolumesRestore(RAROptions *Cmd,const wchar *Name,bool Silent);
 void RecVolumesTest(RAROptions *Cmd,Archive *Arc,const wchar *Name);
+
+}  // namespace third_party_unrar
 
 #endif

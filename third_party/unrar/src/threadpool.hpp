@@ -1,6 +1,8 @@
 #ifndef _RAR_THREADPOOL_
 #define _RAR_THREADPOOL_
 
+namespace third_party_unrar {
+
 #ifndef RAR_SMP
 const uint MaxPoolThreads=1; // For single threaded version.
 #else
@@ -102,6 +104,8 @@ ThreadPool* CreateThreadPool();
 void DestroyThreadPool(ThreadPool *Pool);
 
 #endif // RAR_SMP
+
+}  // namespace third_party_unrar
 
 #endif // _RAR_THREADPOOL_
 

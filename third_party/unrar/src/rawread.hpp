@@ -1,6 +1,8 @@
 #ifndef _RAR_RAWREAD_
 #define _RAR_RAWREAD_
 
+namespace third_party_unrar {
+
 class RawRead
 {
   private:
@@ -37,5 +39,7 @@ class RawRead
 };
 
 uint64 RawGetV(const byte *Data,uint &ReadPos,uint DataSize,bool &Overflow);
+
+}  // namespace third_party_unrar
 
 #endif

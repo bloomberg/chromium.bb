@@ -1,6 +1,6 @@
 #include "rar.hpp"
 
-
+namespace third_party_unrar {
 
 #ifndef RARDLL
 const wchar *St(MSGID StringId)
@@ -18,3 +18,4 @@ const wchar *StF(MSGID StringId)
 }
 #endif
 
+}  // namespace third_party_unrar

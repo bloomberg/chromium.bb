@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 FragmentedWindow::FragmentedWindow()
 {
   memset(Mem,0,sizeof(Mem));
@@ -113,3 +115,5 @@ size_t FragmentedWindow::GetBlockSize(size_t StartPos,size_t RequiredSize)
       return Min(MemSize[I]-StartPos,RequiredSize);
   return 0; // Must never be here.
 }
+
+}  // namespace third_party_unrar

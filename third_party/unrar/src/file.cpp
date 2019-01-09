@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 File::File()
 {
   hFile=FILE_BAD_HANDLE;
@@ -764,3 +766,5 @@ void File::SetFileHandle(FileHandle hF) {
   hOpenFile = hF;
 }
 #endif  // defined(CHROMIUM_UNRAR)
+
+}  // namespace third_party_unrar

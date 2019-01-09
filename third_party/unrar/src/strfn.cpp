@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 const char *NullToEmpty(const char *Str)
 {
   return Str==NULL ? "":Str;
@@ -468,3 +470,5 @@ void PrintfPrepareFmt(const wchar *Org,wchar *Cvt,size_t MaxSize)
   Cvt[Dest]=0;
 }
 #endif
+
+}

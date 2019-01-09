@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 CommandData::CommandData()
 {
   Init();
@@ -1408,3 +1410,5 @@ void CommandData::ReportWrongSwitches(RARFORMAT Format)
   }
 }
 #endif
+
+}  // namespace third_party_unrar

@@ -1,6 +1,8 @@
 #ifndef _RAR_QOPEN_
 #define _RAR_QOPEN_
 
+namespace third_party_unrar {
+
 struct QuickOpenItem
 {
   byte *Header;
@@ -57,5 +59,7 @@ class QuickOpen
     bool Seek(int64 Offset,int Method);
     bool Tell(int64 *Pos);
 };
+
+}  // namespace third_party_unrar
 
 #endif

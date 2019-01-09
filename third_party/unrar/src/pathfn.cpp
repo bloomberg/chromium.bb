@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 wchar* PointToName(const wchar *Path)
 {
   for (int I=(int)wcslen(Path)-1;I>=0;I--)
@@ -983,3 +985,5 @@ void MakeNameCompatible(wchar *Name)
   }
 }
 #endif
+
+}  // namespace third_party_unrar

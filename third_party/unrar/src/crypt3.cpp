@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 void CryptData::SetKey30(bool Encrypt,SecPassword *Password,const wchar *PwdW,const byte *Salt)
 {
   byte AESKey[16],AESInit[16];
@@ -65,3 +67,5 @@ void CryptData::SetKey30(bool Encrypt,SecPassword *Password,const wchar *PwdW,co
   cleandata(AESKey,sizeof(AESKey));
   cleandata(AESInit,sizeof(AESInit));
 }
+
+}  // namespace third_party_unrar

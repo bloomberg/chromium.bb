@@ -7,6 +7,8 @@
 #if !defined(_SUBALLOC_H_)
 #define _SUBALLOC_H_
 
+namespace third_party_unrar {
+
 #if defined(__GNUC__) && defined(ALLOW_MISALIGNED)
 #define RARPPM_PACK_ATTR __attribute__ ((packed))
 #else
@@ -82,5 +84,6 @@ class SubAllocator
     byte *pText, *UnitsStart,*HeapEnd,*FakeUnitsStart;
 };
 
+}  // namespace third_party_unrar
 
 #endif /* !defined(_SUBALLOC_H_) */

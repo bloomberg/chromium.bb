@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 #ifdef RARDLL
 static bool DllVolChange(RAROptions *Cmd,wchar *NextName,size_t NameSize);
 static bool DllVolNotify(RAROptions *Cmd,wchar *NextName);
@@ -286,3 +288,5 @@ bool DllVolNotify(RAROptions *Cmd,wchar *NextName)
 #pragma runtime_checks( "s", restore )
 #endif
 #endif
+
+}  // namespace third_party_unrar

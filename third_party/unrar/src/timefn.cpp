@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 void RarTime::GetLocal(RarLocalTime *lt)
 {
 #ifdef _WIN_ALL
@@ -338,3 +340,5 @@ bool IsLeapYear(int Year)
 {
   return (Year&3)==0 && (Year%100!=0 || Year%400==0);
 }
+
+}  // namespace third_party_unrar

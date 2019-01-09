@@ -1,6 +1,8 @@
 #ifndef _RAR_STRFN_
 #define _RAR_STRFN_
 
+namespace third_party_unrar {
+
 const char* NullToEmpty(const char *Str);
 const wchar* NullToEmpty(const wchar *Str);
 void IntToExt(const char *Src,char *Dest,size_t DestSize);
@@ -47,5 +49,7 @@ const wchar* GetCmdParam(const wchar *CmdLine,wchar *Param,size_t MaxSize);
 #ifndef RARDLL
 void PrintfPrepareFmt(const wchar *Org,wchar *Cvt,size_t MaxSize);
 #endif
+
+}  // namespace third_party_unrar
 
 #endif
