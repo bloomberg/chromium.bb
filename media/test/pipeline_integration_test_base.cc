@@ -681,9 +681,4 @@ void PipelineIntegrationTestBase::RunUntilQuitOrEndedOrError(
   RunUntilQuitOrError(run_loop);
 }
 
-base::TimeTicks DummyTickClock::NowTicks() const {
-  now_ += base::TimeDelta::FromSeconds(60);
-  return now_;
-}
-
 }  // namespace media
