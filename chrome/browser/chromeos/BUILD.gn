@@ -99,6 +99,7 @@ source_set("chromeos") {
     "//chromeos/dbus:metrics_event_proto",
     "//chromeos/dbus:oobe_config_proto",
     "//chromeos/dbus/services:services",
+    "//chromeos/disks",
     "//chromeos/login/auth",
     "//chromeos/login/login_state",
     "//chromeos/network",
