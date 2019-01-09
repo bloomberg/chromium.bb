@@ -59,6 +59,10 @@ void CreateNativeAudioMediaStreamTrack(
     capabilities.echo_cancellation = std::vector<bool>({false});
     capabilities.auto_gain_control = std::vector<bool>({false});
     capabilities.noise_suppression = std::vector<bool>({false});
+    capabilities.sample_size = {
+        media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
+        media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
+    };
     source.SetCapabilities(capabilities);
   }
 

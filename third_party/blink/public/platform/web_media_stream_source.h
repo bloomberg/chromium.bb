@@ -86,6 +86,7 @@ class WebMediaStreamSource {
     WebVector<WebString> echo_cancellation_type;
     WebVector<bool> auto_gain_control;
     WebVector<bool> noise_suppression;
+    WebVector<int32_t> sample_size;
 
     WebMediaStreamTrack::FacingMode facing_mode =
         WebMediaStreamTrack::FacingMode::kNone;

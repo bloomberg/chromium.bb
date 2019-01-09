@@ -14,6 +14,7 @@ dictionary MediaTrackCapabilities {
     [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] sequence<DOMString> echoCancellationType;
     sequence<boolean> autoGainControl;
     sequence<boolean> noiseSuppression;
+    LongRange sampleSize;
     DOMString deviceId;
     DOMString groupId;
     // W3C Image Capture API
