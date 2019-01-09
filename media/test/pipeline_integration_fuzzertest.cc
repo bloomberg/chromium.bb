@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/eme_constants.h"
@@ -239,6 +240,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Media pipeline checks command line arguments internally.
   base::CommandLine::Init(0, nullptr);
+
+  // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
+  TestTimeouts::Initialize();
 
   media::InitializeMediaLibrary();
 

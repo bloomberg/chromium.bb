@@ -210,6 +210,7 @@ foreach(variant, pipeline_integration_fuzzer_variants) {
     deps = [
       ":pipeline_integration_test_base",
       "//base",
+      "//base/test:test_support",
       "//media",
 
       # TODO(dalecurtis): Required since the gmock header is included in the
