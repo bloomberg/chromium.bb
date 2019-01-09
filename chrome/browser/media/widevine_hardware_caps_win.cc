@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "media/base/decrypt_config.h"
+#include "media/media_buildflags.h"
 
 namespace {
 
@@ -48,6 +49,59 @@ enum IntelWidevineCaps {
   kCbcs = 17,
 };
 
+struct CodecToD3D11DecoderProfile {
+  media::VideoCodec video_codec;
+  GUID d3d11_decoder_profile;
+};
+
+const CodecToD3D11DecoderProfile kCodecsToQuery[] = {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    {media::VideoCodec::kCodecH264, D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
+#endif
+    {media::VideoCodec::kCodecVP9, D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
+};
+
+// Use |video_device| to help check whether |d3d11_decoder_profile| is supported
+// with CENC.
+bool IsD3D11DecoderProfileSupportedWithCenc(ID3D11VideoDevice* video_device,
+                                            const GUID& d3d11_decoder_profile) {
+  D3D11_VIDEO_CONTENT_PROTECTION_CAPS caps = {};
+
+  // Check whether kD3DCryptoTypeIntelWidevine is supported with |codec|.
+  auto hresult = video_device->GetContentProtectionCaps(
+      &kD3DCryptoTypeIntelWidevine, &d3d11_decoder_profile, &caps);
+  if (FAILED(hresult)) {
+    DVLOG(1) << "Failed to GetContentProtectionCaps: " << PrintHr(hresult);
+    return false;
+  }
+
+  // For kD3DCryptoTypeIntelWidevine, this is a bitmask of IntelWidevineCaps.
+  auto capability = std::bitset<64>(caps.ProtectedMemorySize);
+  DVLOG(1) << "Content protection caps: " << capability;
+
+  if (!capability.test(IntelWidevineCaps::kSupported)) {
+    DVLOG(1) << "Hardware secure decryption not supported";
+    return false;
+  }
+
+  if (!capability.test(IntelWidevineCaps::kAesCtr)) {
+    DVLOG(1) << "AES-CTR decryption not supported";
+    return false;
+  }
+
+  // Query for CENC.
+  // TODO(crbug.com/899984): There are contents encrypted with kCencVersion1 out
+  // there, so this check is not sufficient. Update this to check kCencVersion1.
+  if (!capability.test(IntelWidevineCaps::kCencVersion3)) {
+    DVLOG(1) << "CENC version 3 not supported";
+    return false;
+  }
+
+  DVLOG(1) << "Widevine hardware secure CENC-v3 decryption supported. CENC-v1 "
+              "playback may fail!";
+  return true;
+}
+
 }  // namespace
 
 void GetWidevineHardwareCaps(
@@ -70,7 +124,7 @@ void GetWidevineHardwareCaps(
   // D3D11CdmProxy requires D3D_FEATURE_LEVEL_11_1.
   const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
 
-  // Create device and pupulate |device|.
+  // Create device and populate |device|.
   HRESULT hresult = D3D11CreateDevice(
       nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels,
       base::size(feature_levels), D3D11_SDK_VERSION, device.GetAddressOf(),
@@ -87,43 +141,16 @@ void GetWidevineHardwareCaps(
     return;
   }
 
-  D3D11_VIDEO_CONTENT_PROTECTION_CAPS caps = {};
+  // TODO(xhwang): Support query for CBCS. Maybe return all encryption schemes
+  // supported by a codec.
 
-  // Check whether kD3DCryptoTypeIntelWidevine is supported with H264 codec.
-  // TODO(xhwang): Support query for VP9.
-  hresult = video_device->GetContentProtectionCaps(
-      &kD3DCryptoTypeIntelWidevine, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
-      &caps);
-  if (FAILED(hresult)) {
-    DVLOG(1) << "Failed to GetContentProtectionCaps: " << PrintHr(hresult);
-    return;
+  for (const auto& entry : kCodecsToQuery) {
+    if (IsD3D11DecoderProfileSupportedWithCenc(video_device.Get(),
+                                               entry.d3d11_decoder_profile)) {
+      video_codecs->insert(entry.video_codec);
+    }
   }
 
-  // For kD3DCryptoTypeIntelWidevine, this is a bitmask of IntelWidevineCaps.
-  auto capability = std::bitset<64>(caps.ProtectedMemorySize);
-  DVLOG(1) << "Content protection caps: " << capability;
-
-  if (!capability.test(IntelWidevineCaps::kSupported)) {
-    DVLOG(1) << "Hardware secure decryption not supported";
-    return;
-  }
-
-  // TODO(xhwang): Support query for CBCS.
-  if (!capability.test(IntelWidevineCaps::kAesCtr)) {
-    DVLOG(1) << "AES-CTR decryption not supported";
-    return;
-  }
-
-  // Query for CENC.
-  // TODO(crbug.com/899984): There are contents encrypted with kCencVersion1 out
-  // there, so this check is not sufficient. Update this to check kCencVersion1.
-  if (!capability.test(IntelWidevineCaps::kCencVersion3)) {
-    DVLOG(1) << "CENC version 3 not supported";
-    return;
-  }
-
-  DVLOG(1) << "Widevine hardware secure H264 CENC-v3 decryption supported. "
-              "CENC-v1 playback may fail!";
-  video_codecs->insert(media::VideoCodec::kCodecH264);
-  encryption_schemes->insert(media::EncryptionMode::kCenc);
+  if (!video_codecs->empty())
+    encryption_schemes->insert(media::EncryptionMode::kCenc);
 }
