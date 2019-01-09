@@ -2192,11 +2192,11 @@ enum class EnterTabSwitcherSnapshotResult {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     auto params = web_navigation_util::CreateWebLoadParams(
         URL, transition, /*post_data=*/nullptr);
-    [targetTabModel insertTabWithLoadParams:params
-                                     opener:nil
-                                openedByDOM:NO
-                                    atIndex:targetTabModel.count
-                               inBackground:NO];
+    return [targetTabModel insertTabWithLoadParams:params
+                                            opener:nil
+                                       openedByDOM:NO
+                                           atIndex:targetTabModel.count
+                                      inBackground:NO];
   }
 
   Tab* newTab = currentTabInTargetBVC;
