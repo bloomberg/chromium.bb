@@ -95,6 +95,13 @@ class RequestQueueStore {
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       UpdateCallback callback);
 
+  // Invokes |remove_predicate| for all requests in the queue, and removes each
+  // request where |remove_predicate| returns true. Note: |remove_predicate| is
+  // called from a background thread.
+  void RemoveRequestsIf(const base::RepeatingCallback<
+                            bool(const SavePageRequest&)>& remove_predicate,
+                        UpdateCallback done_callback);
+
   // Asynchronously sets the auto fetch notification state on the request with
   // |request_id|.
   void SetAutoFetchNotificationState(

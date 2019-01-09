@@ -142,6 +142,13 @@ class RequestCoordinator : public KeyedService,
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       RemoveRequestsCallback callback);
 
+  // Invokes |remove_predicate| for all requests in the queue, and removes each
+  // request where |remove_predicate| returns true. Note: |remove_predicate| is
+  // called from a background thread.
+  void RemoveRequestsIf(const base::RepeatingCallback<
+                            bool(const SavePageRequest&)>& remove_predicate,
+                        RemoveRequestsCallback done_callback);
+
   // Pause a list of requests by |request_id|.  This will change the state
   // in the request queue so the request cannot be started.
   void PauseRequests(const std::vector<int64_t>& request_ids);

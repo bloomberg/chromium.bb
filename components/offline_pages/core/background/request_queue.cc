@@ -91,6 +91,15 @@ void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
   task_queue_.AddTask(std::move(task));
 }
 
+void RequestQueue::RemoveRequestsIf(
+    const base::RepeatingCallback<bool(const SavePageRequest&)>&
+        remove_predicate,
+    UpdateCallback done_callback) {
+  task_queue_.AddTask(std::make_unique<ClosureTask>(base::BindOnce(
+      &RequestQueueStore::RemoveRequestsIf, base::Unretained(store_.get()),
+      remove_predicate, std::move(done_callback))));
+}
+
 void RequestQueue::ChangeRequestsState(
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
