@@ -253,6 +253,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Set the ImageState for the image bound to the given level.
   void SetLevelImageState(GLenum target, GLint level, ImageState state);
 
+  bool CompatibleWithSamplerUniformType(GLenum type) const;
 
   // Get the image associated with a particular level. Returns NULL if level
   // does not exist.
@@ -352,6 +353,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   MemoryTypeTracker* GetMemTracker();
 
+  // Returns GL_NONE on error.
+  GLenum GetInternalFormatOfBaseLevel() const;
+
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
@@ -426,6 +430,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   // Returns the LevelInfo for |target| and |level| if it's set, else NULL.
   const LevelInfo* GetLevelInfo(GLint target, GLint level) const;
+  // Returns NULL if the base level is not defined.
+  const LevelInfo* GetBaseLevelInfo() const;
 
   // Set the info for a particular level.
   void SetLevelInfo(GLenum target,

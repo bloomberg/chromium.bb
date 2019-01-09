@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_version_info.h"
@@ -3909,6 +3910,130 @@ uint32_t TextureManager::GetServiceIdGeneration() const {
 
 void TextureManager::IncrementServiceIdGeneration() {
   current_service_id_generation_++;
+}
+
+const Texture::LevelInfo* Texture::GetBaseLevelInfo() const {
+  if (face_infos_.empty() ||
+      static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
+    return nullptr;
+  }
+  return &face_infos_[0].level_infos[base_level_];
+}
+
+GLenum Texture::GetInternalFormatOfBaseLevel() const {
+  const LevelInfo* level_info = GetBaseLevelInfo();
+  return level_info ? level_info->internal_format : GL_NONE;
+}
+
+bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
+  enum {
+    SAMPLER_INVALID,
+    SAMPLER_FLOAT,
+    SAMPLER_UNSIGNED,
+    SAMPLER_SIGNED,
+    SAMPLER_SHADOW,
+  } category = SAMPLER_INVALID;
+
+  switch (type) {
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_2D_RECT_ARB:
+    case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_EXTERNAL_OES:
+    case GL_SAMPLER_3D:
+    case GL_SAMPLER_2D_ARRAY:
+      category = SAMPLER_FLOAT;
+      break;
+    case GL_INT_SAMPLER_2D:
+    case GL_INT_SAMPLER_3D:
+    case GL_INT_SAMPLER_CUBE:
+    case GL_INT_SAMPLER_2D_ARRAY:
+      category = SAMPLER_SIGNED;
+      break;
+    case GL_UNSIGNED_INT_SAMPLER_2D:
+    case GL_UNSIGNED_INT_SAMPLER_3D:
+    case GL_UNSIGNED_INT_SAMPLER_CUBE:
+    case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+      category = SAMPLER_UNSIGNED;
+      break;
+    case GL_SAMPLER_2D_SHADOW:
+    case GL_SAMPLER_2D_ARRAY_SHADOW:
+    case GL_SAMPLER_CUBE_SHADOW:
+    case GL_SAMPLER_2D_RECT_SHADOW_ARB:
+      category = SAMPLER_SHADOW;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  const LevelInfo* level_info = GetBaseLevelInfo();
+  if (!level_info) {
+    return false;
+  }
+  if ((level_info->format == GL_DEPTH_COMPONENT ||
+       level_info->format == GL_DEPTH_STENCIL) &&
+      sampler_state_.compare_mode != GL_NONE) {
+    // If TEXTURE_COMPARE_MODE is set, then depth textures can only be sampled
+    // by shadow samplers.
+    return category == SAMPLER_SHADOW;
+  }
+
+  if (level_info->type == GL_NONE && level_info->format == GL_NONE &&
+      level_info->internal_format != GL_NONE) {
+    // This is probably a compressed texture format. All compressed formats are
+    // sampled as float.
+    return category == SAMPLER_FLOAT;
+  }
+
+  bool normalized =
+      level_info->format == GL_RED || level_info->format == GL_RG ||
+      level_info->format == GL_RGB || level_info->format == GL_RGBA ||
+      level_info->format == GL_DEPTH_COMPONENT ||
+      level_info->format == GL_DEPTH_STENCIL ||
+      level_info->format == GL_LUMINANCE_ALPHA ||
+      level_info->format == GL_LUMINANCE || level_info->format == GL_ALPHA ||
+      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT ||
+      level_info->format == GL_RGB10_A2_EXT ||
+      level_info->format == GL_RGB_YCBCR_420V_CHROMIUM;
+  if (normalized) {
+    // All normalized texture formats are sampled as float.
+    return category == SAMPLER_FLOAT;
+  }
+
+  switch (level_info->type) {
+    case GL_HALF_FLOAT:
+    case GL_FLOAT:
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+      // Float formats.
+      return category == SAMPLER_FLOAT;
+    case GL_BYTE:
+    case GL_SHORT:
+    case GL_INT:
+      // Signed integer formats.
+      return category == SAMPLER_SIGNED;
+    case GL_UNSIGNED_BYTE:
+    case GL_UNSIGNED_SHORT:
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_UNSIGNED_INT_24_8:
+      // Unsigned integer formats.
+      return category == SAMPLER_UNSIGNED;
+    default:
+#if DCHECK_IS_ON()
+      // Calling GetStringEnum here has a binary size impact on Android, so only
+      // do it when DCHECKs are enabled for debugging purposes.
+      NOTREACHED() << "Type: " << gl::GLEnums::GetStringEnum(level_info->type)
+                   << " Format: "
+                   << gl::GLEnums::GetStringEnum(level_info->format)
+                   << "  Internal format: "
+                   << gl::GLEnums::GetStringEnum(level_info->internal_format);
+#else   // DCHECK_IS_ON()
+      NOTREACHED();
+#endif  // DCHECK_IS_ON()
+  }
+  return false;
 }
 
 }  // namespace gles2
