@@ -1,8 +1,9 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef MEDIA_GPU_WINDOWS_D3D11_MOCKS_H_
-#define MEDIA_GPU_WINDOWS_D3D11_MOCKS_H_
+
+#ifndef MEDIA_BASE_WIN_D3D11_MOCKS_H_
+#define MEDIA_BASE_WIN_D3D11_MOCKS_H_
 
 #include <d3d11.h>
 #include <d3d11_1.h>
@@ -11,7 +12,7 @@
 #include <wrl/implements.h>
 
 #include "base/win/iunknown_impl.h"
-#include "media/gpu/windows/d3d11_create_device_cb.h"
+#include "media/base/win/d3d11_create_device_cb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #define MOCK_STDCALL_METHOD0(Name, Types) \
@@ -1594,4 +1595,4 @@ class D3D11DeviceContextMock : public MockCOMInterface<ID3D11DeviceContext> {
 #undef MOCK_STDCALL_METHOD8
 #undef MOCK_STDCALL_METHOD9
 
-#endif  // MEDIA_GPU_WINDOWS_D3D11_MOCKS_H_
+#endif  // MEDIA_BASE_WIN_D3D11_MOCKS_H_

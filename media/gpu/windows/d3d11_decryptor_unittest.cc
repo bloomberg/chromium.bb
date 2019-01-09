@@ -13,8 +13,8 @@
 #include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/subsample_entry.h"
+#include "media/base/win/d3d11_mocks.h"
 #include "media/cdm/cdm_proxy_context.h"
-#include "media/gpu/windows/d3d11_mocks.h"
 
 using ::testing::_;
 using ::testing::AtLeast;

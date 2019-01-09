@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/windows/d3d11_mocks.h"
+#include "media/base/win/d3d11_mocks.h"
+
 namespace media {
 
 D3D11CreateDeviceMock::D3D11CreateDeviceMock() = default;

@@ -16,8 +16,8 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/win/d3d11_create_device_cb.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/windows/d3d11_create_device_cb.h"
 
 namespace media {
 

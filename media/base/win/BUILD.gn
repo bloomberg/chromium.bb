@@ -44,3 +44,25 @@ jumbo_component("win") {
   # MediaFoundation is not available on Windows N, so must be delay loaded.
   all_dependent_configs = [ ":delay_load_mf" ]
 }
+
+source_set("d3d11") {
+  sources = [
+    "d3d11_create_device_cb.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("d3d11_test_support") {
+  testonly = true
+  sources = [
+    "d3d11_mocks.cc",
+    "d3d11_mocks.h",
+  ]
+  deps = [
+    ":d3d11",
+    "//base",
+    "//testing/gmock",
+  ]
+}
