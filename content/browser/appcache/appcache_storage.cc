@@ -73,9 +73,9 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
 
   scoped_refptr<AppCacheResponseInfo> info;
   if (result >= 0) {
-    info = new AppCacheResponseInfo(storage_, manifest_url_, response_id_,
-                                    std::move(info_buffer_->http_info),
-                                    info_buffer_->response_data_size);
+    info = new AppCacheResponseInfo(
+        storage_->GetWeakPtr(), manifest_url_, response_id_,
+        std::move(info_buffer_->http_info), info_buffer_->response_data_size);
   }
   FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));
 

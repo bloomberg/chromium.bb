@@ -3554,9 +3554,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     std::unique_ptr<net::HttpResponseInfo> http_info =
         std::make_unique<net::HttpResponseInfo>();
     http_info->headers = new net::HttpResponseHeaders(raw_headers);
-    scoped_refptr<AppCacheResponseInfo> info(
-        new AppCacheResponseInfo(service_->storage(), manifest_url, response_id,
-                                 std::move(http_info), 0));
+    scoped_refptr<AppCacheResponseInfo> info(new AppCacheResponseInfo(
+        service_->storage()->GetWeakPtr(), manifest_url, response_id,
+        std::move(http_info), 0));
     response_infos_.push_back(info);
     return info.get();
   }

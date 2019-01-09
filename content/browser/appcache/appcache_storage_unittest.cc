@@ -67,19 +67,36 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   const GURL kManifestUrl("http://origin/");
   scoped_refptr<AppCacheResponseInfo> info =
       base::MakeRefCounted<AppCacheResponseInfo>(
-          service.storage(), kManifestUrl, 111,
-          std::make_unique<net::HttpResponseInfo>(), kUnkownResponseDataSize);
+          service.storage()->GetWeakPtr(), kManifestUrl, 111,
+          std::make_unique<net::HttpResponseInfo>(), kUnknownResponseDataSize);
 
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));
 
   service.storage()->working_set()->RemoveResponseInfo(info.get());
 
-  EXPECT_TRUE(!service.storage()->working_set()->GetResponseInfo(111));
+  EXPECT_FALSE(service.storage()->working_set()->GetResponseInfo(111));
 
   // Removing non-existing info from service should not fail.
   MockAppCacheService dummy;
   dummy.storage()->working_set()->RemoveResponseInfo(info.get());
+}
+
+TEST_F(AppCacheStorageTest, ResponseInfoLifetime) {
+  scoped_refptr<AppCacheResponseInfo> info;
+  {
+    MockAppCacheService service;
+    const GURL kManifestUrl("http://origin/");
+    info = base::MakeRefCounted<AppCacheResponseInfo>(
+        service.storage()->GetWeakPtr(), kManifestUrl, 111,
+        std::make_unique<net::HttpResponseInfo>(), kUnknownResponseDataSize);
+
+    EXPECT_EQ(info.get(),
+              service.storage()->working_set()->GetResponseInfo(111));
+  }
+
+  // Outliving the AppCacheService should not be fatal.
+  info.reset();
 }
 
 TEST_F(AppCacheStorageTest, DelegateReferences) {
