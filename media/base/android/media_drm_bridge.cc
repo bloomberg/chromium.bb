@@ -343,7 +343,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
       std::move(storage), create_fetcher_cb, session_message_cb,
       session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
 
-  if (media_drm_bridge->j_media_drm_.is_null())
+  if (!media_drm_bridge->j_media_drm_)
     return nullptr;
 
   return media_drm_bridge;
@@ -433,7 +433,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
     }
   }
 
-  if (j_init_data.is_null()) {
+  if (!j_init_data) {
     j_init_data =
         base::android::ToJavaByteArray(env, init_data.data(), init_data.size());
   }
@@ -562,6 +562,17 @@ bool MediaDrmBridge::IsSecureCodecRequired() {
   return true;
 }
 
+void MediaDrmBridge::Provision(
+    base::OnceCallback<void(bool)> provisioning_complete_cb) {
+  DVLOG(1) << __func__;
+  DCHECK(provisioning_complete_cb);
+  DCHECK(!provisioning_complete_cb_);
+  provisioning_complete_cb_ = std::move(provisioning_complete_cb);
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_MediaDrmBridge_provision(env, j_media_drm_);
+}
+
 void MediaDrmBridge::Unprovision() {
   DVLOG(1) << __func__;
 
@@ -633,7 +644,7 @@ void MediaDrmBridge::OnMediaCryptoReady(
                      base::Passed(CreateJavaObjectPtr(j_media_crypto.obj()))));
 }
 
-void MediaDrmBridge::OnStartProvisioning(
+void MediaDrmBridge::OnProvisionRequest(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jstring>& j_default_url,
@@ -647,6 +658,18 @@ void MediaDrmBridge::OnStartProvisioning(
                                 weak_factory_.GetWeakPtr(),
                                 ConvertJavaStringToUTF8(env, j_default_url),
                                 std::move(request_data)));
+}
+
+void MediaDrmBridge::OnProvisioningComplete(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_media_drm,
+    bool success) {
+  DVLOG(1) << __func__;
+
+  // This should only be called as result of a call to Provision().
+  DCHECK(provisioning_complete_cb_);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(provisioning_complete_cb_), success));
 }
 
 void MediaDrmBridge::OnPromiseResolved(JNIEnv* env,
@@ -853,7 +876,7 @@ MediaDrmBridge::~MediaDrmBridge() {
 
   // After the call to Java_MediaDrmBridge_destroy() Java won't call native
   // methods anymore, this is ensured by MediaDrmBridge.java.
-  if (!j_media_drm_.is_null())
+  if (j_media_drm_)
     Java_MediaDrmBridge_destroy(env, j_media_drm_);
 
   player_tracker_.NotifyCdmUnset();

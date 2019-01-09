@@ -124,6 +124,11 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // CdmContext implementation.
   MediaCryptoContext* GetMediaCryptoContext() override;
 
+  // Provision the origin bound with |this|. |provisioning_complete_cb| will be
+  // called asynchronously to indicate whether this was successful or not.
+  // MediaDrmBridge must be created with a valid origin ID.
+  void Provision(base::OnceCallback<void(bool)> provisioning_complete_cb);
+
   // Unprovision the origin bound with |this|. This will remove the cert for
   // current origin and leave the offline licenses in invalid state (offline
   // licenses can't be used anymore).
@@ -169,11 +174,18 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const base::android::JavaParamRef<jobject>& j_media_crypto);
 
   // Called by Java when we need to send a provisioning request,
-  void OnStartProvisioning(
+  void OnProvisionRequest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_media_drm,
       const base::android::JavaParamRef<jstring>& j_default_url,
       const base::android::JavaParamRef<jbyteArray>& j_request_data);
+
+  // Called by Java when provisioning is complete. This is only in response to a
+  // provision() request.
+  void OnProvisioningComplete(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      bool success);
 
   // Callbacks to resolve the promise for |promise_id|.
   void OnPromiseResolved(
@@ -315,6 +327,9 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // The ProvisionFetcher that requests and receives provisioning data.
   // Non-null iff when a provision request is pending.
   std::unique_ptr<ProvisionFetcher> provision_fetcher_;
+
+  // The callback to be called when provisioning is complete.
+  base::OnceCallback<void(bool)> provisioning_complete_cb_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
