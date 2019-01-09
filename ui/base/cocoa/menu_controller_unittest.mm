@@ -555,7 +555,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   delegate.SetDynamicLabel(second);
   const gfx::Image& icon =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_EMOJI_FAVICON);
+          IDR_DEFAULT_FAVICON);
   delegate.SetDynamicIcon(icon);
   // Simulate opening the menu and validate that the item label + icon changes.
   Validate(menu.get(), [menu menu]);
