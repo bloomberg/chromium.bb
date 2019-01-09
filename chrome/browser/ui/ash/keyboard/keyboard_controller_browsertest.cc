@@ -81,6 +81,29 @@ class KeyboardLoadedWaiter : public ChromeKeyboardControllerClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(KeyboardLoadedWaiter);
 };
 
+class KeyboardOccludedBoundsChangeWaiter
+    : public ChromeKeyboardControllerClient::Observer {
+ public:
+  KeyboardOccludedBoundsChangeWaiter() {
+    ChromeKeyboardControllerClient::Get()->AddObserver(this);
+  }
+  ~KeyboardOccludedBoundsChangeWaiter() override {
+    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  // ChromeKeyboardControllerClient::Observer
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override {
+    run_loop_.QuitWhenIdle();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardOccludedBoundsChangeWaiter);
+};
+
 ui::InputMethod* GetInputMethod() {
   aura::Window* root_window = ChromeKeyboardControllerClient::Get()
                                   ->GetKeyboardWindow()
@@ -278,9 +301,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
   ASSERT_GT(keyboard_height, 0);
   gfx::Rect test_bounds = controller->GetKeyboardWindow()->bounds();
   test_bounds.set_height(keyboard_height);
-  controller->GetKeyboardWindow()->SetBounds(test_bounds);
-  // Allow actions triggered by window bounds observers to complete.
-  base::RunLoop().RunUntilIdle();
+  {
+    // Waiter needs to be created before SetBounds() is invoked so that it can
+    // catch OnOccludedBoundsChanged event even before it starts waiting.
+    KeyboardOccludedBoundsChangeWaiter waiter;
+    controller->GetKeyboardWindow()->SetBounds(test_bounds);
+    // Wait for the keyboard bounds change has been processed.
+    waiter.Wait();
+  }
 
   // Non ime window should have smaller visible view port due to overlap with
   // virtual keyboard.
