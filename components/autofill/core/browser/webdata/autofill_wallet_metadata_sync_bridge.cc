@@ -191,7 +191,7 @@ std::string AutofillWalletMetadataSyncBridge::GetClientTag(
 
 std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  return GetStorageKeyForSpecificsId(
+  return GetStorageKeyForWalletMetadataSpecificsId(
       entity_data.specifics.wallet_metadata().id());
 }
 
