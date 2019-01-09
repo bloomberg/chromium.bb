@@ -346,7 +346,6 @@ inline bool PaintFastBottomLayer(Node* node,
   FloatRoundedRect color_border =
       info.is_rounded_fill ? border_rect
                            : FloatRoundedRect(PixelSnappedIntRect(rect));
-
   // When the layer has an image, figure out whether it is covered by a single
   // tile. The border for painting images may not be the same as the color due
   // to optimizations for the image painting destination that avoid painting
@@ -645,11 +644,16 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       bleed_avoidance, border_padding_insets);
 
   // Fast path for drawing simple color backgrounds. Do not use the fast
-  // path if the dest rect has been adjusted for scrolling backgrounds
-  // because correcting the dest rect for this case reduces the accuracy of the
-  // destinations rects.
-  // TODO(schenney): Still use the fast path if not painting any images.
-  if (!did_adjust_paint_rect &&
+  // path with images if the dest rect has been adjusted for scrolling
+  // backgrounds because correcting the dest rect for scrolling reduces the
+  // accuracy of the destination rects. Also disable the fast path for images
+  // if we are shrinking the background for bleed avoidance, because this
+  // adjusts the border rects in a way that breaks the optimization.
+  bool disable_fast_path =
+      info.should_paint_image &&
+      (bleed_avoidance == kBackgroundBleedShrinkBackground ||
+       did_adjust_paint_rect);
+  if (!disable_fast_path &&
       PaintFastBottomLayer(node_, paint_info, info, rect, border_rect, geometry,
                            image.get(), composite_op)) {
     return;

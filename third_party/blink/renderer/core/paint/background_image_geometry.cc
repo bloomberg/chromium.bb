@@ -110,6 +110,8 @@ void BackgroundImageGeometry::SetNoRepeatX(LayoutUnit x_offset,
 
     // Reduce the width of the dest rect to draw only the portion of the
     // tile that remains visible after offsetting the image.
+    // TODO(schenney): This might grow the dest rect if the dest rect has
+    // been adjusted for opaque borders.
     unsnapped_dest_rect_.SetWidth(tile_size_.Width() + x_offset);
     snapped_dest_rect_.SetWidth(tile_size_.Width() + snapped_x_offset);
   }
@@ -145,6 +147,8 @@ void BackgroundImageGeometry::SetNoRepeatY(LayoutUnit y_offset,
 
     // Reduce the height of the dest rect to draw only the portion of the
     // tile that remains visible after offsetting the image.
+    // TODO(schenney): This might grow the dest rect if the dest rect has
+    // been adjusted for opaque borders.
     unsnapped_dest_rect_.SetHeight(tile_size_.Height() + y_offset);
     snapped_dest_rect_.SetHeight(tile_size_.Height() + snapped_y_offset);
   }
@@ -696,7 +700,6 @@ void BackgroundImageGeometry::ComputePositioningArea(
     snapped_box_offset =
         LayoutPoint(snapped_box_outset.Left() - snapped_dest_adjust.Left(),
                     snapped_box_outset.Top() - snapped_dest_adjust.Top());
-
     // For view backgrounds, the input paint rect is specified in root element
     // local coordinate (i.e. a transform is applied on the context for
     // painting), and is expanded to cover the whole canvas. Since left/top is
