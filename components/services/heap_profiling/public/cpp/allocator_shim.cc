@@ -882,12 +882,16 @@ void SerializeFramesFromBacktrace(FrameSerializer* serializer,
   serializer->AddAllInstructionPointers(frame_count - skip_frames,
                                         frames + skip_frames);
 
+  // Both thread name and task context require access to TLS.
+  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
+    return;
+
   if (g_include_thread_names) {
     const char* thread_name = GetOrSetThreadName();
     serializer->AddCString(thread_name);
   }
 
-  if (!*context && !ScopedAllowAlloc::HasTLSBeenDestroyed()) {
+  if (!*context) {
     const auto* tracker =
         AllocationContextTracker::GetInstanceForCurrentThread();
     if (tracker)
