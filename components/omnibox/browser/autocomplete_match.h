@@ -364,6 +364,9 @@ struct AutocompleteMatch {
   // is taking precedence.
   bool ShouldShowTabMatch() const;
 
+  // Returns true if the suggestion should show a tab match button or pedal.
+  bool ShouldShowButton() const;
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).

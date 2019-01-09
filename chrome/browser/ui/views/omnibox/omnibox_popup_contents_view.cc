@@ -206,7 +206,7 @@ bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
 }
 
 bool OmniboxPopupContentsView::IsButtonSelected() const {
-  return model_->selected_line_state() == OmniboxPopupModel::TAB_SWITCH;
+  return model_->selected_line_state() == OmniboxPopupModel::BUTTON_FOCUSED;
 }
 
 void OmniboxPopupContentsView::UnselectButton() {

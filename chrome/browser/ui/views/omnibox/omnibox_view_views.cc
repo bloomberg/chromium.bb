@@ -508,13 +508,14 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     return true;
   }
 
-  // If tabbing forwards (shift is not pressed) and tab switch button is not
+  // If tabbing forwards (shift is not pressed) and suggestion button is not
   // selected, select it.
-  if (model()->popup_model()->SelectedLineHasTabMatch() &&
+  if (model()->popup_model()->SelectedLineHasButton() &&
       model()->popup_model()->selected_line_state() ==
           OmniboxPopupModel::NORMAL &&
       !event.IsShiftDown()) {
-    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+    model()->popup_model()->SetSelectedLineState(
+        OmniboxPopupModel::BUTTON_FOCUSED);
     popup_view_->ProvideButtonFocusHint(
         model()->popup_model()->selected_line());
     return true;
@@ -525,7 +526,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (event.IsShiftDown()) {
     // If tab switch button is focused, unfocus it.
     if (model()->popup_model()->selected_line_state() ==
-        OmniboxPopupModel::TAB_SWITCH) {
+        OmniboxPopupModel::BUTTON_FOCUSED) {
       model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
       return true;
     }
@@ -539,8 +540,9 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   // If we shift-tabbed (and actually moved) to a suggestion with a tab
   // switch button, select it.
   if (event.IsShiftDown() &&
-      model()->popup_model()->SelectedLineHasTabMatch()) {
-    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+      model()->popup_model()->SelectedLineHasButton()) {
+    model()->popup_model()->SetSelectedLineState(
+        OmniboxPopupModel::BUTTON_FOCUSED);
     popup_view_->ProvideButtonFocusHint(
         model()->popup_model()->selected_line());
   }
@@ -575,7 +577,7 @@ bool OmniboxViewViews::TextAndUIDirectionMatch() const {
 
 bool OmniboxViewViews::AtEndWithTabMatch() const {
   if (model()->popup_model() &&  // Can be null in tests.
-      model()->popup_model()->SelectedLineHasTabMatch()) {
+      model()->popup_model()->SelectedLineHasButton()) {
     // When text and UI direction match, 'end' is as expected,
     // otherwise we use beginning.
     return TextAndUIDirectionMatch() ? SelectionAtEnd()
@@ -589,7 +591,7 @@ bool OmniboxViewViews::MaybeFocusTabButton() {
     if (model()->popup_model()->selected_line_state() ==
         OmniboxPopupModel::NORMAL) {
       model()->popup_model()->SetSelectedLineState(
-          OmniboxPopupModel::TAB_SWITCH);
+          OmniboxPopupModel::BUTTON_FOCUSED);
       popup_view_->ProvideButtonFocusHint(
           model()->popup_model()->selected_line());
     }
@@ -602,7 +604,7 @@ bool OmniboxViewViews::MaybeUnfocusTabButton() {
   // 'at end' isn't strictly necessary for unfocusing, because unfocusing
   // on other events e.g. mouse clicks, takes care of it.
   if (AtEndWithTabMatch() && model()->popup_model()->selected_line_state() ==
-                                 OmniboxPopupModel::TAB_SWITCH) {
+                                 OmniboxPopupModel::BUTTON_FOCUSED) {
     model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
     return true;
   }
@@ -660,7 +662,7 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
   // Get friendly accessibility label.
   bool is_tab_switch_button_focused =
       model()->popup_model()->selected_line_state() ==
-      OmniboxPopupModel::TAB_SWITCH;
+      OmniboxPopupModel::BUTTON_FOCUSED;
   friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
       match, display_text, model()->popup_model()->selected_line(),
       model()->result().size(), is_tab_switch_button_focused,
@@ -915,7 +917,7 @@ const char* OmniboxViewViews::GetClassName() const {
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   if (model()->popup_model() &&  // Can be null in tests.
       model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::TAB_SWITCH) {
+          OmniboxPopupModel::BUTTON_FOCUSED) {
     model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
   }
   is_mouse_pressed_ = true;
@@ -1343,7 +1345,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
       if (model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::TAB_SWITCH) {
+          OmniboxPopupModel::BUTTON_FOCUSED) {
         popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
                                event.time_stamp());
       } else {
@@ -1483,7 +1485,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (!(control || alt || shift)) {
         if (SelectionAtEnd() &&
             model()->popup_model()->selected_line_state() ==
-                OmniboxPopupModel::TAB_SWITCH) {
+                OmniboxPopupModel::BUTTON_FOCUSED) {
           popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
                                  event.time_stamp());
           return true;

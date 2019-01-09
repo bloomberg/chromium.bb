@@ -246,8 +246,8 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
 
   // Focus the selection.
   popup_model()->SetSelectedLine(0, false, false);
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
-  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
+  EXPECT_EQ(OmniboxPopupModel::BUTTON_FOCUSED,
             popup_model()->selected_line_state());
 
   // Adding a match at end won't change that we selected first suggestion, so
@@ -259,7 +259,7 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
   result->AppendMatches(input, matches);
   result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
-  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+  EXPECT_EQ(OmniboxPopupModel::BUTTON_FOCUSED,
             popup_model()->selected_line_state());
 
   // Changing selection should change focused state.
@@ -267,10 +267,10 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
 
   // Changing selection to same selection might change state.
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
   // Letting routine filter selecting same line should not change it.
   popup_model()->SetSelectedLine(1, false, false);
-  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+  EXPECT_EQ(OmniboxPopupModel::BUTTON_FOCUSED,
             popup_model()->selected_line_state());
   // Forcing routine to handle selecting same line should change it.
   popup_model()->SetSelectedLine(1, false, true);
@@ -278,7 +278,7 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
 
   // Adding a match at end will reset selection to first, so should change
   // selected line, and thus focus.
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
   matches[0].relevance = 999;
   matches[0].contents = base::ASCIIToUTF16("match3.com");
   matches[0].destination_url = GURL("http://match3.com");
@@ -290,7 +290,7 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
 
   // Prepending a match won't change selection, but since URL is different,
   // should clear the focus state.
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
   matches[0].relevance = 1100;
   matches[0].contents = base::ASCIIToUTF16("match4.com");
   matches[0].destination_url = GURL("http://match4.com");
@@ -301,7 +301,7 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
 
   // Selecting |kNoMatch| should clear focus.
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
   popup_model()->SetSelectedLine(OmniboxPopupModel::kNoMatch, false, false);
   popup_model()->OnResultChanged();
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());

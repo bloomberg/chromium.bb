@@ -766,11 +766,14 @@ bool AutocompleteMatch::IsExceptedFromLineReversal() const {
 }
 
 bool AutocompleteMatch::ShouldShowTabMatch() const {
+  return has_tab_match && !associated_keyword;
+}
+
+bool AutocompleteMatch::ShouldShowButton() const {
   // TODO(orinj): If side button Pedal presentation mode is not kept,
   // the simpler logic (with no pedal checks) can be restored, and if it is
   // kept then some minor refactoring (or at least renaming) is in order.
-  return (has_tab_match && !associated_keyword) ||
-         (pedal && pedal->ShouldPresentButton());
+  return ShouldShowTabMatch() || (pedal && pedal->ShouldPresentButton());
 }
 
 #if DCHECK_IS_ON()
