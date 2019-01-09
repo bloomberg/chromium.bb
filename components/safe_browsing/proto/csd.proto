@@ -624,7 +624,11 @@ message ClientDownloadRequest {
   }
   repeated DetachedCodeSignature detached_code_signature = 59;
 
-  // next available tag number: 60;
+  // When this is set to true, we expect the server to provide heightened
+  // protection for Advanced Protection users.
+  optional bool request_ap_verdicts = 67;
+
+  // next available tag number: 68;
 }
 
 message ReferrerChainOptions {

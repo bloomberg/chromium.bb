@@ -698,6 +698,9 @@ void CheckClientDownloadRequest::SendRequest() {
     return;
   }
 
+  request->set_request_ap_verdicts(
+      base::FeatureList::IsEnabled(kUseAPDownloadProtection));
+
   // User can manually blacklist a sha256 via flag, for testing.
   // This is checked just before the request is sent, to verify the request
   // would have been sent.  This emmulates the server returning a DANGEROUS
