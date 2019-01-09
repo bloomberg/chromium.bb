@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 1000 tests; 952 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Derived key of type name: HMAC hash: SHA-512 length: 256  using empty password, long salt, SHA-384, with 100000 iterations
 PASS Derived key of type name: HMAC hash: SHA-512 length: 256  using empty password, long salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: HMAC hash: SHA-512 length: 256  using empty password, long salt, SHA-384, with 100000 iterations with missing deriveKey usage

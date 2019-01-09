@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 739 tests; 703 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Derived key of type name: AES-CBC length: 128  using empty password, empty salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 128  using empty password, empty salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using empty password, empty salt, SHA-512, with 1 iterations with wrong (ECDH) key

@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 1115 tests; 1104 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS BaseAudioContext interface: existence and properties of interface object
 PASS BaseAudioContext interface object length

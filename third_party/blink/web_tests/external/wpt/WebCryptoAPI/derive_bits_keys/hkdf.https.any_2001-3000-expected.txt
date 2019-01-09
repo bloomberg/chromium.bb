@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 1000 tests; 934 PASS, 66 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS long derivedKey, empty salt, SHA-512, with normal info
 PASS long derivedKey, empty salt, SHA-512, with normal info with 0 length
 PASS Derived key of type name: AES-CBC length: 128  using long derivedKey, empty salt, SHA-512, with normal info

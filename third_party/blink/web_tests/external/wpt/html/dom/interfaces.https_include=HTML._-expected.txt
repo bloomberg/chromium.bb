@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 3581 tests; 3539 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
