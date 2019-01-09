@@ -4333,7 +4333,7 @@
             ]
         }
     ],
-    "SimplifyHttpsIndicatorPhase2": [
+    "SimplifyHttpsIndicatorPhase3": [
         {
             "platforms": [
                 "chromeos",
