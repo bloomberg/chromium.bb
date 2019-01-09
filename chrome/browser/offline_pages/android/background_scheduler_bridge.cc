@@ -6,6 +6,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,9 +33,16 @@ static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return false;
+
+  // Make sure the auto-fetch service is running, so it can respond to completed
+  // pages.
+  OfflinePageAutoFetcherServiceFactory::GetForBrowserContext(profile);
+
   // Lookup/create RequestCoordinator KeyedService and call
   // StartScheduledProcessing on it with bound j_callback_obj.
-  Profile* profile = ProfileManager::GetLastUsedProfile();
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->
       GetForBrowserContext(profile);
@@ -52,6 +60,8 @@ static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
 // JNI call to stop request processing in scheduled mode.
 static void JNI_BackgroundSchedulerBridge_StopScheduledProcessing(JNIEnv* env) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return;
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
   DVLOG(2) << "resource_coordinator: " << coordinator;

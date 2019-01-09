@@ -1242,23 +1242,39 @@ public class ChromeTabbedActivity
                     Tab currentTab = getActivityTab();
                     if (currentTab != null) {
                         TabRedirectHandler.from(currentTab).updateIntent(intent);
-                        int transitionType = PageTransition.LINK | PageTransition.FROM_API;
-                        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-                        loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
-                        loadUrlParams.setHasUserGesture(hasUserGesture);
-                        loadUrlParams.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
-                                intent, transitionType));
-                        if (referer != null) {
-                            loadUrlParams.setReferrer(new Referrer(
-                                    referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
-                        }
-                        currentTab.loadUrl(loadUrlParams);
+                        currentTab.loadUrl(ChromeTabbedActivity.createLoadUrlParamsForIntent(
+                                url, referer, hasUserGesture, mIntentHandlingTimeMs, intent));
                     } else {
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
                     break;
                 case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
                     openNewTab(url, referer, headers, externalAppId, intent, false);
+                    break;
+                case TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB:
+                    int tabId = IntentUtils.safeGetIntExtra(
+                            intent, TabOpenType.REUSE_TAB_MATCHING_ID_STRING, Tab.INVALID_TAB_ID);
+                    if (tabId != Tab.INVALID_TAB_ID) {
+                        mTabModelSelectorImpl.tryToRestoreTabStateForId(tabId);
+                        int matchingTabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
+                        boolean loaded = false;
+                        if (matchingTabIndex != TabModel.INVALID_TAB_INDEX) {
+                            Tab tab = tabModel.getTabAt(matchingTabIndex);
+                            if (tab.getUrl().equals(url)) {
+                                tabModel.setIndex(matchingTabIndex, TabSelectionType.FROM_USER);
+                                LoadUrlParams loadUrlParams =
+                                        ChromeTabbedActivity.createLoadUrlParamsForIntent(url,
+                                                referer, hasUserGesture, mIntentHandlingTimeMs,
+                                                intent);
+                                loadUrlParams.setVerbatimHeaders(headers);
+                                tab.loadUrl(loadUrlParams);
+                                loaded = true;
+                            }
+                        }
+                        if (!loaded) {
+                            openNewTab(url, referer, headers, externalAppId, intent, false);
+                        }
+                    }
                     break;
                 case TabOpenType.OPEN_NEW_TAB:
                     if (fromLauncherShortcut) {
@@ -1908,6 +1924,24 @@ public class ChromeTabbedActivity
     }
 
     /**
+     * Create a LoadUrlParams for handling a VIEW intent.
+     */
+    private static LoadUrlParams createLoadUrlParamsForIntent(String url, String referer,
+            boolean hasUserGesture, long intentHandlingTimeMs, Intent intent) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setIntentReceivedTimestamp(intentHandlingTimeMs);
+        loadUrlParams.setHasUserGesture(hasUserGesture);
+        int transitionType = PageTransition.LINK | PageTransition.FROM_API;
+        loadUrlParams.setTransitionType(
+                IntentHandler.getTransitionTypeFromIntent(intent, transitionType));
+        if (referer != null) {
+            loadUrlParams.setReferrer(
+                    new Referrer(referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
+        }
+        return loadUrlParams;
+    }
+
+    /**
      * Launch a URL from an intent.
      *
      * @param url           The url from the intent.
@@ -1935,12 +1969,13 @@ public class ChromeTabbedActivity
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
             loadUrlParams.setVerbatimHeaders(headers);
-            return getTabCreator(isIncognito).createNewTab(
-                    loadUrlParams,
-                    fromLauncherShortcut ? TabLaunchType.FROM_LAUNCHER_SHORTCUT
-                            : TabLaunchType.FROM_LINK,
-                    null,
-                    intent);
+            @TabLaunchType
+            Integer launchType = IntentHandler.getTabLaunchType(intent);
+            if (launchType == null) {
+                launchType = fromLauncherShortcut ? TabLaunchType.FROM_LAUNCHER_SHORTCUT
+                                                  : TabLaunchType.FROM_LINK;
+            }
+            return getTabCreator(isIncognito).createNewTab(loadUrlParams, launchType, null, intent);
         } else {
             // Check if the tab is being created from a Reader Mode navigation.
             if (ReaderModeManager.isEnabled(this)

@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/offline_pages/test_request_coordinator_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,9 +25,37 @@
 
 namespace offline_pages {
 namespace {
-const int kTabId = 1;
+using testing::_;
 using OfflinePageAutoFetcherScheduleResult =
     chrome::mojom::OfflinePageAutoFetcherScheduleResult;
+
+const int kTabId = 1;
+ClientId TestClientId() {
+  return auto_fetch::MakeClientId(auto_fetch::ClientIdMetadata(kTabId));
+}
+SavePageRequest TestRequest(ClientId client_id = TestClientId()) {
+  return SavePageRequest(123, GURL("http://www.url.com"), client_id,
+                         base::Time(), true);
+}
+
+class MockDelegate : public OfflinePageAutoFetcherService::Delegate {
+ public:
+  MOCK_METHOD4(ShowAutoFetchCompleteNotification,
+               void(const base::string16& pageTitle,
+                    const std::string& url,
+                    int android_tab_id,
+                    int64_t offline_id));
+};
+
+class TestOfflinePageModel : public StubOfflinePageModel {
+ public:
+  // Change signature for the mocked method to make it easier to use.
+  MOCK_METHOD1(GetPageByOfflineId_, OfflinePageItem*(int64_t offline_id));
+  void GetPageByOfflineId(int64_t offline_id,
+                          SingleOfflinePageItemCallback callback) override {
+    std::move(callback).Run(GetPageByOfflineId_(offline_id));
+  }
+};
 
 class OfflinePageAutoFetcherServiceTest : public testing::Test {
  public:
@@ -31,9 +63,12 @@ class OfflinePageAutoFetcherServiceTest : public testing::Test {
     RequestCoordinator* coordinator = static_cast<RequestCoordinator*>(
         RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, base::BindRepeating(&BuildTestRequestCoordinator)));
+
     queue_store_ = static_cast<TestRequestQueueStore*>(
         coordinator->queue_for_testing()->GetStoreForTesting());
-    service_ = std::make_unique<OfflinePageAutoFetcherService>(coordinator);
+
+    service_ = std::make_unique<OfflinePageAutoFetcherService>(
+        coordinator, &offline_page_model_, &delegate_);
   }
 
   void TearDown() override {
@@ -59,6 +94,8 @@ class OfflinePageAutoFetcherServiceTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle browser_thread_bundle_;
+  MockDelegate delegate_;
+  TestOfflinePageModel offline_page_model_;
   TestingProfile profile_;
 
   // Owned by the request queue.
@@ -183,6 +220,50 @@ TEST_F(OfflinePageAutoFetcherServiceTest, CancelNotExist) {
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelQueueEmpty) {
   service_->CancelSchedule(GURL("http://foo.com"));
+  browser_thread_bundle_.RunUntilIdle();
+}
+
+// Simulate a completed auto fetch request, and verify that
+// ShowAutoFetchCompleteNotification() is called on the delegate.
+TEST_F(OfflinePageAutoFetcherServiceTest, NotifyOnAutoFetchCompleted) {
+  const SavePageRequest kTestRequest = TestRequest();
+  const int64_t kOfflineId = 1234;
+  OfflinePageItem returned_item(kTestRequest.url(), kOfflineId,
+                                kTestRequest.client_id(), base::FilePath(),
+                                2000);
+  returned_item.title = base::ASCIIToUTF16("Cows");
+  EXPECT_CALL(offline_page_model_,
+              GetPageByOfflineId_(kTestRequest.request_id()))
+      .WillOnce(testing::Return(&returned_item));
+  EXPECT_CALL(delegate_, ShowAutoFetchCompleteNotification(
+                             returned_item.title, kTestRequest.url().spec(),
+                             kTabId, kOfflineId));
+  service_->OnCompleted(kTestRequest,
+                        RequestNotifier::BackgroundSavePageResult::SUCCESS);
+
+  browser_thread_bundle_.RunUntilIdle();
+}
+
+// Simulate a failed auto-fetch request, and verify that
+// it is ignored.
+TEST_F(OfflinePageAutoFetcherServiceTest, DontNotifyOnAutoFetchFail) {
+  const SavePageRequest kTestRequest = TestRequest();
+  EXPECT_CALL(offline_page_model_, GetPageByOfflineId_(_)).Times(0);
+  service_->OnCompleted(
+      kTestRequest, RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE);
+
+  browser_thread_bundle_.RunUntilIdle();
+}
+
+// Simulate a completed non-auto-fetch request, and verify that
+// it is ignored.
+TEST_F(OfflinePageAutoFetcherServiceTest, DontNotifyOnOtherRequestCompleted) {
+  const ClientId kClientId("other-namespace", "id");
+  const SavePageRequest kTestRequest = TestRequest(kClientId);
+  EXPECT_CALL(offline_page_model_, GetPageByOfflineId_(_)).Times(0);
+  service_->OnCompleted(kTestRequest,
+                        RequestNotifier::BackgroundSavePageResult::SUCCESS);
+
   browser_thread_bundle_.RunUntilIdle();
 }
 

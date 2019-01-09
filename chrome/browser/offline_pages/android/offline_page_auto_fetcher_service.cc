@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
 
 #include <string>
 #include <utility>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/auto_fetch.h"
@@ -45,6 +48,7 @@ SavePageRequest* FindRequest(
   }
   return nullptr;
 }
+
 }  // namespace
 
 // This is an attempt to verify that a task callback eventually calls
@@ -70,10 +74,21 @@ class OfflinePageAutoFetcherService::TaskToken {
 };
 
 OfflinePageAutoFetcherService::OfflinePageAutoFetcherService(
-    RequestCoordinator* request_coordinator)
+    RequestCoordinator* request_coordinator,
+    OfflinePageModel* offline_page_model,
+    Delegate* delegate)
     : page_load_watcher_(request_coordinator),
-      request_coordinator_(request_coordinator) {}
-OfflinePageAutoFetcherService::~OfflinePageAutoFetcherService() {}
+      request_coordinator_(request_coordinator),
+      offline_page_model_(offline_page_model),
+      delegate_(delegate) {
+  request_coordinator_->AddObserver(this);
+}
+
+OfflinePageAutoFetcherService::~OfflinePageAutoFetcherService() = default;
+
+void OfflinePageAutoFetcherService::Shutdown() {
+  request_coordinator_->RemoveObserver(this);
+}
 
 void OfflinePageAutoFetcherService::TrySchedule(bool user_requested,
                                                 const GURL& url,
@@ -144,7 +159,6 @@ void OfflinePageAutoFetcherService::TryScheduleStep2(
       return;
     }
   }
-
   // Finally, schedule a new request, and proceed to step 3.
   RequestCoordinator::SavePageLaterParams params;
   params.url = url;
@@ -220,6 +234,36 @@ void OfflinePageAutoFetcherService::TaskComplete(TaskToken token) {
 
 bool OfflinePageAutoFetcherService::IsTaskQueueEmptyForTesting() {
   return task_queue_.empty();
+}
+
+void OfflinePageAutoFetcherService::OnCompleted(
+    const SavePageRequest& request,
+    RequestNotifier::BackgroundSavePageResult status) {
+  if (request.client_id().name_space != kAutoAsyncNamespace ||
+      status != RequestNotifier::BackgroundSavePageResult::SUCCESS)
+    return;
+
+  offline_page_model_->GetPageByOfflineId(
+      request.request_id(),
+      base::BindOnce(&OfflinePageAutoFetcherService::AutoFetchComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OfflinePageAutoFetcherService::AutoFetchComplete(
+    const OfflinePageItem* page) {
+  if (!page)
+    return;
+  base::Optional<auto_fetch::ClientIdMetadata> metadata =
+      auto_fetch::ExtractMetadata(page->client_id);
+  if (!metadata)
+    return;
+
+  const GURL& url =
+      page->original_url.is_empty() ? page->url : page->original_url;
+
+  delegate_->ShowAutoFetchCompleteNotification(page->title, url.spec(),
+                                               metadata.value().android_tab_id,
+                                               page->offline_id);
 }
 
 }  // namespace offline_pages

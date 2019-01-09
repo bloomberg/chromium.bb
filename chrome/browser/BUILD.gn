@@ -4164,8 +4164,6 @@ jumbo_split_static_library("browser") {
 
   if (enable_offline_pages) {
     sources += [
-      "offline_pages/auto_fetch_page_load_watcher.cc",
-      "offline_pages/auto_fetch_page_load_watcher.h",
       "offline_pages/background_loader_offliner.cc",
       "offline_pages/background_loader_offliner.h",
       "offline_pages/download_archive_manager.cc",
@@ -4174,12 +4172,6 @@ jumbo_split_static_library("browser") {
       "offline_pages/downloads/resource_throttle.h",
       "offline_pages/fresh_offline_content_observer.cc",
       "offline_pages/fresh_offline_content_observer.h",
-      "offline_pages/offline_page_auto_fetcher.cc",
-      "offline_pages/offline_page_auto_fetcher.h",
-      "offline_pages/offline_page_auto_fetcher_service.cc",
-      "offline_pages/offline_page_auto_fetcher_service.h",
-      "offline_pages/offline_page_auto_fetcher_service_factory.cc",
-      "offline_pages/offline_page_auto_fetcher_service_factory.h",
       "offline_pages/offline_page_bookmark_observer.cc",
       "offline_pages/offline_page_bookmark_observer.h",
       "offline_pages/offline_page_info_handler.cc",
@@ -4230,6 +4222,10 @@ jumbo_split_static_library("browser") {
     ]
     if (is_android) {
       sources += [
+        "offline_pages/android/auto_fetch_notifier.cc",
+        "offline_pages/android/auto_fetch_notifier.h",
+        "offline_pages/android/auto_fetch_page_load_watcher.cc",
+        "offline_pages/android/auto_fetch_page_load_watcher.h",
         "offline_pages/android/background_scheduler_bridge.cc",
         "offline_pages/android/background_scheduler_bridge.h",
         "offline_pages/android/cct_origin_observer.cc",
@@ -4244,6 +4240,12 @@ jumbo_split_static_library("browser") {
         "offline_pages/android/downloads/offline_page_share_helper.h",
         "offline_pages/android/load_termination_listener_impl.cc",
         "offline_pages/android/load_termination_listener_impl.h",
+        "offline_pages/android/offline_page_auto_fetcher.cc",
+        "offline_pages/android/offline_page_auto_fetcher.h",
+        "offline_pages/android/offline_page_auto_fetcher_service.cc",
+        "offline_pages/android/offline_page_auto_fetcher_service.h",
+        "offline_pages/android/offline_page_auto_fetcher_service_factory.cc",
+        "offline_pages/android/offline_page_auto_fetcher_service_factory.h",
         "offline_pages/android/offline_page_bridge.cc",
         "offline_pages/android/offline_page_bridge.h",
         "offline_pages/android/offline_page_model_factory.cc",
@@ -4841,6 +4843,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/ntp/RecentlyClosedBridge.java",
       "../android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java",
       "../android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
+      "../android/java/src/org/chromium/chrome/browser/offlinepages/AutoFetchNotifier.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerBridge.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/CCTRequestStatus.java",
       "../android/java/src/org/chromium/chrome/browser/offlinepages/CctOfflinePageModelObserver.java",
