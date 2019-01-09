@@ -2365,7 +2365,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <ph name="FILES">%1$d<ex>10</ex></ph> files left
       </message>
       <message name="IDS_DOWNLOAD_UI_FILES_DOWNLOADED" desc="Number of files that have been downloaded. [ICU Syntax]">
-        {FILES, plural, =1 {%1$d file downloaded} other {%1$d files downloaded}}
+        {FILES, plural,
+          =1 {<ph name="FILES_DOWNLOADED_ONE">%1$d<ex>1</ex></ph> file downloaded}
+          other {<ph name="FILES_DOWNLOADED_MANY">%1$d<ex>8</ex></ph> files downloaded}}
       </message>
       <message name="IDS_REMAINING_DURATION_DAYS" desc="Message to show remaining duration in multiple days">
         <ph name="DAYS">%1$d<ex>2</ex></ph> days left
