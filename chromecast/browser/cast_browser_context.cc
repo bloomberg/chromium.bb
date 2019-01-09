@@ -129,6 +129,11 @@ CastBrowserContext::GetPermissionControllerDelegate() {
   return permission_manager_.get();
 }
 
+content::ClientHintsControllerDelegate*
+CastBrowserContext::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 content::BackgroundFetchDelegate*
 CastBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;

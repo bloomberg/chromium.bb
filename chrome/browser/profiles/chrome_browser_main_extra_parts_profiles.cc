@@ -17,6 +17,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
+#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -244,6 +245,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::android_sms::AndroidSmsServiceFactory::GetInstance();
 #endif
   ChromeSigninClientFactory::GetInstance();
+  ClientHintsFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif

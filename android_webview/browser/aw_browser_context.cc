@@ -277,6 +277,11 @@ AwBrowserContext::GetPermissionControllerDelegate() {
   return permission_manager_.get();
 }
 
+content::ClientHintsControllerDelegate*
+AwBrowserContext::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 content::BackgroundFetchDelegate*
 AwBrowserContext::GetBackgroundFetchDelegate() {
   // TODO(crbug.com/766077): Resolve whether to support or disable background

@@ -42,6 +42,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
@@ -526,6 +527,17 @@ NavigationRequest::NavigationRequest(
     GetContentClient()->browser()->NavigationRequestStarted(
         frame_tree_node->frame_tree_node_id(), common_params_.url,
         &embedder_additional_headers, &additional_load_flags);
+
+    BrowserContext* browser_context =
+        frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+    if (browser_context->GetClientHintsControllerDelegate()) {
+      net::HttpRequestHeaders client_hints_headers;
+      browser_context->GetClientHintsControllerDelegate()
+          ->GetAdditionalNavigationRequestClientHintsHeaders(
+              common_params_.url, &client_hints_headers);
+      headers.MergeFrom(client_hints_headers);
+    }
+
     begin_params_->load_flags |= additional_load_flags;
 
     headers.AddHeadersFromString(begin_params_->headers);
@@ -552,8 +564,6 @@ NavigationRequest::NavigationRequest(
       }
     }
 
-    BrowserContext* browser_context =
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext();
     RendererPreferences render_prefs = frame_tree_node_->render_manager()
                                            ->current_host()
                                            ->GetDelegate()
@@ -1553,14 +1563,24 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  net::HttpRequestHeaders embedder_additional_headers;
+  net::HttpRequestHeaders additional_headers;
   std::vector<std::string> embedder_removed_headers;
   GetContentClient()->browser()->NavigationRequestRedirected(
       frame_tree_node_->frame_tree_node_id(), common_params_.url,
-      &embedder_additional_headers);
+      &additional_headers);
+
+  BrowserContext* browser_context =
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+  if (browser_context->GetClientHintsControllerDelegate()) {
+    net::HttpRequestHeaders client_hints_extra_headers;
+    browser_context->GetClientHintsControllerDelegate()
+        ->GetAdditionalNavigationRequestClientHintsHeaders(
+            common_params_.url, &client_hints_extra_headers);
+    additional_headers.MergeFrom(client_hints_extra_headers);
+  }
 
   loader_->FollowRedirect(std::move(embedder_removed_headers),
-                          std::move(embedder_additional_headers));
+                          std::move(additional_headers));
 }
 
 void NavigationRequest::OnFailureChecksComplete(

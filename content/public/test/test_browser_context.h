@@ -57,6 +57,7 @@ class TestBrowserContext : public BrowserContext {
   PushMessagingService* GetPushMessagingService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   PermissionControllerDelegate* GetPermissionControllerDelegate() override;
+  ClientHintsControllerDelegate* GetClientHintsControllerDelegate() override;
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
   BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;

@@ -227,6 +227,11 @@ ShellBrowserContext::GetPermissionControllerDelegate() {
   return permission_manager_.get();
 }
 
+ClientHintsControllerDelegate*
+ShellBrowserContext::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 BackgroundFetchDelegate* ShellBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;
 }

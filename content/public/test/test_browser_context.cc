@@ -149,6 +149,11 @@ TestBrowserContext::GetPermissionControllerDelegate() {
   return permission_controller_delegate_.get();
 }
 
+ClientHintsControllerDelegate*
+TestBrowserContext::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 BackgroundFetchDelegate* TestBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;
 }

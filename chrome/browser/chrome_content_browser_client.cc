@@ -39,8 +39,6 @@
 #include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
-#include "chrome/browser/client_hints/client_hints.h"
-#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -2280,8 +2278,6 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
 
-  ClientHintsFactory::GetForBrowserContext(browser_context)
-      ->GetAdditionalNavigationRequestClientHintsHeaders(url, extra_headers);
 
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -2318,9 +2314,6 @@ void ChromeContentBrowserClient::NavigationRequestRedirected(
     if (policy_header_service)
       policy_header_service->AddPolicyHeaders(url, modified_headers);
   }
-
-  ClientHintsFactory::GetForBrowserContext(browser_context)
-      ->GetAdditionalNavigationRequestClientHintsHeaders(url, modified_headers);
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

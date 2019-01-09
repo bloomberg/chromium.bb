@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
+#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -453,6 +454,11 @@ OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
 content::PermissionControllerDelegate*
 OffTheRecordProfileImpl::GetPermissionControllerDelegate() {
   return PermissionManagerFactory::GetForProfile(this);
+}
+
+content::ClientHintsControllerDelegate*
+OffTheRecordProfileImpl::GetClientHintsControllerDelegate() {
+  return ClientHintsFactory::GetForBrowserContext(this);
 }
 
 content::BackgroundFetchDelegate*

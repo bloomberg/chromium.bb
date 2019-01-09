@@ -43,6 +43,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
@@ -1101,6 +1102,11 @@ ProfileImpl::GetBrowsingDataRemoverDelegate() {
 content::PermissionControllerDelegate*
 ProfileImpl::GetPermissionControllerDelegate() {
   return PermissionManagerFactory::GetForProfile(this);
+}
+
+content::ClientHintsControllerDelegate*
+ProfileImpl::GetClientHintsControllerDelegate() {
+  return ClientHintsFactory::GetForBrowserContext(this);
 }
 
 content::BackgroundFetchDelegate* ProfileImpl::GetBackgroundFetchDelegate() {

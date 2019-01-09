@@ -8,18 +8,15 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 
 namespace content {
 class BrowserContext;
 }
 
-namespace client_hints {
-class ClientHints;
-}
-
 class ClientHintsFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static client_hints::ClientHints* GetForBrowserContext(
+  static content::ClientHintsControllerDelegate* GetForBrowserContext(
       content::BrowserContext* context);
 
   static ClientHintsFactory* GetInstance();
@@ -35,6 +32,7 @@ class ClientHintsFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ClientHintsFactory);
 };
