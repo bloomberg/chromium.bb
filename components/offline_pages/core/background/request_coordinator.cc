@@ -497,6 +497,17 @@ void RequestCoordinator::RemoveRequests(const std::vector<int64_t>& request_ids,
       net::EFFECTIVE_CONNECTION_TYPE_LAST);
 }
 
+void RequestCoordinator::RemoveRequestsIf(
+    const base::RepeatingCallback<bool(const SavePageRequest&)>&
+        remove_predicate,
+    RemoveRequestsCallback callback) {
+  queue_->RemoveRequestsIf(
+      std::move(remove_predicate),
+      base::BindOnce(&RequestCoordinator::HandleRemovedRequestsAndCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     RequestNotifier::BackgroundSavePageResult::USER_CANCELED));
+}
+
 void RequestCoordinator::PauseRequests(
     const std::vector<int64_t>& request_ids) {
   // Remove the paused requests from prioritized list.

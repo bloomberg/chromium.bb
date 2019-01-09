@@ -140,7 +140,7 @@ bool UpgradeFrom72(sql::Database* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool CreateSchema(sql::Database* db) {
+bool CreateSchemaSync(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -227,8 +227,8 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
 }
 
 // Get a request for a specific id.
-std::unique_ptr<SavePageRequest> GetOneRequest(sql::Database* db,
-                                               const int64_t request_id) {
+std::unique_ptr<SavePageRequest> GetOneRequestSync(sql::Database* db,
+                                                   const int64_t request_id) {
   static const char kSql[] =
       "SELECT " REQUEST_QUEUE_FIELDS " FROM " REQUEST_QUEUE_TABLE_NAME
       " WHERE request_id=?";
@@ -241,7 +241,7 @@ std::unique_ptr<SavePageRequest> GetOneRequest(sql::Database* db,
   return {};
 }
 
-ItemActionStatus DeleteRequestById(sql::Database* db, int64_t request_id) {
+ItemActionStatus DeleteRequestByIdSync(sql::Database* db, int64_t request_id) {
   static const char kSql[] =
       "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -253,7 +253,7 @@ ItemActionStatus DeleteRequestById(sql::Database* db, int64_t request_id) {
   return ItemActionStatus::SUCCESS;
 }
 
-ItemActionStatus Insert(sql::Database* db, const SavePageRequest& request) {
+ItemActionStatus InsertSync(sql::Database* db, const SavePageRequest& request) {
   static const char kSql[] = "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
                              " (" REQUEST_QUEUE_FIELDS
                              ") VALUES"
@@ -284,7 +284,7 @@ ItemActionStatus Insert(sql::Database* db, const SavePageRequest& request) {
   return ItemActionStatus::SUCCESS;
 }
 
-ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
+ItemActionStatus UpdateSync(sql::Database* db, const SavePageRequest& request) {
   static const char kSql[] =
       "UPDATE OR IGNORE " REQUEST_QUEUE_TABLE_NAME
       " SET creation_time = ?, activation_time = ?, last_attempt_time = ?,"
@@ -320,17 +320,26 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
   return ItemActionStatus::SUCCESS;
 }
 
+UpdateRequestsResult StoreUpdateResultForIds(
+    StoreState store_state,
+    const std::vector<int64_t>& item_ids,
+    ItemActionStatus action_status) {
+  UpdateRequestsResult result(store_state);
+  for (const auto& item_id : item_ids)
+    result.item_statuses.emplace_back(item_id, action_status);
+  return result;
+}
+
 void PostStoreUpdateResultForIds(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     StoreState store_state,
     const std::vector<int64_t>& item_ids,
     ItemActionStatus action_status,
     RequestQueueStore::UpdateCallback callback) {
-  UpdateRequestsResult result(store_state);
-  for (const auto& item_id : item_ids)
-    result.item_statuses.emplace_back(item_id, action_status);
   runner->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(callback), std::move(result)));
+                   base::BindOnce(std::move(callback),
+                                  StoreUpdateResultForIds(store_state, item_ids,
+                                                          action_status)));
 }
 
 void PostStoreErrorForAllRequests(
@@ -345,6 +354,11 @@ void PostStoreErrorForAllRequests(
                               std::move(callback));
 }
 
+UpdateRequestsResult StoreErrorForAllIds(const std::vector<int64_t>& item_ids) {
+  return StoreUpdateResultForIds(StoreState::LOADED, item_ids,
+                                 ItemActionStatus::STORE_ERROR);
+}
+
 void PostStoreErrorForAllIds(scoped_refptr<base::SingleThreadTaskRunner> runner,
                              const std::vector<int64_t>& item_ids,
                              RequestQueueStore::UpdateCallback callback) {
@@ -353,7 +367,7 @@ void PostStoreErrorForAllIds(scoped_refptr<base::SingleThreadTaskRunner> runner,
                               std::move(callback));
 }
 
-bool InitDatabase(sql::Database* db, const base::FilePath& path) {
+bool InitDatabaseSync(sql::Database* db, const base::FilePath& path) {
   db->set_page_size(4096);
   db->set_cache_size(500);
   db->set_histogram_tag("BackgroundRequestQueue");
@@ -371,24 +385,33 @@ bool InitDatabase(sql::Database* db, const base::FilePath& path) {
   }
   db->Preload();
 
-  return CreateSchema(db);
+  return CreateSchemaSync(db);
+}
+
+base::Optional<std::vector<std::unique_ptr<SavePageRequest>>>
+GetAllRequestsSync(sql::Database* db) {
+  static const char kSql[] =
+      "SELECT " REQUEST_QUEUE_FIELDS " FROM " REQUEST_QUEUE_TABLE_NAME;
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  std::vector<std::unique_ptr<SavePageRequest>> requests;
+  while (statement.Step())
+    requests.push_back(MakeSavePageRequest(statement));
+  if (!statement.Succeeded())
+    return base::nullopt;
+  return requests;
 }
 
 void GetRequestsSync(sql::Database* db,
                      scoped_refptr<base::SingleThreadTaskRunner> runner,
                      RequestQueueStore::GetRequestsCallback callback) {
-  static const char kSql[] =
-      "SELECT " REQUEST_QUEUE_FIELDS " FROM " REQUEST_QUEUE_TABLE_NAME;
-
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-
+  base::Optional<std::vector<std::unique_ptr<SavePageRequest>>> result =
+      GetAllRequestsSync(db);
   std::vector<std::unique_ptr<SavePageRequest>> requests;
-  while (statement.Step())
-    requests.push_back(MakeSavePageRequest(statement));
-
-  runner->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(callback), statement.Succeeded(),
-                                  std::move(requests)));
+  const bool success = result.has_value();
+  if (success)
+    requests = std::move(result).value();
+  runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success,
+                                             std::move(requests)));
 }
 
 void GetRequestsByIdsSync(sql::Database* db,
@@ -411,7 +434,8 @@ void GetRequestsByIdsSync(sql::Database* db,
   for (int64_t request_id : request_ids) {
     if (!processed_ids.insert(request_id).second)
       continue;
-    std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
+    std::unique_ptr<SavePageRequest> request =
+        GetOneRequestSync(db, request_id);
     if (request)
       result.updated_items.push_back(*request);
     ItemActionStatus status =
@@ -432,7 +456,7 @@ void AddRequestSync(sql::Database* db,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const SavePageRequest& request,
                     RequestQueueStore::AddCallback callback) {
-  ItemActionStatus status = Insert(db, request);
+  ItemActionStatus status = InsertSync(db, request);
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), status));
 }
 
@@ -449,7 +473,7 @@ void UpdateRequestsSync(sql::Database* db,
   }
 
   for (const auto& request : requests) {
-    ItemActionStatus status = Update(db, request);
+    ItemActionStatus status = UpdateSync(db, request);
     result.item_statuses.emplace_back(request.request_id(), status);
     if (status == ItemActionStatus::SUCCESS)
       result.updated_items.push_back(request);
@@ -464,44 +488,41 @@ void UpdateRequestsSync(sql::Database* db,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
 
-void RemoveRequestsSync(sql::Database* db,
-                        scoped_refptr<base::SingleThreadTaskRunner> runner,
-                        const std::vector<int64_t>& request_ids,
-                        RequestQueueStore::UpdateCallback callback) {
+UpdateRequestsResult RemoveRequestsSync(
+    sql::Database* db,
+    const std::vector<int64_t>& request_ids) {
   UpdateRequestsResult result(StoreState::LOADED);
 
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
   sql::Transaction transaction(db);
   if (!transaction.Begin()) {
-    PostStoreErrorForAllIds(runner, request_ids, std::move(callback));
-    return;
+    return StoreErrorForAllIds(request_ids);
   }
 
   // Read the request before we delete it, and if the delete worked, put it on
   // the queue of requests that got deleted.
   for (int64_t request_id : request_ids) {
-    std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
-    ItemActionStatus status = DeleteRequestById(db, request_id);
+    std::unique_ptr<SavePageRequest> request =
+        GetOneRequestSync(db, request_id);
+    ItemActionStatus status = DeleteRequestByIdSync(db, request_id);
     result.item_statuses.push_back(std::make_pair(request_id, status));
     if (status == ItemActionStatus::SUCCESS)
       result.updated_items.push_back(*request);
   }
 
   if (!transaction.Commit()) {
-    PostStoreErrorForAllIds(runner, request_ids, std::move(callback));
-    return;
+    return StoreErrorForAllIds(request_ids);
   }
 
-  runner->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(callback), std::move(result)));
+  return result;
 }
 
 void OpenConnectionSync(sql::Database* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
                         SuccessCallback callback) {
-  bool success = InitDatabase(db, path);
+  bool success = InitDatabaseSync(db, path);
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
@@ -519,16 +540,33 @@ void ResetSync(sql::Database* db,
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-bool SetAutoFetchNotificationState(
+bool SetAutoFetchNotificationStateSync(
     sql::Database* db,
     int64_t request_id,
     SavePageRequest::AutoFetchNotificationState state) {
-  std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
+  std::unique_ptr<SavePageRequest> request = GetOneRequestSync(db, request_id);
   if (!request)
     return false;
 
   request->set_auto_fetch_notification_state(state);
-  return Update(db, *request) == ItemActionStatus::SUCCESS;
+  return UpdateSync(db, *request) == ItemActionStatus::SUCCESS;
+}
+
+UpdateRequestsResult RemoveRequestsIfSync(
+    sql::Database* db,
+    const base::RepeatingCallback<bool(const SavePageRequest&)>&
+        remove_predicate) {
+  base::Optional<std::vector<std::unique_ptr<SavePageRequest>>> requests =
+      GetAllRequestsSync(db);
+  if (!requests)
+    return UpdateRequestsResult(StoreState::LOADED);
+
+  std::vector<int64_t> ids_to_remove;
+  for (const std::unique_ptr<SavePageRequest>& request : requests.value()) {
+    if (remove_predicate.Run(*request))
+      ids_to_remove.push_back(request->request_id());
+  }
+  return RemoveRequestsSync(db, ids_to_remove);
 }
 
 }  // anonymous namespace
@@ -633,10 +671,21 @@ void RequestQueueStore::RemoveRequests(const std::vector<int64_t>& request_ids,
     return;
   }
 
-  background_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RemoveRequestsSync, db_.get(),
-                                base::ThreadTaskRunnerHandle::Get(),
-                                request_ids, std::move(callback)));
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&RemoveRequestsSync, db_.get(), request_ids),
+      std::move(callback));
+}
+
+void RequestQueueStore::RemoveRequestsIf(
+    const base::RepeatingCallback<bool(const SavePageRequest&)>&
+        remove_predicate,
+    UpdateCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(offline_pages::RemoveRequestsIfSync, db_.get(),
+                     remove_predicate),
+      std::move(callback));
 }
 
 void RequestQueueStore::SetAutoFetchNotificationState(
@@ -645,8 +694,8 @@ void RequestQueueStore::SetAutoFetchNotificationState(
     base::OnceCallback<void(bool updated)> callback) {
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(offline_pages::SetAutoFetchNotificationState, db_.get(),
-                     request_id, state),
+      base::BindOnce(offline_pages::SetAutoFetchNotificationStateSync,
+                     db_.get(), request_id, state),
       std::move(callback));
 }
 

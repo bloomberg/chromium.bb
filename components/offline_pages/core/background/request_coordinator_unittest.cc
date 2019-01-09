@@ -1527,6 +1527,30 @@ TEST_F(RequestCoordinatorTest, SetAutoFetchNotificationState) {
             last_requests()[0]->auto_fetch_notification_state());
 }
 
+TEST_F(RequestCoordinatorTest, RemoveRequestsIf) {
+  // Add two requests, then remove only one of them by using a function that
+  // compares the request id.
+  AddRequest1();
+  AddRequest2();
+  coordinator()->RemoveRequestsIf(
+      base::BindRepeating([](const SavePageRequest& request) {
+        return request.request_id() == kRequestId1;
+      }),
+      base::BindOnce(&RequestCoordinatorTest::RemoveRequestsDone,
+                     base::Unretained(this)));
+  PumpLoop();
+
+  // Get the remaining requests for verification.
+  queue()->GetRequests(base::BindOnce(&RequestCoordinatorTest::GetRequestsDone,
+                                      base::Unretained(this)));
+  PumpLoop();
+
+  ASSERT_EQ(1UL, last_remove_results().size());
+  EXPECT_EQ(kRequestId1, last_remove_results()[0].first);
+  ASSERT_EQ(1UL, last_requests().size());
+  EXPECT_EQ(kRequestId2, last_requests()[0]->request_id());
+}
+
 TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {
   // Set low-end device status to actual status.
   SetIsLowEndDeviceForTest(base::SysInfo::IsLowEndDevice());
