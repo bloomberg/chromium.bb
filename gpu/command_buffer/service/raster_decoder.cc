@@ -961,6 +961,9 @@ const gles2::ContextState* RasterDecoderImpl::GetContextState() {
 }
 
 void RasterDecoderImpl::RestoreGlobalState() const {
+  // We mark the context state is dirty instead of restoring global
+  // state, and the global state will be restored by the next context.
+  raster_decoder_context_state_->need_context_state_reset = true;
   raster_decoder_context_state_->PessimisticallyResetGrContext();
 }
 
