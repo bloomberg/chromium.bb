@@ -73,7 +73,8 @@ namespace feedbackPrivate {
     SystemInformation[]? systemInformation;
 
     // True if we have permission to add histograms to this feedback report.
-    boolean sendHistograms;
+    // Deprecated and will be ignored.
+    boolean? sendHistograms;
 
     // Optional feedback UI flow. Default is the regular user flow.
     FeedbackFlow? flow;
