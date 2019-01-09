@@ -2219,6 +2219,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	struct drm_plane_state *ps;
 	struct drm_mode *mode;
 	struct drm_head *head;
+	const struct pixel_format_info *pinfo = NULL;
 	uint32_t connectors[MAX_CLONED_CONNECTORS];
 	int n_conn = 0;
 	struct timespec now;
@@ -2298,6 +2299,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	    !scanout_plane->state_cur->fb ||
 	    scanout_plane->state_cur->fb->strides[0] !=
 	    scanout_state->fb->strides[0]) {
+
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
 				     scanout_state->fb->fb_id,
 				     0, 0,
@@ -2308,6 +2310,11 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 			goto err;
 		}
 	}
+
+	pinfo = scanout_state->fb->format;
+	drm_debug(backend, "\t[CRTC:%u, PLANE:%u] FORMAT: %s\n",
+			   output->crtc_id, scanout_state->plane->plane_id,
+			   pinfo ? pinfo->drm_format_name : "UNKNOWN");
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id,
 			    scanout_state->fb->fb_id,
@@ -2531,6 +2538,7 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 
 	wl_list_for_each(plane_state, &state->plane_list, link) {
 		struct drm_plane *plane = plane_state->plane;
+		const struct pixel_format_info *pinfo = NULL;
 
 		ret |= plane_add_prop(req, plane, WDRM_PLANE_FB_ID,
 				      plane_state->fb ? plane_state->fb->fb_id : 0);
@@ -2552,6 +2560,13 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 				      plane_state->dest_w);
 		ret |= plane_add_prop(req, plane, WDRM_PLANE_CRTC_H,
 				      plane_state->dest_h);
+
+		if (plane_state->fb && plane_state->fb->format)
+			pinfo = plane_state->fb->format;
+
+		drm_debug(plane->backend, "\t\t\t[PLANE:%lu] FORMAT: %s\n",
+				(unsigned long) plane->plane_id,
+				pinfo ? pinfo->drm_format_name : "UNKNOWN");
 
 		if (ret != 0) {
 			weston_log("couldn't set plane state\n");
