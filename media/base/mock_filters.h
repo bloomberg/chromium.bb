@@ -127,6 +127,18 @@ class MockPipeline : public Pipeline {
   DISALLOW_COPY_AND_ASSIGN(MockPipeline);
 };
 
+class MockMediaResource : public MediaResource {
+ public:
+  MockMediaResource();
+  ~MockMediaResource() override;
+
+  // MediaResource implementation.
+  MOCK_CONST_METHOD0(GetType, MediaResource::Type());
+  MOCK_METHOD0(GetAllStreams, std::vector<DemuxerStream*>());
+  MOCK_METHOD1(GetFirstStream, DemuxerStream*(DemuxerStream::Type type));
+  MOCK_CONST_METHOD0(GetMediaUrlParams, MediaUrlParams());
+};
+
 class MockDemuxer : public Demuxer {
  public:
   MockDemuxer();
