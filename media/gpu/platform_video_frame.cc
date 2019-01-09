@@ -17,7 +17,6 @@
 #endif
 
 namespace media {
-namespace gpu {
 
 namespace {
 
@@ -107,5 +106,4 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   return nullptr;
 }
 
-}  // namespace gpu
 }  // namespace media

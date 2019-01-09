@@ -52,7 +52,7 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   // We pass coded_size as visible_rect here. The actual visible rect is given
   // in ExportVideoFrame().
   gfx::Rect visible_rect(size.width(), size.height());
-  texture_ref->frame_ = media::gpu::CreatePlatformVideoFrame(
+  texture_ref->frame_ = media::CreatePlatformVideoFrame(
       pixel_format, size, visible_rect, visible_rect.size(), buffer_usage,
       base::TimeDelta());
   if (!texture_ref->frame_) {
