@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for cros_generate_stateful_update_payload."""
+"""Test the partition_lib module."""
 
 from __future__ import print_function
 
@@ -12,12 +12,14 @@ import os
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.scripts import cros_generate_stateful_update_payload
+
+from chromite.lib.paygen import paygen_stateful_payload_lib
 
 
 class GenerateStatefulPayloadTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Test correct arguments passed to tar."""
-  def testDeltaGenerator(self):
+  """Tests generating correct stateful payload."""
+
+  def testGenerateStatefulPayload(self):
     """Test correct arguments propagated to tar call."""
 
     self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
@@ -30,10 +32,8 @@ class GenerateStatefulPayloadTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
 
-    cros_generate_stateful_update_payload.main([
-        '--image_path', '/dev/null',
-        '--output_dir', self.tempdir,
-    ])
+    paygen_stateful_payload_lib.GenerateStatefulPayload('dev/null',
+                                                        self.tempdir)
 
     self.assertCommandContains([
         'tar',
