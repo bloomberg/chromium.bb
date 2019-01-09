@@ -627,8 +627,8 @@ const base::Feature kWorkStealingInScriptRunner{
     "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enabled scheduler use for script streaming.
-const base::Feature kScheduledScriptStreaming{
-    "ScheduledScriptStreaming", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kScheduledScriptStreaming{"ScheduledScriptStreaming",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{
