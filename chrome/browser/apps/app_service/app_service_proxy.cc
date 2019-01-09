@@ -80,6 +80,14 @@ void AppServiceProxy::Launch(const std::string& app_id,
   });
 }
 
+void AppServiceProxy::SetPermission(const std::string& app_id,
+                                    apps::mojom::PermissionPtr permission) {
+  cache_.ForOneApp(app_id, [this, &permission](const apps::AppUpdate& update) {
+    app_service_->SetPermission(update.AppType(), update.AppId(),
+                                std::move(permission));
+  });
+}
+
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }

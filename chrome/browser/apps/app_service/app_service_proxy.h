@@ -47,6 +47,9 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
               apps::mojom::LaunchSource launch_source,
               int64_t display_id);
 
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission);
+
  private:
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
