@@ -24,10 +24,17 @@ class BrowserContext;
 }  // namespace content
 
 namespace autofill_assistant {
+class Client;
+
 // Autofill assistant service to communicate with the server to get scripts and
 // client actions.
 class Service {
  public:
+  // Convenience method for creating a service from a client.
+  // |client| must remain valid for the lifetime of the service instance.
+  static std::unique_ptr<Service> Create(content::BrowserContext* context,
+                                         Client* client);
+
   // |context| and |token_fetcher| must remain valid for the lifetime of the
   // service instance.
   Service(const std::string& api_key,

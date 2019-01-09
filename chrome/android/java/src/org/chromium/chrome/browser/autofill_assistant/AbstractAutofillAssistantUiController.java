@@ -12,7 +12,4 @@ package org.chromium.chrome.browser.autofill_assistant;
  * merges to M72.
  */
 abstract class AbstractAutofillAssistantUiController
-        implements AutofillAssistantUiDelegate.Client, UiDelegateHolder.Listener {
-    /** Interface called to initiate controller. */
-    public void init(UiDelegateHolder delegateHolder, Details details) {}
-}
+        implements AutofillAssistantUiDelegate.Client, UiDelegateHolder.Listener {}

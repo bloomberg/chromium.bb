@@ -40,12 +40,32 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver,
                    private content::WebContentsDelegate {
  public:
-  static void CreateForWebContents(
-      content::WebContents* web_contents,
-      std::unique_ptr<Client> client,
-      std::unique_ptr<std::map<std::string, std::string>> parameters,
-      const std::string& locale,
-      const std::string& country_code);
+  // |web_contents| and |client| must remain valid for the lifetime of the
+  // instance.
+  Controller(content::WebContents* web_contents,
+             Client* client,
+             std::unique_ptr<WebController> web_controller,
+             std::unique_ptr<Service> service);
+  ~Controller() override;
+
+  // Called when autofill assistant can start executing scripts.
+  void Start(const GURL& initialUrl,
+             const std::map<std::string, std::string>& parameters);
+
+  // Initiates a clean shutdown.
+  //
+  // This function returns false when it needs more time to properly shut down
+  // the script tracker. It usually means that it either has to wait for a
+  // script to find an appropriate moment to suspend execution or wait for a
+  // script checking round to complete.
+  //
+  // A caller is expected to try again later when this function returns false. A
+  // return value of true means that the scrip tracker can safely be destroyed.
+  //
+  // TODO(crbug.com/806868): Instead of this safety net, the proper fix is to
+  // switch to weak pointers everywhere so that dangling callbacks are not an
+  // issue.
+  bool Terminate();
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -61,13 +81,6 @@ class Controller : public ScriptExecutorDelegate,
 
  private:
   friend ControllerTest;
-
-  Controller(content::WebContents* web_contents,
-             std::unique_ptr<Client> client,
-             std::unique_ptr<WebController> web_controller,
-             std::unique_ptr<Service> service,
-             std::unique_ptr<std::map<std::string, std::string>> parameters);
-  ~Controller() override;
 
   void GetOrCheckScripts(const GURL& url);
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
@@ -100,14 +113,11 @@ class Controller : public ScriptExecutorDelegate,
   void FinishStart(const GURL& initial_url);
 
   // Overrides autofill_assistant::UiDelegate:
-  void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
-  void OnDestroy() override;
   void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
-  bool Terminate() override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;
@@ -122,16 +132,15 @@ class Controller : public ScriptExecutorDelegate,
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  void WebContentsDestroyed() override;
 
   // Overrides content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
 
-  std::unique_ptr<Client> client_;
+  Client* const client_;
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
-  std::unique_ptr<std::map<std::string, std::string>> parameters_;
+  std::map<std::string, std::string> parameters_;
   std::unique_ptr<ClientMemory> memory_;
 
   // Domain of the last URL the controller requested scripts from.

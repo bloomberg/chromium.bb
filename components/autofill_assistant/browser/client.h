@@ -24,6 +24,10 @@ class Client {
   // Returns the API key to be used for requests to the backend.
   virtual std::string GetApiKey() = 0;
 
+  // Returns the e-mail address that corresponds to the auth credentials. Might
+  // be empty.
+  virtual std::string GetAccountEmailAddress() = 0;
+
   // Returns the AccessTokenFetcher to use to get oauth credentials.
   virtual AccessTokenFetcher* GetAccessTokenFetcher() = 0;
 
@@ -35,6 +39,16 @@ class Client {
 
   // Returns a UiController.
   virtual UiController* GetUiController() = 0;
+
+  // Returns the locale.
+  virtual std::string GetLocale() = 0;
+
+  // Returns the country code.
+  virtual std::string GetCountryCode() = 0;
+
+  // Stops autofill assistant for the current WebContents, both controller and
+  // UI.
+  virtual void Stop() = 0;
 
  protected:
   Client() = default;
