@@ -101,10 +101,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelodoffset.html',
         bug=794335)
 
-    self.Fail('conformance2/uniforms/' +
-        'incompatible-texture-type-for-sampler.html',
-        bug=809237)
-
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',

@@ -101,6 +101,7 @@
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image.h"
@@ -2138,8 +2139,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                                    GLuint shm_offset,
                                                    GLuint size);
 
-  // Returns false if textures were replaced.
-  bool PrepareTexturesForRender();
+  // Returns false if a GL error occurred. textures_set is always modified
+  // appropriately to indicate whether textures were set, even on failure.
+  bool PrepareTexturesForRender(bool* textures_set, const char* function_name);
   void RestoreStateForTextures();
 
   // Returns true if GL_FIXED attribs were simulated.
@@ -10359,9 +10361,10 @@ void GLES2DecoderImpl::DoCopyBufferSubData(GLenum readtarget,
       writeoffset, size);
 }
 
-bool GLES2DecoderImpl::PrepareTexturesForRender() {
+bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
+                                                const char* function_name) {
   DCHECK(state_.current_program.get());
-  bool textures_set = false;
+  *textures_set = false;
   const Program::SamplerIndices& sampler_indices =
      state_.current_program->sampler_indices();
   for (size_t ii = 0; ii < sampler_indices.size(); ++ii) {
@@ -10380,7 +10383,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         if (!texture_ref ||
             !texture_manager()->CanRenderWithSampler(
                 texture_ref, sampler_state)) {
-          textures_set = true;
+          *textures_set = true;
           api()->glActiveTextureFn(GL_TEXTURE0 + texture_unit_index);
           api()->glBindTextureFn(textarget, texture_manager()->black_texture_id(
                                                 uniform_info->type));
@@ -10396,13 +10399,26 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
                 " incompatible texture filtering.");
           }
           continue;
+        } else if (!texture_ref->texture()->CompatibleWithSamplerUniformType(
+                       uniform_info->type)) {
+          LOCAL_SET_GL_ERROR(
+              GL_INVALID_OPERATION, function_name,
+              (std::string("Texture bound to texture unit ") +
+               base::UintToString(texture_unit_index) +
+               " with internal format " +
+               gl::GLEnums::GetStringEnum(
+                   texture_ref->texture()->GetInternalFormatOfBaseLevel()) +
+               " is not compatible with sampler type " +
+               gl::GLEnums::GetStringEnum(uniform_info->type))
+                  .c_str());
+          return false;
         }
 
         if (textarget != GL_TEXTURE_CUBE_MAP) {
           Texture* texture = texture_ref->texture();
           if (DoBindOrCopyTexImageIfNeeded(texture, textarget,
                                            GL_TEXTURE0 + texture_unit_index)) {
-            textures_set = true;
+            *textures_set = true;
             continue;
           }
         }
@@ -10410,7 +10426,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
       // else: should this be an error?
     }
   }
-  return !textures_set;
+  return true;
 }
 
 void GLES2DecoderImpl::RestoreStateForTextures() {
@@ -11005,7 +11021,10 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawArrays(
   bool simulated_fixed_attribs = false;
   if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
                            &simulated_fixed_attribs, total_max_primcount)) {
-    bool textures_set = !PrepareTexturesForRender();
+    bool textures_set;
+    if (!PrepareTexturesForRender(&textures_set, function_name)) {
+      return error::kNoError;
+    }
     ApplyDirtyState();
     if (!ValidateAndAdjustDrawBuffers(function_name)) {
       return error::kNoError;
@@ -11215,7 +11234,10 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
   bool simulated_fixed_attribs = false;
   if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
                            &simulated_fixed_attribs, total_max_primcount)) {
-    bool textures_set = !PrepareTexturesForRender();
+    bool textures_set;
+    if (!PrepareTexturesForRender(&textures_set, function_name)) {
+      return error::kNoError;
+    }
     ApplyDirtyState();
     // TODO(gman): Refactor to hide these details in BufferManager or
     // VertexAttribManager.
