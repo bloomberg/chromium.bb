@@ -4,17 +4,25 @@
 
 #include "ash/wm/non_client_frame_controller.h"
 
+#include <vector>
+
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ws/public/cpp/property_type_converters.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/test_change_tracker.h"
 #include "services/ws/test_window_tree_client.h"
+#include "services/ws/window_tree_test_helper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 
@@ -67,6 +75,32 @@ TEST_F(NonClientFrameControllerTest, ExposesChildTreeIdToAccessibility) {
   EXPECT_EQ(ax_tree_id, ax_node_data.GetStringAttribute(
                             ax::mojom::StringAttribute::kChildTreeId));
   EXPECT_EQ(ax::mojom::Role::kClient, ax_node_data.role);
+}
+
+TEST_F(NonClientFrameControllerTest, HonorsMinimumSize) {
+  const gfx::Size min_size(201, 302);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  // |window| takes ownership of the new size.
+  window->SetProperty(aura::client::kMinimumSize, new gfx::Size(min_size));
+  ASSERT_TRUE(window->delegate());
+  EXPECT_EQ(min_size, window->delegate()->GetMinimumSize());
+}
+
+TEST_F(NonClientFrameControllerTest, HonorsMinimumSizeWithoutFrame) {
+  // Variant of HonorsMinimumSize that removes the standard frame (the client
+  // draws the non-client area).
+  using TransportType = std::vector<uint8_t>;
+  const gfx::Size min_size(201, 302);
+  auto properties = CreatePropertiesForProxyWindow();
+  properties[ws::mojom::WindowManager::kMinimumSize_Property] =
+      mojo::ConvertTo<TransportType>(min_size);
+  properties[ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
+      mojo::ConvertTo<TransportType>(true);
+  std::unique_ptr<aura::Window> window(
+      GetWindowTreeTestHelper()->NewTopLevelWindow(
+          mojo::MapToFlatMap(properties)));
+  ASSERT_TRUE(window->delegate());
+  EXPECT_EQ(min_size, window->delegate()->GetMinimumSize());
 }
 
 }  // namespace ash

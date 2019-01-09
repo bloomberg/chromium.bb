@@ -255,10 +255,9 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   return widget;
 }
 
-std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
-    const gfx::Rect& bounds_in_screen,
-    aura::client::WindowType type,
-    int shell_window_id) {
+std::map<std::string, std::vector<uint8_t>>
+AshTestBase::CreatePropertiesForProxyWindow(const gfx::Rect& bounds_in_screen,
+                                            aura::client::WindowType type) {
   // The following simulates what happens when a client creates a window.
   std::map<std::string, std::vector<uint8_t>> properties;
   if (!bounds_in_screen.IsEmpty()) {
@@ -278,11 +277,17 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(mus_window_type));
+  return properties;
+}
 
+std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    aura::client::WindowType type,
+    int shell_window_id) {
   // WindowTreeTestHelper maps 0 to a unique id.
   std::unique_ptr<aura::Window> window(
-      GetWindowTreeTestHelper()->NewTopLevelWindow(
-          mojo::MapToFlatMap(std::move(properties))));
+      GetWindowTreeTestHelper()->NewTopLevelWindow(mojo::MapToFlatMap(
+          CreatePropertiesForProxyWindow(bounds_in_screen, type))));
   window->set_id(shell_window_id);
   window->Show();
   return window;
