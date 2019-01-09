@@ -587,7 +587,7 @@ const base::Feature kWebRtcScreenshareSwEncoding{
 // http://crbug.com/688388. This value is sent to WebRTC's echo canceller to
 // toggle which echo canceller should be used.
 const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
