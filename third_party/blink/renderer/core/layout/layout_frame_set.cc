@@ -138,7 +138,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
       if (grid[i].IsAbsolute()) {
         long long temp_product =
             static_cast<long long>(grid_layout[i]) * remaining_fixed;
-        grid_layout[i] = temp_product / total_fixed;
+        grid_layout[i] = static_cast<int>(temp_product / total_fixed);
         remaining_len -= grid_layout[i];
       }
     }
@@ -158,7 +158,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
       if (grid[i].IsPercentage()) {
         long long temp_product =
             static_cast<long long>(grid_layout[i]) * remaining_percent;
-        grid_layout[i] = temp_product / total_percent;
+        grid_layout[i] = static_cast<int>(temp_product / total_percent);
         remaining_len -= grid_layout[i];
       }
     }
@@ -208,7 +208,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
         if (grid[i].IsPercentage()) {
           long long temp_product =
               static_cast<long long>(grid_layout[i]) * remaining_percent;
-          change_percent = temp_product / total_percent;
+          change_percent = static_cast<int>(temp_product / total_percent);
           grid_layout[i] += change_percent;
           remaining_len -= change_percent;
         }
@@ -224,7 +224,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
         if (grid[i].IsAbsolute()) {
           long long temp_product =
               static_cast<long long>(grid_layout[i]) * remaining_fixed;
-          change_fixed = temp_product / total_fixed;
+          change_fixed = static_cast<int>(temp_product / total_fixed);
           grid_layout[i] += change_fixed;
           remaining_len -= change_fixed;
         }
