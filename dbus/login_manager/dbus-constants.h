@@ -108,6 +108,8 @@ const char kSigEncodeFail[] = INTERFACE ".SigEncodeFail";
 const char kTestingChannelError[] = INTERFACE ".TestingChannelError";
 const char kUnknownPid[] = INTERFACE ".UnknownPid";
 const char kVerifyFail[] = INTERFACE ".VerifyFail";
+const char kSystemPropertyUpdateFailed[] =
+    INTERFACE ".SystemPropertyUpdateFailed";
 const char kVpdUpdateFailed[] = INTERFACE ".VpdUpdateFailed";
 
 #undef INTERFACE
