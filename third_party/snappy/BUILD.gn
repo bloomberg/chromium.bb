@@ -21,12 +21,6 @@ config("snappy_config") {
 config("snappy_warnings") {
   cflags = []
 
-  if (is_clang) {
-    # ComputeTable is unused,
-    # https://code.google.com/p/snappy/issues/detail?id=96
-    cflags += [ "-Wno-unused-function" ]
-  }
-
   if (is_win) {
     cflags += [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
   }
