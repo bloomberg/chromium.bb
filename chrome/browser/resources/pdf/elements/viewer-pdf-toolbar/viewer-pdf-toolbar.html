@@ -210,8 +210,8 @@
           selected$="[[equal_('eraser', annotationTool.tool)]]"
           on-click="annotationToolClicked_"
           icon="pdf:eraser"
-          aria-label$="{{strings.tooltipEraser}}"
-          title$="{{strings.tooltipEraser}}">
+          aria-label$="{{strings.annotationEraser}}"
+          title$="{{strings.annotationEraser}}">
       </paper-icon-button>
 
       <viewer-toolbar-dropdown id="pen"
@@ -220,6 +220,8 @@
           open-icon="pdf:marker"
           closed-icon="pdf:marker"
           dropdown-centered
+          hide-header
+          header$="{{strings.annotationPen}}"
           style="--pen-tip-fill: #000000">
         <viewer-pen-options
           selected-color="#000000"
@@ -236,6 +238,8 @@
           open-icon="pdf:highlighter"
           closed-icon="pdf:highlighter"
           dropdown-centered
+          hide-header
+          header$="{{strings.annotationHighlighter}}"
           style="--pen-tip-fill: #ffbc00">
         <viewer-pen-options
           selected-color="#ffbc00"

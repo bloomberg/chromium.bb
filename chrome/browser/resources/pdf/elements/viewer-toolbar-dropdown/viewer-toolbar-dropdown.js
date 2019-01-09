@@ -18,8 +18,14 @@ Polymer({
   is: 'viewer-toolbar-dropdown',
 
   properties: {
-    /** String to be displayed at the top of the dropdown. */
+    /**
+     * String to be displayed at the top of the dropdown and for the tooltip
+     * of the button.
+      */
     header: String,
+
+    /** Whether to hide the header at the top of the dropdown. */
+    hideHeader: Boolean,
 
     /** Icon to display when the dropdown is closed. */
     closedIcon: String,
