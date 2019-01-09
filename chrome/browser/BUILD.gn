@@ -2846,8 +2846,6 @@ jumbo_split_static_library("browser") {
       "obsolete_system/obsolete_system_win.cc",
       "page_load_metrics/observers/session_restore_page_load_metrics_observer.cc",
       "page_load_metrics/observers/session_restore_page_load_metrics_observer.h",
-      "pdf/pdf_extension_util.cc",
-      "pdf/pdf_extension_util.h",
       "permissions/attestation_permission_request.cc",
       "permissions/attestation_permission_request.h",
       "policy/local_sync_policy_handler.cc",
@@ -4290,6 +4288,10 @@ jumbo_split_static_library("browser") {
   }
 
   if (enable_pdf) {
+    sources += [
+      "pdf/pdf_extension_util.cc",
+      "pdf/pdf_extension_util.h",
+    ]
     deps += [
       "//pdf:buildflags",
       "//pdf:features",
