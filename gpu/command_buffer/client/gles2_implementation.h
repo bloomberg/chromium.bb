@@ -149,6 +149,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   GLint GetUniformLocationHelper(GLuint program, const char* name);
   GLint GetFragDataIndexEXTHelper(GLuint program, const char* name);
   GLint GetFragDataLocationHelper(GLuint program, const char* name);
+
+  // Writes the result bucket into a buffer pointed by name and of maximum size
+  // buffsize. If length is !null, it receives the number of characters written
+  // (excluding the final \0). This is a helper function for GetActive*Helper
+  // functions that return names.
+  void GetResultNameHelper(GLsizei bufsize, GLsizei* length, char* name);
   bool GetActiveAttribHelper(
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
@@ -628,9 +634,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                                    const GLfloat* transform_values,
                                    ScopedTransferBufferPtr* buffer,
                                    uint32_t* out_paths_shm_id,
-                                   size_t* out_paths_offset,
+                                   uint32_t* out_paths_offset,
                                    uint32_t* out_transforms_shm_id,
-                                   size_t* out_transforms_offset);
+                                   uint32_t* out_transforms_offset);
 
 // Set to 1 to have the client fail when a GL error is generated.
 // This helps find bugs in the renderer since the debugger stops on the error.

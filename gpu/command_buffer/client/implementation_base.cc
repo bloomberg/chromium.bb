@@ -19,8 +19,8 @@
 namespace gpu {
 
 #if !defined(_MSC_VER)
-const size_t ImplementationBase::kMaxSizeOfSimpleResult;
-const unsigned int ImplementationBase::kStartingOffset;
+const uint32_t ImplementationBase::kMaxSizeOfSimpleResult;
+const uint32_t ImplementationBase::kStartingOffset;
 #endif
 
 ImplementationBase::ImplementationBase(CommandBufferHelper* helper,
