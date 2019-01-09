@@ -175,19 +175,19 @@ void* WinHeapAlignedRealloc(void* ptr, size_t size, size_t alignment) {
     return nullptr;
 
   // Try to resize the allocation in place first.
-  if (HeapReAlloc(get_heap_handle(), HEAP_REALLOC_IN_PLACE_ONLY,
-                  UnalignAllocation(ptr), adjusted)) {
+  void* unaligned = UnalignAllocation(ptr);
+  if (HeapReAlloc(get_heap_handle(), HEAP_REALLOC_IN_PLACE_ONLY, unaligned,
+                  adjusted)) {
     return ptr;
   }
 
-  // Otherwise manually performed an _aligned_malloc() and copy since an
+  // Otherwise manually perform an _aligned_malloc() and copy since an
   // unaligned allocation from HeapReAlloc() would force us to copy the
   // allocation twice.
   void* new_ptr = WinHeapAlignedMalloc(size, alignment);
   if (!new_ptr)
     return nullptr;
 
-  void* unaligned = UnalignAllocation(ptr);
   size_t gap =
       reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(unaligned);
   size_t old_size = WinHeapGetSizeEstimate(unaligned) - gap;
