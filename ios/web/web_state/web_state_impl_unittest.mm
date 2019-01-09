@@ -72,29 +72,17 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
  public:
   TestGlobalWebStateObserver()
       : GlobalWebStateObserver(),
-        navigation_items_pruned_called_(false),
-        navigation_item_committed_called_(false),
         did_start_loading_called_(false),
         did_stop_loading_called_(false),
         did_start_navigation_called_(false),
-        page_loaded_called_with_success_(false),
         web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding GlobalWebStateObserver method
   // has been called.
-  bool navigation_items_pruned_called() const {
-    return navigation_items_pruned_called_;
-  }
-  bool navigation_item_committed_called() const {
-    return navigation_item_committed_called_;
-  }
   bool did_start_loading_called() const { return did_start_loading_called_; }
   bool did_stop_loading_called() const { return did_stop_loading_called_; }
   bool did_start_navigation_called() const {
     return did_start_navigation_called_;
-  }
-  bool page_loaded_called_with_success() const {
-    return page_loaded_called_with_success_;
   }
   bool web_state_destroyed_called() const {
     return web_state_destroyed_called_;
@@ -102,15 +90,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
 
  private:
   // GlobalWebStateObserver implementation:
-  void NavigationItemsPruned(WebState* web_state,
-                             size_t pruned_item_count) override {
-    navigation_items_pruned_called_ = true;
-  }
-  void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) override {
-    navigation_item_committed_called_ = true;
-  }
   void WebStateDidStartLoading(WebState* web_state) override {
     did_start_loading_called_ = true;
   }
@@ -122,21 +101,13 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
       NavigationContext* navigation_context) override {
     did_start_navigation_called_ = true;
   }
-  void PageLoaded(WebState* web_state,
-                  PageLoadCompletionStatus load_completion_status) override {
-    page_loaded_called_with_success_ =
-        load_completion_status == PageLoadCompletionStatus::SUCCESS;
-  }
   void WebStateDestroyed(WebState* web_state) override {
     web_state_destroyed_called_ = true;
   }
 
-  bool navigation_items_pruned_called_;
-  bool navigation_item_committed_called_;
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
   bool did_start_navigation_called_;
-  bool page_loaded_called_with_success_;
   bool web_state_destroyed_called_;
 };
 
@@ -636,19 +607,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   std::unique_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
-  // Test that NavigationItemsPruned() is called.
-  EXPECT_FALSE(observer->navigation_items_pruned_called());
-  web_state_->OnNavigationItemsPruned(1);
-  EXPECT_TRUE(observer->navigation_items_pruned_called());
-
-  // Test that NavigationItemCommitted() is called.
-  EXPECT_FALSE(observer->navigation_item_committed_called());
-  LoadCommittedDetails details;
-  auto item = std::make_unique<NavigationItemImpl>();
-  details.item = item.get();
-  web_state_->OnNavigationItemCommitted(details);
-  EXPECT_TRUE(observer->navigation_item_committed_called());
-
   // Test that DidStartNavigation() is called.
   EXPECT_FALSE(observer->did_start_navigation_called());
   std::unique_ptr<NavigationContextImpl> context =
@@ -668,13 +626,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   EXPECT_FALSE(observer->did_stop_loading_called());
   web_state_->SetIsLoading(false);
   EXPECT_TRUE(observer->did_stop_loading_called());
-
-  // Test that OnPageLoaded() is called with success when there is no error.
-  EXPECT_FALSE(observer->page_loaded_called_with_success());
-  web_state_->OnPageLoaded(GURL("http://test"), false);
-  EXPECT_FALSE(observer->page_loaded_called_with_success());
-  web_state_->OnPageLoaded(GURL("http://test"), true);
-  EXPECT_TRUE(observer->page_loaded_called_with_success());
 
   // Test that WebStateDestroyed() is called.
   EXPECT_FALSE(observer->web_state_destroyed_called());

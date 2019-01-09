@@ -38,20 +38,6 @@ void GlobalWebStateEventTracker::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void GlobalWebStateEventTracker::NavigationItemsPruned(
-    WebState* web_state,
-    size_t pruned_item_count) {
-  for (auto& observer : observer_list_)
-    observer.NavigationItemsPruned(web_state, pruned_item_count);
-}
-
-void GlobalWebStateEventTracker::NavigationItemCommitted(
-    WebState* web_state,
-    const LoadCommittedDetails& load_details) {
-  for (auto& observer : observer_list_)
-    observer.NavigationItemCommitted(web_state, load_details);
-}
-
 void GlobalWebStateEventTracker::DidStartNavigation(
     WebState* web_state,
     NavigationContext* navigation_context) {
@@ -67,13 +53,6 @@ void GlobalWebStateEventTracker::DidStartLoading(WebState* web_state) {
 void GlobalWebStateEventTracker::DidStopLoading(WebState* web_state) {
   for (auto& observer : observer_list_)
     observer.WebStateDidStopLoading(web_state);
-}
-
-void GlobalWebStateEventTracker::PageLoaded(
-    WebState* web_state,
-    PageLoadCompletionStatus load_completion_status) {
-  for (auto& observer : observer_list_)
-    observer.PageLoaded(web_state, load_completion_status);
 }
 
 void GlobalWebStateEventTracker::RenderProcessGone(WebState* web_state) {

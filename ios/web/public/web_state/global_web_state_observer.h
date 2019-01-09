@@ -12,7 +12,6 @@
 
 namespace web {
 
-struct LoadCommittedDetails;
 class NavigationContext;
 class WebState;
 
@@ -27,19 +26,6 @@ class WebState;
 // TODO(crbug.com/782269): Remove this class.
 class GlobalWebStateObserver {
  public:
-  // DEPRECATED. Use WebStateObserver's |NavigationItemsPruned| instead.
-  // Called when navigation items have been pruned in |web_state|.
-  // TODO(crbug.com/782269): Remove this method.
-  virtual void NavigationItemsPruned(WebState* web_state,
-                                     size_t pruned_item_count) {}
-
-  // Called when a navigation item has been committed in |web_state|.
-  // DEPRECATED. Use WebStateObserver's |DidFinishNavigation| instead.
-  // TODO(crbug.com/782269): Remove this method.
-  virtual void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) {}
-
   // Called when |web_state| has started loading a page.
   // DEPRECATED. Use WebStateObserver's |DidStartLoading| instead.
   // TODO(crbug.com/782269): Remove this method.
@@ -56,12 +42,6 @@ class GlobalWebStateObserver {
   virtual void WebStateDidStartNavigation(
       WebState* web_state,
       NavigationContext* navigation_context) {}
-
-  // Called when the current page is loaded in |web_state|.
-  // DEPRECATED. Use WebStateObserver's |PageLoaded| instead.
-  // TODO(crbug.com/782269): Remove this method.
-  virtual void PageLoaded(WebState* web_state,
-                          PageLoadCompletionStatus load_completion_status) {}
 
   // Called when the web process is terminated (usually by crashing, though
   // possibly by other means).
