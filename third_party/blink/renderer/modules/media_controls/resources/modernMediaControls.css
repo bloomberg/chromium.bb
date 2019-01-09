@@ -827,6 +827,11 @@ video::-internal-media-controls-overflow-menu-list {
   transform-origin: bottom right;
 }
 
+audio::-internal-media-controls-overflow-menu-list:focus,
+video::-internal-media-controls-overflow-menu-list:focus {
+  outline: none;
+}
+
 audio::-internal-media-controls-overflow-menu-list.closed,
 video::-internal-media-controls-overflow-menu-list.closed {
   transform: scale(0);
