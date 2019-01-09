@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/base/hit_test.h"
@@ -38,6 +39,151 @@ using views_bridge_mac::mojom::WindowVisibilityState;
 namespace views {
 
 namespace {
+
+// Dummy implementation of the BridgedNativeWidgetHost interface. This structure
+// exists to work around a bug wherein synchronous mojo calls to an associated
+// interface can hang if the interface request is unbound. This structure is
+// bound to the real host's interface, and then deletes itself only once the
+// underlying connection closes.
+// https://crbug.com/915572
+class BridgedNativeWidgetHostDummy
+    : public views_bridge_mac::mojom::BridgedNativeWidgetHost {
+ public:
+  BridgedNativeWidgetHostDummy() {}
+  ~BridgedNativeWidgetHostDummy() override {}
+
+ private:
+  void OnVisibilityChanged(bool visible) override {}
+  void OnWindowNativeThemeChanged() override {}
+  void OnViewSizeChanged(const gfx::Size& new_size) override {}
+  void SetKeyboardAccessible(bool enabled) override {}
+  void OnIsFirstResponderChanged(bool is_first_responder) override {}
+  void OnMouseCaptureActiveChanged(bool capture_is_active) override {}
+  void OnScrollEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnMouseEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnGestureEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnWindowGeometryChanged(
+      const gfx::Rect& window_bounds_in_screen_dips,
+      const gfx::Rect& content_bounds_in_screen_dips) override {}
+  void OnWindowFullscreenTransitionStart(
+      bool target_fullscreen_state) override {}
+  void OnWindowFullscreenTransitionComplete(bool is_fullscreen) override {}
+  void OnWindowMiniaturizedChanged(bool miniaturized) override {}
+  void OnWindowDisplayChanged(const display::Display& display) override {}
+  void OnWindowWillClose() override {}
+  void OnWindowHasClosed() override {}
+  void OnWindowKeyStatusChanged(bool is_key,
+                                bool is_content_first_responder,
+                                bool full_keyboard_access_enabled) override {}
+  void DoDialogButtonAction(ui::DialogButton button) override {}
+  void OnFocusWindowToolbar() override {}
+  void SetRemoteAccessibilityTokens(
+      const std::vector<uint8_t>& window_token,
+      const std::vector<uint8_t>& view_token) override {}
+  void GetSheetOffsetY(GetSheetOffsetYCallback callback) override {
+    float offset_y = 0;
+    std::move(callback).Run(offset_y);
+  }
+  void DispatchKeyEventRemote(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventRemoteCallback callback) override {
+    bool event_handled = false;
+    std::move(callback).Run(event_handled);
+  }
+  void DispatchKeyEventToMenuControllerRemote(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventToMenuControllerRemoteCallback callback) override {
+    ui::KeyEvent* key_event = event->AsKeyEvent();
+    bool event_swallowed = false;
+    std::move(callback).Run(event_swallowed, key_event->handled());
+  }
+  void GetHasMenuController(GetHasMenuControllerCallback callback) override {
+    bool has_menu_controller = false;
+    std::move(callback).Run(has_menu_controller);
+  }
+  void GetIsDraggableBackgroundAt(
+      const gfx::Point& location_in_content,
+      GetIsDraggableBackgroundAtCallback callback) override {
+    bool is_draggable_background = false;
+    std::move(callback).Run(is_draggable_background);
+  }
+  void GetTooltipTextAt(const gfx::Point& location_in_content,
+                        GetTooltipTextAtCallback callback) override {
+    base::string16 new_tooltip_text;
+    std::move(callback).Run(new_tooltip_text);
+  }
+  void GetIsFocusedViewTextual(
+      GetIsFocusedViewTextualCallback callback) override {
+    bool is_textual = false;
+    std::move(callback).Run(is_textual);
+  }
+  void GetWidgetIsModal(GetWidgetIsModalCallback callback) override {
+    bool widget_is_modal = false;
+    std::move(callback).Run(widget_is_modal);
+  }
+  void GetDialogButtonInfo(ui::DialogButton button,
+                           GetDialogButtonInfoCallback callback) override {
+    bool exists = false;
+    base::string16 label;
+    bool is_enabled = false;
+    bool is_default = false;
+    std::move(callback).Run(exists, label, is_enabled, is_default);
+  }
+  void GetDoDialogButtonsExist(
+      GetDoDialogButtonsExistCallback callback) override {
+    bool buttons_exist = false;
+    std::move(callback).Run(buttons_exist);
+  }
+  void GetShouldShowWindowTitle(
+      GetShouldShowWindowTitleCallback callback) override {
+    bool should_show_window_title = false;
+    std::move(callback).Run(should_show_window_title);
+  }
+  void GetCanWindowBecomeKey(GetCanWindowBecomeKeyCallback callback) override {
+    bool can_window_become_key = false;
+    std::move(callback).Run(can_window_become_key);
+  }
+  void GetAlwaysRenderWindowAsKey(
+      GetAlwaysRenderWindowAsKeyCallback callback) override {
+    bool always_render_as_key = false;
+    std::move(callback).Run(always_render_as_key);
+  }
+  void GetCanWindowClose(GetCanWindowCloseCallback callback) override {
+    bool can_window_close = false;
+    std::move(callback).Run(can_window_close);
+  }
+  void GetWindowFrameTitlebarHeight(
+      GetWindowFrameTitlebarHeightCallback callback) override {
+    bool override_titlebar_height = false;
+    float titlebar_height = 0;
+    std::move(callback).Run(override_titlebar_height, titlebar_height);
+  }
+  void GetRootViewAccessibilityToken(
+      GetRootViewAccessibilityTokenCallback callback) override {
+    std::vector<uint8_t> token;
+    int64_t pid = 0;
+    std::move(callback).Run(pid, token);
+  }
+  void ValidateUserInterfaceItem(
+      int32_t command,
+      ValidateUserInterfaceItemCallback callback) override {
+    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+    std::move(callback).Run(std::move(result));
+  }
+  void ExecuteCommand(int32_t command,
+                      WindowOpenDisposition window_open_disposition,
+                      bool is_before_first_responder,
+                      ExecuteCommandCallback callback) override {
+    bool was_executed = false;
+    std::move(callback).Run(was_executed);
+  }
+  void HandleAccelerator(const ui::Accelerator& accelerator,
+                         bool require_priority_handler,
+                         HandleAcceleratorCallback callback) override {
+    bool was_handled = false;
+    std::move(callback).Run(was_handled);
+  }
+};
 
 // Returns true if bounds passed to window in SetBounds should be treated as
 // though they are in screen coordinates.
@@ -103,9 +249,17 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   DCHECK(children_.empty());
   if (bridge_factory_host_) {
     bridge_ptr_.reset();
-    host_mojo_binding_.Unbind();
     bridge_factory_host_->RemoveObserver(this);
     bridge_factory_host_ = nullptr;
+  }
+
+  // Workaround for https://crbug.com/915572
+  if (host_mojo_binding_.is_bound()) {
+    auto request = host_mojo_binding_.Unbind();
+    if (request.is_pending()) {
+      mojo::MakeStrongAssociatedBinding(
+          std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
+    }
   }
 
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
