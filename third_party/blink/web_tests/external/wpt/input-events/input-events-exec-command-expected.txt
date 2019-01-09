@@ -1,0 +1,49 @@
+This is a testharness.js-based test.
+PASS Calling execCommand("insertText", false, a)
+PASS Calling execCommand("insertText", false, bc)
+PASS execCommand("insertText") should insert "abc" into the editor
+PASS Calling execCommand("insertOrderedList", false, null)
+PASS execCommand("insertOrderedList") should make <ol> and wrap the text with it
+PASS Calling execCommand("insertUnorderedList", false, null)
+PASS execCommand("insertUnorderedList") should make <ul> and wrap the text with it
+PASS Calling execCommand("insertLineBreak", false, null)
+PASS Calling execCommand("insertParagraph", false, null)
+FAIL Calling execCommand("insertHorizontalRule", false, null) assert_equals: Calling execCommand("insertHorizontalRule", false, null) should produce inputType: insertHorizontalRule expected "insertHorizontalRule" but got ""
+PASS Calling execCommand("bold", false, null)
+PASS execCommand("bold") should wrap selected text with <b> element
+PASS Calling execCommand("italic", false, null)
+PASS execCommand("italic") should wrap selected text with <i> element
+PASS Calling execCommand("underline", false, null)
+PASS execCommand("underline") should wrap selected text with <u> element
+PASS Calling execCommand("strikeThrough", false, null)
+PASS execCommand("strikeThrough") should wrap selected text with <strike> element
+PASS Calling execCommand("superscript", false, null)
+PASS execCommand("superscript") should wrap selected text with <sup> element
+PASS Calling execCommand("subscript", false, null)
+PASS execCommand("subscript") should wrap selected text with <sub> element
+FAIL Calling execCommand("backColor", false, #000000) assert_equals: Calling execCommand("backColor", false, #000000) should produce inputType: formatBackColor expected "formatBackColor" but got ""
+FAIL Calling execCommand("foreColor", false, #FFFFFF) assert_equals: Calling execCommand("foreColor", false, #FFFFFF) should produce inputType: formatFontColor expected "formatFontColor" but got ""
+FAIL Calling execCommand("hiliteColor", false, #FFFF00) assert_equals: Calling execCommand("hiliteColor", false, #FFFF00) should produce inputType: formatBackColor expected "formatBackColor" but got ""
+FAIL Calling execCommand("fontName", false, monospace) assert_equals: Calling execCommand("fontName", false, monospace) should produce inputType: formatFontName expected "formatFontName" but got ""
+PASS Calling execCommand("justifyCenter", false, null)
+PASS execCommand("justifyCenter") should wrap the text with <div> element whose text-align is center
+PASS Calling execCommand("justifyFull", false, null)
+PASS execCommand("justifyFull") should wrap the text with <div> element whose text-align is justify
+PASS Calling execCommand("justifyRight", false, null)
+PASS execCommand("justifyRight") should wrap the text with <div> element whose text-align is right
+PASS Calling execCommand("justifyLeft", false, null)
+PASS execCommand("justifyLeft") should wrap the text with <div> element whose text-align is left
+PASS Calling execCommand("removeFormat", false, null)
+PASS execCommand("removeFormat") should remove the style of current block
+PASS Calling execCommand("indent", false, null)
+PASS Calling execCommand("outdent", false, null)
+PASS Set of execCommand("indent") and execCommand("outdent") should keep same DOM tree
+PASS Calling execCommand("copy", false, null)
+PASS Calling execCommand("cut", false, null)
+PASS Calling execCommand("paste", false, null)
+FAIL Calling execCommand("createLink", false, https://example.com/) assert_equals: Calling execCommand("createLink", false, https://example.com/) should produce inputType: insertLink expected "insertLink" but got ""
+PASS execCommand("createLink") should create a link
+PASS Calling execCommand("unlink", false, null)
+PASS execCommand("createLink") should remove the link
+Harness: the test ran to completion.
+
