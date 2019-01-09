@@ -342,7 +342,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     STACK_ALLOCATED();
 
    public:
-    unsigned run_index = 0;
     // The total number of characters of runs_[0..run_index - 1].
     unsigned characters_on_left_runs = 0;
 

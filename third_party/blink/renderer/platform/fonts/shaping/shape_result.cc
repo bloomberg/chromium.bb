@@ -122,13 +122,14 @@ unsigned ShapeResult::RunInfo::NumGraphemes(unsigned start,
                                             unsigned end) const {
   if (graphemes_.size() == 0 || start >= num_characters_)
     return 0;
-  DCHECK_LT(start, end);
-  DCHECK_LE(end, num_characters_);
+  CHECK_LT(start, end);
+  CHECK_LE(end, num_characters_);
+  CHECK_EQ(num_characters_, graphemes_.size());
   return graphemes_[end - 1] - graphemes_[start] + 1;
 }
 
 void ShapeResult::EnsureGraphemes(const StringView& text) const {
-  DCHECK_EQ(NumCharacters(), text.length());
+  CHECK_EQ(NumCharacters(), text.length());
 
   // Hit-testing, canvas, etc. may still call this function for 0-length text,
   // or glyphs may be missing at all.
@@ -144,7 +145,7 @@ void ShapeResult::EnsureGraphemes(const StringView& text) const {
     return;
 
   unsigned result_start_index = StartIndex();
-  for (const auto& run : runs_) {
+  for (const scoped_refptr<RunInfo>& run : runs_) {
     if (!run)
       continue;
     DCHECK_GE(run->start_index_, result_start_index);
@@ -289,7 +290,6 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
     BreakGlyphsOption break_glyphs_option,
     GlyphIndexResult* result) const {
   DCHECK(target_x >= 0 && target_x <= width_);
-  const unsigned num_glyphs = glyph_data_.size();
 
   result->origin_x = 0;
   unsigned glyph_sequence_start = 0;
@@ -301,12 +301,12 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
     glyph_sequence_start = glyph_sequence_end = num_characters_;
   }
 
-  for (unsigned i = 0; i < num_glyphs; ++i) {
-    unsigned current_glyph_char_index = glyph_data_[i].character_index;
+  for (const HarfBuzzRunGlyphData& glyph_data : glyph_data_) {
+    unsigned current_glyph_char_index = glyph_data.character_index;
     // If the glyph is part of the same sequence, we just accumulate the
     // advance.
     if (glyph_sequence_start == current_glyph_char_index) {
-      result->advance += glyph_data_[i].advance;
+      result->advance += glyph_data.advance;
       continue;
     }
 
@@ -328,7 +328,7 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
     }
     glyph_sequence_start = current_glyph_char_index;
     result->origin_x += result->advance;
-    result->advance = glyph_data_[i].advance;
+    result->advance = glyph_data.advance;
   }
 
   // At this point, we have [glyph_sequence_start, glyph_sequence_end)
@@ -512,19 +512,18 @@ void ShapeResult::OffsetForPosition(float target_x,
   unsigned characters_so_far = Rtl() ? NumCharacters() : 0;
   float current_x = 0;
 
-  for (unsigned i = 0; i < runs_.size(); ++i) {
-    const RunInfo* run = runs_[i].get();
+  for (const scoped_refptr<RunInfo>& run_ptr : runs_) {
+    const RunInfo* run = run_ptr.get();
     if (!run)
       continue;
     if (Rtl())
-      characters_so_far -= runs_[i]->num_characters_;
+      characters_so_far -= run->num_characters_;
     float next_x = current_x + run->width_;
     float offset_for_run = target_x - current_x;
     if (offset_for_run >= 0 && offset_for_run < run->width_) {
       // The x value in question is within this script run.
       run->CharacterIndexForXPosition(offset_for_run, break_glyphs_option,
                                       result);
-      result->run_index = i;
       result->characters_on_left_runs = characters_so_far;
       if (Rtl()) {
         result->left_character_index =
@@ -555,7 +554,6 @@ void ShapeResult::OffsetForPosition(float target_x,
     result->right_character_index += characters_so_far;
   }
 
-  result->run_index = runs_.size() - 1;
   result->characters_on_left_runs = characters_so_far;
 
   DCHECK_LE(result->left_character_index, NumCharacters());
