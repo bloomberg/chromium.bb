@@ -17,7 +17,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "services/network/network_change_manager.h"

@@ -7,7 +7,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/pref_names.h"
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)

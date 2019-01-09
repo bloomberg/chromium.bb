@@ -15,8 +15,8 @@ import("//ios/web_view/repack.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-buildflag_header("web_view_features") {
-  header = "cwv_web_view_features.h"
+buildflag_header("web_view_buildflags") {
+  header = "cwv_web_view_buildflags.h"
 
   flags = [
     "IOS_WEB_VIEW_ENABLE_SYNC=$ios_web_view_enable_sync",
@@ -259,7 +259,7 @@ if (ios_web_view_enable_autofill) {
 
 ios_web_view_deps = [
   ":web_view_bundle",
-  ":web_view_features",
+  ":web_view_buildflags",
   ":web_view_resources",
   "//base",
   "//components/autofill/core/browser",
@@ -318,9 +318,9 @@ ios_web_view_deps = [
 
 # Generate the umbrella header to exclude headers for disabled features.
 # This is preferable to guarding header imports using flags defined in
-# :web_view_features because:
+# :web_view_buildflags because:
 # 1. Confusing to see headers for unsupported features in umbrella header.
-# 2. A need to include cwv_web_view_features.h as part of public headers and
+# 2. A need to include cwv_web_view_buildflags.h as part of public headers and
 #    any headers it itself includes, despite not being part of the public API.
 action("web_view_umbrella_header") {
   script = "//build/config/ios/generate_umbrella_header.py"

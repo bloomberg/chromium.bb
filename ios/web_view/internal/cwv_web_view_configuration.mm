@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_data_manager_internal.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
