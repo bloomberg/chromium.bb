@@ -388,7 +388,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   [shareButton_ setFrameOrigin:origin];
   [shareButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [shareButton_ setTarget:self];
-  [shareButton_ setKeyEquivalent:kKeyEquivalentReturn];
+  [shareButton_ setKeyEquivalent:kKeyEquivalentEscape];
   [shareButton_ setAction:@selector(sharePressed:)];
   [content addSubview:shareButton_];
 
@@ -401,7 +401,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   [cancelButton_ setFrameOrigin:origin];
   [cancelButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [cancelButton_ setTarget:self];
-  [cancelButton_ setKeyEquivalent:kKeyEquivalentEscape];
+  [cancelButton_ setKeyEquivalent:kKeyEquivalentReturn];
   [cancelButton_ setAction:@selector(cancelPressed:)];
   [content addSubview:cancelButton_];
 }
