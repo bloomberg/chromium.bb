@@ -381,7 +381,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
       PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
           info_map_, ruleset_data->extension_id, request.url, tab_id,
           crosses_incognito, WebRequestPermissions::DO_NOT_CHECK_HOST,
-          request.initiator);
+          request.initiator, request.type);
       DCHECK_NE(PageAccess::kWithheld, page_access);
       if (page_access != PageAccess::kAllowed)
         continue;
@@ -417,7 +417,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
           info_map_, ruleset_data->extension_id, request.url, tab_id,
           crosses_incognito,
           WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-          request.initiator);
+          request.initiator, request.type);
 
       if (page_access != PageAccess::kAllowed) {
         if (page_access == PageAccess::kWithheld)

@@ -1821,7 +1821,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
               crosses_incognito,
               WebRequestPermissions::
                   REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-              request->initiator);
+              request->initiator, request->type);
 
       if (access != PermissionsData::PageAccess::kAllowed) {
         if (access == PermissionsData::PageAccess::kWithheld) {

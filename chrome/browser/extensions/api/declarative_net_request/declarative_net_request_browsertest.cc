@@ -2200,31 +2200,17 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
-                       SubframesWithNoInitiatorPermissions) {
-  // The extension has access to requests to "frame_1.com" and "frame_2.com",
-  // but not the initiator of those requests (example.com). No frames should be
-  // redirected.
+                       SubframesRequireNoInitiatorPermissions) {
+  // The extension has access to requests to "frame_1.com" and "frame_2.com".
+  // These should be redirected. Note: extensions don't need access to the
+  // initiator of a navigation request to redirect it (See crbug.com/918137).
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithHostPermissions({GetMatchPatternForDomain("frame_1"),
                                         GetMatchPatternForDomain("frame_2")}));
-  RunTests({{"frame_1", false},
-            {"frame_2", false},
+  RunTests({{"frame_1", true},
+            {"frame_2", true},
             {"frame_3", false},
             {"frame_4", false}});
-}
-
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
-                       SubframesWithInitiatorPermission) {
-  // The extension has access to requests to "frame_1.com" and "frame_4.com",
-  // and also the initiator of those requests (example.com). Hence |frame_1| and
-  // |frame_4| should be redirected.
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithHostPermissions(
-      {GetMatchPatternForDomain("frame_1"), GetMatchPatternForDomain("frame_4"),
-       GetMatchPatternForDomain("example")}));
-  RunTests({{"frame_1", true},
-            {"frame_2", false},
-            {"frame_3", false},
-            {"frame_4", true}});
 }
 
 // Fixture to test the "resourceTypes" and "excludedResourceTypes" fields of a

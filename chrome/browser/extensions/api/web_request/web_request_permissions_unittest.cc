@@ -130,14 +130,17 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
       context.CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
                             NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  EXPECT_EQ(
-      PermissionsData::PageAccess::kAllowed,
-      WebRequestPermissions::CanExtensionAccessURL(
-          extension_info_map_.get(), permissionless_extension_->id(),
-          request->url(),
-          -1,     // No tab id.
-          false,  // crosses_incognito
-          WebRequestPermissions::DO_NOT_CHECK_HOST, request->initiator()));
+  const content::ResourceType kResourceType =
+      content::RESOURCE_TYPE_SUB_RESOURCE;
+
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), permissionless_extension_->id(),
+                request->url(),
+                -1,     // No tab id.
+                false,  // crosses_incognito
+                WebRequestPermissions::DO_NOT_CHECK_HOST, request->initiator(),
+                kResourceType));
   EXPECT_EQ(PermissionsData::PageAccess::kDenied,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), permissionless_extension_->id(),
@@ -145,14 +148,14 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                request->initiator()));
+                request->initiator(), kResourceType));
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), com_extension_->id(), request->url(),
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                request->initiator()));
+                request->initiator(), kResourceType));
   EXPECT_EQ(
       PermissionsData::PageAccess::kAllowed,
       WebRequestPermissions::CanExtensionAccessURL(
@@ -160,13 +163,14 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
           -1,     // No tab id.
           false,  // crosses_incognito
           WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-          request->initiator()));
+          request->initiator(), kResourceType));
   EXPECT_EQ(PermissionsData::PageAccess::kDenied,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), com_extension_->id(), request->url(),
                 -1,     // No tab id.
                 false,  // crosses_incognito
-                WebRequestPermissions::REQUIRE_ALL_URLS, request->initiator()));
+                WebRequestPermissions::REQUIRE_ALL_URLS, request->initiator(),
+                kResourceType));
 
   std::unique_ptr<net::URLRequest> request_with_initiator(
       context.CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
@@ -181,7 +185,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::DO_NOT_CHECK_HOST,
-                request_with_initiator->initiator()));
+                request_with_initiator->initiator(), kResourceType));
   EXPECT_EQ(PermissionsData::PageAccess::kDenied,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), permissionless_extension_->id(),
@@ -189,7 +193,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                request_with_initiator->initiator()));
+                request_with_initiator->initiator(), kResourceType));
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), com_extension_->id(),
@@ -197,7 +201,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                request_with_initiator->initiator()));
+                request_with_initiator->initiator(), kResourceType));
+  // Doesn't have access to the initiator.
   EXPECT_EQ(
       PermissionsData::PageAccess::kDenied,
       WebRequestPermissions::CanExtensionAccessURL(
@@ -206,7 +211,19 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
           -1,     // No tab id.
           false,  // crosses_incognito
           WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-          request_with_initiator->initiator()));
+          request_with_initiator->initiator(), kResourceType));
+  // Navigation requests don't need access to the initiator.
+  EXPECT_EQ(
+      PermissionsData::PageAccess::kAllowed,
+      WebRequestPermissions::CanExtensionAccessURL(
+          extension_info_map_.get(), com_extension_->id(),
+          request_with_initiator->url(),
+          -1,     // No tab id.
+          false,  // crosses_incognito
+          WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+          request_with_initiator->initiator(),
+          content::RESOURCE_TYPE_SUB_FRAME));
+
   EXPECT_EQ(PermissionsData::PageAccess::kDenied,
             WebRequestPermissions::CanExtensionAccessURL(
                 extension_info_map_.get(), com_extension_->id(),
@@ -214,7 +231,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_ALL_URLS,
-                request_with_initiator->initiator()));
+                request_with_initiator->initiator(), kResourceType));
 
   // Public Sessions tests.
 #if defined(OS_CHROMEOS)
@@ -229,7 +246,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                org_request->initiator()));
+                org_request->initiator(), kResourceType));
 
   chromeos::ScopedTestPublicSessionLoginState login_state;
 
@@ -242,16 +259,16 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                org_request->initiator()));
+                org_request->initiator(), kResourceType));
 
-  EXPECT_EQ(
-      PermissionsData::PageAccess::kAllowed,
-      WebRequestPermissions::CanExtensionAccessURL(
-          extension_info_map_.get(), com_policy_extension_->id(),
-          org_request->url(),
-          -1,     // No tab id.
-          false,  // crosses_incognito
-          WebRequestPermissions::REQUIRE_ALL_URLS, org_request->initiator()));
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            WebRequestPermissions::CanExtensionAccessURL(
+                extension_info_map_.get(), com_policy_extension_->id(),
+                org_request->url(),
+                -1,     // No tab id.
+                false,  // crosses_incognito
+                WebRequestPermissions::REQUIRE_ALL_URLS,
+                org_request->initiator(), kResourceType));
 
   // Make sure that chrome:// URLs cannot be accessed.
   std::unique_ptr<net::URLRequest> chrome_request(
@@ -265,6 +282,6 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 -1,     // No tab id.
                 false,  // crosses_incognito
                 WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-                chrome_request->initiator()));
+                chrome_request->initiator(), kResourceType));
 #endif
 }

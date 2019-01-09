@@ -210,13 +210,16 @@ TEST(ExtensionWebRequestPermissions,
 
   auto get_access = [extension, info_map](
                         const GURL& url,
-                        base::Optional<url::Origin> initiator) {
+                        const base::Optional<url::Origin>& initiator,
+                        const base::Optional<content::ResourceType>&
+                            resource_type) {
     constexpr int kTabId = 42;
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL;
     return WebRequestPermissions::CanExtensionAccessURL(
         info_map.get(), extension->id(), url, kTabId,
-        false /* crosses incognito */, kPermissionsCheck, initiator);
+        false /* crosses incognito */, kPermissionsCheck, initiator,
+        resource_type);
   };
 
   const GURL example_com("https://example.com");
@@ -224,21 +227,23 @@ TEST(ExtensionWebRequestPermissions,
   const url::Origin example_com_origin(url::Origin::Create(example_com));
   const url::Origin chromium_org_origin(url::Origin::Create(chromium_org));
 
+  GURL urls[] = {example_com, chromium_org};
+  base::Optional<url::Origin> initiators[] = {base::nullopt, example_com_origin,
+                                              chromium_org_origin};
+  base::Optional<content::ResourceType> resource_types[] = {
+      base::nullopt, content::RESOURCE_TYPE_SUB_RESOURCE,
+      content::RESOURCE_TYPE_MAIN_FRAME};
+
   // With all permissions withheld, the result of any request should be
   // kWithheld.
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(example_com, base::nullopt));
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(example_com, example_com_origin));
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(example_com, chromium_org_origin));
-
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(chromium_org, base::nullopt));
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(chromium_org, chromium_org_origin));
-  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(chromium_org, example_com_origin));
+  for (const auto& url : urls) {
+    for (const auto& initiator : initiators) {
+      for (const auto& resource_type : resource_types) {
+        EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+                  get_access(url, initiator, resource_type));
+      }
+    }
+  }
 
   // Grant access to chromium.org.
   URLPatternSet chromium_org_patterns({URLPattern(
@@ -254,25 +259,36 @@ TEST(ExtensionWebRequestPermissions,
   // example.com isn't granted, so without an initiator or with an initiator
   // that the extension doesn't have access to, access is withheld.
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(example_com, base::nullopt));
+            get_access(example_com, base::nullopt,
+                       content::RESOURCE_TYPE_SUB_RESOURCE));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
-            get_access(example_com, example_com_origin));
+            get_access(example_com, example_com_origin,
+                       content::RESOURCE_TYPE_MAIN_FRAME));
 
-  // However, if a request is made to example.com from an initiator that the
-  // extension has access to, access is allowed. This is functionally necessary
-  // for any extension with webRequest to work with the runtime host permissions
-  // feature. See https://crbug.com/851722.
+  // However, if a sub-resource request is made to example.com from an initiator
+  // that the extension has access to, access is allowed. This is functionally
+  // necessary for any extension with webRequest to work with the runtime host
+  // permissions feature. See https://crbug.com/851722.
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
-            get_access(example_com, chromium_org_origin));
+            get_access(example_com, chromium_org_origin,
+                       content::RESOURCE_TYPE_SUB_RESOURCE));
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            get_access(example_com, chromium_org_origin, base::nullopt));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            get_access(example_com, chromium_org_origin,
+                       content::RESOURCE_TYPE_SUB_FRAME));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            get_access(example_com, chromium_org_origin,
+                       content::RESOURCE_TYPE_MAIN_FRAME));
 
-  // With access to the requested origin, access is always allowed, independent
-  // of initiator.
-  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
-            get_access(chromium_org, base::nullopt));
-  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
-            get_access(chromium_org, chromium_org_origin));
-  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
-            get_access(chromium_org, example_com_origin));
+  // With access to the requested origin, access is always allowed for
+  // REQUIRE_HOST_PERMISSION_FOR_URL, independent of initiator.
+  for (const auto& initiator : initiators) {
+    for (const auto& resource_type : resource_types) {
+      EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+                get_access(chromium_org, initiator, resource_type));
+    }
+  }
 }
 
 TEST(ExtensionWebRequestPermissions,
@@ -307,13 +323,16 @@ TEST(ExtensionWebRequestPermissions,
 
   auto get_access = [extension, info_map](
                         const GURL& url,
-                        base::Optional<url::Origin> initiator) {
+                        const base::Optional<url::Origin>& initiator,
+                        const base::Optional<content::ResourceType>&
+                            resource_type) {
     constexpr int kTabId = 42;
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR;
     return WebRequestPermissions::CanExtensionAccessURL(
         info_map.get(), extension->id(), url, kTabId,
-        false /* crosses incognito */, kPermissionsCheck, initiator);
+        false /* crosses incognito */, kPermissionsCheck, initiator,
+        resource_type);
   };
 
   using PageAccess = PermissionsData::PageAccess;
@@ -327,26 +346,32 @@ TEST(ExtensionWebRequestPermissions,
   struct {
     base::Optional<url::Origin> initiator;
     GURL url;
-    PermissionsData::PageAccess expected_access;
+    PermissionsData::PageAccess expected_access_subresource;
+    PermissionsData::PageAccess expected_access_navigation;
   } cases[] = {
-      {base::nullopt, kAllowedUrl, PageAccess::kAllowed},
-      {base::nullopt, kWithheldUrl, PageAccess::kWithheld},
-      {base::nullopt, kDeniedUrl, PageAccess::kDenied},
+      {base::nullopt, kAllowedUrl, PageAccess::kAllowed, PageAccess::kAllowed},
+      {base::nullopt, kWithheldUrl, PageAccess::kWithheld,
+       PageAccess::kWithheld},
+      {base::nullopt, kDeniedUrl, PageAccess::kDenied, PageAccess::kDenied},
 
-      {kOpaqueOrigin, kAllowedUrl, PageAccess::kAllowed},
-      {kOpaqueOrigin, kWithheldUrl, PageAccess::kWithheld},
-      {kOpaqueOrigin, kDeniedUrl, PageAccess::kDenied},
+      {kOpaqueOrigin, kAllowedUrl, PageAccess::kAllowed, PageAccess::kAllowed},
+      {kOpaqueOrigin, kWithheldUrl, PageAccess::kWithheld,
+       PageAccess::kWithheld},
+      {kOpaqueOrigin, kDeniedUrl, PageAccess::kDenied, PageAccess::kDenied},
 
-      {kDeniedOrigin, kAllowedUrl, PageAccess::kDenied},
-      {kDeniedOrigin, kWithheldUrl, PageAccess::kDenied},
-      {kDeniedOrigin, kDeniedUrl, PageAccess::kDenied},
-      {kAllowedOrigin, kDeniedUrl, PageAccess::kDenied},
-      {kWithheldOrigin, kDeniedUrl, PageAccess::kDenied},
+      {kDeniedOrigin, kAllowedUrl, PageAccess::kDenied, PageAccess::kAllowed},
+      {kDeniedOrigin, kWithheldUrl, PageAccess::kDenied, PageAccess::kWithheld},
+      {kDeniedOrigin, kDeniedUrl, PageAccess::kDenied, PageAccess::kDenied},
+      {kAllowedOrigin, kDeniedUrl, PageAccess::kDenied, PageAccess::kDenied},
+      {kWithheldOrigin, kDeniedUrl, PageAccess::kDenied, PageAccess::kDenied},
 
-      {kWithheldOrigin, kWithheldUrl, PageAccess::kWithheld},
-      {kWithheldOrigin, kAllowedUrl, PageAccess::kWithheld},
-      {kAllowedOrigin, kWithheldUrl, PageAccess::kAllowed},
-      {kAllowedOrigin, kAllowedUrl, PageAccess::kAllowed},
+      {kWithheldOrigin, kWithheldUrl, PageAccess::kWithheld,
+       PageAccess::kWithheld},
+      {kWithheldOrigin, kAllowedUrl, PageAccess::kWithheld,
+       PageAccess::kAllowed},
+      {kAllowedOrigin, kWithheldUrl, PageAccess::kAllowed,
+       PageAccess::kWithheld},
+      {kAllowedOrigin, kAllowedUrl, PageAccess::kAllowed, PageAccess::kAllowed},
   };
 
   for (const auto& test_case : cases) {
@@ -354,8 +379,17 @@ TEST(ExtensionWebRequestPermissions,
         "url-%s initiator-%s", test_case.url.spec().c_str(),
         test_case.initiator ? test_case.initiator->Serialize().c_str()
                             : "empty"));
-    EXPECT_EQ(get_access(test_case.url, test_case.initiator),
-              test_case.expected_access);
+    EXPECT_EQ(get_access(test_case.url, test_case.initiator,
+                         content::RESOURCE_TYPE_SUB_RESOURCE),
+              test_case.expected_access_subresource);
+    EXPECT_EQ(get_access(test_case.url, test_case.initiator, base::nullopt),
+              test_case.expected_access_subresource);
+    EXPECT_EQ(get_access(test_case.url, test_case.initiator,
+                         content::RESOURCE_TYPE_SUB_FRAME),
+              test_case.expected_access_navigation);
+    EXPECT_EQ(get_access(test_case.url, test_case.initiator,
+                         content::RESOURCE_TYPE_MAIN_FRAME),
+              test_case.expected_access_navigation);
   }
 }
 

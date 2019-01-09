@@ -976,13 +976,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // The runner will have refreshed the page, and the extension will have
-  // received access to the main-frame ("a.com") and requests initiated by it
-  // (cross-origin sub-frame navigations to "b.com" and "c.com").
+  // received access to the main-frame ("a.com"). It should still not be able to
+  // intercept the cross-origin sub-frame requests to "b.com" and "c.com".
   get_main_and_child_frame(web_contents, &main_frame, &child_frame);
   EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "a.com"));
-  EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
-  EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "c.com"));
+  EXPECT_FALSE(
+      HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
+  EXPECT_FALSE(
+      HasSeenWebRequestInBackgroundPage(extension, profile(), "c.com"));
 
+  // The withheld sub-frame requests should not show up as a blocked action.
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
 
   int request_count =

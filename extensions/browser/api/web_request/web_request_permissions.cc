@@ -86,7 +86,8 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     int tab_id,
     bool crosses_incognito,
     WebRequestPermissions::HostPermissionsCheck host_permissions_check,
-    const base::Optional<url::Origin>& initiator) {
+    const base::Optional<url::Origin>& initiator,
+    const base::Optional<content::ResourceType>& resource_type) {
   // extension_info_map can be NULL in testing.
   if (!extension_info_map)
     return PermissionsData::PageAccess::kAllowed;
@@ -121,18 +122,23 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
   if (crosses_incognito && !extension_info_map->CanCrossIncognito(extension))
     return PermissionsData::PageAccess::kDenied;
 
-  PermissionsData::PageAccess access = PermissionsData::PageAccess::kDenied;
   switch (host_permissions_check) {
     case WebRequestPermissions::DO_NOT_CHECK_HOST:
-      access = PermissionsData::PageAccess::kAllowed;
+      return PermissionsData::PageAccess::kAllowed;
       break;
-    case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL:
-      access = GetHostAccessForURL(*extension, url, tab_id);
-      // If access to the host was withheld, check if the extension has access
-      // to the initiator. If it does, allow the extension to see the request.
-      // This is important for extensions with webRequest to work well with
-      // runtime host permissions.
-      if (access == PermissionsData::PageAccess::kWithheld) {
+    case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL: {
+      PermissionsData::PageAccess access =
+          GetHostAccessForURL(*extension, url, tab_id);
+
+      bool is_navigation_request =
+          resource_type && content::IsResourceTypeFrame(*resource_type);
+
+      // For sub-resource (non-navigation) requests, if access to the host was
+      // withheld, check if the extension has access to the initiator. If it
+      // does, allow the extension to see the request. This is important for
+      // extensions with webRequest to work well with runtime host permissions.
+      if (!is_navigation_request &&
+          access == PermissionsData::PageAccess::kWithheld) {
         PermissionsData::PageAccess initiator_access =
             initiator
                 ? GetHostAccessForURL(*extension, initiator->GetURL(), tab_id)
@@ -140,10 +146,23 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
         if (initiator_access == PermissionsData::PageAccess::kAllowed)
           access = PermissionsData::PageAccess::kAllowed;
       }
+      return access;
       break;
+    }
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
       PermissionsData::PageAccess request_access =
           GetHostAccessForURL(*extension, url, tab_id);
+
+      bool is_navigation_request =
+          resource_type && content::IsResourceTypeFrame(*resource_type);
+
+      // Only require access to the initiator for sub-resource (non-navigation)
+      // requests. See crbug.com/918137.
+      // TODO(karandeepb): Should service worker navigation preload requests be
+      // treated similarly?
+      if (is_navigation_request)
+        return request_access;
+
       if (request_access == PermissionsData::PageAccess::kDenied)
         return request_access;
 
@@ -173,10 +192,11 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       // | Denied          | *             | Denied         |
       // ----------------------------------------------------
 
-      // Note: The only interesting case is when the access to request is
-      // withheld but the access to initiator is allowed. In this case, we allow
-      // access to the request. This is important for extensions with webRequest
-      // to work well with runtime host permissions. See crbug.com/851722.
+      // Note: The only interesting case is when the access to a sub-resource
+      // request is withheld but the access to initiator is allowed. In this
+      // case, we allow access to the request. This is important for extensions
+      // with webRequest to work well with runtime host permissions. See
+      // crbug.com/851722.
 
       PermissionsData::PageAccess initiator_access =
           GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
@@ -188,13 +208,14 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       break;
     }
     case WebRequestPermissions::REQUIRE_ALL_URLS:
-      if (extension->permissions_data()->HasEffectiveAccessToAllHosts())
-        access = PermissionsData::PageAccess::kAllowed;
-      // else ACCESS_DENIED
+      return extension->permissions_data()->HasEffectiveAccessToAllHosts()
+                 ? PermissionsData::PageAccess::kAllowed
+                 : PermissionsData::PageAccess::kDenied;
       break;
   }
 
-  return access;
+  NOTREACHED();
+  return PermissionsData::PageAccess::kDenied;
 }
 
 // Returns true if |request|.url is of the form clients[0-9]*.google.com.
@@ -352,10 +373,11 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     int tab_id,
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
-    const base::Optional<url::Origin>& initiator) {
-  return CanExtensionAccessURLInternal(extension_info_map, extension_id, url,
-                                       tab_id, crosses_incognito,
-                                       host_permissions_check, initiator);
+    const base::Optional<url::Origin>& initiator,
+    const base::Optional<content::ResourceType>& resource_type) {
+  return CanExtensionAccessURLInternal(
+      extension_info_map, extension_id, url, tab_id, crosses_incognito,
+      host_permissions_check, initiator, resource_type);
 }
 
 // static
@@ -372,5 +394,7 @@ bool WebRequestPermissions::CanExtensionAccessInitiator(
              extension_info_map, extension_id, initiator->GetURL(), tab_id,
              crosses_incognito,
              WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
-             base::nullopt) == PermissionsData::PageAccess::kAllowed;
+             base::nullopt /* initiator */,
+             base::nullopt /* resource_type */) ==
+         PermissionsData::PageAccess::kAllowed;
 }
