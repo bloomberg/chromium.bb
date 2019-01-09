@@ -23,16 +23,32 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::IconKeyPtr expect_icon_key_;
   bool expect_icon_key_changed_;
 
+  std::vector<apps::mojom::PermissionPtr> expect_permissions_;
+  bool expect_permissions_changed_;
+
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
 
   apps::mojom::OptionalBool expect_show_in_search_;
   bool expect_show_in_search_changed_;
 
+  static constexpr uint32_t kPermissionTypeLocation = 100;
+  static constexpr uint32_t kPermissionTypeNotification = 200;
+
+  apps::mojom::PermissionPtr MakePermission(uint32_t permission_id,
+                                            apps::mojom::TriState value) {
+    apps::mojom::PermissionPtr permission = apps::mojom::Permission::New();
+    permission->permission_id = permission_id;
+    permission->value_type = apps::mojom::PermissionValueType::kTriState;
+    permission->value = static_cast<uint32_t>(value);
+    return permission;
+  }
+
   void ExpectNoChange() {
     expect_readiness_changed_ = false;
     expect_name_changed_ = false;
     expect_icon_key_changed_ = false;
+    expect_permissions_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
   }
@@ -46,6 +62,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_icon_key_, u.IconKey());
     EXPECT_EQ(expect_icon_key_changed_, u.IconKeyChanged());
+
+    EXPECT_EQ(expect_permissions_, u.Permissions());
+    EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
 
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
@@ -64,6 +83,7 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_ = apps::mojom::Readiness::kUnknown;
     expect_name_ = "";
     expect_icon_key_ = nullptr;
+    expect_permissions_.clear();
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     ExpectNoChange();
@@ -150,6 +170,42 @@ class AppUpdateTest : public testing::Test {
       delta->show_in_search = apps::mojom::OptionalBool::kTrue;
       expect_show_in_search_ = apps::mojom::OptionalBool::kTrue;
       expect_show_in_search_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Permission tests.
+
+    if (state) {
+      auto p0 = MakePermission(kPermissionTypeLocation,
+                               apps::mojom::TriState::kAllow);
+      auto p1 = MakePermission(kPermissionTypeNotification,
+                               apps::mojom::TriState::kAllow);
+      state->permissions.push_back(p0.Clone());
+      state->permissions.push_back(p1.Clone());
+      expect_permissions_.push_back(p0.Clone());
+      expect_permissions_.push_back(p1.Clone());
+      expect_permissions_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      expect_permissions_.clear();
+      auto p0 = MakePermission(kPermissionTypeNotification,
+                               apps::mojom::TriState::kAllow);
+      auto p1 = MakePermission(kPermissionTypeLocation,
+                               apps::mojom::TriState::kBlock);
+
+      delta->permissions.push_back(p0.Clone());
+      delta->permissions.push_back(p1.Clone());
+      expect_permissions_.push_back(p0.Clone());
+      expect_permissions_.push_back(p1.Clone());
+      expect_permissions_changed_ = true;
       CheckExpects(u);
     }
 

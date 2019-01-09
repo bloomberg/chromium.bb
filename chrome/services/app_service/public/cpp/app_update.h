@@ -5,6 +5,8 @@
 #ifndef CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 #define CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
@@ -63,6 +65,9 @@ class AppUpdate {
 
   apps::mojom::IconKeyPtr IconKey() const;
   bool IconKeyChanged() const;
+
+  std::vector<apps::mojom::PermissionPtr> Permissions() const;
+  bool PermissionsChanged() const;
 
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
