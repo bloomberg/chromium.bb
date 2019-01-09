@@ -530,7 +530,8 @@ public abstract class NotificationBuilderBase {
             // Updating a notification with a bitmap status bar icon leads to a crash on Samsung
             // and Coolpad (Yulong) devices on Marshmallow, see https://crbug.com/829367.
             // Also, there are crashes on Lenovo M devices: https://crbug.com/894361.
-            for (String name : new String[] {"samsung", "yulong", "lenovo"}) {
+            // And some more crashes from Hisense and LeEco devices: https://crbug.com/903268.
+            for (String name : new String[] {"samsung", "yulong", "lenovo", "hisense", "leeco"}) {
                 if (Build.MANUFACTURER.equalsIgnoreCase(name)) {
                     return false;
                 }
