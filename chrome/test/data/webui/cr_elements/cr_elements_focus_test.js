@@ -123,12 +123,6 @@ CrElementsInputTest.prototype = {
   ]),
 };
 
-// This test is flaky on ChromeOS. See https://crbug.com/895832.
-GEN('#if defined(OS_CHROMEOS)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsInputTest', 'MAYBE_All', function() {
+TEST_F('CrElementsInputTest', 'All', function() {
   mocha.run();
 });

@@ -73,11 +73,13 @@ suite('cr-input', function() {
     input = crInput.$.input;
     Polymer.dom.flush();
 
-    assertEquals(null, crInput.getAttribute('tabindex'));
-    assertEquals(true, input.disabled);
-    crInput.disabled = false;
-    assertEquals('14', crInput.getAttribute('tabindex'));
-    assertEquals(14, input.tabIndex);
+    return test_util.whenAttributeIs(input, 'tabindex', null).then(() => {
+      assertEquals(null, crInput.getAttribute('tabindex'));
+      assertEquals(true, input.disabled);
+      crInput.disabled = false;
+      assertEquals('14', crInput.getAttribute('tabindex'));
+      assertEquals(14, input.tabIndex);
+    });
   });
 
   test('pointerDownAndTabIndex', function() {
