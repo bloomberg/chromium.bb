@@ -64,4 +64,8 @@ bool StubPasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
+GURL StubPasswordManagerDriver::GetLastCommittedURL() const {
+  return GURL();
+}
+
 }  // namespace password_manager

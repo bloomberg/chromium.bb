@@ -144,7 +144,8 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
     return false;
 
   password_manager::PasswordManagerClient* client = password_manager->client();
-  if (!client || !client->IsFillingFallbackEnabledForCurrentPage())
+  if (!client ||
+      !client->IsFillingFallbackEnabled(driver->GetLastCommittedURL()))
     return false;
 
   LogContextOfShowAllSavedPasswordsShown(

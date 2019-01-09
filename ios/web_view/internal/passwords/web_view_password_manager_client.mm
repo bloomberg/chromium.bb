@@ -138,11 +138,11 @@ void WebViewPasswordManagerClient::NotifyStorePasswordCalled() {
   helper_.NotifyStorePasswordCalled();
 }
 
-bool WebViewPasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
-    const {
+bool WebViewPasswordManagerClient::IsSavingAndFillingEnabled(
+    const GURL& url) const {
   return *saving_passwords_enabled_ && !IsIncognito() &&
          !net::IsCertStatusError(GetMainFrameCertStatus()) &&
-         IsFillingEnabledForCurrentPage();
+         IsFillingEnabled(url);
 }
 
 const GURL& WebViewPasswordManagerClient::GetLastCommittedEntryURL() const {

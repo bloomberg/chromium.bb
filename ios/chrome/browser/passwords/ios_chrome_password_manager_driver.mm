@@ -96,3 +96,7 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
   // On IOS only processing of password forms in main frame is implemented.
   return true;
 }
+
+GURL IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
+  return delegate_.lastCommittedURL;
+}
