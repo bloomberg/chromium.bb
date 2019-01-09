@@ -286,6 +286,12 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   RenderWidgetHostViewBase* touchscreen_gesture_target() {
     return rwhier()->touchscreen_gesture_target_.target;
   }
+  RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin() {
+    return rwhier()->bubbling_gesture_scroll_origin_;
+  }
+  RenderWidgetHostViewBase* bubbling_gesture_scroll_target() {
+    return rwhier()->bubbling_gesture_scroll_target_;
+  }
 
   TestBrowserThreadBundle thread_bundle_;
 
@@ -592,6 +598,84 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
                               ui::LatencyInfo(ui::SourceEventType::TOUCH));
   EXPECT_EQ(6u, targeter->num_requests_in_queue_for_testing());
   EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+}
+
+// Test that when a child view involved in scroll bubbling detaches, scroll
+// bubbling is canceled.
+TEST_F(RenderWidgetHostInputEventRouterTest,
+       CancelScrollBubblingWhenChildDetaches) {
+  gfx::Vector2dF delta(0.f, 10.f);
+  blink::WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+          delta.x(), delta.y(), blink::kWebGestureDeviceTouchscreen);
+
+  {
+    ChildViewState child = MakeChildView(view_root_.get());
+
+    rwhier()->BubbleScrollEvent(view_root_.get(), child.view.get(),
+                                scroll_begin);
+    EXPECT_EQ(child.view.get(), bubbling_gesture_scroll_origin());
+    EXPECT_EQ(view_root_.get(), bubbling_gesture_scroll_target());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+              view_root_->last_gesture_seen());
+
+    rwhier()->WillDetachChildView(child.view.get());
+    EXPECT_EQ(nullptr, bubbling_gesture_scroll_origin());
+    EXPECT_EQ(nullptr, bubbling_gesture_scroll_target());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+              view_root_->last_gesture_seen());
+  }
+
+  {
+    ChildViewState outer = MakeChildView(view_root_.get());
+    ChildViewState inner = MakeChildView(outer.view.get());
+
+    rwhier()->BubbleScrollEvent(outer.view.get(), inner.view.get(),
+                                scroll_begin);
+    EXPECT_EQ(inner.view.get(), bubbling_gesture_scroll_origin());
+    EXPECT_EQ(outer.view.get(), bubbling_gesture_scroll_target());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+              outer.view->last_gesture_seen());
+    rwhier()->BubbleScrollEvent(view_root_.get(), outer.view.get(),
+                                scroll_begin);
+    EXPECT_EQ(inner.view.get(), bubbling_gesture_scroll_origin());
+    EXPECT_EQ(view_root_.get(), bubbling_gesture_scroll_target());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+              outer.view->last_gesture_seen());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+              view_root_->last_gesture_seen());
+
+    rwhier()->WillDetachChildView(outer.view.get());
+    EXPECT_EQ(nullptr, bubbling_gesture_scroll_origin());
+    EXPECT_EQ(nullptr, bubbling_gesture_scroll_target());
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+              view_root_->last_gesture_seen());
+  }
+}
+
+// Test that when a child view that is irrelevant to any ongoing scroll
+// bubbling detaches, scroll bubbling is not canceled.
+TEST_F(RenderWidgetHostInputEventRouterTest,
+       ContinueScrollBubblingWhenIrrelevantChildDetaches) {
+  gfx::Vector2dF delta(0.f, 10.f);
+  blink::WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+          delta.x(), delta.y(), blink::kWebGestureDeviceTouchscreen);
+
+  ChildViewState outer = MakeChildView(view_root_.get());
+  ChildViewState inner = MakeChildView(outer.view.get());
+
+  rwhier()->BubbleScrollEvent(view_root_.get(), outer.view.get(), scroll_begin);
+  EXPECT_EQ(outer.view.get(), bubbling_gesture_scroll_origin());
+  EXPECT_EQ(view_root_.get(), bubbling_gesture_scroll_target());
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+            view_root_->last_gesture_seen());
+
+  rwhier()->WillDetachChildView(inner.view.get());
+  EXPECT_EQ(outer.view.get(), bubbling_gesture_scroll_origin());
+  EXPECT_EQ(view_root_.get(), bubbling_gesture_scroll_target());
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+            view_root_->last_gesture_seen());
 }
 
 }  // namespace content
