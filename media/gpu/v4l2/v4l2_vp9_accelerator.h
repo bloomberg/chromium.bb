@@ -39,9 +39,7 @@ class V4L2VP9Accelerator : public VP9Decoder::VP9Accelerator {
   bool GetFrameContext(const scoped_refptr<VP9Picture>& pic,
                        Vp9FrameContext* frame_ctx) override;
 
-  bool IsFrameContextRequired() const override {
-    return device_needs_frame_context_;
-  }
+  bool IsFrameContextRequired() const override;
 
  private:
   scoped_refptr<V4L2DecodeSurface> VP9PictureToV4L2DecodeSurface(

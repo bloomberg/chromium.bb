@@ -404,6 +404,10 @@ bool V4L2VP9Accelerator::GetFrameContext(const scoped_refptr<VP9Picture>& pic,
   return true;
 }
 
+bool V4L2VP9Accelerator::IsFrameContextRequired() const {
+  return device_needs_frame_context_;
+}
+
 scoped_refptr<V4L2DecodeSurface>
 V4L2VP9Accelerator::VP9PictureToV4L2DecodeSurface(
     const scoped_refptr<VP9Picture>& pic) {
