@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
@@ -1091,6 +1093,31 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   SetClipPath();
 
   SchedulePaint();
+}
+
+// static
+AutofillPopupView* AutofillPopupView::Create(
+    AutofillPopupController* controller) {
+#if defined(OS_MACOSX)
+  // It's possible for the container_view to not be in a window. In that case,
+  // cancel the popup since we can't fully set it up.
+  if (!platform_util::GetTopLevel(controller->container_view()))
+    return nullptr;
+#endif
+
+  views::Widget* observing_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          controller->container_view());
+
+#if !defined(OS_MACOSX)
+  // If the top level widget can't be found, cancel the popup since we can't
+  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
+  // because the parent is not a views::Widget.
+  if (!observing_widget)
+    return nullptr;
+#endif
+
+  return new AutofillPopupViewNativeViews(controller, observing_widget);
 }
 
 }  // namespace autofill

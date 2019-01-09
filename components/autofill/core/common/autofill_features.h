@@ -41,7 +41,6 @@ extern const base::Feature kAutofillEnableIFrameSupportOniOS;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
-extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
 extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
@@ -147,11 +146,6 @@ bool IsPasswordManualFallbackEnabled();
 // Returns whether the UI for addresses and credit cards in manual fallback is
 // enabled.
 bool IsAutofillManualFallbackEnabled();
-
-// Returns true if the native Views implementation of the Desktop dropdown
-// should be used. This will also be true if the kExperimentalUi flag is true,
-// which forces a bunch of forthcoming UI changes on.
-bool ShouldUseNativeViews();
 
 // Returns true if expiration dates on the save card dialog should be
 // unlabeled, i.e. not preceded by "Exp."
