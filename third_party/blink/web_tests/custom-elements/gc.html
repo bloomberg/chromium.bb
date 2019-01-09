@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <body>
@@ -27,9 +28,7 @@ promise_test((t) => {
     f.remove();
   })();
 
-  return Promise.resolve()
-  .then(() => {
-    gc(); gc();
+  return asyncGC().then(() => {
     assert_true(observation.wasCollected,
                 'cyclic references between objects and DOM wrappers should ' +
                 'not leak');
@@ -53,9 +52,7 @@ promise_test((t) => {
     f.remove();
   })();
 
-  return Promise.resolve()
-  .then(() => {
-    gc(); gc();
+  return asyncGC().then(() => {
     assert_true(observation.wasCollected,
                 'defining a custom element should not leak its constructor');
   });
