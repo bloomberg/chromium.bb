@@ -55,8 +55,9 @@ class CONTENT_EXPORT SyntheticGestureController {
   void StartTimer(bool high_frequency);
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
-                   OnGestureCompleteCallback completion_callback,
                    SyntheticGesture::Result result);
+  void GestureCompleted(SyntheticGesture::Result result);
+  void ResolveCompletionCallback();
 
   Delegate* const delegate_;
   std::unique_ptr<SyntheticGestureTarget> gesture_target_;

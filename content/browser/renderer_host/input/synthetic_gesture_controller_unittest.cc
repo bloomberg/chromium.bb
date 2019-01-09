@@ -183,6 +183,14 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   bool flush_requested() const { return flush_requested_; }
   void ClearFlushRequest() { flush_requested_ = false; }
 
+  void WaitForTargetAck(SyntheticGestureParams::GestureType type,
+                        SyntheticGestureParams::GestureSourceType source,
+                        base::OnceClosure callback) const override {
+    // Must resolve synchronously since FlushInputUntilComplete will try the
+    // next gesture after this one.
+    std::move(callback).Run();
+  }
+
  private:
   bool flush_requested_;
 

@@ -104,6 +104,11 @@ void MockWidgetInputHandler::DispatchNonBlockingEvent(
       std::move(event), DispatchEventCallback()));
 }
 
+void MockWidgetInputHandler::WaitForInputProcessed(
+    WaitForInputProcessedCallback callback) {
+  NOTREACHED();
+}
+
 MockWidgetInputHandler::MessageVector
 MockWidgetInputHandler::GetAndResetDispatchedMessages() {
   MessageVector dispatched_events;

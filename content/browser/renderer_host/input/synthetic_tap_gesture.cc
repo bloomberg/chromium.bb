@@ -46,6 +46,13 @@ SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
                           : SyntheticGesture::GESTURE_RUNNING;
 }
 
+void SyntheticTapGesture::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(), gesture_source_type_,
+                           std::move(callback));
+}
+
 bool SyntheticTapGesture::AllowHighFrequencyDispatch() const {
   return false;
 }

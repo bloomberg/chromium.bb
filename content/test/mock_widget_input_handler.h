@@ -216,6 +216,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(
       std::unique_ptr<content::InputEvent> event) override;
+  void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
       mojom::SynchronousCompositorControlHostPtr control_host,
       mojom::SynchronousCompositorHostAssociatedPtrInfo host,
