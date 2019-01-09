@@ -600,7 +600,7 @@ void BrowsingDataRemoverImpl::OnTaskComplete() {
   // TODO(brettw) http://crbug.com/305259: This should also observe session
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
-
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(num_pending_tasks_, 0);
   num_pending_tasks_--;
 

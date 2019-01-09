@@ -127,6 +127,15 @@ void OnQuotaManagedOriginDeleted(const url::Origin& origin,
   CheckQuotaManagedDataDeletionStatus(deletion_task_count, std::move(callback));
 }
 
+void PerformQuotaManagerStorageCleanup(
+    const scoped_refptr<storage::QuotaManager>& quota_manager,
+    blink::mojom::StorageType quota_storage_type,
+    uint32_t remove_mask,
+    base::OnceClosure callback) {
+  quota_manager->PerformStorageCleanup(quota_storage_type, remove_mask,
+                                       std::move(callback));
+}
+
 void ClearedShaderCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     base::PostTaskWithTraits(
@@ -151,7 +160,7 @@ void OnLocalStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time delete_begin,
     const base::Time delete_end,
     base::OnceClosure callback,
@@ -159,7 +168,7 @@ void OnLocalStorageUsageInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::OnceClosure done_callback =
-      perform_cleanup
+      perform_storage_cleanup
           ? base::BindOnce(
                 &DOMStorageContextWrapper::PerformLocalStorageCleanup,
                 dom_storage_context, std::move(callback))
@@ -188,13 +197,13 @@ void OnSessionStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     base::OnceClosure callback,
     const std::vector<SessionStorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::OnceClosure done_callback =
-      perform_cleanup
+      perform_storage_cleanup
           ? base::BindOnce(
                 &DOMStorageContextWrapper::PerformSessionStorageCleanup,
                 dom_storage_context, std::move(callback))
@@ -218,7 +227,7 @@ void ClearLocalStorageOnUIThread(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const GURL& storage_origin,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
@@ -237,22 +246,23 @@ void ClearLocalStorageOnUIThread(
     return;
   }
 
-  dom_storage_context->GetLocalStorageUsage(base::BindOnce(
-      &OnLocalStorageUsageInfo, dom_storage_context, special_storage_policy,
-      origin_matcher, perform_cleanup, begin, end, std::move(callback)));
+  dom_storage_context->GetLocalStorageUsage(
+      base::BindOnce(&OnLocalStorageUsageInfo, dom_storage_context,
+                     special_storage_policy, origin_matcher,
+                     perform_storage_cleanup, begin, end, std::move(callback)));
 }
 
 void ClearSessionStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   dom_storage_context->GetSessionStorageUsage(base::BindOnce(
       &OnSessionStorageUsageInfo, dom_storage_context, special_storage_policy,
-      origin_matcher, perform_cleanup, std::move(callback)));
+      origin_matcher, perform_storage_cleanup, std::move(callback)));
 }
 
 }  // namespace
@@ -402,13 +412,15 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       const base::Time begin,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
-      const StoragePartition::OriginMatcherFunction& origin_matcher);
+      const StoragePartition::OriginMatcherFunction& origin_matcher,
+      bool perform_storage_cleanup);
 
   void ClearOriginsOnIOThread(
       storage::QuotaManager* quota_manager,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       const StoragePartition::OriginMatcherFunction& origin_matcher,
+      bool perform_storage_cleanup,
       base::OnceClosure callback,
       const std::set<url::Origin>& origins,
       blink::mojom::StorageType quota_storage_type);
@@ -483,7 +495,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::FileSystemContext* filesystem_context,
       network::mojom::CookieManager* cookie_manager,
-      bool perform_cleanup,
+      bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
 
@@ -494,6 +506,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       const StoragePartition::OriginMatcherFunction& origin_matcher,
+      bool perform_storage_cleanup,
       base::OnceClosure callback);
 
  private:
@@ -514,6 +527,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const GURL& storage_origin,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
+    bool perform_storage_cleanup,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -525,7 +539,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
               : base::make_optional(url::Origin::Create(storage_origin)),
           std::move(callback));
   helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
-                              origin_matcher);
+                              origin_matcher, perform_storage_cleanup);
 }
 
 StoragePartitionImpl::StoragePartitionImpl(
@@ -956,7 +970,7 @@ void StoragePartitionImpl::ClearDataImpl(
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     CookieDeletionFilterPtr cookie_deletion_filter,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
@@ -972,7 +986,7 @@ void StoragePartitionImpl::ClearDataImpl(
       storage_origin, origin_matcher, std::move(cookie_deletion_filter),
       GetPath(), dom_storage_context_.get(), quota_manager_.get(),
       special_storage_policy_.get(), filesystem_context_.get(),
-      GetCookieManagerForBrowserProcess(), perform_cleanup, begin, end);
+      GetCookieManagerForBrowserProcess(), perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -1006,7 +1020,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     const scoped_refptr<storage::QuotaManager>& quota_manager,
     const base::Time begin,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    const StoragePartition::OriginMatcherFunction& origin_matcher) {
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
+    bool perform_storage_cleanup) {
   IncrementTaskCountOnIO();
   base::RepeatingClosure decrement_callback = base::BindRepeating(
       &QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO,
@@ -1022,7 +1037,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, origin_matcher,
-                       decrement_callback));
+                       perform_storage_cleanup, decrement_callback));
   }
 
   // Do the same for temporary quota.
@@ -1033,7 +1048,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, origin_matcher,
-                       decrement_callback));
+                       perform_storage_cleanup, decrement_callback));
   }
 
   // Do the same for syncable quota.
@@ -1044,7 +1059,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                        base::Unretained(this), base::RetainedRef(quota_manager),
                        special_storage_policy, origin_matcher,
-                       decrement_callback));
+                       perform_storage_cleanup, decrement_callback));
   }
 
   DecrementTaskCountOnIO();
@@ -1056,6 +1071,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
         const scoped_refptr<storage::SpecialStoragePolicy>&
             special_storage_policy,
         const StoragePartition::OriginMatcherFunction& origin_matcher,
+        bool perform_storage_cleanup,
         base::OnceClosure callback,
         const std::set<url::Origin>& origins,
         blink::mojom::StorageType quota_storage_type) {
@@ -1070,8 +1086,13 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
   // The logic below (via CheckQuotaManagedDataDeletionStatus) only
   // invokes the callback when all processing is complete.
-  base::RepeatingClosure completion =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  base::RepeatingClosure done_callback = base::AdaptCallbackForRepeating(
+      perform_storage_cleanup
+          ? base::BindOnce(&PerformQuotaManagerStorageCleanup,
+                           base::WrapRefCounted(quota_manager),
+                           quota_storage_type, remove_mask_,
+                           std::move(callback))
+          : std::move(callback));
 
   size_t* deletion_task_count = new size_t(0u);
   (*deletion_task_count)++;
@@ -1090,11 +1111,11 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
         origin, quota_storage_type,
         StoragePartitionImpl::GenerateQuotaClientMask(remove_mask_),
         base::BindOnce(&OnQuotaManagedOriginDeleted, origin, quota_storage_type,
-                       deletion_task_count, completion));
+                       deletion_task_count, done_callback));
   }
   (*deletion_task_count)--;
 
-  CheckQuotaManagedDataDeletionStatus(deletion_task_count, completion);
+  CheckQuotaManagedDataDeletionStatus(deletion_task_count, done_callback);
 }
 
 void StoragePartitionImpl::DataDeletionHelper::IncrementTaskCountOnUI() {
@@ -1128,7 +1149,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::FileSystemContext* filesystem_context,
     network::mojom::CookieManager* cookie_manager,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask_, 0u);
@@ -1174,15 +1195,16 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             &DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
             base::Unretained(this), base::WrapRefCounted(quota_manager), begin,
             storage_origin, base::WrapRefCounted(special_storage_policy),
-            origin_matcher, decrement_callback));
+            origin_matcher, perform_storage_cleanup, decrement_callback));
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_LOCAL_STORAGE) {
     IncrementTaskCountOnUI();
     ClearLocalStorageOnUIThread(base::WrapRefCounted(dom_storage_context),
                                 base::WrapRefCounted(special_storage_policy),
-                                origin_matcher, storage_origin, perform_cleanup,
-                                begin, end, decrement_callback);
+                                origin_matcher, storage_origin,
+                                perform_storage_cleanup, begin, end,
+                                decrement_callback);
 
     // ClearDataImpl cannot clear session storage data when a particular origin
     // is specified. Therefore we ignore clearing session storage in this case.
@@ -1192,7 +1214,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       ClearSessionStorageOnUIThread(
           base::WrapRefCounted(dom_storage_context),
           base::WrapRefCounted(special_storage_policy), origin_matcher,
-          perform_cleanup, decrement_callback);
+          perform_storage_cleanup, decrement_callback);
     }
   }
 
@@ -1241,11 +1263,11 @@ void StoragePartitionImpl::ClearData(
   CookieDeletionFilterPtr deletion_filter = CookieDeletionFilter::New();
   if (!storage_origin.host().empty())
     deletion_filter->host_name = storage_origin.host();
-  bool perform_cleanup =
+  bool perform_storage_cleanup =
       begin.is_null() && end.is_max() && storage_origin.is_empty();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
                 OriginMatcherFunction(), std::move(deletion_filter),
-                perform_cleanup, begin, end, std::move(callback));
+                perform_storage_cleanup, begin, end, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearData(
@@ -1253,13 +1275,13 @@ void StoragePartitionImpl::ClearData(
     uint32_t quota_storage_remove_mask,
     const OriginMatcherFunction& origin_matcher,
     network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), origin_matcher,
-                std::move(cookie_deletion_filter), perform_cleanup, begin, end,
-                std::move(callback));
+                std::move(cookie_deletion_filter), perform_storage_cleanup,
+                begin, end, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearHttpAndMediaCaches(

@@ -726,6 +726,60 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(HostDataDeleter);
 };
 
+class QuotaManager::StorageCleanupHelper : public QuotaTask {
+ public:
+  StorageCleanupHelper(QuotaManager* manager,
+                       StorageType type,
+                       int quota_client_mask,
+                       base::OnceClosure callback)
+      : QuotaTask(manager),
+        type_(type),
+        quota_client_mask_(quota_client_mask),
+        callback_(std::move(callback)),
+        weak_factory_(this) {}
+
+ protected:
+  void Run() override {
+    base::RepeatingClosure barrier = base::BarrierClosure(
+        manager()->clients_.size(),
+        base::BindOnce(&StorageCleanupHelper::CallCompleted,
+                       weak_factory_.GetWeakPtr()));
+
+    // This may synchronously trigger |callback_| at the end of the for loop,
+    // make sure we do nothing after this block.
+    for (auto* client : manager()->clients_) {
+      if (quota_client_mask_ & client->id()) {
+        client->PerformStorageCleanup(type_, barrier);
+      } else {
+        barrier.Run();
+      }
+    }
+  }
+
+  void Aborted() override {
+    weak_factory_.InvalidateWeakPtrs();
+    std::move(callback_).Run();
+    DeleteSoon();
+  }
+
+  void Completed() override {
+    weak_factory_.InvalidateWeakPtrs();
+    std::move(callback_).Run();
+    DeleteSoon();
+  }
+
+ private:
+  QuotaManager* manager() const {
+    return static_cast<QuotaManager*>(observer());
+  }
+
+  StorageType type_;
+  int quota_client_mask_;
+  base::OnceClosure callback_;
+  base::WeakPtrFactory<StorageCleanupHelper> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(StorageCleanupHelper);
+};
+
 class QuotaManager::GetModifiedSinceHelper {
  public:
   bool GetModifiedSinceOnDBThread(StorageType type,
@@ -941,6 +995,14 @@ void QuotaManager::DeleteOriginData(const url::Origin& origin,
                                     StatusCallback callback) {
   DeleteOriginDataInternal(origin, type, quota_client_mask, false,
                            std::move(callback));
+}
+
+void QuotaManager::PerformStorageCleanup(StorageType type,
+                                         int quota_client_mask,
+                                         base::OnceClosure callback) {
+  StorageCleanupHelper* deleter = new StorageCleanupHelper(
+      this, type, quota_client_mask, std::move(callback));
+  deleter->Start();
 }
 
 void QuotaManager::DeleteHostData(const std::string& host,

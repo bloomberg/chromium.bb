@@ -417,6 +417,16 @@ void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
       base::BindOnce(&StatusCodeToBoolCallbackAdapter, std::move(callback)));
 }
 
+void ServiceWorkerContextWrapper::PerformStorageCleanup(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    std::move(callback).Run();
+    return;
+  }
+  context()->PerformStorageCleanup(std::move(callback));
+}
+
 void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     const GURL& url,
     const GURL& other_url,

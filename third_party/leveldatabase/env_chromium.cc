@@ -1657,11 +1657,12 @@ leveldb::Status OpenDB(const leveldb_env::Options& options,
 leveldb::Status RewriteDB(const leveldb_env::Options& options,
                           const std::string& name,
                           std::unique_ptr<leveldb::DB>* dbptr) {
+  DCHECK(options.create_if_missing);
   if (!base::FeatureList::IsEnabled(leveldb::kLevelDBRewriteFeature))
     return Status::OK();
   if (leveldb_chrome::IsMemEnv(options.env))
     return Status::OK();
-  TRACE_EVENT0("leveldb", "ChromiumEnv::RewriteDB");
+  TRACE_EVENT1("leveldb", "ChromiumEnv::RewriteDB", "name", name);
   leveldb::Status s;
   std::string tmp_name = DatabaseNameForRewriteDB(name);
   if (options.env->FileExists(tmp_name)) {

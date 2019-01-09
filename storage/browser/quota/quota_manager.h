@@ -201,6 +201,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                       int quota_client_mask,
                       StatusCallback callback);
 
+  // Instructs each QuotaClient to remove possible traces of deleted
+  // data on the disk.
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             int quota_client_mask,
+                             base::OnceClosure callback);
+
   // Called by UI and internal modules.
   void GetPersistentHostQuota(const std::string& host, QuotaCallback callback);
   void SetPersistentHostQuota(const std::string& host,
@@ -274,6 +280,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   class GetModifiedSinceHelper;
   class DumpQuotaTableHelper;
   class DumpOriginInfoTableHelper;
+  class StorageCleanupHelper;
 
   using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
   using OriginInfoTableEntry = QuotaDatabase::OriginInfoTableEntry;

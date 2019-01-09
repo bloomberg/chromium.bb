@@ -105,6 +105,16 @@ void ServiceWorkerQuotaClient::DeleteOriginData(const url::Origin& origin,
       base::BindOnce(&ReportToQuotaStatus, std::move(callback)));
 }
 
+void ServiceWorkerQuotaClient::PerformStorageCleanup(
+    blink::mojom::StorageType type,
+    base::OnceClosure callback) {
+  if (type != StorageType::kTemporary) {
+    std::move(callback).Run();
+    return;
+  }
+  context_->PerformStorageCleanup(std::move(callback));
+}
+
 bool ServiceWorkerQuotaClient::DoesSupport(StorageType type) const {
   return type == StorageType::kTemporary;
 }

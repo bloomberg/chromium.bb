@@ -497,6 +497,12 @@ void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
           AsWeakPtr(), std::move(callback)));
 }
 
+void ServiceWorkerContextCore::PerformStorageCleanup(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  storage()->PerformStorageCleanup(std::move(callback));
+}
+
 void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
     blink::ServiceWorkerStatusCode status,

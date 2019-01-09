@@ -57,6 +57,10 @@ void FakeServiceWorkerContext::DeleteForOrigin(const GURL& origin,
                                                ResultCallback callback) {
   NOTREACHED();
 }
+void FakeServiceWorkerContext::PerformStorageCleanup(
+    base::OnceClosure callback) {
+  NOTREACHED();
+}
 void FakeServiceWorkerContext::CheckHasServiceWorker(
     const GURL& url,
     const GURL& other_url,

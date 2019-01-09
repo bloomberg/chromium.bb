@@ -77,6 +77,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient {
                                 blink::mojom::StorageType type,
                                 DeletionCallback callback) = 0;
 
+  // Called by the QuotaManager.
+  // This can be implemented if a QuotaClient would like to perform a cleanup
+  // step after major deletions.
+  virtual void PerformStorageCleanup(blink::mojom::StorageType type,
+                                     base::OnceClosure callback);
+
   virtual bool DoesSupport(blink::mojom::StorageType type) const = 0;
 };
 
