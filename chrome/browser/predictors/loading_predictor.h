@@ -80,6 +80,7 @@ class LoadingPredictor : public KeyedService,
   void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) override;
 
   size_t GetActiveHintsSizeForTesting() { return active_hints_.size(); }
+  size_t GetTotalHintsActivatedForTesting() { return total_hints_activated_; }
   size_t GetActiveNavigationsSizeForTesting() {
     return active_navigations_.size();
   }
@@ -131,6 +132,7 @@ class LoadingPredictor : public KeyedService,
   std::map<GURL, base::TimeTicks> active_hints_;
   std::set<NavigationID> active_navigations_;
   bool shutdown_ = false;
+  size_t total_hints_activated_ = 0;
 
   GURL last_omnibox_origin_;
   base::TimeTicks last_omnibox_preconnect_time_;
@@ -147,6 +149,10 @@ class LoadingPredictor : public KeyedService,
                            TestMainFrameResponseClearsNavigations);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestMainFrameRequestDoesntCancelExternalHint);
+  FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
+                           TestDuplicateHintAfterPreconnectCompleteCalled);
+  FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
+                           TestDuplicateHintAfterPreconnectCompleteNotCalled);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestDontTrackNonPrefetchableUrls);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest, TestDontPredictOmniboxHints);
