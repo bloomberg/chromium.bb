@@ -380,7 +380,8 @@ void ThemeService::UseDefaultTheme() {
 #endif
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   if (native_theme && native_theme->UsesHighContrastColors())
-    SetCustomDefaultTheme(new IncreasedContrastThemeSupplier);
+    SetCustomDefaultTheme(new IncreasedContrastThemeSupplier(
+        native_theme->SystemDarkModeEnabled()));
   ClearAllThemeData();
   NotifyThemeChanged();
 }

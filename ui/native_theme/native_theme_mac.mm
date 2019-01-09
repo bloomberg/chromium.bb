@@ -175,9 +175,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
   if (UsesHighContrastColors()) {
     switch (color_id) {
       case kColorId_SelectedMenuItemForegroundColor:
-        return SK_ColorWHITE;
+        return SystemDarkModeEnabled() ? SK_ColorBLACK : SK_ColorWHITE;
       case kColorId_FocusedMenuItemBackgroundColor:
-        return SK_ColorDKGRAY;
+        return SystemDarkModeEnabled() ? SK_ColorLTGRAY : SK_ColorDKGRAY;
       default:
         break;
     }

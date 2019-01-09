@@ -12,7 +12,7 @@
 // inactive tab distinction).
 class IncreasedContrastThemeSupplier : public CustomThemeSupplier {
  public:
-  IncreasedContrastThemeSupplier();
+  explicit IncreasedContrastThemeSupplier(bool is_dark_mode);
 
   bool GetColor(int id, SkColor* color) const override;
 
@@ -20,6 +20,8 @@ class IncreasedContrastThemeSupplier : public CustomThemeSupplier {
   ~IncreasedContrastThemeSupplier() override;
 
  private:
+  bool is_dark_mode_;
+
   DISALLOW_COPY_AND_ASSIGN(IncreasedContrastThemeSupplier);
 };
 
