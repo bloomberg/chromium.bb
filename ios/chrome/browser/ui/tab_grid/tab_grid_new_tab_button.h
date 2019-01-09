@@ -18,10 +18,10 @@ typedef NS_ENUM(NSUInteger, TabGridNewTabButtonSizeClass) {
 // The "new tab" button is a button that the user taps when they want to create
 // a new tab. Every combination of |sizeClass| and |page| results in a
 // differently configured button.
-@interface TabGridNewTabButton : UIButton
+@interface TabGridNewTabButton : UIBarButtonItem
+@property(nonatomic, strong, readonly) UIButton* button;
 @property(nonatomic, assign) TabGridPage page;
 @property(nonatomic, assign) TabGridNewTabButtonSizeClass sizeClass;
-+ (instancetype)buttonWithSizeClass:(TabGridNewTabButtonSizeClass)sizeClass;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_NEW_TAB_BUTTON_H_

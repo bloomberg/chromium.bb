@@ -12,16 +12,25 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation TabGridTopToolbar
-@synthesize leadingButton = _leadingButton;
-@synthesize trailingButton = _trailingButton;
-@synthesize pageControl = _pageControl;
+@interface TabGridTopToolbar () <UIToolbarDelegate>
+@end
+
+@implementation TabGridTopToolbar {
+  UIBarButtonItem* _centralItem;
+  UIBarButtonItem* _spaceItem;
+}
+
+- (void)hide {
+  self.backgroundColor = UIColor.blackColor;
+  self.pageControl.alpha = 0.0;
+}
+
+- (void)show {
+  self.backgroundColor = UIColor.clearColor;
+  self.pageControl.alpha = 1.0;
+}
 
 #pragma mark - UIView
-
-- (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kTabGridTopToolbarHeight);
-}
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
   // The first time this moves to a superview, perform the view setup.
@@ -30,67 +39,58 @@
   }
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self setItemsForTraitCollection:self.traitCollection];
+}
+
+#pragma mark - UIBarPositioningDelegate
+
+// Returns UIBarPositionTopAttached, otherwise the toolbar's translucent
+// background won't extend below the status bar.
+- (UIBarPosition)positionForBar:(id<UIBarPositioning>)bar {
+  return UIBarPositionTopAttached;
+}
+
 #pragma mark - Private
 
+- (void)setItemsForTraitCollection:(UITraitCollection*)traitCollection {
+  if (traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+    [self setItems:@[ _spaceItem, _centralItem, _spaceItem ]];
+  } else {
+    [self setItems:@[
+      _leadingButton, _spaceItem, _centralItem, _spaceItem, _trailingButton
+    ]];
+  }
+}
+
 - (void)setupViews {
-  self.layoutMargins = UIEdgeInsetsMake(0, kTabGridToolbarHorizontalInset, 0,
-                                        kTabGridToolbarHorizontalInset);
+  self.translatesAutoresizingMaskIntoConstraints = NO;
+  self.barStyle = UIBarStyleBlack;
+  self.translucent = YES;
+  self.delegate = self;
+  [self setShadowImage:[[UIImage alloc] init]
+      forToolbarPosition:UIBarPositionAny];
 
-  UIVisualEffect* blurEffect =
-      [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-  UIVisualEffectView* toolbar =
-      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:toolbar];
-
-  UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-  leadingButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
+  _leadingButton = [[UIBarButtonItem alloc] init];
+  _leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
   // The segmented control has an intrinsic size.
-  TabGridPageControl* pageControl = [[TabGridPageControl alloc] init];
-  pageControl.translatesAutoresizingMaskIntoConstraints = NO;
+  _pageControl = [[TabGridPageControl alloc] init];
+  _pageControl.translatesAutoresizingMaskIntoConstraints = NO;
+  _centralItem = [[UIBarButtonItem alloc] initWithCustomView:_pageControl];
 
-  UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+  _trailingButton = [[UIBarButtonItem alloc] init];
+  _trailingButton.style = UIBarButtonItemStyleDone;
+  _trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  leadingButton.contentHorizontalAlignment =
-      UIControlContentHorizontalAlignmentLeading;
-  trailingButton.contentHorizontalAlignment =
-      UIControlContentHorizontalAlignmentTrailing;
+  _spaceItem = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
 
-  [toolbar.contentView addSubview:leadingButton];
-  [toolbar.contentView addSubview:trailingButton];
-  [toolbar.contentView addSubview:pageControl];
-  _leadingButton = leadingButton;
-  _trailingButton = trailingButton;
-  _pageControl = pageControl;
-
-  NSArray* constraints = @[
-    [toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [toolbar.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-    [toolbar.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [toolbar.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [leadingButton.heightAnchor
-        constraintEqualToConstant:kTabGridTopToolbarHeight],
-    [leadingButton.leadingAnchor
-        constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-    [leadingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
-    [pageControl.centerXAnchor constraintEqualToAnchor:toolbar.centerXAnchor],
-    [pageControl.centerYAnchor
-        constraintEqualToAnchor:toolbar.bottomAnchor
-                       constant:-kTabGridTopToolbarHeight / 2.0f],
-    [trailingButton.heightAnchor
-        constraintEqualToConstant:kTabGridTopToolbarHeight],
-    [trailingButton.leadingAnchor
-        constraintEqualToAnchor:pageControl.trailingAnchor],
-    [trailingButton.trailingAnchor
-        constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-    [trailingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
-  ];
-  [NSLayoutConstraint activateConstraints:constraints];
+  [self setItemsForTraitCollection:self.traitCollection];
 }
 
 @end
