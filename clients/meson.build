@@ -61,7 +61,8 @@ simple_clients = [
 		],
 		'dep_objs': [
 			dep_wayland_client,
-			dep_libdrm
+			dep_libdrm,
+			dep_libm
 		],
 		'deps': [ 'egl', 'glesv2', 'gbm' ]
 	},

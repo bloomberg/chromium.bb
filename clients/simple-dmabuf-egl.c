@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include <drm_fourcc.h>
 #include <xf86drm.h>
@@ -125,6 +126,12 @@ struct window {
 	struct wl_callback *callback;
 	bool initialized;
 	bool wait_for_configure;
+	struct {
+		GLuint program;
+		GLuint pos;
+		GLuint color;
+		GLuint offset_uniform;
+	} gl;
 };
 
 static sig_atomic_t running = 1;
@@ -426,6 +433,117 @@ static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
 	xdg_toplevel_handle_close,
 };
 
+static const char *vert_shader_text =
+	"uniform float offset;\n"
+	"attribute vec4 pos;\n"
+	"attribute vec4 color;\n"
+	"varying vec4 v_color;\n"
+	"void main() {\n"
+	"  gl_Position = pos + vec4(offset, offset, 0.0, 0.0);\n"
+	"  v_color = color;\n"
+	"}\n";
+
+static const char *frag_shader_text =
+	"precision mediump float;\n"
+	"varying vec4 v_color;\n"
+	"void main() {\n"
+	"  gl_FragColor = v_color;\n"
+	"}\n";
+
+static GLuint
+create_shader(const char *source, GLenum shader_type)
+{
+	GLuint shader;
+	GLint status;
+
+	shader = glCreateShader(shader_type);
+	assert(shader != 0);
+
+	glShaderSource(shader, 1, (const char **) &source, NULL);
+	glCompileShader(shader);
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if (!status) {
+		char log[1000];
+		GLsizei len;
+		glGetShaderInfoLog(shader, 1000, &len, log);
+		fprintf(stderr, "Error: compiling %s: %*s\n",
+			shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment",
+			len, log);
+		return 0;
+	}
+
+	return shader;
+}
+
+static GLuint
+create_and_link_program(GLuint vert, GLuint frag)
+{
+	GLint status;
+	GLuint program = glCreateProgram();
+
+	glAttachShader(program, vert);
+	glAttachShader(program, frag);
+	glLinkProgram(program);
+
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	if (!status) {
+		char log[1000];
+		GLsizei len;
+		glGetProgramInfoLog(program, 1000, &len, log);
+		fprintf(stderr, "Error: linking:\n%*s\n", len, log);
+		return 0;
+	}
+
+	return program;
+}
+
+static bool
+window_set_up_gl(struct window *window)
+{
+	GLuint vert = create_shader(vert_shader_text, GL_VERTEX_SHADER);
+	GLuint frag = create_shader(frag_shader_text, GL_FRAGMENT_SHADER);
+
+	window->gl.program = create_and_link_program(vert, frag);
+
+	glDeleteShader(vert);
+	glDeleteShader(frag);
+
+	window->gl.pos = glGetAttribLocation(window->gl.program, "pos");
+	window->gl.color = glGetAttribLocation(window->gl.program, "color");
+
+	glUseProgram(window->gl.program);
+
+	window->gl.offset_uniform =
+		glGetUniformLocation(window->gl.program, "offset");
+
+	return window->gl.program != 0;
+}
+
+static void
+destroy_window(struct window *window)
+{
+	int i;
+
+	if (window->gl.program)
+		glDeleteProgram(window->gl.program);
+
+	if (window->callback)
+		wl_callback_destroy(window->callback);
+
+	for (i = 0; i < NUM_BUFFERS; i++) {
+		if (window->buffers[i].buffer)
+			buffer_free(&window->buffers[i]);
+	}
+
+	if (window->xdg_toplevel)
+		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
+	if (window->xdg_surface)
+		zxdg_surface_v6_destroy(window->xdg_surface);
+	wl_surface_destroy(window->surface);
+	free(window);
+}
+
 static struct window *
 create_window(struct display *display, int width, int height)
 {
@@ -486,31 +604,19 @@ create_window(struct display *display, int width, int height)
 		                           width, height);
 
 		if (ret < 0)
-			return NULL;
+			goto error;
 	}
+
+	if (!window_set_up_gl(window))
+		goto error;
 
 	return window;
-}
 
-static void
-destroy_window(struct window *window)
-{
-	int i;
+error:
+	if (window)
+		destroy_window(window);
 
-	if (window->callback)
-		wl_callback_destroy(window->callback);
-
-	for (i = 0; i < NUM_BUFFERS; i++) {
-		if (window->buffers[i].buffer)
-			buffer_free(&window->buffers[i]);
-	}
-
-	if (window->xdg_toplevel)
-		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
-	if (window->xdg_surface)
-		zxdg_surface_v6_destroy(window->xdg_surface);
-	wl_surface_destroy(window->surface);
-	free(window);
+	return NULL;
 }
 
 static struct buffer *
@@ -527,13 +633,67 @@ window_next_buffer(struct window *window)
 
 static const struct wl_callback_listener frame_listener;
 
+/* Renders a square moving from the lower left corner to the
+ * upper right corner of the window. The square's vertices have
+ * the following colors:
+ *
+ *  green +-----+ yellow
+ *        |     |
+ *        |     |
+ *    red +-----+ blue
+ */
+static void
+render(struct window *window, struct buffer *buffer)
+{
+	/* Complete a movement iteration in 5000 ms. */
+	static const uint64_t iteration_ms = 5000;
+	static const GLfloat verts[4][2] = {
+		{ -0.5, -0.5 },
+		{ -0.5,  0.5 },
+		{  0.5, -0.5 },
+		{  0.5,  0.5 }
+	};
+	static const GLfloat colors[4][3] = {
+		{ 1, 0, 0 },
+		{ 0, 1, 0 },
+		{ 0, 0, 1 },
+		{ 1, 1, 0 }
+	};
+	GLfloat offset;
+	struct timeval tv;
+	uint64_t time_ms;
+
+	gettimeofday(&tv, NULL);
+	time_ms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+
+	/* Split time_ms in repeating windows of [0, iteration_ms) and map them
+	 * to offsets in the [-0.5, 0.5) range. */
+	offset = (time_ms % iteration_ms) / (float) iteration_ms - 0.5;
+
+	/* Direct all GL draws to the buffer through the FBO */
+	glBindFramebuffer(GL_FRAMEBUFFER, buffer->gl_fbo);
+
+	glViewport(0, 0, window->width, window->height);
+
+	glUniform1f(window->gl.offset_uniform, offset);
+
+	glClearColor(0.0,0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glVertexAttribPointer(window->gl.pos, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	glVertexAttribPointer(window->gl.color, 3, GL_FLOAT, GL_FALSE, 0, colors);
+	glEnableVertexAttribArray(window->gl.pos);
+	glEnableVertexAttribArray(window->gl.color);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glDisableVertexAttribArray(window->gl.pos);
+	glDisableVertexAttribArray(window->gl.color);
+}
+
 static void
 redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
-	/* With a 60Hz redraw rate this completes a cycle in 3 seconds */
-	static const int MAX_STEP = 180;
-	static int step = 0;
-	static int step_dir = 1;
 	struct window *window = data;
 	struct buffer *buffer;
 
@@ -545,19 +705,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		abort();
 	}
 
-	/* Direct all GL draws to the buffer through the FBO */
-	glBindFramebuffer(GL_FRAMEBUFFER, buffer->gl_fbo);
-
-	/* Cycle between 0 and MAX_STEP */
-	step += step_dir;
-	if (step == 0 || step == MAX_STEP)
-		step_dir = -step_dir;
-
-	glClearColor(0.0,
-		     (float) step / MAX_STEP,
-		     1.0 - (float) step / MAX_STEP,
-		     1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	render(window, buffer);
 	glFinish();
 
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);

@@ -690,7 +690,7 @@ nodist_weston_simple_dmabuf_egl_SOURCES =		\
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
 	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_simple_dmabuf_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_EGL_CLIENT_CFLAGS)
-weston_simple_dmabuf_egl_LDADD = $(SIMPLE_DMABUF_EGL_CLIENT_LIBS) libshared.la
+weston_simple_dmabuf_egl_LDADD = $(SIMPLE_DMABUF_EGL_CLIENT_LIBS) libshared.la -lm
 endif
 
 noinst_LTLIBRARIES += libtoytoolkit.la
