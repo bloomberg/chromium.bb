@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "content/common/content_export.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "device/fido/virtual_fido_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h"
 
@@ -72,6 +73,8 @@ class CONTENT_EXPORT ScopedVirtualAuthenticatorEnvironment
   // Discoveries are owned by U2fRequest and FidoRequestHandler, and
   // automatically unregister themselves upon their destruction.
   std::set<VirtualFidoDiscovery*> discoveries_;
+
+  scoped_refptr<device::VirtualFidoDevice::State> virtual_device_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedVirtualAuthenticatorEnvironment);
 };
