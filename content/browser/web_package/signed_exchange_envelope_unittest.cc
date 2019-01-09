@@ -253,4 +253,69 @@ TEST(SignedExchangeEnvelopeTest, InnerResponseIsSXG) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeEnvelopeTest, CacheControlNoStore) {
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"cache-control", "no-store"},
+                             });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, CacheControlSecondValueIsNoStore) {
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"cache-control", "max-age=300, no-store"},
+                             });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, CacheControlPrivateWithValue) {
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"cache-control", "private=foo"},
+                             });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, CacheControlNoStoreInQuotedString) {
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"cache-control", "foo=\"300, no-store\""},
+                             });
+  ASSERT_TRUE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, CacheControlParseError) {
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"cache-control", "max-age=\"abc"},
+                             });
+  ASSERT_FALSE(header.has_value());
+}
+
 }  // namespace content
