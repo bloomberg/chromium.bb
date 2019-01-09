@@ -199,6 +199,17 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   NSArray* supported_languages = [base::mac::OuterBundle() localizations];
   std::string preferred_localization;
   for (NSString* language in preferred_languages) {
+    // We must convert the "-" separator to "_" to be compatible with
+    // NSBundle::localizations() e.g. "en-GB" becomes "en_GB".
+    // See https://crbug.com/913345.
+    language = [language stringByReplacingOccurrencesOfString:@"-"
+                                                   withString:@"_"];
+    if ([supported_languages containsObject:language]) {
+      preferred_localization = base::SysNSStringToUTF8(language);
+      break;
+    }
+    // Check for language support without the region component.
+    language = [language componentsSeparatedByString:@"_"][0];
     if ([supported_languages containsObject:language]) {
       preferred_localization = base::SysNSStringToUTF8(language);
       break;
