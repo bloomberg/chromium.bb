@@ -19,7 +19,6 @@ import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
-import("//ui/android/features.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
@@ -137,15 +136,9 @@ android_resources("chrome_app_java_resources") {
     "java/res",
     "//chrome/android/java/res_chromium",
   ]
-
   if (enable_vr) {
     resource_dirs += [ "//chrome/android/java/res_vr" ]
   }
-
-  if (enable_android_night_mode) {
-    resource_dirs += [ "//chrome/android/java/res_night" ]
-  }
-
   deps = [
     ":chrome_strings_grd",
     "//chrome/android/webapk/libs/common:splash_resources",

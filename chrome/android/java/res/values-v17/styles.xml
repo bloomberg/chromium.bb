@@ -18,7 +18,7 @@
 
     <style name="LauncherTheme" parent="@android:style/Theme.NoDisplay" />
 
-    <style name="MainThemeBase" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="MainThemeBase" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorLink">@color/default_text_color_link</item>

@@ -31207,7 +31207,6 @@ from previous Chrome versions.
   <int value="-351552989" label="disable-hosted-apps-in-windows"/>
   <int value="-351127770" label="enable-offline-pages-as-bookmarks"/>
   <int value="-349437334" label="UseDdljsonApi:disabled"/>
-  <int value="-349380607" label="AndroidNightMode:disabled"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
   <int value="-346413328" label="UseNewAcceptLanguageHeader:disabled"/>
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
@@ -32033,7 +32032,6 @@ from previous Chrome versions.
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1166789664" label="SyncPseudoUSSAppList:disabled"/>
   <int value="1166897718" label="TextSuggestionsTouchBar:disabled"/>
-  <int value="1167350114" label="AndroidNightMode:enabled"/>
   <int value="1167613030" label="enable-permission-action-reporting"/>
   <int value="1169418814" label="ManualFallbacksFilling:enabled"/>
   <int value="1174088940" label="enable-wasm"/>

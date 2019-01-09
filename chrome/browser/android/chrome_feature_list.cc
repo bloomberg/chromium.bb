@@ -80,7 +80,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &invalidation::switches::kFCMInvalidations,
     &kAdjustWebApkInstallationSpace,
     &kAllowRemoteContextForNotifications,
-    &kAndroidNightMode,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
@@ -198,9 +197,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 // Alphabetical:
 const base::Feature kAdjustWebApkInstallationSpace = {
     "AdjustWebApkInstallationSpace", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAndroidNightMode{"AndroidNightMode",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
