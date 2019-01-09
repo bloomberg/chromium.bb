@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/** @enum {number} */
+print_preview.CloudPrintState = {
+  DISABLED: 0,
+  ENABLED: 1,
+  SIGNED_IN: 2,
+  NOT_SIGNED_IN: 3,
+};
+
 (function() {
 'use strict';
 
@@ -18,7 +28,6 @@ Polymer({
     activeUser: {
       type: String,
       notify: true,
-      value: '',
     },
 
     /** @type {?cloudprint.CloudPrintInterface} */

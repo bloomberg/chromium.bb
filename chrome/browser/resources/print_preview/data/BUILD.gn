@@ -131,6 +131,7 @@ js_library("user_info") {
     ":destination_store",
     ":invitation_store",
     "..:cloud_print_interface",
+    "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:event_tracker",
   ]
 }

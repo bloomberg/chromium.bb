@@ -31,11 +31,16 @@ Polymer({
       value: null,
     },
 
-    /** @type {boolean} */
-    showCloudPrintPromo: {
+    /** @type {!print_preview.CloudPrintState} */
+    cloudPrintState: {
+      type: Number,
+      observer: 'onCloudPrintStateChanged_',
+    },
+
+    /** @private */
+    cloudPrintPromoDismissed_: {
       type: Boolean,
-      notify: true,
-      observer: 'onShowCloudPrintPromoChanged_',
+      value: false,
     },
 
     /** @private {!Array<!print_preview.Destination>} */
@@ -163,10 +168,6 @@ Polymer({
   updateDestinations_: function() {
     if (this.destinationStore === undefined) {
       return;
-    }
-
-    if (this.activeUser) {
-      this.showCloudPrintPromo = false;
     }
 
     this.updateList(
@@ -331,7 +332,7 @@ Polymer({
 
   /** @private */
   onCloudPrintPromoDismissed_: function() {
-    this.showCloudPrintPromo = false;
+    this.cloudPrintPromoDismissed_ = true;
   },
 
   /**
@@ -430,10 +431,20 @@ Polymer({
   },
 
   /** @private */
-  onShowCloudPrintPromoChanged_: function() {
-    if (this.showCloudPrintPromo) {
+  onCloudPrintStateChanged_: function() {
+    if (this.cloudPrintState === print_preview.CloudPrintState.NOT_SIGNED_IN) {
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
     }
+  },
+
+  /**
+   * @return {boolean} Whether to show the cloud print promo.
+   * @private
+   */
+  shouldShowCloudPrintPromo_: function() {
+    return this.cloudPrintState ===
+        print_preview.CloudPrintState.NOT_SIGNED_IN &&
+        !this.cloudPrintPromoDismissed_;
   },
 });
