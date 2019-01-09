@@ -20,10 +20,17 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dwrite_rasterizer_support/dwrite_rasterizer_support.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 
 namespace content {
 
 namespace {
+
+std::vector<std::pair<std::string, uint32_t>> expected_test_fonts = {
+    {u8"CambriaMath", 1},
+    {u8"Ming-Lt-HKSCS-ExtB", 2},
+    {u8"NSimSun", 1},
+    {u8"calibri-bolditalic", 0}};
 
 class DWriteFontProxyImplUnitTest : public testing::Test {
  public:
@@ -181,6 +188,38 @@ TEST_F(DWriteFontProxyImplUnitTest, TestCustomFontFiles) {
   for (auto& file : handles) {
     EXPECT_TRUE(file.IsValid());
     EXPECT_LT(0, file.GetLength());  // Check the file exists
+  }
+}
+
+TEST_F(DWriteFontProxyImplUnitTest, TestFindUniqueFont) {
+  base::ReadOnlySharedMemoryRegion font_table_memory;
+  dwrite_font_proxy().GetUniqueNameLookupTable(&font_table_memory);
+  blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
+
+  for (auto& test_font_name_index : expected_test_fonts) {
+    base::Optional<blink::FontTableMatcher::MatchResult> match_result =
+        font_table_matcher.MatchName(test_font_name_index.first);
+    CHECK(match_result) << "No font matched for font name: "
+                        << test_font_name_index.first;
+    base::File unique_font_file(
+        base::FilePath::FromUTF8Unsafe(match_result->font_path),
+        base::File::FLAG_OPEN | base::File::FLAG_READ);
+    CHECK(unique_font_file.IsValid());
+    CHECK_GT(unique_font_file.GetLength(), 0);
+    CHECK_EQ(test_font_name_index.second, match_result->ttc_index);
+  }
+}
+
+TEST_F(DWriteFontProxyImplUnitTest, TestFontIndexingTimeout) {
+  impl_.SetSlowDownIndexingForTesting(true);
+  base::ReadOnlySharedMemoryRegion font_table_memory;
+  dwrite_font_proxy().GetUniqueNameLookupTable(&font_table_memory);
+  blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
+
+  for (auto& test_font_name_index : expected_test_fonts) {
+    base::Optional<blink::FontTableMatcher::MatchResult> match_result =
+        font_table_matcher.MatchName(test_font_name_index.first);
+    CHECK(!match_result);
   }
 }
 
