@@ -35,7 +35,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/arc/arc_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"

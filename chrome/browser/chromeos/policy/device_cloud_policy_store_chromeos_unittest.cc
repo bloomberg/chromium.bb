@@ -19,7 +19,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/policy_constants.h"

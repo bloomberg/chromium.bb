@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 
 namespace chromeos {
 

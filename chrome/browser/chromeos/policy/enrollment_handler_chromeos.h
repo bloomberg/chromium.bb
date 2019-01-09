@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
