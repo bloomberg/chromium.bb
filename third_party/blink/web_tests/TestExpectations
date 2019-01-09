@@ -3169,6 +3169,14 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/generic/sandboxed-iframe-with-opaque-origin.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/generic/sandboxed-iframe-with-opaque-origin.html [ Timeout ]
+crbug.com/626703 external/wpt/referrer-policy/generic/sandboxed-iframe-with-opaque-origin.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/generic/sandboxed-iframe-with-opaque-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-values/vh-support-atviewport.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-backgrounds/border-image-calc.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/boundary-shaping/boundary-shaping-005.html [ Failure ]
