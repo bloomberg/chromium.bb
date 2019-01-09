@@ -432,6 +432,8 @@ fuzzer_test("sqlite3_ossfuzz_fuzzer") {
 
 source_set("sqlite3_lpm_fuzzer_core") {
   sources = [
+    "fuzz/disabled_queries_parser.cc",
+    "fuzz/disabled_queries_parser.h",
     "fuzz/sql_run_queries.cc",
     "fuzz/sql_run_queries.h",
   ]

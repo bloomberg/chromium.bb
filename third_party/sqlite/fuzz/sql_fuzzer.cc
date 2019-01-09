@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "testing/libfuzzer/proto/lpm_interface.h"
+#include "third_party/sqlite/fuzz/disabled_queries_parser.h"
 #include "third_party/sqlite/fuzz/sql_query_grammar.pb.h"
 #include "third_party/sqlite/fuzz/sql_query_proto_to_string.h"
 #include "third_party/sqlite/fuzz/sql_run_queries.h"
@@ -34,6 +35,12 @@ using namespace sql_query_grammar;
 // 5. Temp-file database, for better fuzzing of VACUUM and journalling.
 
 DEFINE_BINARY_PROTO_FUZZER(const SQLQueries& sql_queries) {
+  char* skip_queries = getenv("SQL_SKIP_QUERIES");
+  if (skip_queries) {
+    sql_fuzzer::SetDisabledQueries(
+        sql_fuzzer::ParseDisabledQueries(skip_queries));
+  }
+
   std::vector<std::string> queries = sql_fuzzer::SQLQueriesToVec(sql_queries);
 
   if (getenv("LPM_DUMP_NATIVE_INPUT") && queries.size() != 0) {
