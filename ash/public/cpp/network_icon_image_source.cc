@@ -71,8 +71,6 @@ void NetworkIconImageSource::Draw(gfx::Canvas* canvas) {
   if (badges_.center.icon)
     paint_badge(badges_.center, icon_x, icon_y, icon_.width());
 
-  if (badges_.top_left.icon)
-    paint_badge(badges_.top_left, 0, icon_y);
   if (badges_.bottom_left.icon) {
     paint_badge(
         badges_.bottom_left, 0,
