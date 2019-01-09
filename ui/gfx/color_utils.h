@@ -109,10 +109,12 @@ GFX_EXPORT SkColor GetResultingPaintColor(SkColor foreground,
 // Returns true if |color| contrasts more with white than the darkest color.
 GFX_EXPORT bool IsDark(SkColor color);
 
-// Makes a dark color lighter or a light color darker by blending |color| with
-// white or black depending on its current luma.  |alpha| controls the amount of
-// white or black that will be alpha-blended into |color|.
-GFX_EXPORT SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha);
+// Returns whichever of white or the darkest available color contrasts more with
+// |color|.
+GFX_EXPORT SkColor GetColorWithMaxContrast(SkColor color);
+
+// Blends towards the color with max contrast by |alpha|.
+GFX_EXPORT SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha);
 
 // This is a copy of |getThemedAssetColor()| in ColorUtils.java.
 GFX_EXPORT SkColor GetThemedAssetColor(SkColor theme_color);

@@ -730,12 +730,8 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
             ->frame()
             ->GetThemeProvider();
 
-    // TODO(afakhry): This operation is done in several places, try to find a
-    // centeral location for it. Part of themes work for
-    // https://crbug.com/820495.
-    const SkColor drop_indicator_color = color_utils::BlendTowardOppositeLuma(
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR),
-        SK_AlphaOPAQUE);
+    const SkColor drop_indicator_color = color_utils::GetColorWithMaxContrast(
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
     canvas->FillRect(indicator_bounds, drop_indicator_color);
   }
 }

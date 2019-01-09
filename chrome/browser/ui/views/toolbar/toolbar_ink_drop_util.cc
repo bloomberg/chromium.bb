@@ -64,9 +64,8 @@ SkColor GetToolbarInkDropBaseColor(const views::View* host_view) {
   const auto* theme_provider = host_view->GetThemeProvider();
   // There may be no theme provider in unit tests.
   if (theme_provider) {
-    return color_utils::BlendTowardOppositeLuma(
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR),
-        SK_AlphaOPAQUE);
+    return color_utils::GetColorWithMaxContrast(
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
   return gfx::kPlaceholderColor;

@@ -168,8 +168,8 @@ SkColor Checkbox::GetIconImageColor(int icon_state) const {
                             style::STYLE_PRIMARY);
   return (icon_state & IconState::ENABLED)
              ? active_color
-             : color_utils::BlendTowardOppositeLuma(active_color,
-                                                    gfx::kDisabledControlAlpha);
+             : color_utils::BlendTowardMaxContrast(active_color,
+                                                   gfx::kDisabledControlAlpha);
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {

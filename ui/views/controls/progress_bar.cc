@@ -129,10 +129,8 @@ SkColor ProgressBar::GetForegroundColor() const {
 }
 
 SkColor ProgressBar::GetBackgroundColor() const {
-  if (background_color_)
-    return background_color_.value();
-
-  return color_utils::BlendTowardOppositeLuma(GetForegroundColor(), 0xCC);
+  return background_color_.value_or(
+      color_utils::BlendTowardMaxContrast(GetForegroundColor(), 0xCC));
 }
 
 void ProgressBar::AnimationProgressed(const gfx::Animation* animation) {
