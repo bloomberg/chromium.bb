@@ -70,8 +70,6 @@ blink_modules_sources("indexeddb") {
     "indexed_db_database_callbacks_impl.h",
     "indexed_db_dispatcher.cc",
     "indexed_db_dispatcher.h",
-    "indexed_db_key_builder.cc",
-    "indexed_db_key_builder.h",
     "inspector_indexed_db_agent.cc",
     "inspector_indexed_db_agent.h",
     "web_idb_callbacks.h",

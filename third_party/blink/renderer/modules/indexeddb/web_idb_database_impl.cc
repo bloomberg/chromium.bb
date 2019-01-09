@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -210,7 +209,7 @@ void WebIDBDatabaseImpl::Delete(long long transaction_id,
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
-      mojom::blink::IDBKeyRange::From(IDBKeyRangeBuilder::Build(primary_key));
+      mojom::blink::IDBKeyRange::From(IDBKeyRange::Create(primary_key));
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr);
   database_->DeleteRange(transaction_id, object_store_id,
