@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -83,6 +84,13 @@ class SmbService : public KeyedService,
   // contain the URLs to the shares found.
   void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                              GatherSharesResponse shares_callback);
+
+  // Updates the credentials for |mount_id|. If there is a stored callback in
+  // |update_credentials_replies_| for |mount_id|, it will be run upon once the
+  // credentials are successfully updated.
+  void UpdateCredentials(int32_t mount_id,
+                         const std::string& username,
+                         const std::string& password);
 
  private:
   // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
@@ -168,6 +176,11 @@ class SmbService : public KeyedService,
                           int32_t mount_id,
                           base::OnceClosure reply);
 
+  // Opens a request credential dialog for the share path |share_path|.
+  // When a user clicks "Update" in the dialog, UpdateCredentials is run.
+  void OpenRequestCredentialsDialog(const std::string& share_path,
+                                    int32_t mount_id);
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
@@ -176,6 +189,8 @@ class SmbService : public KeyedService,
   Profile* profile_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
   std::unique_ptr<SmbShareFinder> share_finder_;
+  // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
+  std::map<int32_t, base::OnceClosure> update_credential_replies_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

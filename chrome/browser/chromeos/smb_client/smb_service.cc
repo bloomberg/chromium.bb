@@ -150,6 +150,12 @@ void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        std::move(shares_callback));
 }
 
+void SmbService::UpdateCredentials(int32_t mount_id,
+                                   const std::string& username,
+                                   const std::string& password) {
+  NOTREACHED();
+}
+
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const base::FilePath& share_path,
                            const std::string& username_input,
@@ -490,6 +496,12 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropDown() const {
 void SmbService::RequestCredentials(const std::string& share_path,
                                     int32_t mount_id,
                                     base::OnceClosure reply) {
+  update_credential_replies_[mount_id] = std::move(reply);
+  OpenRequestCredentialsDialog(share_path, mount_id);
+}
+
+void SmbService::OpenRequestCredentialsDialog(const std::string& share_path,
+                                              int32_t mount_id) {
   NOTREACHED();
 }
 
