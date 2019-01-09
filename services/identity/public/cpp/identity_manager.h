@@ -30,11 +30,12 @@ class ArcTermsOfServiceDefaultNegotiatorTest;
 namespace chromeos {
 class ChromeSessionManager;
 class UserSessionManager;
-}
+}  // namespace chromeos
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+class TestURLLoaderFactory;
+}  // namespace network
 
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
@@ -44,6 +45,7 @@ namespace identity {
 class AccountsMutator;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
+struct CookieParams;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
@@ -330,6 +332,11 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
 
+  friend void SetCookieAccounts(
+      IdentityManager* identity_manager,
+      network::TestURLLoaderFactory* test_url_loader_factory,
+      const std::vector<identity::CookieParams>& cookie_accounts);
+
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend ArcSupportHostTest;
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
@@ -340,6 +347,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   SigninManagerBase* GetSigninManager();
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
+  GaiaCookieManagerService* GetGaiaCookieManagerService();
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.

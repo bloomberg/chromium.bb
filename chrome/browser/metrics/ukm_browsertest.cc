@@ -20,7 +20,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/secondary_account_sync_test.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -144,10 +144,10 @@ class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
 };
 
 // Test fixture that provides access to some UKM internals.
-class UkmBrowserTestBase : public SyncTest {
+class UkmBrowserTestBase : public SecondaryAccountSyncTest {
  public:
   explicit UkmBrowserTestBase(bool is_unified_consent_enabled)
-      : SyncTest(SINGLE_CLIENT),
+      :
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
         scoped_dice_(is_unified_consent_enabled
                          ? std::make_unique<ScopedAccountConsistencyDice>()
@@ -336,27 +336,15 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
                                {});
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // This is required to support (fake) secondary-account-signin (based on
-    // cookies) in tests. Without this, the real GaiaCookieManagerService would
-    // try talking to Google servers which of course wouldn't work in tests.
-    fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
-    UkmBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
-    secondary_account_helper::InitNetwork();
+    InitNetwork();
 #endif  // defined(OS_CHROMEOS)
     UkmBrowserTest::SetUpOnMainThread();
   }
 
  private:
   base::test::ScopedFeatureList features_;
-
-  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
-      fake_gaia_cookie_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestWithSyncTransport);
 };
@@ -1174,8 +1162,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  secondary_account_helper::SignInSecondaryAccount(profile,
-                                                   "secondary_user@email.com");
+  SignInSecondaryAccount(profile, "secondary_user@email.com");
   ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
             sync_service->GetTransportState());
   ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
