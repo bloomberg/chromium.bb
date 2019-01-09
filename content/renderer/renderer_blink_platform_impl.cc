@@ -786,6 +786,10 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
   capabilities.echo_cancellation = std::vector<bool>({false});
   capabilities.auto_gain_control = std::vector<bool>({false});
   capabilities.noise_suppression = std::vector<bool>({false});
+  capabilities.sample_size = {
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
+  };
   web_media_stream_source.SetCapabilities(capabilities);
 
   media_stream_source->ConnectToTrack(web_media_stream_track);

@@ -89,6 +89,14 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
     capabilities->setEchoCancellation({true, false});
     capabilities->setAutoGainControl({true, false});
     capabilities->setNoiseSuppression({true, false});
+    // Sample size.
+    // TODO(crbug/704136): Replace the magic-constant "16" with the appropriate
+    // call to media:: when dependencies to media in blink are fixed as for
+    // onion souping.
+    LongRange* sample_size = LongRange::Create();
+    sample_size->setMin(16);
+    sample_size->setMax(16);
+    capabilities->setSampleSize(sample_size);
   }
 
   if (DeviceType() == MediaDeviceType::MEDIA_VIDEO_INPUT) {

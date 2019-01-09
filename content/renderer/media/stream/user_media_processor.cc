@@ -964,6 +964,10 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   }
   capabilities.auto_gain_control = {true, false};
   capabilities.noise_suppression = {true, false};
+  capabilities.sample_size = {
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
+  };
   capabilities.device_id = blink::WebString::FromUTF8(device.id);
   if (device.group_id)
     capabilities.group_id = blink::WebString::FromUTF8(*device.group_id);
