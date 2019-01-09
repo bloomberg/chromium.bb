@@ -4,6 +4,10 @@
     Management overview
   </message>
 
+  <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization" translateable="false">
+    Device managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
+  </message>
+
   <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed" translateable="false">
     Your device is not managed by an administrator
   </message>

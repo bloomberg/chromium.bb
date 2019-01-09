@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="management_browser_proxy.html">
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+
+<dom-module id="settings-management-page">
+  <template>
+    <style include="settings-shared">
+      cr-policy-indicator {
+        margin-inline-start: var(--cr-controlled-by-spacing);
+      }
+
+      ul {
+        list-style-type : none;
+      }
+    </style>
+      <!--  This is where page content gets dynamically added. -->
+
+      <div class="settings-box two-line single-column"
+           id="managementStatus" hidden></div>
+
+      <div class="settings-box block single-column" id="policies" hidden>
+        <h2>$i18n{managementDeviceReporting}</h2>
+        <div id="deviceConfiguration">
+          $i18n{managementDeviceConfiguration}
+        </div>
+        <ul id="reportingInfoList">
+          <li id="reportingDevice" hidden>
+            <iron-icon icon="settings:computer"></iron-icon>
+            <span id="reportingDeviceText"> </span>
+          </li>
+          <li id="reportingSecurity" hidden>
+            <iron-icon icon="settings:security"></iron-icon>
+            <span id="reportingSecurityText"> </span>
+          </li>
+          <li id="reportingUserActivity" hidden>
+            <iron-icon icon="settings:person"></iron-icon>
+            <span id="reportingUserActivityText"> </span>
+          </li>
+          <li id="reportingWeb" hidden>
+            <iron-icon icon="settings:public"></iron-icon>
+            <span id="reportingWebText"> </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="settings-box two-line single-column" id="extensions" hidden>
+        <h2>$i18n{managementExtensionReporting}</h2>
+        <div id="extensionsInstalled">
+          $i18n{managementExtensionsInstalled}
+        </div>
+        <table id="extensionsTable">
+          <tr>
+            <th>$i18n{managementExtensionName}</th>
+            <th>$i18n{managementExtensionPermissions}</th>
+          </tr>
+        </table>
+      </div>
+
+      <div class="settings-box two-line single-column" id="trustRoots" hidden>
+          <h2 class="section-title">$i18n{managementLocalTrustRoots}</h2>
+          <div id="trustRootsConfiguration"></div>
+      </div>
+  </template>
+  <script src="management_page.js"></script>
+</dom-module>

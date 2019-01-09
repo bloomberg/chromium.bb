@@ -83,6 +83,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
+#include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
@@ -186,6 +187,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<StartupPagesHandler>(web_ui));
 
 #if defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(std::make_unique<ManagementUIHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   AddSettingsPageUIHandler(

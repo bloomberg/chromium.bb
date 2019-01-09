@@ -10,12 +10,15 @@ js_type_check("closure_compile") {
     ":about_page_browser_proxy",
     ":channel_switcher_dialog",
     ":detailed_build_info",
+    ":management_browser_proxy",
+    ":management_page",
   ]
 }
 
 js_library("about_page") {
   deps = [
     ":about_page_browser_proxy",
+    ":management_browser_proxy",
     "..:lifetime_browser_proxy",
     "..:route",
     "../settings_page:main_page_behavior",
@@ -49,5 +52,20 @@ js_library("channel_switcher_dialog") {
   deps = [
     ":about_page_browser_proxy",
     "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("management_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:promise_resolver",
+    "//ui/webui/resources/js:util",
+  ]
+}
+
+js_library("management_page") {
+  deps = [
+    ":management_browser_proxy",
   ]
 }

@@ -22,6 +22,8 @@
 <if expr="chromeos">
 <link rel="import" href="detailed_build_info.html">
 <link rel="import" href="update_warning_dialog.html">
+<link rel="import" href="management_browser_proxy.html">
+<link rel="import" href="management_page.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../reset_page/powerwash_dialog.html">
 </if>
@@ -231,12 +233,22 @@
                 id="detailed-build-info-trigger"
                 on-click="onDetailedBuildInfoTap_"
                 label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
+            <cr-link-row class="hr" icon-class="subpage-arrow"
+                start-icon="settings:business"
+                id="management-info"
+                on-click="onManagementInfoTap_"
+                label="[[managementTitle_]]"></cr-link-row>
 </if>
           </div>
 <if expr="chromeos">
           <template is="dom-if" route-path="/help/details">
             <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
               <settings-detailed-build-info></settings-detailed-build-info>
+            </settings-subpage>
+          </template>
+          <template is="dom-if" route-path="/help/management">
+            <settings-subpage page-title="[[managementTitle_]]">
+              <settings-management-page></settings-management-page>
             </settings-subpage>
           </template>
 </if>
