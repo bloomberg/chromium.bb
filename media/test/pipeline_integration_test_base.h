@@ -43,18 +43,6 @@ extern const char kNullVideoHash[];
 // Empty hash string.  Used to verify empty audio tracks.
 extern const char kNullAudioHash[];
 
-// Dummy tick clock which advances extremely quickly (1 minute every time
-// NowTicks() is called).
-class DummyTickClock : public base::TickClock {
- public:
-  DummyTickClock() : now_() {}
-  ~DummyTickClock() override {}
-  base::TimeTicks NowTicks() const override;
-
- private:
-  mutable base::TimeTicks now_;
-};
-
 class PipelineTestRendererFactory {
  public:
   virtual ~PipelineTestRendererFactory() {}
@@ -181,7 +169,6 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   VideoPixelFormat last_video_frame_format_;
   gfx::ColorSpace last_video_frame_color_space_;
-  DummyTickClock dummy_clock_;
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
   base::TimeDelta current_duration_;
