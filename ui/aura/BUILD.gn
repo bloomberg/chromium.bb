@@ -299,8 +299,8 @@ jumbo_static_library("test_support") {
     ":aura",
     "//services/ws/common",
 
-    # Must be public as headers include ui_features.h.
-    "//ui/base:ui_features",
+    # Must be public as headers include buildflags.h.
+    "//ui/base:buildflags",
   ]
   deps = [
     "//base/test:test_support",

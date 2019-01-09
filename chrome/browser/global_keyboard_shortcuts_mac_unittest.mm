@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace {

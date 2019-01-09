@@ -54,7 +54,7 @@ static_library("utility") {
     "//sql",
     "//third_party/libxml",
     "//third_party/zlib/google:zip",
-    "//ui/base:ui_features",
+    "//ui/base:buildflags",
   ]
 
   if (!is_android) {

@@ -16,7 +16,7 @@ jumbo_source_set("xkb") {
 
   deps = [
     "//base",
-    "//ui/base:ui_features",
+    "//ui/base:buildflags",
     "//ui/events:dom_keycode_converter",
   ]
 }

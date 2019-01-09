@@ -41,8 +41,8 @@
 #include "gpu/config/gpu_switches.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_features.h"
 
 #if defined(OS_POSIX)
 #include "base/files/file_descriptor_watcher_posix.h"

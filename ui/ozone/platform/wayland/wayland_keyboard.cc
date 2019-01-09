@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 
 #include "base/files/scoped_file.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"

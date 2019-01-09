@@ -53,9 +53,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "third_party/blink/public/web/blink.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_features.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

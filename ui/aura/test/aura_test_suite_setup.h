@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 namespace ui {
 class ContextFactory;

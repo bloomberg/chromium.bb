@@ -12,7 +12,7 @@
 #include "components/exo/keyboard_observer.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_input_delegate.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(OS_CHROMEOS)

@@ -7,8 +7,8 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/base/ui_features.h"
 
 namespace features {
 

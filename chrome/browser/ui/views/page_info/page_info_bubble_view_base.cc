@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
