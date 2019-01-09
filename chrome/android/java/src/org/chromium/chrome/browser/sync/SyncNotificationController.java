@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
@@ -147,13 +148,16 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      */
     private Intent createSettingsIntent() {
         final String fragmentName;
+        final Bundle fragmentArguments;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
             fragmentName = SyncAndServicesPreferences.class.getName();
+            fragmentArguments = SyncAndServicesPreferences.createArguments(false);
         } else {
             fragmentName = AccountManagementFragment.class.getName();
+            fragmentArguments = null;
         }
         return PreferencesLauncher.createIntentForSettingsPage(
-                ContextUtils.getApplicationContext(), fragmentName);
+                ContextUtils.getApplicationContext(), fragmentName, fragmentArguments);
     }
 
     /**

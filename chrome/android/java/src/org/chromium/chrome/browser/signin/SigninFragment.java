@@ -136,8 +136,9 @@ public class SigninFragment extends SigninFragmentBase {
             public void onSignInComplete() {
                 UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
                 if (settingsClicked) {
-                    PreferencesLauncher.launchSettingsPage(
-                            getActivity(), SyncAndServicesPreferences.class);
+                    PreferencesLauncher.launchSettingsPage(getActivity(),
+                            SyncAndServicesPreferences.class,
+                            SyncAndServicesPreferences.createArguments(true));
                 }
 
                 recordSigninCompletedHistogramAccountInfo();

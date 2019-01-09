@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -99,12 +100,15 @@ public final class FirstRunSignInProcessor {
      */
     private static void openSignInSettings(Activity activity) {
         final Class<? extends Fragment> fragment;
+        final Bundle arguments;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
             fragment = SyncAndServicesPreferences.class;
+            arguments = SyncAndServicesPreferences.createArguments(true);
         } else {
             fragment = AccountManagementFragment.class;
+            arguments = null;
         }
-        PreferencesLauncher.launchSettingsPage(activity, fragment);
+        PreferencesLauncher.launchSettingsPage(activity, fragment, arguments);
     }
 
     /**
