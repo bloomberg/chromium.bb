@@ -510,6 +510,37 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
 }
 
 template <typename Base>
+void LayoutNGMixin<Base>::ComputeSelfHitTestRects(
+    Vector<LayoutRect>& rects,
+    const LayoutPoint& layer_offset) const {
+  // Deliberately skipping the LayoutBlockFlow override here. We need to check
+  // for visible overflow (and exit early if it's clipped) here anyway, and it's
+  // pointless to look for legacy line boxes if we're NG.
+  LayoutBlock::ComputeSelfHitTestRects(rects, layer_offset);
+
+  if (!Base::HasHorizontalLayoutOverflow() &&
+      !Base::HasVerticalLayoutOverflow())
+    return;
+
+  NGPaintFragment* block_fragment = PaintFragment();
+  if (!block_fragment)
+    return;
+  for (const NGPaintFragment* line = block_fragment->FirstLineBox(); line;
+       line = line->NextSibling()) {
+    DCHECK(line->PhysicalFragment().IsLineBox());
+    NGPhysicalOffset line_offset = line->Offset();
+    NGPhysicalSize size = line->Size();
+    LayoutRect rect(layer_offset.X() + line_offset.left,
+                    layer_offset.Y() + line_offset.top, size.width,
+                    size.height);
+    // It's common for this rect to be entirely contained in our box, so exclude
+    // that simple case.
+    if (!rect.IsEmpty() && (rects.IsEmpty() || !rects[0].Contains(rect)))
+      rects.push_back(rect);
+  }
+}
+
+template <typename Base>
 void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
