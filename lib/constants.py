@@ -771,6 +771,9 @@ SKYLAB_HWTEST_PRIORITIES_MAP = {
     HWTEST_CQ_PRIORITY: 50,
 }
 
+# The environment for executing tests.
+ENV_SKYLAB = 'skylab'
+ENV_AUTOTEST = 'autotest'
 
 # HWTest result statuses
 HWTEST_STATUS_PASS = 'pass'

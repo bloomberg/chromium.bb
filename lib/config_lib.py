@@ -165,6 +165,26 @@ def IsMasterCQ(config):
   return config.build_type == constants.PALADIN_TYPE and config.master
 
 
+def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
+  """Return the env of a suite to run for a given build/model.
+
+  Args:
+    builder_run_config: The BuildConfig object inside a BuilderRun object.
+    model_config: A ModelTestConfig object to test against.
+    suite_config: A HWTestConfig object to test against.
+
+  Returns:
+    A string variable to indiate the hwtest environment.
+  """
+  enable_suite = True if suite_config is None else suite_config.enable_skylab
+  enable_model = True if model_config is None else model_config.enable_skylab
+  if (builder_run_config.enable_skylab_hw_tests
+      and enable_suite and enable_model):
+    return constants.ENV_SKYLAB
+
+  return constants.ENV_AUTOTEST
+
+
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.
 
