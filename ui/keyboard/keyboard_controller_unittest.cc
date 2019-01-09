@@ -35,6 +35,7 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_layout_delegate.h"
 #include "ui/keyboard/test/test_keyboard_ui.h"
 #include "ui/wm/core/default_activation_client.h"
 
@@ -106,19 +107,6 @@ class KeyboardContainerObserver : public aura::WindowObserver {
   base::RunLoop* const run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardContainerObserver);
-};
-
-class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
- public:
-  TestKeyboardLayoutDelegate() {}
-  ~TestKeyboardLayoutDelegate() override {}
-
-  // Overridden from keyboard::KeyboardLayoutDelegate
-  void MoveKeyboardToDisplay(const display::Display& display) override {}
-  void MoveKeyboardToTouchableDisplay() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestKeyboardLayoutDelegate);
 };
 
 class SetModeCallbackInvocationCounter {
