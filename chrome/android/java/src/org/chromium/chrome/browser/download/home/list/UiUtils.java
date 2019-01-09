@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.VisibleForTesting;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 
@@ -29,6 +30,16 @@ import java.util.concurrent.TimeUnit;
 
 /** A set of helper utility methods for the UI. */
 public final class UiUtils {
+    private static boolean sDisableUrlFormatting;
+
+    /**
+     * Disable url formatting for tests since tests might not native initialized.
+     */
+    @VisibleForTesting
+    public static void setDisableUrlFormattingForTests(boolean disabled) {
+        sDisableUrlFormatting = disabled;
+    }
+
     private UiUtils() {}
 
     /**
@@ -96,7 +107,10 @@ public final class UiUtils {
     public static CharSequence generatePrefetchCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
         String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
-        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        String displayUrl = item.pageUrl;
+        if (!sDisableUrlFormatting) {
+            displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        }
         return context.getString(
                 R.string.download_manager_prefetch_caption, displayUrl, displaySize);
     }
@@ -109,7 +123,10 @@ public final class UiUtils {
     public static CharSequence generateGenericCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
         String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
-        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        String displayUrl = item.pageUrl;
+        if (!sDisableUrlFormatting) {
+            displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        }
         return context.getString(
                 R.string.download_manager_list_item_description, displaySize, displayUrl);
     }

@@ -26,9 +26,10 @@ public class ToolbarUtils {
     /**
      * Sets up feature engagement tracker for the download settings in-product-help text bubble.
      * @param toolbar The toolbar that contains the settings menu.
+     * @param profile The profile used to get tracker.
      */
-    public static void setupTrackerForDownloadSettingsIPH(View toolbar) {
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+    public static void setupTrackerForDownloadSettingsIPH(View toolbar, Profile profile) {
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         tracker.addOnInitializedCallback(
                 success -> ToolbarUtils.maybeShowDownloadSettingsTextBubble(tracker, toolbar));
     }
