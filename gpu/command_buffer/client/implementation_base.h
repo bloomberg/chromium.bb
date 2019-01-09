@@ -45,11 +45,11 @@ class GLES2_IMPL_EXPORT ImplementationBase
       public GpuControlClient {
  public:
   // The maximum result size from simple GL get commands.
-  static const size_t kMaxSizeOfSimpleResult =
+  static const uint32_t kMaxSizeOfSimpleResult =
       16 * sizeof(uint32_t);  // NOLINT.
 
   // used for testing only. If more things are reseved add them here.
-  static const unsigned int kStartingOffset = kMaxSizeOfSimpleResult;
+  static const uint32_t kStartingOffset = kMaxSizeOfSimpleResult;
 
   // Alignment of allocations.
   static const unsigned int kAlignment = 16;

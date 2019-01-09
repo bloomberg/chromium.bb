@@ -3492,6 +3492,27 @@ void GLES2Implementation::TexSubImage3DImpl(GLenum target,
   }
 }
 
+void GLES2Implementation::GetResultNameHelper(GLsizei bufsize,
+                                              GLsizei* length,
+                                              char* name) {
+  // Length of string (without final \0) that we will write to the buffer.
+  GLsizei max_length = 0;
+  if (name && (bufsize > 0)) {
+    std::vector<int8_t> str;
+    GetBucketContents(kResultBucketId, &str);
+    if (!str.empty()) {
+      DCHECK_LE(str.size(), static_cast<size_t>(INT_MAX));
+      // Note: both bufsize and str.size() count/include the terminating \0.
+      max_length = std::min(bufsize, static_cast<GLsizei>(str.size())) - 1;
+    }
+    memcpy(name, str.data(), max_length);
+    name[max_length] = '\0';
+  }
+  if (length) {
+    *length = max_length;
+  }
+}
+
 bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
                                                 GLuint index,
                                                 GLsizei bufsize,
@@ -3519,21 +3540,8 @@ bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      // Note: this can invalidate |result|.
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size =
-          std::min(static_cast<size_t>(bufsize) - 1,
-                   std::max(static_cast<size_t>(0), str.size() - 1));
-      if (length) {
-        *length = max_size;
-      }
-      if (name && bufsize > 0) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
   return success;
 }
@@ -3592,29 +3600,18 @@ bool GLES2Implementation::GetActiveUniformHelper(GLuint program,
   helper_->GetActiveUniform(program, index, kResultBucketId, GetResultShmId(),
                             result.offset());
   WaitForCmd();
-  if (result->success) {
+  bool success = !!result->success;
+  if (success) {
     if (size) {
       *size = result->size;
     }
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size =
-          std::min(static_cast<size_t>(bufsize) - 1,
-                   std::max(static_cast<size_t>(0), str.size() - 1));
-      if (length) {
-        *length = max_size;
-      }
-      if (name && bufsize > 0) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
-  return result->success != 0;
+  return success;
 }
 
 void GLES2Implementation::GetActiveUniform(GLuint program,
@@ -3670,27 +3667,12 @@ bool GLES2Implementation::GetActiveUniformBlockNameHelper(GLuint program,
   helper_->GetActiveUniformBlockName(program, index, kResultBucketId,
                                      GetResultShmId(), result.offset());
   WaitForCmd();
-  if (*result) {
-    if (bufsize == 0) {
-      if (length) {
-        *length = 0;
-      }
-    } else if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      DCHECK_GT(str.size(), 0u);
-      GLsizei max_size =
-          std::min(bufsize, static_cast<GLsizei>(str.size())) - 1;
-      if (length) {
-        *length = max_size;
-      }
-      if (name) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+  bool success = !!result;
+  if (success) {
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
-  return *result != 0;
+  return success;
 }
 
 void GLES2Implementation::GetActiveUniformBlockName(GLuint program,
@@ -4025,25 +4007,8 @@ bool GLES2Implementation::GetTransformFeedbackVaryingHelper(GLuint program,
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size = std::min(bufsize, static_cast<GLsizei>(str.size()));
-      if (max_size > 0) {
-        --max_size;
-      }
-      if (length) {
-        *length = max_size;
-      }
-      if (name) {
-        if (max_size > 0) {
-          memcpy(name, &str[0], max_size);
-          name[max_size] = '\0';
-        } else if (bufsize > 0) {
-          name[0] = '\0';
-        }
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
   return result->success != 0;
 }
@@ -5162,7 +5127,7 @@ void GLES2Implementation::ScheduleCALayerSharedStateCHROMIUM(
     const GLfloat* clip_rect,
     GLint sorting_context_id,
     const GLfloat* transform) {
-  size_t shm_size = 20 * sizeof(GLfloat);
+  uint32_t shm_size = 20 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerSharedStateCHROMIUM",
@@ -5183,7 +5148,7 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                                   GLuint edge_aa_mask,
                                                   const GLfloat* bounds_rect,
                                                   GLuint filter) {
-  size_t shm_size = 8 * sizeof(GLfloat);
+  uint32_t shm_size = 8 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerCHROMIUM",
@@ -6652,11 +6617,11 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
   base::CheckedNumeric<uint32_t> total_size = count;
   total_size += 1;
   total_size *= sizeof(GLint);
-  if (!total_size.IsValid()) {
+  uint32_t header_size = 0;
+  if (!total_size.AssignIfValid(&header_size)) {
     SetGLError(GL_INVALID_VALUE, func_name, "overflow");
     return false;
   }
-  size_t header_size = total_size.ValueOrDefault(0);
   std::vector<GLint> header(count + 1);
   header[0] = static_cast<GLint>(count);
   for (GLsizei ii = 0; ii < count; ++ii) {
@@ -6668,35 +6633,30 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
     }
     total_size += len;
     total_size += 1;  // NULL at the end of each char array.
-    if (!total_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, func_name, "overflow");
-      return false;
-    }
     header[ii + 1] = len;
   }
   // Pack data into a bucket on the service.
-  helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
-  size_t offset = 0;
+  uint32_t validated_size = 0;
+  if (!total_size.AssignIfValid(&validated_size)) {
+    SetGLError(GL_INVALID_VALUE, func_name, "overflow");
+    return false;
+  }
+  helper_->SetBucketSize(kResultBucketId, validated_size);
+  uint32_t offset = 0;
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src =
         (ii == 0) ? reinterpret_cast<const char*>(&header[0]) : str[ii - 1];
-    base::CheckedNumeric<size_t> checked_size =
-        (ii == 0) ? header_size : static_cast<size_t>(header[ii]);
+    uint32_t size = (ii == 0) ? header_size : header[ii];
     if (ii > 0) {
-      checked_size += 1;  // NULL in the end.
+      size += 1;  // NULL in the end.
     }
-    if (!checked_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, func_name, "overflow");
-      return false;
-    }
-    size_t size = checked_size.ValueOrDefault(0);
     while (size) {
       ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
       if (!buffer.valid() || buffer.size() == 0) {
         SetGLError(GL_OUT_OF_MEMORY, func_name, "too large");
         return false;
       }
-      size_t copy_size = buffer.size();
+      uint32_t copy_size = buffer.size();
       if (ii > 0 && buffer.size() == size)
         --copy_size;
       if (copy_size)
@@ -7005,9 +6965,9 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
     const GLfloat* transform_values,
     ScopedTransferBufferPtr* buffer,
     uint32_t* out_paths_shm_id,
-    size_t* out_paths_offset,
+    uint32_t* out_paths_offset,
     uint32_t* out_transforms_shm_id,
-    size_t* out_transforms_offset) {
+    uint32_t* out_transforms_offset) {
   if (num_paths < 0) {
     SetGLError(GL_INVALID_VALUE, function_name, "numPaths < 0");
     return false;
@@ -7121,9 +7081,9 @@ void GLES2Implementation::StencilFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilFillPathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7156,9 +7116,9 @@ void GLES2Implementation::StencilStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilStrokePathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7189,9 +7149,9 @@ void GLES2Implementation::CoverFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glCoverFillPathInstancedCHROMIUM", num_paths, path_name_type, paths,
           transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7223,9 +7183,9 @@ void GLES2Implementation::CoverStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glCoverStrokePathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7259,9 +7219,9 @@ void GLES2Implementation::StencilThenCoverFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilThenCoverFillPathInstancedCHROMIUM", num_paths,
           path_name_type, paths, transform_type, transform_values, &buffer,
@@ -7298,9 +7258,9 @@ void GLES2Implementation::StencilThenCoverStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilThenCoverStrokePathInstancedCHROMIUM", num_paths,
           path_name_type, paths, transform_type, transform_values, &buffer,
