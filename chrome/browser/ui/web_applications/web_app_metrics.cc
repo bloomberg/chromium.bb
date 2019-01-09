@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -59,8 +60,11 @@ WebAppMetrics::WebAppMetrics(Profile* profile)
   WebAppProvider* provider = WebAppProvider::Get(profile_);
   DCHECK(provider);
 
-  provider->SetRegistryReadyCallback(base::BindOnce(
-      &WebAppMetrics::CountUserInstalledApps, weak_ptr_factory_.GetWeakPtr()));
+  if (AllowWebAppInstallation(profile_)) {
+    provider->SetRegistryReadyCallback(
+        base::BindOnce(&WebAppMetrics::CountUserInstalledApps,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 WebAppMetrics::~WebAppMetrics() = default;
@@ -70,7 +74,7 @@ void WebAppMetrics::OnEngagementEvent(
     const GURL& url,
     double score,
     SiteEngagementService::EngagementType engagement_type) {
-  if (!web_contents)
+  if (!web_contents || !AllowWebAppInstallation(profile_))
     return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
