@@ -310,10 +310,16 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, DownloadProfileStorage) {
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/917385
+#define MAYBE_DownloadAccountStorage_Card DISABLED_DownloadAccountStorage_Card
+#else
+#define MAYBE_DownloadAccountStorage_Card DownloadAccountStorage_Card
+#endif
 // The account storage requires USS, so we only test the USS implementation
 // here.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       DownloadAccountStorage_Card) {
+                       MAYBE_DownloadAccountStorage_Card) {
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
       /*enabled_features=*/{switches::kSyncStandaloneTransport,
