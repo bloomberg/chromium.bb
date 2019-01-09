@@ -37,8 +37,10 @@ class MockLaunchd : public Launchd {
               bool as_service);
   ~MockLaunchd() override;
 
-  CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
-  CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error) override;
+  bool GetJobInfo(const std::string& label,
+                  mac::services::JobInfo* info) override;
+  bool CheckIn(const std::string& socket_key,
+               mac::services::JobCheckinInfo* info) override;
   bool RemoveJob(const std::string& label) override;
   bool RestartJob(Domain domain,
                   Type type,

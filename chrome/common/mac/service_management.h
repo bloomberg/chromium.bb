@@ -8,8 +8,29 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_file.h"
+#include "base/optional.h"
+
 namespace mac {
 namespace services {
+
+struct JobInfo {
+  JobInfo();
+  JobInfo(const JobInfo& other);
+  ~JobInfo();
+
+  std::string program;
+  base::Optional<int> pid;
+};
+
+struct JobCheckinInfo {
+  JobCheckinInfo();
+  JobCheckinInfo(const JobCheckinInfo& info);
+  ~JobCheckinInfo();
+
+  std::string program;
+  int socket;
+};
 
 struct JobOptions {
   JobOptions();
@@ -43,6 +64,9 @@ struct JobOptions {
   // not run in system sessions).
   bool auto_launch;
 };
+
+bool GetJobInfo(const std::string& label, JobInfo* info);
+bool CheckIn(const std::string& socket_key, JobCheckinInfo* info);
 
 bool SubmitJob(const JobOptions& options);
 bool RemoveJob(const std::string& label);
