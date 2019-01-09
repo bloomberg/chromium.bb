@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/touch_timeout_handler.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -294,6 +296,16 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
 
 PassthroughTouchEventQueue::PreFilterResult
 PassthroughTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
+  // Unconditionally apply the timeout filter to avoid exacerbating
+  // any responsiveness problems on the page.
+  if (timeout_handler_ && timeout_handler_->FilterEvent(event))
+    return PreFilterResult::kFilteredTimeout;
+
+  if (base::FeatureList::IsEnabled(
+          features::kSkipPassthroughTouchEventQueueFilter)) {
+    return PreFilterResult::kUnfiltered;
+  }
+
   if (event.GetType() == WebInputEvent::kTouchScrollStarted)
     return PreFilterResult::kUnfiltered;
 
@@ -310,9 +322,6 @@ PassthroughTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
       return PreFilterResult::kFilteredNoPageHandlers;
     }
   }
-
-  if (timeout_handler_ && timeout_handler_->FilterEvent(event))
-    return PreFilterResult::kFilteredTimeout;
 
   if (drop_remaining_touches_in_sequence_ &&
       event.GetType() != WebInputEvent::kTouchCancel)
