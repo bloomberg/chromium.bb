@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -24,7 +24,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -44,8 +44,8 @@ class MediaInternalsTestBase {
   virtual ~MediaInternalsTestBase() = default;
 
   void SetUpServiceManager() {
-    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
+    scoped_feature_list_.InitAndEnableFeature(
+        media_session::features::kMediaSessionService);
 
     service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
@@ -112,7 +112,7 @@ class MediaInternalsTestBase {
   }
 
  private:
-  base::test::ScopedCommandLine scoped_command_line_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
 };
 

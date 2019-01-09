@@ -775,7 +775,7 @@
   },
   {
     "name": "enable-arc-unified-audio-focus",
-    // "owners": [ "your-team" ],
+    "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -809,8 +809,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-audio-focus",
-    // "owners": [ "your-team" ],
+    "name": "enable-audio-focus-enforcement",
+    "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -1410,7 +1410,12 @@
   },
   {
     "name": "enable-media-session-ash-media-keys",
-    // "owners": [ "your-team" ],
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-media-session-service",
+    "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76
   },
   {

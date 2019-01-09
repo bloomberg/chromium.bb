@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/stl_util.h"
-#include "services/media_session/public/cpp/switches.h"
 
 namespace media_session {
 namespace test {

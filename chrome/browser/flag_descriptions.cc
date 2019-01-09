@@ -341,6 +341,11 @@ const char kEnableAccessibilityObjectModelDescription[] =
     "Enables experimental support for Accessibility Object Model APIs "
     "that are in development.";
 
+const char kEnableAudioFocusEnforcementName[] = "Audio Focus Enforcement";
+const char kEnableAudioFocusEnforcementDescription[] =
+    "Enables enforcement of a single media session having audio focus at "
+    "any one time. Requires #enable-media-session-service to be enabled too.";
+
 const char kEnableWebPaymentsSingleAppUiSkipName[] =
     "Enable Web Payments single app UI skip";
 const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
@@ -622,6 +627,11 @@ const char kEnableMacMaterialDesignDownloadShelfName[] =
 
 const char kEnableMacMaterialDesignDownloadShelfDescription[] =
     "If enabled, the download shelf uses Material Design.";
+
+const char kEnableMediaSessionServiceName[] = "Media Session Service";
+const char kEnableMediaSessionServiceDescription[] =
+    "Enables the media session mojo service and internal media session "
+    "support.";
 
 const char kEnablePolicyToolName[] = "Enable policy management page";
 const char kEnablePolicyToolDescription[] =
@@ -2755,17 +2765,6 @@ const char kPromosOnLocalNtpName[] = "Enable promos on the local NTP";
 const char kPromosOnLocalNtpDescription[] =
     "Show promos on the local New Tab page if Google is the "
     "default search engine.";
-
-const char kEnableAudioFocusName[] = "Manage audio focus across tabs";
-const char kEnableAudioFocusDescription[] =
-    "Manage audio focus across tabs to improve the audio mixing.";
-const char kEnableAudioFocusDisabled[] = "Disabled";
-const char kEnableAudioFocusEnabled[] = "Enabled";
-const char kEnableAudioFocusEnabledDuckFlash[] =
-    "Enabled (Flash lowers volume when interrupted by other sound, "
-    "experimental)";
-const char kEnableAudioFocusEnabledNoEnforce[] =
-    "Enabled (without enforcement of a single active media session)";
 
 const char kEnableWebAuthenticationBleSupportName[] =
     "Web Authentication API BLE support";

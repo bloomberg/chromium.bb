@@ -30324,6 +30324,7 @@ from previous Chrome versions.
   <int value="-1903365454" label="SyncPseudoUSSPreferences:disabled"/>
   <int value="-1899715534" label="GamepadPollingInterval:enabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
+  <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
@@ -31051,6 +31052,7 @@ from previous Chrome versions.
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
+  <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
@@ -32025,6 +32027,7 @@ from previous Chrome versions.
   <int value="1148284632" label="NewTabPageUIMd:disabled"/>
   <int value="1149823105" label="enable-input-ime-api"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
+  <int value="1152491093" label="MediaSessionService:disabled"/>
   <int value="1153454438"
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
@@ -32088,6 +32091,7 @@ from previous Chrome versions.
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
+  <int value="1258043820" label="AudioFocusEnforcement:enabled"/>
   <int value="1258747457"
       label="SyncPseudoUSSHistoryDeleteDirectives:disabled"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>

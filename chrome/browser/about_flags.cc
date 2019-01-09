@@ -124,7 +124,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -693,22 +693,6 @@ const FeatureEntry::FeatureParam kEnforceTLS13DowngradeKnownOnly[] = {
 const FeatureEntry::FeatureVariation kEnforceTLS13DowngradeFeatureVariations[] =
     {{"(Known Root Only)", kEnforceTLS13DowngradeKnownOnly,
       base::size(kEnforceTLS13DowngradeKnownOnly), nullptr}};
-
-#if !defined(OS_ANDROID)
-const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
-    {flag_descriptions::kEnableAudioFocusDisabled, "", ""},
-    {flag_descriptions::kEnableAudioFocusEnabled,
-     media_session::switches::kEnableAudioFocus, ""},
-#if BUILDFLAG(ENABLE_PLUGINS)
-    {flag_descriptions::kEnableAudioFocusEnabledDuckFlash,
-     media_session::switches::kEnableAudioFocus,
-     media_session::switches::kEnableAudioFocusDuckFlash},
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-    {flag_descriptions::kEnableAudioFocusEnabledNoEnforce,
-     media_session::switches::kEnableAudioFocus,
-     media_session::switches::kEnableAudioFocusNoEnforce},
-};
-#endif  // !defined(OS_ANDROID)
 
 const FeatureEntry::Choice kForceColorProfileChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1559,7 +1543,8 @@ const FeatureEntry kFeatureEntries[] = {
     {
         "disable-office-editing-component-app",
         flag_descriptions::kOfficeEditingComponentAppName,
-        flag_descriptions::kOfficeEditingComponentAppDescription, kOsCrOS,
+        flag_descriptions::kOfficeEditingComponentAppDescription,
+        kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
@@ -1572,8 +1557,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesGoogleComDomain)},
     {
-        "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
-        flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
+        "enable-background-blur",
+        flag_descriptions::kEnableBackgroundBlurName,
+        flag_descriptions::kEnableBackgroundBlurDescription,
+        kOsCrOS,
         FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
     },
     {"enable-notification-indicator",
@@ -1585,8 +1572,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppListSearchAutocomplete)},
     {
-        "enable-pinch", flag_descriptions::kPinchScaleName,
-        flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
+        "enable-pinch",
+        flag_descriptions::kPinchScaleName,
+        flag_descriptions::kPinchScaleDescription,
+        kOsLinux | kOsWin | kOsCrOS,
         ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch,
                                   switches::kDisablePinch),
     },
@@ -1638,14 +1627,17 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 #if defined(OS_CHROMEOS)
     {
-        "ash-debug-shortcuts", flag_descriptions::kDebugShortcutsName,
-        flag_descriptions::kDebugShortcutsDescription, kOsAll,
+        "ash-debug-shortcuts",
+        flag_descriptions::kDebugShortcutsName,
+        flag_descriptions::kDebugShortcutsDescription,
+        kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
     },
     {
         "ash-enable-mirrored-screen",
         flag_descriptions::kAshEnableMirroredScreenName,
-        flag_descriptions::kAshEnableMirroredScreenDescription, kOsCrOS,
+        flag_descriptions::kAshEnableMirroredScreenDescription,
+        kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
     },
     {"ash-shelf-color", flag_descriptions::kAshShelfColorName,
@@ -2794,11 +2786,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableEnumeratingAudioDevicesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnumerateAudioDevices)},
 #endif  // OS_CHROMEOS
-#if !defined(OS_ANDROID)
-    {"enable-audio-focus", flag_descriptions::kEnableAudioFocusName,
-     flag_descriptions::kEnableAudioFocusDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kEnableAudioFocusChoices)},
-#endif  // !OS_ANDROID
 #if defined(OS_ANDROID)
     {"modal-permission-prompts", flag_descriptions::kModalPermissionPromptsName,
      flag_descriptions::kModalPermissionPromptsDescription, kOsAndroid,
@@ -4274,6 +4261,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReopenTabInProductHelpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(feature_engagement::kIPHReopenTabFeature)},
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
+    {"enable-audio-focus-enforcement",
+     flag_descriptions::kEnableAudioFocusEnforcementName,
+     flag_descriptions::kEnableAudioFocusEnforcementDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media_session::features::kAudioFocusEnforcement)},
+    {"enable-media-session-service",
+     flag_descriptions::kEnableMediaSessionServiceName,
+     flag_descriptions::kEnableMediaSessionServiceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media_session::features::kMediaSessionService)},
 };
 
 class FlagsStateSingleton {

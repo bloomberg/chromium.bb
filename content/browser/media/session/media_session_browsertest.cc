@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -15,7 +16,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 
 namespace content {
@@ -33,13 +34,14 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
+
+    scoped_feature_list_.InitAndEnableFeature(media::kInternalMediaSession);
   }
 
-  void EnableInternalMediaSesion() {
-#if !defined(OS_ANDROID)
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        media_session::switches::kEnableInternalMediaSession);
-#endif  // !defined(OS_ANDROID)
+  void DisableInternalMediaSession() {
+    disabled_feature_list_.InitWithFeatures(
+        {}, {media::kInternalMediaSession,
+             media_session::features::kMediaSessionService});
   }
 
   void StartPlaybackAndWait(Shell* shell, const std::string& id) {
@@ -112,14 +114,17 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     DISALLOW_COPY_AND_ASSIGN(MediaStartStopObserver);
   };
 
+  base::test::ScopedFeatureList disabled_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaSessionBrowserTest);
 };
 
 }  // anonymous namespace
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-// The feature can't be disabled on Android and Chrome OS.
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
+  DisableInternalMediaSession();
+
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
@@ -135,11 +140,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
   EXPECT_FALSE(IsPlaying(shell(), "long-audio"));
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
-  EnableInternalMediaSesion();
-
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
@@ -157,8 +159,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
-  EnableInternalMediaSesion();
-
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
@@ -179,8 +179,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, WebContents_Muted) {
-  EnableInternalMediaSesion();
-
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));
 
   shell()->web_contents()->SetAudioMuted(true);
@@ -205,8 +203,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, WebContents_Muted) {
 #if !defined(OS_ANDROID)
 // On Android, System Audio Focus would break this test.
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {
-  EnableInternalMediaSesion();
-
   Shell* other_shell = CreateBrowser();
 
   NavigateToURL(shell(), GetTestUrl("media/session", "media-session.html"));

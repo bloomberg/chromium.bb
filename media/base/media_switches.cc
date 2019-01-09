@@ -481,6 +481,21 @@ const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enables flash to be ducked by audio focus.
+const base::Feature kAudioFocusDuckFlash{"AudioFocusDuckFlash",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the internal Media Session logic without enabling the Media Session
+// service.
+const base::Feature kInternalMediaSession {
+  "InternalMediaSession",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {
@@ -495,16 +510,5 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
 #endif
   return false;
 }
-
-// Enable grouped browser audio focus. This means that all browser media
-// sessions will share audio focus. This should only be enabled on Chrome OS.
-const base::Feature kUseGroupedBrowserAudioFocus {
-  "UseGroupedBrowserAudioFocus",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 }  // namespace media

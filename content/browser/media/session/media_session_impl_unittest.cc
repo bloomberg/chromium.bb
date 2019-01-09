@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
@@ -16,7 +17,7 @@
 #include "media/base/media_content_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -77,8 +78,10 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   MediaSessionImplTest() = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
+    scoped_feature_list_.InitWithFeatures(
+        {media_session::features::kMediaSessionService,
+         media_session::features::kAudioFocusEnforcement},
+        {});
 
     RenderViewHostTestHarness::SetUp();
 
@@ -143,6 +146,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 
   std::unique_ptr<TestServiceManagerContext> service_manager_context_;

@@ -243,6 +243,9 @@ extern const char kEmbeddedExtensionOptionsDescription[];
 extern const char kEnableAccessibilityObjectModelName[];
 extern const char kEnableAccessibilityObjectModelDescription[];
 
+extern const char kEnableAudioFocusEnforcementName[];
+extern const char kEnableAudioFocusEnforcementDescription[];
+
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
 
@@ -401,6 +404,9 @@ extern const char kEnableMacMaterialDesignDownloadShelfDescription[];
 
 extern const char kEnableMaterialDesignBookmarksName[];
 extern const char kEnableMaterialDesignBookmarksDescription[];
+
+extern const char kEnableMediaSessionServiceName[];
+extern const char kEnableMediaSessionServiceDescription[];
 
 extern const char kEnablePolicyToolName[];
 extern const char kEnablePolicyToolDescription[];
@@ -1637,13 +1643,6 @@ extern const char kSearchSuggestionsOnLocalNtpDescription[];
 
 extern const char kPromosOnLocalNtpName[];
 extern const char kPromosOnLocalNtpDescription[];
-
-extern const char kEnableAudioFocusName[];
-extern const char kEnableAudioFocusDescription[];
-extern const char kEnableAudioFocusDisabled[];
-extern const char kEnableAudioFocusEnabled[];
-extern const char kEnableAudioFocusEnabledDuckFlash[];
-extern const char kEnableAudioFocusEnabledNoEnforce[];
 
 extern const char kEnableWebAuthenticationBleSupportName[];
 extern const char kEnableWebAuthenticationBleSupportDescription[];

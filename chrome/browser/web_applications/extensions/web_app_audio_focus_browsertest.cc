@@ -15,7 +15,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 
 namespace web_app {
 
@@ -33,11 +33,14 @@ class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
   WebAppAudioFocusBrowserTest() = default;
   ~WebAppAudioFocusBrowserTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(media_session::switches::kEnableAudioFocus);
-    scoped_feature_list_.InitAndEnableFeature(
-        media::kUseGroupedBrowserAudioFocus);
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {media_session::features::kMediaSessionService,
+         media_session::features::kAudioFocusEnforcement,
+         media_session::features::kAudioFocusSessionGrouping},
+        {});
+
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
   bool IsPaused(content::WebContents* web_contents) {
