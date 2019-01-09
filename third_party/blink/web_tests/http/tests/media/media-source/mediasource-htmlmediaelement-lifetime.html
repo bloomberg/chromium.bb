@@ -1,28 +1,146 @@
 <!DOCTYPE html>
-<title>Tests that the MediaSource keeps the HTMLMediaElement alive.</title>
+<title>Tests that GC preserves all of attached HTMLMediaElement+MSE when only part of that has a live reference.</title>
 <script src="/w3c/resources/testharness.js"></script>
 <script src="/w3c/resources/testharnessreport.js"></script>
 <script>
+
 async_test(function(test) {
     var video = document.createElement("video");
-    var mediaSource = new MediaSource();
+    var media_source = new MediaSource();
+    var object_url = URL.createObjectURL(media_source);
 
-    mediaSource.onsourceopen = test.step_func(function() {
-        // sourceOpened called.
-        var buffer = mediaSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
-
-        // Running the garbage collector.
+    media_source.onsourceopen = test.step_func(function() {
+        URL.revokeObjectURL(object_url);
         video = null;
+        // We still have a reference to the MediaSource, so gc() shouldn't collect
+        // HTMLME+MSE.
         gc();
 
         setTimeout(test.step_func(function() {
-            assert_equals(mediaSource.readyState, "open", "MediaSource object is open.");
-            // Setting MediaSource duration.
-            mediaSource.duration = 100;
+            assert_equals(media_source.readyState, "open", "MediaSource object is open.");
+            // Setting |media_source|.duration should synchronously enqueue a
+            // 'durationchange' event on the media element (for which we have
+            // no reference, but we do have an event listener -- see below).
+            media_source.duration = 100;
+
+            // Though we drop the reference to the MediaSource here, gc()
+            // shouldn't collect HTMLME+MSE due to pending 'durationchange'
+            // event dispatch on HTMLME.
+            media_source = null;
+            gc();
         }), 0);
     });
 
     video.ondurationchange = test.step_func_done();
-    video.src = URL.createObjectURL(mediaSource);
-});
+    video.src = object_url;
+
+    // Debugging notes: If this test times out, it's likely due to failure in
+    // keeping HTMLME+MSE alive and pending event dispatch on their wrappers alive
+    // through gc(); either gc() over-collected HTMLME+MSE or event dispatch was
+    // perturbed by gc().
+}, "GC of HTMLME+MediaSource preserves HTMLME+MediaSource when only MediaSource reference is alive, then HTMLME.ondurationchange is dispatched if it was pending when GC occurred with no HTMLME+MSE references");
+
+async_test(function(test) {
+    var video = document.createElement("video");
+    var media_source = new MediaSource();
+    var object_url = URL.createObjectURL(media_source);
+    var source_opened = false;
+    var detach_started = false;
+
+    media_source.onsourceopen = test.step_func(function() {
+        URL.revokeObjectURL(object_url);
+        source_opened = true;
+    });
+
+    media_source.onsourceclose = test.step_func(function() {
+        assert_true(source_opened, "sourceopen should fire before sourceclose");
+        assert_true(detach_started, "We should explicitly start detachment before receiving sourceclose");
+        test.done();
+    });
+
+    // Forget all live references to the MediaSource, except object_url (until
+    // that is also revoked later during sourceopen handling.)
+    media_source = null;
+
+    video.src = object_url;
+
+    var gc_then_detach_if_attached = test.step_func(function() {
+        // GC shouldn't collect HTMLME+MSE, even if source_opened is true and
+        // object_url has been revoked, because we still have a reference to HTMLME.
+        gc();
+        if (!source_opened) {
+            // Keep trying until we're attached.
+            setTimeout(gc_then_detach_if_attached, 10);
+            return;
+        }
+
+        // Invoking the load algorithm by setting src to '' should detach MSE and also
+        // schedule a 'sourceclose' event on the previously attached MediaSource.
+        detach_started = true;
+
+        video.src = '';
+        // There should be a pending sourceclose event on the MediaSource, so even if we drop
+        // the reference to the HTMLME here, gc() still shouldn't collect the MediaSource
+        // due to that pending event dispatch on it.
+        video = null;
+        gc();
+    });
+
+    gc_then_detach_if_attached();
+
+    // Debugging notes: If this test times out, it's likely due to failure in
+    // keeping HTMLME+MSE alive and pending event dispatch on their wrappers alive
+    // through gc(); either gc() over-collected HTMLME+MSE or event dispatch was
+    // perturbed by gc().
+    // If the asserts in media_source.onsourceclose fail, they are self-explanatory.
+}, "GC of HTMLME+MediaSource preserves HTMLME+MediaSource when only HTMLMediaElement reference is alive, then MediaSource.onsourceclose is dispatched if it was pending when GC occurred with no HTMLME+MSE references");
+
+async_test(function(test) {
+    var video = document.createElement("video");
+    var media_source = new MediaSource();
+    var object_url = URL.createObjectURL(media_source);
+    var malformed_media_append_started = false;
+
+    video.onerror = test.step_func(function() {
+        assert_true(malformed_media_append_started, "error should occur after append of malformed media bytestream started");
+        test.done();
+    });
+
+    media_source.onsourceopen = test.step_func(function() {
+        URL.revokeObjectURL(object_url);
+        var source_buffer = media_source.addSourceBuffer('video/webm; codecs="vp8"');
+        var source_buffer_list = media_source.sourceBuffers;
+        assert_true(source_buffer === source_buffer_list[0]);
+        source_buffer = null;
+        media_source = null;
+        // source_buffer_list's reference by us is the only thing keeping HTMLME+MSE alive.
+        gc();
+
+        setTimeout(test.step_func(function() {
+            gc();
+            source_buffer_list[0].onupdatestart = test.step_func(function() { malformed_media_append_started = true; });
+
+            // Begin asynchronous append of a malformed media bytestream which
+            // should result eventually with HTMLME error event firing due to the MSE
+            // Append Error Algorithm.
+            source_buffer_list[0].appendBuffer(new Uint8Array(10));
+
+            // There should be a pending updatestart event on the SourceBuffer, so even if we drop the reference
+            // to the SourceBufferList here, gc() still shouldn't collect HTMLME+MSE due to pending event dispatch
+            // on MSE.  This is verified by HTMLME eventually handling an error event due to the asynchronous append
+            // of malformed media.
+            source_buffer_list = null;
+            gc();
+        }), 0);
+    });
+
+    video.src = object_url;
+
+    // Debugging notes: If this test times out, it's likely due to failure in
+    // keeping HTMLME+MSE alive and pending event dispatch on their wrappers alive
+    // through gc(); either gc() over-collected HTMLME+MSE or event dispatch was
+    // perturbed by gc().
+    // If the assert in video.onerror fails, it is self-explanatory.
+}, "GC of HTMLME+MediaSource+SBL+SB preserves all when only SourceBufferList reference is alive, then SourceBuffer.onupdatestart and HTMLME.onerror are dispatched if they became pending during the asynchronous buffer append algorithm, of malformed bytestream, after all HTMLME+MSE references dropped");
+
 </script>

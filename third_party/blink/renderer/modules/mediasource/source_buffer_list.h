@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -85,7 +86,23 @@ class SourceBufferList final : public EventTargetWithInlineData,
 
   Member<EventQueue> async_event_queue_;
 
-  HeapVector<Member<SourceBuffer>> list_;
+  // If any portion of an attached HTMLMediaElement (HTMLME) and the MediaSource
+  // Extensions (MSE) API is alive (having pending activity or traceable from a
+  // GC root), the whole group is not GC'ed. Here, using TraceWrapperMember,
+  // instead of Member, because the |list_|'s SourceBuffers' wrappers need to
+  // remain alive at least to successfully dispatch any events enqueued by
+  // behavior of the HTMLME+MSE API. TraceWrapperMember usage here keeps the
+  // SourceBuffers in |list_|, and their wrappers, from being collected if we
+  // are alive or traceable from a GC root.
+  // For instance, suppose the only reference to the group of HTMLME+MSE API
+  // objects is one held by the app to the wrapper of this SourceBufferList.
+  // The app could do any of a number of actions on any of the SourceBuffers in
+  // |list_|, such as appending more media, causing events to be enqueued for
+  // later dispatch on at least those SourceBuffers. None of the app's event
+  // listeners on objects in HTMLME+MSE are counted as references, but events
+  // pending for dispatch to them must keep the HTML+MSE group of objects alive
+  // through at least their dispatch.
+  HeapVector<TraceWrapperMember<SourceBuffer>> list_;
 };
 
 }  // namespace blink

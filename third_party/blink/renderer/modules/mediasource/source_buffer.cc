@@ -1146,12 +1146,15 @@ void SourceBuffer::NotifyParseWarning(const ParseWarning warning) {
 }
 
 bool SourceBuffer::HasPendingActivity() const {
-  return source_;
+  return updating_ || append_buffer_async_task_handle_.IsActive() ||
+         remove_async_task_handle_.IsActive() ||
+         (async_event_queue_ && async_event_queue_->HasPendingEvents());
 }
 
 void SourceBuffer::ContextDestroyed(ExecutionContext*) {
   append_buffer_async_task_handle_.Cancel();
   remove_async_task_handle_.Cancel();
+  updating_ = false;
 }
 
 ExecutionContext* SourceBuffer::GetExecutionContext() const {
