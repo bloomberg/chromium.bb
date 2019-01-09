@@ -1,0 +1,57 @@
+This is a testharness.js-based test.
+Found 53 tests; 10 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL encodeInto() with Hi and destination length 0, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with Hi and destination length 0, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with Hi and destination length 0, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with Hi and destination length 0, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with Hi and destination length 0, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with Hi and destination length 0, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with A and destination length 10, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜ and destination length 4, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ùåÜA and destination length 3, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with Ì†¥AÌºÜA¬•Hi and destination length 10, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with AÌºÜ and destination length 4, offset 4, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 0, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 4, filler 0 encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 0, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 4, filler 128 encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 0, filler random encoder.encodeInto is not a function
+FAIL encodeInto() with ¬•¬• and destination length 4, offset 4, filler random encoder.encodeInto is not a function
+PASS Invalid encodeInto() destination: function DataView() { [native code] }
+PASS Invalid encodeInto() destination: function Int8Array() { [native code] }
+PASS Invalid encodeInto() destination: function Int16Array() { [native code] }
+PASS Invalid encodeInto() destination: function Int32Array() { [native code] }
+PASS Invalid encodeInto() destination: function Uint16Array() { [native code] }
+PASS Invalid encodeInto() destination: function Uint32Array() { [native code] }
+PASS Invalid encodeInto() destination: function Uint8ClampedArray() { [native code] }
+PASS Invalid encodeInto() destination: function Float32Array() { [native code] }
+PASS Invalid encodeInto() destination: function Float64Array() { [native code] }
+PASS Invalid encodeInto() destination: ArrayBuffer
+FAIL encodeInto() cannot operate on a detached buffer (intermediate value).encodeInto is not a function
+Harness: the test ran to completion.
+
