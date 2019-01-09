@@ -2858,7 +2858,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 8
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -3661,7 +3661,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -4418,7 +4419,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 4
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -5584,7 +5585,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -7068,7 +7070,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -8266,7 +8269,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 5
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -9046,7 +9049,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 2
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -9978,7 +9981,8 @@
             {
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "shards": 6
         },
         "test": "content_browsertests"
       },
