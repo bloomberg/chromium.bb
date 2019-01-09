@@ -338,13 +338,10 @@ class _ProjectContextGenerator(object):
           'multiple packages. Unable to process with gradle.')
       return _DEFAULT_ANDROID_MANIFEST_PATH
 
-    variables = {}
-    variables['compile_sdk_version'] = self.build_vars['compile_sdk_version']
-    variables['package'] = resource_packages[0]
-
+    variables = {'package': resource_packages[0]}
+    data = self.jinja_processor.Render(_TemplatePath('manifest'), variables)
     output_file = os.path.join(
         self.EntryOutputDir(entry), 'AndroidManifest.xml')
-    data = self.jinja_processor.Render(_TemplatePath('manifest'), variables)
     _WriteFile(output_file, data)
 
     return output_file
