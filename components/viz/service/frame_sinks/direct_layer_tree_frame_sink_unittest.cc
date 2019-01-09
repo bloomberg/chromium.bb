@@ -215,7 +215,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   auto* quad2 = pass2->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
   quad2->SetNew(shared_quad_state2, rect2 /* rect */, rect2 /* visible_rect */,
                 SurfaceRange(base::nullopt, child_surface_id), SK_ColorBLACK,
-                false /* stretch_content_to_fill_bounds */);
+                false /* stretch_content_to_fill_bounds */,
+                false /* ignores_input_event */);
   pass_list.push_back(std::move(pass2));
 
   auto pass3 = RenderPass::Create();
@@ -256,7 +257,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   auto* quad4 = pass4->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
   quad4->SetNew(shared_quad_state4, rect4 /* rect */, rect4 /* visible_rect */,
                 SurfaceRange(base::nullopt, child_surface_id4), SK_ColorBLACK,
-                false /* stretch_content_to_fill_bounds */);
+                false /* stretch_content_to_fill_bounds */,
+                false /* ignores_input_event */);
   pass_list.push_back(std::move(pass4));
 
   const auto* hit_test_region_list1 =
@@ -355,7 +357,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect3_0,
                     SurfaceRange(base::nullopt, child_surface_id),
                     SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false);
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*ignores_input_event=*/false);
     pass_list.push_back(std::move(pass3_0));
 
     auto pass3_1 = RenderPass::Create();
@@ -399,7 +402,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect4_0,
                     SurfaceRange(base::nullopt, child_surface_id),
                     SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false);
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*ignores_input_event=*/false);
     pass_list.push_back(std::move(pass4_0));
 
     auto pass4_1 = RenderPass::Create();
@@ -445,7 +449,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect5_0,
                     SurfaceRange(base::nullopt, child_surface_id),
                     SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false);
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*ignores_input_event=*/false);
     pass_list.push_back(std::move(pass5_0));
 
     auto pass5_1 = RenderPass::Create();
@@ -491,7 +496,8 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect6_0,
                     SurfaceRange(base::nullopt, child_surface_id),
                     SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false);
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*ignores_input_event=*/false);
     pass_list.push_back(std::move(pass6_0));
 
     auto pass6_1 = RenderPass::Create();

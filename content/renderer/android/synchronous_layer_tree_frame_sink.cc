@@ -324,7 +324,8 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
             viz::SurfaceId(
                 kChildFrameSinkId,
                 child_local_surface_id_allocation_.local_surface_id())),
-        SK_ColorWHITE, false);
+        SK_ColorWHITE, false /* stretch_content_to_fill_bounds */,
+        false /* ignores_input_event */);
 
     child_support_->SubmitCompositorFrame(
         child_local_surface_id_allocation_.local_surface_id(),

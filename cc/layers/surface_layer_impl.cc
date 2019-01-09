@@ -180,7 +180,8 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_range, background_color(),
-                            stretch_content_to_fill_bounds_);
+                            stretch_content_to_fill_bounds_,
+                            has_pointer_events_none_);
 
   return surface_draw_quad;
 }

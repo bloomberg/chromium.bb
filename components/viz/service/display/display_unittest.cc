@@ -3332,7 +3332,8 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     quad2->SetNew(shared_quad_state2, rect2 /* rect */,
                   rect2 /* visible_rect */,
                   SurfaceRange(base::nullopt, sub_surface_id), SK_ColorBLACK,
-                  false /* stretch_content_to_fill_bounds */);
+                  false /* stretch_content_to_fill_bounds */,
+                  false /* has_pointer_events_none */);
 
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);

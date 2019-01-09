@@ -5800,7 +5800,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        PointerEventsNoneOOPIF) {
-  if (!features::IsVizHitTestingSurfaceLayerEnabled())
+  if (!features::IsVizHitTestingEnabled())
     return;
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
@@ -5811,13 +5811,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   expected_transform.Translate(-2 * device_scale_factor,
                                -2 * device_scale_factor);
 
-  // We should not submit hit test region for iframes with pointer-events: none
-  // in /2 hit testing.
+  // We should not submit hit test region for iframes with pointer-events: none.
   DCHECK(hit_test_data.size() == 3);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
+  // Non v2 hit-testing should still treat the second OOPIF as slow path.
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
+  } else {
+    EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+  }
 
   // Check that an update on the css property can trigger an update in submitted
   // hit test data.
@@ -5859,12 +5863,21 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
+  // Non v2 hit-testing should still treat OOPIFs as slow path.
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
+  } else {
+    EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+  }
 
   EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
   EXPECT_TRUE(
       expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[3].flags);
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    EXPECT_EQ(kFastHitTestFlags, hit_test_data[3].flags);
+  } else {
+    EXPECT_EQ(kSlowHitTestFlags, hit_test_data[3].flags);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
