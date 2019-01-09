@@ -121,14 +121,14 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
 }
 
 std::unique_ptr<InkDropMask> Checkbox::CreateInkDropMask() const {
-  // The checkbox ripple is larger than the checkbox and shouldn't get masked to
-  // its bounds.
+  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
+  // the checkbox view (otherwise it gets clipped which looks weird).
   return nullptr;
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {
-  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
-  // the checkbox view (otherwise it gets clipped which looks weird).
+  // Usually ink-drop ripples match the text color. Checkboxes use the color of
+  // the unchecked, enabled icon.
   return GetIconImageColor(IconState::ENABLED);
 }
 
