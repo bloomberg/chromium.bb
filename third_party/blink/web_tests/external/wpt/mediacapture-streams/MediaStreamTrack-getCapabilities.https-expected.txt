@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 112 tests; 92 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup audio MediaStreamTrack getCapabilities() test for volume
 PASS Setup audio MediaStreamTrack getCapabilities() test for sampleRate
 PASS Setup audio MediaStreamTrack getCapabilities() test for sampleSize

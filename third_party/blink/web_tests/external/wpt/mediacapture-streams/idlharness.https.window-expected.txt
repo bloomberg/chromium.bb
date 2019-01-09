@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 163 tests; 151 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS mediacapture-streams interfaces.
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator[2]: original interface defined

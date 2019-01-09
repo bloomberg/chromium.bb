@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 108 tests; 106 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test frame policy on same origin iframe inherit from header policy.
 PASS Test frame policy on cross origin iframe inherit from header policy.
 PASS Test frame policy on another cross origin iframe inherit from header policy.
