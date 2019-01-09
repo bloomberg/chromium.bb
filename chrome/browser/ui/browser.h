@@ -753,6 +753,7 @@ class Browser : public TabStripModelObserver,
   void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
                                  int index,
                                  void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,

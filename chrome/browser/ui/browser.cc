@@ -929,6 +929,10 @@ bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
 }
 
 void Browser::OpenFile() {
+  // Ignore if there is already a select file dialog.
+  if (select_file_dialog_)
+    return;
+
   base::RecordAction(UserMetricsAction("OpenFile"));
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, std::make_unique<ChromeSelectFilePolicy>(
@@ -1979,6 +1983,11 @@ void Browser::FileSelected(const base::FilePath& path, int index,
 void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
                                         int index,
                                         void* params) {
+  // Transfer the ownership of select file dialog so that the ref count is
+  // released after the function returns. This is needed because the passed-in
+  // data such as |file_info| and |params| could be owned by the dialog.
+  scoped_refptr<ui::SelectFileDialog> dialog = std::move(select_file_dialog_);
+
   profile_->set_last_selected_directory(file_info.file_path.DirName());
 
   GURL url = std::move(file_info.url)
@@ -1989,6 +1998,10 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
 
   OpenURL(OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                         ui::PAGE_TRANSITION_TYPED, false));
+}
+
+void Browser::FileSelectionCanceled(void* params) {
+  select_file_dialog_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
