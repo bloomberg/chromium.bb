@@ -758,12 +758,31 @@ void Program::Update() {
     DCHECK(length == 0 || name_buffer[length] == '\0');
     std::string original_name;
     GetVertexAttribData(name_buffer.get(), &original_name, &type);
-    size_t location_count = size * LocationCountForAttribType(type);
-    // TODO(gman): Should we check for error?
-    GLint location = glGetAttribLocation(service_id_, name_buffer.get());
-    num_locations = std::max(num_locations, location + location_count);
+    base::CheckedNumeric<size_t> location_count = size;
+    location_count *= LocationCountForAttribType(type);
+    size_t safe_location_count = 0;
+    if (!location_count.AssignIfValid(&safe_location_count))
+      return;
+    GLint location;
+    if (base::StartsWith(name_buffer.get(), "gl_",
+                         base::CompareCase::SENSITIVE)) {
+      // Built-in attributes, for example, gl_VertexID, are still considered
+      // as active but their location is -1.
+      // However, on MacOSX, drivers return 0 in this case.
+      // Set |location| to -1 directly.
+      location = -1;
+    } else {
+      // TODO(gman): Should we check for error?
+      location = glGetAttribLocation(service_id_, name_buffer.get());
+      base::CheckedNumeric<size_t> max_location = location;
+      max_location += safe_location_count;
+      size_t safe_max_location = 0;
+      if (!max_location.AssignIfValid(&safe_max_location))
+        return;
+      num_locations = std::max(num_locations, safe_max_location);
+    }
     attrib_infos_.push_back(
-        VertexAttrib(1, type, original_name, location, location_count));
+        VertexAttrib(1, type, original_name, location, safe_location_count));
     max_attrib_name_length_ = std::max(
         max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
   }
