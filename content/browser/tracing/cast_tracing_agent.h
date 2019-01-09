@@ -28,12 +28,14 @@ class CastTracingAgent : public tracing::BaseAgent {
   ~CastTracingAgent() override;
 
  private:
+  // tracing::BaseAgent implementation.
+  void GetCategories(std::set<std::string>* category_set) override;
+
   // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void GetCategories(Agent::GetCategoriesCallback callback) override;
 
   void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
                                  bool success);

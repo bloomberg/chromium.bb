@@ -40,7 +40,6 @@ class MockAgent : public mojom::Agent {
                     base::TimeTicks coordinator_time,
                     StartTracingCallback cb) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
-  void GetCategories(GetCategoriesCallback cb) override;
   void RequestBufferStatus(RequestBufferStatusCallback cb) override;
 
   mojo::Binding<mojom::Agent> binding_;

@@ -63,10 +63,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   static TraceLog* GetInstance();
 
-  // Get set of known category groups. This can change as new code paths are
-  // reached. The known category groups are inserted into |category_groups|.
-  void GetKnownCategoryGroups(std::vector<std::string>* category_groups);
-
   // Retrieves a copy (for thread-safety) of the current TraceConfig.
   TraceConfig GetCurrentTraceConfig() const;
 

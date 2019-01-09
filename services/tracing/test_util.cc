@@ -36,11 +36,6 @@ void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   }
 }
 
-void MockAgent::GetCategories(GetCategoriesCallback cb) {
-  call_stat_.push_back("GetCategories");
-  std::move(cb).Run(categories_);
-}
-
 void MockAgent::RequestBufferStatus(RequestBufferStatusCallback cb) {
   call_stat_.push_back("RequestBufferStatus");
   std::move(cb).Run(trace_log_status_.event_capacity,

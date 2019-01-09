@@ -41,19 +41,6 @@ TraceEventAgent* TraceEventAgent::GetInstance() {
   return instance.get();
 }
 
-void TraceEventAgent::Connect(service_manager::Connector* connector) {
-  // |connector| can be null in tests.
-  if (!connector) {
-    return;
-  }
-
-  BaseAgent::Connect(connector);
-
-#if defined(PERFETTO_AVAILABLE)
-  ProducerClient::Get()->Connect(connector);
-#endif
-}
-
 TraceEventAgent::TraceEventAgent()
     : BaseAgent(kTraceEventLabel,
                 mojom::TraceDataType::ARRAY,
@@ -67,11 +54,24 @@ TraceEventAgent::TraceEventAgent()
 
 TraceEventAgent::~TraceEventAgent() = default;
 
-void TraceEventAgent::GetCategories(GetCategoriesCallback callback) {
-  std::vector<std::string> category_vector;
-  base::trace_event::TraceLog::GetInstance()->GetKnownCategoryGroups(
-      &category_vector);
-  std::move(callback).Run(base::JoinString(category_vector, ","));
+void TraceEventAgent::Connect(service_manager::Connector* connector) {
+  // |connector| can be null in tests.
+  if (!connector) {
+    return;
+  }
+
+  BaseAgent::Connect(connector);
+
+#if defined(PERFETTO_AVAILABLE)
+  ProducerClient::Get()->Connect(connector);
+#endif
+}
+
+void TraceEventAgent::GetCategories(std::set<std::string>* category_set) {
+  for (size_t i = base::trace_event::BuiltinCategories::kVisibleCategoryStart;
+       i < base::trace_event::BuiltinCategories::Size(); ++i) {
+    category_set->insert(base::trace_event::BuiltinCategories::At(i));
+  }
 }
 
 void TraceEventAgent::AddMetadataGeneratorFunction(

@@ -256,6 +256,10 @@ class BASE_EXPORT BuiltinCategories {
   // Returns the amount of built-in categories in the registry.
   static constexpr size_t Size() { return base::size(kBuiltinCategories); }
 
+  // Where in the builtin category list to start when populating the
+  // about://tracing UI.
+  static constexpr size_t kVisibleCategoryStart = 3;
+
   // Returns whether the category is either:
   // - Properly registered in the builtin list.
   // - Constists of several categories separated by commas.

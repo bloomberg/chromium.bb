@@ -37,15 +37,6 @@ std::string GetTracingCategories(
   return base::JoinString(categories, ",");
 }
 
-std::string GetAllTracingCategories() {
-  std::vector<base::StringPiece> categories;
-  for (size_t i = 0; i < chromecast::tracing::kCategoryCount; ++i) {
-    base::StringPiece category(chromecast::tracing::kCategories[i]);
-    categories.push_back(category);
-  }
-  return base::JoinString(categories, ",");
-}
-
 void DestroySystemTracerOnWorker(
     std::unique_ptr<chromecast::SystemTracer> tracer) {}
 
@@ -308,8 +299,10 @@ void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
                                             base::Unretained(this)));
 }
 
-void CastTracingAgent::GetCategories(Agent::GetCategoriesCallback callback) {
-  std::move(callback).Run(GetAllTracingCategories());
+void CastTracingAgent::GetCategories(std::set<std::string>* category_set) {
+  for (size_t i = 0; i < chromecast::tracing::kCategoryCount; ++i) {
+    category_set->insert(chromecast::tracing::kCategories[i]);
+  }
 }
 
 void CastTracingAgent::StartTracingCallbackProxy(

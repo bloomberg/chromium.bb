@@ -138,25 +138,6 @@ class CoordinatorTest : public testing::Test,
     EXPECT_EQ(num_agents, count);
   }
 
-  void GetCategories(bool expected_success,
-                     std::set<std::string> expected_categories) {
-    coordinator_->GetCategories(base::BindRepeating(
-        [](bool expected_success, std::set<std::string> expected_categories,
-           bool success, const std::string& categories) {
-          EXPECT_EQ(expected_success, success);
-          if (!success)
-            return;
-          std::vector<std::string> category_vector = base::SplitString(
-              categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-          EXPECT_EQ(expected_categories.size(), category_vector.size());
-          for (const auto& expected_category : expected_categories) {
-            EXPECT_EQ(1, std::count(category_vector.begin(),
-                                    category_vector.end(), expected_category));
-          }
-        },
-        expected_success, expected_categories));
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<AgentRegistry> agent_registry_;
   std::unique_ptr<Coordinator> coordinator_;
@@ -403,39 +384,6 @@ TEST_F(CoordinatorTest, RequestBufferUsage) {
   EXPECT_EQ(3u, agent1->call_stat().size());
   EXPECT_EQ(2u, agent2->call_stat().size());
   EXPECT_EQ(1u, agent3->call_stat().size());
-}
-
-TEST_F(CoordinatorTest, GetCategoriesFail) {
-  base::RunLoop run_loop;
-  StartTracing("config", true);
-  std::set<std::string> expected_categories;
-  GetCategories(false, expected_categories);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(CoordinatorTest, GetCategoriesSimple) {
-  base::RunLoop run_loop;
-  auto* agent = AddArrayAgent();
-  agent->categories_ = "cat2,cat1";
-  std::set<std::string> expected_categories;
-  expected_categories.insert("cat1");
-  expected_categories.insert("cat2");
-  GetCategories(true, expected_categories);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(CoordinatorTest, GetCategoriesFromTwoAgents) {
-  base::RunLoop run_loop;
-  auto* agent1 = AddArrayAgent();
-  agent1->categories_ = "cat2,cat1";
-  auto* agent2 = AddArrayAgent();
-  agent2->categories_ = "cat3,cat2";
-  std::set<std::string> expected_categories;
-  expected_categories.insert("cat1");
-  expected_categories.insert("cat2");
-  expected_categories.insert("cat3");
-  GetCategories(true, expected_categories);
-  run_loop.RunUntilIdle();
 }
 
 TEST_F(CoordinatorTest, LateAgents) {
