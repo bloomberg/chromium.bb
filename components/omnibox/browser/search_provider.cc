@@ -862,6 +862,17 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
   if (!template_url || template_url->suggestions_url().empty())
     return nullptr;
 
+  // Setting SuggestUrl the same as SearchUrl is a typical misconfiguration.
+  // It's not possible for a URL to both provide a search results page and
+  // suggested queries response (at least they have different format).  Most
+  // like the user set the search URL correctly; it would be obvious if they did
+  // not. Thus, it's likely that the suggest URL is wrong.  Because it would not
+  // give a valid query suggestion response, don't bother sending queries to it
+  // (otherwise user will quickly hit rate-limit for search queries, that will
+  // harm valid search queries as well).
+  if (template_url->suggestions_url() == template_url->url())
+    return nullptr;
+
   // Bail if the suggestion URL is invalid with the given replacements.
   TemplateURLRef::SearchTermsArgs search_term_args(input.text());
   search_term_args.input_type = input.type();
