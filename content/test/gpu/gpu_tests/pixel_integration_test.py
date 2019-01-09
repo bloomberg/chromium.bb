@@ -4,6 +4,7 @@
 import glob
 import os
 import re
+from subprocess import CalledProcessError
 import sys
 
 from gpu_tests import gpu_integration_test
@@ -94,6 +95,11 @@ class PixelIntegrationTest(
       help='Overrides the default on-disk location for reference images '
       '(only used for local testing without a cloud storage account)',
       default=default_reference_image_dir)
+    parser.add_option(
+      '--use-skia-gold',
+      dest='use_skia_gold',
+      action='store_true', default=False,
+      help='Use the Skia team\'s Gold tool to handle image comparisons')
 
   @classmethod
   def _CreateExpectations(cls):
@@ -106,10 +112,10 @@ class PixelIntegrationTest(
     pages = pixel_test_pages.DefaultPages(name)
     pages += pixel_test_pages.GpuRasterizationPages(name)
     pages += pixel_test_pages.ExperimentalCanvasFeaturesPages(name)
-    pages += pixel_test_pages.NoGpuProcessPages(name)
+    # pages += pixel_test_pages.NoGpuProcessPages(name)
     # The following pages should run only on platforms where SwiftShader is
     # enabled. They are skipped on other platforms through test expectations.
-    pages += pixel_test_pages.SwiftShaderPages(name)
+    # pages += pixel_test_pages.SwiftShaderPages(name)
     if sys.platform.startswith('darwin'):
       pages += pixel_test_pages.MacSpecificPages(name)
     if sys.platform.startswith('win'):
@@ -134,6 +140,14 @@ class PixelIntegrationTest(
       'domAutomationController._readyForActions')
     if do_page_action:
       self._DoPageAction(tab, page)
+    if self.GetParsedCommandLineOptions().use_skia_gold:
+      self.RunSkiaGoldBasedPixelTest(test_path, do_page_action, args)
+    else:
+      self.RunLegacyPixelTest(test_path, do_page_action, args)
+
+  def RunLegacyPixelTest(self, test_path, do_page_action, args):
+    page = args[0]
+    tab = self.tab
     try:
       if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
         self.fail('page indicated test failure')
@@ -195,6 +209,83 @@ class PixelIntegrationTest(
             self.GetParsedCommandLineOptions().generated_dir, image_name,
             screenshot, ref_png)
         self.fail('Reference image did not match captured screen')
+    finally:
+      if do_page_action:
+        # Assume that page actions might have killed the GPU process.
+        self._RestartBrowser('Must restart after page actions')
+
+  def RunSkiaGoldBasedPixelTest(self, test_path, do_page_action, args):
+    page = args[0]
+    tab = self.tab
+    try:
+      if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
+        self.fail('page indicated test failure')
+      if not tab.screenshot_supported:
+        self.fail('Browser does not support screenshot capture')
+      screenshot = tab.Screenshot(5)
+      if screenshot is None:
+        self.fail('Could not capture screenshot')
+      dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
+      if page.test_rect:
+        screenshot = image_util.Crop(
+            screenshot, int(page.test_rect[0] * dpr),
+            int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
+            int(page.test_rect[3] * dpr))
+      # This is required by Gold whether this is a tryjob or not.
+      build_id_args = [
+        '--commit',
+        self.GetParsedCommandLineOptions().build_revision,
+      ]
+      parsed_options = self.GetParsedCommandLineOptions()
+      # Trybots conceptually download their reference images from
+      # cloud storage; they don't produce them. (TODO(kbr): remove
+      # this once fully switched over to Gold.)
+      if parsed_options.download_refimg_from_cloud_storage:
+        # Tryjobs in Gold need:
+        #   CL issue number (in Gerrit)
+        #   Patchset number
+        #   Buildbucket ID
+        build_id_args += [
+          '--issue',
+          self.GetParsedCommandLineOptions().review_patch_issue,
+          '--patchset',
+          self.GetParsedCommandLineOptions().review_patch_set,
+          '--jobid',
+          self.GetParsedCommandLineOptions().buildbucket_build_id
+        ]
+      if page.expected_colors:
+        # Use expected colors instead of ref images for validation.
+        self._ValidateScreenshotSamplesWithSkiaGold(
+            tab, page, screenshot, page.expected_colors, dpr, build_id_args)
+        return
+      image_name = self._UrlToImageName(page.name)
+      is_local_run = not (parsed_options.upload_refimg_to_cloud_storage or
+                          parsed_options.download_refimg_from_cloud_storage)
+      if is_local_run:
+        # Legacy path using on-disk results.
+        ref_png = self._GetReferenceImage(
+          self.GetParsedCommandLineOptions().reference_dir,
+          image_name, page.revision, screenshot)
+        # Test new snapshot against existing reference image
+        if not image_util.AreEqual(ref_png, screenshot,
+                                   tolerance=page.tolerance):
+          if parsed_options.test_machine_name:
+            self._UploadErrorImagesToCloudStorage(image_name, screenshot,
+                                                  ref_png)
+          else:
+            self._WriteErrorImages(
+              parsed_options.generated_dir, image_name, screenshot, ref_png)
+        self.fail('Reference image did not match captured screen')
+      else:
+        try:
+          self._UploadTestResultToSkiaGold(
+            image_name, screenshot,
+            tab, page,
+            is_check_mode=True,
+            build_id_args=build_id_args)
+        except CalledProcessError:
+          # TODO(kbr): make a nice link from the failures to gold.skia.org.
+          self.fail('Gold said the test failed, so fail.')
     finally:
       if do_page_action:
         # Assume that page actions might have killed the GPU process.
