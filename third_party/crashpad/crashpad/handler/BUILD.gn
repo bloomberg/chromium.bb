@@ -151,7 +151,7 @@ crashpad_executable("crashpad_handler") {
         "@loader_path/../../../../../../..",
 
         # The handler can also be executed in an unbundled framework at
-        # Chromium Framework.framework/Versions/V/Helpers/
+        # Chromium Framework.framework/Versions/A/Helpers/
         "-rpath",
         "@loader_path/../../../..",
       ]
