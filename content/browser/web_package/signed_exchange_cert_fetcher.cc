@@ -21,11 +21,14 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
 namespace {
+
+constexpr char kCertChainMimeType[] = "application/cert-chain+cbor";
 
 // Limit certificate messages to 100k, matching BoringSSL's default limit.
 const size_t kMaxCertSizeForSignedExchange = 100 * 1024;
@@ -86,6 +89,7 @@ SignedExchangeCertFetcher::CreateAndStart(
   return cert_fetcher;
 }
 
+// https://wicg.github.io/webpackage/loading.html#handling-cert-url
 SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -111,6 +115,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   resource_request_->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->headers.SetHeader(network::kAcceptHeader,
+                                       kCertChainMimeType);
   if (force_fetch) {
     resource_request_->load_flags |=
         net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
@@ -223,7 +229,7 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
   // "The resource at a signature's cert-url MUST have the
   // application/cert-chain+cbor content type" [spec text]
-  if (head.mime_type != "application/cert-chain+cbor") {
+  if (head.mime_type != kCertChainMimeType) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_,
         base::StringPrintf(

@@ -272,6 +272,10 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
             mock_loader_factory_.url_request()->load_flags);
   EXPECT_EQ(request_initiator_,
             mock_loader_factory_.url_request()->request_initiator);
+  std::string accept;
+  EXPECT_TRUE(
+      mock_loader_factory_.url_request()->headers.GetHeader("Accept", &accept));
+  EXPECT_EQ("application/cert-chain+cbor", accept);
 
   CallOnReceiveResponse();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
