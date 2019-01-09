@@ -49,7 +49,12 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   ~LocationBarBubbleDelegateView() override;
 
   // Displays the bubble with appearance and behavior tailored for |reason|.
-  void ShowForReason(DisplayReason reason);
+  // If |allow_refocus_alert| is set to true (default), inactive bubbles will
+  // have an additional screen reader alert instructing the user to use a
+  // hotkey combination to focus the bubble; if it's set to false, no additional
+  // alert is provided (use false for transient bubbles to avoid confusing the
+  // user).
+  void ShowForReason(DisplayReason reason, bool allow_refocus_alert = true);
 
   // content::NotificationObserver:
   void Observe(int type,
