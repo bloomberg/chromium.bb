@@ -33,14 +33,14 @@ cca.views.GalleryBase = function(selector, model) {
 
   /**
    * Contains pictures' views.
-   * @type {Array.<cca.views.GalleryBase.DOMPicture>}
+   * @type {Array<cca.views.GalleryBase.DOMPicture>}
    * @protected
    */
   this.pictures = [];
 
   /**
    * Contains selected pictures' indexes sorted in the selection order.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @protected
    */
   this.selectedIndexes = [];
@@ -166,7 +166,7 @@ cca.views.GalleryBase.prototype.lastSelectedPicture = function() {
 
 /**
  * Returns the currently selected picture views sorted in the added order.
- * @return {Array.<cca.views.GalleryBase.DOMPicture>}
+ * @return {Array<cca.views.GalleryBase.DOMPicture>}
  * @protected
  */
 cca.views.GalleryBase.prototype.selectedPictures = function() {

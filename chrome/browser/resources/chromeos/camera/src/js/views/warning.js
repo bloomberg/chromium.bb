@@ -23,7 +23,7 @@ cca.views.Warning = function() {
   cca.views.View.call(this, '#warning');
 
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.errorNames_ = [];

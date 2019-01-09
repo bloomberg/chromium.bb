@@ -177,7 +177,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
 /**
  * Reads file entries from the directory.
  * @param {DirectoryEntry} dir Directory entry to be read.
- * @return {!Promise<!Array.<FileEntry>>} Promise for the read file entries.
+ * @return {!Promise<!Array<FileEntry>>} Promise for the read file entries.
  * @private
  */
 cca.models.FileSystem.readDir_ = function(dir) {
@@ -420,11 +420,11 @@ cca.models.FileSystem.hasThumbnailPrefix_ = function(entry) {
 
 /**
  * Parses and filters the internal entries to thumbnail and picture entries.
- * @param {Array.<FileEntry>} internalEntries Internal file entries.
- * @param {Object.<string, FileEntry>} thumbnailEntriesByName Result thumbanil
+ * @param {Array<FileEntry>} internalEntries Internal file entries.
+ * @param {Object<string, FileEntry>} thumbnailEntriesByName Result thumbanil
  *     entries mapped by thumbnail names, initially empty.
- * @param {Array.<FileEntry>=} pictureEntries Result picture entries,
- *     initially empty.
+ * @param {Array<FileEntry>=} pictureEntries Result picture entries, initially
+ *     empty.
  * @private
  */
 cca.models.FileSystem.parseInternalEntries_ = function(
@@ -450,7 +450,7 @@ cca.models.FileSystem.parseInternalEntries_ = function(
 
 /**
  * Gets the picture and thumbnail entries.
- * @return {!Promise<!Array.<!Array.<FileEntry>|!Object.<string, FileEntry>>>}
+ * @return {!Promise<!Array<!Array<FileEntry>|!Object<string, FileEntry>>>}
  *     Promise for the picture entries and the thumbnail entries mapped by
  *     thumbnail names.
  */

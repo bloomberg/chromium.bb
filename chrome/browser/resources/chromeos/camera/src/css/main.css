@@ -982,7 +982,7 @@ body.dialog #dialog #dialog-popup {
 }
 
 #dialog #dialog-msg {
-  -webkit-user-select: text;  /* Allow copying the message. */
+  user-select: text;  /* Allow copying the message. */
   cursor: text;
   color: #202124;
   font-size: 14px;

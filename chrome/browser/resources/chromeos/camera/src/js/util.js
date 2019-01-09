@@ -18,7 +18,7 @@ cca.util = cca.util || {};
  * Gets the clockwise rotation and flip that can orient a photo to its upright
  * position.
  * @param {Blob} blob JPEG blob that might contain EXIF orientation field.
- * @return {Promise<Object.<number, boolean>>}
+ * @return {Promise<Object<number, boolean>>}
  */
 cca.util.getPhotoOrientation = function(blob) {
   let getOrientation = new Promise((resolve, reject) => {
@@ -158,7 +158,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
 
 /**
  * Checks if the current device is in the given device list.
- * @param {Array.<string>} ids Device ids.
+ * @param {Array<string>} ids Device ids.
  * @return {!Promise<boolean>} Promise for the result.
  */
 cca.util.isChromeOSDevice = function(ids) {
@@ -436,7 +436,7 @@ cca.util.PointerTracker = function(element, callback) {
   this.callback_ = callback;
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.lastMousePosition_ = null;
@@ -546,13 +546,13 @@ cca.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   this.scrolling_ = false;
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.startScrollPosition_ = [0, 0];
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.lastScrollPosition_ = [0, 0];
@@ -592,7 +592,7 @@ cca.util.ScrollTracker.prototype = {
   },
 
   /**
-   * @return {Array.<number>} Returns distance of the last detected scroll.
+   * @return {Array<number>} Returns distance of the last detected scroll.
    */
   get delta() {
     return [
@@ -722,13 +722,13 @@ cca.util.MouseScroller = function(scroller) {
   this.scroller_ = scroller;
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.startPosition_ = null;
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.startScrollPosition_ = null;

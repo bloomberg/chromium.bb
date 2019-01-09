@@ -20,13 +20,13 @@ cca.models = cca.models || {};
  */
 cca.models.Gallery = function() {
   /**
-   * @type {Array.<cca.models.Gallery.Observer>}
+   * @type {Array<cca.models.Gallery.Observer>}
    * @private
    */
   this.observers_ = [];
 
   /**
-   * @type {Promise<Array.<cca.models.Gallery.Picture>>}
+   * @type {Promise<Array<cca.models.Gallery.Picture>>}
    * @private
    */
   this.loaded_ = null;
