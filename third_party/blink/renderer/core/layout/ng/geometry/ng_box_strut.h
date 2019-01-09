@@ -57,7 +57,7 @@ struct CORE_EXPORT NGBoxStrut {
     return *this;
   }
 
-  NGBoxStrut operator+(const NGBoxStrut& other) {
+  NGBoxStrut operator+(const NGBoxStrut& other) const {
     NGBoxStrut result(*this);
     result += other;
     return result;
@@ -71,7 +71,7 @@ struct CORE_EXPORT NGBoxStrut {
     return *this;
   }
 
-  NGBoxStrut operator-(const NGBoxStrut& other) {
+  NGBoxStrut operator-(const NGBoxStrut& other) const {
     NGBoxStrut result(*this);
     result -= other;
     return result;
