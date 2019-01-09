@@ -15,7 +15,12 @@ namespace content {
 bool LibraryLoaded(JNIEnv* env,
                    jclass clazz,
                    base::android::LibraryProcessType library_process_type) {
-  base::android::InitReachedCodeProfilerAtStartup(library_process_type);
+  if (library_process_type ==
+          base::android::LibraryProcessType::PROCESS_BROWSER ||
+      library_process_type ==
+          base::android::LibraryProcessType::PROCESS_CHILD) {
+    base::android::InitReachedCodeProfilerAtStartup(library_process_type);
+  }
 
   // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
   tracing::EnableStartupTracingIfNeeded();
