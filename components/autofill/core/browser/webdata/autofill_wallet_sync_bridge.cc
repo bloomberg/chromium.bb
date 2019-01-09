@@ -88,7 +88,8 @@ std::string GetStorageKeyForWalletDataSpecificsId(
 
 // Creates a EntityData object corresponding to the specified |address|.
 std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
-    const AutofillProfile& address) {
+    const AutofillProfile& address,
+    bool enforce_utf8) {
   auto entity_data = std::make_unique<EntityData>();
 
   std::string specifics_id = GetSpecificsIdFromAutofillProfile(address);
@@ -98,13 +99,15 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
 
-  SetAutofillWalletSpecificsFromServerProfile(address, wallet_specifics);
+  SetAutofillWalletSpecificsFromServerProfile(address, wallet_specifics,
+                                              enforce_utf8);
 
   return entity_data;
 }
 
 // Creates a EntityData object corresponding to the specified |card|.
-std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card) {
+std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
+                                                     bool enforce_utf8) {
   std::string specifics_id = GetSpecificsIdFromCreditCard(card);
 
   auto entity_data = std::make_unique<EntityData>();
@@ -114,7 +117,8 @@ std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card) {
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
 
-  SetAutofillWalletSpecificsFromServerCard(card, wallet_specifics);
+  SetAutofillWalletSpecificsFromServerCard(card, wallet_specifics,
+                                           enforce_utf8);
 
   return entity_data;
 }
@@ -217,57 +221,7 @@ void AutofillWalletSyncBridge::GetData(StorageKeyList storage_keys,
 }
 
 void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  std::vector<std::unique_ptr<CreditCard>> cards;
-  std::unique_ptr<PaymentsCustomerData> customer_data;
-  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
-      !GetAutofillTable()->GetServerCreditCards(&cards) ||
-      !GetAutofillTable()->GetPaymentsCustomerData(&customer_data)) {
-    change_processor()->ReportError(
-        {FROM_HERE, "Failed to load entries from table."});
-    return;
-  }
-
-  // Convert all non base 64 strings so that they can be displayed properly.
-  auto batch = std::make_unique<syncer::MutableDataBatch>();
-  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
-    std::unique_ptr<EntityData> entity_data =
-        CreateEntityDataFromAutofillServerProfile(*entry);
-    sync_pb::WalletPostalAddress* wallet_address =
-        entity_data->specifics.mutable_autofill_wallet()->mutable_address();
-
-    wallet_address->set_id(GetBase64EncodedServerId(wallet_address->id()));
-
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromAutofillProfile(*entry)),
-               std::move(entity_data));
-  }
-  for (const std::unique_ptr<CreditCard>& entry : cards) {
-    std::unique_ptr<EntityData> entity_data = CreateEntityDataFromCard(*entry);
-    sync_pb::WalletMaskedCreditCard* wallet_card =
-        entity_data->specifics.mutable_autofill_wallet()->mutable_masked_card();
-
-    wallet_card->set_id(GetBase64EncodedServerId(wallet_card->id()));
-    // The billing address id might refer to a local profile guid which doesn't
-    // need to be encoded.
-    if (!base::IsStringUTF8(wallet_card->billing_address_id())) {
-      wallet_card->set_billing_address_id(
-          GetBase64EncodedServerId(wallet_card->billing_address_id()));
-    }
-
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromCreditCard(*entry)),
-               std::move(entity_data));
-  }
-
-  if (customer_data) {
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromPaymentsCustomerData(*customer_data)),
-               CreateEntityDataFromPaymentsCustomerData(*customer_data));
-  }
-  std::move(callback).Run(std::move(batch));
+  GetAllDataImpl(std::move(callback), /*enforce_utf8=*/true);
 }
 
 std::string AutofillWalletSyncBridge::GetClientTag(
@@ -312,6 +266,11 @@ AutofillWalletSyncBridge::ApplyStopSyncChanges(
 }
 
 void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {
+  GetAllDataImpl(std::move(callback), /*enforce_utf8=*/false);
+}
+
+void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
+                                              bool enforce_utf8) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
@@ -329,12 +288,12 @@ void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {
   for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
     batch->Put(GetStorageKeyForWalletDataSpecificsId(
                    GetSpecificsIdFromAutofillProfile(*entry)),
-               CreateEntityDataFromAutofillServerProfile(*entry));
+               CreateEntityDataFromAutofillServerProfile(*entry, enforce_utf8));
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
     batch->Put(GetStorageKeyForWalletDataSpecificsId(
                    GetSpecificsIdFromCreditCard(*entry)),
-               CreateEntityDataFromCard(*entry));
+               CreateEntityDataFromCard(*entry, enforce_utf8));
   }
 
   if (customer_data) {
