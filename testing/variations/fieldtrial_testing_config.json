@@ -5349,24 +5349,6 @@
             ]
         }
     ],
-    "WebRTC-IncreasedReceivebuffers": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "262144"
-                }
-            ]
-        }
-    ],
     "WebRTC-LocalIPPermissionCheck": [
         {
             "platforms": [
