@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
@@ -34,6 +36,13 @@
 namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
+
+// Map any ARC Camera app to internal Camera app.
+ash::ShelfID MaybeMapShelfId(const arc::ArcAppShelfId& arc_app_shelf_id) {
+  if (IsCameraApp(arc_app_shelf_id.app_id()))
+    return ash::ShelfID(app_list::kInternalAppIdCamera);
+  return ash::ShelfID(arc_app_shelf_id.ToString());
+}
 
 }  // namespace
 
@@ -467,16 +476,16 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   const arc::ArcAppShelfId& app_shelf_id = app_window_info.app_shelf_id();
   const auto it = app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it != app_shelf_group_to_controller_map_.end()) {
-    DCHECK_EQ(it->second->app_id(), app_shelf_id.ToString());
+    DCHECK(IsCameraApp(app_shelf_id.ToString()) ||
+           it->second->app_id() == app_shelf_id.ToString());
     it->second->AddTaskId(task_id);
     return it->second;
   }
 
+  const ash::ShelfID shelf_id = MaybeMapShelfId(app_shelf_id);
   std::unique_ptr<ArcAppWindowLauncherItemController> controller =
-      std::make_unique<ArcAppWindowLauncherItemController>(
-          app_shelf_id.ToString());
+      std::make_unique<ArcAppWindowLauncherItemController>(shelf_id);
   ArcAppWindowLauncherItemController* item_controller = controller.get();
-  const ash::ShelfID shelf_id(app_shelf_id.ToString());
   if (!owner()->GetItem(shelf_id)) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {

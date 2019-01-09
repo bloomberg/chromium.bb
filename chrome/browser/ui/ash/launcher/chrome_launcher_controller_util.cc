@@ -7,6 +7,8 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
@@ -59,4 +61,10 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     }
   }
   return AppListControllerDelegate::PIN_EDITABLE;
+}
+
+bool IsCameraApp(const std::string& app_id) {
+  return app_id == arc::kCameraAppId || app_id == arc::kLegacyCameraAppId ||
+         app_id == arc::kCameraMigrationAppId ||
+         app_id == extension_misc::kChromeCameraAppId;
 }
