@@ -148,6 +148,66 @@ bool ParseRequestMap(const cbor::Value& value,
   return true;
 }
 
+// Returns if the response is cacheble by a shared cache, as per Section 3 of
+// [RFC7234].
+bool IsCacheableBySharedCache(const SignedExchangeEnvelope::HeaderMap& headers,
+                              SignedExchangeDevToolsProxy* devtools_proxy) {
+  // As we require response code 200 which is cacheable by default, these two
+  // are trivially true:
+  // > o  the response status code is understood by the cache, and
+  // > o  the response either:
+  // >    ...
+  // >    *  has a status code that is defined as cacheable by default (see
+  // >       Section 4.2.2), or
+  // >    ...
+  //
+  // Also, SXG version >= b3 do not have request method and headers, so these
+  // are not applicable:
+  // > o  The request method is understood by the cache and defined as being
+  // >    cacheable, and
+  // > o  the Authorization header field (see Section 4.2 of [RFC7235]) does
+  // >    not appear in the request, if the cache is shared, unless the
+  // >    response explicitly allows it (see Section 3.2), and
+  //
+  // Hence, we have to check the two remaining clauses:
+  // > o  the "no-store" cache directive (see Section 5.2) does not appear
+  // >    in request or response header fields, and
+  // > o  the "private" response directive (see Section 5.2.2.6) does not
+  // >    appear in the response, if the cache is shared, and
+  //
+  // Note that this implementation does not recognize any cache control
+  // extensions.
+  auto found = headers.find("cache-control");
+  if (found == headers.end())
+    return true;
+  net::HttpUtil::NameValuePairsIterator it(
+      found->second.begin(), found->second.end(), ',',
+      net::HttpUtil::NameValuePairsIterator::Values::NOT_REQUIRED,
+      net::HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
+  while (it.GetNext()) {
+    auto name = it.name();
+    if (name == "no-store" || name == "private") {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
+          base::StringPrintf(
+              "Exchange's response must be cacheable by a shared cache, but "
+              "has cache-control: %s",
+              found->second.c_str()));
+      return false;
+    }
+  }
+  if (!it.valid()) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Failed to parse cache-control header of the exchange. "
+            "cache-control: %s",
+            found->second.c_str()));
+    return false;
+  }
+  return true;
+}
+
 bool ParseResponseMap(const cbor::Value& value,
                       SignedExchangeEnvelope* out,
                       SignedExchangeDevToolsProxy* devtools_proxy) {
@@ -244,6 +304,13 @@ bool ParseResponseMap(const cbor::Value& value,
       return false;
     }
   }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 5. If Section 3 of [RFC7234] forbids a shared cache from storing
+  // response,
+  //         return “invalid”. [spec text]
+  if (!IsCacheableBySharedCache(out->response_headers(), devtools_proxy))
+    return false;
 
   // https://wicg.github.io/webpackage/loading.html#parsing-b1
   // Step 26. If parsedExchange’s response's status is a redirect status or the
