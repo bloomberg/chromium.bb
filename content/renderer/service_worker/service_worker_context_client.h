@@ -54,8 +54,6 @@ namespace content {
 
 class EmbeddedWorkerInstanceClientImpl;
 class HostChildURLLoaderFactoryBundle;
-class ServiceWorkerNetworkProvider;
-class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
 class WebWorkerFetchContext;
 
@@ -378,8 +376,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
-  scoped_refptr<ServiceWorkerProviderContext> provider_context_;
-
   // Not owned; |this| is destroyed when |proxy_| becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;
 
@@ -391,9 +387,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   scoped_refptr<mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
       instance_host_;
 
-  // This is passed to ServiceWorkerNetworkProvider when
+  // This holds blink.mojom.ServiceWorkerContainer(Host) connections to the
+  // browser-side ServiceWorkerProviderHost to keep it alive there.
+  // Note: |service_worker_provider_info_->script_loader_factory_ptr_info| is
+  // moved to WebServiceWorkerNetworkProviderImpl when
   // CreateServiceWorkerNetworkProvider is called.
-  std::unique_ptr<ServiceWorkerNetworkProvider> pending_network_provider_;
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+      service_worker_provider_info_;
 
   // This is valid from the ctor to WorkerContextDestroyed.
   std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;

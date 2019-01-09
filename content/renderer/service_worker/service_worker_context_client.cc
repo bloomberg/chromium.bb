@@ -39,8 +39,6 @@
 #include "content/renderer/service_worker/controller_service_worker_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
-#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
@@ -102,15 +100,18 @@ base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient>>::
 class WebServiceWorkerNetworkProviderImpl
     : public blink::WebServiceWorkerNetworkProvider {
  public:
-  explicit WebServiceWorkerNetworkProviderImpl(
-      std::unique_ptr<ServiceWorkerNetworkProvider> provider)
-      : provider_(std::move(provider)) {}
+  WebServiceWorkerNetworkProviderImpl(
+      int provider_id,
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          script_loader_factory_info)
+      : provider_id_(provider_id),
+        script_loader_factory_(std::move(script_loader_factory_info)) {}
 
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
   void WillSendRequest(WebURLRequest& request) override {
     auto extra_data = std::make_unique<RequestExtraData>();
-    extra_data->set_service_worker_provider_id(provider_->provider_id());
+    extra_data->set_service_worker_provider_id(provider_id_);
     extra_data->set_originated_from_service_worker(true);
     // Service workers are only available in secure contexts, so all requests
     // are initiated in a secure context.
@@ -123,7 +124,7 @@ class WebServiceWorkerNetworkProviderImpl
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (render_thread && provider_->script_loader_factory() &&
+    if (render_thread && script_loader_factory() &&
         blink::ServiceWorkerUtils::IsServicificationEnabled() &&
         IsScriptRequest(request)) {
       // TODO(crbug.com/796425): Temporarily wrap the raw
@@ -131,16 +132,16 @@ class WebServiceWorkerNetworkProviderImpl
       return std::make_unique<WebURLLoaderImpl>(
           render_thread->resource_dispatcher(), std::move(task_runner_handle),
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              provider_->script_loader_factory()));
+              script_loader_factory()));
     }
     return nullptr;
   }
 
   network::mojom::URLLoaderFactory* script_loader_factory() {
-    return provider_->script_loader_factory();
+    return script_loader_factory_.get();
   }
 
-  int ProviderID() const override { return provider_->provider_id(); }
+  int ProviderID() const override { return provider_id_; }
 
  private:
   static bool IsScriptRequest(const WebURLRequest& request) {
@@ -151,7 +152,9 @@ class WebServiceWorkerNetworkProviderImpl
            request_context == blink::mojom::RequestContextType::IMPORT;
   }
 
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
+  const int provider_id_;
+  // The URL loader factory for loading the service worker's scripts.
+  network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 };
 
 class StreamHandleListener
@@ -550,11 +553,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
         std::move(subresource_loaders)));
   }
 
-  // Create a content::ServiceWorkerNetworkProvider for this data source so
-  // we can observe its requests.
-  pending_network_provider_ = ServiceWorkerNetworkProvider::CreateForController(
-      std::move(provider_info));
-  provider_context_ = pending_network_provider_->context();
+  service_worker_provider_info_ = std::move(provider_info);
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                     "ServiceWorkerContextClient", this,
@@ -1159,7 +1158,8 @@ std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return std::make_unique<WebServiceWorkerNetworkProviderImpl>(
-      std::move(pending_network_provider_));
+      service_worker_provider_info_->provider_id,
+      std::move(service_worker_provider_info_->script_loader_factory_ptr_info));
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -1192,7 +1192,8 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
-      std::move(script_loader_factory_info), provider_context_->provider_id(),
+      std::move(script_loader_factory_info),
+      service_worker_provider_info_->provider_id,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

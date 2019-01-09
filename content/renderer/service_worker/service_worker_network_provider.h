@@ -47,11 +47,11 @@ class ServiceWorkerProviderContext;
 // process can then route the request to this provider's corresponding
 // ServiceWorkerProviderHost.
 //
-// It is created for both service worker clients and execution contexts. It is
-// instantiated prior to the main resource load being started and remains
+// It is created for service worker clients (documents and shared workers). It
+// is instantiated prior to the main resource load being started and remains
 // allocated until after the last subresource load has occurred. It is owned by
 // the appropriate DocumentLoader for the provider (i.e., the loader for a
-// document, or the shadow page's loader for a shared worker or service worker).
+// document, or the shadow page's loader for a shared worker).
 // Each request coming from the DocumentLoader is tagged with the provider_id in
 // WillSendRequest.
 class CONTENT_EXPORT ServiceWorkerNetworkProvider {
@@ -97,11 +97,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
-  // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
-  // a service worker execution context).
-  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForController(
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
-
   // Valid only for WebServiceWorkerNetworkProvider created by
   // CreateForNavigation.
   static ServiceWorkerNetworkProvider* FromWebServiceWorkerNetworkProvider(
@@ -117,7 +112,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   }
 
   // Returns whether the context this provider is for is controlled by a service
-  // worker. Can be called only for providers for service worker clients.
+  // worker.
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
 
   // Called when blink::IdlenessDetector emits its network idle signal.
@@ -128,8 +123,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // kInvalidServiceWorkerProviderId).
   ServiceWorkerNetworkProvider();
 
-  // This is for service worker clients (i.e., |type| must be kForWindow or
-  // kForSharedWorker). |is_parent_frame_secure| is only relevant when the
+  // |is_parent_frame_secure| is only relevant when the
   // |type| is kForWindow.
   //
   // For S13nServiceWorker:
@@ -150,15 +144,11 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
-  // This is for controllers, used in CreateForController.
-  explicit ServiceWorkerNetworkProvider(
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
-
   scoped_refptr<ServiceWorkerProviderContext> context_;
   blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
 
-  // The URL loader factory for loading worker scripts, used for service workers
-  // and shared workers.
+  // For shared worker contexts. The URL loader factory for loading the worker's
+  // scripts.
   network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);

@@ -88,22 +88,21 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 // ServiceWorkerProviderHost for this frame/worker, which, again, makes the
 // frame/worker alive in the browser's service worker world.
 //
-// The analogue of ServiceWorkerProviderHost ("provider host") on the renderer
-// process is ServiceWorkerProviderContext ("provider"). A provider host has a
-// Mojo connection to the provider in the renderer. Destruction of the host
-// happens upon disconnection of the Mojo pipe.
+// A provider host has a Mojo connection to the provider in the renderer.
+// Destruction of the host happens upon disconnection of the Mojo pipe.
 //
 // There are two general types of providers:
 // 1) those for service worker clients (windows or shared workers), and
 // 2) those for service workers themselves.
 //
-// For client providers, there is a provider per frame or shared worker in the
-// renderer process. The lifetime of this host object is tied to the lifetime of
-// the document or the worker.
+// For client providers, there is a provider (ServiceWorkerProviderContext) per
+// frame or shared worker in the renderer process. The lifetime of this host
+// object is tied to the lifetime of the document or the worker.
 //
-// For service worker providers, there is a provider per running service worker
-// in the renderer process. The lifetime of this host object is tied to the
-// lifetime of the running service worker.
+// For service worker providers, there is a provider
+// (ServiceWorkerContextClient) per running service worker in the renderer
+// process. The lifetime of this host object is tied to the lifetime of the
+// running service worker.
 //
 // A ServiceWorkerProviderHost is created in the following situations:
 //

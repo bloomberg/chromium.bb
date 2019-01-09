@@ -60,12 +60,9 @@ interface SharedWorkerFactory {
       // This is only non-null when S13nServiceWorker is enabled but
       // NetworkService is disabled.
       //
-      // It doesn't really need to be associated, but a similar associated
-      // interface ptr is sent for service worker startup, so making this
-      // associated too simplifies code on the renderer, as
-      // ServiceWorkerNetworkProvider::script_loader_factory_ can be an
-      // associated interface ptr used for both service worker and shared
-      // worker execution contexts.
+      // TODO(leonhsl): It doesn't really need to be associated. Make it
+      // non-associated and update
+      // ServiceWorkerNetworkProvider::script_loader_factory_ as well.
       associated network.mojom.URLLoaderFactory? main_script_loader_factory,
 
       // NetworkService (PlzWorker):
