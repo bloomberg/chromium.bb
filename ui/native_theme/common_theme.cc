@@ -173,6 +173,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey900;
     case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
       return gfx::kGoogleGrey200;
+    case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+      return SkColorSetA(gfx::kGoogleBlue600, 0x1A);
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace views {
@@ -34,11 +35,13 @@ class MenuRunnerImplInterface {
   virtual void Release() = 0;
 
   // Runs the menu. See MenuRunner::RunMenuAt for more details.
-  virtual void RunMenuAt(Widget* parent,
-                         MenuButton* button,
-                         const gfx::Rect& bounds,
-                         MenuAnchorPosition anchor,
-                         int32_t run_types) = 0;
+  virtual void RunMenuAt(
+      Widget* parent,
+      MenuButton* button,
+      const gfx::Rect& bounds,
+      MenuAnchorPosition anchor,
+      int32_t run_types,
+      base::flat_set<int> alerted_commands = base::flat_set<int>()) = 0;
 
   // Hides and cancels the menu.
   virtual void Cancel() = 0;

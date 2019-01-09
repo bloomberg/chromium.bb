@@ -54,10 +54,7 @@ void ReopenTabPromoController::OnMenuOpened() {
 
   AppMenu* app_menu = app_menu_button->app_menu();
   app_menu->AddObserver(this);
-
-  views::MenuItemView* recent_tabs_menu_item =
-      app_menu->root_menu_item()->GetMenuItemByID(IDC_RECENT_TABS_MENU);
-  recent_tabs_menu_item->SetForcedVisualSelection(true);
+  app_menu->ShowReopenTabPromo();
 }
 
 void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
@@ -85,17 +82,4 @@ void ReopenTabPromoController::AppMenuClosed() {
 
   AppMenu* app_menu = browser_view_->toolbar()->app_menu_button()->app_menu();
   app_menu->RemoveObserver(this);
-}
-
-void ReopenTabPromoController::OnShowSubmenu() {
-  // Check if the last opened tab menu item exists (it will if the history
-  // submenu was opened). If so, highlight it.
-  views::MenuItemView* root_menu_item =
-      browser_view_->toolbar()->app_menu_button()->app_menu()->root_menu_item();
-  views::MenuItemView* last_tab_menu_item =
-      root_menu_item->GetMenuItemByID(AppMenuModel::kMinRecentTabsCommandId);
-  if (last_tab_menu_item) {
-    // The history submenu was shown. Highlight the last-closed tab item.
-    last_tab_menu_item->SetForcedVisualSelection(true);
-  }
 }

@@ -367,6 +367,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // border radius, if they are both the same value.
   void SetCornerRadius(int radius);
 
+  // Show an alert on this menu item. An alerted menu item is rendered
+  // differently to draw attention to it.
+  void SetAlerted(bool alerted);
+  bool Alerted() const { return alerted_; }
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -612,6 +617,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // The vertical separator that separates the actionable and submenu regions of
   // an ACTIONABLE_SUBMENU.
   Separator* vertical_separator_;
+
+  // Whether this menu item is rendered differently to draw attention to it.
+  bool alerted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

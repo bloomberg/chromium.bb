@@ -12,8 +12,6 @@ class AppMenuObserver {
 
   virtual void AppMenuClosed() {}
 
-  virtual void OnShowSubmenu() {}
-
  protected:
   virtual ~AppMenuObserver() {}
 };

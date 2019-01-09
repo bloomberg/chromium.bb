@@ -320,6 +320,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_HighlightedMenuItemBackgroundColor,
     kColorId_HighlightedMenuItemForegroundColor,
     kColorId_FocusedHighlightedMenuItemBackgroundColor,
+    kColorId_MenuItemAlertBackgroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,

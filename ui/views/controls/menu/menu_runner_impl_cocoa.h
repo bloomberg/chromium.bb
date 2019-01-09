@@ -29,11 +29,13 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
 
   bool IsRunning() const override;
   void Release() override;
-  void RunMenuAt(Widget* parent,
-                 MenuButton* button,
-                 const gfx::Rect& bounds,
-                 MenuAnchorPosition anchor,
-                 int32_t run_types) override;
+  void RunMenuAt(
+      Widget* parent,
+      MenuButton* button,
+      const gfx::Rect& bounds,
+      MenuAnchorPosition anchor,
+      int32_t run_types,
+      base::flat_set<int> alerted_commands = base::flat_set<int>()) override;
   void Cancel() override;
   base::TimeTicks GetClosingEventTime() const override;
 

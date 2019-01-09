@@ -32,7 +32,8 @@ void MenuRunner::RunMenuAt(Widget* parent,
                            MenuButton* button,
                            const gfx::Rect& bounds,
                            MenuAnchorPosition anchor,
-                           ui::MenuSourceType source_type) {
+                           ui::MenuSourceType source_type,
+                           base::flat_set<int> alerted_commands) {
   // If we are shown on mouse press, we will eat the subsequent mouse down and
   // the parent widget will not be able to reset its state (it might have mouse
   // capture from the mouse down). So we clear its state here.
@@ -69,7 +70,8 @@ void MenuRunner::RunMenuAt(Widget* parent,
     }
   }
 
-  impl_->RunMenuAt(parent, button, bounds, anchor, run_types_);
+  impl_->RunMenuAt(parent, button, bounds, anchor, run_types_,
+                   alerted_commands);
 }
 
 bool MenuRunner::IsRunning() const {
