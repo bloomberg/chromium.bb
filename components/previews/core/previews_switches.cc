@@ -26,5 +26,11 @@ const char kIgnoreLitePageRedirectOptimizationBlacklist[] =
 const char kClearLitePageRedirectLocalBlacklist[] =
     "clear-litepage-redirect-local-blacklist-on-startup";
 
+// Overrides the Hints Protobuf that would come from the component updater. If
+// the value of this switch is invalid, regular hint processing is used.
+// The value of this switch should be a base64 encoding of a binary
+// Configuration message, found in optimization_guide's hints.proto.
+const char kHintsProtoOverride[] = "optimization_guide_hints_override";
+
 }  // namespace switches
 }  // namespace previews

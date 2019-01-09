@@ -38,6 +38,12 @@ class PreviewsHints {
   static std::unique_ptr<PreviewsHints> CreateFromHintsComponent(
       const optimization_guide::HintsComponentInfo& info);
 
+  // Creates a Hints instance from the provided hints configuration. This must
+  // be called using a background task runner as it requires a significant
+  // amount of processing.
+  static std::unique_ptr<PreviewsHints> CreateFromHintsConfiguration(
+      const optimization_guide::proto::Configuration& config);
+
   // Returns the matching PageHint for |document_url| if found in |hint|.
   // TODO(dougarnett): Consider moving to some hint_util file.
   static const optimization_guide::proto::PageHint* FindPageHint(

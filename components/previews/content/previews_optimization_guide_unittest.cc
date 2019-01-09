@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -25,6 +27,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -86,6 +89,13 @@ class PreviewsOptimizationGuideTest : public testing::Test {
         temp_dir().Append(FILE_PATH_LITERAL("somefile.pb")));
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
     guide_->OnHintsComponentAvailable(info);
+  }
+
+  void NewGuide() {
+    guide_ = std::make_unique<PreviewsOptimizationGuide>(
+        optimization_guide_service_.get(),
+        scoped_task_environment_.GetMainThreadTaskRunner());
+    RunUntilIdle();
   }
 
   void ResetGuide() {
@@ -348,6 +358,45 @@ TEST_F(PreviewsOptimizationGuideTest,
                                      PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_TRUE(guide()->IsWhitelisted(&user_data, GURL("https://anypage.com"),
                                      PreviewsType::NOSCRIPT, &ect_threshold));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ProcessHintsWithValidCommandLineOverride) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint = config.add_hints();
+  hint->set_key("somedomain.org");
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("noscript_default_2g");
+  optimization_guide::proto::Optimization* optimization =
+      page_hint->add_whitelisted_optimizations();
+  optimization->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
+  std::string encoded_config;
+  config.SerializeToString(&encoded_config);
+  base::Base64Encode(encoded_config, &encoded_config);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHintsProtoOverride, encoded_config);
+  NewGuide();
+
+  // Verify page matches and ECT thresholds.
+  PreviewsUserData user_data(kDefaultPageId);
+  net::EffectiveConnectionType ect_threshold;
+  EXPECT_TRUE(guide()->GetHintsForTesting());
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      &user_data, GURL("https://somedomain.org/noscript_default_2g"),
+      PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ProcessHintsWithInvalidCommandLineOverride) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHintsProtoOverride, "this-is-not-a-proto");
+  NewGuide();
+
+  EXPECT_FALSE(guide()->GetHintsForTesting());
 }
 
 // Test when resource loading hints are enabled.
