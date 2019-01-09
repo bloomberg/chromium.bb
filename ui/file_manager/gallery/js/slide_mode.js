@@ -1684,8 +1684,11 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   this.stopSlideshow_();
 
   // Disable entering edit mode for videos.
-  var item = assert(this.getItem(this.getSelectedIndex()));
-  var startEditing = !this.isEditing() && item.isEditable();
+  let startEditing = false;
+  let item = this.getItem(this.getSelectedIndex());
+  if (item != null) {
+    startEditing = !this.isEditing() && item.isEditable();
+  }
 
   ImageUtil.setAttribute(this.container_, 'editing', startEditing);
   this.editButtonToggleRipple_.activated = this.isEditing();
@@ -1701,6 +1704,9 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.imageView_.applyViewportChange();
 
     this.touchHandlers_.enabled = false;
+
+    // Assert that item is an item and not null
+    item = assert(item);
 
     // Show editor warning message.
     SlideMode
