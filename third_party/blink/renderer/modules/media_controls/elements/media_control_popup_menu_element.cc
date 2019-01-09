@@ -144,7 +144,8 @@ void MediaControlPopupMenuElement::OnItemSelected() {
 }
 
 void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kPointermove) {
+  if (event.type() == event_type_names::kPointermove &&
+      event.target() != this) {
     ToElement(event.target()->ToNode())->focus();
   } else if (event.type() == event_type_names::kFocusout) {
     GetDocument()
@@ -226,7 +227,8 @@ void MediaControlPopupMenuElement::HideIfNotFocused() {
     return;
 
   if (!GetDocument().FocusedElement() ||
-      GetDocument().FocusedElement()->parentElement() != this) {
+      (GetDocument().FocusedElement()->parentElement() != this &&
+       GetDocument().FocusedElement() != this)) {
     SetIsWanted(false);
   }
 }
