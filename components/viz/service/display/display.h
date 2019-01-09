@@ -99,7 +99,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
-  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
+  bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const override;
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override;
   void SurfaceDiscarded(const SurfaceId& surface_id) override;

@@ -42,7 +42,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
     return success;
   }
 
-  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override {
+  bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const override {
     return base::ContainsKey(undrawn_surfaces_, surface_id);
   }
 

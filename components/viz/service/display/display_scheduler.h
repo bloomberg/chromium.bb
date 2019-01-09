@@ -28,7 +28,7 @@ class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
   virtual ~DisplaySchedulerClient() {}
 
   virtual bool DrawAndSwap() = 0;
-  virtual bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const = 0;
+  virtual bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const = 0;
   virtual bool SurfaceDamaged(const SurfaceId& surface_id,
                               const BeginFrameAck& ack) = 0;
   virtual void SurfaceDiscarded(const SurfaceId& surface_id) = 0;
