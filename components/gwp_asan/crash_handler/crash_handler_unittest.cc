@@ -50,6 +50,8 @@ int HandlerMainAdaptor(int argc, char* argv[]) {
 MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
+  // Remove the --test-child-process argument from argv and launch crashpad.
+#if defined(OS_WIN)
   std::vector<wchar_t*> argv;
   for (auto& arg : cmd_line->argv()) {
     if (arg.find(L"test-child-process") == std::string::npos)
@@ -57,6 +59,15 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
   }
 
   crashpad::ToolSupport::Wmain(argv.size(), argv.data(), HandlerMainAdaptor);
+#else
+  std::vector<char*> argv;
+  for (auto& arg : cmd_line->argv()) {
+    if (arg.find("test-child-process") == std::string::npos)
+      argv.push_back(const_cast<char*>(arg.c_str()));
+  }
+
+  HandlerMainAdaptor(argv.size(), argv.data());
+#endif
 
   return 0;
 }
@@ -137,7 +148,9 @@ class CrashHandlerTest : public base::MultiProcessTest {
     cmd_line.AppendSwitchASCII("crash-type", crash_type);
 
     base::LaunchOptions options;
+#if defined(OS_WIN)
     options.start_hidden = true;
+#endif  // defined(OS_WIN)
     base::Process process =
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
