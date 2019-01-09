@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -353,15 +354,25 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     float font_size,
     AlternateFontName alternate_font_name) {
   DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
+  sk_sp<SkTypeface> typeface;
 
+  bool created_from_src_local = false;
   CString name;
-  sk_sp<SkTypeface> typeface =
-      CreateTypeface(font_description, creation_params, name);
+
+  if (alternate_font_name == AlternateFontName::kLocalUniqueFace &&
+      RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
+    typeface = CreateTypefaceFromUniqueName(creation_params, name);
+    created_from_src_local = true;
+  } else {
+    typeface = CreateTypeface(font_description, creation_params, name);
+  }
+
   // Windows will always give us a valid pointer here, even if the face name
   // is non-existent. We have to double-check and see if the family name was
   // really used.
   if (!typeface ||
-      !TypefacesMatchesFamily(typeface.get(), creation_params.Family())) {
+      (!created_from_src_local &&
+       !TypefacesMatchesFamily(typeface.get(), creation_params.Family()))) {
     AtomicString adjusted_name;
     FontSelectionValue variant_weight;
     FontSelectionValue variant_stretch;

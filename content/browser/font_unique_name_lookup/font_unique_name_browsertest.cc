@@ -98,6 +98,9 @@ const char* kExpectedFontFamilyNames[] = {"American Typewriter",
                                           "Malayalam Sangam MN",
                                           "Hiragino Maru Gothic Pro",
                                           "Hiragino Kaku Gothic StdN"};
+#elif defined(OS_WIN)
+const char* kExpectedFontFamilyNames[] = {"Cambria Math", "MingLiU_HKSCS-ExtB",
+                                          "NSimSun", "Calibri"};
 #endif
 
 }  // namespace
@@ -120,8 +123,7 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(drott): Enable this on all platforms.
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if !defined(OS_FUCHSIA)
 IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
   LoadAndWait("/font_src_local_matching.html");
   Attach();

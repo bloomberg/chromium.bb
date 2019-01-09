@@ -96,8 +96,15 @@ function getFontsWithTestCharsForOS() {
       [ "MalayalamSangamMN", "0" ],
       [ "HiraMaruPro-W4", "0" ],
       [ "HiraKakuStdN-W8", "0" ],
-    ]
-  };
+    ];
+  } else if (navigator.userAgent.indexOf("Windows") !== -1) {
+    return [
+      ["CambriaMath", "0"],
+      ["Ming-Lt-HKSCS-ExtB", "0"],
+      ["NSimSun", "0"],
+      ["calibri-bolditalic", "0"]
+      ];
+  }
   return [];
 }
 
