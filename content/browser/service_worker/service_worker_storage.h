@@ -177,6 +177,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
                           const GURL& origin,
                           StatusCallback callback);
 
+  // Removes traces of deleted data on disk.
+  void PerformStorageCleanup(base::OnceClosure callback);
+
   // Creates a resource accessor. Never returns nullptr but an accessor may be
   // associated with the disabled disk cache if the storage is disabled.
   std::unique_ptr<ServiceWorkerResponseReader> CreateResponseReader(
@@ -536,6 +539,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   static void DeleteAllDataForOriginsFromDB(
       ServiceWorkerDatabase* database,
       const std::set<GURL>& origins);
+  static void PerformStorageCleanupInDB(ServiceWorkerDatabase* database);
 
   bool IsDisabled() const;
   void ScheduleDeleteAndStartOver();

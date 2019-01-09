@@ -140,6 +140,13 @@ class ServiceWorkerContext {
   virtual void DeleteForOrigin(const GURL& origin_url,
                                ResultCallback callback) = 0;
 
+  // Performs internal storage cleanup. Operations to the storage in the past
+  // (e.g. deletion) are usually recorded in disk for a certain period until
+  // compaction happens. This method wipes them out to ensure that the deleted
+  // entries and other traces like log files are removed.
+  // Must be called from the IO thread.
+  virtual void PerformStorageCleanup(base::OnceClosure callback) = 0;
+
   // Returns ServiceWorkerCapability describing existence and properties of a
   // Service Worker registration matching |url|. Found service worker
   // registration must also encompass the |other_url|, otherwise it will be

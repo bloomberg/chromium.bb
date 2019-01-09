@@ -131,6 +131,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       CountExternalRequestsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
+  void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
                              const GURL& other_url,
                              CheckHasServiceWorkerCallback callback) override;

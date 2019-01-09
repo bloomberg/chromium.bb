@@ -596,6 +596,23 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
     registration->set_is_deleted(true);
 }
 
+void ServiceWorkerStorage::PerformStorageCleanup(base::OnceClosure callback) {
+  DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
+         state_ == STORAGE_STATE_DISABLED)
+      << state_;
+  if (IsDisabled()) {
+    RunSoon(FROM_HERE, std::move(callback));
+    return;
+  }
+
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
+
+  database_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&PerformStorageCleanupInDB, database_.get()),
+      std::move(callback));
+}
+
 std::unique_ptr<ServiceWorkerResponseReader>
 ServiceWorkerStorage::CreateResponseReader(int64_t resource_id) {
   return base::WrapUnique(
@@ -2100,6 +2117,12 @@ void ServiceWorkerStorage::DeleteAllDataForOriginsFromDB(
 
   std::vector<int64_t> newly_purgeable_resources;
   database->DeleteAllDataForOrigins(origins, &newly_purgeable_resources);
+}
+
+void ServiceWorkerStorage::PerformStorageCleanupInDB(
+    ServiceWorkerDatabase* database) {
+  DCHECK(database);
+  database->RewriteDB();
 }
 
 bool ServiceWorkerStorage::IsDisabled() const {

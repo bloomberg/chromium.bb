@@ -175,6 +175,7 @@ jumbo_component("browser") {
     "quota/client_usage_tracker.cc",
     "quota/client_usage_tracker.h",
     "quota/quota_callbacks.h",
+    "quota/quota_client.cc",
     "quota/quota_client.h",
     "quota/quota_database.cc",
     "quota/quota_database.h",

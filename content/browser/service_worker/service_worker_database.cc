@@ -119,6 +119,10 @@ const int64_t kCurrentSchemaVersion = 2;
 
 namespace {
 
+// The data size is usually small, but the values are changed frequently. So,
+// set a low write buffer size to trigger compaction more often.
+constexpr size_t kWriteBufferSize = 512 * 1024;
+
 class ServiceWorkerEnv : public leveldb_env::ChromiumEnv {
  public:
   ServiceWorkerEnv() : ChromiumEnv("LevelDBEnv.ServiceWorker") {}
@@ -1021,6 +1025,27 @@ ServiceWorkerDatabase::DeleteUserDataByKeyPrefixes(
   return WriteBatch(&batch);
 }
 
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::RewriteDB() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+  if (IsDatabaseInMemory())
+    return STATUS_OK;
+
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+  options.env = g_service_worker_env.Pointer();
+  options.write_buffer_size = kWriteBufferSize;
+
+  status = LevelDBStatusToServiceWorkerDBStatus(
+      leveldb_env::RewriteDB(options, path_.AsUTF8Unsafe(), &db_));
+  return status;
+}
+
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
     const std::string& user_data_name,
@@ -1272,9 +1297,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   } else {
     options.env = g_service_worker_env.Pointer();
   }
-  // The data size is usually small, but the values are changed frequently. So,
-  // set a low write buffer size to trigger compaction more often.
-  options.write_buffer_size = 512 * 1024;
+  options.write_buffer_size = kWriteBufferSize;
 
   Status status = LevelDBStatusToServiceWorkerDBStatus(
       leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_));
