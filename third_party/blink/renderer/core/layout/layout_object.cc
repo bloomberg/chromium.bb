@@ -4082,12 +4082,7 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
       continue;
     if (!child->IsSelected())
       continue;
-    if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-      child->SetShouldDoFullPaintInvalidation(
-          PaintInvalidationReason::kSelection);
-    } else {
-      child->SetShouldInvalidateSelection();
-    }
+    child->SetShouldInvalidateSelection();
   }
 }
 
