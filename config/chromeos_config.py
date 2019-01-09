@@ -3123,7 +3123,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _release_enable_skylab_partial_boards = {
-      'coral': ['astronaut'],
+      'coral': ['astronaut', 'nasher', 'lava'],
   }
 
   def _get_skylab_settings(board_name):
