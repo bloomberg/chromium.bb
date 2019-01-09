@@ -34,10 +34,6 @@ class FeedbackData : public FeedbackCommon {
   // compression.
   void SetAndCompressSystemInfo(std::unique_ptr<SystemLogsMap> sys_info);
 
-  // Sets the histograms for this instance and kicks off its
-  // compression.
-  void SetAndCompressHistograms(std::unique_ptr<std::string> histograms);
-
   // Sets the attached file data and kicks off its compression.
   void AttachAndCompressFileData(
       std::unique_ptr<std::string> attached_filedata);
