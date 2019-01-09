@@ -120,6 +120,11 @@ WebRunnerBrowserContext::GetPermissionControllerDelegate() {
   return nullptr;
 }
 
+content::ClientHintsControllerDelegate*
+WebRunnerBrowserContext::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 content::BackgroundFetchDelegate*
 WebRunnerBrowserContext::GetBackgroundFetchDelegate() {
   return nullptr;

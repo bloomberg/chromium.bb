@@ -942,6 +942,11 @@ TestingProfile::GetPermissionControllerDelegate() {
   return NULL;
 }
 
+content::ClientHintsControllerDelegate*
+TestingProfile::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 content::BackgroundFetchDelegate* TestingProfile::GetBackgroundFetchDelegate() {
   return nullptr;
 }

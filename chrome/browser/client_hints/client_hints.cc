@@ -217,7 +217,7 @@ ClientHints::~ClientHints() = default;
 
 void ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
     const GURL& url,
-    net::HttpRequestHeaders* additional_headers) const {
+    net::HttpRequestHeaders* additional_headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
             net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);

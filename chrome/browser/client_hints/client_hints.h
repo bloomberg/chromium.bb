@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 
 class GURL;
 
@@ -38,16 +39,16 @@ double RoundKbpsToMbps(const std::string& host,
 
 }  // namespace internal
 
-class ClientHints : public KeyedService {
+class ClientHints : public KeyedService,
+                    public content::ClientHintsControllerDelegate {
  public:
   explicit ClientHints(content::BrowserContext* context);
   ~ClientHints() override;
 
-  // Allow the embedder to add headers related to client hints
-  // that should be sent when fetching |url|.
+  // content::ClientHintsControllerDelegate:
   void GetAdditionalNavigationRequestClientHintsHeaders(
       const GURL& url,
-      net::HttpRequestHeaders* additional_headers) const;
+      net::HttpRequestHeaders* additional_headers) override;
 
  private:
   content::BrowserContext* context_;

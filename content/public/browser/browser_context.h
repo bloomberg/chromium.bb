@@ -78,6 +78,7 @@ class BrowserPluginGuestManager;
 class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
+class ClientHintsControllerDelegate;
 class DownloadManagerDelegate;
 class PermissionController;
 class PermissionControllerDelegate;
@@ -295,6 +296,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Note: if you want to check a permission status, you probably need
   // BrowserContext::GetPermissionController() instead.
   virtual PermissionControllerDelegate* GetPermissionControllerDelegate() = 0;
+
+  // Returns the ClientHintsControllerDelegate associated with that context if
+  // any, nullptr otherwise.
+  virtual ClientHintsControllerDelegate* GetClientHintsControllerDelegate() = 0;
 
   // Returns the BackgroundFetchDelegate associated with that context if any,
   // nullptr otherwise.
