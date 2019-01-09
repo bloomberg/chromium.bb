@@ -26,7 +26,9 @@ rtc_static_library("rtc_task_runner") {
     "task_runner/taskrunner.cc",
     "task_runner/taskrunner.h",
   ]
-  deps = ["//base"]
+  deps = [
+    "//base",
+  ]
 }
 
 rtc_static_library("rtc_xmllite") {
@@ -120,12 +122,6 @@ config("libjingle_xmpp_unittests_config") {
       "-Wno-sign-compare",
       "-Wno-unused-const-variable",
     ]
-  }
-  if (is_win) {
-    defines += [ "LIBJINGLE_XMPP_WIN" ]
-  }
-  if (is_posix || is_fuchsia) {
-    defines += [ "LIBJINGLE_XMPP_POSIX" ]
   }
 }
 
