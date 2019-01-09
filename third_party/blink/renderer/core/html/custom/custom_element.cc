@@ -9,8 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_disabled_state_changed_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_form_associated_callback_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
@@ -266,22 +265,19 @@ void CustomElement::EnqueueAttributeChangedCallback(
 void CustomElement::EnqueueFormAssociatedCallback(
     Element& element,
     HTMLFormElement* nullable_form) {
-  auto* definition = DefinitionForElementWithoutCheck(element);
-  if (definition->HasFormAssociatedCallback()) {
-    Enqueue(&element,
-            MakeGarbageCollected<CustomElementFormAssociatedCallbackReaction>(
-                definition, nullable_form));
+  auto& definition = *DefinitionForElementWithoutCheck(element);
+  if (definition.HasFormAssociatedCallback()) {
+    Enqueue(&element, &CustomElementReactionFactory::CreateFormAssociated(
+                          definition, nullable_form));
   }
 }
 
 void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
                                                         bool is_disabled) {
-  auto* definition = DefinitionForElementWithoutCheck(element);
-  if (definition->HasDisabledStateChangedCallback()) {
-    Enqueue(
-        &element,
-        MakeGarbageCollected<CustomElementDisabledStateChangedCallbackReaction>(
-            definition, is_disabled));
+  auto& definition = *DefinitionForElementWithoutCheck(element);
+  if (definition.HasDisabledStateChangedCallback()) {
+    Enqueue(&element, &CustomElementReactionFactory::CreateDisabledStateChanged(
+                          definition, is_disabled));
   }
 }
 
