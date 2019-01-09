@@ -53,12 +53,19 @@ class SingleClientStandaloneTransportSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientStandaloneTransportSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
-                       DoesNotStartSyncWithFeatureDisabled) {
-  base::test::ScopedFeatureList disable_standalone_transport;
-  disable_standalone_transport.InitAndDisableFeature(
-      switches::kSyncStandaloneTransport);
+class SingleClientStandaloneTransportFeatureDisabledSyncTest : public SyncTest {
+ public:
+  SingleClientStandaloneTransportFeatureDisabledSyncTest()
+      : SyncTest(SINGLE_CLIENT) {
+    features_.InitAndDisableFeature(switches::kSyncStandaloneTransport);
+  }
 
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportFeatureDisabledSyncTest,
+                       DoesNotStartSyncWithFeatureDisabled) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Since standalone transport is disabled, signing in should *not* start the
