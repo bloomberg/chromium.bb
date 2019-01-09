@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -33,10 +33,10 @@ class CryptohomeClient;
 namespace attestation {
 
 // Interface for access to the Privacy CA server.
-class CHROMEOS_EXPORT ServerProxy {
+class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
  public:
-  typedef base::Callback<void(bool success,
-                              const std::string& data)> DataCallback;
+  typedef base::Callback<void(bool success, const std::string& data)>
+      DataCallback;
   virtual ~ServerProxy();
   virtual void SendEnrollRequest(const std::string& request,
                                  const DataCallback& on_response) = 0;
@@ -56,7 +56,7 @@ class CHROMEOS_EXPORT ServerProxy {
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);
 //
 // This class is not thread safe.
-class CHROMEOS_EXPORT AttestationFlow {
+class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
  public:
   typedef base::RepeatingCallback<
       void(AttestationStatus status, const std::string& pem_certificate_chain)>

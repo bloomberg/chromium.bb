@@ -955,6 +955,7 @@ jumbo_static_library("extensions") {
     deps += [
       "//ash",
       "//ash/public/cpp",
+      "//chromeos/attestation",
       "//chromeos/components/proximity_auth",
       "//chromeos/cryptohome",
       "//chromeos/disks",

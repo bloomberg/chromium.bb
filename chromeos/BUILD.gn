@@ -70,8 +70,6 @@ component("chromeos") {
     "account_manager/account_manager_factory.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
-    "attestation/attestation_flow.cc",
-    "attestation/attestation_flow.h",
     "geolocation/geoposition.cc",
     "geolocation/geoposition.h",
     "geolocation/simple_geolocation_provider.cc",
@@ -209,7 +207,8 @@ source_set("test_support_source_set") {
     "//chromeos/dbus:test_support",
   ]
   deps = [
-    "//chromeos/cryptohome",
+    "//chromeos/attestation:test_support",
+    "//chromeos/cryptohome:test_support",
     "//chromeos/disks:test_support",
     "//chromeos/login/auth:test_support",
     "//chromeos/login/login_state:test_support",
@@ -221,12 +220,6 @@ source_set("test_support_source_set") {
     "//testing/gtest",
   ]
   sources = [
-    "attestation/mock_attestation_flow.cc",
-    "attestation/mock_attestation_flow.h",
-    "cryptohome/mock_async_method_caller.cc",
-    "cryptohome/mock_async_method_caller.h",
-    "cryptohome/mock_homedir_methods.cc",
-    "cryptohome/mock_homedir_methods.h",
     "network/fake_network_device_handler.cc",
     "network/fake_network_device_handler.h",
     "network/mock_managed_network_configuration_handler.cc",
@@ -263,6 +256,7 @@ test("chromeos_unittests") {
     ":test_support",
     ":test_support_without_gmock",
     "//base/test:test_support",
+    "//chromeos/attestation:unit_tests",
     "//chromeos/audio:unit_tests",
     "//chromeos/cryptohome",
     "//chromeos/cryptohome:unit_tests",
@@ -302,7 +296,6 @@ test("chromeos_unittests") {
   sources = [
     "account_manager/account_manager_unittest.cc",
     "app_mode/kiosk_oem_manifest_parser_unittest.cc",
-    "attestation/attestation_flow_unittest.cc",
     "geolocation/simple_geolocation_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
