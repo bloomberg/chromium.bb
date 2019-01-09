@@ -296,7 +296,6 @@ void ShelfLayoutManager::UpdateVisibilityState() {
                      ? SHELF_AUTO_HIDE
                      : CalculateShelfVisibility());
         break;
-      case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
         break;
@@ -1515,7 +1514,6 @@ void ShelfLayoutManager::UpdateWorkspaceMask(
     case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
       container->layer()->SetMasksToBounds(false);
       break;
-    case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
     case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
       container->layer()->SetMasksToBounds(true);
       break;

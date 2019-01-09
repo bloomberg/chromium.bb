@@ -127,15 +127,6 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
     EXPECT_EQ(type == aura::client::WINDOW_TYPE_NORMAL ? 3 : 2,
               model_->item_count());
   }
-
-  // Windows with WindowState::ignored_by_shelf set do not get shelf items.
-  widget1 =
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  wm::GetWindowState(widget1->GetNativeWindow())->set_ignored_by_shelf(true);
-  // TODO(msw): Make the flag a window property and remove this workaround.
-  widget1->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey,
-                                          true);
-  EXPECT_EQ(2, model_->item_count());
 }
 
 TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {

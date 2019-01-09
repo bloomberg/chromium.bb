@@ -1036,8 +1036,7 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
 }
 
 // Tests that a minimized window's visibility and layer visibility
-// stay invisible (A minimized window is cloned during overview),
-// and ignored_by_shelf state is restored upon exit.
+// stay invisible (A minimized window is cloned during overview).
 TEST_F(WindowSelectorTest, MinimizedWindowState) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -1045,17 +1044,14 @@ TEST_F(WindowSelectorTest, MinimizedWindowState) {
   window_state->Minimize();
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
-  EXPECT_FALSE(window_state->ignored_by_shelf());
 
   ToggleOverview();
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
-  EXPECT_TRUE(window_state->ignored_by_shelf());
 
   ToggleOverview();
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
-  EXPECT_FALSE(window_state->ignored_by_shelf());
 }
 
 // Tests that a bounds change during overview is corrected for.

@@ -16,9 +16,6 @@ enum WorkspaceWindowState {
   // There's a maximized window.
   WORKSPACE_WINDOW_STATE_MAXIMIZED,
 
-  // At least one window overlaps the shelf.
-  WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
-
   // None of the windows are fullscreen, maximized or touch the shelf.
   WORKSPACE_WINDOW_STATE_DEFAULT,
 };

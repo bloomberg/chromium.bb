@@ -36,6 +36,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -2249,10 +2250,9 @@ TEST_F(ShelfLayoutManagerTest, WorkspaceMask) {
   EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
-  // Overlaps with shelf.
+  // Overlaps with shelf should not cause any specific behavior.
   w1->SetBounds(GetShelfLayoutManager()->GetIdealBounds());
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
-            GetWorkspaceWindowState());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
@@ -2265,8 +2265,7 @@ TEST_F(ShelfLayoutManagerTest, WorkspaceMask) {
 
   std::unique_ptr<aura::Window> w2(CreateTestWindow());
   w2->Show();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
-            GetWorkspaceWindowState());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w2.reset();
@@ -2274,8 +2273,7 @@ TEST_F(ShelfLayoutManagerTest, WorkspaceMask) {
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
-            GetWorkspaceWindowState());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 }
 
@@ -2380,8 +2378,16 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
 
-  // Ending split view mode will maximize the two windows.
-  split_view_controller->EndSplitView();
+  // Drag the divider to left to end split view mode, which will maximize the
+  // the right snapped window.
+  gfx::Point drag_point = split_view_controller->split_view_divider()
+                              ->GetDividerBoundsInScreen(false)
+                              .CenterPoint();
+  split_view_controller->StartResize(drag_point);
+  drag_point.set_x(0);
+  split_view_controller->EndResize(drag_point);
+
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 

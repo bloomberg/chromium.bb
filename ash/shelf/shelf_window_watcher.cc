@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -32,8 +31,7 @@ namespace {
 ShelfItemType GetShelfItemType(aura::Window* window) {
   if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
       window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
-      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      !wm::GetWindowState(window)->ignored_by_shelf()) {
+      window->type() == aura::client::WINDOW_TYPE_NORMAL) {
     return TYPE_DIALOG;
   }
   return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
@@ -43,8 +41,7 @@ ShelfItemType GetShelfItemType(aura::Window* window) {
 // Mash sets and returns an initial default shelf id for unidentified windows.
 // TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfID GetShelfID(aura::Window* window) {
-  if (features::IsUsingWindowService() && !window->GetProperty(kShelfIDKey) &&
-      !wm::GetWindowState(window)->ignored_by_shelf()) {
+  if (features::IsUsingWindowService() && !window->GetProperty(kShelfIDKey)) {
     static int id = 0;
     const ash::ShelfID shelf_id(ShelfWindowWatcher::kDefaultShelfIdPrefix +
                                 std::to_string(id++));

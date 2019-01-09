@@ -511,7 +511,6 @@ void WindowState::SetAndClearRestoreBounds() {
 WindowState::WindowState(aura::Window* window)
     : window_(window),
       bounds_changed_by_user_(false),
-      ignored_by_shelf_(false),
       can_consume_system_keys_(false),
       unminimize_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
