@@ -74,13 +74,15 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   bool ShowMediaRouterDialogForPresentation() {
     return dialog_controller_->ShowMediaRouterDialogForPresentation(
-        content::PresentationRequest(
-            {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
-            url::Origin::Create(GURL("http://google.com"))),
-        base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
-                       base::Unretained(this)),
-        base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
-                       base::Unretained(this)));
+        std::make_unique<StartPresentationContext>(
+            content::PresentationRequest(
+                {1, 2},
+                {GURL("http://example.com"), GURL("http://example2.com")},
+                url::Origin::Create(GURL("http://google.com"))),
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
+                           base::Unretained(this)),
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
+                           base::Unretained(this))));
   }
 
   std::unique_ptr<TestMediaRouterDialogController> dialog_controller_;
