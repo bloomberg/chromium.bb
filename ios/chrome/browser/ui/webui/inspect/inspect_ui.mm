@@ -16,7 +16,9 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/chrome/grit/ios_resources.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_frame.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
@@ -58,6 +60,8 @@ class InspectDOMHandler : public web::WebUIIOSMessageHandler,
 
   // JavaScriptConsoleTabHelperDelegate
   void DidReceiveConsoleMessage(
+      web::WebState* web_state,
+      web::WebFrame* sender_frame,
       const JavaScriptConsoleMessage& message) override;
 
   // TabModelListObserver
@@ -149,9 +153,23 @@ void InspectDOMHandler::RegisterMessages() {
 }
 
 void InspectDOMHandler::DidReceiveConsoleMessage(
+    web::WebState* web_state,
+    web::WebFrame* sender_frame,
     const JavaScriptConsoleMessage& message) {
-  DVLOG(0) << message.origin.spec() << " [" << message.level << "] "
-           << message.message->GetString();
+  std::vector<base::Value> params;
+  web::WebFrame* main_web_frame =
+      web::WebFramesManager::FromWebState(web_state)->GetMainWebFrame();
+  params.push_back(base::Value(main_web_frame->GetFrameId()));
+  params.push_back(base::Value(sender_frame->GetFrameId()));
+  params.push_back(base::Value(message.url.spec()));
+  params.push_back(base::Value(message.level));
+  params.push_back(message.message->Clone());
+
+  web::WebFrame* inspect_ui_web_frame =
+      web::WebFramesManager::FromWebState(web_ui()->GetWebState())
+          ->GetMainWebFrame();
+  inspect_ui_web_frame->CallJavaScriptFunction(
+      "inspectWebUI.logMessageReceived", params);
 }
 
 void InspectDOMHandler::SetDelegateForWebStatesInTabModel(

@@ -43,6 +43,10 @@ class JavaScriptConsoleTabHelper
   // The delegate associated with the receiver.
   JavaScriptConsoleTabHelperDelegate* delegate_ = nullptr;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(JavaScriptConsoleTabHelper);
 };
 

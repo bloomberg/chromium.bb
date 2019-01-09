@@ -69,6 +69,6 @@ TEST_F(JavaScriptConsoleTabHelperTest, LogMessage) {
       delegate->GetLastLoggedMessage();
   ASSERT_TRUE(last_logged_message);
   EXPECT_EQ("log", last_logged_message->level);
-  EXPECT_EQ(url, last_logged_message->origin);
+  EXPECT_EQ(url, last_logged_message->url);
   EXPECT_EQ("Log message", last_logged_message->message->GetString());
 };

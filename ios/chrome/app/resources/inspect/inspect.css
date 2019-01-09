@@ -3,12 +3,58 @@
  * found in the LICENSE file.
  */
 
+body {
+  min-width: 500px;
+}
+
 #controls {
-  border: 1px solid #ababab;
-  text-align: center;
   padding: 5px;
+  text-align: center;
 }
 
 #notice {
   margin: 1em;
+}
+
+#tabs {
+  min-height: 1em;
+  width: 100%;
+}
+
+.child-frames-label {
+  font-weight: bold;
+  margin: 10px !important;
+  display: none;
+}
+
+.error {
+  color: red;
+}
+
+.frame {
+  border: 1px solid #aaa;
+  margin: 10px !important;
+  padding: 1em;
+}
+
+.log {
+  margin: .5em !important;
+  white-space: pre-wrap;
+}
+
+.log-level {
+  font-weight: bold;
+  margin: .5em !important;
+}
+
+.logs {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.tab {
+  border: 1px solid #aaa;
+}
+
+.warning {
+  color: orange;
 }

@@ -19,6 +19,8 @@ class FakeJavaScriptConsoleTabHelperDelegate
   ~FakeJavaScriptConsoleTabHelperDelegate() override;
 
   void DidReceiveConsoleMessage(
+      web::WebState* web_state,
+      web::WebFrame* sender_frame,
       const JavaScriptConsoleMessage& message) override;
 
   // Returns the last messaged logged.
