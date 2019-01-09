@@ -173,6 +173,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Overridden from views::View:
   void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -184,6 +185,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
 
   // Overridden from MessageView:
@@ -248,6 +250,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void UpdateViewForExpandedState(bool expanded);
   void ToggleInlineSettings(const ui::Event& event);
 
+  // Initializes |ink_drop_mask_| and sets the mask on |ink_drop_layer_|.
+  void InstallNotificationInkDropMask();
+
   views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons
@@ -268,6 +273,15 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
+
+  // Corner radii for the InkDropMask.
+  int top_radius_ = 0;
+  int bottom_radius_ = 0;
+
+  // The InkDrop layer and InkDropMask used to update their bounds on
+  // OnBoundsChanged(). See crbug.com/915222.
+  ui::Layer* ink_drop_layer_ = nullptr;
+  std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
   // Container views directly attached to this view.
   NotificationHeaderView* header_row_ = nullptr;
