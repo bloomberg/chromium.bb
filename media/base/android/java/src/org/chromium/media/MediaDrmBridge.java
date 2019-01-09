@@ -546,6 +546,27 @@ public class MediaDrmBridge {
     }
 
     /**
+     * Provision the current origin. Normally provisioning will be triggered
+     * automatically when MediaCrypto is needed (in the constructor).
+     * However, this is available to preprovision an origin separately.
+     * nativeOnProvisioningComplete() will be called indicating success/failure.
+     */
+    @CalledByNative
+    private void provision() {
+        // This should only be called if no MediaCrypto needed.
+        assert mMediaDrm != null;
+        assert !mRequiresMediaCrypto;
+
+        // Provision only works for origin isolated storage.
+        if (!mOriginSet) {
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
+            return;
+        }
+
+        startProvisioning();
+    }
+
+    /**
      * Unprovision the current origin, a.k.a removing the cert for current origin.
      */
     @CalledByNative
@@ -1082,8 +1103,7 @@ public class MediaDrmBridge {
         }
 
         MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
-        nativeOnStartProvisioning(
-                mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        nativeOnProvisionRequest(mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
     }
 
     /**
@@ -1141,17 +1161,24 @@ public class MediaDrmBridge {
     }
 
     /*
-     *  Continue to createMediaCrypto() after provisioning.
+     *  Provisioning complete. Continue to createMediaCrypto() if required.
      *
      * @param success Whether provisioning has succeeded or not.
      */
     void onProvisioned(boolean success) {
+        if (!mRequiresMediaCrypto) {
+            // No MediaCrypto required, so notify provisioning complete.
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, success);
+            if (!success) {
+                release();
+            }
+            return;
+        }
+
         if (!success) {
             release();
             return;
         }
-
-        assert mRequiresMediaCrypto;
 
         if (!mOriginSet) {
             createMediaCrypto();
@@ -1409,8 +1436,9 @@ public class MediaDrmBridge {
     private native void nativeOnMediaCryptoReady(
             long nativeMediaDrmBridge, MediaCrypto mediaCrypto);
 
-    private native void nativeOnStartProvisioning(
+    private native void nativeOnProvisionRequest(
             long nativeMediaDrmBridge, String defaultUrl, byte[] requestData);
+    private native void nativeOnProvisioningComplete(long nativeMediaDrmBridge, boolean success);
 
     private native void nativeOnPromiseResolved(long nativeMediaDrmBridge, long promiseId);
     private native void nativeOnPromiseResolvedWithSession(
