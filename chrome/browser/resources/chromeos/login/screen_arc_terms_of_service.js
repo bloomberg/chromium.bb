@@ -315,10 +315,13 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Handles Next button click.
      */
     onNext: function() {
+      var isDemoModeSetup = this.isDemoModeSetup_();
       this.getElement_('arc-location-service').hidden = false;
       this.getElement_('arc-pai-service').hidden = false;
       this.getElement_('arc-google-service-confirmation').hidden = false;
-      this.getElement_('arc-review-settings').hidden = false;
+      if (!isDemoModeSetup) {
+        this.getElement_('arc-review-settings').hidden = false;
+      }
       this.getElement_('arc-tos-container').style.overflowY = 'auto';
       this.getElement_('arc-tos-container').scrollTop =
           this.getElement_('arc-tos-container').scrollHeight;
