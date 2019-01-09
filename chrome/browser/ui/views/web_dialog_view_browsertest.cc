@@ -21,10 +21,17 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif  // defined(USE_AURA)
 
 namespace {
 
@@ -237,4 +244,43 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseParentWindow) {
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(web_dialog_delegate_destroyed_);
   EXPECT_TRUE(web_dialog_view_destroyed_);
+}
+
+// Test that key event is translated to a text input properly.
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, TextInputViaKeyEvent) {
+  // Replace the dialog content with a single text input element and focus it.
+  content::WebContents* contents = view_->web_contents();
+  ASSERT_TRUE(content::WaitForLoadStop(contents));
+  ASSERT_TRUE(content::ExecuteScript(contents, R"(
+    document.body.innerHTML = '<input type="text" id="text-id">';
+    document.getElementById('text-id').focus();
+  )"));
+
+  // Generate a key event for 'a'.
+  gfx::NativeWindow event_window = view_->GetWidget()->GetNativeWindow();
+#if defined(USE_AURA)
+  event_window = event_window->GetRootWindow();
+#endif
+  if (features::IsUsingWindowService())
+    event_window = nullptr;
+
+  ui::test::EventGenerator generator(event_window);
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+
+  // Verify text input is updated.
+  std::string result;
+  while (result != "a") {
+    // Use PostDelayedTask instead of RunLoop::RunUntilIdle() to avoid being
+    // a busy loop that prevents renderer doing its job in time.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(100));
+    run_loop.Run();
+
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, R"(
+      window.domAutomationController.send(
+          document.getElementById('text-id').value);
+    )", &result));
+  }
 }
