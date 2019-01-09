@@ -174,7 +174,6 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
     aura::Window* window)
     : selector_item_(selector_item),
       window_(window),
-      ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
       weak_ptr_factory_(this) {
@@ -217,7 +216,6 @@ void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform,
   // Shadow controller may be null on shutdown.
   if (Shell::Get()->shadow_controller())
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
-  wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   if (minimized_widget_) {
     // Fade out the minimized widget. This animation continues past the
     // lifetime of |this|.
@@ -414,7 +412,6 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
 
   DCHECK(!overview_started_);
   overview_started_ = true;
-  wm::GetWindowState(window_)->set_ignored_by_shelf(true);
   if (window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED) {
     CreateMirrorWindowForMinimizedState();

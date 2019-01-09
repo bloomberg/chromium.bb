@@ -209,8 +209,6 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   // Disable the "bounce in" animation when showing the window.
   ::wm::SetWindowVisibilityAnimationTransition(widget_window,
                                                ::wm::ANIMATE_NONE);
-  // The background widget should not activate the shelf when passing under it.
-  wm::GetWindowState(widget_window)->set_ignored_by_shelf(true);
   if (params.layer_type == ui::LAYER_SOLID_COLOR) {
     widget_window->layer()->SetColor(background_color);
   } else if (params.layer_type == ui::LAYER_TEXTURED) {

@@ -187,16 +187,6 @@ aura::Window* CreateAndParentTopLevelWindow(
       root_window_controller, window_type, property_converter, properties);
   DisconnectedAppHandler::Create(window);
 
-  auto ignored_by_shelf_iter = properties->find(
-      ws::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
-  if (ignored_by_shelf_iter != properties->end()) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->set_ignored_by_shelf(
-        mojo::ConvertTo<bool>(ignored_by_shelf_iter->second));
-    // No need to persist this value.
-    properties->erase(ignored_by_shelf_iter);
-  }
-
   // TODO: kFocusable_InitProperty should be removed. http://crbug.com/837713.
   auto focusable_iter =
       properties->find(ws::mojom::WindowManager::kFocusable_InitProperty);

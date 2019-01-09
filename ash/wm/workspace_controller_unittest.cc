@@ -353,14 +353,6 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
       0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
   // Move |w1| to overlap the shelf.
   w1->SetBounds(touches_shelf_bounds);
-
-  // Add a visible ignored window
-  std::unique_ptr<Window> w_ignored(CreateTestWindow());
-  w_ignored->SetBounds(touches_shelf_bounds);
-  wm::GetWindowState(&(*w_ignored))->set_ignored_by_shelf(true);
-  w_ignored->Show();
-
-  // Then make it visible
   w1->Show();
 
   wm::ActivateWindow(w1.get());

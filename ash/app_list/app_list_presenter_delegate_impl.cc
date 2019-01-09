@@ -22,7 +22,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
@@ -95,8 +94,6 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   view->Initialize(params);
 
   SnapAppListBoundsToDisplayEdge();
-  wm::GetWindowState(view->GetWidget()->GetNativeWindow())
-      ->set_ignored_by_shelf(true);
   Shell::Get()->AddPreTargetHandler(this);
 
   // By setting us as DnD recipient, the app list knows that we can
