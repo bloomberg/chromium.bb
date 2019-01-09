@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -50,13 +51,14 @@ IdentityManager::IdentityManager(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     GaiaCookieManagerService* gaia_cookie_manager_service,
-    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator)
+    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
+    std::unique_ptr<AccountsMutator> accounts_mutator)
     : signin_manager_(signin_manager),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       gaia_cookie_manager_service_(gaia_cookie_manager_service),
       primary_account_mutator_(std::move(primary_account_mutator)),
-      accounts_mutator_(token_service_) {
+      accounts_mutator_(std::move(accounts_mutator)) {
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
@@ -217,7 +219,7 @@ PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
 }
 
 AccountsMutator* IdentityManager::GetAccountsMutator() {
-  return &accounts_mutator_;
+  return accounts_mutator_.get();
 }
 
 void IdentityManager::AddObserver(Observer* observer) {

@@ -19,6 +19,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -526,7 +527,7 @@ class IdentityManagerTest : public testing::Test {
 
     identity_manager_.reset(new IdentityManager(
         signin_manager_.get(), &token_service_, &account_tracker_,
-        &gaia_cookie_manager_service_, nullptr));
+        &gaia_cookie_manager_service_, nullptr, nullptr));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -2004,11 +2005,6 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()->batch_change_records().at(0).size());
   EXPECT_EQ(account_id,
             identity_manager_observer()->batch_change_records().at(0).at(0));
-}
-
-TEST_F(IdentityManagerTest, GetAccountsMutator) {
-  AccountsMutator* mutator = identity_manager()->GetAccountsMutator();
-  EXPECT_TRUE(mutator);
 }
 
 // Checks that FindAccountInfoForAccountWithRefreshTokenByAccountId() returns

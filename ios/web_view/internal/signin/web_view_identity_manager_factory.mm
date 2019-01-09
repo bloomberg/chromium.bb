@@ -13,6 +13,7 @@
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
@@ -43,8 +44,8 @@ class IdentityManagerWrapper : public KeyedService,
             std::make_unique<identity::PrimaryAccountMutatorImpl>(
                 WebViewAccountTrackerServiceFactory::GetForBrowserState(
                     browser_state),
-                WebViewSigninManagerFactory::GetForBrowserState(
-                    browser_state))) {}
+                WebViewSigninManagerFactory::GetForBrowserState(browser_state)),
+            nullptr) {}
 };
 
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
