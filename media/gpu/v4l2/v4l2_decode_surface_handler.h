@@ -16,7 +16,7 @@ class V4L2DecodeSurfaceHandler
     : public DecodeSurfaceHandler<V4L2DecodeSurface> {
  public:
   V4L2DecodeSurfaceHandler() = default;
-  virtual ~V4L2DecodeSurfaceHandler() = default;
+  ~V4L2DecodeSurfaceHandler() override = default;
 
   // Append slice data in |data| of size |size| to pending hardware
   // input buffer with |index|. This buffer will be submitted for decode
