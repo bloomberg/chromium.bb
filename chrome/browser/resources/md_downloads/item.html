@@ -100,7 +100,7 @@
         text-decoration: line-through;
       }
 
-      :host-context([dark]) #content:not(.is-active) #name {
+      :host-context([dark]) #content:not(.is-active) :-webkit-any(#name, #tag) {
         color: var(--google-grey-500);
       }
 
@@ -193,9 +193,15 @@
       }
 
       #progress {
+        /* TODO(dbeam): border-radius on container and progress bar. */
         --paper-progress-active-color: var(--google-blue-600);
         --paper-progress-container-color: rgb(223, 222, 223);
         width: auto;
+      }
+
+      :host-context([dark]) #progress {
+        --paper-progress-active-color: var(--google-blue-300);
+        --paper-progress-container-color: var(--google-grey-800);
       }
 
       #show {
