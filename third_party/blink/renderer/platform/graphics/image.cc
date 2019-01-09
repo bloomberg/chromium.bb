@@ -395,9 +395,8 @@ void Image::DrawPattern(GraphicsContext& context,
 
   SkFilterQuality quality_to_use =
       context.ComputeFilterQuality(this, dest_rect, FloatRect(subset_rect));
-  bool should_antialias = context.ShouldAntialias();
   sk_sp<PaintShader> tile_shader = CreatePatternShader(
-      image, local_matrix, quality_to_use, should_antialias,
+      image, local_matrix, quality_to_use, context.ShouldAntialias(),
       FloatSize(repeat_spacing.Width() / scale_src_to_dest.Width(),
                 repeat_spacing.Height() / scale_src_to_dest.Height()),
       tmx, tmy);
@@ -409,7 +408,6 @@ void Image::DrawPattern(GraphicsContext& context,
   flags.setColor(tile_shader ? SK_ColorBLACK : SK_ColorTRANSPARENT);
   flags.setBlendMode(composite_op);
   flags.setFilterQuality(quality_to_use);
-  flags.setAntiAlias(should_antialias);
   flags.setShader(std::move(tile_shader));
 
   context.DrawRect(dest_rect, flags);
