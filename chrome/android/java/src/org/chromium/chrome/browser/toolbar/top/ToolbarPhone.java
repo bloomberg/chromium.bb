@@ -589,7 +589,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // those in this current layout pass as they are needed for animations.
         updateUnfocusedLocationBarLayoutParams();
 
-        if (mLayoutLocationBarInFocusedMode || mVisualState == VisualState.NEW_TAB_NORMAL) {
+        if (mLayoutLocationBarInFocusedMode
+                || (mVisualState == VisualState.NEW_TAB_NORMAL
+                        && mTabSwitcherState == STATIC_TAB)) {
             int priorVisibleWidth = 0;
             for (int i = 0; i < mLocationBar.getChildCount(); i++) {
                 View child = mLocationBar.getChildAt(i);
@@ -892,7 +894,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private float getExpansionPercentForVisualState(@VisualState int visualState) {
-        return visualState == VisualState.NEW_TAB_NORMAL ? 1 : mUrlExpansionPercent;
+        return visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB
+                ? 1
+                : mUrlExpansionPercent;
     }
 
     /**
