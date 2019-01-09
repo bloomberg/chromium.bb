@@ -415,7 +415,7 @@ static const arg_def_t cpu_used_av1 =
     ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
 static const arg_def_t rowmtarg =
     ARG_DEF(NULL, "row-mt", 1,
-            "Enable row based multi-threading (0: off (default), 1: on)");
+            "Enable row based multi-threading (0: off, 1: on (default))");
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =

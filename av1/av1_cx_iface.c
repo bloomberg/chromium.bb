@@ -136,7 +136,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                       // noise_sensitivity
   CONFIG_SHARP_SETTINGS,   // sharpness
   0,                       // static_thresh
-  0,                       // row_mt
+  1,                       // row_mt
   0,                       // tile_columns
   0,                       // tile_rows
   0,                       // enable_tpl_model
