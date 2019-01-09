@@ -27,7 +27,7 @@ EMPTY_LINE = (
 )
 NOTICE_COUNTDOWN_HEADER = (
   '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n'
-  '┃  METRICS COLLECTION WILL START IN %2d EXECUTIONS  ┃'
+  '┃  METRICS COLLECTION WILL START IN %2d EXECUTIONS   ┃'
 )
 NOTICE_COLLECTION_HEADER = (
   '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n'
