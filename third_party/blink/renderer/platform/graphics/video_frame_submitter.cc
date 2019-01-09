@@ -39,7 +39,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       resource_provider_(std::move(resource_provider)),
       rotation_(media::VIDEO_ROTATION_0),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
+          ::features::IsSurfaceSynchronizationEnabled()),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(media_thread_checker_);
 }
