@@ -1001,14 +1001,14 @@ def _GetRunSkylabSuiteArgs(
     timeout_mins=None,
     retry=None,
     max_retries=None,
-    suite_args=None):
+    suite_args=None,
+    job_keyvals=None):
   """Get a list of args for run_suite.
 
   TODO (xixuan): Add other features as required, e.g.
     subsystems
     test_args
     skip_duts_check
-    job_keyvals
     suite_min_duts
     minimum_duts
 
@@ -1045,6 +1045,9 @@ def _GetRunSkylabSuiteArgs(
 
   if suite_args is not None:
     args += ['--suite_args', repr(suite_args)]
+
+  if job_keyvals is not None:
+    args += ['--job_keyvals', repr(job_keyvals)]
 
   # Use fallback request for every skylab suite.
   args += ['--use_fallback']
@@ -1166,7 +1169,8 @@ def RunSkylabHWTestSuite(
     timeout_mins=None,
     retry=None,
     max_retries=None,
-    suite_args=None):
+    suite_args=None,
+    job_keyvals=None):
   """Run the test suite in the Autotest lab using Skylab.
 
   Args:
@@ -1188,7 +1192,8 @@ def RunSkylabHWTestSuite(
       timeout_mins=timeout_mins,
       retry=retry,
       max_retries=max_retries,
-      suite_args=suite_args)
+      suite_args=suite_args,
+      job_keyvals=job_keyvals)
   swarming_args = _CreateSwarmingArgs(build, suite, board, priority_str,
                                       timeout_mins, run_skylab=True)
   try:
