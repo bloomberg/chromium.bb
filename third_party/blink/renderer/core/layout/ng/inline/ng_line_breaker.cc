@@ -52,6 +52,16 @@ bool IsImage(const NGInlineItem& item) {
   return true;
 }
 
+LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
+                                const ComputedStyle* style) {
+  DCHECK(style);
+  NGBoxStrut margins = ComputeMarginsForSelf(space, *style);
+  NGBoxStrut borders = ComputeBorders(space, *style);
+  NGBoxStrut paddings = ComputePadding(space, *style);
+
+  return margins.inline_end + borders.inline_end + paddings.inline_end;
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
@@ -982,18 +992,18 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
 
+  LayoutUnit used_size =
+      position_ + inline_margin_size + ComputeFloatAncestorInlineEndSize();
   bool can_fit_float =
-      position_ + inline_margin_size <=
-      line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+      used_size <= line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
   if (!can_fit_float) {
     // Floats need to know the current line width to determine whether to put it
     // into the current line or to the next line. Trailing spaces will be
     // removed if this line breaks here because they should be collapsed across
     // floats, but they are still included in the current line position at this
     // point. Exclude it when computing whether this float can fit or not.
-    can_fit_float =
-        position_ + inline_margin_size - TrailingCollapsibleSpaceWidth() <=
-        line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+    can_fit_float = used_size - TrailingCollapsibleSpaceWidth() <=
+                    line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
   }
 
   // The float should be positioned after the current line if:
@@ -1033,6 +1043,39 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
 
     DCHECK_GE(AvailableWidth(), LayoutUnit());
   }
+}
+
+// To correctly determine if a float is allowed to be on the same line as its
+// content, we need to determine if it has any ancestors with inline-end
+// padding, border, or margin.
+// The inline-end size from all of these ancestors contribute to the "used
+// size" of the float, and may cause the float to be pushed down.
+LayoutUnit NGLineBreaker::ComputeFloatAncestorInlineEndSize() const {
+  const Vector<NGInlineItem>& items = Items();
+  wtf_size_t item_index = item_index_;
+
+  LayoutUnit inline_end_size;
+  while (item_index < items.size()) {
+    const NGInlineItem& item = items[item_index++];
+
+    if (item.Type() == NGInlineItem::kCloseTag) {
+      if (item.HasEndEdge()) {
+        inline_end_size +=
+            ComputeInlineEndSize(constraint_space_, item.Style());
+      }
+      continue;
+    }
+
+    // For this calculation, any open tag (even if its empty) stops this
+    // calculation, and allows the float to appear on the same line. E.g.
+    // <span style="padding-right: 20px;"><f></f><span></span></span>
+    //
+    // Any non-empty item also allows the float to be on the same line.
+    if (item.Type() == NGInlineItem::kOpenTag || !item.IsEmptyItem())
+      break;
+  }
+
+  return inline_end_size;
 }
 
 bool NGLineBreaker::ComputeOpenTagResult(
@@ -1082,15 +1125,11 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item) {
 
 void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
   NGInlineItemResult* item_result = AddItem(item);
+
   item_result->has_edge = item.HasEndEdge();
   if (item_result->has_edge) {
-    DCHECK(item.Style());
-    const ComputedStyle& style = *item.Style();
-    NGBoxStrut margins = ComputeMarginsForSelf(constraint_space_, style);
-    NGBoxStrut borders = ComputeBorders(constraint_space_, style);
-    NGBoxStrut paddings = ComputePadding(constraint_space_, style);
     item_result->inline_size =
-        margins.inline_end + borders.inline_end + paddings.inline_end;
+        ComputeInlineEndSize(constraint_space_, item.Style());
     position_ += item_result->inline_size;
 
     if (!item_result->should_create_line_box && !item.IsEmptyItem())

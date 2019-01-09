@@ -126,6 +126,8 @@ class CORE_EXPORT NGLineBreaker {
   void HandleAtomicInline(const NGInlineItem&);
   void HandleFloat(const NGInlineItem&);
 
+  LayoutUnit ComputeFloatAncestorInlineEndSize() const;
+
   void HandleOpenTag(const NGInlineItem&);
   void HandleCloseTag(const NGInlineItem&);
 

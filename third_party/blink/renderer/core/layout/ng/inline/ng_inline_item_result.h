@@ -102,7 +102,7 @@ struct CORE_EXPORT NGInlineItemResult {
   // correctly determine that we don't need a line box.
   bool should_create_line_box = false;
 
-  // The field should be initialized and maintained like
+  // This field should be initialized and maintained like
   // |should_create_line_box|. It indicates if there are (at the current
   // position) any unpositioned floats.
   bool has_unpositioned_floats = false;
