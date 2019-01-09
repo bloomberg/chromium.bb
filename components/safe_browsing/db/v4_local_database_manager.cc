@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing/db/v4_feature_list.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -601,11 +600,8 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
     const std::unique_ptr<PendingCheck>& check,
     FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   DCHECK(enabled_);
-  DCHECK(v4_database_);
 
-  base::ElapsedTimer timer;
   full_hash_to_store_and_hash_prefixes->clear();
   for (const auto& full_hash : check->full_hashes) {
     StoreAndHashPrefixes matched_store_and_hash_prefixes;
@@ -617,11 +613,6 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
     }
   }
 
-  // NOTE(vakh): This doesn't distinguish which stores it's searching through.
-  // However, the vast majority of the entries in this histogram will be from
-  // searching the three CHECK_BROWSE_URL stores.
-  UMA_HISTOGRAM_COUNTS_10M("SafeBrowsing.V4GetPrefixMatches.TimeUs",
-                           timer.Elapsed().InMicroseconds());
   return !full_hash_to_store_and_hash_prefixes->empty();
 }
 
