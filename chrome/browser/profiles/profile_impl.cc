@@ -143,14 +143,14 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
@@ -1196,10 +1196,9 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         chromeos::multidevice_setup::OobeCompletionTrackerFactory::
             GetForProfile(this),
         std::make_unique<
-            chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
+            chromeos::android_sms::AndroidSmsAppHelperDelegateImpl>(this),
         std::make_unique<
-            chromeos::multidevice_setup::AndroidSmsPairingStateTrackerImpl>(
-            this),
+            chromeos::android_sms::AndroidSmsPairingStateTrackerImpl>(this),
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
   }
 
