@@ -393,8 +393,8 @@ void Text::RecalcTextStyle(StyleRecalcChange change) {
           GetDocument().EnsureStyleResolver().StyleForText(this);
       const ComputedStyle* layout_parent_style =
           GetLayoutObject()->Parent()->Style();
-      if (new_style != layout_parent_style &&
-          !new_style->InheritedEqual(*layout_parent_style)) {
+      if (!new_style || (new_style != layout_parent_style &&
+                         !new_style->InheritedEqual(*layout_parent_style))) {
         // The computed style or the need for an anonymous inline wrapper for a
         // display:contents text child changed.
         SetNeedsReattachLayoutTree();
