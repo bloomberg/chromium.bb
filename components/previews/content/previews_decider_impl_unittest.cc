@@ -917,10 +917,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
         1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 
   // Now verify preview for whitelisted url.
@@ -934,14 +930,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
 
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
-
-    // Triggered ECT logged.
-    histogram_tester.ExpectUniqueSample(
-        "Previews.Triggered.EffectiveConnectionType",
-        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-    histogram_tester.ExpectUniqueSample(
-        "Previews.Triggered.EffectiveConnectionType.NoScript",
-        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
   }
 
   // Verify preview not allowed for whitelisted url when network is not slow.
@@ -956,10 +944,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 
   // Verify preview not allowed for whitelisted url for unknown network quality.
@@ -976,10 +960,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
         1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 
   // Verify preview not allowed for session limited ECT threshold.
@@ -1000,10 +980,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
         1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 }
 
@@ -1174,10 +1150,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
         1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints", 0);
   }
 
   // Now verify preview for whitelisted url.
@@ -1192,14 +1164,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount(
         "Previews.EligibilityReason.ResourceLoadingHints", 0);
-
-    // Triggered ECT logged.
-    histogram_tester.ExpectUniqueSample(
-        "Previews.Triggered.EffectiveConnectionType",
-        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-    histogram_tester.ExpectUniqueSample(
-        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints",
-        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
   }
 
   // Verify preview not allowed for whitelisted url when network is not slow.
@@ -1214,10 +1178,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
         static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints", 0);
   }
 
   // Verify preview not allowed for whitelisted url for unknown network quality.
@@ -1232,10 +1192,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
         static_cast<int>(PreviewsEligibilityReason::DEVICE_OFFLINE), 1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints", 0);
   }
 
   // Verify preview not allowed for session limited ECT threshold.
@@ -1256,10 +1212,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
         1);
-
-    // Expect no triggered ECT logged.
-    histogram_tester.ExpectTotalCount(
-        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints", 0);
   }
 }
 
