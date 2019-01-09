@@ -16,6 +16,12 @@ struct App {
   Readiness readiness;
   string? name;
   IconKey? icon_key;
+  // This vector must be treated atomically, if there is a permission
+  // change, the publisher must send through the entire list of permissions.
+  // Should contain no duplicate IDs.
+  // If empty during updates, Subscriber can assume no changes.
+  // There is no guarantee that this is sorted by any criteria.
+  array<Permission> permissions;
 
   // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
   // show_in_yyy fields?
@@ -24,6 +30,16 @@ struct App {
 
   // When adding new fields, also update the Merge method and other helpers in
   // chrome/services/app_service/public/cpp/app_update.*
+};
+
+struct Permission {
+  // An AppType-specific value, opaque to the App Service.
+  // Different publishers (with different AppType's) can
+  // re-use the same numerical value to mean different things.
+  uint32 permission_id;
+  PermissionValueType value_type;
+  // The semantics of value depends on the value_type.
+  uint32 value;
 };
 
 // The types of apps available in the registry.
@@ -84,4 +100,15 @@ enum LaunchSource {
   kFromAppListGrid,            // Grid of apps, not the search box.
   kFromAppListRecommendation,  // Query-less recommendations (smaller icons).
   kFromAppListQueryResult,     // Query-dependent results (larger icons).
+};
+
+enum TriState {
+  kAllow,
+  kBlock,
+  kAsk,
+};
+
+enum PermissionValueType {
+  kBool,                       // Permission.value is a Bool.
+  kTriState,                   // Permission.value is a TriState.
 };

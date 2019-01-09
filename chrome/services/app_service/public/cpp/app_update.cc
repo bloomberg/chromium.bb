@@ -6,6 +6,17 @@
 
 #include "base/logging.h"
 
+namespace {
+
+void ClonePermissions(const std::vector<apps::mojom::PermissionPtr>& clone_from,
+                      std::vector<apps::mojom::PermissionPtr>* clone_to) {
+  for (const auto& permission : clone_from) {
+    clone_to->push_back(permission->Clone());
+  }
+}
+
+}  // namespace
+
 namespace apps {
 
 // static
@@ -25,6 +36,12 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   }
   if (!delta->icon_key.is_null()) {
     state->icon_key = delta->icon_key.Clone();
+  }
+  if (!delta->permissions.empty()) {
+    DCHECK(state->permissions.empty() ||
+           (delta->permissions.size() == state->permissions.size()));
+    state->permissions.clear();
+    ClonePermissions(delta->permissions, &state->permissions);
   }
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
@@ -102,6 +119,23 @@ apps::mojom::IconKeyPtr AppUpdate::IconKey() const {
 bool AppUpdate::IconKeyChanged() const {
   return delta_ && !delta_->icon_key.is_null() &&
          (!state_ || !delta_->icon_key.Equals(state_->icon_key));
+}
+
+std::vector<apps::mojom::PermissionPtr> AppUpdate::Permissions() const {
+  std::vector<apps::mojom::PermissionPtr> permissions;
+
+  if (delta_ && !delta_->permissions.empty()) {
+    ClonePermissions(delta_->permissions, &permissions);
+  } else if (state_ && !state_->permissions.empty()) {
+    ClonePermissions(state_->permissions, &permissions);
+  }
+
+  return permissions;
+}
+
+bool AppUpdate::PermissionsChanged() const {
+  return delta_ && !delta_->permissions.empty() &&
+         (!state_ || (delta_->permissions != state_->permissions));
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {

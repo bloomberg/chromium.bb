@@ -9,13 +9,16 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension_metrics.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -38,6 +41,14 @@
 // (i.e. in this C++ file) and not at all on the app subscriber side.
 
 namespace {
+
+// Only supporting important permissions for now.
+const ContentSettingsType kSupportedPermissionTypes[] = {
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+};
 
 ash::ShelfLaunchSource ConvertLaunchSource(
     apps::mojom::LaunchSource launch_source) {
@@ -158,6 +169,43 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->icon_key->icon_type = apps::mojom::IconType::kExtension;
   app->icon_key->s_key = extension->id();
   app->icon_key->u_key = next_u_key_++;
+
+  // Extensions where |from_bookmark| is true wrap websites and use web
+  // permissions.
+  if (extension->from_bookmark()) {
+    const GURL url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    auto* host_content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
+    DCHECK(host_content_settings_map);
+
+    for (ContentSettingsType type : kSupportedPermissionTypes) {
+      ContentSetting setting = host_content_settings_map->GetContentSetting(
+          url, url, type, std::string() /* resource_identifier */);
+
+      // Map ContentSettingsType to an apps::mojom::TriState value
+      apps::mojom::TriState setting_val;
+      switch (setting) {
+        case CONTENT_SETTING_ALLOW:
+          setting_val = apps::mojom::TriState::kAllow;
+          break;
+        case CONTENT_SETTING_ASK:
+          setting_val = apps::mojom::TriState::kAsk;
+          break;
+        case CONTENT_SETTING_BLOCK:
+          setting_val = apps::mojom::TriState::kBlock;
+          break;
+        default:
+          setting_val = apps::mojom::TriState::kAsk;
+      }
+
+      auto permission = apps::mojom::Permission::New();
+      permission->permission_id = static_cast<uint32_t>(type);
+      permission->value_type = apps::mojom::PermissionValueType::kTriState;
+      permission->value = static_cast<uint32_t>(setting_val);
+
+      app->permissions.push_back(std::move(permission));
+    }
+  }
 
   auto show = app_list::ShouldShowInLauncher(extension, profile_)
                   ? apps::mojom::OptionalBool::kTrue
