@@ -282,13 +282,17 @@ def verify_path_regexps(regexps, verbose=True):
       if not simple_name_re.match(itm):
         break
       last_normal_path += 1
-    path_to_search = os.path.sep.join(parts[:last_normal_path])
+    path_to_search = os.path.join(*parts[:last_normal_path])
     # Simple case. Regexp is just referencing a single file. Just check if the
     # file exists.
-    if path_to_search == regexp and os.path.exists(os.path.join(
-        CHROMIUM_DIR, path_to_search)):
+    if path_to_search == os.path.join(*parts) and os.path.exists(
+        os.path.join(CHROMIUM_DIR, path_to_search)):
       continue
 
+    if os.path.sep != '/':
+      # Regular expressions require backslashes to be escaped. Need to double
+      # escape it, since the path itself has a double backslash.
+      regexp = regexp.replace('/', '\\\\')
     compiled_regexp = re.compile(regexp)
     found = False
     for root, _, files in os.walk(os.path.join(CHROMIUM_DIR, path_to_search)):

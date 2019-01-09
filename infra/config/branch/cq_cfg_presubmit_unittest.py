@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -24,7 +24,7 @@ class CqCfgPresubmitTest(unittest.TestCase):
       walk.side_effect = [(
           (os.path.join(cq_cfg_presubmit.CHROMIUM_DIR, 'random'),
             None, ['test.txt'],),
-          (os.path.join(cq_cfg_presubmit.CHROMIUM_DIR, 'simple/file'),
+          (os.path.join(cq_cfg_presubmit.CHROMIUM_DIR, 'simple', 'file'),
            None, ['test.txt'],),
       )]
       with mock.patch('cq_cfg_presubmit.os.path.exists') as exists:
