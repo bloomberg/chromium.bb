@@ -756,6 +756,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_INSPECT_UI_CONSOLE_NOTICE" desc="The message at the top of the debugging page which displays JavaScript console logs [iOS only].">
         Tap the "Start Logging" button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or "Stop Logging" is tapped.
       </message>
+      <message name="IDS_IOS_INSPECT_UI_CONSOLE_START_LOGGING" desc="The button on the top of the debugging page to start JavaScript console logging [iOS only].">
+        Start Logging
+      </message>
+      <message name="IDS_IOS_INSPECT_UI_CONSOLE_STOP_LOGGING" desc="The button on the top of the debugging page to stop JavaScript console logging [iOS only].">
+        Stop Logging
+      </message>
       <message name="IDS_IOS_INTENTS_SEARCH_IN_CHROME_DESCRIPTION" desc="Siri Shortcut for search in chrome description [iOS only].">
         Start a search in a new Chrome tab.
       </message>
