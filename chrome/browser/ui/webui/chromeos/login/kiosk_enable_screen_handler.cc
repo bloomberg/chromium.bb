@@ -131,7 +131,7 @@ void KioskEnableScreenHandler::OnEnableConsumerKioskAutoLaunch(
   if (!success)
     LOG(WARNING) << "Consumer kiosk mode can't be enabled!";
 
-  CallJSWithPrefix("onCompleted", success);
+  CallJS("login.KioskEnableScreen.onCompleted", success);
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_KIOSK_ENABLED,

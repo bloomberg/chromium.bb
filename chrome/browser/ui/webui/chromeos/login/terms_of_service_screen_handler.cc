@@ -177,7 +177,7 @@ void TermsOfServiceScreenHandler::DoShow() {
 
 void TermsOfServiceScreenHandler::UpdateDomainInUI() {
   if (page_is_ready())
-    CallJSWithPrefix("setDomain", domain_);
+    CallJS("login.TermsOfServiceScreen.setDomain", domain_);
 }
 
 void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
@@ -189,9 +189,9 @@ void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
   // download is still in progress and the UI will be updated when the
   // OnLoadError() or the OnLoadSuccess() callback is called.
   if (load_error_)
-    CallJSWithPrefix("setTermsOfServiceLoadError");
+    CallJS("login.TermsOfServiceScreen.setTermsOfServiceLoadError");
   else if (!terms_of_service_.empty())
-    CallJSWithPrefix("setTermsOfService", terms_of_service_);
+    CallJS("login.TermsOfServiceScreen.setTermsOfService", terms_of_service_);
 }
 
 void TermsOfServiceScreenHandler::HandleBack() {
