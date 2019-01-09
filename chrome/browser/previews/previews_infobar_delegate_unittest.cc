@@ -631,14 +631,14 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
 TEST_F(PreviewsInfoBarDelegateUnitTest,
        DISABLE_ON_WINDOWS(PreviewInfobarTimestampFinchParamsUMA)) {
   std::map<std::string, std::string> variation_params;
-  variation_params["min_staleness_in_minutes"] = "1";
+  variation_params["min_staleness_in_minutes"] = "2";
   variation_params["max_staleness_in_minutes"] = "5";
   EnableStalePreviewsTimestamp(variation_params);
 
   TestStalePreviews(
-      1, false /* is_reload */,
+      2, false /* is_reload */,
       l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-                                 base::IntToString16(1)),
+                                 base::IntToString16(2)),
       PreviewsUITabHelper::PreviewsStalePreviewTimestamp::kTimestampShown);
 
   TestStalePreviews(6, false /* is_reload */, base::string16(),

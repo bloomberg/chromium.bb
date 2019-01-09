@@ -170,6 +170,7 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
     NOTREACHED();
     return base::string16();
   }
+  DCHECK_GE(min_staleness_in_minutes, 2);
 
   base::Time network_time;
   if (g_browser_process->network_time_tracker()->GetNetworkTime(&network_time,
@@ -206,6 +207,7 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
   RecordStaleness(PreviewsStalePreviewTimestamp::kTimestampShown);
 
   if (staleness_in_minutes < 60) {
+    DCHECK_GE(staleness_in_minutes, 2);
     return l10n_util::GetStringFUTF16(
         IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
         base::IntToString16(staleness_in_minutes));
