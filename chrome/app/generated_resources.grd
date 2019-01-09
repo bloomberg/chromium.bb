@@ -9259,15 +9259,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_INCOGNITO_WINDOW_COUNTER_MESSAGE" desc="The message showing the number of open incogntio windows. [ICU Syntax]">
       {0, plural,
-        =1 {You have one incognito window.}
-        other {You have # incognito windows.}
+        =1 {}
+        other {# windows are open}
       }
     </message>
-    <message name="IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON" desc="The text of the button offering to close all incognito windows. [ICU Syntax]">
-      {0, plural,
-        =1 {Close this window}
-        other {Close all incognito windows}
-      }
+    <message name="IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON" desc="The text of the button offering to close all incognito windows.">
+      Exit Incognito
     </message>
   </messages>
  </release>
