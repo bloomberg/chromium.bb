@@ -1358,16 +1358,13 @@ void ProfileSyncService::OnUserChoseDatatypes(
     return;
   }
 
-  sync_prefs_.SetKeepEverythingSynced(sync_everything);
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  sync_prefs_.SetPreferredDataTypes(sync_everything, registered_types,
+                                    chosen_types);
 
   if (data_type_manager_)
     data_type_manager_->ResetDataTypeErrors();
 
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  // Will only enable those types that are registered and preferred.
-  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types);
-
-  // Now reconfigure the DTM.
   ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
 }
 

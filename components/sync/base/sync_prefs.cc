@@ -257,12 +257,6 @@ bool SyncPrefs::HasKeepEverythingSynced() const {
   return pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
-void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
-                            keep_everything_synced);
-}
-
 ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     ModelTypeSet registered_types) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -280,9 +274,12 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   return ResolvePrefGroups(registered_types, preferred_types);
 }
 
-void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
+void SyncPrefs::SetPreferredDataTypes(bool keep_everything_synced,
+                                      ModelTypeSet registered_types,
                                       ModelTypeSet preferred_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
+                            keep_everything_synced);
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
   DCHECK(registered_types.HasAll(preferred_types));
   for (ModelType type : registered_types) {
