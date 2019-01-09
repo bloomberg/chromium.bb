@@ -24,7 +24,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
 
   ~TestAXNodeWrapper() override;
 
-  AXPlatformNode* ax_platform_node() { return platform_node_; }
+  AXPlatformNode* ax_platform_node() const { return platform_node_; }
 
   void BuildAllWrappers(AXTree* tree, AXNode* node);
 

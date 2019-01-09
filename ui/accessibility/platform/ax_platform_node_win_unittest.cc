@@ -34,14 +34,59 @@ ScopedVariant SELF(CHILDID_SELF);
 
 }  // namespace
 
+// Helper macros for testing UIAutomation property values and maintain
+// correct stack tracing and failure causality.
+//
+// WARNING: These aren't intended to be generic EXPECT_BSTR_EQ macros
+// as the logic is specific to extracting and comparing UIA property
+// values.
+#define EXPECT_UIA_VALUE_EQ(node, property_id, expectedVariant) \
+  do {                                                          \
+    ScopedVariant actual;                                       \
+    ASSERT_HRESULT_SUCCEEDED(                                   \
+        node->GetPropertyValue(property_id, actual.Receive())); \
+    EXPECT_EQ(0, expectedVariant.Compare(actual));              \
+  } while (false)
+
+#define EXPECT_UIA_BSTR_EQ(node, property_id, expected)                  \
+  do {                                                                   \
+    ScopedVariant expectedVariant(expected);                             \
+    ASSERT_EQ(VT_BSTR, expectedVariant.type());                          \
+    ASSERT_NE(nullptr, expectedVariant.ptr()->bstrVal);                  \
+    ScopedVariant actual;                                                \
+    ASSERT_HRESULT_SUCCEEDED(                                            \
+        node->GetPropertyValue(property_id, actual.Receive()));          \
+    ASSERT_EQ(VT_BSTR, actual.type());                                   \
+    ASSERT_NE(nullptr, actual.ptr()->bstrVal);                           \
+    EXPECT_STREQ(expectedVariant.ptr()->bstrVal, actual.ptr()->bstrVal); \
+  } while (false)
+
+#define EXPECT_UIA_BOOL_EQ(node, property_id, expected)               \
+  do {                                                                \
+    ScopedVariant expectedVariant(expected, VT_BOOL);                 \
+    ASSERT_EQ(VT_BOOL, expectedVariant.type());                       \
+    ScopedVariant actual;                                             \
+    ASSERT_HRESULT_SUCCEEDED(                                         \
+        node->GetPropertyValue(property_id, actual.Receive()));       \
+    EXPECT_EQ(expectedVariant.ptr()->boolVal, actual.ptr()->boolVal); \
+  } while (false)
+
+#define EXPECT_UIA_INT_EQ(node, property_id, expected)              \
+  do {                                                              \
+    ScopedVariant expectedVariant(expected, VT_I4);                 \
+    ASSERT_EQ(VT_I4, expectedVariant.type());                       \
+    ScopedVariant actual;                                           \
+    ASSERT_HRESULT_SUCCEEDED(                                       \
+        node->GetPropertyValue(property_id, actual.Receive()));     \
+    EXPECT_EQ(expectedVariant.ptr()->intVal, actual.ptr()->intVal); \
+  } while (false)
+
 class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
  public:
   AXPlatformNodeWinTest() {}
   ~AXPlatformNodeWinTest() override {}
 
-  void SetUp() override {
-    win::CreateATLModuleIfNeeded();
-  }
+  void SetUp() override { win::CreateATLModuleIfNeeded(); }
 
   void TearDown() override {
     // Destroy the tree and make sure we're not leaking any objects.
@@ -50,6 +95,26 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   }
 
  protected:
+  template <typename T>
+  ComPtr<T> QueryInterfaceFromNode(AXNode* node) {
+    const TestAXNodeWrapper* wrapper =
+        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+    if (!wrapper)
+      return ComPtr<T>();
+
+    AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
+    ComPtr<T> result;
+    EXPECT_HRESULT_SUCCEEDED(
+        ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
+                                                                    &result));
+
+    return result;
+  }
+
+  ComPtr<IRawElementProviderSimple> GetRootIRawElementProviderSimple() {
+    return QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootNode());
+  }
+
   ComPtr<IAccessible> IAccessibleFromNode(AXNode* node) {
     TestAXNodeWrapper* wrapper =
         TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
@@ -2577,6 +2642,41 @@ TEST_F(AXPlatformNodeWinTest,
   LONG offset;
   EXPECT_HRESULT_SUCCEEDED(text_field->get_caretOffset(&offset));
   EXPECT_EQ(2, offset);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
+  AXNodeData root;
+  root.SetName("fake name");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kAccessKey, "Ctrl+Q");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts, "Alt+F4");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                          "fake description");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                          "role description");
+  root.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 2);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kInvalidState, 1);
+  root.role = ax::mojom::Role::kMarquee;
+
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  ScopedVariant uia_id;
+  ASSERT_HRESULT_SUCCEEDED(root_node->GetPropertyValue(
+      UIA_AutomationIdPropertyId, uia_id.Receive()));
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AutomationIdPropertyId,
+                     uia_id.ptr()->bstrVal);
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaRolePropertyId, L"marquee");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
+                     L"expanded=false;multiline=false;multiselectable=false;"
+                     L"posinset=1;required=false;setsize=2");
+  EXPECT_UIA_INT_EQ(root_node, UIA_ControlTypePropertyId,
+                    int{UIA_TextControlTypeId});
+  EXPECT_UIA_INT_EQ(root_node, UIA_OrientationPropertyId,
+                    int{OrientationType_None});
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsRequiredForFormPropertyId, false);
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsDataValidForFormPropertyId, true);
 }
 
 }  // namespace ui
