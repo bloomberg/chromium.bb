@@ -13,16 +13,12 @@ namespace features {
 // the .cc file.
 
 extern const base::Feature kDoodlesOnLocalNtp;
-extern const base::Feature kNtpIcons;
 extern const base::Feature kPromosOnLocalNtp;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
 
 // Returns whether New Tab Page custom links are enabled.
 bool IsCustomLinksEnabled();
-
-// Returns whether the Material Design UI for Most Visited is enabled.
-bool IsMDIconsEnabled();
 
 }  // namespace features
 

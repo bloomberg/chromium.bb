@@ -86,7 +86,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker_test_support.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -4211,12 +4210,9 @@ class PolicyWebStoreIconTest : public PolicyTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
-    // Force to enable the new tab page material design flag
-    scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list;
   DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
 };
 
@@ -4259,10 +4255,6 @@ IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconTest, NTPWebStoreIconShown) {
   // applies. See WebStoreIconPolicyTest.NTPWebStoreIconHidden for verification
   // when a policy is in effect.
 
-  // Force to enable the new tab page material design flag
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
-
   // Open new tab page and look for the web store icons.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
@@ -4294,12 +4286,9 @@ class PolicyWebStoreIconHiddenTest : public PolicyTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
-    // Force to enable the new tab page material design flag
-    scoped_feature_list.InitAndEnableFeature(features::kNtpIcons);
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list;
   DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconHiddenTest);
 };
 

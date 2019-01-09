@@ -1302,12 +1302,7 @@ const char kNtlmV2EnabledDescription[] =
 const char kNtpCustomLinksName[] = "New Tab Page Custom Links";
 const char kNtpCustomLinksDescription[] =
     "Enable customization of shortcuts on the New Tab Page and replaces Most "
-    "Visited. Implicitly enables 'ntp-ui-md' and 'ntp-icons'.";
-
-const char kNtpIconsName[] = "New Tab Page Material Design Icons";
-const char kNtpIconsDescription[] =
-    "Show Material Design icons on the New Tab Page, instead of Most Visited "
-    "tiles. Implicitly enables 'ntp-ui-md'.";
+    "Visited.";
 
 const char kNumRasterThreadsName[] = "Number of raster threads";
 const char kNumRasterThreadsDescription[] =

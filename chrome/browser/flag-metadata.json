@@ -2531,11 +2531,6 @@
     "expiry_milestone": 73
   },
   {
-    "name": "ntp-icons",
-    "owners": [ "kristipark", "ramyan" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "num-raster-threads",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

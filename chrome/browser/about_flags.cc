@@ -3809,10 +3809,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-custom-links", flag_descriptions::kNtpCustomLinksName,
      flag_descriptions::kNtpCustomLinksDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_tiles::kNtpCustomLinks)},
-
-    {"ntp-icons", flag_descriptions::kNtpIconsName,
-     flag_descriptions::kNtpIconsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNtpIcons)},
 #endif  // OS_WIN || OS_MACOSX || OS_LINUX
 
 #if defined(OS_ANDROID)

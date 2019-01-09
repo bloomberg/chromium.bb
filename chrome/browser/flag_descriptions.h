@@ -803,9 +803,6 @@ extern const char kNtlmV2EnabledDescription[];
 extern const char kNtpCustomLinksName[];
 extern const char kNtpCustomLinksDescription[];
 
-extern const char kNtpIconsName[];
-extern const char kNtpIconsDescription[];
-
 extern const char kNumRasterThreadsName[];
 extern const char kNumRasterThreadsDescription[];
 extern const char kNumRasterThreadsOne[];

@@ -20,7 +20,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -50,7 +49,6 @@ struct RawPrepopulatedPage {
   int url_id;            // The resource for the page URL.
   int title_id;          // The resource for the page title.
   int favicon_id;        // The raw data resource for the favicon.
-  int large_favicon_id;  // The raw data resource for the larger favicon.
   SkColor color;         // The best color to highlight the page (should
                          // roughly match favicon).
 };
@@ -61,7 +59,6 @@ const RawPrepopulatedPage kRawPrepopulatedPages[] = {
     {
         IDS_WEBSTORE_URL,
         IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
-        IDR_WEBSTORE_ICON_16,
         IDR_WEBSTORE_ICON_32,
         SkColorSetRGB(63, 132, 197),
     },
@@ -81,9 +78,7 @@ void InitializePrepopulatedPageList(
       continue;
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
-        l10n_util::GetStringUTF16(page.title_id),
-        features::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
-        page.color));
+        l10n_util::GetStringUTF16(page.title_id), page.favicon_id, page.color));
   }
 #endif
 }
