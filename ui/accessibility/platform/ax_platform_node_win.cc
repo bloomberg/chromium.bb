@@ -206,11 +206,9 @@ const uint32_t kScreenReaderAndHTMLAccessibilityModes =
 // IAccessible2UsageObserver
 //
 
-IAccessible2UsageObserver::IAccessible2UsageObserver() {
-}
+IAccessible2UsageObserver::IAccessible2UsageObserver() {}
 
-IAccessible2UsageObserver::~IAccessible2UsageObserver() {
-}
+IAccessible2UsageObserver::~IAccessible2UsageObserver() {}
 
 // static
 base::ObserverList<IAccessible2UsageObserver>::Unchecked&
@@ -619,7 +617,7 @@ IFACEMETHODIMP AXPlatformNodeWin::accLocation(LONG* x_left,
   gfx::Rect bounds = target->GetDelegate()->GetUnclippedScreenBoundsRect();
   *x_left = bounds.x();
   *y_top = bounds.y();
-  *width  = bounds.width();
+  *width = bounds.width();
   *height = bounds.height();
 
   if (bounds.IsEmpty())
@@ -998,15 +996,15 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
     selected->vt = VT_DISPATCH;
     selected->pdispVal = selected_nodes[0].Detach();
     return S_OK;
-      }
+  }
 
   // Multiple items are selected.
-      LONG selected_count = static_cast<LONG>(selected_nodes.size());
-      auto* enum_variant = new base::win::EnumVariant(selected_count);
-      enum_variant->AddRef();
-      for (LONG i = 0; i < selected_count; ++i) {
-        enum_variant->ItemAt(i)->vt = VT_DISPATCH;
-        enum_variant->ItemAt(i)->pdispVal = selected_nodes[i].Detach();
+  LONG selected_count = static_cast<LONG>(selected_nodes.size());
+  auto* enum_variant = new base::win::EnumVariant(selected_count);
+  enum_variant->AddRef();
+  for (LONG i = 0; i < selected_count; ++i) {
+    enum_variant->ItemAt(i)->vt = VT_DISPATCH;
+    enum_variant->ItemAt(i)->pdispVal = selected_nodes[i].Detach();
   }
   selected->vt = VT_UNKNOWN;
   HRESULT hr = enum_variant->QueryInterface(IID_PPV_ARGS(&V_UNKNOWN(selected)));
@@ -3305,17 +3303,21 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       if (GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
                           &int_attribute)) {
         result->vt = VT_BOOL;
-        result->boolVal = int_attribute ==
-                          static_cast<int32_t>(ax::mojom::InvalidState::kFalse);
+        if (int_attribute ==
+            static_cast<int32_t>(ax::mojom::InvalidState::kFalse)) {
+          result->boolVal = VARIANT_TRUE;
+        } else {
+          result->boolVal = VARIANT_FALSE;
+        }
       }
       break;
 
     case UIA_IsRequiredForFormPropertyId:
       result->vt = VT_BOOL;
       if (data.HasState(ax::mojom::State::kRequired)) {
-        result->boolVal = true;
+        result->boolVal = VARIANT_TRUE;
       } else {
-        result->boolVal = false;
+        result->boolVal = VARIANT_FALSE;
       }
       break;
 
@@ -3345,6 +3347,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
           result->vt = VT_I4;
           result->intVal = OrientationType_Vertical;
         }
+      } else {
+        result->vt = VT_I4;
+        result->intVal = OrientationType_None;
       }
       break;
 
