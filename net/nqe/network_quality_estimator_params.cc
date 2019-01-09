@@ -437,19 +437,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "throughput_hanging_requests_cwnd_size_multiplier",
               1)),
       weight_multiplier_per_second_(GetWeightMultiplierPerSecond(params_)),
-      weight_multiplier_per_signal_strength_level_(
-          GetDoubleValueForVariationParamWithDefaultValue(
-              params_,
-              "rssi_weight_per_signal_strength_level",
-              // Set the default value to something less than 1.0. This enables
-              // caching of the network quality indexed by signal strength.
-              // A value of 1.0 indicates that the signal strength is not used
-              // when assigning weight to the observations. A value less than
-              // 1.0, but close to 1.0 allows caching of the network quality
-              // indexed by signal strength, while not significantly changing
-              // the weight of the observations based on signal strength.
-              // TODO(tbansal): https://crbug.com/513681: Update this value.
-              0.999)),
+      weight_multiplier_per_signal_strength_level_(0.8),
       forced_effective_connection_type_(
           GetInitForcedEffectiveConnectionType(params_)),
       forced_effective_connection_type_on_cellular_only_(
@@ -511,10 +499,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "socket_watchers_min_notification_interval_msec",
               200))),
-      use_end_to_end_rtt_(
-          GetStringValueForVariationParamWithDefaultValue(params_,
-                                                          "use_end_to_end_rtt",
-                                                          "false") == "true"),
+      use_end_to_end_rtt_(true),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);

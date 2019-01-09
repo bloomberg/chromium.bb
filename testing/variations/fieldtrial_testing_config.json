@@ -2824,26 +2824,6 @@
             ]
         }
     ],
-    "NetworkQualityEstimator": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "rssi_weight_per_signal_strength_level": "0.9",
-                        "use_end_to_end_rtt": "true"
-                    }
-                }
-            ]
-        }
-    ],
     "NewExtensionUpdaterService": [
         {
             "platforms": [
