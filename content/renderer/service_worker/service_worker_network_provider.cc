@@ -233,13 +233,6 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
 }
 
 // static
-std::unique_ptr<ServiceWorkerNetworkProvider>
-ServiceWorkerNetworkProvider::CreateForController(
-    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  return base::WrapUnique(new ServiceWorkerNetworkProvider(std::move(info)));
-}
-
-// static
 ServiceWorkerNetworkProvider*
 ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
     blink::WebServiceWorkerNetworkProvider* provider) {
@@ -330,19 +323,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       std::move(controller_info), std::move(fallback_loader_factory));
   if (script_loader_factory_info.is_valid())
     script_loader_factory_.Bind(std::move(script_loader_factory_info));
-}
-
-// Constructor for service worker execution contexts.
-ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      info->provider_id, std::move(info->client_request),
-      std::move(info->host_ptr_info));
-
-  if (info->script_loader_factory_ptr_info.is_valid()) {
-    script_loader_factory_.Bind(
-        std::move(info->script_loader_factory_ptr_info));
-  }
 }
 
 }  // namespace content

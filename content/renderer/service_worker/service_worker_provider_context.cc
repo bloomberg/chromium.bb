@@ -80,20 +80,6 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
   }
 }
 
-// For service worker execution contexts.
-ServiceWorkerProviderContext::ServiceWorkerProviderContext(
-    int provider_id,
-    blink::mojom::ServiceWorkerContainerAssociatedRequest request,
-    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info)
-    : provider_type_(
-          blink::mojom::ServiceWorkerProviderType::kForServiceWorker),
-      provider_id_(provider_id),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {
-  container_host_.Bind(std::move(host_ptr_info));
-}
-
 ServiceWorkerProviderContext::~ServiceWorkerProviderContext() = default;
 
 blink::mojom::ServiceWorkerObjectInfoPtr
