@@ -8,14 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#if defined(LIBJINGLE_XMPP_POSIX)
-#include <sys/time.h>
-#endif  // LIBJINGLE_XMPP_POSIX
-
-#if defined(LIBJINGLE_XMPP_WIN)
-#include "third_party/webrtc/rtc_base/win32.h"
-#endif  // LIBJINGLE_XMPP_WIN
-
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

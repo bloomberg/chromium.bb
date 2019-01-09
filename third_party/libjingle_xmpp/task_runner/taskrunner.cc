@@ -14,7 +14,6 @@
 
 #include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace rtc {
 
