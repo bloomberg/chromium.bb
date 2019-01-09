@@ -4665,9 +4665,9 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
 
       if Search(r'sizeof\(.+\)', tok): continue
       if Search(r'arraysize\(\w+\)', tok): continue
-      if Search(r'base::size\(\w+\)', tok): continue
-      if Search(r'std::size\(\w+\)', tok): continue
-      if Search(r'std::extent\(\w+\)', tok): continue
+      if Search(r'base::size\(.+\)', tok): continue
+      if Search(r'std::size\(.+\)', tok): continue
+      if Search(r'std::extent<.+>', tok): continue
 
       tok = tok.lstrip('(')
       tok = tok.rstrip(')')
