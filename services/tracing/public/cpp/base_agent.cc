@@ -28,6 +28,8 @@ void BaseAgent::Connect(service_manager::Connector* connector) {
   agent_registry->RegisterAgent(std::move(agent), label_, type_, pid_);
 }
 
+void BaseAgent::GetCategories(std::set<std::string>* category_set) {}
+
 void BaseAgent::StartTracing(const std::string& config,
                              base::TimeTicks coordinator_time,
                              Agent::StartTracingCallback callback) {
@@ -35,10 +37,6 @@ void BaseAgent::StartTracing(const std::string& config,
 }
 
 void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
-
-void BaseAgent::GetCategories(Agent::GetCategoriesCallback callback) {
-  std::move(callback).Run("" /* categories */);
-}
 
 void BaseAgent::RequestBufferStatus(
     Agent::RequestBufferStatusCallback callback) {

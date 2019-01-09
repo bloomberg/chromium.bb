@@ -284,21 +284,13 @@ TracingControllerImpl* TracingControllerImpl::GetInstance() {
 }
 
 bool TracingControllerImpl::GetCategories(GetCategoriesDoneCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  coordinator_->GetCategories(base::BindOnce(
-      [](GetCategoriesDoneCallback callback, bool success,
-         const std::string& categories) {
-        const std::vector<std::string> split = base::SplitString(
-            categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-        std::set<std::string> category_set;
-        for (const auto& category : split) {
-          category_set.insert(category);
-        }
-        std::move(callback).Run(category_set);
-      },
-      std::move(callback)));
-  // TODO(chiniforooshan): The actual success value should be sent by the
-  // callback asynchronously.
+  std::set<std::string> category_set;
+
+  tracing::TraceEventAgent::GetInstance()->GetCategories(&category_set);
+  for (auto& agent : agents_)
+    agent->GetCategories(&category_set);
+
+  std::move(callback).Run(category_set);
   return true;
 }
 

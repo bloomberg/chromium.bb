@@ -66,7 +66,6 @@ class Coordinator : public mojom::Coordinator {
                          StopAndFlushCallback callback) override;
   void IsTracing(IsTracingCallback callback) override;
   void RequestBufferUsage(RequestBufferUsageCallback callback) override;
-  void GetCategories(GetCategoriesCallback callback) override;
 
   // Internal methods for collecting events from agents.
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
@@ -82,9 +81,6 @@ class Coordinator : public mojom::Coordinator {
   void OnRequestBufferStatusResponse(AgentRegistry::AgentEntry* agent_entry,
                                      uint32_t capacity,
                                      uint32_t count);
-
-  void OnGetCategoriesResponse(AgentRegistry::AgentEntry* agent_entry,
-                               const std::string& categories);
 
   mojo::Binding<mojom::Coordinator> binding_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -102,10 +98,6 @@ class Coordinator : public mojom::Coordinator {
   float maximum_trace_buffer_usage_ = 0;
   uint32_t approximate_event_count_ = 0;
   RequestBufferUsageCallback request_buffer_usage_callback_;
-
-  // For getting categories.
-  std::set<std::string> category_set_;
-  GetCategoriesCallback get_categories_callback_;
 
   base::WeakPtrFactory<Coordinator> weak_ptr_factory_;
 

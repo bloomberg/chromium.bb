@@ -37,6 +37,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
   static TraceEventAgent* GetInstance();
 
   void Connect(service_manager::Connector* connector) override;
+  void GetCategories(std::set<std::string>* category_set) override;
 
   using MetadataGeneratorFunction =
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
@@ -55,8 +56,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
                     base::TimeTicks coordinator_time,
                     StartTracingCallback callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
-
-  void GetCategories(GetCategoriesCallback callback) override;
 
   void RequestBufferStatus(RequestBufferStatusCallback callback) override;
 

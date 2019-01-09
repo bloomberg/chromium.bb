@@ -25,6 +25,7 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
   ~BaseAgent() override;
 
   virtual void Connect(service_manager::Connector* connector);
+  virtual void GetCategories(std::set<std::string>* category_set);
 
  protected:
   BaseAgent(const std::string& label,
@@ -37,7 +38,6 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void GetCategories(Agent::GetCategoriesCallback callback) override;
   void RequestBufferStatus(
       Agent::RequestBufferStatusCallback callback) override;
 

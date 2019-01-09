@@ -42,7 +42,6 @@ interface Agent {
       => (bool success);
   StopAndFlush(Recorder recorder);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
-  GetCategories() => (string categories);
 };
 
 // An agent can make several calls to |AddChunk|. Chunks will be concatenated
@@ -71,5 +70,4 @@ interface Coordinator {
   IsTracing() => (bool is_tracing);
   RequestBufferUsage() => (bool success, float percent_full,
                            uint32 approximate_count);
-  GetCategories() => (bool success, string categories);
 };

@@ -106,20 +106,6 @@ class TraceEventAgentTest : public testing::Test {
     TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(generator);
   }
 
-  void GetCategories(const std::string& expected_category,
-                     base::Closure quit_closure) {
-    TraceEventAgent::GetInstance()->GetCategories(base::BindRepeating(
-        &TraceEventAgentTest::OnGetCategoriesReply, base::Unretained(this),
-        expected_category, quit_closure));
-  }
-
-  void OnGetCategoriesReply(const std::string& expected_category,
-                            base::Closure quit_closure,
-                            const std::string& categories) {
-    EXPECT_FALSE(categories.rfind(expected_category) == std::string::npos);
-    quit_closure.Run();
-  }
-
   MockRecorder* recorder() const { return recorder_.get(); }
 
  private:
@@ -149,13 +135,6 @@ TEST_F(TraceEventAgentTest, StopAndFlushEvents) {
   EXPECT_EQ("event1,event2", mock_recorder->events());
   EXPECT_EQ("", mock_recorder->metadata());
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
-}
-
-TEST_F(TraceEventAgentTest, GetCategories) {
-  base::RunLoop run_loop;
-  TRACE_EVENT_INSTANT0(kTestCategory, "event1", TRACE_EVENT_SCOPE_THREAD);
-  GetCategories(kTestCategory, run_loop.QuitClosure());
-  run_loop.Run();
 }
 
 TEST_F(TraceEventAgentTest, StopAndFlushMetadata) {

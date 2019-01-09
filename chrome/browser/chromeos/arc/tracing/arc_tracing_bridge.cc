@@ -308,6 +308,14 @@ ArcTracingBridge::~ArcTracingBridge() {
       ->DeleteSoon(FROM_HERE, reader_.release());
 }
 
+void ArcTracingBridge::GetCategories(std::set<std::string>* category_set) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (const auto& category : categories_) {
+    category_set->insert(category.full_name);
+  }
+}
+
 void ArcTracingBridge::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::TracingInstance* tracing_instance = ARC_GET_INSTANCE_FOR_METHOD(
@@ -326,12 +334,8 @@ void ArcTracingBridge::OnCategoriesReady(
   // alternative, the old category that is no longer in |categories_| will be
   // ignored when calling |StartTracing|.
   categories_.clear();
-  for (const auto& category : categories) {
+  for (const auto& category : categories)
     categories_.emplace_back(Category{category, kCategoryPrefix + category});
-    // Show the category name in the selection UI.
-    base::trace_event::TraceLog::GetCategoryGroupEnabled(
-        categories_.back().full_name.c_str());
-  }
 }
 
 void ArcTracingBridge::StartTracing(const std::string& config,
@@ -450,6 +454,12 @@ ArcTracingBridge::ArcTracingAgent::ArcTracingAgent(ArcTracingBridge* bridge)
 }
 
 ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
+
+void ArcTracingBridge::ArcTracingAgent::GetCategories(
+    std::set<std::string>* category_set) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bridge_->GetCategories(category_set);
+}
 
 void ArcTracingBridge::ArcTracingAgent::StartTracing(
     const std::string& config,

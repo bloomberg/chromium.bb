@@ -36,7 +36,6 @@ namespace {
 
 const char kMetadataTraceLabel[] = "metadata";
 
-const char kGetCategoriesClosureName[] = "GetCategoriesClosure";
 const char kRequestBufferUsageClosureName[] = "RequestBufferUsageClosure";
 const char kStartTracingClosureName[] = "StartTracingClosure";
 
@@ -294,8 +293,6 @@ Coordinator::~Coordinator() {
     base::ResetAndReturn(&start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
     base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
-  if (!get_categories_callback_.is_null())
-    base::ResetAndReturn(&get_categories_callback_).Run(false, "");
 
   if (trace_streamer_) {
     // We are in the middle of flushing trace data. We need to
@@ -503,50 +500,6 @@ void Coordinator::OnRequestBufferStatusResponse(
   if (!agent_registry_->HasDisconnectClosure(&kRequestBufferUsageClosureName)) {
     std::move(request_buffer_usage_callback_)
         .Run(true, maximum_trace_buffer_usage_, approximate_event_count_);
-  }
-}
-
-void Coordinator::GetCategories(GetCategoriesCallback callback) {
-  if (is_tracing_) {
-    std::move(callback).Run(false, "");
-    return;
-  }
-
-  DCHECK(get_categories_callback_.is_null());
-  is_tracing_ = true;
-  category_set_.clear();
-  get_categories_callback_ = std::move(callback);
-  agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
-    agent_entry->AddDisconnectClosure(
-        &kGetCategoriesClosureName,
-        base::BindOnce(&Coordinator::OnGetCategoriesResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(agent_entry), ""));
-    agent_entry->agent()->GetCategories(base::BindRepeating(
-        &Coordinator::OnGetCategoriesResponse, weak_ptr_factory_.GetWeakPtr(),
-        base::Unretained(agent_entry)));
-  });
-}
-
-void Coordinator::OnGetCategoriesResponse(
-    AgentRegistry::AgentEntry* agent_entry,
-    const std::string& categories) {
-  bool removed =
-      agent_entry->RemoveDisconnectClosure(&kGetCategoriesClosureName);
-  DCHECK(removed);
-
-  std::vector<std::string> split = base::SplitString(
-      categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const auto& category : split) {
-    category_set_.insert(category);
-  }
-
-  if (!agent_registry_->HasDisconnectClosure(&kGetCategoriesClosureName)) {
-    std::vector<std::string> category_vector(category_set_.begin(),
-                                             category_set_.end());
-    std::move(get_categories_callback_)
-        .Run(true, base::JoinString(category_vector, ","));
-    is_tracing_ = false;
   }
 }
 
