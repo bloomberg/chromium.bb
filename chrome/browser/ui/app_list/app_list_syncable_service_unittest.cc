@@ -167,6 +167,36 @@ syncer::SyncDataList CreateBadAppRemoteData(const std::string& id) {
   return sync_list;
 }
 
+bool AreAllAppAtributesEqualInSync(
+    const app_list::AppListSyncableService::SyncItem* item1,
+    const app_list::AppListSyncableService::SyncItem* item2) {
+  return item1->parent_id == item2->parent_id &&
+         item1->item_ordinal.EqualsOrBothInvalid(item2->item_ordinal) &&
+         item1->item_pin_ordinal.EqualsOrBothInvalid(item2->item_pin_ordinal);
+}
+
+bool AreAllAppAtributesNotEqualInSync(
+    const app_list::AppListSyncableService::SyncItem* item1,
+    const app_list::AppListSyncableService::SyncItem* item2) {
+  return item1->parent_id != item2->parent_id &&
+         !item1->item_ordinal.EqualsOrBothInvalid(item2->item_ordinal) &&
+         !item1->item_pin_ordinal.EqualsOrBothInvalid(item2->item_pin_ordinal);
+}
+
+bool AreAllAppAtributesEqualInAppList(const ChromeAppListItem* item1,
+                                      const ChromeAppListItem* item2) {
+  // Note, there is no pin position in app list.
+  return item1->folder_id() == item2->folder_id() &&
+         item1->position().EqualsOrBothInvalid(item2->position());
+}
+
+bool AreAllAppAtributesNotEqualInAppList(const ChromeAppListItem* item1,
+                                         const ChromeAppListItem* item2) {
+  // Note, there is no pin position in app list.
+  return item1->folder_id() != item2->folder_id() &&
+         !item1->position().EqualsOrBothInvalid(item2->position());
+}
+
 }  // namespace
 
 class AppListSyncableServiceTest : public AppListTestBase {
@@ -813,4 +843,94 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePositionNotExist) {
   model_updater()->AddItem((std::move(page_break_item)));
   EXPECT_TRUE(last_app_position.CreateAfter().Equals(
       model_updater()->GetFirstAvailablePosition()));
+}
+
+// Test that verifies app attributes are transferred to the existing app and to
+// to the app which will be installed later.
+TEST_F(AppListSyncableServiceTest, TransferItem) {
+  // Webstore app in this test is source app.
+  scoped_refptr<extensions::Extension> webstore =
+      MakeApp(kSomeAppName, extensions::kWebStoreAppId,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  service_->AddExtension(webstore.get());
+
+  // Chrome is an existing app to transfer attributes to.
+  scoped_refptr<extensions::Extension> chrome =
+      MakeApp(kSomeAppName, extension_misc::kChromeAppId,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  service_->AddExtension(chrome.get());
+
+  // Youtube is a future app to be installed.
+  scoped_refptr<extensions::Extension> youtube =
+      MakeApp(kSomeAppName, extension_misc::kYoutubeAppId,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+
+  // Webstore and Chrome items should exist now in sync and in model but not
+  // Youtube.
+  const app_list::AppListSyncableService::SyncItem* webstore_sync_item =
+      GetSyncItem(extensions::kWebStoreAppId);
+  const ChromeAppListItem* webstore_item =
+      model_updater()->FindItem(extensions::kWebStoreAppId);
+  ASSERT_TRUE(webstore_item);
+  ASSERT_TRUE(webstore_sync_item);
+
+  const app_list::AppListSyncableService::SyncItem* chrome_sync_item =
+      GetSyncItem(extension_misc::kChromeAppId);
+  const ChromeAppListItem* chrome_item =
+      model_updater()->FindItem(extension_misc::kChromeAppId);
+  ASSERT_TRUE(chrome_item);
+  ASSERT_TRUE(chrome_sync_item);
+
+  EXPECT_FALSE(GetSyncItem(extension_misc::kYoutubeAppId));
+  EXPECT_FALSE(model_updater()->FindItem(extension_misc::kYoutubeAppId));
+
+  // Modify Webstore app with non-default attributes.
+  model_updater()->SetItemPosition(extensions::kWebStoreAppId,
+                                   syncer::StringOrdinal("position"));
+  model_updater()->MoveItemToFolder(extensions::kWebStoreAppId, "folderid");
+  app_list_syncable_service()->SetPinPosition(extensions::kWebStoreAppId,
+                                              syncer::StringOrdinal("pin"));
+
+  // Before transfer attributes are different in both, app item and in sync.
+  EXPECT_TRUE(AreAllAppAtributesNotEqualInAppList(webstore_item, chrome_item));
+  EXPECT_TRUE(
+      AreAllAppAtributesNotEqualInSync(webstore_sync_item, chrome_sync_item));
+
+  // Perform attributes transfer to existing Chrome app.
+  EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
+      extensions::kWebStoreAppId, extension_misc::kChromeAppId));
+  // Perform attributes transfer to the future Youtube app.
+  EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
+      extensions::kWebStoreAppId, extension_misc::kYoutubeAppId));
+  // No sync item is created due to transfer to the future app.
+  EXPECT_FALSE(GetSyncItem(extension_misc::kYoutubeAppId));
+  // Attributes transfer from non-existing app fails.
+  EXPECT_FALSE(app_list_syncable_service()->TransferItemAttributes(
+      extension_misc::kCameraAppId, extension_misc::kYoutubeAppId));
+
+  // Now Chrome app attributes match Webstore app.
+  EXPECT_TRUE(AreAllAppAtributesEqualInAppList(webstore_item, chrome_item));
+  EXPECT_TRUE(
+      AreAllAppAtributesEqualInSync(webstore_sync_item, chrome_sync_item));
+
+  // Install Youtube now.
+  service_->AddExtension(youtube.get());
+
+  const app_list::AppListSyncableService::SyncItem* youtube_sync_item =
+      GetSyncItem(extension_misc::kYoutubeAppId);
+  const ChromeAppListItem* youtube_item =
+      model_updater()->FindItem(extension_misc::kYoutubeAppId);
+  ASSERT_TRUE(youtube_item);
+  ASSERT_TRUE(youtube_sync_item);
+
+  // Note, attributes are not transferred inline for pending app.
+  EXPECT_TRUE(AreAllAppAtributesNotEqualInAppList(webstore_item, youtube_item));
+  EXPECT_TRUE(
+      AreAllAppAtributesNotEqualInSync(webstore_sync_item, youtube_sync_item));
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(AreAllAppAtributesEqualInAppList(webstore_item, youtube_item));
+  EXPECT_TRUE(
+      AreAllAppAtributesEqualInSync(webstore_sync_item, youtube_sync_item));
 }
