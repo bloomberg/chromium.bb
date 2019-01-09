@@ -122,6 +122,15 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     return cursor_;
   }
 
+  gfx::Size GetMinimumSize() const override {
+    aura::Window* window = GetNativeWindow();
+    if (window && remove_standard_frame_ &&
+        window->GetProperty(aura::client::kMinimumSize)) {
+      return *window->GetProperty(aura::client::kMinimumSize);
+    }
+    return views::NativeWidgetAura::GetMinimumSize();
+  }
+
  private:
   const bool remove_standard_frame_;
 

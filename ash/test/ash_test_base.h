@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
@@ -111,6 +113,11 @@ class AshTestBase : public testing::Test {
       views::WidgetDelegate* delegate = nullptr,
       int container_id = kShellWindowId_DefaultContainer,
       const gfx::Rect& bounds = gfx::Rect());
+
+  // Returns the set of properties for creating a proxy window.
+  std::map<std::string, std::vector<uint8_t>> CreatePropertiesForProxyWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL);
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
