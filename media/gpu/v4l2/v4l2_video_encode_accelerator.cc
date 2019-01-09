@@ -294,7 +294,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       base::Bind(&Client::RequireBitstreamBuffers, client_, kInputBufferCount,
                  image_processor_.get()
                      ? image_processor_->input_layout().coded_size()
-                     : device_input_layout_->coded_size(),
+                     : input_allocated_size_,
                  output_buffer_byte_size_));
   return true;
 }
@@ -1242,6 +1242,10 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
                  << device_input_layout_->coded_size().ToString();
         return false;
       }
+      // TODO(crbug.com/914700): Remove this once
+      // Client::RequireBitstreamBuffers uses input's VideoFrameLayout to
+      // allocate input buffer.
+      input_allocated_size_ = V4L2Device::AllocatedSizeFromV4L2Format(format);
       return true;
     }
   }
