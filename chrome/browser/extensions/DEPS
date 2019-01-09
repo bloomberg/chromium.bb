@@ -2,6 +2,7 @@ include_rules = [
   "+extensions/strings/grit/extensions_strings.h",
   "+services/network/public/mojom",
   "+services/network/session_cleanup_cookie_store.h",
+  "+third_party/ink/grit",
   "+ui/base",
 
   # For access to testing command line switches.

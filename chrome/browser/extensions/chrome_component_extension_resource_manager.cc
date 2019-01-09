@@ -14,6 +14,7 @@
 #include "chrome/grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "third_party/ink/grit/ink_resources.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/keyboard/resources/keyboard_resource_util.h"
@@ -35,6 +36,10 @@ ChromeComponentExtensionResourceManager() {
 #if defined(OS_CHROMEOS)
     {"chrome_app/chrome_app_icon_32.png", IDR_CHROME_APP_ICON_32},
     {"chrome_app/chrome_app_icon_192.png", IDR_CHROME_APP_ICON_192},
+    {"pdf/ink/ink_lib_binary.js", IDR_INK_LIB_BINARY_JS},
+    {"pdf/ink/glcore_base.wasm", IDR_INK_GLCORE_BASE_WASM},
+    {"pdf/ink/glcore_wasm_bootstrap_compiled.js",
+     IDR_INK_GLCORE_WASM_BOOTSTRAP_COMPILED_JS},
 #endif
   };
 
