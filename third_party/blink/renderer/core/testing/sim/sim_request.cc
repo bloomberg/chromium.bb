@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_network.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -16,16 +14,11 @@ SimRequestBase::SimRequestBase(String url,
                                String mime_type,
                                bool start_immediately)
     : url_(url),
+      mime_type_(mime_type),
       start_immediately_(start_immediately),
       started_(false),
       client_(nullptr),
       total_encoded_data_length_(0) {
-  KURL full_url(url);
-  WebURLResponse response(full_url);
-  response.SetMIMEType(mime_type);
-  response.SetHTTPStatusCode(200);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(full_url,
-                                                              response, "");
   SimNetwork::Current().AddRequest(*this);
 }
 
@@ -110,7 +103,6 @@ void SimRequestBase::Complete(const Vector<char>& data) {
 void SimRequestBase::Reset() {
   started_ = false;
   client_ = nullptr;
-  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(KURL(url_));
   SimNetwork::Current().RemoveRequest(*this);
 }
 

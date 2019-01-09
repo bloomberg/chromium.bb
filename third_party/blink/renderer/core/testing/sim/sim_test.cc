@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -61,11 +62,15 @@ void SimTest::SetUp() {
   page_.SetPage(WebView().GetPage());
 }
 
-void SimTest::LoadURL(const String& url) {
-  auto navigation_params = std::make_unique<WebNavigationParams>();
-  navigation_params->request = WebURLRequest(KURL(url));
-  WebView().MainFrameImpl()->CommitNavigation(std::move(navigation_params),
-                                              nullptr /* extra_data */);
+void SimTest::LoadURL(const String& url_string) {
+  KURL url(url_string);
+  frame_test_helpers::LoadFrameDontWait(WebView().MainFrameImpl(), url);
+  if (DocumentLoader::WillLoadUrlAsEmpty(url) || url.ProtocolIsData()) {
+    // Empty documents and data urls are not using mocked out SimRequests,
+    // but instead load data directly.
+    frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+        WebView().MainFrameImpl());
+  }
 }
 
 LocalDOMWindow& SimTest::Window() {
