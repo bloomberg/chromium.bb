@@ -1197,7 +1197,7 @@ test("browser_tests") {
         sources += [
           "../browser/ui/views/extensions/request_file_system_dialog_browsertest.cc",
           "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
-          "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc",
+          "//third_party/liblouis/wasm/liblouis_wrapper_browsertest.cc",
         ]
         deps += [ "//chrome/browser/chromeos" ]
         data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
