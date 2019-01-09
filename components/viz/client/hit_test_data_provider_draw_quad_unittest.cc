@@ -50,7 +50,7 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
   surface_quad->SetNew(
       pass->shared_quad_state_list.back(), child_rect, child_rect,
       SurfaceRange(fallback_child_surface_id, child_surface_id), SK_ColorWHITE,
-      false);
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
 
   return pass;
 }

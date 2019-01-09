@@ -144,10 +144,11 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
                                        device_viewport_size_);
 
     auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                         gfx::Rect(child_size), gfx::Rect(child_size),
-                         SurfaceRange(base::nullopt, child_surface_id),
-                         SK_ColorWHITE, false);
+    surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, child_surface_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
@@ -237,20 +238,22 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                        device_viewport_size_);
 
     auto* left_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                              gfx::Rect(child_size), gfx::Rect(child_size),
-                              SurfaceRange(base::nullopt, left_child_id),
-                              SK_ColorWHITE, false);
+    left_surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, left_child_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
                                        device_viewport_size_);
 
     auto* right_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                               gfx::Rect(child_size), gfx::Rect(child_size),
-                               SurfaceRange(base::nullopt, right_child_id),
-                               SK_ColorWHITE, false);
+    right_surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, right_child_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     auto root_frame =
         CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();

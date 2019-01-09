@@ -43,6 +43,10 @@ base::Optional<HitTestRegionList> HitTestDataProviderDrawQuad::GetHitTestData(
         const SurfaceDrawQuad* surface_quad =
             SurfaceDrawQuad::MaterialCast(quad);
 
+        // Skip the quad if it has pointer-events:none set.
+        if (surface_quad->ignores_input_event)
+          continue;
+
         // Skip the quad if the FrameSinkId between fallback and primary is not
         // the same, because we don't know which FrameSinkId would be used to
         // draw this quad.

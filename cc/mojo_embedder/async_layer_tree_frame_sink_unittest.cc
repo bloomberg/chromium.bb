@@ -251,7 +251,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
                   /*visible_rect=*/rect3_0,
                   viz::SurfaceRange(base::nullopt, child_surface_id),
                   SK_ColorBLACK,
-                  /*stretch_content_to_fill_bounds=*/false);
+                  /*stretch_content_to_fill_bounds=*/false,
+                  /*ignores_input_event=*/false);
   pass_list.push_back(std::move(pass3_0));
 
   auto pass3_1 = viz::RenderPass::Create();
@@ -324,7 +325,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
                   /*visible_rect=*/rect2_0,
                   viz::SurfaceRange(base::nullopt, child_surface_id),
                   SK_ColorBLACK,
-                  /*stretch_content_to_fill_bounds=*/false);
+                  /*stretch_content_to_fill_bounds=*/false,
+                  /*ignores_input_event=*/false);
   pass_list.push_back(std::move(pass2_0));
 
   auto pass2_1 = viz::RenderPass::Create();

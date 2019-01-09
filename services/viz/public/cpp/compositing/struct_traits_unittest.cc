@@ -794,7 +794,7 @@ TEST_F(StructTraitsTest, RenderPass) {
           base::nullopt,
           SurfaceId(FrameSinkId(1337, 1234),
                     LocalSurfaceId(1234, base::UnguessableToken::Create()))),
-      SK_ColorYELLOW, false);
+      SK_ColorYELLOW, false, false);
 
   std::unique_ptr<RenderPass> output;
   mojo::test::SerializeAndDeserialize<mojom::RenderPass>(&input, &output);
@@ -939,7 +939,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   primary_surface_quad->SetNew(
       sqs, rect3, rect3, SurfaceRange(fallback_surface_id, primary_surface_id),
-      SK_ColorBLUE, false);
+      SK_ColorBLUE, false, false);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
