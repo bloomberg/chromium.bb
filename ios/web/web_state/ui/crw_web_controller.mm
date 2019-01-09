@@ -1290,7 +1290,10 @@ GURL URLEscapedForHistory(const GURL& url) {
       !IsWKInternalUrl(newURL) && !newURL.SchemeIs(url::kAboutScheme) &&
       _webView) {
     GURL documentOrigin = newURL.GetOrigin();
-    GURL committedOrigin = _webStateImpl->GetLastCommittedURL().GetOrigin();
+    web::NavigationItem* committedItem =
+        _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
+    GURL committedOrigin =
+        committedItem ? committedItem->GetURL().GetOrigin() : GURL::EmptyGURL();
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
 
