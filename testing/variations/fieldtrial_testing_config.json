@@ -1840,21 +1840,6 @@
             ]
         }
     ],
-    "ExtendedShellExtensionsEnumeration": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ExtendedShellExtensionsEnumeration"
-                    ]
-                }
-            ]
-        }
-    ],
     "ExtensionContentVerification": [
         {
             "platforms": [

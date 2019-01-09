@@ -212,9 +212,6 @@ void EnumerateShellExtensionsOnBlockingSequence(
 const wchar_t kApprovedShellExtensionRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
 
-const base::Feature kExtendedShellExtensionsEnumeration{
-    "ExtendedShellExtensionsEnumeration", base::FEATURE_DISABLED_BY_DEFAULT};
-
 void EnumerateShellExtensions(
     OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
     base::OnceClosure on_enumeration_finished) {
@@ -236,13 +233,10 @@ void EnumerateShellExtensionPaths(
 
   ReadApprovedShellExtensions(HKEY_LOCAL_MACHINE, callback);
   ReadApprovedShellExtensions(HKEY_CURRENT_USER, callback);
-
-  if (base::FeatureList::IsEnabled(kExtendedShellExtensionsEnumeration)) {
-    ReadColumnHandlers(callback);
-    ReadCopyHookHandlers(callback);
-    ReadDragDropHandlers(callback);
-    ReadContextMenuAndPropertySheetHandlers(callback);
-  }
+  ReadColumnHandlers(callback);
+  ReadCopyHookHandlers(callback);
+  ReadDragDropHandlers(callback);
+  ReadContextMenuAndPropertySheetHandlers(callback);
 }
 
 }  // namespace internal
