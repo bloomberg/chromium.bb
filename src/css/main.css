@@ -537,7 +537,7 @@ body.mirror:not(.capturing) #preview-video {
   opacity: 0.5;
 }
 
-body:not(.grid) #preview-grid {
+body:not(.grid):not(.gridsettings) #preview-grid {
   visibility: hidden;
   /* Delay invisibility for grid animating-out. */
   transition: visibility 500ms;
@@ -572,16 +572,20 @@ body._4x4 #preview-grid-horizontal:before {
   content: '';
 }
 
-body.grid._3x3 #preview-grid-horizontal {
+body.grid._3x3 #preview-grid-horizontal,
+body.gridsettings._3x3 #preview-grid-horizontal {
   height: 33.333%;
 }
 
-body.grid.golden #preview-grid-horizontal {
+body.grid.golden #preview-grid-horizontal,
+body.gridsettings.golden #preview-grid-horizontal {
   height: 23.607%;
 }
 
 body.grid._4x4 #preview-grid-horizontal,
-body.grid._4x4 #preview-grid-horizontal:before {
+body.grid._4x4 #preview-grid-horizontal:before,
+body.gridsettings._4x4 #preview-grid-horizontal,
+body.gridsettings._4x4 #preview-grid-horizontal:before {
   height: 50%;
 }
 
@@ -606,16 +610,20 @@ body._4x4 #preview-grid-vertical:before {
   content: '';
 }
 
-body.grid._3x3 #preview-grid-vertical {
+body.grid._3x3 #preview-grid-vertical,
+body.gridsettings._3x3 #preview-grid-vertical {
   width: 33.333%;
 }
 
-body.grid.golden #preview-grid-vertical {
+body.grid.golden #preview-grid-vertical,
+body.gridsettings.golden #preview-grid-vertical {
   width: 23.607%;
 }
 
 body.grid._4x4 #preview-grid-vertical,
-body.grid._4x4 #preview-grid-vertical:before {
+body.grid._4x4 #preview-grid-vertical:before,
+body.gridsettings._4x4 #preview-grid-vertical,
+body.gridsettings._4x4 #preview-grid-vertical:before {
   width: 50%;
 }
 
