@@ -996,6 +996,13 @@ class ChromeSDKCommand(command.CliCommand):
     if options.internal:
       gn_args['is_chrome_branded'] = True
       gn_args['is_official_build'] = True
+
+      # TODO(https://crbug.com/917504): We'd like to use lld for all
+      # configurations. However, it appears that there's a bug in how it emits
+      # unwinding info on ARM, and we emit unwind info on builds that aren't
+      # both official and branded. Until that bug is fixed, our use of lld has
+      # to be restricted to builds where we don't emit unwinding info.
+      gn_args['use_lld'] = True
     else:
       gn_args.pop('is_chrome_branded', None)
       gn_args.pop('is_official_build', None)
