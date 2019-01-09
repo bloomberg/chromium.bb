@@ -43,10 +43,8 @@ def main(argv):
     manifest = json.load(f)
 
   if args.canary:
-    manifest['name'] += ' (Canary)'
     output_manifest = CANARY_MANIFEST
   elif args.dev:
-    manifest['name'] += ' (Dev)'
     output_manifest = DEV_MANIFEST
 
   manifest['version_name'] = (manifest['version'] +
