@@ -1,10 +1,27 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import {promiseForRequest, throwForDisallowedKey, promiseForTransaction} from './idb_utils.js';
+
 // TODOs/spec-noncompliances:
 // - Susceptible to tampering of built-in prototypes and globals. We want to
 //   work on tooling to ameliorate that.
 
 // TODO: Use private fields when those ship.
-const databaseName = new WeakMap();
-const databasePromise = new WeakMap();
+// In the meantime we use this hard-to-understand, but effective, pattern:
+// http://2ality.com/2016/01/private-data-classes.html#keeping-private-data-in-weakmaps
+// Of note, the weak map entries will live only as long as the corresponding StorageArea instances.
+//
+// Cheatsheet:
+// x.#y      <--->  _y.get(x)
+// x.#y = z  <--->  _y.set(x, z)
+
+const _databaseName = new WeakMap();
+const _databasePromise = new WeakMap();
+
+const DEFAULT_STORAGE_AREA_NAME = 'default';
+const DEFAULT_IDB_STORE_NAME = 'store';
 
 if (!self.isSecureContext) {
   throw new DOMException(
@@ -14,8 +31,8 @@ if (!self.isSecureContext) {
 
 export class StorageArea {
   constructor(name) {
-    databasePromise.set(this, null);
-    databaseName.set(this, `async-local-storage:${name}`);
+    _databasePromise.set(this, null);
+    _databaseName.set(this, `async-local-storage:${name}`);
   }
 
   async set(key, value) {
@@ -28,11 +45,7 @@ export class StorageArea {
         store.put(value, key);
       }
 
-      return new Promise((resolve, reject) => {
-        transaction.oncomplete = () => resolve();
-        transaction.onabort = () => reject(transaction.error);
-        transaction.onerror = () => reject(transaction.error);
-      });
+      return promiseForTransaction(transaction);
     });
   }
 
@@ -40,12 +53,7 @@ export class StorageArea {
     throwForDisallowedKey(key);
 
     return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      const request = store.get(key);
-
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
+      return promiseForRequest(store.get(key));
     });
   }
 
@@ -54,43 +62,34 @@ export class StorageArea {
 
     return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
       store.delete(key);
-
-      return new Promise((resolve, reject) => {
-        transaction.oncomplete = () => resolve();
-        transaction.onabort = () => reject(transaction.error);
-        transaction.onerror = () => reject(transaction.error);
-      });
+      return promiseForTransaction(transaction);
     });
   }
 
   async clear() {
-    if (!databasePromise.has(this)) {
-      return Promise.reject(new TypeError('Invalid this value'));
+    if (!_databasePromise.has(this)) {
+      throw new TypeError('Invalid this value');
     }
 
-    if (databasePromise.get(this) !== null) {
-      return databasePromise.get(this).then(
-          () => {
-            databasePromise.set(this, null);
-            return deleteDatabase(databaseName.get(this));
-          },
-          () => {
-            databasePromise.set(this, null);
-            return deleteDatabase(databaseName.get(this));
-          });
+    const databasePromise = _databasePromise.get(this);
+    if (databasePromise !== null) {
+      // Don't try to delete, and clear the promise, while we're opening the database; wait for that
+      // first.
+      try {
+        await databasePromise;
+      } catch {
+        // If the database failed to initialize, then that's fine, we'll still try to delete it.
+      }
+
+      _databasePromise.set(this, null);
     }
 
-    return deleteDatabase(databaseName.get(this));
+    return promiseForRequest(self.indexedDB.deleteDatabase(_databaseName.get(this)));
   }
 
   async keys() {
     return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      const request = store.getAllKeys(undefined);
-
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
+      return promiseForRequest(store.getAllKeys(undefined));
     });
   }
 
@@ -122,108 +121,61 @@ export class StorageArea {
   }
 
   get backingStore() {
-    if (!databasePromise.has(this)) {
+    if (!_databasePromise.has(this)) {
       throw new TypeError('Invalid this value');
     }
 
-    return {database: databaseName.get(this), store: 'store', version: 1};
+    return {
+      database: _databaseName.get(this),
+      store: DEFAULT_IDB_STORE_NAME,
+      version: 1,
+    };
   }
 }
 
-export const storage = new StorageArea('default');
+export const storage = new StorageArea(DEFAULT_STORAGE_AREA_NAME);
 
-function performDatabaseOperation(area, mode, steps) {
-  if (!databasePromise.has(area)) {
-    return Promise.reject(new TypeError('Invalid this value'));
+async function performDatabaseOperation(area, mode, steps) {
+  if (!_databasePromise.has(area)) {
+    throw new TypeError('Invalid this value');
   }
 
-  if (databasePromise.get(area) === null) {
+  if (_databasePromise.get(area) === null) {
     initializeDatabasePromise(area);
   }
 
-  return databasePromise.get(area).then(database => {
-    const transaction = database.transaction('store', mode);
-    const store = transaction.objectStore('store');
+  const database = await _databasePromise.get(area);
+  const transaction = database.transaction(DEFAULT_IDB_STORE_NAME, mode);
+  const store = transaction.objectStore(DEFAULT_IDB_STORE_NAME);
 
-    return steps(transaction, store);
-  });
+  return steps(transaction, store);
 }
 
 function initializeDatabasePromise(area) {
-  databasePromise.set(area, new Promise((resolve, reject) => {
-    const request = self.indexedDB.open(databaseName.get(area), 1);
+  _databasePromise.set(
+      area, new Promise((resolve, reject) => {
+        const request = self.indexedDB.open(_databaseName.get(area), 1);
 
-    request.onsuccess = () => {
-      const database = request.result;
-      database.onclose = () => databasePromise.set(area, null);
-      database.onversionchange = () => {
-        database.close();
-        databasePromise.set(area, null);
-      };
-      resolve(database);
-    };
+        request.onsuccess = () => {
+          const database = request.result;
+          database.onclose = () => _databasePromise.set(area, null);
+          database.onversionchange = () => {
+            database.close();
+            _databasePromise.set(area, null);
+          };
+          resolve(database);
+        };
 
-    request.onerror = () => reject(request.error);
+        request.onerror = () => reject(request.error);
 
-    request.onupgradeneeded = () => {
-      try {
-        request.result.createObjectStore('store');
-      } catch (e) {
-        reject(e);
-      }
-    };
-  }));
-}
-
-function isAllowedAsAKey(value) {
-  if (typeof value === 'number' || typeof value === 'string') {
-    return true;
-  }
-
-  if (Array.isArray(value)) {
-    return true;
-  }
-
-  if (isDate(value)) {
-    return true;
-  }
-
-  if (ArrayBuffer.isView(value)) {
-    return true;
-  }
-
-  if (isArrayBuffer(value)) {
-    return true;
-  }
-
-  return false;
-}
-
-function isDate(value) {
-  try {
-    Date.prototype.getTime.call(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const byteLengthGetter =
-    Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'byteLength').get;
-function isArrayBuffer(value) {
-  try {
-    byteLengthGetter.call(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function throwForDisallowedKey(key) {
-  if (!isAllowedAsAKey(key)) {
-    throw new DOMException(
-        'The given value is not allowed as a key', 'DataError');
-  }
+        request.onupgradeneeded = () => {
+          try {
+            request.result.createObjectStore(DEFAULT_IDB_STORE_NAME);
+          } catch (e) {
+            reject(e);
+          }
+        };
+      }));
 }
 
 function zip(a, b) {
@@ -233,12 +185,4 @@ function zip(a, b) {
   }
 
   return result;
-}
-
-function deleteDatabase(name) {
-  return new Promise((resolve, reject) => {
-    const request = self.indexedDB.deleteDatabase(name);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
 }

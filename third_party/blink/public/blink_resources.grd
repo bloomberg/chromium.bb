@@ -51,6 +51,7 @@
       <!-- Layered API scripts. Should be consistent with kLayeredAPIResources
            in renderer/core/script/layered_api.cc -->
       <include name="IDR_LAYERED_API_ASYNC_LOCAL_STORAGE_INDEX_JS" file="../renderer/core/script/resources/layered_api/async-local-storage/index.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_ASYNC_LOCAL_STORAGE_IDB_UTILS_JS" file="../renderer/core/script/resources/layered_api/async-local-storage/idb_utils.js" type="BINDATA" skip_minify="true"/>
       <include name="IDR_LAYERED_API_BLANK_INDEX_JS" file="../renderer/core/script/resources/layered_api/blank/index.js" type="BINDATA" skip_minify="true"/>
       <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/index.js" type="BINDATA" skip_minify="true"/>
       <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_ITEM_SOURCE_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/item-source.js" type="BINDATA" skip_minify="true"/>
