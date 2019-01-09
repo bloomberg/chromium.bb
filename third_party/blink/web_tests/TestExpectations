@@ -4278,6 +4278,8 @@ crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-0
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 
+crbug.com/917554 external/wpt/upgrade-insecure-requests/worker-subresource-fetch-upgrade.https.html [ Crash ]
+
 # Different results on try bots and CQ, skipped to unblock wpt import.
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-default-css.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-element.html [ Skip ]
