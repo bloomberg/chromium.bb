@@ -563,6 +563,15 @@ To test code that uses `base::ThreadTaskRunnerHandle`,
 [`base::test::ScopedTaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
 for the scope of the test.
 
+Tests can run the ScopedTaskEnvironment's message pump using a RunLoop, which
+can be made to run until Quit, or to execute ready-to-run tasks and immediately
+return.
+
+ScopedTaskEnvironment configures RunLoop::Run() to LOG(FATAL) if it hasn't been
+explicitly quit after TestTimeouts::action_timeout(). This is preferable to
+having the test hang if the code under test fails to trigger the RunLoop to
+quit. The timeout can be overridden with ScopedRunTimeoutForTest.
+
 ```cpp
 class MyTest : public testing::Test {
  public:

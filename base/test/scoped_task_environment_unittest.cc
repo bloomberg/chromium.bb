@@ -14,6 +14,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/mock_callback.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -364,6 +365,25 @@ TEST_F(ScopedTaskEnvironmentTest, LifetimeObserver) {
   ScopedTaskEnvironment::SetLifetimeObserver(nullptr);
 }
 
+TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
+  const RunLoop::ScopedRunTimeoutForTest* old_run_timeout =
+      RunLoop::ScopedRunTimeoutForTest::Current();
+
+  {
+    ScopedTaskEnvironment scoped_task_environment;
+
+    // ScopedTaskEnvironment should set a default Run() timeout that CHECKs if
+    // reached.
+    const RunLoop::ScopedRunTimeoutForTest* run_timeout =
+        RunLoop::ScopedRunTimeoutForTest::Current();
+    ASSERT_NE(run_timeout, old_run_timeout);
+    EXPECT_EQ(run_timeout->timeout(), TestTimeouts::action_max_timeout());
+    EXPECT_DEATH_IF_SUPPORTED({ run_timeout->on_timeout().Run(); }, "");
+  }
+
+  EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);
+}
+
 INSTANTIATE_TEST_CASE_P(
     MainThreadDefault,
     ScopedTaskEnvironmentTest,
@@ -532,6 +552,11 @@ TEST_P(ScopedTaskEnvironmentMockedTime, RunLoopDriveable) {
   // TestMockTimeTaskRunner::FastForwardUntilNoTasksRemain() is a better API to
   // do this, this is just done here for the purpose of extensively testing the
   // RunLoop approach).
+
+  // Disable Run() timeout here, otherwise we'll fast-forward to it before we
+  // reach the quit task.
+  RunLoop::ScopedRunTimeoutForTest disable_timeout{TimeDelta()};
+
   RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(), TimeDelta::FromDays(50));
