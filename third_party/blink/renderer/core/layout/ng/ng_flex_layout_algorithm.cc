@@ -22,12 +22,7 @@ namespace blink {
 NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)),
-      border_scrollbar_padding_(
-          CalculateBorderScrollbarPadding(ConstraintSpace(), Node())),
-      borders_(ComputeBorders(ConstraintSpace(), Style())),
-      padding_(ComputePadding(ConstraintSpace(), Style())),
-      is_column_(Style().IsColumnFlexDirection()) {
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -60,14 +55,22 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
 }
 
 scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
+  DCHECK(!NeedMinMaxSize(ConstraintSpace(), Style()))
+      << "Don't support that yet";
+
+  borders_ = ComputeBorders(ConstraintSpace(), Style());
+  padding_ = ComputePadding(ConstraintSpace(), Style());
   // TODO(dgrogan): Pass padding+borders as optimization.
   border_box_size_ = CalculateBorderBoxSize(ConstraintSpace(), Node());
+  border_scrollbar_padding_ =
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   content_box_size_ =
       ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
   FlexLayoutAlgorithm algorithm(&Style(), line_break_length);
-  const bool is_horizontal_flow = algorithm.IsHorizontalFlow();
+  bool is_column = Style().IsColumnFlexDirection();
+  bool is_horizontal_flow = algorithm.IsHorizontalFlow();
 
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
@@ -197,7 +200,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   LayoutUnit main_axis_offset = border_scrollbar_padding_.inline_start;
   LayoutUnit cross_axis_offset = border_scrollbar_padding_.block_start;
-  if (is_column_) {
+  if (is_column) {
     main_axis_offset = border_scrollbar_padding_.block_start;
     cross_axis_offset = border_scrollbar_padding_.inline_start;
   }
@@ -222,7 +225,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                                               &space_builder);
 
       NGLogicalSize available_size;
-      if (is_column_) {
+      if (is_column) {
         available_size.inline_size = content_box_size_.inline_size;
         available_size.block_size = flex_item.flexed_content_size +
                                     flex_item.main_axis_border_and_padding;
@@ -253,8 +256,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         std::max(max_main_axis_extent, line->main_axis_extent);
   }
   LayoutUnit intrinsic_block_content_size =
-      is_column_ ? max_main_axis_extent
-                 : cross_axis_offset - border_scrollbar_padding_.block_start;
+      is_column ? max_main_axis_extent
+                : cross_axis_offset - border_scrollbar_padding_.block_start;
   LayoutUnit intrinsic_block_size =
       intrinsic_block_content_size + border_scrollbar_padding_.BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
@@ -265,7 +268,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   // container-specific local variables into data members.
   LayoutUnit final_content_cross_size =
       block_size - border_scrollbar_padding_.BlockSum();
-  if (is_column_) {
+  if (is_column) {
     final_content_cross_size =
         border_box_size_.inline_size - border_scrollbar_padding_.InlineSum();
   }
@@ -290,7 +293,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         NGLogicalSize available_size(flex_item.flexed_content_size +
                                          flex_item.main_axis_border_and_padding,
                                      flex_item.cross_axis_size);
-        if (is_column_)
+        if (is_column)
           available_size.Flip();
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(content_box_size_);
@@ -322,55 +325,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
 base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  MinMaxSize sizes;
-  if (Node().ShouldApplySizeContainment()) {
-    // TODO(dgrogan): When this code was written it didn't make any more tests
-    // pass, so it may be wrong or untested.
-    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-      sizes = border_scrollbar_padding_.InlineSum();
-    return sizes;
-  }
-
-  for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
-       generic_child = generic_child.NextSibling()) {
-    NGBlockNode child = ToNGBlockNode(generic_child);
-    if (child.IsOutOfFlowPositioned())
-      continue;
-    // Use default MinMaxSizeInput:
-    //   - Children of flexbox ignore any specified float properties, so
-    //     children never have to take floated siblings into account, and
-    //     external floats don't make it through the new formatting context that
-    //     flexbox establishes.
-    //   - We want the child's border box MinMaxSize, which is the default.
-    MinMaxSize child_min_max_sizes =
-        ComputeMinAndMaxContentContribution(Style(), child, MinMaxSizeInput());
-    NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
-    child_min_max_sizes += child_margins.InlineSum();
-    if (is_column_) {
-      sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
-      sizes.max_size = std::max(sizes.max_size, child_min_max_sizes.max_size);
-    } else {
-      sizes.max_size += child_min_max_sizes.max_size;
-      if (IsMultiline())
-        sizes.min_size = std::max(sizes.min_size, child_min_max_sizes.min_size);
-      else
-        sizes.min_size += child_min_max_sizes.min_size;
-    }
-  }
-  sizes.max_size = std::max(sizes.max_size, sizes.min_size);
-
-  // Due to negative margins, it is possible that we calculated a negative
-  // intrinsic width. Make sure that we never return a negative width.
-  sizes.Encompass(LayoutUnit());
-
-  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    sizes += border_scrollbar_padding_.InlineSum();
-
-  return sizes;
-}
-
-bool NGFlexLayoutAlgorithm::IsMultiline() const {
-  return Style().FlexWrap() != EFlexWrap::kNowrap;
+  // TODO(dgrogan): Implement this.
+  return base::nullopt;
 }
 
 }  // namespace blink
