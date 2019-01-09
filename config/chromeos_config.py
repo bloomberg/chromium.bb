@@ -719,8 +719,17 @@ def GeneralTemplates(site_config, ge_build_config):
       upload_symbols=False,
   )
 
+  # This should be used by any "workspace_builders."
   site_config.AddTemplate(
-      'firmware_base',
+      'workspace',
+      postsync_patch=False,
+  )
+
+  # Requires that you set boards, and workspace_branch.
+  site_config.AddTemplate(
+      'firmwarebranch',
+      site_config.templates.release,
+      site_config.templates.workspace,
       display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
       images=[],
       hwqual=False,
@@ -730,8 +739,6 @@ def GeneralTemplates(site_config, ge_build_config):
       sync_chrome=False,
       chrome_sdk=False,
       unittests=False,
-      hw_tests=[],
-      hw_tests_override=None,
       dev_installer_prebuilts=False,
       upload_hw_test_artifacts=False,
       upload_symbols=False,
@@ -739,30 +746,17 @@ def GeneralTemplates(site_config, ge_build_config):
       signer_tests=False,
       paygen=False,
       image_test=False,
-      sign_types=['firmware'],
-  )
-
-  site_config.AddTemplate(
-      'firmware',
-      site_config.templates.release,
-      site_config.templates.firmware_base,
-      description='Firmware Canary',
       manifest=constants.DEFAULT_MANIFEST,
       afdo_use=False,
-  )
-
-  site_config.AddTemplate(
-      'depthcharge_firmware',
-      site_config.templates.firmware,
-      useflags=config_lib.append_useflags(['depthcharge']))
-
-  site_config.AddTemplate(
-      'depthcharge_full_firmware',
-      site_config.templates.full,
-      site_config.templates.internal,
-      site_config.templates.firmware_base,
-      useflags=config_lib.append_useflags(['depthcharge']),
-      description='Firmware Informational',
+      sign_types=['firmware', 'accessory_rwsig'],
+      build_type=constants.GENERIC_TYPE,
+      uprev=True,
+      overlays=constants.BOTH_OVERLAYS,
+      push_overlays=constants.BOTH_OVERLAYS,
+      builder_class_name='workspace_builders.FirmwareBranchBuilder',
+      build_timeout=6*60 * 60,
+      description='TOT builder to build a firmware branch.',
+      doc='https://goto.google.com/tot-for-firmware-branches',
   )
 
   site_config.AddTemplate(
@@ -811,12 +805,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'moblab_vm_tests',
       moblab_vm_tests=[
           config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE)],
-  )
-
-  # This should be used by any "workspace_builders."
-  site_config.AddTemplate(
-      'workspace',
-      postsync_patch=False,
   )
 
   site_config.AddTemplate(
@@ -2763,7 +2751,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def FirmwareBuilders(site_config, boards_dict, ge_build_config):
+def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   """Create all firmware build configs.
 
   Args:
@@ -2772,56 +2760,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-
-  _firmware_boards = (chromeos_boards.arm_internal_release_boards
-                      | chromeos_boards.x86_internal_release_boards)
-
-  _x86_depthcharge_firmware_boards = frozenset([
-      'link',
-  ])
-
-  # Add x86 and arm firmware configs.
-  for board in _firmware_boards:
-    site_config.Add(
-        '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
-        site_config.templates.firmware,
-        board_configs[board],
-        site_config.templates.no_vmtest_builder,
-    )
-
-  for board in _x86_depthcharge_firmware_boards:
-    site_config.Add(
-        '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
-        site_config.templates.depthcharge_firmware,
-        board_configs[board],
-        site_config.templates.no_vmtest_builder,
-    )
-    site_config.Add(
-        '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
-                         config_lib.CONFIG_TYPE_FIRMWARE),
-        site_config.templates.depthcharge_full_firmware,
-        board_configs[board],
-        site_config.templates.no_vmtest_builder,
-    )
-
-  # Requires that you set boards, and workspace_branch.
-  site_config.AddTemplate(
-      'firmwarebranch',
-      site_config.templates.firmware,
-      site_config.templates.workspace,
-      sign_types=['firmware', 'accessory_rwsig'],
-      build_type=constants.GENERIC_TYPE,
-      uprev=True,
-      overlays=constants.BOTH_OVERLAYS,
-      push_overlays=constants.BOTH_OVERLAYS,
-      builder_class_name='workspace_builders.FirmwareBranchBuilder',
-      build_timeout=6*60 * 60,
-      description='TOT builder to build a firmware branch.',
-      doc='https://goto.google.com/tot-for-firmware-branches',
-  )
-
   # Defines "interval", "branch", "boards" for firmwarebranch builds.
   #
   # Intervals:

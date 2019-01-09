@@ -788,22 +788,7 @@ def GeneralTemplates(site_config, ge_build_config):
   # END Factory
 
   # BEGIN Firmware
-  site_config.templates.firmware_base.apply(
-      site_config.templates.no_vmtest_builder,
-  )
-
-  site_config.templates.firmware.apply(
-      # site_config.templates.default_hw_tests_override,
-      site_config.templates.no_vmtest_builder,
-  )
-
-  site_config.templates.depthcharge_firmware.apply(
-      # site_config.templates.default_hw_tests_override,
-      site_config.templates.no_vmtest_builder,
-  )
-
-  site_config.templates.depthcharge_full_firmware.apply(
-      # site_config.templates.default_hw_tests_override,
+  site_config.templates.firmwarebranch.apply(
       site_config.templates.no_vmtest_builder,
   )
   # END Firmware
