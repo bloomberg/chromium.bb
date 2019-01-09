@@ -201,19 +201,19 @@ then calls into the HttpStreamFactory to request an HttpStream to the server.
 
 Summary:
 
-* HttpStreamFactory creates an HttpStreamFactoryImpl::Job.
-* HttpStreamFactoryImpl::Job calls into the TransportClientSocketPool to
+* HttpStreamFactory creates an HttpStreamFactory::Job.
+* HttpStreamFactory::Job calls into the TransportClientSocketPool to
 populate an ClientSocketHandle.
 * TransportClientSocketPool has no idle sockets, so it creates a
 TransportConnectJob and starts it.
 * TransportConnectJob creates a StreamSocket and establishes a connection.
 * TransportClientSocketPool puts the StreamSocket in the ClientSocketHandle,
-and calls into HttpStreamFactoryImpl::Job.
-* HttpStreamFactoryImpl::Job creates an HttpBasicStream, which takes
+and calls into HttpStreamFactory::Job.
+* HttpStreamFactory::Job creates an HttpBasicStream, which takes
 ownership of the ClientSocketHandle.
 * It returns the HttpBasicStream to the HttpNetworkTransaction.
 
-The HttpStreamFactoryImpl::Job creates a ClientSocketHandle to hold a socket,
+The HttpStreamFactory::Job creates a ClientSocketHandle to hold a socket,
 once connected, and passes it into the ClientSocketPoolManager. The
 ClientSocketPoolManager assembles the TransportSocketParams needed to
 establish the connection and creates a group name ("host:port") used to
@@ -229,7 +229,7 @@ actual DNS lookup by calling into the HostResolverImpl, if needed, and then
 finally establishes a connection.
 
 Once the socket is connected, ownership of the socket is passed to the
-ClientSocketHandle. The HttpStreamFactoryImpl::Job is then informed the
+ClientSocketHandle. The HttpStreamFactory::Job is then informed the
 connection attempt succeeded, and it then creates an HttpBasicStream, which
 takes ownership of the ClientSocketHandle. It then passes ownership of the
 HttpBasicStream back to the HttpNetworkTransaction.
@@ -307,7 +307,7 @@ socket slot.
 A sample of the object relationships involved in the above process is
 diagramed here: 
 
-![Object Relationship Diagram for URLRequest lifetime](url_request.svg)
+![Object Relationship Diagram for URLRequest lifetime](url_request.png)
 
 There are a couple of points in the above diagram that do not come
 clear visually:
@@ -453,7 +453,7 @@ The relationships between the important classes in the socket pools is
 shown diagrammatically for the lowest layer socket pool
 (TransportSocketPool) below. 
 
-![Object Relationship Diagram for Socket Pools](pools.svg)
+![Object Relationship Diagram for Socket Pools](pools.png)
 
 The ClientSocketPoolBase is a template class templatized on the class
 containing the parameters for the appropriate type of socket (in this
@@ -484,7 +484,7 @@ TransportSocketPool to establish a TCP connection.
 
 Once a connection is established by the lower layered pool, the SSLConnectJob
 then starts SSL negotiation. Once that's done, the SSL socket is passed back to
-the HttpStreamFactoryImpl::Job that initiated the request, and things proceed
+the HttpStreamFactory::Job that initiated the request, and things proceed
 just as with HTTP. When complete, the socket is returned to the
 SSLClientSocketPool.
 
@@ -497,7 +497,7 @@ SSLSocketPool between the the HttpProxyClientSocketPool and the
 TransportSocketPool, since they can talk SSL to both the proxy and the
 destination server, layered on top of each other.
 
-The first step the HttpStreamFactoryImpl::Job performs, just before calling
+The first step the HttpStreamFactory::Job performs, just before calling
 into the ClientSocketPoolManager to create a socket, is to pass the URL to the
 Proxy service to get an ordered list of proxies (if any) that should be tried
 for that URL.  Then when the ClientSocketPoolManager tries to get a socket for
@@ -509,7 +509,7 @@ pool.
 ### HTTP/2 (Formerly SPDY)
 
 HTTP/2 negotation is performed as part of the SSL handshake, so when
-HttpStreamFactoryImpl::Job gets a socket, it may have HTTP/2 negotiated over it
+HttpStreamFactory::Job gets a socket, it may have HTTP/2 negotiated over it
 as well. When it gets a socket with HTTP/2 negotiated as well, the Job creates a
 SpdySession using the socket and a SpdyHttpStream on top of the SpdySession.
 The SpdyHttpStream will be passed to the HttpNetworkTransaction, which drives
@@ -519,7 +519,7 @@ The SpdySession will be shared with other Jobs connecting to the same server,
 and future Jobs will find the SpdySession before they try to create a
 connection. HttpServerProperties also tracks which servers supported HTTP/2 when
 we last talked to them. We only try to establish a single connection to servers
-we think speak HTTP/2 when multiple HttpStreamFactoryImpl::Jobs are trying to
+we think speak HTTP/2 when multiple HttpStreamFactory::Jobs are trying to
 connect to them, to avoid wasting resources.
 
 ### QUIC
@@ -528,9 +528,9 @@ QUIC works quite a bit differently from HTTP/2. Servers advertise QUIC support
 with an "Alternate-Protocol" HTTP header in their responses.
 HttpServerProperties then tracks servers that have advertised QUIC support.
 
-When a new request comes in to HttpStreamFactoryImpl for a connection to a
+When a new request comes in to HttpStreamFactory for a connection to a
 server that has advertised QUIC support in the past, it will create a second
-HttpStreamFactoryImpl::Job for QUIC, which returns an QuicHttpStream on success.
+HttpStreamFactory::Job for QUIC, which returns an QuicHttpStream on success.
 The two Jobs (One for QUIC, one for all versions of HTTP) will be raced against
 each other, and whichever successfully creates an HttpStream first will be used.
 

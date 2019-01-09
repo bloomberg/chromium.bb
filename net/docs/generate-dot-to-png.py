@@ -14,9 +14,10 @@ import subprocess
 
 def main():
   for dot_filename in glob.glob("*.dot"):
-    svg_filename = os.path.splitext(dot_filename)[0] + ".svg"
-    print "Generating %s from %s" % (svg_filename, dot_filename)
-    subprocess.check_call(["dot", "-Tsvg", dot_filename, "-o", svg_filename])
+    png_filename = os.path.splitext(dot_filename)[0] + ".png"
+    print "Generating %s from %s" % (png_filename, dot_filename)
+    subprocess.check_call(["dot", "-Tpng", dot_filename, "-o", png_filename])
+    subprocess.check_call(["optipng", png_filename])
 
 
 if __name__ == "__main__":
