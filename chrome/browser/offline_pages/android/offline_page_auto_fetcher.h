@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_AUTO_FETCHER_H_
-#define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_AUTO_FETCHER_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_AUTO_FETCHER_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_AUTO_FETCHER_H_
 
 #include <memory>
 #include <queue>
@@ -26,8 +26,7 @@ class OfflinePageAutoFetcher : public chrome::mojom::OfflinePageAutoFetcher {
  public:
   explicit OfflinePageAutoFetcher(content::RenderFrameHost* render_frame_host);
   ~OfflinePageAutoFetcher() override;
-  void TrySchedule(bool user_requested,
-                   TryScheduleCallback callback) override;
+  void TrySchedule(bool user_requested, TryScheduleCallback callback) override;
   void CancelSchedule() override;
 
   static void Create(chrome::mojom::OfflinePageAutoFetcherRequest request,
@@ -44,4 +43,4 @@ class OfflinePageAutoFetcher : public chrome::mojom::OfflinePageAutoFetcher {
 
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_AUTO_FETCHER_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_AUTO_FETCHER_H_

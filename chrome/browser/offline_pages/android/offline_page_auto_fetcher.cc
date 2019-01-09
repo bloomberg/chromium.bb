@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 
 #include <utility>
 
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service_factory.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "content/public/browser/render_frame_host.h"

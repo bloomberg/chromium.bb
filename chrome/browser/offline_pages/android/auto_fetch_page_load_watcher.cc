@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/auto_fetch_page_load_watcher.h"
+#include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher.h"
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
-#include "chrome/browser/offline_pages/offline_page_auto_fetcher_service_factory.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"

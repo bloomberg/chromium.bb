@@ -3097,6 +3097,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <ph name="DOMAIN_NAME"><ex>www.example.com</ex>%1$s</ph> and more sites
       </message>
 
+      <message name="IDS_OFFLINE_PAGES_AUTO_FETCH_READY_NOTIFICATION_TEXT" desc="Text inside a notification explaining that the page has been fetched and is ready to view. This is the subtext of the notification and appars below the web page title. When the notification is tapped, the page is opened in Chrome.">
+        Page is ready to view
+      </message>
+
       <!-- Offline indicator -->
       <message name="IDS_OFFLINE_INDICATOR_OFFLINE_TITLE" desc="Text to be displayed in the snackbar that lets the users know they are offline.">
         No connection

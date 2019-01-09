@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/auto_fetch_page_load_watcher.h"
+#include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
 
 #include <memory>
 #include <string>

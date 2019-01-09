@@ -60,6 +60,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Handles all browser-related Intents.
@@ -280,7 +281,8 @@ public class IntentHandler {
 
     @IntDef({TabOpenType.OPEN_NEW_TAB, TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB,
             TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB, TabOpenType.CLOBBER_CURRENT_TAB,
-            TabOpenType.BRING_TAB_TO_FRONT, TabOpenType.OPEN_NEW_INCOGNITO_TAB})
+            TabOpenType.BRING_TAB_TO_FRONT, TabOpenType.OPEN_NEW_INCOGNITO_TAB,
+            TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TabOpenType {
         int OPEN_NEW_TAB = 0;
@@ -292,8 +294,13 @@ public class IntentHandler {
         int BRING_TAB_TO_FRONT = 4;
         // Opens a new incognito tab.
         int OPEN_NEW_INCOGNITO_TAB = 5;
+        // Tab is reused only if the tab ID exists (tab ID is specified with the integer extra
+        // REUSE_TAB_MATCHING_ID_STRING), and if the tab matches the requested URL.
+        // Otherwise, the URL is opened in a new tab.
+        int REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB = 6;
 
         String BRING_TAB_TO_FRONT_STRING = "BRING_TAB_TO_FRONT";
+        String REUSE_TAB_MATCHING_ID_STRING = "REUSE_TAB_MATCHING_ID";
     }
 
     /**
@@ -727,6 +734,26 @@ public class IntentHandler {
     }
 
     /**
+     * Sets the Extra field 'EXTRA_HEADERS' on intent. If |extraHeaders| is empty or null,
+     * removes 'EXTRA_HEADERS' from intent.
+     *
+     * @param extraHeaders   A map containing the set of headers. May be null.
+     * @param intent         The intent to modify.
+     */
+    public static void setIntentExtraHeaders(
+            @Nullable Map<String, String> extraHeaders, Intent intent) {
+        if (extraHeaders == null || extraHeaders.isEmpty()) {
+            intent.removeExtra(Browser.EXTRA_HEADERS);
+        } else {
+            Bundle bundle = new Bundle();
+            for (Map.Entry<String, String> header : extraHeaders.entrySet()) {
+                bundle.putString(header.getKey(), header.getValue());
+            }
+            intent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        }
+    }
+
+    /**
      * Calls {@link #getExtraHeadersFromIntent(Intent, boolean)} with shouldLogHeaders as false.
      */
     public static String getExtraHeadersFromIntent(Intent intent) {
@@ -1013,6 +1040,12 @@ public class IntentHandler {
         if (appId == null
                 || IntentUtils.safeGetBooleanExtra(intent, Browser.EXTRA_CREATE_NEW_TAB, false)) {
             return TabOpenType.OPEN_NEW_TAB;
+        }
+
+        int tabId = IntentUtils.safeGetIntExtra(
+                intent, TabOpenType.REUSE_TAB_MATCHING_ID_STRING, Tab.INVALID_TAB_ID);
+        if (tabId != Tab.INVALID_TAB_ID) {
+            return TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB;
         }
 
         // Intents from chrome open in the same tab by default, all others only clobber
