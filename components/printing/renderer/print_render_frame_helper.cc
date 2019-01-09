@@ -346,7 +346,9 @@ bool IsPrintingNodeOrPdfFrame(const blink::WebLocalFrame* frame,
 }
 
 bool IsPrintingFrameset(const blink::WebLocalFrame* frame) {
-  return frame->GetDocument().Body().TagName().Equals("FRAMESET");
+  return frame->GetDocument().IsHTMLDocument() &&
+         !frame->GetDocument().Body().IsNull() &&
+         frame->GetDocument().Body().TagName().Equals("FRAMESET");
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
