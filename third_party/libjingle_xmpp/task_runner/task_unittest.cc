@@ -17,10 +17,10 @@
 #endif  // LIBJINGLE_XMPP_WIN
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
-#include "third_party/webrtc/rtc_base/arraysize.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
@@ -406,8 +406,7 @@ TEST(start_task_test, AbortShouldWake) {
 //  * When the next timeout task time, times out
 class TimeoutChangeTest : public sigslot::has_slots<> {
  public:
-  TimeoutChangeTest()
-    : task_count_(arraysize(stuck_tasks_)) {}
+  TimeoutChangeTest() : task_count_(base::size(stuck_tasks_)) {}
 
   // no need to delete any tasks; the task runner owns them
   ~TimeoutChangeTest() {}
@@ -462,7 +461,7 @@ class TimeoutChangeTest : public sigslot::has_slots<> {
 
  private:
   void OnTimeoutId(const int id) {
-    for (size_t i = 0; i < arraysize(stuck_tasks_); ++i) {
+    for (size_t i = 0; i < base::size(stuck_tasks_); ++i) {
       if (stuck_tasks_[i] && stuck_tasks_[i]->unique_id() == id) {
         task_count_--;
         stuck_tasks_[i] = NULL;

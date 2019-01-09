@@ -1,6 +1,7 @@
 include_rules = [
   "+base/logging.h",
   "+base/macros.h",
+  "+base/stl_util.h",
 ]
 
 specific_include_rules = {
