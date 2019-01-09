@@ -17,6 +17,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
@@ -81,6 +82,29 @@ class KeyboardLoadedWaiter : public ChromeKeyboardControllerClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(KeyboardLoadedWaiter);
 };
 
+class KeyboardOccludedBoundsChangeWaiter
+    : public ChromeKeyboardControllerClient::Observer {
+ public:
+  KeyboardOccludedBoundsChangeWaiter() {
+    ChromeKeyboardControllerClient::Get()->AddObserver(this);
+  }
+  ~KeyboardOccludedBoundsChangeWaiter() override {
+    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  // ChromeKeyboardControllerClient::Observer
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override {
+    run_loop_.QuitWhenIdle();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardOccludedBoundsChangeWaiter);
+};
+
 ui::InputMethod* GetInputMethod() {
   aura::Window* root_window = ChromeKeyboardControllerClient::Get()
                                   ->GetKeyboardWindow()
@@ -128,13 +152,19 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
   void MockEnableIMEInDifferentExtension(const std::string& url,
                                          const gfx::Rect& init_bounds) {
     DCHECK(!url.empty());
-    ChromeKeyboardControllerClient::Get()->set_virtual_keyboard_url_for_test(
-        GURL(url));
     auto* keyboard_controller = ChromeKeyboardControllerClient::Get();
+    keyboard_controller->set_virtual_keyboard_url_for_test(GURL(url));
     keyboard_controller->ReloadKeyboardIfNeeded();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
     keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
+
+    // SetBounds() of the keyboard window in this context will end up with
+    // invisible bounds so that the virtual keyboard isn't going to be visible
+    // in this context. We need to wait for the processing of this bounds
+    // change, otherwise further SetBounds invocations in
+    // FocusEditableNodeeAndShowKeyboard() will be ignored.
+    aura::test::WaitForAllChangesToComplete();
   }
 
  private:
@@ -278,9 +308,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
   ASSERT_GT(keyboard_height, 0);
   gfx::Rect test_bounds = controller->GetKeyboardWindow()->bounds();
   test_bounds.set_height(keyboard_height);
-  controller->GetKeyboardWindow()->SetBounds(test_bounds);
-  // Allow actions triggered by window bounds observers to complete.
-  base::RunLoop().RunUntilIdle();
+  {
+    // Waiter needs to be created before SetBounds() is invoked so that it can
+    // catch OnOccludedBoundsChanged event even before it starts waiting.
+    KeyboardOccludedBoundsChangeWaiter waiter;
+    controller->GetKeyboardWindow()->SetBounds(test_bounds);
+    // Wait for the keyboard bounds change has been processed.
+    waiter.Wait();
+  }
 
   // Non ime window should have smaller visible view port due to overlap with
   // virtual keyboard.
