@@ -212,6 +212,9 @@ class ChromotingInstance : public ClientUserInterface,
 
   void Disconnect();
 
+  void UpdateNetConfigAndConnect(const base::DictionaryValue& data);
+  void OnNetConfigUpdated(std::unique_ptr<base::DictionaryValue> data);
+
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,
                              const pp::VarDictionary& data);

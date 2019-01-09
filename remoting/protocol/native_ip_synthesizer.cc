@@ -5,8 +5,9 @@
 #include "remoting/protocol/native_ip_synthesizer.h"
 
 #include "base/logging.h"
-#include "build/build_config.h"
+#include "base/no_destructor.h"
 #include "net/base/sys_addrinfo.h"
+#include "remoting/protocol/rfc7050_ip_synthesizer.h"
 #include "third_party/webrtc/rtc_base/ipaddress.h"
 #include "third_party/webrtc/rtc_base/socketaddress.h"
 
@@ -16,8 +17,8 @@ namespace protocol {
 // static
 rtc::SocketAddress ToNativeSocket(const rtc::SocketAddress& original_socket) {
 #if defined(OS_IOS)
-  // Currently only iOS needs the extra translation step. Android emulates an
-  // IPv4 network stack.
+  // iOS implements IPv6 synthesis logic into the getaddrinfo() function. See:
+  // https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/NetworkingOverview/UnderstandingandPreparingfortheIPv6Transition/UnderstandingandPreparingfortheIPv6Transition.html#//apple_ref/doc/uid/TP40010220-CH213-DontLinkElementID_4
 
   addrinfo hints;
   memset(&hints, 0, sizeof(hints));
@@ -47,10 +48,19 @@ rtc::SocketAddress ToNativeSocket(const rtc::SocketAddress& original_socket) {
   freeaddrinfo(result);
   new_socket.SetPort(original_socket.port());
   return new_socket;
-#else
+#elif defined(OS_ANDROID)
+  // Android implements 464XLAT and emulates an IPv4 network stack.
   return original_socket;
-#endif  // defined(OS_IOS)
+#else
+  return Rfc7050IpSynthesizer::GetInstance()->ToNativeSocket(original_socket);
+#endif
 }
+
+#if defined(OS_NACL)
+void RefreshNativeIpSynthesizer(base::OnceClosure on_done) {
+  Rfc7050IpSynthesizer::GetInstance()->UpdateDns64Prefix(std::move(on_done));
+}
+#endif
 
 }  // namespace protocol
 }  // namespace remoting
