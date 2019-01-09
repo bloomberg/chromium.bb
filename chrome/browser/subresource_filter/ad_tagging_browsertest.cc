@@ -214,8 +214,6 @@ const char kSubresourceFilterOriginStatusHistogram[] =
     "OriginStatus";
 const char kGoogleOriginStatusHistogram[] =
     "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
-const char kAllOriginStatusHistogram[] =
-    "PageLoad.Clients.Ads.All.FrameCounts.AdFrames.PerFrame.OriginStatus";
 const char kWindowOpenFromAdStateHistogram[] = "Blink.WindowOpen.FromAdState";
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
@@ -230,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
   // Navigate away and ensure we report same origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(
-      kAllOriginStatusHistogram,
+      kSubresourceFilterOriginStatusHistogram,
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
 }
 
@@ -280,9 +278,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   histogram_tester.ExpectUniqueSample(
       kSubresourceFilterOriginStatusHistogram,
       AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
-  histogram_tester.ExpectUniqueSample(
-      kAllOriginStatusHistogram,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
 }
 
 // Ad script creates a frame and navigates it same origin.
@@ -306,9 +301,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   histogram_tester.ExpectTotalCount(kGoogleOriginStatusHistogram, 0);
   histogram_tester.ExpectUniqueSample(
       kSubresourceFilterOriginStatusHistogram,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
-  histogram_tester.ExpectUniqueSample(
-      kAllOriginStatusHistogram,
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
 }
 

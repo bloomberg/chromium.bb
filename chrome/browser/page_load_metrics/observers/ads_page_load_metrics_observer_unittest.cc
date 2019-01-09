@@ -55,7 +55,7 @@ struct ExpectedFrameBytes {
   size_t uncached_kb;
 };
 
-enum class AdType { GOOGLE = 0, SUBRESOURCE_FILTER = 1, ALL = 2 };
+enum class AdType { GOOGLE = 0, SUBRESOURCE_FILTER = 1 };
 enum class ResourceCached { NOT_CACHED = false, CACHED = true };
 enum class FrameType { AD = 0, NON_AD };
 
@@ -125,8 +125,6 @@ std::string AdTypeToString(AdType ad_type) {
       return "Google";
     case AdType::SUBRESOURCE_FILTER:
       return "SubresourceFilter";
-    case AdType::ALL:
-      return "All";
   }
   ADD_FAILURE();
   return "";
@@ -407,9 +405,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
   TestHistograms(histogram_tester(), {{0, 10}, {10, 10}},
                  30 /* non_ad_cached_kb */, 20 /* non_ad_uncached_kb */,
                  AdType::SUBRESOURCE_FILTER);
-  TestHistograms(histogram_tester(), {{10, 0}, {0, 10}, {0, 10}, {10, 10}},
-                 20 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */,
-                 AdType::ALL);
 }
 
 // Test that the cross-origin ad subframe navigation metric works as it's

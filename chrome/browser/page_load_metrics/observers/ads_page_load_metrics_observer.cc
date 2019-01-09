@@ -35,9 +35,6 @@ namespace {
     case AdsPageLoadMetricsObserver::AD_TYPE_SUBRESOURCE_FILTER:           \
       hist_macro("PageLoad.Clients.Ads.SubresourceFilter." suffix, value); \
       break;                                                               \
-    case AdsPageLoadMetricsObserver::AD_TYPE_ALL:                          \
-      hist_macro("PageLoad.Clients.Ads.All." suffix, value);               \
-      break;                                                               \
   }
 
 #define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
@@ -599,7 +596,6 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordHistogramsForType(AD_TYPE_GOOGLE);
   RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
-  RecordHistogramsForType(AD_TYPE_ALL);
   RecordPageResourceTotalHistograms(source_id);
   for (auto const& kv : page_resources_)
     RecordResourceHistograms(kv.second);
@@ -618,7 +614,7 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
       continue;
 
     // If this isn't the type of ad we're looking for, move on to the next.
-    if (ad_type != AD_TYPE_ALL && !ad_frame_data.ad_types.test(ad_type))
+    if (!ad_frame_data.ad_types.test(ad_type))
       continue;
 
     non_zero_ad_frames += 1;
