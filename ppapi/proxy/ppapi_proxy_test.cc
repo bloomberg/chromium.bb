@@ -465,9 +465,9 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
       &MockGetInterface,
       PpapiPermissions::AllPermissions()));
   ppapi::Preferences preferences;
-  host_dispatcher_->InitHostWithChannel(&delegate_mock_,
-                                        base::kNullProcessId, channel_handle,
-                                        is_client, preferences);
+  host_dispatcher_->InitHostWithChannel(&delegate_mock_, base::kNullProcessId,
+                                        channel_handle, is_client, preferences,
+                                        base::ThreadTaskRunnerHandle::Get());
   HostDispatcher::SetForInstance(pp_instance(), host_dispatcher_.get());
 }
 

@@ -3121,13 +3121,10 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
       module_->CreateModuleForExternalPluginInstance());
 
   RendererPpapiHostImpl* renderer_ppapi_host =
-      external_plugin_module->CreateOutOfProcessModule(render_frame_,
-                                                       file_path,
-                                                       permissions,
-                                                       channel_handle,
-                                                       plugin_pid,
-                                                       plugin_child_id,
-                                                       true);
+      external_plugin_module->CreateOutOfProcessModule(
+          render_frame_, file_path, permissions, channel_handle, plugin_pid,
+          plugin_child_id, true,
+          render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault));
   if (!renderer_ppapi_host) {
     DLOG(ERROR) << "CreateExternalPluginModule() failed";
     return PP_EXTERNAL_PLUGIN_ERROR_MODULE;
