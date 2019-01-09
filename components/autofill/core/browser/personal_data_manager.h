@@ -127,17 +127,6 @@ class PersonalDataManager : public KeyedService,
   bool IsSyncFeatureEnabled() const override;
 
   // GaiaCookieManagerService::Observer:
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override {}
-  void OnSetAccountsInCookieCompleted(
-      const GoogleServiceAuthError& error) override {}
-  void OnLogOutAccountsFromCookieCompleted(
-      const GoogleServiceAuthError& error) override {}
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error) override {}
   void OnGaiaCookieDeletedByUserAction() override;
 
   // Returns the current sync status.
