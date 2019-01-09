@@ -55,6 +55,7 @@ struct ExploreSitesCategory {
   std::string version_token;
   int category_type;
   std::string label;
+  int num_shown_on_ntp;  // Number of times this category was shown on NTP.
 
   std::vector<ExploreSitesSite> sites;
 
