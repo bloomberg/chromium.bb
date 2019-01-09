@@ -17,6 +17,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
@@ -119,9 +120,15 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
                                    gfx::Size(21, 21));
 }
 
+std::unique_ptr<InkDropMask> Checkbox::CreateInkDropMask() const {
+  // The checkbox ripple is larger than the checkbox and shouldn't get masked to
+  // its bounds.
+  return nullptr;
+}
+
 SkColor Checkbox::GetInkDropBaseColor() const {
-  // Usually ink drop ripples match the text color. Checkboxes use the color of
-  // the unchecked, enabled icon.
+  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
+  // the checkbox view (otherwise it gets clipped which looks weird).
   return GetIconImageColor(IconState::ENABLED);
 }
 
