@@ -478,11 +478,6 @@
                 "handlers": ["none"]
             },
             {
-                "name": "requestAppBanner",
-                "experimental": true,
-                "handlers": ["browser"]
-            },
-            {
                 "name": "setBlockedEventsWarningThreshold",
                 "experimental": true,
                 "parameters": [

@@ -556,9 +556,6 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* web_contents,
       SecurityStyleExplanations* security_style_explanations);
 
-  // Requests the app banner. This method is called from the DevTools.
-  virtual void RequestAppBannerFromDevTools(WebContents* web_contents) {}
-
   // Called when a suspicious navigation of the main frame has been blocked.
   // Allows the delegate to provide some UI to let the user know about the
   // blocked navigation and give them the option to recover from it. The given

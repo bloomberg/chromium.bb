@@ -37,7 +37,6 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -1238,13 +1237,6 @@ std::unique_ptr<content::SerialChooser> Browser::RunSerialChooser(
   BubbleReference bubble_reference =
       GetBubbleManager()->ShowBubble(std::move(chooser_bubble_delegate));
   return std::make_unique<SerialChooser>(std::move(bubble_reference));
-}
-
-void Browser::RequestAppBannerFromDevTools(content::WebContents* web_contents) {
-  banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
-  banners::AppBannerManagerDesktop* manager =
-      banners::AppBannerManagerDesktop::FromWebContents(web_contents);
-  manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
 }
 
 void Browser::PassiveInsecureContentFound(const GURL& resource_url) {
