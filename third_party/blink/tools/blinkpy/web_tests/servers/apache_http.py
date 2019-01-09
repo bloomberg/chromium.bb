@@ -45,9 +45,9 @@ class ApacheHTTP(server_base.ServerBase):
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
         self._log_prefixes = ('access_log', 'error_log')
-        self._mappings = [{'port': 8000},
-                          {'port': 8080},
-                          {'port': 8443, 'sslcert': True}]
+        self._mappings = [{'port': 8000, 'scheme': 'http'},
+                          {'port': 8080, 'scheme': 'http'},
+                          {'port': 8443, 'scheme': 'https', 'sslcert': True}]
         self._number_of_servers = number_of_servers
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)

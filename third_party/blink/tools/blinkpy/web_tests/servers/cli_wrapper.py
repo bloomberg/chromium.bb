@@ -36,6 +36,7 @@ import logging
 import optparse
 
 from blinkpy.common.host import Host
+from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.port.factory import configuration_options
 
 
@@ -56,9 +57,8 @@ def main(server_constructor, input_fn=None, argv=None, description=None, **kwarg
         parser.add_option(opt)
     options, _ = parser.parse_args(argv)
 
-    logging.basicConfig()
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG if options.verbose else logging.INFO)
+    configure_logging(logging_level=logging.DEBUG if options.verbose else logging.INFO,
+                      include_time=options.verbose)
 
     host = Host()
     port_obj = host.port_factory.get(options=options)

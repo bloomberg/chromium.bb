@@ -47,7 +47,7 @@ class PyWebSocket(server_base.ServerBase):
         super(PyWebSocket, self).__init__(port_obj, output_dir)
         self._name = 'pywebsocket'
         self._log_prefixes = (_WS_LOG_PREFIX,)
-        self._mappings = [{'port': _DEFAULT_WS_PORT}]
+        self._mappings = [{'port': _DEFAULT_WS_PORT, 'scheme': 'ws'}]
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
 
         self._port = _DEFAULT_WS_PORT
