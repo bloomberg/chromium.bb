@@ -2921,24 +2921,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         schedule=interval,
     )
 
-    buildspec = site_config.Add(
-        '%s-buildspec' % branch,
-        site_config.templates.buildspec,
-        workspace_branch=branch,
-        display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
-        # TODO: Uncomment to put buildspecs go into production.
-        # schedule=interval,
-    )
-
-    for board in boards:
-      buildspec.AddSlave(
-          site_config.Add(
-              '%s-%s-firmwarebranch' % (board, branch),
-              site_config.templates.firmwarebranch,
-              boards=[board],
-              workspace_branch=branch,
-          ))
-
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
   """Create all factory build configs.

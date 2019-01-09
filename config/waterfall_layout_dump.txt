@@ -636,7 +636,6 @@
   asuka-chromium-pfq-tryjob
   asuka-compile-only-pre-cq
   asuka-factory-tryjob
-  asuka-firmware-glados-7820.B-firmwarebranch-tryjob
   asuka-firmware-tryjob
   asuka-full-tryjob
   asuka-llvm-next-toolchain-tryjob
@@ -677,7 +676,6 @@
   auron_paine-chromium-pfq-tryjob
   auron_paine-compile-only-pre-cq
   auron_paine-factory-tryjob
-  auron_paine-firmware-paine-6301.58.B-firmwarebranch-tryjob
   auron_paine-firmware-tryjob
   auron_paine-full-tryjob
   auron_paine-llvm-next-toolchain-tryjob
@@ -699,7 +697,6 @@
   auron_yuna-compile-only-pre-cq
   auron_yuna-factory-tryjob
   auron_yuna-firmware-tryjob
-  auron_yuna-firmware-yuna-6301.59.B-firmwarebranch-tryjob
   auron_yuna-full-tryjob
   auron_yuna-llvm-next-toolchain-tryjob
   auron_yuna-llvm-toolchain-tryjob
@@ -719,7 +716,6 @@
   banjo-chromium-pfq-tryjob
   banjo-compile-only-pre-cq
   banjo-factory-tryjob
-  banjo-firmware-banjo-5216.334.B-firmwarebranch-tryjob
   banjo-firmware-tryjob
   banjo-full-tryjob
   banjo-llvm-next-toolchain-tryjob
@@ -740,7 +736,6 @@
   banon-chromium-pfq-tryjob
   banon-compile-only-pre-cq
   banon-factory-tryjob
-  banon-firmware-strago-7287.B-firmwarebranch-tryjob
   banon-firmware-tryjob
   banon-full-tryjob
   banon-llvm-next-toolchain-tryjob
@@ -868,7 +863,6 @@
   bob-chromium-pfq-tryjob
   bob-compile-only-pre-cq
   bob-factory-tryjob
-  bob-firmware-gru-8785.B-firmwarebranch-tryjob
   bob-firmware-tryjob
   bob-full-tryjob
   bob-llvm-next-toolchain-tryjob
@@ -891,7 +885,6 @@
   buddy-chromium-pfq-tryjob
   buddy-compile-only-pre-cq
   buddy-factory-tryjob
-  buddy-firmware-buddy-6301.202.B-firmwarebranch-tryjob
   buddy-firmware-tryjob
   buddy-full-tryjob
   buddy-llvm-next-toolchain-tryjob
@@ -912,7 +905,6 @@
   candy-chromium-pfq-tryjob
   candy-compile-only-pre-cq
   candy-factory-tryjob
-  candy-firmware-candy-5216.310.B-firmwarebranch-tryjob
   candy-firmware-tryjob
   candy-full-tryjob
   candy-llvm-next-toolchain-tryjob
@@ -987,7 +979,6 @@
   caroline-chromium-pfq-tryjob
   caroline-compile-only-pre-cq
   caroline-factory-tryjob
-  caroline-firmware-glados-7820.B-firmwarebranch-tryjob
   caroline-firmware-tryjob
   caroline-full-tryjob
   caroline-llvm-next-toolchain-tryjob
@@ -1031,7 +1022,6 @@
   cave-chromium-pfq-tryjob
   cave-compile-only-pre-cq
   cave-factory-tryjob
-  cave-firmware-glados-7820.B-firmwarebranch-tryjob
   cave-firmware-tryjob
   cave-full-tryjob
   cave-llvm-next-toolchain-tryjob
@@ -1053,7 +1043,6 @@
   celes-chromium-pfq-tryjob
   celes-compile-only-pre-cq
   celes-factory-tryjob
-  celes-firmware-celes-7287.92.B-firmwarebranch-tryjob
   celes-firmware-tryjob
   celes-full-tryjob
   celes-llvm-next-toolchain-tryjob
@@ -1074,7 +1063,6 @@
   chell-chromium-pfq-tryjob
   chell-compile-only-pre-cq
   chell-factory-tryjob
-  chell-firmware-glados-7820.B-firmwarebranch-tryjob
   chell-firmware-tryjob
   chell-full-tryjob
   chell-incremental-tryjob
@@ -1134,7 +1122,6 @@
   clapper-chromium-pfq-tryjob
   clapper-compile-only-pre-cq
   clapper-factory-tryjob
-  clapper-firmware-clapper-5216.199.B-firmwarebranch-tryjob
   clapper-firmware-tryjob
   clapper-full-tryjob
   clapper-llvm-next-toolchain-tryjob
@@ -1167,7 +1154,6 @@
   coral-chromium-pfq-tryjob
   coral-compile-only-pre-cq
   coral-factory-tryjob
-  coral-firmware-coral-10068.B-firmwarebranch-tryjob
   coral-firmware-tryjob
   coral-full-tryjob
   coral-llvm-next-toolchain-tryjob
@@ -1188,7 +1174,6 @@
   cyan-chromium-pfq-tryjob
   cyan-compile-only-pre-cq
   cyan-factory-tryjob
-  cyan-firmware-cyan-7287.57.B-firmwarebranch-tryjob
   cyan-firmware-tryjob
   cyan-full-tryjob
   cyan-llvm-next-toolchain-tryjob
@@ -1234,7 +1219,6 @@
   daisy_skate-chromium-pfq-tryjob
   daisy_skate-compile-only-pre-cq
   daisy_skate-factory-tryjob
-  daisy_skate-firmware-skate-3824.129.B-firmwarebranch-tryjob
   daisy_skate-firmware-tryjob
   daisy_skate-full-tryjob
   daisy_skate-llvm-next-toolchain-tryjob
@@ -1293,7 +1277,6 @@
   edgar-chromium-pfq-tryjob
   edgar-compile-only-pre-cq
   edgar-factory-tryjob
-  edgar-firmware-edgar-7287.167.B-firmwarebranch-tryjob
   edgar-firmware-tryjob
   edgar-full-tryjob
   edgar-llvm-next-toolchain-tryjob
@@ -1314,7 +1297,6 @@
   elm-chromium-pfq-tryjob
   elm-compile-only-pre-cq
   elm-factory-tryjob
-  elm-firmware-oak-8438.B-firmwarebranch-tryjob
   elm-firmware-tryjob
   elm-full-tryjob
   elm-llvm-next-toolchain-tryjob
@@ -1336,7 +1318,6 @@
   enguarde-chromium-pfq-tryjob
   enguarde-compile-only-pre-cq
   enguarde-factory-tryjob
-  enguarde-firmware-enguarde-5216.201.B-firmwarebranch-tryjob
   enguarde-firmware-tryjob
   enguarde-full-tryjob
   enguarde-llvm-next-toolchain-tryjob
@@ -1415,8 +1396,6 @@
   eve-chromium-pfq-tryjob
   eve-compile-only-pre-cq
   eve-factory-tryjob
-  eve-firmware-eve-9584.B-firmwarebranch-tryjob
-  eve-firmware-eve-campfire-9584.131.B-firmwarebranch-tryjob
   eve-firmware-tryjob
   eve-full-tryjob
   eve-kvm-chromium-pfq-tryjob
@@ -1471,7 +1450,6 @@
   expresso-chromium-pfq-tryjob
   expresso-compile-only-pre-cq
   expresso-factory-tryjob
-  expresso-firmware-expresso-5216.223.B-firmwarebranch-tryjob
   expresso-firmware-tryjob
   expresso-full-tryjob
   expresso-llvm-next-toolchain-tryjob
@@ -1523,8 +1501,6 @@
   falco-chromium-pfq-tryjob
   falco-compile-only-pre-cq
   falco-factory-tryjob
-  falco-firmware-falco_peppy-4389.B-firmwarebranch-tryjob
-  falco-firmware-servo-9040.B-firmwarebranch-tryjob
   falco-firmware-tryjob
   falco-full-compile-paladin-tryjob
   falco-full-tryjob
@@ -1562,251 +1538,77 @@
   falco_li-tot-chrome-pfq-informational-tryjob
   falco_li-tot-chromium-pfq-informational-tryjob
   falco_li-unittest-stress
-  firmware-auron-6301.B-buildspec-tryjob
-    jecht-firmware-auron-6301.B-firmwarebranch
   firmware-auron-6301.B-firmwarebranch-tryjob
-  firmware-banjo-5216.334.B-buildspec-tryjob
-    banjo-firmware-banjo-5216.334.B-firmwarebranch
   firmware-banjo-5216.334.B-firmwarebranch-tryjob
-  firmware-buddy-6301.202.B-buildspec-tryjob
-    buddy-firmware-buddy-6301.202.B-firmwarebranch
   firmware-buddy-6301.202.B-firmwarebranch-tryjob
-  firmware-candy-5216.310.B-buildspec-tryjob
-    candy-firmware-candy-5216.310.B-firmwarebranch
   firmware-candy-5216.310.B-firmwarebranch-tryjob
-  firmware-celes-7287.92.B-buildspec-tryjob
-    celes-firmware-celes-7287.92.B-firmwarebranch
   firmware-celes-7287.92.B-firmwarebranch-tryjob
-  firmware-clapper-5216.199.B-buildspec-tryjob
-    clapper-firmware-clapper-5216.199.B-firmwarebranch
   firmware-clapper-5216.199.B-firmwarebranch-tryjob
-  firmware-coral-10068.B-buildspec-tryjob
-    coral-firmware-coral-10068.B-firmwarebranch
   firmware-coral-10068.B-firmwarebranch-tryjob
-  firmware-cr50-9308.24.B-buildspec-tryjob
-    reef-firmware-cr50-9308.24.B-firmwarebranch
   firmware-cr50-9308.24.B-firmwarebranch-tryjob
-  firmware-cr50-9308.B-buildspec-tryjob
-    reef-firmware-cr50-9308.B-firmwarebranch
   firmware-cr50-9308.B-firmwarebranch-tryjob
-  firmware-cr50-mp-release-9308.87.B-buildspec-tryjob
-    reef-firmware-cr50-mp-release-9308.87.B-firmwarebranch
   firmware-cr50-mp-release-9308.87.B-firmwarebranch-tryjob
-  firmware-cr50-release-9308.25.B-buildspec-tryjob
-    reef-firmware-cr50-release-9308.25.B-firmwarebranch
   firmware-cr50-release-9308.25.B-firmwarebranch-tryjob
-  firmware-cyan-7287.57.B-buildspec-tryjob
-    cyan-firmware-cyan-7287.57.B-firmwarebranch
   firmware-cyan-7287.57.B-firmwarebranch-tryjob
-  firmware-edgar-7287.167.B-buildspec-tryjob
-    edgar-firmware-edgar-7287.167.B-firmwarebranch
   firmware-edgar-7287.167.B-firmwarebranch-tryjob
-  firmware-enguarde-5216.201.B-buildspec-tryjob
-    enguarde-firmware-enguarde-5216.201.B-firmwarebranch
   firmware-enguarde-5216.201.B-firmwarebranch-tryjob
-  firmware-eve-9584.B-buildspec-tryjob
-    eve-firmware-eve-9584.B-firmwarebranch
   firmware-eve-9584.B-firmwarebranch-tryjob
-  firmware-eve-campfire-9584.131.B-buildspec-tryjob
-    eve-firmware-eve-campfire-9584.131.B-firmwarebranch
   firmware-eve-campfire-9584.131.B-firmwarebranch-tryjob
-  firmware-expresso-5216.223.B-buildspec-tryjob
-    expresso-firmware-expresso-5216.223.B-firmwarebranch
   firmware-expresso-5216.223.B-firmwarebranch-tryjob
-  firmware-falco_peppy-4389.B-buildspec-tryjob
-    falco-firmware-falco_peppy-4389.B-firmwarebranch
-    peppy-firmware-falco_peppy-4389.B-firmwarebranch
   firmware-falco_peppy-4389.B-firmwarebranch-tryjob
-  firmware-fizz-10139.94.B-buildspec-tryjob
-    fizz-firmware-fizz-10139.94.B-firmwarebranch
   firmware-fizz-10139.94.B-firmwarebranch-tryjob
-  firmware-fizz-10139.B-buildspec-tryjob
-    fizz-firmware-fizz-10139.B-firmwarebranch
   firmware-fizz-10139.B-firmwarebranch-tryjob
-  firmware-gale-8281.B-buildspec-tryjob
-    gale-firmware-gale-8281.B-firmwarebranch
   firmware-gale-8281.B-firmwarebranch-tryjob
-  firmware-gandof-6301.155.B-buildspec-tryjob
-    gandof-firmware-gandof-6301.155.B-firmwarebranch
   firmware-gandof-6301.155.B-firmwarebranch-tryjob
-  firmware-glados-7820.B-buildspec-tryjob
-    asuka-firmware-glados-7820.B-firmwarebranch
-    caroline-firmware-glados-7820.B-firmwarebranch
-    cave-firmware-glados-7820.B-firmwarebranch
-    chell-firmware-glados-7820.B-firmwarebranch
-    glados-firmware-glados-7820.B-firmwarebranch
-    lars-firmware-glados-7820.B-firmwarebranch
-    sentry-firmware-glados-7820.B-firmwarebranch
   firmware-glados-7820.B-firmwarebranch-tryjob
-  firmware-glimmer-5216.198.B-buildspec-tryjob
-    glimmer-firmware-glimmer-5216.198.B-firmwarebranch
   firmware-glimmer-5216.198.B-firmwarebranch-tryjob
-  firmware-gnawty-5216.239.B-buildspec-tryjob
-    gnawty-firmware-gnawty-5216.239.B-firmwarebranch
   firmware-gnawty-5216.239.B-firmwarebranch-tryjob
-  firmware-gru-8785.B-buildspec-tryjob
-    bob-firmware-gru-8785.B-firmwarebranch
-    gru-firmware-gru-8785.B-firmwarebranch
-    kevin-firmware-gru-8785.B-firmwarebranch
   firmware-gru-8785.B-firmwarebranch-tryjob
-  firmware-grunt-11031.B-buildspec-tryjob
-    grunt-firmware-grunt-11031.B-firmwarebranch
   firmware-grunt-11031.B-firmwarebranch-tryjob
-  firmware-guado-6301.108.B-buildspec-tryjob
-    guado-firmware-guado-6301.108.B-firmwarebranch
   firmware-guado-6301.108.B-firmwarebranch-tryjob
-  firmware-heli-5216.392.B-buildspec-tryjob
-    heli-firmware-heli-5216.392.B-firmwarebranch
   firmware-heli-5216.392.B-firmwarebranch-tryjob
-  firmware-kalista-11343.B-buildspec-tryjob
-    kalista-firmware-kalista-11343.B-firmwarebranch
   firmware-kalista-11343.B-firmwarebranch-tryjob
-  firmware-kip-5216.227.B-buildspec-tryjob
-    kip-firmware-kip-5216.227.B-firmwarebranch
   firmware-kip-5216.227.B-firmwarebranch-tryjob
-  firmware-kitty-5771.61.B-buildspec-tryjob
-    nyan_kitty-firmware-kitty-5771.61.B-firmwarebranch
   firmware-kitty-5771.61.B-firmwarebranch-tryjob
-  firmware-leon-4389.61.B-buildspec-tryjob
-    leon-firmware-leon-4389.61.B-firmwarebranch
   firmware-leon-4389.61.B-firmwarebranch-tryjob
-  firmware-lulu-6301.136.B-buildspec-tryjob
-    lulu-firmware-lulu-6301.136.B-firmwarebranch
   firmware-lulu-6301.136.B-firmwarebranch-tryjob
-  firmware-mccloud-5827.B-buildspec-tryjob
-    mccloud-firmware-mccloud-5827.B-firmwarebranch
   firmware-mccloud-5827.B-firmwarebranch-tryjob
-  firmware-monroe-4921.B-buildspec-tryjob
-    monroe-firmware-monroe-4921.B-firmwarebranch
   firmware-monroe-4921.B-firmwarebranch-tryjob
-  firmware-nami-10775.B-buildspec-tryjob
-    nami-firmware-nami-10775.B-firmwarebranch
   firmware-nami-10775.B-firmwarebranch-tryjob
-  firmware-ninja-5216.383.B-buildspec-tryjob
-    ninja-firmware-ninja-5216.383.B-firmwarebranch
   firmware-ninja-5216.383.B-firmwarebranch-tryjob
-  firmware-nocturne-10984.B-buildspec-tryjob
-    nocturne-firmware-nocturne-10984.B-firmwarebranch
   firmware-nocturne-10984.B-firmwarebranch-tryjob
-  firmware-nyan-5771.B-buildspec-tryjob
-    nyan_big-firmware-nyan-5771.B-firmwarebranch
-    nyan_blaze-firmware-nyan-5771.B-firmwarebranch
   firmware-nyan-5771.B-firmwarebranch-tryjob
-  firmware-oak-8438.B-buildspec-tryjob
-    elm-firmware-oak-8438.B-firmwarebranch
-    hana-firmware-oak-8438.B-firmwarebranch
-    oak-firmware-oak-8438.B-firmwarebranch
   firmware-oak-8438.B-firmwarebranch-tryjob
-  firmware-octopus-11297.B-buildspec-tryjob
-    octopus-firmware-octopus-11297.B-firmwarebranch
   firmware-octopus-11297.B-firmwarebranch-tryjob
-  firmware-orco-5216.362.B-buildspec-tryjob
-    orco-firmware-orco-5216.362.B-firmwarebranch
   firmware-orco-5216.362.B-firmwarebranch-tryjob
-  firmware-paine-6301.58.B-buildspec-tryjob
-    auron_paine-firmware-paine-6301.58.B-firmwarebranch
   firmware-paine-6301.58.B-firmwarebranch-tryjob
-  firmware-panther-4920.24.B-buildspec-tryjob
-    panther-firmware-panther-4920.24.B-firmwarebranch
   firmware-panther-4920.24.B-firmwarebranch-tryjob
-  firmware-pit-4482.B-buildspec-tryjob
-    peach_pi-firmware-pit-4482.B-firmwarebranch
-    peach_pit-firmware-pit-4482.B-firmwarebranch
   firmware-pit-4482.B-firmwarebranch-tryjob
-  firmware-poppy-10431.B-buildspec-tryjob
-    nautilus-firmware-poppy-10431.B-firmwarebranch
-    poppy-firmware-poppy-10431.B-firmwarebranch
-    soraka-firmware-poppy-10431.B-firmwarebranch
   firmware-poppy-10431.B-firmwarebranch-tryjob
-  firmware-quawks-5216.204.B-buildspec-tryjob
-    quawks-firmware-quawks-5216.204.B-firmwarebranch
   firmware-quawks-5216.204.B-firmwarebranch-tryjob
-  firmware-rammus-11275.B-buildspec-tryjob
-    rammus-firmware-rammus-11275.B-firmwarebranch
   firmware-rammus-11275.B-firmwarebranch-tryjob
-  firmware-reef-9042.B-buildspec-tryjob
-    pyro-firmware-reef-9042.B-firmwarebranch
-    reef-firmware-reef-9042.B-firmwarebranch
-    sand-firmware-reef-9042.B-firmwarebranch
-    snappy-firmware-reef-9042.B-firmwarebranch
   firmware-reef-9042.B-firmwarebranch-tryjob
-  firmware-reks-7287.133.B-buildspec-tryjob
-    reks-firmware-reks-7287.133.B-firmwarebranch
   firmware-reks-7287.133.B-firmwarebranch-tryjob
-  firmware-rikku-6301.110.B-buildspec-tryjob
-    rikku-firmware-rikku-6301.110.B-firmwarebranch
   firmware-rikku-6301.110.B-firmwarebranch-tryjob
-  firmware-samus-6300.B-buildspec-tryjob
-    samus-firmware-samus-6300.B-firmwarebranch
   firmware-samus-6300.B-firmwarebranch-tryjob
-  firmware-scarlet-10388.B-buildspec-tryjob
-    scarlet-firmware-scarlet-10388.B-firmwarebranch
   firmware-scarlet-10388.B-firmwarebranch-tryjob
-  firmware-servo-11011.B-buildspec-tryjob
-    oak-firmware-servo-11011.B-firmwarebranch
   firmware-servo-11011.B-firmwarebranch-tryjob
-  firmware-servo-9040.B-buildspec-tryjob
-    falco-firmware-servo-9040.B-firmwarebranch
   firmware-servo-9040.B-firmwarebranch-tryjob
-  firmware-skate-3824.129.B-buildspec-tryjob
-    daisy_skate-firmware-skate-3824.129.B-firmwarebranch
   firmware-skate-3824.129.B-firmwarebranch-tryjob
-  firmware-smaug-7900.B-buildspec-tryjob
-    smaug-firmware-smaug-7900.B-firmwarebranch
   firmware-smaug-7900.B-firmwarebranch-tryjob
-  firmware-squawks-5216.152.B-buildspec-tryjob
-    squawks-firmware-squawks-5216.152.B-firmwarebranch
   firmware-squawks-5216.152.B-firmwarebranch-tryjob
-  firmware-strago-7287.B-buildspec-tryjob
-    banon-firmware-strago-7287.B-firmwarebranch
-    kefka-firmware-strago-7287.B-firmwarebranch
-    relm-firmware-strago-7287.B-firmwarebranch
-    setzer-firmware-strago-7287.B-firmwarebranch
-    wizpig-firmware-strago-7287.B-firmwarebranch
   firmware-strago-7287.B-firmwarebranch-tryjob
-  firmware-sumo-5216.382.B-buildspec-tryjob
-    sumo-firmware-sumo-5216.382.B-firmwarebranch
   firmware-sumo-5216.382.B-firmwarebranch-tryjob
-  firmware-swanky-5216.238.B-buildspec-tryjob
-    swanky-firmware-swanky-5216.238.B-firmwarebranch
   firmware-swanky-5216.238.B-firmwarebranch-tryjob
-  firmware-terra-7287.154.B-buildspec-tryjob
-    terra-firmware-terra-7287.154.B-firmwarebranch
   firmware-terra-7287.154.B-firmwarebranch-tryjob
-  firmware-tidus-6301.109.B-buildspec-tryjob
-    tidus-firmware-tidus-6301.109.B-firmwarebranch
   firmware-tidus-6301.109.B-firmwarebranch-tryjob
-  firmware-tricky-5829.B-buildspec-tryjob
-    tricky-firmware-tricky-5829.B-firmwarebranch
   firmware-tricky-5829.B-firmwarebranch-tryjob
-  firmware-ultima-7287.131.B-buildspec-tryjob
-    ultima-firmware-ultima-7287.131.B-firmwarebranch
   firmware-ultima-7287.131.B-firmwarebranch-tryjob
-  firmware-veyron-6588.B-buildspec-tryjob
-    veyron_fievel-firmware-veyron-6588.B-firmwarebranch
-    veyron_jaq-firmware-veyron-6588.B-firmwarebranch
-    veyron_jerry-firmware-veyron-6588.B-firmwarebranch
-    veyron_mickey-firmware-veyron-6588.B-firmwarebranch
-    veyron_mighty-firmware-veyron-6588.B-firmwarebranch
-    veyron_minnie-firmware-veyron-6588.B-firmwarebranch
-    veyron_rialto-firmware-veyron-6588.B-firmwarebranch
-    veyron_speedy-firmware-veyron-6588.B-firmwarebranch
-    veyron_tiger-firmware-veyron-6588.B-firmwarebranch
   firmware-veyron-6588.B-firmwarebranch-tryjob
-  firmware-winky-5216.265.B-buildspec-tryjob
-    winky-firmware-winky-5216.265.B-firmwarebranch
   firmware-winky-5216.265.B-firmwarebranch-tryjob
-  firmware-wolf-4389.24.B-buildspec-tryjob
-    wolf-firmware-wolf-4389.24.B-firmwarebranch
   firmware-wolf-4389.24.B-firmwarebranch-tryjob
-  firmware-yuna-6301.59.B-buildspec-tryjob
-    auron_yuna-firmware-yuna-6301.59.B-firmwarebranch
   firmware-yuna-6301.59.B-firmwarebranch-tryjob
-  firmware-zako-5219.17.B-buildspec-tryjob
-    zako-firmware-zako-5219.17.B-firmwarebranch
   firmware-zako-5219.17.B-firmwarebranch-tryjob
-  firmware-zako-5219.B-buildspec-tryjob
-    zako-firmware-zako-5219.B-firmwarebranch
   firmware-zako-5219.B-firmwarebranch-tryjob
   fizz-accelerator-compile-only-pre-cq
   fizz-accelerator-factory-tryjob
@@ -1827,8 +1629,6 @@
   fizz-chromium-pfq-tryjob
   fizz-compile-only-pre-cq
   fizz-factory-tryjob
-  fizz-firmware-fizz-10139.94.B-firmwarebranch-tryjob
-  fizz-firmware-fizz-10139.B-firmwarebranch-tryjob
   fizz-firmware-tryjob
   fizz-full-tryjob
   fizz-llvm-next-toolchain-tryjob
@@ -1885,7 +1685,6 @@
   flapjack-unittest-stress
   gale-compile-only-pre-cq
   gale-factory-tryjob
-  gale-firmware-gale-8281.B-firmwarebranch-tryjob
   gale-firmware-tryjob
   gale-full-tryjob
   gale-llvm-next-toolchain-tryjob
@@ -1902,7 +1701,6 @@
   gandof-chromium-pfq-tryjob
   gandof-compile-only-pre-cq
   gandof-factory-tryjob
-  gandof-firmware-gandof-6301.155.B-firmwarebranch-tryjob
   gandof-firmware-tryjob
   gandof-full-tryjob
   gandof-llvm-next-toolchain-tryjob
@@ -1923,7 +1721,6 @@
   glados-chromium-pfq-tryjob
   glados-compile-only-pre-cq
   glados-factory-tryjob
-  glados-firmware-glados-7820.B-firmwarebranch-tryjob
   glados-firmware-tryjob
   glados-full-tryjob
   glados-llvm-next-toolchain-tryjob
@@ -1943,7 +1740,6 @@
   glimmer-chromium-pfq-tryjob
   glimmer-compile-only-pre-cq
   glimmer-factory-tryjob
-  glimmer-firmware-glimmer-5216.198.B-firmwarebranch-tryjob
   glimmer-firmware-tryjob
   glimmer-full-tryjob
   glimmer-llvm-next-toolchain-tryjob
@@ -1964,7 +1760,6 @@
   gnawty-chromium-pfq-tryjob
   gnawty-compile-only-pre-cq
   gnawty-factory-tryjob
-  gnawty-firmware-gnawty-5216.239.B-firmwarebranch-tryjob
   gnawty-firmware-tryjob
   gnawty-full-tryjob
   gnawty-llvm-next-toolchain-tryjob
@@ -1996,7 +1791,6 @@
   gru-chromium-pfq-tryjob
   gru-compile-only-pre-cq
   gru-factory-tryjob
-  gru-firmware-gru-8785.B-firmwarebranch-tryjob
   gru-firmware-tryjob
   gru-full-tryjob
   gru-llvm-next-toolchain-tryjob
@@ -2018,7 +1812,6 @@
   grunt-chromium-pfq-tryjob
   grunt-compile-only-pre-cq
   grunt-factory-tryjob
-  grunt-firmware-grunt-11031.B-firmwarebranch-tryjob
   grunt-firmware-tryjob
   grunt-full-tryjob
   grunt-llvm-next-toolchain-tryjob
@@ -2056,7 +1849,6 @@
   guado-chromium-pfq-tryjob
   guado-compile-only-pre-cq
   guado-factory-tryjob
-  guado-firmware-guado-6301.108.B-firmwarebranch-tryjob
   guado-firmware-tryjob
   guado-full-tryjob
   guado-llvm-next-toolchain-tryjob
@@ -2126,7 +1918,6 @@
   hana-chromium-pfq-tryjob
   hana-compile-only-pre-cq
   hana-factory-tryjob
-  hana-firmware-oak-8438.B-firmwarebranch-tryjob
   hana-firmware-tryjob
   hana-full-tryjob
   hana-llvm-next-toolchain-tryjob
@@ -2167,7 +1958,6 @@
   heli-chromium-pfq-tryjob
   heli-compile-only-pre-cq
   heli-factory-tryjob
-  heli-firmware-heli-5216.392.B-firmwarebranch-tryjob
   heli-firmware-tryjob
   heli-full-tryjob
   heli-llvm-next-toolchain-tryjob
@@ -2189,7 +1979,6 @@
   jecht-chromium-pfq-tryjob
   jecht-compile-only-pre-cq
   jecht-factory-tryjob
-  jecht-firmware-auron-6301.B-firmwarebranch-tryjob
   jecht-firmware-tryjob
   jecht-full-tryjob
   jecht-llvm-next-toolchain-tryjob
@@ -2210,7 +1999,6 @@
   kalista-chromium-pfq-tryjob
   kalista-compile-only-pre-cq
   kalista-factory-tryjob
-  kalista-firmware-kalista-11343.B-firmwarebranch-tryjob
   kalista-firmware-tryjob
   kalista-full-tryjob
   kalista-llvm-next-toolchain-tryjob
@@ -2231,7 +2019,6 @@
   kefka-chromium-pfq-tryjob
   kefka-compile-only-pre-cq
   kefka-factory-tryjob
-  kefka-firmware-strago-7287.B-firmwarebranch-tryjob
   kefka-firmware-tryjob
   kefka-full-tryjob
   kefka-llvm-next-toolchain-tryjob
@@ -2273,7 +2060,6 @@
   kevin-chromium-pfq-tryjob
   kevin-compile-only-pre-cq
   kevin-factory-tryjob
-  kevin-firmware-gru-8785.B-firmwarebranch-tryjob
   kevin-firmware-tryjob
   kevin-full-tryjob
   kevin-llvm-next-toolchain-tryjob
@@ -2306,7 +2092,6 @@
   kip-chromium-pfq-tryjob
   kip-compile-only-pre-cq
   kip-factory-tryjob
-  kip-firmware-kip-5216.227.B-firmwarebranch-tryjob
   kip-firmware-tryjob
   kip-full-tryjob
   kip-llvm-next-toolchain-tryjob
@@ -2407,7 +2192,6 @@
   lars-chromium-pfq-tryjob
   lars-compile-only-pre-cq
   lars-factory-tryjob
-  lars-firmware-glados-7820.B-firmwarebranch-tryjob
   lars-firmware-tryjob
   lars-full-tryjob
   lars-llvm-next-toolchain-tryjob
@@ -2439,7 +2223,6 @@
   leon-chromium-pfq-tryjob
   leon-compile-only-pre-cq
   leon-factory-tryjob
-  leon-firmware-leon-4389.61.B-firmwarebranch-tryjob
   leon-firmware-tryjob
   leon-full-tryjob
   leon-llvm-next-toolchain-tryjob
@@ -2483,7 +2266,6 @@
   lulu-chromium-pfq-tryjob
   lulu-compile-only-pre-cq
   lulu-factory-tryjob
-  lulu-firmware-lulu-6301.136.B-firmwarebranch-tryjob
   lulu-firmware-tryjob
   lulu-full-tryjob
   lulu-llvm-next-toolchain-tryjob
@@ -2937,7 +2719,6 @@
   mccloud-chromium-pfq-tryjob
   mccloud-compile-only-pre-cq
   mccloud-factory-tryjob
-  mccloud-firmware-mccloud-5827.B-firmwarebranch-tryjob
   mccloud-firmware-tryjob
   mccloud-full-tryjob
   mccloud-llvm-next-toolchain-tryjob
@@ -2980,7 +2761,6 @@
   monroe-chromium-pfq-tryjob
   monroe-compile-only-pre-cq
   monroe-factory-tryjob
-  monroe-firmware-monroe-4921.B-firmwarebranch-tryjob
   monroe-firmware-tryjob
   monroe-full-tryjob
   monroe-llvm-next-toolchain-tryjob
@@ -3001,7 +2781,6 @@
   nami-chromium-pfq-tryjob
   nami-compile-only-pre-cq
   nami-factory-tryjob
-  nami-firmware-nami-10775.B-firmwarebranch-tryjob
   nami-firmware-tryjob
   nami-full-tryjob
   nami-llvm-next-toolchain-tryjob
@@ -3022,7 +2801,6 @@
   nautilus-chromium-pfq-tryjob
   nautilus-compile-only-pre-cq
   nautilus-factory-tryjob
-  nautilus-firmware-poppy-10431.B-firmwarebranch-tryjob
   nautilus-firmware-tryjob
   nautilus-full-tryjob
   nautilus-llvm-next-toolchain-tryjob
@@ -3043,7 +2821,6 @@
   ninja-chromium-pfq-tryjob
   ninja-compile-only-pre-cq
   ninja-factory-tryjob
-  ninja-firmware-ninja-5216.383.B-firmwarebranch-tryjob
   ninja-firmware-tryjob
   ninja-full-tryjob
   ninja-llvm-next-toolchain-tryjob
@@ -3064,7 +2841,6 @@
   nocturne-chromium-pfq-tryjob
   nocturne-compile-only-pre-cq
   nocturne-factory-tryjob
-  nocturne-firmware-nocturne-10984.B-firmwarebranch-tryjob
   nocturne-firmware-tryjob
   nocturne-full-tryjob
   nocturne-llvm-next-toolchain-tryjob
@@ -3124,7 +2900,6 @@
   nyan_big-chromium-pfq-tryjob
   nyan_big-compile-only-pre-cq
   nyan_big-factory-tryjob
-  nyan_big-firmware-nyan-5771.B-firmwarebranch-tryjob
   nyan_big-firmware-tryjob
   nyan_big-full-tryjob
   nyan_big-llvm-next-toolchain-tryjob
@@ -3145,7 +2920,6 @@
   nyan_blaze-chromium-pfq-tryjob
   nyan_blaze-compile-only-pre-cq
   nyan_blaze-factory-tryjob
-  nyan_blaze-firmware-nyan-5771.B-firmwarebranch-tryjob
   nyan_blaze-firmware-tryjob
   nyan_blaze-full-tryjob
   nyan_blaze-llvm-next-toolchain-tryjob
@@ -3166,7 +2940,6 @@
   nyan_kitty-chromium-pfq-tryjob
   nyan_kitty-compile-only-pre-cq
   nyan_kitty-factory-tryjob
-  nyan_kitty-firmware-kitty-5771.61.B-firmwarebranch-tryjob
   nyan_kitty-firmware-tryjob
   nyan_kitty-full-compile-paladin-tryjob
   nyan_kitty-full-tryjob
@@ -3188,8 +2961,6 @@
   oak-chromium-pfq-tryjob
   oak-compile-only-pre-cq
   oak-factory-tryjob
-  oak-firmware-oak-8438.B-firmwarebranch-tryjob
-  oak-firmware-servo-11011.B-firmwarebranch-tryjob
   oak-firmware-tryjob
   oak-full-tryjob
   oak-llvm-next-toolchain-tryjob
@@ -3221,7 +2992,6 @@
   octopus-chromium-pfq-tryjob
   octopus-compile-only-pre-cq
   octopus-factory-tryjob
-  octopus-firmware-octopus-11297.B-firmwarebranch-tryjob
   octopus-firmware-tryjob
   octopus-full-tryjob
   octopus-llvm-next-toolchain-tryjob
@@ -3242,7 +3012,6 @@
   orco-chromium-pfq-tryjob
   orco-compile-only-pre-cq
   orco-factory-tryjob
-  orco-firmware-orco-5216.362.B-firmwarebranch-tryjob
   orco-firmware-tryjob
   orco-full-tryjob
   orco-llvm-next-toolchain-tryjob
@@ -3263,7 +3032,6 @@
   panther-chromium-pfq-tryjob
   panther-compile-only-pre-cq
   panther-factory-tryjob
-  panther-firmware-panther-4920.24.B-firmwarebranch-tryjob
   panther-firmware-tryjob
   panther-full-tryjob
   panther-llvm-next-toolchain-tryjob
@@ -3304,7 +3072,6 @@
   peach_pi-chromium-pfq-tryjob
   peach_pi-compile-only-pre-cq
   peach_pi-factory-tryjob
-  peach_pi-firmware-pit-4482.B-firmwarebranch-tryjob
   peach_pi-firmware-tryjob
   peach_pi-full-tryjob
   peach_pi-llvm-next-toolchain-tryjob
@@ -3325,7 +3092,6 @@
   peach_pit-chromium-pfq-tryjob
   peach_pit-compile-only-pre-cq
   peach_pit-factory-tryjob
-  peach_pit-firmware-pit-4482.B-firmwarebranch-tryjob
   peach_pit-firmware-tryjob
   peach_pit-full-tryjob
   peach_pit-llvm-next-toolchain-tryjob
@@ -3346,7 +3112,6 @@
   peppy-chromium-pfq-tryjob
   peppy-compile-only-pre-cq
   peppy-factory-tryjob
-  peppy-firmware-falco_peppy-4389.B-firmwarebranch-tryjob
   peppy-firmware-tryjob
   peppy-full-tryjob
   peppy-llvm-next-toolchain-tryjob
@@ -3367,7 +3132,6 @@
   poppy-chromium-pfq-tryjob
   poppy-compile-only-pre-cq
   poppy-factory-tryjob
-  poppy-firmware-poppy-10431.B-firmwarebranch-tryjob
   poppy-firmware-tryjob
   poppy-full-tryjob
   poppy-llvm-next-toolchain-tryjob
@@ -3392,7 +3156,6 @@
   pyro-chromium-pfq-tryjob
   pyro-compile-only-pre-cq
   pyro-factory-tryjob
-  pyro-firmware-reef-9042.B-firmwarebranch-tryjob
   pyro-firmware-tryjob
   pyro-full-tryjob
   pyro-llvm-next-toolchain-tryjob
@@ -3413,7 +3176,6 @@
   quawks-chromium-pfq-tryjob
   quawks-compile-only-pre-cq
   quawks-factory-tryjob
-  quawks-firmware-quawks-5216.204.B-firmwarebranch-tryjob
   quawks-firmware-tryjob
   quawks-full-tryjob
   quawks-llvm-next-toolchain-tryjob
@@ -3434,7 +3196,6 @@
   rammus-chromium-pfq-tryjob
   rammus-compile-only-pre-cq
   rammus-factory-tryjob
-  rammus-firmware-rammus-11275.B-firmwarebranch-tryjob
   rammus-firmware-tryjob
   rammus-full-tryjob
   rammus-llvm-next-toolchain-tryjob
@@ -3457,11 +3218,6 @@
   reef-chromium-pfq-tryjob
   reef-compile-only-pre-cq
   reef-factory-tryjob
-  reef-firmware-cr50-9308.24.B-firmwarebranch-tryjob
-  reef-firmware-cr50-9308.B-firmwarebranch-tryjob
-  reef-firmware-cr50-mp-release-9308.87.B-firmwarebranch-tryjob
-  reef-firmware-cr50-release-9308.25.B-firmwarebranch-tryjob
-  reef-firmware-reef-9042.B-firmwarebranch-tryjob
   reef-firmware-tryjob
   reef-full-tryjob
   reef-llvm-next-toolchain-tryjob
@@ -3483,7 +3239,6 @@
   reks-chromium-pfq-tryjob
   reks-compile-only-pre-cq
   reks-factory-tryjob
-  reks-firmware-reks-7287.133.B-firmwarebranch-tryjob
   reks-firmware-tryjob
   reks-full-tryjob
   reks-llvm-next-toolchain-tryjob
@@ -3504,7 +3259,6 @@
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq
   relm-factory-tryjob
-  relm-firmware-strago-7287.B-firmwarebranch-tryjob
   relm-firmware-tryjob
   relm-full-tryjob
   relm-llvm-next-toolchain-tryjob
@@ -3525,7 +3279,6 @@
   rikku-chromium-pfq-tryjob
   rikku-compile-only-pre-cq
   rikku-factory-tryjob
-  rikku-firmware-rikku-6301.110.B-firmwarebranch-tryjob
   rikku-firmware-tryjob
   rikku-full-tryjob
   rikku-llvm-next-toolchain-tryjob
@@ -3558,7 +3311,6 @@
   samus-chromium-pfq-tryjob
   samus-compile-only-pre-cq
   samus-factory-tryjob
-  samus-firmware-samus-6300.B-firmwarebranch-tryjob
   samus-firmware-tryjob
   samus-full-tryjob
   samus-kernelnext-chromium-pfq-tryjob
@@ -3591,7 +3343,6 @@
   sand-chromium-pfq-tryjob
   sand-compile-only-pre-cq
   sand-factory-tryjob
-  sand-firmware-reef-9042.B-firmwarebranch-tryjob
   sand-firmware-tryjob
   sand-full-tryjob
   sand-llvm-next-toolchain-tryjob
@@ -3635,7 +3386,6 @@
   scarlet-chromium-pfq-tryjob
   scarlet-compile-only-pre-cq
   scarlet-factory-tryjob
-  scarlet-firmware-scarlet-10388.B-firmwarebranch-tryjob
   scarlet-firmware-tryjob
   scarlet-full-tryjob
   scarlet-llvm-next-toolchain-tryjob
@@ -3656,7 +3406,6 @@
   sentry-chromium-pfq-tryjob
   sentry-compile-only-pre-cq
   sentry-factory-tryjob
-  sentry-firmware-glados-7820.B-firmwarebranch-tryjob
   sentry-firmware-tryjob
   sentry-full-tryjob
   sentry-llvm-next-toolchain-tryjob
@@ -3677,7 +3426,6 @@
   setzer-chromium-pfq-tryjob
   setzer-compile-only-pre-cq
   setzer-factory-tryjob
-  setzer-firmware-strago-7287.B-firmwarebranch-tryjob
   setzer-firmware-tryjob
   setzer-full-tryjob
   setzer-llvm-next-toolchain-tryjob
@@ -3695,12 +3443,10 @@
   setzer-tot-chromium-pfq-informational-tryjob
   setzer-unittest-stress
   signer-pre-cq
-  smaug-firmware-smaug-7900.B-firmwarebranch-tryjob
   snappy-chrome-pfq-tryjob
   snappy-chromium-pfq-tryjob
   snappy-compile-only-pre-cq
   snappy-factory-tryjob
-  snappy-firmware-reef-9042.B-firmwarebranch-tryjob
   snappy-firmware-tryjob
   snappy-full-tryjob
   snappy-llvm-next-toolchain-tryjob
@@ -3721,7 +3467,6 @@
   soraka-chromium-pfq-tryjob
   soraka-compile-only-pre-cq
   soraka-factory-tryjob
-  soraka-firmware-poppy-10431.B-firmwarebranch-tryjob
   soraka-firmware-tryjob
   soraka-full-tryjob
   soraka-llvm-next-toolchain-tryjob
@@ -3742,7 +3487,6 @@
   squawks-chromium-pfq-tryjob
   squawks-compile-only-pre-cq
   squawks-factory-tryjob
-  squawks-firmware-squawks-5216.152.B-firmwarebranch-tryjob
   squawks-firmware-tryjob
   squawks-full-tryjob
   squawks-llvm-next-toolchain-tryjob
@@ -3783,7 +3527,6 @@
   sumo-chromium-pfq-tryjob
   sumo-compile-only-pre-cq
   sumo-factory-tryjob
-  sumo-firmware-sumo-5216.382.B-firmwarebranch-tryjob
   sumo-firmware-tryjob
   sumo-full-tryjob
   sumo-llvm-next-toolchain-tryjob
@@ -3804,7 +3547,6 @@
   swanky-chromium-pfq-tryjob
   swanky-compile-only-pre-cq
   swanky-factory-tryjob
-  swanky-firmware-swanky-5216.238.B-firmwarebranch-tryjob
   swanky-firmware-tryjob
   swanky-full-tryjob
   swanky-llvm-next-toolchain-tryjob
@@ -3842,7 +3584,6 @@
   terra-chromium-pfq-tryjob
   terra-compile-only-pre-cq
   terra-factory-tryjob
-  terra-firmware-terra-7287.154.B-firmwarebranch-tryjob
   terra-firmware-tryjob
   terra-full-tryjob
   terra-llvm-next-toolchain-tryjob
@@ -3864,7 +3605,6 @@
   tidus-chromium-pfq-tryjob
   tidus-compile-only-pre-cq
   tidus-factory-tryjob
-  tidus-firmware-tidus-6301.109.B-firmwarebranch-tryjob
   tidus-firmware-tryjob
   tidus-full-tryjob
   tidus-llvm-next-toolchain-tryjob
@@ -3885,7 +3625,6 @@
   tricky-chromium-pfq-tryjob
   tricky-compile-only-pre-cq
   tricky-factory-tryjob
-  tricky-firmware-tricky-5829.B-firmwarebranch-tryjob
   tricky-firmware-tryjob
   tricky-full-tryjob
   tricky-llvm-next-toolchain-tryjob
@@ -3907,7 +3646,6 @@
   ultima-compile-only-pre-cq
   ultima-factory-tryjob
   ultima-firmware-tryjob
-  ultima-firmware-ultima-7287.131.B-firmwarebranch-tryjob
   ultima-full-tryjob
   ultima-llvm-next-toolchain-tryjob
   ultima-llvm-toolchain-tryjob
@@ -3928,7 +3666,6 @@
   veyron_fievel-compile-only-pre-cq
   veyron_fievel-factory-tryjob
   veyron_fievel-firmware-tryjob
-  veyron_fievel-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_fievel-full-tryjob
   veyron_fievel-llvm-next-toolchain-tryjob
   veyron_fievel-llvm-toolchain-tryjob
@@ -3949,7 +3686,6 @@
   veyron_jaq-compile-only-pre-cq
   veyron_jaq-factory-tryjob
   veyron_jaq-firmware-tryjob
-  veyron_jaq-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_jaq-full-tryjob
   veyron_jaq-llvm-next-toolchain-tryjob
   veyron_jaq-llvm-toolchain-tryjob
@@ -3970,7 +3706,6 @@
   veyron_jerry-compile-only-pre-cq
   veyron_jerry-factory-tryjob
   veyron_jerry-firmware-tryjob
-  veyron_jerry-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_jerry-full-tryjob
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
@@ -3992,7 +3727,6 @@
   veyron_mickey-compile-only-pre-cq
   veyron_mickey-factory-tryjob
   veyron_mickey-firmware-tryjob
-  veyron_mickey-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_mickey-full-tryjob
   veyron_mickey-llvm-next-toolchain-tryjob
   veyron_mickey-llvm-toolchain-tryjob
@@ -4013,7 +3747,6 @@
   veyron_mighty-compile-only-pre-cq
   veyron_mighty-factory-tryjob
   veyron_mighty-firmware-tryjob
-  veyron_mighty-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_mighty-full-tryjob
   veyron_mighty-llvm-next-toolchain-tryjob
   veyron_mighty-llvm-toolchain-tryjob
@@ -4034,7 +3767,6 @@
   veyron_minnie-compile-only-pre-cq
   veyron_minnie-factory-tryjob
   veyron_minnie-firmware-tryjob
-  veyron_minnie-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_minnie-full-tryjob
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
@@ -4056,7 +3788,6 @@
   veyron_rialto-compile-only-pre-cq
   veyron_rialto-factory-tryjob
   veyron_rialto-firmware-tryjob
-  veyron_rialto-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_rialto-full-tryjob
   veyron_rialto-llvm-next-toolchain-tryjob
   veyron_rialto-llvm-toolchain-tryjob
@@ -4077,7 +3808,6 @@
   veyron_speedy-compile-only-pre-cq
   veyron_speedy-factory-tryjob
   veyron_speedy-firmware-tryjob
-  veyron_speedy-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_speedy-full-tryjob
   veyron_speedy-llvm-next-toolchain-tryjob
   veyron_speedy-llvm-toolchain-tryjob
@@ -4099,7 +3829,6 @@
   veyron_tiger-compile-only-pre-cq
   veyron_tiger-factory-tryjob
   veyron_tiger-firmware-tryjob
-  veyron_tiger-firmware-veyron-6588.B-firmwarebranch-tryjob
   veyron_tiger-full-tryjob
   veyron_tiger-llvm-next-toolchain-tryjob
   veyron_tiger-llvm-toolchain-tryjob
@@ -4134,7 +3863,6 @@
   winky-compile-only-pre-cq
   winky-factory-tryjob
   winky-firmware-tryjob
-  winky-firmware-winky-5216.265.B-firmwarebranch-tryjob
   winky-full-tryjob
   winky-llvm-next-toolchain-tryjob
   winky-llvm-toolchain-tryjob
@@ -4155,7 +3883,6 @@
   wizpig-chromium-pfq-tryjob
   wizpig-compile-only-pre-cq
   wizpig-factory-tryjob
-  wizpig-firmware-strago-7287.B-firmwarebranch-tryjob
   wizpig-firmware-tryjob
   wizpig-full-tryjob
   wizpig-llvm-next-toolchain-tryjob
@@ -4177,7 +3904,6 @@
   wolf-compile-only-pre-cq
   wolf-factory-tryjob
   wolf-firmware-tryjob
-  wolf-firmware-wolf-4389.24.B-firmwarebranch-tryjob
   wolf-full-tryjob
   wolf-llvm-next-toolchain-tryjob
   wolf-llvm-toolchain-tryjob
@@ -4220,8 +3946,6 @@
   zako-compile-only-pre-cq
   zako-factory-tryjob
   zako-firmware-tryjob
-  zako-firmware-zako-5219.17.B-firmwarebranch-tryjob
-  zako-firmware-zako-5219.B-firmwarebranch-tryjob
   zako-full-tryjob
   zako-llvm-next-toolchain-tryjob
   zako-llvm-toolchain-tryjob
