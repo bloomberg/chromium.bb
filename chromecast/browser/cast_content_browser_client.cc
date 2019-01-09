@@ -157,6 +157,13 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+void CreateOriginId(
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
+  // origin ID.
+  std::move(callback).Run(base::UnguessableToken::Create());
+}
+
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                            ::media::mojom::MediaDrmStorageRequest request) {
   DVLOG(1) << __func__;
@@ -171,6 +178,7 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   // The object will be deleted on connection error, or when the frame navigates
   // away.
   new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
+                               base::BindRepeating(&CreateOriginId),
                                std::move(request));
 }
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
