@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -20,6 +21,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -207,6 +209,26 @@ TEST_F(ShelfControllerTest, ShelfItemImageSynchronization) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(item.image.isNull());
   EXPECT_FALSE(controller->model()->items()[index].image.isNull());
+}
+
+TEST_F(ShelfControllerTest, ShelfIDUpdate) {
+  ShelfModel* model = Shell::Get()->shelf_controller()->model();
+
+  const ShelfID id1("id1");
+  const ShelfID id2("id2");
+
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  window->SetProperty(kShelfIDKey, new std::string(id1.Serialize()));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(id1, model->active_shelf_id());
+
+  window->SetProperty(kShelfIDKey, new std::string(id2.Serialize()));
+  EXPECT_EQ(id2, model->active_shelf_id());
+
+  window->ClearProperty(kShelfIDKey);
+  EXPECT_NE(id1, model->active_shelf_id());
+  EXPECT_NE(id2, model->active_shelf_id());
 }
 
 class ShelfControllerNotificationIndicatorTest : public AshTestBase {
