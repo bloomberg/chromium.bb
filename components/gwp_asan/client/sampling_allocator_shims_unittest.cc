@@ -49,9 +49,8 @@ namespace {
 
 constexpr size_t kSamplingFrequency = 10;
 
-// The likelihood of iterating this many times and not getting a sampled
-// allocation is less than one in a trillion [1 / exp(32)].
-constexpr size_t kLoopIterations = kSamplingFrequency * 32;
+// Number of loop iterations required to definitely hit a sampled allocation.
+constexpr size_t kLoopIterations = kSamplingFrequency * 4;
 
 constexpr int kSuccess = 0;
 constexpr int kFailure = 1;
