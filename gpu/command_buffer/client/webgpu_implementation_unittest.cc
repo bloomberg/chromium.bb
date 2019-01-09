@@ -31,10 +31,10 @@ namespace webgpu {
 class WebGPUImplementationTest : public testing::Test {
  protected:
   static const uint8_t kInitialValue = 0xBD;
-  static const int32_t kNumCommandEntries = 500;
-  static const int32_t kCommandBufferSizeBytes =
+  static const uint32_t kNumCommandEntries = 500;
+  static const uint32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const size_t kTransferBufferSize = 512;
+  static const uint32_t kTransferBufferSize = 512;
 
   static const GLint kMaxCombinedTextureImageUnits = 8;
   static const GLint kMaxTextureImageUnits = 8;
