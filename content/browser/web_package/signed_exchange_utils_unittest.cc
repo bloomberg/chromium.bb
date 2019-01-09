@@ -49,6 +49,9 @@ TEST(SignedExchangeUtilsTest, VersionParam_Simple) {
   base::Optional<SignedExchangeVersion> version =
       GetSignedExchangeVersion("application/signed-exchange;v=b2");
   EXPECT_EQ(version, SignedExchangeVersion::kB2);
+
+  version = GetSignedExchangeVersion("application/signed-exchange;v=b3");
+  EXPECT_EQ(version, SignedExchangeVersion::kB3);
 }
 
 TEST(SignedExchangeUtilsTest, VersionParam_WithSpace) {

@@ -14,7 +14,10 @@ namespace content {
 
 namespace {
 
-constexpr char kSignedExchangeMagic[] = "sxg1-b2";
+constexpr char kSignedExchangeMagic[] = "sxg1-b3";
+
+// TODO(crbug.com/919424) Remove support for kB2
+constexpr char kSignedExchangeMagicB2[] = "sxg1-b2";
 
 // size of `fallbackUrlLength` field in number of bytes.
 constexpr size_t kFallbackUrlLengthFieldSizeInBytes = 2;
@@ -59,7 +62,9 @@ BeforeFallbackUrl BeforeFallbackUrl::Parse(
 
   bool is_valid = true;
   if (memcmp(magic_string.data(), kSignedExchangeMagic,
-             sizeof(kSignedExchangeMagic)) != 0) {
+             sizeof(kSignedExchangeMagic)) != 0 &&
+      memcmp(magic_string.data(), kSignedExchangeMagicB2,
+             sizeof(kSignedExchangeMagicB2)) != 0) {
     signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
                                                     "Wrong magic string");
     is_valid = false;
