@@ -810,6 +810,21 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter",
+          "--qemu-require-kvm"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "net_unittests"
+      },
+      {
+        "args": [
           "--qemu-require-kvm"
         ],
         "swarming": {
