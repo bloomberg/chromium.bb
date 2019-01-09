@@ -58,20 +58,20 @@ size_t TokenizedStringCharIterator::GetCharSize() const {
 }
 
 bool TokenizedStringCharIterator::IsFirstCharOfToken() const {
-  return current_token_iter_ && current_token_iter_->char_pos() == 0;
+  return current_token_iter_ && current_token_iter_->char_offset() == 0;
 }
 
 TokenizedStringCharIterator::State TokenizedStringCharIterator::GetState()
     const {
   return State(current_token_,
-               current_token_iter_ ? current_token_iter_->char_pos() : 0);
+               current_token_iter_ ? current_token_iter_->char_offset() : 0);
 }
 
 void TokenizedStringCharIterator::SetState(const State& state) {
   current_token_ = state.token_index;
   CreateTokenCharIterator();
   if (current_token_iter_) {
-    while (current_token_iter_->char_pos() < state.char_index)
+    while (current_token_iter_->char_offset() < state.char_index)
       current_token_iter_->Advance();
   }
 }
