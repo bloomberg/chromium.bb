@@ -854,8 +854,9 @@ message ThermalSample {
 
 // Temperature measurement series for thermal point.
 message ThermalInfo {
+  reserved 2;
   optional string label = 1;
-  optional int32 temperature = 2;
+  repeated ThermalSample samples = 3;
 }
 
 // Status for various on-board components
