@@ -244,7 +244,7 @@ void EnrollmentScreenHandler::ShowSigninScreen() {
 
 void EnrollmentScreenHandler::ShowLicenseTypeSelectionScreen(
     const base::DictionaryValue& license_types) {
-  CallJSWithPrefix("setAvailableLicenseTypes", license_types);
+  CallJS("login.OAuthEnrollmentScreen.setAvailableLicenseTypes", license_types);
   ShowStep(kEnrollmentStepPickLicense);
 }
 
@@ -267,10 +267,10 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
   }
   switch (error) {
     case authpolicy::ERROR_NONE: {
-      CallJSWithPrefix("setAdJoinParams", std::string() /* machineName */,
-                       std::string() /* userName */,
-                       static_cast<int>(ActiveDirectoryErrorState::NONE),
-                       show_unlock_password_);
+      CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
+             std::string() /* machineName */, std::string() /* userName */,
+             static_cast<int>(ActiveDirectoryErrorState::NONE),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     }
@@ -280,31 +280,31 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       return;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
-      CallJSWithPrefix(
-          "setAdJoinParams", machine_name, username,
-          static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME),
-          show_unlock_password_);
+      CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
+             username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_BAD_PASSWORD:
-      CallJSWithPrefix(
-          "setAdJoinParams", machine_name, username,
-          static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD),
-          show_unlock_password_);
+      CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
+             username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
-      CallJSWithPrefix(
-          "setAdJoinParams", machine_name, username,
-          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG),
-          show_unlock_password_);
+      CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
+             username,
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_INVALID_MACHINE_NAME:
-      CallJSWithPrefix(
-          "setAdJoinParams", machine_name, username,
-          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID),
-          show_unlock_password_);
+      CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
+             username,
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_PASSWORD_EXPIRED:
@@ -345,7 +345,8 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
 void EnrollmentScreenHandler::ShowAttributePromptScreen(
     const std::string& asset_id,
     const std::string& location) {
-  CallJSWithPrefix("showAttributePromptStep", asset_id, location);
+  CallJS("login.OAuthEnrollmentScreen.showAttributePromptStep", asset_id,
+         location);
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
@@ -354,8 +355,8 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
 
 void EnrollmentScreenHandler::ShowAttestationBasedEnrollmentSuccessScreen(
     const std::string& enterprise_domain) {
-  CallJSWithPrefix("showAttestationBasedEnrollmentSuccess",
-                   ui::GetChromeOSDeviceName(), enterprise_domain);
+  CallJS("login.OAuthEnrollmentScreen.showAttestationBasedEnrollmentSuccess",
+         ui::GetChromeOSDeviceName(), enterprise_domain);
 }
 
 void EnrollmentScreenHandler::ShowAuthError(
@@ -632,11 +633,10 @@ bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
 void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
     std::string unlocked_data) {
   if (unlocked_data.empty()) {
-    CallJSWithPrefix(
-        "setAdJoinParams", std::string() /* machineName */,
-        std::string() /* userName */,
-        static_cast<int>(ActiveDirectoryErrorState::BAD_UNLOCK_PASSWORD),
-        show_unlock_password_);
+    CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
+           std::string() /* machineName */, std::string() /* userName */,
+           static_cast<int>(ActiveDirectoryErrorState::BAD_UNLOCK_PASSWORD),
+           show_unlock_password_);
     return;
   }
   std::unique_ptr<base::ListValue> options =
@@ -645,7 +645,8 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
   if (!options) {
     ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);
     show_unlock_password_ = false;
-    CallJSWithPrefix("setAdJoinConfiguration", base::ListValue());
+    CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration",
+           base::ListValue());
     return;
   }
   base::DictionaryValue custom;
@@ -656,7 +657,7 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
   show_unlock_password_ = false;
   active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::USING_CONFIGURATION;
-  CallJSWithPrefix("setAdJoinConfiguration", *options);
+  CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration", *options);
 }
 
 void EnrollmentScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
@@ -693,7 +694,7 @@ void EnrollmentScreenHandler::UpdateStateInternal(
   if (is_frame_error) {
     LOG(WARNING) << "Retry page load";
     // TODO(rsorokin): Too many consecutive reloads.
-    CallJSWithPrefix("doReload");
+    CallJS("login.OAuthEnrollmentScreen.doReload");
   }
 
   if (!is_online || is_frame_error)
@@ -870,7 +871,7 @@ void EnrollmentScreenHandler::HandleLicenseTypeSelected(
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {
-  CallJSWithPrefix("showStep", std::string(step));
+  CallJS("login.OAuthEnrollmentScreen.showStep", std::string(step));
 }
 
 void EnrollmentScreenHandler::ShowError(int message_id, bool retry) {
@@ -885,7 +886,7 @@ void EnrollmentScreenHandler::ShowErrorForDevice(int message_id, bool retry) {
 
 void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,
                                                bool retry) {
-  CallJSWithPrefix("showError", message, retry);
+  CallJS("login.OAuthEnrollmentScreen.showError", message, retry);
 }
 
 void EnrollmentScreenHandler::DoShow() {

@@ -491,7 +491,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("webviewPartitionName", partition_name);
 
   frame_state_ = FRAME_STATE_LOADING;
-  CallJSWithPrefix("loadAuthExtension", params);
+  CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
 }
 
 void GaiaScreenHandler::ReloadGaia(bool force_reload) {
@@ -514,7 +514,7 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
 }
 
 void GaiaScreenHandler::MonitorOfflineIdle(bool is_online) {
-  CallJSWithPrefix("monitorOfflineIdle", is_online);
+  CallJS("login.GaiaSigninScreen.monitorOfflineIdle", is_online);
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
@@ -735,18 +735,16 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
-      CallJSWithPrefix(
-          "invalidateAd", username,
-          static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
+      CallJS("login.GaiaSigninScreen.invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
       break;
     case authpolicy::ERROR_BAD_PASSWORD:
-      CallJSWithPrefix(
-          "invalidateAd", username,
-          static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD));
+      CallJS("login.GaiaSigninScreen.invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD));
       break;
     default:
-      CallJSWithPrefix("invalidateAd", username,
-                       static_cast<int>(ActiveDirectoryErrorState::NONE));
+      CallJS("login.GaiaSigninScreen.invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::NONE));
       core_oobe_view_->ShowSignInError(
           0, GetAdErrorMessage(error), std::string(),
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
@@ -1227,7 +1225,7 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
                     g_browser_process->platform_part()
                         ->browser_policy_connector_chromeos()
                         ->IsEnterpriseManaged());
-  CallJSWithPrefix("showWhitelistCheckFailedError", true, params);
+  CallJS("login.GaiaSigninScreen.showWhitelistCheckFailedError", true, params);
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force,

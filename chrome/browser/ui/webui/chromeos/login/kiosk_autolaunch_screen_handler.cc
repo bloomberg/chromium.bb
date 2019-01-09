@@ -81,7 +81,7 @@ void KioskAutolaunchScreenHandler::UpdateKioskApp() {
     icon_url = webui::GetBitmapDataUrl(*app.icon.bitmap());
 
   app_info.SetString("appIconUrl", icon_url);
-  CallJSWithPrefix("updateApp", app_info);
+  CallJS("login.AutolaunchScreen.updateApp", app_info);
 }
 
 void KioskAutolaunchScreenHandler::DeclareLocalizedValues(

@@ -127,7 +127,7 @@ void UserImageScreenHandler::HandleGetImages() {
   std::unique_ptr<base::ListValue> default_images =
       default_user_image::GetAsDictionary(true /* all */);
   result.Set("images", std::move(default_images));
-  CallJSWithPrefix("setDefaultImages", result);
+  CallJS("login.UserImageScreen.setDefaultImages", result);
 }
 
 void UserImageScreenHandler::HandleScreenReady() {
@@ -180,7 +180,7 @@ void UserImageScreenHandler::HandleScreenShown() {
 }
 
 void UserImageScreenHandler::HideCurtain() {
-  CallJSWithPrefix("hideCurtain");
+  CallJS("login.UserImageScreen.hideCurtain");
 }
 
 }  // namespace chromeos

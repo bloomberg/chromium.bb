@@ -65,8 +65,12 @@ void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
 
+void BaseWebUIHandler::CallJS(const std::string& method) {
+  web_ui()->CallJavascriptFunctionUnsafe(method);
+}
+
 void BaseWebUIHandler::CallJSWithPrefix(const std::string& method) {
-  web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method));
+  CallJS(FullMethodPath(method));
 }
 
 void BaseWebUIHandler::ShowScreen(OobeScreen screen) {

@@ -150,7 +150,7 @@ void SyncConsentScreenHandler::Show() {
 void SyncConsentScreenHandler::Hide() {}
 
 void SyncConsentScreenHandler::SetThrobberVisible(bool visible) {
-  CallJSWithPrefix("setThrobberVisible", visible);
+  CallJS("login.SyncConsentScreen.setThrobberVisible", visible);
 }
 
 void SyncConsentScreenHandler::Initialize() {}
