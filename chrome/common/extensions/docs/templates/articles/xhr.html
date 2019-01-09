@@ -6,18 +6,20 @@ Regular web pages can use the
 <a href="https://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
 object to send and receive data from remote servers,
 but they're limited by the
-<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
-Extensions aren't so limited.
-An extension can talk to remote servers outside of its origin,
-as long as it first requests cross-origin permissions.</p>
+<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>
+(and since Chrome 73 <a href="content_scripts">content scripts</a> are also
+subject to the same restrictions as the web page they are injected into).
+Extensions aren't so limited - a script executing in an
+extension's origin can talk to remote servers outside of its origin,
+as long as the extension requests cross-origin permissions.</p>
 
 <h2 id="extension-origin">Extension origin</h2>
-<p>Each running extension exists within its own separate security origin. Without
-requesting additional privileges, the extension can use
+<p>Each running extension exists within its own separate security origin.
+Without requesting additional privileges, the extension can use
 XMLHttpRequest to get resources within its installation. For example, if
 an extension contains a JSON configuration file called <code>config.json</code>,
-in a <code>config_resources</code> folder, the extension can retrieve the file's contents like
-this:</p>
+in a <code>config_resources</code> folder, the extension can retrieve the
+file's contents like this:</p>
 
 <pre>
 var xhr = new XMLHttpRequest();
@@ -85,6 +87,7 @@ of hosts, it must declare the permissions separately:</p>
 
 <h2 id="security-considerations">Security considerations</h2>
 
+<h3 id="xss">Avoiding cross-site scripting vulnerabilities</h3>
 <p>
 When using resources retrieved via XMLHttpRequest, your background page should
 be careful not to fall victim to <a
@@ -140,6 +143,86 @@ xhr.onreadystatechange = function() {
 }
 xhr.send();
 </pre>
+
+<h3 id="xhr-vs-content-scripts">
+  Limiting content script access to cross-origin requests
+</h3>
+
+<p>
+When performing cross-origin requests on behalf of a content script, be careful
+to guard against a malicious webpage that might try to impersonate a content
+script.  In particular, do not allow content scripts to request an arbitrary
+URL.
+</p>
+
+<p>
+Consider an example where an extension performs a cross-origin
+request to let a content script discover the price of an item. One (insecure)
+approach would be to have the content script specify the exact resource to be
+fetched by the background page.
+</p>
+
+<pre data-filename="background.js">
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.contentScriptQuery == 'fetchUrl') {
+        // WARNING: SECURITY PROBLEM - a malicious webpage may abuse
+        // the message handler to get access to arbitrary cross-origin
+        // resources.
+        fetch(request.url)
+            .then(response => response.text())
+            .then(text => sendResponse(text))
+            .catch(error => ...)
+        return true;  // Will respond asynchronously.
+      }
+    });
+</pre>
+
+<pre data-filename="content_script.js">
+chrome.runtime.sendMessage(
+    {contentScriptQuery: 'fetchUrl',
+     url: 'https://another-site.com/price-query?itemId=' +
+              encodeURIComponent(request.itemId)},
+    response => parsePrice(response.text()));
+</pre>
+
+<p>
+In the approach above, the content script can ask the extension to fetch any
+URL that the extension has access to.  A malicious website may be able to forge
+such messages and trick the extension into giving access to cross-origin
+resources.
+</p>
+
+<p>
+Instead, design message handlers that limit the resources that can be fetched.
+Below, only the <code>itemId</code> is provided by the content script, and not
+the full URL.
+</p>
+
+<pre data-filename="background.js">
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.contentScriptQuery == 'queryPrice') {
+        var url = 'https://another-site.com/price-query?itemId=' +
+            encodeURIComponent(request.itemId);
+        fetch(url)
+            .then(response => response.text())
+            .then(text => parsePrice(text))
+            .then(price => sendResponse(price))
+            .catch(error => ...)
+        return true;  // Will respond asynchronously.
+      }
+    });
+</pre>
+
+<pre data-filename="content_script.js">
+chrome.runtime.sendMessage(
+    {contentScriptQuery: 'queryPrice', itemId: 12345},
+    price => ...);
+</pre>
+
+<h3 id="http-man-in-the-middle">Preferring HTTPS over HTTP</h3>
+
 <p>
 Additionally, be especially careful of resources retrieved via HTTP.  If your
 extension is used on a hostile network, an network attacker (aka a <a
@@ -148,7 +231,7 @@ could modify the response and, potentially, attack your extension.  Instead,
 prefer HTTPS whenever possible.
 </p>
 
-<h3 id="interaction-with-csp">Interaction with Content Security Policy</h3>
+<h3 id="interaction-with-csp">Adjusting the Content Security Policy</h3>
 
 <p>
 If you modify the default <a href="contentSecurityPolicy">Content
