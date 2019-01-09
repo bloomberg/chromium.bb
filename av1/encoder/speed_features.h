@@ -646,6 +646,9 @@ typedef struct SPEED_FEATURES {
 
   // Enable/disable interintra wedge search.
   int disable_wedge_interintra_search;
+
+  // Flag used to control the extent of coeff R-D optimization
+  int perform_coeff_opt;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

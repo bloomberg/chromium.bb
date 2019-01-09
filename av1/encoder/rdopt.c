@@ -3046,6 +3046,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   tran_low_t *best_dqcoeff = this_dqcoeff;
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+  int perform_block_coeff_opt;
   av1_invalid_rd_stats(best_rd_stats);
 
   TXB_RD_INFO *intra_txb_rd_info = NULL;
@@ -3180,12 +3181,19 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   const uint16_t *eobs_ptr = x->plane[plane].eobs;
 
+  // Used mse based threshold logic to take decision of R-D of optimization of
+  // coeffs. For snaller residuals, coeff optimization would be helpful. For
+  // larger residuals, R-D optimization may not be effective.
+  // TODO(any): Experiment with variance and mean based thresholds
+  perform_block_coeff_opt = (block_mse_q8 <= cpi->coeff_opt_dist_threshold);
+
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!(allowed_tx_mask & (1 << tx_type))) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
-    if (cpi->optimize_seg_arr[mbmi->segment_id] != FULL_TRELLIS_OPT) {
+    if ((cpi->optimize_seg_arr[mbmi->segment_id] != FULL_TRELLIS_OPT) ||
+        (!perform_block_coeff_opt)) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
