@@ -51,7 +51,6 @@ class WPTServe(server_base.ServerBase):
         if self._port_obj.host.filesystem.exists(path_to_ws_handlers):
             start_cmd += ['--ws_doc_root', path_to_ws_handlers]
 
-        self._stdout = self._stderr = self._executive.DEVNULL
         # TODO(burnik): We should stop setting the CWD once WPT can be run without it.
         self._cwd = path_to_wpt_root
         self._env = port_obj.host.environ.copy()
@@ -80,34 +79,39 @@ class WPTServe(server_base.ServerBase):
         return temp_file
 
     def _stop_running_server(self):
-        self._wait_for_action(self._check_and_kill_wptserve)
+        if not self._wait_for_action(self._check_and_kill):
+            # This is mostly for POSIX systems. We send SIGINT in
+            # _check_and_kill() and here we use SIGKILL.
+            self._executive.kill_process(self._pid)
+
         if self._filesystem.exists(self._pid_file):
             self._filesystem.remove(self._pid_file)
         if self._filesystem.exists(self._config_file):
             self._filesystem.remove(self._config_file)
 
-    def _check_and_kill_wptserve(self):
+    def _check_and_kill(self):
         """Tries to kill wptserve.
 
         Returns True if it appears to be not running. Or, if it appears to be
         running, tries to kill the process and returns False.
         """
-        if not (self._pid and self._executive.check_running_pid(self._pid)):
+        if not (self._pid and self._process):
+            _log.warning('No process object or PID. wptserve has not started.')
+            return True
+
+        # Polls the process in case it has died; otherwise, the process might be
+        # defunct and check_running_pid can still succeed.
+        if self._process.poll() or not self._executive.check_running_pid(self._pid):
             _log.debug('pid %d is not running', self._pid)
             return True
 
         _log.debug('pid %d is running, killing it', self._pid)
 
-        # Executive.kill_process appears to not to effectively kill the
-        # wptserve processes on Linux (and presumably other platforms).
+        # kill_process() kills the whole process tree on Windows, but not on
+        # POSIX, so we send SIGINT instead to allow wptserve to exit gracefully.
         if self._platform.is_win():
             self._executive.kill_process(self._pid)
         else:
             self._executive.interrupt(self._pid)
-
-        # According to Popen.wait(), this can deadlock when using stdout=PIPE or
-        # stderr=PIPE. We're using DEVNULL for both so that should not occur.
-        if self._process is not None:
-            self._process.wait()
 
         return False

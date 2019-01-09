@@ -3,6 +3,7 @@
   "ws_doc_root": null,
   "check_subdomains": false,
   "server_host": "127.0.0.1",
+  "log_level": "info",
   "ports": {
     "http": [8001, 8081],
     "https": [8444],
