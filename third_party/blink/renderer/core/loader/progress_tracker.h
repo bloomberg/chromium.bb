@@ -67,7 +67,7 @@ class CORE_EXPORT ProgressTracker final
 
   void WillStartLoading(unsigned long identifier, ResourceLoadPriority);
   void IncrementProgress(unsigned long identifier, const ResourceResponse&);
-  void IncrementProgress(unsigned long identifier, size_t);
+  void IncrementProgress(unsigned long identifier, uint64_t);
   void CompleteProgress(unsigned long identifier);
 
  private:

@@ -229,7 +229,7 @@ class NetworkResourcesData final
                           bool base64_encoded = false);
   void MaybeAddResourceData(const String& request_id,
                             const char* data,
-                            size_t data_length);
+                            uint64_t data_length);
   void MaybeDecodeDataToContent(const String& request_id);
   void AddResource(const String& request_id, Resource*);
   ResourceData const* Data(const String& request_id);

@@ -166,7 +166,7 @@ void ProgressTracker::IncrementProgress(unsigned long identifier,
 }
 
 void ProgressTracker::IncrementProgress(unsigned long identifier,
-                                        size_t length) {
+                                        uint64_t length) {
   ProgressItem* item = progress_items_.at(identifier);
   if (!item)
     return;

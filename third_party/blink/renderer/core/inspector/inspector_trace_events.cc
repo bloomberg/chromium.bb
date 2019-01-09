@@ -131,7 +131,7 @@ void InspectorTraceEvents::DidReceiveResourceResponse(
 void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
                                           DocumentLoader* loader,
                                           const char* data,
-                                          int encoded_data_length) {
+                                          uint64_t encoded_data_length) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceReceivedData",
                        TRACE_EVENT_SCOPE_THREAD, "data",
@@ -820,13 +820,13 @@ std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
     DocumentLoader* loader,
     unsigned long identifier,
     LocalFrame* frame,
-    int encoded_data_length) {
+    uint64_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
-  value->SetInteger("encodedDataLength", encoded_data_length);
+  value->SetDouble("encodedDataLength", encoded_data_length);
   return value;
 }
 

@@ -109,7 +109,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidReceiveData(unsigned long identifier,
                       DocumentLoader*,
                       const char* data,
-                      size_t data_length);
+                      uint64_t data_length);
   void DidReceiveBlob(unsigned long identifier,
                       DocumentLoader*,
                       scoped_refptr<BlobDataHandle>);

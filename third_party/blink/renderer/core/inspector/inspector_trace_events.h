@@ -96,7 +96,7 @@ class CORE_EXPORT InspectorTraceEvents
   void DidReceiveData(unsigned long identifier,
                       DocumentLoader*,
                       const char* data,
-                      int data_length);
+                      uint64_t data_length);
   void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,
                         TimeTicks monotonic_finish_time,
@@ -286,7 +286,7 @@ namespace inspector_receive_data_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   unsigned long identifier,
                                   LocalFrame*,
-                                  int encoded_data_length);
+                                  uint64_t encoded_data_length);
 }
 
 namespace inspector_resource_finish_event {

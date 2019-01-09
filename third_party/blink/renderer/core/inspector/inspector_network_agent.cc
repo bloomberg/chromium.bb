@@ -971,7 +971,7 @@ static bool IsErrorStatusCode(int status_code) {
 void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
                                            DocumentLoader* loader,
                                            const char* data,
-                                           size_t data_length) {
+                                           uint64_t data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
   if (data) {
@@ -986,7 +986,7 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
   }
 
   GetFrontend()->dataReceived(
-      request_id, CurrentTimeTicksInSeconds(), data_length,
+      request_id, CurrentTimeTicksInSeconds(), static_cast<int>(data_length),
       static_cast<int>(
           resources_data_->GetAndClearPendingEncodedDataLength(request_id)));
 }
