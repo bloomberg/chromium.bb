@@ -50,6 +50,8 @@ class MockService : public perfetto::TracingService {
   std::unique_ptr<ConsumerEndpoint> ConnectConsumer(perfetto::Consumer*,
                                                     uid_t) override;
 
+  void SetSMBScrapingEnabled(bool enabled) override;
+
  private:
   base::MessageLoop* message_loop_;
 
@@ -112,6 +114,8 @@ void MockService::OnTracingDisabled() {
 void MockService::WaitForTracingDisabled() {
   wait_for_tracing_disabled_.Run();
 }
+
+void MockService::SetSMBScrapingEnabled(bool enabled) {}
 
 // perfetto::TracingService implementation.
 std::unique_ptr<perfetto::TracingService::ProducerEndpoint>
