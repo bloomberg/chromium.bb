@@ -104,7 +104,7 @@ const SPEED_INSTANT = 400000;
 
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
                                             resolve,
                                             start_x,
@@ -142,7 +142,7 @@ function pixelsPerTick() {
 
 function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s, fling_velocity, gesture_source_type) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.swipe(direction,
                                    pixels_to_scroll,
                                    resolve,
@@ -159,7 +159,7 @@ function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s,
 
 function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pinchBy(scale,
                                      centerX,
                                      centerY,
@@ -175,7 +175,7 @@ function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type
 
 function mouseMoveTo(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -189,7 +189,7 @@ function mouseMoveTo(xPosition, yPosition) {
 
 function mouseDownAt(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -203,7 +203,7 @@ function mouseDownAt(xPosition, yPosition) {
 
 function mouseUpAt(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -218,7 +218,7 @@ function mouseUpAt(xPosition, yPosition) {
 // Simulate a mouse click on point.
 function mouseClickOn(x, y, button = 0 /* left */) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
@@ -237,7 +237,7 @@ function mouseClickOn(x, y, button = 0 /* left */) {
 // Simulate a mouse press on point for a certain time.
 function mousePressOn(x, y, t) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
@@ -258,7 +258,7 @@ function mousePressOn(x, y, t) {
 // {end_x, end_y} and release.
 function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 0 /* left */, t = 0) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
