@@ -708,6 +708,11 @@ void MenuItemView::SetCornerRadius(int radius) {
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
+void MenuItemView::SetAlerted(bool alerted) {
+  alerted_ = alerted;
+  SchedulePaint();
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type)
@@ -1000,18 +1005,26 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 void MenuItemView::PaintBackground(gfx::Canvas* canvas,
                                    PaintButtonMode mode,
                                    bool render_selection) {
-  if (GetType() == HIGHLIGHTED) {
+  if (GetType() == HIGHLIGHTED || alerted_) {
     // Highligted items always have a different-colored background, and ignore
     // system theme.
-    ui::NativeTheme::ColorId color_id =
-        render_selection
-            ? ui::NativeTheme::
-                  kColorId_FocusedHighlightedMenuItemBackgroundColor
-            : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
+    ui::NativeTheme::ColorId color_id;
+    if (GetType() == HIGHLIGHTED) {
+      color_id =
+          render_selection
+              ? ui::NativeTheme::
+                    kColorId_FocusedHighlightedMenuItemBackgroundColor
+              : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
+    } else {
+      color_id = ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor;
+    }
+
+    const SkColor color = GetNativeTheme()->GetSystemColor(color_id);
+
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(GetNativeTheme()->GetSystemColor(color_id));
+    flags.setColor(color);
     // Draw a rounded rect that spills outside of the clipping area, so that the
     // rounded corners only show in the bottom 2 corners. Note that
     // |corner_radius_| should only be set when the highlighted item is at the

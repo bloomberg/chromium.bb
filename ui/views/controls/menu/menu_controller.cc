@@ -415,7 +415,8 @@ void MenuController::Run(Widget* parent,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition position,
                          bool context_menu,
-                         bool is_nested_drag) {
+                         bool is_nested_drag,
+                         base::flat_set<int> alerted_commands) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -454,6 +455,7 @@ void MenuController::Run(Widget* parent,
     DCHECK_EQ(owner_, parent);
   } else {
     showing_ = true;
+    alerted_commands_ = alerted_commands;
 
     if (owner_)
       owner_->RemoveObserver(this);
@@ -1948,7 +1950,15 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
     // than 0) is fine.
     const int kGroupingId = 1001;
 
+    // Show alerts on the requested MenuItemViews.
+    for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i) {
+      MenuItemView* subitem = item->GetSubmenu()->GetMenuItemAt(i);
+      if (alerted_commands_.contains(subitem->GetCommand()))
+        subitem->SetAlerted(true);
+    }
+
     item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
+
     // Figure out if the mouse is under the menu; if so, remember the mouse
     // location so we can ignore the first mouse move event(s) with that
     // location. We do this after ShowAt because ConvertPointFromScreen

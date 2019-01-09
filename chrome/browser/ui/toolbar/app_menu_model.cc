@@ -230,6 +230,11 @@ void ToolsMenuModel::Build(Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppMenuModel
 
+// static
+const int AppMenuModel::kMinRecentTabsCommandId;
+// static
+const int AppMenuModel::kMaxRecentTabsCommandId;
+
 AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
                            Browser* browser,
                            AppMenuIconController* app_menu_icon_controller)

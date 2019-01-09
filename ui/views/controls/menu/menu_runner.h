@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -115,12 +116,15 @@ class VIEWS_EXPORT MenuRunner {
 
   // Runs the menu. MenuDelegate::OnMenuClosed will be notified of the results.
   // If |anchor| uses a |BUBBLE_..| type, the bounds will get determined by
-  // using |bounds| as the thing to point at in screen coordinates.
+  // using |bounds| as the thing to point at in screen coordinates. Menu items
+  // with commands in |alerted_commands| will be rendered differently to draw
+  // attention to them.
   void RunMenuAt(Widget* parent,
                  MenuButton* button,
                  const gfx::Rect& bounds,
                  MenuAnchorPosition anchor,
-                 ui::MenuSourceType source_type);
+                 ui::MenuSourceType source_type,
+                 base::flat_set<int> alerted_commands = base::flat_set<int>());
 
   // Returns true if we're in a nested run loop running the menu.
   bool IsRunning() const;

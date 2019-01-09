@@ -34,7 +34,6 @@ class ReopenTabPromoController : public AppMenuObserver,
 
   // AppMenuObserver:
   void AppMenuClosed() override;
-  void OnShowSubmenu() override;
 
   ReopenTabInProductHelp* const iph_service_;
   BrowserView* const browser_view_;
