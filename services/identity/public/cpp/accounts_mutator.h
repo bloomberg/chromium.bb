@@ -5,7 +5,10 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_MUTATOR_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_MUTATOR_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 namespace identity {
 
@@ -15,6 +18,18 @@ class AccountsMutator {
  public:
   AccountsMutator() = default;
   virtual ~AccountsMutator() = default;
+
+  // Removes the account given by |account_id|. Also revokes the token
+  // server-side if needed.
+  virtual void RemoveAccount(
+      const std::string& account_id,
+      signin_metrics::SourceForRefreshTokenOperation source =
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown) = 0;
+
+  // Removes all accounts.
+  virtual void RemoveAllAccounts(
+      signin_metrics::SourceForRefreshTokenOperation source =
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
