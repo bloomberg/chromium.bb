@@ -10,6 +10,10 @@ function contentElement() {
   return document.elementFromPoint(innerWidth / 2, innerHeight / 2);
 }
 
+function isAnnotationMode() {
+  return document.querySelector('#toolbar').annotationMode;
+}
+
 async function testAsync(f) {
   try {
     await f();
@@ -27,7 +31,7 @@ chrome.test.runTests([
         toolbar.shadowRoot.querySelector('#annotate') != null);
     chrome.test.succeed();
   },
-  function testEnterAndExitAnnotationMode() {
+  function testEnterAnnotationMode() {
     testAsync(async () => {
       chrome.test.assertEq('EMBED', contentElement().tagName);
 
@@ -36,19 +40,11 @@ chrome.test.runTests([
       await viewer.loaded;
       chrome.test.assertEq(
           'VIEWER-INK-HOST', contentElement().tagName);
-
-      // Exit annotation mode.
-      $('toolbar').toggleAnnotation();
-      await viewer.loaded;
-      chrome.test.assertEq('EMBED', contentElement().tagName);
     });
   },
   function testViewportToCameraConversion() {
     testAsync(async () => {
-      // Enter annotation mode.
-      $('toolbar').toggleAnnotation();
-      await viewer.loaded;
-
+      chrome.test.assertTrue(isAnnotationMode());
       const inkHost = contentElement();
       const cameras = [];
       inkHost.ink_.setCamera = camera => cameras.push(camera);
@@ -79,7 +75,7 @@ chrome.test.runTests([
   },
   function testPenOptions() {
     testAsync(async () => {
-      // Still in annotation mode after previous test.
+      chrome.test.assertTrue(isAnnotationMode());
       const inkHost = contentElement();
       let tool = null;
       inkHost.ink_.setAnnotationTool = value => tool = value;
@@ -142,7 +138,7 @@ chrome.test.runTests([
   },
   function testPointerEvents() {
     testAsync(async () => {
-      // Still in annotation mode after previous test.
+      chrome.test.assertTrue(isAnnotationMode());
       const inkHost = contentElement();
       const events = [];
       inkHost.ink_.dispatchPointerEvent = (type, init) =>
@@ -235,6 +231,15 @@ chrome.test.runTests([
         {type: 'pointerdown', init: pen},
         {type: 'pointerup', init: pen},
       ]);
+    });
+  },
+  function testExitAnnotationMode() {
+    testAsync(async () => {
+      chrome.test.assertTrue(isAnnotationMode());
+      // Exit annotation mode.
+      $('toolbar').toggleAnnotation();
+      await viewer.loaded;
+      chrome.test.assertEq('EMBED', contentElement().tagName);
     });
   },
 ]);
