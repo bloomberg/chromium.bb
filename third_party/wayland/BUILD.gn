@@ -2,12 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("//build/config/linux/pkg_config.gni")
-
-declare_args() {
-  # Controls whether the build should use the version of Wayland
-  # library shipped with the system or Chromium third_party.
-  use_system_libwayland = false
-}
+import("//third_party/wayland/features.gni")
 
 if (!use_system_libwayland) {
   config("wayland_config") {
@@ -107,6 +102,33 @@ if (!use_system_libwayland) {
     ]
 
     public_configs = [ ":wayland_config" ]
+  }
+
+  config("wayland_scanner_config") {
+    cflags = [
+      "-Wno-int-conversion",
+      "-Wno-implicit-function-declaration",
+    ]
+
+    include_dirs = [ "include/" ]
+  }
+
+  executable("wayland_scanner") {
+    sources = [
+      "src/src/scanner.c",
+    ]
+
+    deps = [
+      ":wayland_util",
+      "//third_party/expat:expat",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      "//build/config/linux/libffi",
+      ":wayland_scanner_config",
+    ]
   }
 }
 

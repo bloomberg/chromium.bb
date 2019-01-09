@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_WAYLAND_CLIENTS_CLIENT_HELPER_H_
 #define COMPONENTS_EXO_WAYLAND_CLIENTS_CLIENT_HELPER_H_
 
+#include <aura-shell-client-protocol.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
 #include <input-timestamps-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
@@ -15,7 +16,6 @@
 #include <memory>
 
 #include "base/scoped_generic.h"
-#include "components/exo/wayland/public/aura-shell-client-protocol.h"
 
 #if defined(USE_GBM)
 #include <gbm.h>
