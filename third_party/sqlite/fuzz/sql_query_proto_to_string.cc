@@ -21,6 +21,10 @@ using namespace sql_query_grammar;
 
 #define CONV_FN(TYPE, VAR_NAME) std::string TYPE##ToString(const TYPE& VAR_NAME)
 
+#define RETURN_IF_DISABLED_QUERY(TYPE)     \
+  if (disabled_queries_.count(#TYPE) != 0) \
+    return "";
+
 namespace sql_fuzzer {
 
 namespace {
@@ -49,6 +53,8 @@ constexpr uint32_t kMaxSavePointNumber = 10;
 
 constexpr uint32_t kMaxViewNumber = 5;
 constexpr uint32_t kMaxTriggerNumber = 10;
+
+std::set<std::string> disabled_queries_;
 }  // namespace
 
 CONV_FN(Expr, expr);
@@ -1169,6 +1175,7 @@ CONV_FN(CreateTableOpt1, opt1) {
 }
 
 CONV_FN(CreateTable, create_table) {
+  RETURN_IF_DISABLED_QUERY(CreateTable);
 #if defined(FUZZ_FTS3)
   return "";  // Don't create normal tables in FTS3 fuzzing mode.
 #endif
@@ -1346,6 +1353,7 @@ CONV_FN(ValuesStatement, values) {
 }
 
 CONV_FN(Insert, insert) {
+  RETURN_IF_DISABLED_QUERY(Insert);
   std::string ret;
   if (insert.has_with()) {
     ret += WithStatementToString(insert.with());
@@ -1400,6 +1408,7 @@ CONV_FN(QualifiedTableName, qtn) {
 }
 
 CONV_FN(Delete, delete_) {
+  RETURN_IF_DISABLED_QUERY(Delete);
   std::string ret;
   if (delete_.has_with()) {
     ret += WithStatementToString(delete_.with());
@@ -1417,6 +1426,7 @@ CONV_FN(Delete, delete_) {
 // ~~~~UPDATE~~~~
 // WARNING no space at end
 CONV_FN(Update, update) {
+  RETURN_IF_DISABLED_QUERY(Update);
   std::string ret;
   if (update.has_with()) {
     ret += WithStatementToString(update.with());
@@ -1755,6 +1765,7 @@ CONV_FN(ExtraSelectSubStatement, esss) {
 }
 
 CONV_FN(Select, select) {
+  RETURN_IF_DISABLED_QUERY(Select);
   std::string ret;
   if (select.has_with()) {
     ret += WithStatementToString(select.with());
@@ -1873,6 +1884,7 @@ CONV_FN(FTS3MatchFormat, fmf) {
 }
 
 CONV_FN(FTS3SpecialCommand, fsc) {
+  RETURN_IF_DISABLED_QUERY(FTS3SpecialCommand);
   std::string ret("INSERT INTO ");
   ret += FTS3TableToString(fsc.table());
   ret += "(";
@@ -1905,6 +1917,7 @@ CONV_FN(FTS3SpecialCommand, fsc) {
 
 // WARNING no space at end
 CONV_FN(FTS3SelectMatch, fsm) {
+  RETURN_IF_DISABLED_QUERY(FTS3SelectMatch);
   std::string ret("SELECT * FROM ");
   ret += FTS3TableToString(fsm.table());
   ret += " WHERE ";
@@ -1915,6 +1928,7 @@ CONV_FN(FTS3SelectMatch, fsm) {
 }
 
 CONV_FN(FTS3SpecificQuery, fsq) {
+  RETURN_IF_DISABLED_QUERY(FTS3SpecificQuery);
 #if defined(FUZZ_FTS3)
   // oneof
   if (fsq.has_command()) {
@@ -1943,6 +1957,7 @@ CONV_FN(ICULocale, il) {
 }
 
 CONV_FN(CreateFTS3Table, cft) {
+  RETURN_IF_DISABLED_QUERY(CreateFTS3Table);
   std::string ret("CREATE VIRTUAL TABLE ");
   if (cft.if_not_exists())
     ret += "IF NOT EXISTS ";
@@ -2067,6 +2082,7 @@ CONV_FN(FTS3HiddenTableColumn, fhtc) {
 }
 
 CONV_FN(FTS3HiddenTableInsert, fi) {
+  RETURN_IF_DISABLED_QUERY(FTS3HiddenTableInsert);
   std::string ret("INSERT INTO ");
   ret += FTS3HiddenTableToString(fi.fht());
   if (fi.col_vals_size() == 0) {
@@ -2090,6 +2106,7 @@ CONV_FN(FTS3HiddenTableInsert, fi) {
 }
 
 CONV_FN(FTS3HiddenTableUpdate, fu) {
+  RETURN_IF_DISABLED_QUERY(FTS3HiddenTableUpdate);
   std::string ret("UPDATE ");
   ret += FTS3HiddenTableToString(fu.fht());
   ret += " ";
@@ -2117,6 +2134,7 @@ CONV_FN(FTS3HiddenTableUpdate, fu) {
 }
 
 CONV_FN(FTS3HiddenTableDelete, fd) {
+  RETURN_IF_DISABLED_QUERY(FTS3HiddenTableDelete);
   std::string ret("DELETE FROM ");
   ret += FTS3HiddenTableToString(fd.fht());
   if (fd.has_col_where()) {
@@ -2130,6 +2148,7 @@ CONV_FN(FTS3HiddenTableDelete, fd) {
 
 // ~~~~TRANSACTIONS/SAVEPOINTS
 CONV_FN(BeginTransaction, bt) {
+  RETURN_IF_DISABLED_QUERY(BeginTransaction);
   std::string ret("BEGIN ");
   if (bt.has_type()) {
     ret += BeginTransaction_TransactionType_Name(bt.type());
@@ -2140,11 +2159,13 @@ CONV_FN(BeginTransaction, bt) {
 }
 
 CONV_FN(CommitTransaction, ct) {
+  RETURN_IF_DISABLED_QUERY(CommitTransaction);
   return EnumStrReplaceUnderscores(
       CommitTransaction_CommitText_Name(ct.text()));
 }
 
 CONV_FN(RollbackStatement, rt) {
+  RETURN_IF_DISABLED_QUERY(RollbackStatement);
 #if !defined(FUZZ_OMIT_SAVEPOINT)
   if (rt.has_save_point()) {
     return "ROLLBACK TO SAVEPOINT " + SavePointToString(rt.save_point());
@@ -2155,15 +2176,18 @@ CONV_FN(RollbackStatement, rt) {
 
 #if !defined(FUZZ_OMIT_SAVEPOINT)
 CONV_FN(CreateSavePoint, csp) {
+  RETURN_IF_DISABLED_QUERY(CreateSavePoint);
   return "SAVEPOINT " + SavePointToString(csp.save_point());
 }
 
 CONV_FN(ReleaseSavePoint, rsp) {
+  RETURN_IF_DISABLED_QUERY(ReleaseSavePoint);
   return "RELEASE SAVEPOINT " + SavePointToString(rsp.save_point());
 }
 #endif
 
 CONV_FN(Analyze, a) {
+  RETURN_IF_DISABLED_QUERY(Analyze);
   std::string ret("ANALYZE");
   if (a.has_schema_name()) {
     ret += " ";
@@ -2188,6 +2212,7 @@ CONV_FN(Analyze, a) {
 
 // ~~~~VACUUM~~~~
 CONV_FN(Vacuum, v) {
+  RETURN_IF_DISABLED_QUERY(Vacuum);
   std::string ret("VACUUM");
   if (v.has_schema()) {
     ret += " ";
@@ -2198,6 +2223,7 @@ CONV_FN(Vacuum, v) {
 
 // ~~~~PRAGMA~~~~
 CONV_FN(Pragma, p) {
+  RETURN_IF_DISABLED_QUERY(Pragma);
 #if defined(FUZZ_OMIT_PRAGMA)
   return "";
 #else
@@ -2255,6 +2281,7 @@ CONV_FN(Pragma, p) {
 
 // ~~~~CREATE INDEX~~~~
 CONV_FN(CreateIndex, ci) {
+  RETURN_IF_DISABLED_QUERY(CreateIndex);
   std::string ret("CREATE ");
   if (ci.unique())
     ret += "UNIQUE ";
@@ -2280,6 +2307,7 @@ CONV_FN(CreateIndex, ci) {
 
 // ~~~~CREATE VIEW~~~~
 CONV_FN(CreateView, cv) {
+  RETURN_IF_DISABLED_QUERY(CreateView);
   std::string ret("CREATE ");
   if (cv.has_temp_modifier()) {
     ret += EnumStrReplaceUnderscores(TempModifier_Name(cv.temp_modifier()))
@@ -2321,6 +2349,7 @@ CONV_FN(TypicalQuery, tq) {
 
 // WARNING no space at end
 CONV_FN(CreateTrigger, ct) {
+  RETURN_IF_DISABLED_QUERY(CreateTrigger);
   std::string ret("CREATE ");
   if (ct.has_temp_modifier()) {
     ret += EnumStrReplaceUnderscores(TempModifier_Name(ct.temp_modifier()))
@@ -2375,6 +2404,7 @@ CONV_FN(CreateTrigger, ct) {
 
 // ~~~~REINDEX~~~~
 CONV_FN(ReIndex, ri) {
+  RETURN_IF_DISABLED_QUERY(ReIndex);
 // Chrome doesn't use REINDEX
 #if !defined(SQLITE_OMIT_REINDEX)
   if (ri.empty())
@@ -2400,6 +2430,7 @@ CONV_FN(ReIndex, ri) {
 }
 
 CONV_FN(Drop, d) {
+  RETURN_IF_DISABLED_QUERY(Drop);
   std::string ret("DROP ");
   std::string if_exists("");
   std::string schema("");
@@ -2436,6 +2467,7 @@ CONV_FN(Drop, d) {
 
 // ~~~~ALTER TABLE~~~~
 CONV_FN(AlterTable, at) {
+  RETURN_IF_DISABLED_QUERY(AlterTable);
   std::string ret("ALTER TABLE ");
   ret += ExprSchemaTableToString(at.schema_table());
   ret += " ";
@@ -2460,6 +2492,7 @@ CONV_FN(AlterTable, at) {
 
 // ~~~~ATTACH DATABASE~~~~
 CONV_FN(AttachDatabase, ad) {
+  RETURN_IF_DISABLED_QUERY(AttachDatabase);
   std::string ret("ATTACH DATABASE \'");
   if (ad.in_memory()) {
     if (ad.file_uri()) {
@@ -2487,6 +2520,7 @@ CONV_FN(AttachDatabase, ad) {
 
 // ~~~~DETACH DATABASE~~~~
 CONV_FN(DetachDatabase, dd) {
+  RETURN_IF_DISABLED_QUERY(DetachDatabase);
   std::string ret("DETACH DATABASE ");
   ret += SchemaToString(dd.schema());
   return ret;
@@ -2714,6 +2748,10 @@ CONV_FN(SQLQueries, sql_queries) {
   }
 
   return queries;
+}
+
+void SetDisabledQueries(std::set<std::string> disabled_queries) {
+  disabled_queries_ = disabled_queries;
 }
 
 }  // namespace sql_fuzzer

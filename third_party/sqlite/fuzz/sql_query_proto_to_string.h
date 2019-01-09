@@ -23,6 +23,8 @@ std::string ExprToString(const sql_query_grammar::Expr&);
 
 std::string SQLQueryToString(const sql_query_grammar::SQLQuery&);
 
+void SetDisabledQueries(std::set<std::string> disabled_queries);
+
 }  // namespace sql_fuzzer
 
 #endif  // THIRD_PARTY_SQLITE_FUZZ_SQL_QUERY_PROTO_TO_STRING_H_

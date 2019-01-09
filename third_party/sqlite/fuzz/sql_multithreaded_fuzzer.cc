@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "testing/libfuzzer/proto/lpm_interface.h"
+#include "third_party/sqlite/fuzz/disabled_queries_parser.h"
 #include "third_party/sqlite/fuzz/sql_query_grammar.pb.h"
 #include "third_party/sqlite/fuzz/sql_query_proto_to_string.h"
 #include "third_party/sqlite/fuzz/sql_run_queries.h"
@@ -25,6 +26,12 @@ constexpr int kNumThreads = 4;  // Must change with MultipleSQLQueries protobuf.
 }
 
 DEFINE_BINARY_PROTO_FUZZER(const MultipleSQLQueries& multiple_sql_queries) {
+  char* skip_queries = getenv("SQL_SKIP_QUERIES");
+  if (skip_queries) {
+    sql_fuzzer::SetDisabledQueries(
+        sql_fuzzer::ParseDisabledQueries(skip_queries));
+  }
+
   assert(multiple_sql_queries.GetDescriptor()->field_count() == kNumThreads);
 
   sqlite3* db = sql_fuzzer::InitConnectionForFuzzing();
