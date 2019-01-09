@@ -1168,6 +1168,8 @@ void DesktopDragDropClientAuraX11::CompleteXdndPosition(
   DragTranslate(screen_point, &data, &drop_target_event, &delegate);
   if (delegate)
     drag_operation = delegate->OnDragUpdated(*drop_target_event);
+  UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
+                        drag_operation != ui::DragDropTypes::DRAG_NONE);
 
   // Sends an XdndStatus message back to the source_window. l[2,3]
   // theoretically represent an area in the window where the current action is
