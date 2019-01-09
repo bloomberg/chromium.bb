@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -270,6 +271,14 @@ bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return false;
 }
 
+void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (HasAutocompleteText()) {
+    node_data->role = ax::mojom::Role::kTextField;
+    node_data->SetValue(l10n_util::GetStringFUTF16(
+        IDS_APP_LIST_SEARCH_BOX_AUTOCOMPLETE, search_box()->text()));
+  }
+}
+
 void SearchBoxView::UpdateBackground(double progress,
                                      ash::AppListState current_state,
                                      ash::AppListState target_state) {
@@ -495,6 +504,11 @@ void SearchBoxView::SetAutocompleteText(
   search_box()->set_controller(nullptr);
   search_box()->SetCompositionText(composition_text);
   search_box()->set_controller(this);
+
+  // Send an event to alert ChromeVox that an autocomplete has occurred.
+  // The |kValueChanged| type lets ChromeVox know that it should scan
+  // |node_data| for "Value".
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 void SearchBoxView::UpdateQuery(const base::string16& new_query) {
