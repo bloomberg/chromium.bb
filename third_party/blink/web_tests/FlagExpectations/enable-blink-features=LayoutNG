@@ -237,7 +237,6 @@ crbug.com/591099 external/wpt/html/interaction/focus/sequential-focus-navigation
 crbug.com/850504 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/845902 external/wpt/quirks/line-height-trailing-collapsable-whitespace.html [ Pass ]
 crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
-crbug.com/591099 fast/block/float-avoids-padding-inline-ancestors.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/height-positioned.html [ Pass ]
 crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Pass ]
