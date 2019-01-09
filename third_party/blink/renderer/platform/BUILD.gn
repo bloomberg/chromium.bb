@@ -200,7 +200,7 @@ group("blink_platform_public_deps") {
   ]
   public_configs = [ "//third_party/blink/renderer:features" ]
 
-  if (is_android) {
+  if (is_android || is_win) {
     public_deps +=
         [ "//third_party/blink/public/common:font_unique_name_table_proto" ]
   }
