@@ -237,6 +237,12 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   gfx::Size visible_size_;
   // Layout of device accepted input VideoFrame.
   base::Optional<VideoFrameLayout> device_input_layout_;
+  // Input allocated size calculated by
+  // V4L2Device::AllocatedSizeFromV4L2Format().
+  // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers
+  // uses input's VideoFrameLayout to allocate input buffer.
+  gfx::Size input_allocated_size_;
+
   size_t output_buffer_byte_size_;
   uint32_t output_format_fourcc_;
 

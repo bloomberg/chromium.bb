@@ -381,7 +381,7 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
     return false;
 
   *num_planes = format.fmt.pix_mp.num_planes;
-  *size = V4L2Device::CodedSizeFromV4L2Format(format);
+  *size = V4L2Device::AllocatedSizeFromV4L2Format(format);
   VLOGF(2) << "adjusted output coded size=" << size->ToString()
            << ", num_planes=" << *num_planes;
   return true;
