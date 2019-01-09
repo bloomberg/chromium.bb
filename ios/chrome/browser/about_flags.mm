@@ -55,7 +55,6 @@
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
-#include "ios/chrome/browser/ssl/captive_portal_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -194,9 +193,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          security_state::features::kMarkHttpAsFeature,
          kMarkHttpAsFeatureVariations,
          "MarkHttpAs")},
-    {"ios-captive-portal-metrics", flag_descriptions::kCaptivePortalMetricsName,
-     flag_descriptions::kCaptivePortalMetricsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kCaptivePortalMetrics)},
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeName,
      flag_descriptions::kInProductHelpDemoModeDescription, flags_ui::kOsIos,

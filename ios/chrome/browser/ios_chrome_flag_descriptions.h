@@ -163,10 +163,6 @@ extern const char kExternalFilesLoadedInWebStateDescription[];
 extern const char kBrowserTaskScheduler[];
 extern const char kBrowserTaskSchedulerDescription[];
 
-// Title and description for the flag to enable Captive Portal metrics logging.
-extern const char kCaptivePortalMetricsName[];
-extern const char kCaptivePortalMetricsDescription[];
-
 // Title and description for the flag to enable automatically switching to the
 // regular tabs after closing the last incognito tab.
 extern const char kClosingLastIncognitoTabName[];

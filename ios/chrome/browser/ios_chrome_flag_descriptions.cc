@@ -208,11 +208,6 @@ const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
 
-const char kCaptivePortalMetricsName[] = "Captive Portal Metrics";
-const char kCaptivePortalMetricsDescription[] =
-    "When enabled, some network issues will trigger a test to check if a "
-    "Captive Portal network is the cause of the issue.";
-
 // TODO(crbug.com/893314) : Remove this flag.
 const char kClosingLastIncognitoTabName[] = "Closing Last Incognito Tab";
 const char kClosingLastIncognitoTabDescription[] =
