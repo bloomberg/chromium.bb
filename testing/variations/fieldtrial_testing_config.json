@@ -649,24 +649,6 @@
             ]
         }
     ],
-    "AutofillExpandedPopupViews": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillExpandedPopupViews"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [

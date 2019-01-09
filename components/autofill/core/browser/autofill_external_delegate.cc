@@ -82,17 +82,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Hide warnings as appropriate.
   PossiblyRemoveAutofillWarnings(&suggestions);
 
-#if !defined(OS_ANDROID)
-  // If there are above the fold suggestions at this point, add a separator to
-  // go between the values and menu items. Skip this when using the Native Views
-  // implementation, which has its own logic for distinguishing footer rows.
-  // TODO(crbug.com/831603): Remove this when the relevant feature is on 100%.
-  if (!suggestions.empty() && !features::ShouldUseNativeViews()) {
-    suggestions.push_back(Suggestion());
-    suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-  }
-#endif
-
   if (should_show_scan_credit_card_) {
     Suggestion scan_credit_card(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
@@ -124,16 +113,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Append the credit card signin promo, if appropriate (there are no other
   // suggestions).
   if (suggestions.empty() && should_show_cc_signin_promo_) {
-// No separator on Android.
-#if !defined(OS_ANDROID)
-    // If there are autofill suggestions, the "Autofill options" row was added
-    // above. Add a separator between it and the signin promo.
-    if (has_autofill_suggestions_) {
-      suggestions.push_back(Suggestion());
-      suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-    }
-#endif
-
     Suggestion signin_promo_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO));
     signin_promo_suggestion.frontend_id =
@@ -142,14 +121,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
         signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
   }
-
-#if !defined(OS_ANDROID)
-  // Remove the separator if there is one, and if it is the last element.
-  if (!suggestions.empty() &&
-      suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR) {
-    suggestions.pop_back();
-  }
-#endif
 
   // If anything else is added to modify the values after inserting the data
   // list, AutofillPopupControllerImpl::UpdateDataListValues will need to be

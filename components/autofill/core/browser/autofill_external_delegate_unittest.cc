@@ -893,46 +893,4 @@ TEST_F(AutofillExternalDelegateCardsFromAccountTest,
       /*autoselect_first_suggestion=*/false);
 }
 
-#if !defined(OS_ANDROID)
-// Test that the delegate includes a separator between the content rows and the
-// footer, if and only if the kAutofillExpandedPopupViews feature is disabled.
-TEST_F(AutofillExternalDelegateUnitTest, IncludeFooterSeparatorForOldUIOnly) {
-  // The guts of the test. This will be run once with the feature enabled,
-  // expecting not to find a separator, and a second time with the feature
-  // disabled, expecting to find a separator.
-  auto tester = [this](bool enabled, auto element_ids) {
-    base::test::ScopedFeatureList scoped_feature_list;
-
-    if (enabled) {
-      scoped_feature_list.InitAndEnableFeature(
-          features::kAutofillExpandedPopupViews);
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          features::kAutofillExpandedPopupViews);
-    }
-
-    IssueOnQuery(kQueryId);
-
-    EXPECT_CALL(
-        autofill_client_,
-        ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), false, _));
-
-    std::vector<Suggestion> autofill_item;
-    autofill_item.push_back(Suggestion());
-    autofill_item[0].frontend_id = kAutofillProfileId;
-    external_delegate_->OnSuggestionsReturned(
-        kQueryId, autofill_item, /*autoselect_first_suggestion=*/false);
-  };
-
-  tester(false,
-         testing::ElementsAre(
-             kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-             static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS)));
-
-  tester(true, testing::ElementsAre(
-                   kAutofillProfileId,
-                   static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS)));
-}
-#endif  // !defined(OS_ANDROID)
-
 }  // namespace autofill

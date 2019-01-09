@@ -16,7 +16,6 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 namespace features {
@@ -120,9 +119,6 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForQuery{
 const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillExpandedPopupViews{
-    "AutofillExpandedPopupViews", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, gets payment identity from sync service instead of
 // identity manager.
@@ -370,15 +366,6 @@ bool IsPasswordManualFallbackEnabled() {
 
 bool IsAutofillManualFallbackEnabled() {
   return base::FeatureList::IsEnabled(kAutofillManualFallbackPhaseTwo);
-}
-
-bool ShouldUseNativeViews() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return base::FeatureList::IsEnabled(kAutofillExpandedPopupViews) ||
-         base::FeatureList::IsEnabled(::features::kExperimentalUi);
-#else
-  return false;
-#endif
 }
 
 bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {

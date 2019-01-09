@@ -1524,7 +1524,6 @@ test("browser_tests") {
         "../browser/ui/global_error/global_error_service_browsertest.cc",
         "../browser/ui/media_router/presentation_receiver_window_controller_browsertest.cc",
         "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
-        "../browser/ui/views/autofill/autofill_popup_view_views_browsertest.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest.cc",
