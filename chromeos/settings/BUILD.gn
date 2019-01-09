@@ -4,7 +4,6 @@
 
 import("//build/config/chromeos/rules.gni")
 import("//testing/test.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
@@ -18,21 +17,12 @@ source_set("settings") {
     "//base:i18n",
     "//chromeos:chromeos_constants",
     "//chromeos:chromeos_export",
-    "//chromeos/dbus",
-    "//chromeos/dbus:cryptohome_proto",
     "//chromeos/login/login_state",
-    "//components/policy/core/common:common_constants",
-    "//components/policy/proto",
-    "//dbus",
-    "//google_apis",
     "//third_party/icu",
-    "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
     "cros_settings_provider.cc",
     "cros_settings_provider.h",
-    "install_attributes.cc",
-    "install_attributes.h",
     "system_settings_provider.cc",
     "system_settings_provider.h",
     "timezone_settings.cc",
@@ -61,18 +51,11 @@ source_set("unit_tests") {
     "//base:i18n",
     "//base/test:test_support",
     "//chromeos:chromeos_constants",
-    "//chromeos/dbus",
-    "//chromeos/dbus:cryptohome_proto",
-    "//components/policy/proto",
-    "//dbus",
-    "//google_apis",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
-    "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
-    "install_attributes_unittest.cc",
     "timezone_settings_unittest.cc",
   ]
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 
 #include <stddef.h>
 
@@ -142,9 +142,7 @@ InstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
 }
 
 InstallAttributes::InstallAttributes(CryptohomeClient* cryptohome_client)
-    : cryptohome_client_(cryptohome_client),
-      weak_ptr_factory_(this) {
-}
+    : cryptohome_client_(cryptohome_client), weak_ptr_factory_(this) {}
 
 InstallAttributes::~InstallAttributes() {}
 
@@ -184,12 +182,11 @@ void InstallAttributes::Init(const base::FilePath& cache_file) {
       const cryptohome::SerializedInstallAttributes::Attribute>::iterator entry;
   std::map<std::string, std::string> attr_map;
   for (entry = install_attrs_proto.attributes().begin();
-       entry != install_attrs_proto.attributes().end();
-       ++entry) {
+       entry != install_attrs_proto.attributes().end(); ++entry) {
     // The protobuf values contain terminating null characters, so we have to
     // sanitize the value here.
-    attr_map.insert(std::make_pair(entry->name(),
-                                   std::string(entry->value().c_str())));
+    attr_map.insert(
+        std::make_pair(entry->name(), std::string(entry->value().c_str())));
   }
 
   DecodeInstallAttributes(attr_map);
@@ -215,13 +212,10 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
       device_locked_ = true;
 
       static const char* const kEnterpriseAttributes[] = {
-        kAttrEnterpriseDeviceId,
-        kAttrEnterpriseDomain,
-        kAttrEnterpriseRealm,
-        kAttrEnterpriseMode,
-        kAttrEnterpriseOwned,
-        kAttrEnterpriseUser,
-        kAttrConsumerKioskEnabled,
+          kAttrEnterpriseDeviceId,   kAttrEnterpriseDomain,
+          kAttrEnterpriseRealm,      kAttrEnterpriseMode,
+          kAttrEnterpriseOwned,      kAttrEnterpriseUser,
+          kAttrConsumerKioskEnabled,
       };
       std::map<std::string, std::string> attr_map;
       for (size_t i = 0; i < base::size(kEnterpriseAttributes); ++i) {
@@ -281,8 +275,7 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
       return;
     }
 
-    if (domain != registration_domain_ ||
-        realm != registration_realm_ ||
+    if (domain != registration_domain_ || realm != registration_realm_ ||
         device_id != registration_device_id_) {
       LOG(ERROR) << "Trying to re-lock with non-matching parameters.";
       callback.Run(LOCK_WRONG_DOMAIN);
@@ -301,12 +294,8 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
   if (consistency_check_running_) {
     CHECK(post_check_action_.is_null());
     post_check_action_ = base::Bind(&InstallAttributes::LockDevice,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    device_mode,
-                                    domain,
-                                    realm,
-                                    device_id,
-                                    callback);
+                                    weak_ptr_factory_.GetWeakPtr(), device_mode,
+                                    domain, realm, device_id, callback);
     return;
   }
 
@@ -382,12 +371,8 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
 
   ReadImmutableAttributes(
       base::Bind(&InstallAttributes::OnReadImmutableAttributes,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 device_mode,
-                 domain,
-                 realm,
-                 device_id,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), device_mode, domain, realm,
+                 device_id, callback));
 }
 
 void InstallAttributes::OnReadImmutableAttributes(
@@ -398,10 +383,8 @@ void InstallAttributes::OnReadImmutableAttributes(
     const LockResultCallback& callback) {
   device_lock_running_ = false;
 
-  if (registration_mode_ != mode ||
-      registration_domain_ != domain ||
-      registration_realm_ != realm ||
-      registration_device_id_ != device_id) {
+  if (registration_mode_ != mode || registration_domain_ != domain ||
+      registration_realm_ != realm || registration_device_id_ != device_id) {
     LOG(ERROR) << "Locked data doesn't match.";
     callback.Run(LOCK_READBACK_ERROR);
     return;

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_
-#define CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_
+#ifndef CHROMEOS_TPM_INSTALL_ATTRIBUTES_H_
+#define CHROMEOS_TPM_INSTALL_ATTRIBUTES_H_
 
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
@@ -24,7 +24,7 @@ namespace chromeos {
 // Brokers access to the installation-time attributes on Chrome OS.  When
 // initialized with kInstallAttributesFileName, the attributes are fully trusted
 // (signature has been verified by lockbox-cache).
-class CHROMEOS_EXPORT InstallAttributes {
+class COMPONENT_EXPORT(CHROMEOS_TPM) InstallAttributes {
  public:
   // InstallAttributes status codes.  Do not change the numeric ids or the
   // meaning of the existing codes to preserve the interpretability of old
@@ -229,4 +229,4 @@ class CHROMEOS_EXPORT InstallAttributes {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_
+#endif  // CHROMEOS_TPM_INSTALL_ATTRIBUTES_H_

@@ -15,9 +15,14 @@ component("tpm") {
     "//chromeos/dbus:cryptohome_proto",
     "//chromeos/login/login_state",
     "//components/account_id",
+    "//components/policy/core/common:common_constants",
+    "//components/policy/proto",
     "//crypto",
+    "//google_apis",
   ]
   sources = [
+    "install_attributes.cc",
+    "install_attributes.h",
     "tpm_password_fetcher.cc",
     "tpm_password_fetcher.h",
     "tpm_token_info_getter.cc",
@@ -36,9 +41,12 @@ source_set("unit_tests") {
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/dbus:cryptohome_proto",
+    "//components/policy/proto",
+    "//google_apis",
     "//testing/gtest",
   ]
   sources = [
+    "install_attributes_unittest.cc",
     "tpm_token_info_getter_unittest.cc",
   ]
 }

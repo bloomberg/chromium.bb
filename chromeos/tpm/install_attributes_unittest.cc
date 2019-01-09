@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/settings/install_attributes.h"
-
+#include "chromeos/tpm/install_attributes.h"
 
 #include <memory>
 
@@ -86,10 +85,7 @@ class InstallAttributesTest : public testing::Test {
     base::RunLoop loop;
     InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
-        device_mode,
-        domain,
-        realm,
-        device_id,
+        device_mode, domain, realm, device_id,
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
     return result;
@@ -149,12 +145,11 @@ TEST_F(InstallAttributesTest, Lock) {
 TEST_F(InstallAttributesTest, IsEnterpriseManagedCloud) {
   install_attributes_->Init(GetTempPath());
   EXPECT_FALSE(install_attributes_->IsEnterpriseManaged());
-  ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                policy::DEVICE_MODE_ENTERPRISE,
-                kTestDomain,
-                std::string(),  // realm
-                kTestDeviceId));
+  ASSERT_EQ(
+      InstallAttributes::LOCK_SUCCESS,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
+                                 std::string(),  // realm
+                                 kTestDeviceId));
   EXPECT_TRUE(install_attributes_->IsEnterpriseManaged());
   EXPECT_TRUE(install_attributes_->IsCloudManaged());
   EXPECT_FALSE(install_attributes_->IsActiveDirectoryManaged());
@@ -164,11 +159,9 @@ TEST_F(InstallAttributesTest, IsEnterpriseManagedRealm) {
   install_attributes_->Init(GetTempPath());
   EXPECT_FALSE(install_attributes_->IsEnterpriseManaged());
   ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                policy::DEVICE_MODE_ENTERPRISE_AD,
-                std::string(),  // domain
-                kTestRealm,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE_AD,
+                                       std::string(),  // domain
+                                       kTestRealm, kTestDeviceId));
   EXPECT_TRUE(install_attributes_->IsEnterpriseManaged());
   EXPECT_FALSE(install_attributes_->IsCloudManaged());
   EXPECT_TRUE(install_attributes_->IsActiveDirectoryManaged());
@@ -192,12 +185,11 @@ TEST_F(InstallAttributesTest, GettersCloud) {
   EXPECT_EQ(std::string(), install_attributes_->GetDomain());
   EXPECT_EQ(std::string(), install_attributes_->GetRealm());
   EXPECT_EQ(std::string(), install_attributes_->GetDeviceId());
-  ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                policy::DEVICE_MODE_ENTERPRISE,
-                kTestDomain,
-                std::string(),  // realm
-                kTestDeviceId));
+  ASSERT_EQ(
+      InstallAttributes::LOCK_SUCCESS,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
+                                 std::string(),  // realm
+                                 kTestDeviceId));
   EXPECT_EQ(policy::DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
   EXPECT_EQ(kTestDomain, install_attributes_->GetDomain());
   EXPECT_EQ(std::string(), install_attributes_->GetRealm());
@@ -211,11 +203,9 @@ TEST_F(InstallAttributesTest, GettersAD) {
   EXPECT_EQ(std::string(), install_attributes_->GetRealm());
   EXPECT_EQ(std::string(), install_attributes_->GetDeviceId());
   ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                policy::DEVICE_MODE_ENTERPRISE_AD,
-                std::string(),  // domain
-                kTestRealm,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE_AD,
+                                       std::string(),  // domain
+                                       kTestRealm, kTestDeviceId));
   EXPECT_EQ(policy::DEVICE_MODE_ENTERPRISE_AD, install_attributes_->GetMode());
   EXPECT_EQ(std::string(), install_attributes_->GetDomain());
   EXPECT_EQ(kTestRealm, install_attributes_->GetRealm());
@@ -258,12 +248,10 @@ TEST_F(InstallAttributesTest, ConsumerKioskDevice) {
   install_attributes_->Init(GetTempPath());
   EXPECT_EQ(policy::DEVICE_MODE_PENDING, install_attributes_->GetMode());
   // Lock the attributes for consumer kiosk.
-  ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
-                std::string(),
-                std::string(),
-                std::string()));
+  ASSERT_EQ(
+      InstallAttributes::LOCK_SUCCESS,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
+                                 std::string(), std::string(), std::string()));
 
   ASSERT_FALSE(tpm_util::InstallAttributesIsFirstInstall());
   EXPECT_EQ(policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
@@ -296,10 +284,10 @@ TEST_F(InstallAttributesTest, DeviceLockedFromOlderVersion) {
 
 TEST_F(InstallAttributesTest, Init) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
-  SetAttribute(&install_attrs_proto,
-               InstallAttributes::kAttrEnterpriseOwned, "true");
-  SetAttribute(&install_attrs_proto,
-               InstallAttributes::kAttrEnterpriseUser, kTestUserDeprecated);
+  SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseOwned,
+               "true");
+  SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseUser,
+               kTestUserDeprecated);
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
