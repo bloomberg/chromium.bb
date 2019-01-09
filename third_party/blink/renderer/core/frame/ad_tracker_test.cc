@@ -366,7 +366,7 @@ TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
   const char kAdUrl[] = "https://example.com/ad_script.js";
   const char kVanillaUrl[] = "https://example.com/vanilla_page.html";
   SimSubresourceRequest ad_resource(kAdUrl, "text/javascript");
-  SimSubresourceRequest vanilla_page(kVanillaUrl, "text/html");
+  SimRequest vanilla_page(kVanillaUrl, "text/html");
 
   ad_tracker_->SetAdSuffix("ad_script.js");
 

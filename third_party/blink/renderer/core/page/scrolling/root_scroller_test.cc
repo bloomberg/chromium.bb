@@ -2256,9 +2256,9 @@ TEST_F(ImplicitRootScrollerSimTest, NavigateToValidRemainsRootScroller) {
   // Ensure that we remain the root scroller even though there's no layout in
   // the parent.
   SimRequest child_request2("https://example.com/child-next.html", "text/html");
-  WebURLRequest request(KURL("https://example.com/child-next.html"));
-  WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame()->StartNavigation(
-      request);
+  frame_test_helpers::LoadFrameDontWait(
+      WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame(),
+      KURL("https://example.com/child-next.html"));
 
   child_request2.Write(R"HTML(
         <!DOCTYPE html>

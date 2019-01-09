@@ -49,6 +49,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -104,18 +105,21 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
 
 }  // namespace
 
-void LoadFrame(WebLocalFrame* frame, const std::string& url) {
+void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
   WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
-  WebURL web_url(url_test_helpers::ToKURL(url));
-  if (web_url.ProtocolIs("javascript")) {
-    impl->LoadJavaScriptURL(web_url);
+  if (url.ProtocolIs("javascript")) {
+    impl->LoadJavaScriptURL(url);
   } else {
     auto params = std::make_unique<WebNavigationParams>();
-    params->request = WebURLRequest(web_url);
+    params->request = WebURLRequest(url);
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   }
+}
+
+void LoadFrame(WebLocalFrame* frame, const std::string& url) {
+  LoadFrameDontWait(frame, url_test_helpers::ToKURL(url));
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -444,7 +448,8 @@ int TestWebFrameClient::loads_in_progress_ = 0;
 
 TestWebFrameClient::TestWebFrameClient()
     : interface_provider_(new service_manager::InterfaceProvider()),
-      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
+      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown),
+      weak_factory_(this) {}
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
@@ -494,8 +499,29 @@ void TestWebFrameClient::DidStopLoading() {
 
 void TestWebFrameClient::BeginNavigation(
     std::unique_ptr<WebNavigationInfo> info) {
-  frame_->CommitNavigation(WebNavigationParams::CreateFromInfo(*info),
-                           nullptr /* extra_data */);
+  navigation_callback_.Cancel();
+  if (DocumentLoader::WillLoadUrlAsEmpty(info->url_request.Url()) ||
+      !frame_->HasCommittedFirstRealLoad()) {
+    CommitNavigation(std::move(info));
+    return;
+  }
+
+  if (!frame_->CreatePlaceholderDocumentLoader(*info, nullptr /* extra_data */))
+    return;
+
+  navigation_callback_.Reset(
+      base::BindOnce(&TestWebFrameClient::CommitNavigation,
+                     weak_factory_.GetWeakPtr(), std::move(info)));
+  frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
+      ->PostTask(FROM_HERE, navigation_callback_.callback());
+}
+
+void TestWebFrameClient::CommitNavigation(
+    std::unique_ptr<WebNavigationInfo> info) {
+  if (!frame_)
+    return;
+  auto params = WebNavigationParams::CreateFromInfo(*info);
+  frame_->CommitNavigation(std::move(params), nullptr /* extra_data */);
 }
 
 WebEffectiveConnectionType TestWebFrameClient::GetEffectiveConnectionType() {

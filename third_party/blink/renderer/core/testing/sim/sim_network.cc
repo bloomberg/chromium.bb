@@ -87,11 +87,17 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
 }
 
 void SimNetwork::AddRequest(SimRequestBase& request) {
-  requests_.insert(request.url_, &request);
+  requests_.insert(request.url_.GetString(), &request);
+  WebURLResponse response(request.url_);
+  response.SetMIMEType(request.mime_type_);
+  response.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(request.url_,
+                                                              response, "");
 }
 
 void SimNetwork::RemoveRequest(SimRequestBase& request) {
   requests_.erase(request.url_);
+  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(request.url_);
 }
 
 }  // namespace blink

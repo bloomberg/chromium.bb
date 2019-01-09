@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -49,7 +50,8 @@ class SimRequestBase {
   void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&);
   void DidFail(const WebURLError&);
 
-  String url_;
+  KURL url_;
+  String mime_type_;
   bool start_immediately_;
   bool started_;
   WebURLResponse response_;

@@ -7724,6 +7724,9 @@ TEST_F(WebFrameTest, PushStateStartsAndStops) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "push_state.html", &client);
 
+  // Wait for push state navigation to complete.
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      web_view_helper.LocalMainFrame());
   EXPECT_EQ(client.StartLoadingCount(), 2);
   EXPECT_EQ(client.StopLoadingCount(), 2);
 }
@@ -10005,6 +10008,8 @@ TEST_F(WebFrameTest, SendBeaconFromChildWithRemoteMainFrame) {
   RegisterMockedHttpURLLoad("send_beacon.html");
   RegisterMockedHttpURLLoad("reload_post.html");  // url param to sendBeacon()
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "send_beacon.html");
+  // Wait for the post.
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(local_frame);
 }
 
 TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {

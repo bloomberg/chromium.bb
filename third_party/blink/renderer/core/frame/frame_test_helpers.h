@@ -37,6 +37,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/test/stub_layer_tree_view_delegate.h"
@@ -96,9 +97,10 @@ class TestWebWidgetClient;
 class TestWebViewClient;
 class WebViewHelper;
 
-// Loads a url into the specified WebLocalFrame for testing purposes. Pumps any
-// pending resource requests, as well as waiting for the threaded parser to
-// finish, before returning.
+// Loads a url into the specified WebLocalFrame for testing purposes.
+void LoadFrameDontWait(WebLocalFrame*, const WebURL& url);
+// Same as above, but also pumps any pending resource requests,
+// as well as waiting for the threaded parser to finish, before returning.
 void LoadFrame(WebLocalFrame*, const std::string& url);
 // Same as above, but for WebLocalFrame::LoadHTMLString().
 void LoadHTMLString(WebLocalFrame*,
@@ -375,6 +377,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
   WebPlugin* CreatePlugin(const WebPluginParams& params) override;
 
  private:
+  void CommitNavigation(std::unique_ptr<WebNavigationInfo>);
+
   static int loads_in_progress_;
 
   // If set to a non-null value, self-deletes on frame detach.
@@ -388,9 +392,12 @@ class TestWebFrameClient : public WebLocalFrameClient {
   // Bind().
   WebNavigationControl* frame_ = nullptr;
 
+  base::CancelableOnceCallback<void()> navigation_callback_;
   std::unique_ptr<WebWidgetClient> owned_widget_client_;
   WebEffectiveConnectionType effective_connection_type_;
   Vector<String> console_messages_;
+
+  base::WeakPtrFactory<TestWebFrameClient> weak_factory_;
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that
