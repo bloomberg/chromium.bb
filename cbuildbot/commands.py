@@ -3121,23 +3121,6 @@ class ChromeSDK(object):
     return ['autoninja', '-C', self._GetOutDirectory(debug=debug),
             'chromiumos_preflight']
 
-  def VMTest(self, image_path, debug=False):
-    """Run cros_run_vm_test in a VM.
-
-    Args:
-      image_path: VM image path.
-      debug: True if this is a debug build.
-
-    Returns:
-      A CommandResult object.
-    """
-    assert image_path and os.path.exists(image_path)
-    return self.Run([
-        'cros_run_vm_test', '--copy-on-write', '--deploy',
-        '--board=%s' % self.board, '--image-path=%s' % image_path,
-        '--build-dir=%s' % self._GetOutDirectory(debug=debug),
-    ])
-
   def _GetOutDirectory(self, debug=False):
     """Returns the path to the output directory.
 

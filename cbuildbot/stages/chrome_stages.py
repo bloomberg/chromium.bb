@@ -303,11 +303,6 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
                    '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
-  def _VMTest(self, sdk_cmd):
-    """Run cros_run_vm_test."""
-    sdk_cmd.VMTest(os.path.join(self.GetImageDirSymlink(),
-                                constants.VM_IMAGE_BIN))
-
   def PerformStage(self):
     with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
       cache_dir = os.path.join(tempdir, 'cache')
@@ -337,7 +332,6 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
           goma=bool(goma), extra_args=extra_args, cache_dir=cache_dir)
       self._BuildChrome(sdk_cmd, goma)
       self._TestDeploy(sdk_cmd)
-      self._VMTest(sdk_cmd)
 
 
 class ChromeLKGMSyncStage(sync_stages.SyncStage):
