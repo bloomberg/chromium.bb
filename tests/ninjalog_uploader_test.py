@@ -25,7 +25,14 @@ class NinjalogUploaderTest(unittest.TestCase):
                 'default': {'value': 'false'},
                 'name': 'is_component_build'
             },
-        ])), {'is_component_build': 'true'})
+            {
+                'default': {'value': '"x64"'},
+                'name': 'host_cpu'
+            },
+        ])), {
+            'is_component_build': 'true',
+            'host_cpu': '"x64"',
+        })
 
         self.assertEqual(ninjalog_uploader.ParseGNArgs(json.dumps([
             {
@@ -84,6 +91,28 @@ class NinjalogUploaderTest(unittest.TestCase):
 
         self.assertEqual(ninjalog_uploader.GetBuildTargetFromCommandLine(
             ['ninja', '-C', 'out/Release', 'chrome', 'all']), ['chrome', 'all'])
+
+    def test_get_j_flag(self):
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja']), None)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-j', '1000']), 1000)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-j', '1000a']), None)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-j', 'a']), None)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-j1000']), 1000)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-ja']), None)
+
+        self.assertEqual(ninjalog_uploader.GetJflag(
+            ['ninja','-j']), None)
 
 
 if __name__ == '__main__':

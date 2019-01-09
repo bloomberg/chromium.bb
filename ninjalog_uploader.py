@@ -29,6 +29,14 @@ import sys
 
 from third_party import httplib2
 
+# These build configs affect build performance a lot.
+# TODO(tikuta): Add 'blink_symbol_level', 'closure_compile' and
+#               'use_jumbo_build'.
+WHITELISTED_CONFIGS = (
+    'symbol_level', 'use_goma', 'is_debug', 'is_component_build', 'enable_nacl',
+    'host_os', 'host_cpu', 'target_os', 'target_cpu'
+)
+
 def IsGoogler(server):
     """Check whether this script run inside corp network."""
     try:
@@ -42,8 +50,16 @@ def ParseGNArgs(gn_args):
     """Parse gn_args as json and return config dictionary."""
     configs = json.loads(gn_args)
     build_configs = {}
+
     for config in configs:
-        build_configs[config["name"]] = config["current"]["value"]
+        key = config["name"]
+        if key not in WHITELISTED_CONFIGS:
+            continue
+        if 'current' in config:
+            build_configs[key] = config['current']['value']
+        else:
+            build_configs[key] = config['default']['value']
+
     return build_configs
 
 def GetBuildTargetFromCommandLine(cmdline):
@@ -74,17 +90,34 @@ def GetBuildTargetFromCommandLine(cmdline):
 
     return targets
 
+def GetJflag(cmdline):
+    """Parse cmdline to get flag value for -j"""
+
+    for i in range(len(cmdline)):
+        if (cmdline[i] == '-j' and i + 1 < len(cmdline) and
+            cmdline[i+1].isdigit()):
+            return int(cmdline[i+1])
+
+        if (cmdline[i].startswith('-j') and
+            cmdline[i][len('-j'):].isdigit()):
+            return int(cmdline[i][len('-j'):])
+
 
 def GetMetadata(cmdline, ninjalog):
-    """Get metadata for uploaded ninjalog."""
+    """Get metadata for uploaded ninjalog.
+
+    Returned metadata has schema defined in
+    https://cs.chromium.org?q="type+Metadata+struct+%7B"+file:%5Einfra/go/src/infra/appengine/chromium_build_stats/ninjalog/
+
+    TODO(tikuta): Collect GOMA_* env var.
+    """
 
     build_dir = os.path.dirname(ninjalog)
 
     build_configs = {}
 
     try:
-        args = ['gn', 'args', build_dir, '--list', '--overrides-only',
-                '--short', '--json']
+        args = ['gn', 'args', build_dir, '--list', '--short', '--json']
         if sys.platform == 'win32':
             # gn in PATH is bat file in windows environment (except cygwin).
             args = ['cmd', '/c'] + args
@@ -101,12 +134,14 @@ def GetMetadata(cmdline, ninjalog):
 
     metadata = {
         'platform': platform.system(),
-        'cwd': build_dir,
-        'hostname': socket.gethostname(),
         'cpu_core': multiprocessing.cpu_count(),
-        'cmdline': cmdline,
         'build_configs': build_configs,
+        'targets': GetBuildTargetFromCommandLine(cmdline),
     }
+
+    jflag = GetJflag(cmdline)
+    if jflag is not None:
+        metadata['jobs'] = jflag
 
     return metadata
 
@@ -165,7 +200,7 @@ def main():
             g.write('# end of ninja log\n')
 
             metadata = GetMetadata(args.cmdline, ninjalog)
-            logging.info('send metadata: %s', metadata)
+            logging.info('send metadata: %s', json.dumps(metadata))
             g.write(json.dumps(metadata))
 
     h = httplib2.Http()
