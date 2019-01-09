@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -2062,6 +2063,23 @@ LayoutRect LayoutText::LinesBoundingBox() const {
 }
 
 LayoutRect LayoutText::VisualOverflowRect() const {
+  const LayoutBlock* containing_block = ContainingBlock();
+  if (containing_block->IsLayoutNGBlockFlow()) {
+    const auto* block_flow = ToLayoutBlockFlow(containing_block);
+    LayoutRect rect;
+    if (const auto* fragment = block_flow->PaintFragment()) {
+      auto children =
+          NGPaintFragmentTraversal::SelfFragmentsOf(*fragment, this);
+      for (const auto& child : children) {
+        LayoutRect child_rect = child.fragment->VisualRect();
+        child_rect.MoveBy(child.container_offset.ToLayoutPoint());
+        rect.Unite(child_rect);
+      }
+      containing_block->FlipForWritingMode(rect);
+    }
+    return rect;
+  }
+
   if (!FirstTextBox())
     return LayoutRect();
 
