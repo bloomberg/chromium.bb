@@ -66,6 +66,9 @@ extern const base::Feature kUseLocalBlacklistsV2;
 // filenames contained in the archive.
 extern const base::Feature kInspectRarContentFeature;
 
+// Controls whether we use AP download protection.
+extern const base::Feature kUseAPDownloadProtection;
+
 base::ListValue GetFeatureStatusList();
 
 }  // namespace safe_browsing
