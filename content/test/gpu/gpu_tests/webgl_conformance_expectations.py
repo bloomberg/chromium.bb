@@ -614,6 +614,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'no_passthrough'], bug=479952)
 
+    # Linux passthrough, all vendors
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        ['linux', 'passthrough'], bug=920033)
+
     # Linux passthrough AMD
     self.Fail('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
