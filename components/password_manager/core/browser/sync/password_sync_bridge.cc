@@ -58,8 +58,12 @@ std::string PasswordSyncBridge::GetClientTag(
 
 std::string PasswordSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  NOTIMPLEMENTED();
+  NOTREACHED() << "PasswordSyncBridge do not support GetStorageKey.";
   return std::string();
+}
+
+bool PasswordSyncBridge::SupportsGetStorageKey() const {
+  return false;
 }
 
 syncer::ModelTypeSyncBridge::StopSyncResponse
