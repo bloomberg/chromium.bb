@@ -584,7 +584,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
 TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
-  sync_prefs()->SetKeepEverythingSynced(false);
+  sync_prefs()->SetPreferredDataTypes(/*keep_everything_synced=*/false,
+                                      syncer::UserTypes(), {syncer::BOOKMARKS});
 
   CreateSyncService(ProfileSyncService::MANUAL_START);
   SimulateTestUserSignin();
@@ -595,6 +596,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
+
   sync_service()->Initialize();
 
   EXPECT_FALSE(sync_prefs()->HasKeepEverythingSynced());

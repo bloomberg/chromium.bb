@@ -111,20 +111,23 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetLongPollInterval(base::TimeDelta interval);
 
   bool HasKeepEverythingSynced() const;
-  void SetKeepEverythingSynced(bool keep_everything_synced);
 
-  // The returned set is guaranteed to be a subset of
-  // |registered_types|.  Returns |registered_types| directly if
-  // HasKeepEverythingSynced() is true.
+  // The returned set is guaranteed to be a subset of |registered_types|.
+  // Returns |registered_types| directly if HasKeepEverythingSynced() is true.
   ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
 
-  // |preferred_types| should be a subset of |registered_types|.  All
-  // types in |preferred_types| are marked preferred, and all types in
+  // |keep_everything_synced| indicates that all current and future data types
+  // should be synced. If this is set to true, then GetPreferredDataTypes() will
+  // always return all available data types, even if not all of them are
+  // individually marked as preferred.
+  // |preferred_types| should be a subset of |registered_types|. All types in
+  // |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
-  // Changes are still made to the prefs even if
-  // HasKeepEverythingSynced() is true, but won't be visible until
-  // SetKeepEverythingSynced(false) is called.
-  void SetPreferredDataTypes(ModelTypeSet registered_types,
+  // Changes are still made to the individual data type prefs even if
+  // |keep_everything_synced| is true, but won't be visible until it's set to
+  // false.
+  void SetPreferredDataTypes(bool keep_everything_synced,
+                             ModelTypeSet registered_types,
                              ModelTypeSet preferred_types);
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers
