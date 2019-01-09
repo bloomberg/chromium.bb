@@ -145,13 +145,30 @@ suite('cr-slider', function() {
     assertEquals(100, crSlider.value);
   });
 
-  test('snaps to closest value', () => {
+  test('snaps to closest value after minimum traversal', () => {
+    // Snaps to closest value after traversing a minimum of .8 units.
+    const tolerance = .000001;
     crSlider.snaps = true;
     crSlider.ticks = [];
     pointerDown(.501);
     assertEquals(50, crSlider.value);
     pointerMove(.505);
+    assertEquals(50, crSlider.value);
+    // Before threshold.
+    pointerMove(.508 - tolerance);
+    assertEquals(50, crSlider.value);
+    // After threshold.
+    pointerMove(.508 + tolerance);
     assertEquals(51, crSlider.value);
+    // Before threshold.
+    pointerMove(.502 + tolerance);
+    assertEquals(51, crSlider.value);
+    // After threshold.
+    pointerMove(.502 - tolerance);
+    assertEquals(50, crSlider.value);
+    // Move far away rounds to closest whole number.
+    pointerMove(.605);
+    assertEquals(61, crSlider.value);
   });
 
   test('markers', () => {
@@ -179,7 +196,7 @@ suite('cr-slider', function() {
   });
 
   test('ticks and aria', () => {
-    crSlider.value = 1.5;
+    crSlider.value = 2;
     crSlider.ticks = [1, 2, 4, 8];
     assertEquals('1', crSlider.getAttribute('aria-valuemin'));
     assertEquals('8', crSlider.getAttribute('aria-valuemax'));
@@ -192,6 +209,7 @@ suite('cr-slider', function() {
     assertEquals('8', crSlider.getAttribute('aria-valuetext'));
     assertEquals('8', crSlider.getAttribute('aria-valuenow'));
     assertEquals('', crSlider.$.label.innerHTML.trim());
+    crSlider.value = 2;
     crSlider.ticks = [
       {
         value: 10,
