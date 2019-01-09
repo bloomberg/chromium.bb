@@ -1074,8 +1074,6 @@ jumbo_component("base") {
     "win/wrapped_window_proc.h",
   ]
 
-  jumbo_excluded_sources = []
-
   if (is_posix) {
     sources += [
       "debug/debugger_posix.cc",
@@ -1203,10 +1201,6 @@ jumbo_component("base") {
       "allocator/allocator_shim_override_cpp_symbols.h",
       "allocator/allocator_shim_override_libc_symbols.h",
     ]
-
-    # TODO(thomasanderson): Stop excluding this file once building with C++17 or
-    # later.
-    jumbo_excluded_sources += [ "allocator/allocator_shim.cc" ]
     if (is_win) {
       sources += [
         "allocator/allocator_shim_default_dispatch_to_winheap.cc",
@@ -1661,7 +1655,7 @@ jumbo_component("base") {
     # winternl.h and NTSecAPI.h have different definitions of UNICODE_STRING.
     # There's only one client of NTSecAPI.h in base but several of winternl.h,
     # so exclude the NTSecAPI.h one.
-    jumbo_excluded_sources += [ "rand_util_win.cc" ]
+    jumbo_excluded_sources = [ "rand_util_win.cc" ]
 
     deps += [
       "//base/trace_event/etw_manifest:chrome_events_win",
