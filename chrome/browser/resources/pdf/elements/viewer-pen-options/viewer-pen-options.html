@@ -66,6 +66,7 @@
             outline$="[[item.outline]]"
             checked$="[[equal_(selectedColor, item.color)]]"
             tabindex="1" style="--item-color: [[item.color]]"
+            title$="[[lookup_(strings, item.name)]]"
             aria-label$="[[lookup_(strings, item.name)]]">
       </template>
       <paper-icon-button id="expand" icon="cr:expand-more"
@@ -81,6 +82,7 @@
         <input type="radio" name="size" value="[[item.size]]"
             checked$="[[equal_(selectedSize, item.size)]]"
             tabindex="2" style="--item-size: [[item.size]]"
+            title$="{{lookup_(strings, item.name)}}"
             aria-label$="[[lookup_(strings, item.name)]]">
       </template>
     </div>

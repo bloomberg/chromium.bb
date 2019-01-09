@@ -57,6 +57,68 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
   SetL10nString(dict, "tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH);
   SetL10nString(dict, "tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN);
   SetL10nString(dict, "tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT);
+#if defined(OS_CHROMEOS)
+  SetL10nString(dict, "tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE);
+  SetL10nString(dict, "annotationDocumentTooLarge",
+                IDS_PDF_ANNOTATION_DOCUMENT_TOO_LARGE);
+  SetL10nString(dict, "annotationDocumentProtected",
+                IDS_PDF_ANNOTATION_DOCUMENT_PROTECTED);
+  SetL10nString(dict, "annotationDocumentRotated",
+                IDS_PDF_ANNOTATION_DOCUMENT_ROTATED);
+  SetL10nString(dict, "annotationPen", IDS_PDF_ANNOTATION_PEN);
+  SetL10nString(dict, "annotationHighlighter", IDS_PDF_ANNOTATION_HIGHLIGHTER);
+  SetL10nString(dict, "annotationEraser", IDS_PDF_ANNOTATION_ERASER);
+  SetL10nString(dict, "annotationColorBlack", IDS_PDF_ANNOTATION_COLOR_BLACK);
+  SetL10nString(dict, "annotationColorRed", IDS_PDF_ANNOTATION_COLOR_RED);
+  SetL10nString(dict, "annotationColorYellow", IDS_PDF_ANNOTATION_COLOR_YELLOW);
+  SetL10nString(dict, "annotationColorGreen", IDS_PDF_ANNOTATION_COLOR_GREEN);
+  SetL10nString(dict, "annotationColorCyan", IDS_PDF_ANNOTATION_COLOR_CYAN);
+  SetL10nString(dict, "annotationColorPurple", IDS_PDF_ANNOTATION_COLOR_PURPLE);
+  SetL10nString(dict, "annotationColorBrown", IDS_PDF_ANNOTATION_COLOR_BROWN);
+  SetL10nString(dict, "annotationColorWhite", IDS_PDF_ANNOTATION_COLOR_WHITE);
+  SetL10nString(dict, "annotationColorCrimson",
+                IDS_PDF_ANNOTATION_COLOR_CRIMSON);
+  SetL10nString(dict, "annotationColorAmber", IDS_PDF_ANNOTATION_COLOR_AMBER);
+  SetL10nString(dict, "annotationColorAvocadoGreen",
+                IDS_PDF_ANNOTATION_COLOR_AVOCADO_GREEN);
+  SetL10nString(dict, "annotationColorCobaltBlue",
+                IDS_PDF_ANNOTATION_COLOR_COBALT_BLUE);
+  SetL10nString(dict, "annotationColorDeepPurple",
+                IDS_PDF_ANNOTATION_COLOR_DEEP_PURPLE);
+  SetL10nString(dict, "annotationColorDarkBrown",
+                IDS_PDF_ANNOTATION_COLOR_DARK_BROWN);
+  SetL10nString(dict, "annotationColorDarkGrey",
+                IDS_PDF_ANNOTATION_COLOR_DARK_GREY);
+  SetL10nString(dict, "annotationColorHotPink",
+                IDS_PDF_ANNOTATION_COLOR_HOT_PINK);
+  SetL10nString(dict, "annotationColorOrange", IDS_PDF_ANNOTATION_COLOR_ORANGE);
+  SetL10nString(dict, "annotationColorLime", IDS_PDF_ANNOTATION_COLOR_LIME);
+  SetL10nString(dict, "annotationColorBlue", IDS_PDF_ANNOTATION_COLOR_BLUE);
+  SetL10nString(dict, "annotationColorViolet", IDS_PDF_ANNOTATION_COLOR_VIOLET);
+  SetL10nString(dict, "annotationColorTeal", IDS_PDF_ANNOTATION_COLOR_TEAL);
+  SetL10nString(dict, "annotationColorLightGrey",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_GREY);
+  SetL10nString(dict, "annotationColorLightPink",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_PINK);
+  SetL10nString(dict, "annotationColorLightOrange",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_ORANGE);
+  SetL10nString(dict, "annotationColorLightGreen",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_GREEN);
+  SetL10nString(dict, "annotationColorLightBlue",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_BLUE);
+  SetL10nString(dict, "annotationColorLavender",
+                IDS_PDF_ANNOTATION_COLOR_LAVENDER);
+  SetL10nString(dict, "annotationColorLightTeal",
+                IDS_PDF_ANNOTATION_COLOR_LIGHT_TEAL);
+  SetL10nString(dict, "annotationSize1", IDS_PDF_ANNOTATION_SIZE1);
+  SetL10nString(dict, "annotationSize2", IDS_PDF_ANNOTATION_SIZE2);
+  SetL10nString(dict, "annotationSize3", IDS_PDF_ANNOTATION_SIZE3);
+  SetL10nString(dict, "annotationSize4", IDS_PDF_ANNOTATION_SIZE4);
+  SetL10nString(dict, "annotationSize8", IDS_PDF_ANNOTATION_SIZE8);
+  SetL10nString(dict, "annotationSize12", IDS_PDF_ANNOTATION_SIZE12);
+  SetL10nString(dict, "annotationSize16", IDS_PDF_ANNOTATION_SIZE16);
+  SetL10nString(dict, "annotationSize20", IDS_PDF_ANNOTATION_SIZE20);
+#endif
 }
 
 void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
