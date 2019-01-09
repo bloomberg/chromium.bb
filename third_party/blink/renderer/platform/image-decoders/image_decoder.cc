@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 #include <memory>
+
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
@@ -193,20 +195,16 @@ size_t ImageDecoder::FrameBytesAtIndex(size_t index) const {
       frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameEmpty)
     return 0;
 
-  struct ImageSize {
-    explicit ImageSize(IntSize size) {
-      area = static_cast<uint64_t>(size.Width()) * size.Height();
-    }
-
-    uint64_t area;
-  };
-
   size_t decoded_bytes_per_pixel = k4BytesPerPixel;
   if (frame_buffer_cache_[index].GetPixelFormat() ==
       ImageFrame::PixelFormat::kRGBA_F16) {
     decoded_bytes_per_pixel = k8BytesPerPixel;
   }
-  return ImageSize(FrameSizeAtIndex(index)).area * decoded_bytes_per_pixel;
+  IntSize size = FrameSizeAtIndex(index);
+  base::CheckedNumeric<size_t> area = size.Width();
+  area *= size.Height();
+  area *= decoded_bytes_per_pixel;
+  return area.ValueOrDie();
 }
 
 size_t ImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {

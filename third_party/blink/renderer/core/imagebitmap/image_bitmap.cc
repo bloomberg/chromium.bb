@@ -707,8 +707,9 @@ ImageBitmap::ImageBitmap(ImageData* data,
   }
 
   // Copy / color convert the pixels
-  scoped_refptr<ArrayBuffer> pixels_buffer = ArrayBuffer::CreateOrNull(
-      src_rect.Size().Area(), parsed_options.color_params.BytesPerPixel());
+  scoped_refptr<ArrayBuffer> pixels_buffer =
+      ArrayBuffer::CreateOrNull(SafeCast<uint32_t>(src_rect.Size().Area()),
+                                parsed_options.color_params.BytesPerPixel());
   if (!pixels_buffer)
     return;
   unsigned byte_length = pixels_buffer->ByteLength();

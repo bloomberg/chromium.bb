@@ -99,7 +99,7 @@ void BitmapImage::NotifyMemoryChanged() {
 
 size_t BitmapImage::TotalFrameBytes() {
   if (cached_frame_)
-    return Size().Area() * sizeof(ImageFrame::PixelData);
+    return static_cast<size_t>(Size().Area()) * sizeof(ImageFrame::PixelData);
   return 0u;
 }
 
@@ -182,8 +182,8 @@ Image::SizeAvailability BitmapImage::SetData(scoped_refptr<SharedBuffer> data,
 
 // Return the image density in 0.01 "bits per pixel" rounded to the nearest
 // integer.
-static inline int ImageDensityInCentiBpp(IntSize size,
-                                         size_t image_size_bytes) {
+static inline uint64_t ImageDensityInCentiBpp(IntSize size,
+                                              size_t image_size_bytes) {
   uint64_t image_area = static_cast<uint64_t>(size.Width()) * size.Height();
   return (static_cast<uint64_t>(image_size_bytes) * 100 * 8 + image_area / 2) /
          image_area;

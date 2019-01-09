@@ -77,7 +77,7 @@ class PLATFORM_EXPORT BitmapImageMetrics {
   // Report the JPEG compression density in 0.01 bits per pixel for an image
   // with a smallest side (width or length) of |image_min_side|.
   static void CountImageJpegDensity(int image_min_side,
-                                    int64_t density_centi_bpp);
+                                    uint64_t density_centi_bpp);
   static void CountImageGammaAndGamut(const skcms_ICCProfile*);
   static void CountJpegArea(const IntSize& size);
   static void CountJpegColorSpace(JpegColorSpace color_space);
