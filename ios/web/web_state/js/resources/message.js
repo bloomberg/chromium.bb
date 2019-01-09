@@ -204,7 +204,7 @@ var replyWithResult_ = function(messageId, result) {
     'command': replyCommand,
     'messageId': messageId
   };
-  if (result) {
+  if (typeof result !== 'undefined') {
     response['result'] = result
   }
   __gCrWeb.message.invokeOnHost(response);
