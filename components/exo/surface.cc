@@ -15,6 +15,7 @@
 #include "base/trace_event/traced_value.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/buffer.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
@@ -189,6 +190,19 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
+const std::string& GetApplicationId(aura::Window* window) {
+  static const std::string empty_app_id;
+  if (!window)
+    return empty_app_id;
+  while (window) {
+    const std::string* app_id = exo::GetShellApplicationId(window);
+    if (app_id)
+      return *app_id;
+    window = window->parent();
+  }
+  return empty_app_id;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,9 +245,9 @@ Surface* Surface::AsSurface(const aura::Window* window) {
 }
 
 void Surface::Attach(Buffer* buffer) {
-  TRACE_EVENT1("exo", "Surface::Attach", "buffer",
-               buffer ? buffer->GetSize().ToString() : "null");
-
+  TRACE_EVENT2("exo", "Surface::Attach", "buffer_id",
+               buffer ? buffer->gfx_buffer() : nullptr, "app_id",
+               GetApplicationId(window_.get()));
   has_pending_contents_ = true;
   pending_buffer_.Reset(buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>());
 }
@@ -497,6 +511,7 @@ void Surface::Commit() {
 }
 
 void Surface::CommitSurfaceHierarchy(bool synchronized) {
+  TRACE_EVENT0("exo", "Surface::CommitSurfaceHierarchy");
   if (needs_commit_surface_ && (synchronized || !IsSynchronized())) {
     needs_commit_surface_ = false;
     synchronized = true;
