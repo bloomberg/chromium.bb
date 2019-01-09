@@ -732,54 +732,34 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
     EndListChanged(elapsed);
 }
 
-inline bool CompareTimes(const SMILTimeWithOrigin& left,
-                         const SMILTimeWithOrigin& right) {
-  return left.Time() < right.Time();
-}
-
 SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
                                           SMILTime minimum_time,
                                           bool equals_minimum_ok) const {
   const Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  int size_of_list = list.size();
 
-  if (!size_of_list)
+  if (list.IsEmpty())
     return begin_or_end == kBegin ? SMILTime::Unresolved()
                                   : SMILTime::Indefinite();
 
-  const SMILTimeWithOrigin dummy_time_with_origin(
-      minimum_time, SMILTimeWithOrigin::kParserOrigin);
-  const SMILTimeWithOrigin* result = std::lower_bound(
-      list.begin(), list.end(), dummy_time_with_origin, CompareTimes);
-  int index_of_result = static_cast<int>(result - list.begin());
-  if (index_of_result == size_of_list)
+  // If an equal value is not accepted, return the next bigger item in the list,
+  // if any.
+  auto predicate = [equals_minimum_ok](const SMILTimeWithOrigin& instance_time,
+                                       const SMILTime& time) {
+    return equals_minimum_ok ? instance_time.Time() < time
+                             : instance_time.Time() <= time;
+  };
+  auto* item =
+      std::lower_bound(list.begin(), list.end(), minimum_time, predicate);
+  if (item == list.end())
     return SMILTime::Unresolved();
-  const SMILTime& current_time = list[index_of_result].Time();
 
   // The special value "indefinite" does not yield an instance time in the begin
   // list.
-  if (current_time.IsIndefinite() && begin_or_end == kBegin)
+  if (item->Time().IsIndefinite() && begin_or_end == kBegin)
     return SMILTime::Unresolved();
 
-  if (current_time > minimum_time)
-    return current_time;
-
-  DCHECK(current_time == minimum_time);
-  if (equals_minimum_ok)
-    return current_time;
-
-  // If the equals is not accepted, return the next bigger item in the list.
-  SMILTime next_time = current_time;
-  while (index_of_result < size_of_list - 1) {
-    next_time = list[index_of_result + 1].Time();
-    if (next_time > minimum_time)
-      return next_time;
-    ++index_of_result;
-  }
-
-  return begin_or_end == kBegin ? SMILTime::Unresolved()
-                                : SMILTime::Indefinite();
+  return item->Time();
 }
 
 SMILTime SVGSMILElement::RepeatingDuration() const {
