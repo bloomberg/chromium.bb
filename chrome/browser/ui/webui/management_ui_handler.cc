@@ -54,10 +54,30 @@ const char kManagementReportUsers[] = "managementReportUsers";
 namespace {
 
 #if defined(OS_CHROMEOS)
+
+base::string16 GetTitleWithEnterpriseDomain(
+    policy::BrowserPolicyConnectorChromeOS* connector) {
+  if (!connector->IsEnterpriseManaged()) {
+    return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
+  }
+  std::string display_domain = connector->GetEnterpriseDisplayDomain();
+
+  if (display_domain.empty()) {
+    if (!connector->IsActiveDirectoryManaged())
+      return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
+
+    display_domain = connector->GetRealm();
+  }
+
+  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
+                                    base::UTF8ToUTF16(display_domain));
+}
+
 base::string16 GetEnterpriseDisplayDomain(
     policy::BrowserPolicyConnectorChromeOS* connector) {
-  if (!connector->IsEnterpriseManaged())
+  if (!connector->IsEnterpriseManaged()) {
     return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED);
+  }
 
   std::string display_domain = connector->GetEnterpriseDisplayDomain();
 
@@ -70,6 +90,85 @@ base::string16 GetEnterpriseDisplayDomain(
 
   return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_BY,
                                     base::UTF8ToUTF16(display_domain));
+}
+
+void AddChromeOSReportingDevice(base::Value* report_sources) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  // Only check for report status in managed environment.
+  if (!connector->IsEnterpriseManaged())
+    return;
+
+  policy::DeviceCloudPolicyManagerChromeOS* manager =
+      connector->GetDeviceCloudPolicyManager();
+
+  if (!manager)
+    return;
+
+  if (manager->GetSystemLogUploader()->upload_enabled()) {
+    report_sources->GetList().push_back(
+        base::Value(kManagementLogUploadEnabled));
+  }
+
+  const policy::DeviceStatusCollector* collector =
+      manager->GetStatusUploader()->device_status_collector();
+
+  if (collector->report_hardware_status()) {
+    report_sources->GetList().push_back(
+        base::Value(kManagementReportHardwareStatus));
+  }
+}
+
+void AddChromeOSReportingSecurity(base::Value* report_sources) {}
+
+void AddChromeOSReportingUserActivity(base::Value* report_sources) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  // Only check for report status in managed environment.
+  if (!connector->IsEnterpriseManaged())
+    return;
+
+  policy::DeviceCloudPolicyManagerChromeOS* manager =
+      connector->GetDeviceCloudPolicyManager();
+
+  if (!manager)
+    return;
+
+  const policy::DeviceStatusCollector* collector =
+      manager->GetStatusUploader()->device_status_collector();
+
+  if (collector->report_activity_times()) {
+    report_sources->GetList().push_back(
+        base::Value(kManagementReportActivityTimes));
+  }
+  if (collector->report_users()) {
+    report_sources->GetList().push_back(base::Value(kManagementReportUsers));
+  }
+}
+
+void AddChromeOSReportingWeb(base::Value* report_sources) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  // Only check for report status in managed environment.
+  if (!connector->IsEnterpriseManaged())
+    return;
+
+  policy::DeviceCloudPolicyManagerChromeOS* manager =
+      connector->GetDeviceCloudPolicyManager();
+
+  if (!manager)
+    return;
+
+  const policy::DeviceStatusCollector* collector =
+      manager->GetStatusUploader()->device_status_collector();
+
+  if (collector->report_network_interfaces()) {
+    report_sources->GetList().push_back(
+        base::Value(kManagementReportNetworkInterfaces));
+  }
 }
 
 void AddChromeOSReportingInfo(base::Value* report_sources) {
@@ -167,8 +266,28 @@ ManagementUIHandler::~ManagementUIHandler() {}
 
 void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "getManagementTitle",
+      base::BindRepeating(&ManagementUIHandler::HandleGetManagementTitle,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getDeviceManagementStatus",
       base::BindRepeating(&ManagementUIHandler::HandleGetDeviceManagementStatus,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingDevice",
+      base::BindRepeating(&ManagementUIHandler::HandleGetReportingDevice,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingSecurity",
+      base::BindRepeating(&ManagementUIHandler::HandleGetReportingSecurity,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingUserActivity",
+      base::BindRepeating(&ManagementUIHandler::HandleGetReportingUserActivity,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingWeb",
+      base::BindRepeating(&ManagementUIHandler::HandleGetReportingWeb,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getReportingInfo",
@@ -184,9 +303,23 @@ void ManagementUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void ManagementUIHandler::HandleGetDeviceManagementStatus(
+void ManagementUIHandler::HandleGetManagementTitle(
     const base::ListValue* args) {
   AllowJavascript();
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  base::Value title(GetTitleWithEnterpriseDomain(connector));
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, title);
+#else
+  RejectJavascriptCallback(args->GetList()[0] /* callback_id */,
+                           base::Value("Management overview"));
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ManagementUIHandler::HandleGetDeviceManagementStatus(
+    const base::ListValue* args) {
   base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
 
 #if defined(OS_CHROMEOS)
@@ -201,6 +334,57 @@ void ManagementUIHandler::HandleGetDeviceManagementStatus(
       args->GetList()[0] /* callback_id */,
       base::Value("No device management status on Chrome desktop"));
 #endif  // defined(OS_CHROMEOS)
+}
+
+void ManagementUIHandler::HandleGetReportingDevice(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingDevice(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingSecurity(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingSecurity(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingUserActivity(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingUserActivity(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingWeb(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
 }
 
 void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {

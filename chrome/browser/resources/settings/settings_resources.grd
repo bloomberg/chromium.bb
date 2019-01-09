@@ -74,6 +74,18 @@
         <structure name="IDR_SETTINGS_UPDATE_WARNING_DIALOG_JS"
                    file="about_page/update_warning_dialog.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MANAGEMENT_PAGE_HTML"
+                    file="about_page/management_page.html"
+                    type="chrome_html"/>
+        <structure name="IDR_SETTINGS_MANAGEMENT_PAGE_JS"
+                    file="about_page/management_page.js"
+                    type="chrome_html"/>
+        <structure name="IDR_SETTINGS_MANAGEMENT_BROWSER_PROXY_HTML"
+                    file="about_page/management_browser_proxy.html"
+                    type="chrome_html"/>
+        <structure name="IDR_SETTINGS_MANAGEMENT_PROXY_JS"
+                    file="about_page/management_browser_proxy.js"
+                    type="chrome_html"/>
       </if>
       <structure name="IDR_SETTINGS_ADD_SITE_DIALOG_HTML"
                  file="site_settings/add_site_dialog.html"

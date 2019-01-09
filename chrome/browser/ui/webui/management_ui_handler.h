@@ -33,7 +33,17 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
+  void HandleGetManagementTitle(const base::ListValue* args);
+
   void HandleGetDeviceManagementStatus(const base::ListValue* args);
+
+  void HandleGetReportingDevice(const base::ListValue* args);
+
+  void HandleGetReportingSecurity(const base::ListValue* args);
+
+  void HandleGetReportingUserActivity(const base::ListValue* args);
+
+  void HandleGetReportingWeb(const base::ListValue* args);
 
   void HandleGetReportingInfo(const base::ListValue* args);
 

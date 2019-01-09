@@ -52,6 +52,7 @@
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
+ *   MANAGEMENT_INFO : (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
  *   MULTIDEVICE_FEATURES: (undefined|!settings.Route),
  *   NETWORK_DETAIL: (undefined|!settings.Route),
@@ -434,6 +435,7 @@ cr.define('settings', function() {
     // route in order to show the subpage on Chrome OS.
     r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
     r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
+    r.MANAGEMENT_INFO = r.ABOUT_ABOUT.createChild('/help/management');
     // </if>
 
     return r;

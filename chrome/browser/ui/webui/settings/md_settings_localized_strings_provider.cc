@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
@@ -417,6 +418,27 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
     {"aboutUpdateWarningContinue",
      IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON},
+
+    // About page, Management subpage
+    {"managementTitle", IDS_MANAGEMENT_TITLE},
+    {"managementDeviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
+    {"managementDeviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
+    {"managementExtensionReporting", IDS_MANAGEMENT_EXTENSION_REPORTING},
+    {"managementExtensionsInstalled", IDS_MANAGEMENT_EXTENSIONS_INSTALLED},
+    {"managementExtensionName", IDS_MANAGEMENT_EXTENSIONS_NAME},
+    {"managementExtensionPermissions", IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS},
+    {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
+    {kManagementReportActivityTimes,
+     IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},
+    {kManagementReportHardwareStatus,
+     IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS},
+    {kManagementReportNetworkInterfaces,
+     IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
+    {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
+    {"managementLocalTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
+    {"managementTrustRootsNotConfigured",
+     IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
+    {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED}
 #endif  // defined(OS_CHROMEOS)
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
