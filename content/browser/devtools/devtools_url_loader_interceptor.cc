@@ -321,13 +321,11 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   bool CanGetResponseBody(std::string* error_reason);
-  void UpdateIdAndRegister();
+  bool StartJobAndMaybeNotify();
 
   const std::string id_prefix_;
   const GlobalRequestId global_req_id_;
   const base::UnguessableToken frame_token_;
-  const base::TimeTicks start_ticks_;
-  const base::Time start_time_;
   const bool report_upload_;
 
   DevToolsURLLoaderInterceptor::Impl* interceptor_;
@@ -354,6 +352,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   };
 
   State state_;
+  base::TimeTicks start_ticks_;
+  base::Time start_time_;
+
   bool waiting_for_resolution_;
   int redirect_count_;
   std::string current_id_;
@@ -707,8 +708,6 @@ InterceptionJob::InterceptionJob(
                           create_loader_params->request.render_frame_id,
                           create_loader_params->request_id)),
       frame_token_(frame_token),
-      start_ticks_(base::TimeTicks::Now()),
-      start_time_(base::Time::Now()),
       report_upload_(!!create_loader_params->request.request_body),
       interceptor_(interceptor),
       create_loader_params_(std::move(create_loader_params)),
@@ -721,10 +720,6 @@ InterceptionJob::InterceptionJob(
       waiting_for_resolution_(false),
       redirect_count_(0) {
   context_->AddJob(this);
-  UpdateIdAndRegister();
-  const network::ResourceRequest& request = create_loader_params_->request;
-  stage_ = interceptor_->GetInterceptionStage(
-      request.url, static_cast<ResourceType>(request.resource_type));
 
   loader_binding_.Bind(std::move(loader_request));
   loader_binding_.set_connection_error_handler(
@@ -736,17 +731,32 @@ InterceptionJob::InterceptionJob(
   registered_in_global_request_map_ =
       job_map.emplace(global_req_id_, this).second;
 
-  if (stage_ & InterceptionStage::REQUEST) {
-    NotifyClient(BuildRequestInfo(nullptr));
+  if (StartJobAndMaybeNotify())
     return;
-  }
 
   StartRequest();
 }
 
-void InterceptionJob::UpdateIdAndRegister() {
+bool InterceptionJob::StartJobAndMaybeNotify() {
+  start_ticks_ = base::TimeTicks::Now();
+  start_time_ = base::Time::Now();
+
   current_id_ = id_prefix_ + base::StringPrintf(".%d", redirect_count_);
   interceptor_->AddJob(current_id_, this);
+
+  const network::ResourceRequest& request = create_loader_params_->request;
+  stage_ = interceptor_->GetInterceptionStage(
+      request.url, static_cast<ResourceType>(request.resource_type));
+
+  if (!(stage_ & InterceptionStage::REQUEST))
+    return false;
+
+  if (state_ == State::kRedirectReceived)
+    state_ = State::kFollowRedirect;
+  else
+    DCHECK_EQ(State::kNotStarted, state_);
+  NotifyClient(BuildRequestInfo(nullptr));
+  return true;
 }
 
 bool InterceptionJob::CanGetResponseBody(std::string* error_reason) {
@@ -1318,18 +1328,8 @@ void InterceptionJob::FollowRedirect(
     // compatibilty with URLRequestJob-based interception implementation.
     interceptor_->RemoveJob(current_id_);
     redirect_count_++;
-    UpdateIdAndRegister();
-
-    stage_ = interceptor_->GetInterceptionStage(
-        request->url, static_cast<ResourceType>(request->resource_type));
-    if (stage_ & InterceptionStage::REQUEST) {
-      if (state_ == State::kRedirectReceived)
-        state_ = State::kFollowRedirect;
-      else
-        DCHECK_EQ(State::kNotStarted, state_);
-      NotifyClient(BuildRequestInfo(nullptr));
+    if (StartJobAndMaybeNotify())
       return;
-    }
   }
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
