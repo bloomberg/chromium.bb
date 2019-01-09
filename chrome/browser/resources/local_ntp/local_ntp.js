@@ -604,7 +604,7 @@ function onDeleteCustomLinkDone(success) {
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
 
-  if (configData.isMDIconsEnabled && configData.isGooglePage) {
+  if (configData.isGooglePage) {
     floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
@@ -622,7 +622,7 @@ function showNotification(msg) {
  * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
-  if (configData.isMDIconsEnabled && configData.isGooglePage) {
+  if (configData.isGooglePage) {
     floatDownNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
@@ -972,9 +972,7 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
-    if (configData.isMDIconsEnabled || configData.isCustomLinksEnabled) {
-      enableMDIcons();
-    }
+    enableMDIcons();
 
     if (configData.isCustomLinksEnabled) {
       ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
@@ -1088,10 +1086,6 @@ function createIframes() {
       encodeURIComponent(configData.translatedStrings.mostVisitedTitle));
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
-
-  if (configData.isMDIconsEnabled) {
-    args.push('enableMD=1');
-  }
 
   if (configData.isCustomLinksEnabled) {
     args.push('enableCustomLinks=1');

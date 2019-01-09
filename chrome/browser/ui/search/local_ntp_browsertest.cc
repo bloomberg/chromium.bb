@@ -546,8 +546,7 @@ class LocalNTPMDTest : public LocalNTPTest {
  public:
   LocalNTPMDTest()
       : LocalNTPTest(
-            /*enabled_features=*/{features::kUseGoogleLocalNtp,
-                                  features::kNtpIcons},
+            /*enabled_features=*/{features::kUseGoogleLocalNtp},
             /*disabled_features=*/{ntp_tiles::kNtpCustomLinks}) {}
 
  private:
@@ -595,7 +594,6 @@ class LocalNTPCustomLinksTest : public LocalNTPTest {
   LocalNTPCustomLinksTest()
       : LocalNTPTest(
             /*enabled_features=*/{features::kUseGoogleLocalNtp,
-                                  features::kNtpIcons,
                                   ntp_tiles::kNtpCustomLinks},
             /*disabled_features=*/{}) {}
 

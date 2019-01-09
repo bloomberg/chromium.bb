@@ -150,9 +150,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   auto translated_strings = std::make_unique<base::DictionaryValue>();
 
   AddString(translated_strings.get(), "thumbnailRemovedNotification",
-            features::IsMDIconsEnabled()
-                ? IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED
-                : IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
+            IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED);
   AddString(translated_strings.get(), "removeThumbnailTooltip",
             IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP);
   AddString(translated_strings.get(), "undoThumbnailRemove",
@@ -555,8 +553,6 @@ class LocalNtpSource::SearchConfigurationProvider
     config_data.SetBoolean("isAccessibleBrowser",
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
-
-    config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
 
     if (is_google) {
       config_data.SetBoolean("isCustomLinksEnabled",

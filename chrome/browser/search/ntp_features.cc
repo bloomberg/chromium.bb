@@ -14,11 +14,6 @@ namespace features {
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the user will see the Most Visited tiles updated with Material
-// Design elements.
-const base::Feature kNtpIcons{"NewTabPageIcons",
-                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, the user will sometimes see promos on the NTP.
 const base::Feature kPromosOnLocalNtp{"PromosOnLocalNtp",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -33,12 +28,6 @@ const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
 
 bool IsCustomLinksEnabled() {
   return ntp_tiles::IsCustomLinksEnabled();
-}
-
-bool IsMDIconsEnabled() {
-  return base::FeatureList::IsEnabled(kNtpIcons) ||
-         base::FeatureList::IsEnabled(ntp_tiles::kNtpCustomLinks) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 }  // namespace features
