@@ -457,6 +457,16 @@ bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
          EqualsSansGuid(profile);
 }
 
+bool AutofillProfile::EqualsForClientValidationPurpose(
+    const AutofillProfile& profile) const {
+  for (ServerFieldType type : kSupportedTypesByClientForValidation) {
+    if (GetRawInfo(type).compare(profile.GetRawInfo(type))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool AutofillProfile::EqualsIncludingUsageStatsForTesting(
     const AutofillProfile& profile) const {
   return use_count() == profile.use_count() &&
