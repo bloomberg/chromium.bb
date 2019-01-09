@@ -30,7 +30,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"

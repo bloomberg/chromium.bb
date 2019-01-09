@@ -12,7 +12,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
