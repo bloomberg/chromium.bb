@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -39,8 +40,11 @@ constexpr char kWebAppDefaultApps[] = "web_app_default_apps";
 constexpr char kUserTypesTestDir[] = "user_types";
 
 #if defined(OS_CHROMEOS)
+constexpr char kAppAllUrl[] = "https://www.google.com/all";
 constexpr char kAppChildUrl[] = "https://www.google.com/child";
+constexpr char kAppGuestUrl[] = "https://www.google.com/guest";
 constexpr char kAppManagedUrl[] = "https://www.google.com/managed";
+constexpr char kAppSupervisedUrl[] = "https://www.google.com/supervised";
 constexpr char kAppUnmanagedUrl[] = "https://www.google.com/unmanaged";
 #endif
 
@@ -112,6 +116,13 @@ class ScanDirForExternalWebAppsWithProfileTest
     return profile_builder.Build();
   }
 
+  // Helper that creates simple test guest profile.
+  std::unique_ptr<TestingProfile> CreateGuestProfile() {
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetGuestSession();
+    return profile_builder.Build();
+  }
+
 #if defined(OS_CHROMEOS)
   // Helper that creates simple test profile and logs it into user manager.
   // This makes profile appears as a primary profile in ChromeOS.
@@ -122,6 +133,22 @@ class ScanDirForExternalWebAppsWithProfileTest
     user_manager()->AddUser(account_id);
     user_manager()->LoginUser(account_id);
     return profile;
+  }
+
+  // Helper that creates simple test guest profile and logs it into user
+  // manager. This makes profile appears as a primary profile in ChromeOS.
+  std::unique_ptr<TestingProfile> CreateGuestProfileAndLogin() {
+    std::unique_ptr<TestingProfile> profile = CreateGuestProfile();
+    user_manager()->AddGuestUser();
+    user_manager()->LoginUser(user_manager()->GetGuestAccountId());
+    return profile;
+  }
+
+  void VerifySetOfApps(Profile* profile, const std::set<GURL>& expectations) {
+    const auto app_infos = ScanApps(profile, test_dir(kUserTypesTestDir));
+    ASSERT_EQ(expectations.size(), app_infos.size());
+    for (const auto& app_info : app_infos)
+      ASSERT_EQ(1u, expectations.count(app_info.url));
   }
 #endif
 
@@ -293,55 +320,34 @@ TEST_F(ScanDirForExternalWebAppsTest, NotEnabledByFinch) {
   EXPECT_EQ(0u, app_infos.size());
 }
 
-TEST_F(ScanDirForExternalWebAppsTest, RecursiveSearch) {
-  const auto app_infos =
-      web_app::ScanDirForExternalWebAppsForTesting(test_dir(kUserTypesTestDir));
-
-  // Search is recursive and includes sub-directories. |kUserTypesTestDir|
-  // contains sub-directories for child and managed users. All apps from these
-  // folders has to be included.
-  EXPECT_EQ(3u, app_infos.size());
-}
-
 #if defined(OS_CHROMEOS)
-TEST_F(ScanDirForExternalWebAppsWithProfileTest, UnmanagedUser) {
-  const auto app_infos =
-      ScanApps(CreateProfileAndLogin().get(), test_dir(kUserTypesTestDir));
-  // This contains all apps, including for child and managed users.
-  const std::set<GURL> expectations(
-      {GURL(kAppChildUrl), GURL(kAppManagedUrl), GURL(kAppUnmanagedUrl)});
-  EXPECT_EQ(expectations.size(), app_infos.size());
-  for (const auto& app_info : app_infos)
-    EXPECT_EQ(1u, expectations.count(app_info.url));
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, ChildUser) {
+  const auto profile = CreateProfileAndLogin();
+  profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppChildUrl)});
 }
 
-TEST_F(ScanDirForExternalWebAppsWithProfileTest, SupervisedUser) {
-  const auto profile = CreateProfileAndLogin();
-  profile->SetSupervisedUserId("asdf");
-  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
-  // This contains all apps, including for child and managed users once
-  // supervised user in general is not managed or child and there is no current
-  // separation for this type of user.
-  ASSERT_EQ(3u, app_infos.size());
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, GuestUser) {
+  VerifySetOfApps(CreateGuestProfileAndLogin().get(),
+                  {GURL(kAppAllUrl), GURL(kAppGuestUrl)});
 }
 
 TEST_F(ScanDirForExternalWebAppsWithProfileTest, ManagedUser) {
   const auto profile = CreateProfileAndLogin();
   policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile.get())
       ->OverrideIsManagedForTesting(true);
-  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
-  // This includes apps for managed users only.
-  ASSERT_EQ(1u, app_infos.size());
-  EXPECT_EQ(GURL(kAppManagedUrl), app_infos[0].url);
+  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppManagedUrl)});
 }
 
-TEST_F(ScanDirForExternalWebAppsWithProfileTest, ChildUser) {
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, SupervisedUser) {
   const auto profile = CreateProfileAndLogin();
-  profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
-  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
-  // This includes apps for child users only.
-  ASSERT_EQ(1u, app_infos.size());
-  EXPECT_EQ(GURL(kAppChildUrl), app_infos[0].url);
+  profile->SetSupervisedUserId("asdf");
+  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppSupervisedUrl)});
+}
+
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, UnmanagedUser) {
+  VerifySetOfApps(CreateProfileAndLogin().get(),
+                  {GURL(kAppAllUrl), GURL(kAppUnmanagedUrl)});
 }
 
 TEST_F(ScanDirForExternalWebAppsWithProfileTest, NonPrimaryProfile) {

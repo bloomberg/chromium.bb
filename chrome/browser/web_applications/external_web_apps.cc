@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,15 +55,17 @@ constexpr char kLaunchContainer[] = "launch_container";
 constexpr char kLaunchContainerTab[] = "tab";
 constexpr char kLaunchContainerWindow[] = "window";
 
+// kUserType is required key that specifies enumeration of user types for which
+// web app is visible. See kUserType* constants
+constexpr char kUserType[] = "user_type";
+
+constexpr char kUserTypeChild[] = "child";
+constexpr char kUserTypeGuest[] = "guest";
+constexpr char kUserTypeManaged[] = "managed";
+constexpr char kUserTypeSupervised[] = "supervised";
+constexpr char kUserTypeUnmanaged[] = "unmanaged";
+
 #if defined(OS_CHROMEOS)
-// Defines directory with web apps for child users.
-const base::FilePath::CharType kChildUsersSubdir[] =
-    FILE_PATH_LITERAL("child_users");
-
-// Defines directory with web apps for managed users.
-const base::FilePath::CharType kManagedUsersSubdir[] =
-    FILE_PATH_LITERAL("managed_users");
-
 // The sub-directory of the extensions directory in which to scan for external
 // web apps (as opposed to external extensions or external ARC apps).
 const base::FilePath::CharType kWebAppsSubDirectory[] =
@@ -94,11 +97,12 @@ bool IsFeatureEnabled(const std::string& feature_name) {
 }
 
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
-    const base::FilePath& dir) {
+    const base::FilePath& dir,
+    const std::string& user_type) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
-                                  true,  // Recursive.
+                                  false,  // Recursive.
                                   base::FileEnumerator::FILES);
 
   std::vector<web_app::PendingAppManager::AppInfo> app_infos;
@@ -122,8 +126,28 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
       continue;
     }
 
-    base::Value* value =
-        dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
+    const base::Value* value =
+        dict->FindKeyOfType(kUserType, base::Value::Type::LIST);
+    if (!value) {
+      LOG(ERROR) << file.value() << " has no user type filter";
+      continue;
+    }
+    bool user_type_match = false;
+    for (const auto& it : value->GetList()) {
+      if (!it.is_string()) {
+        LOG(ERROR) << file.value() << " has invalid user type value";
+        user_type_match = false;
+        break;
+      }
+      user_type_match |= (it.GetString() == user_type);
+    }
+    if (!user_type_match) {
+      VLOG(1) << file.value() << " skip, does not match user type "
+              << user_type;
+      continue;
+    }
+
+    value = dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
     if (value) {
       std::string feature_name = value->GetString();
       VLOG(1) << file.value() << " checking feature " << feature_name;
@@ -182,7 +206,7 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
   return app_infos;
 }
 
-base::FilePath DetermineScanDir(Profile* profile) {
+base::FilePath DetermineScanDir(const Profile* profile) {
   base::FilePath dir;
 #if defined(OS_CHROMEOS)
   // As of mid 2018, only Chrome OS has default/external web apps, and
@@ -199,21 +223,26 @@ base::FilePath DetermineScanDir(Profile* profile) {
       LOG(ERROR) << "ScanForExternalWebApps: base::PathService::Get failed";
     } else {
       dir = dir.Append(kWebAppsSubDirectory);
-
-      // Limit web apps for known type of users. Unmanaged users have all apps,
-      // including sub-dirs.
-      if (profile->IsChild()) {
-        dir = dir.Append(kChildUsersSubdir);
-      } else if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-                     profile)
-                     ->IsManaged()) {
-        dir = dir.Append(kManagedUsersSubdir);
-      }
     }
   }
 
 #endif
   return dir;
+}
+
+std::string DetermineUserType(Profile* profile) {
+  DCHECK(!profile->IsOffTheRecord());
+  if (profile->IsGuestSession())
+    return kUserTypeGuest;
+  if (profile->IsChild())
+    return kUserTypeChild;
+  if (profile->IsLegacySupervised())
+    return kUserTypeSupervised;
+  if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+          ->IsManaged()) {
+    return kUserTypeManaged;
+  }
+  return kUserTypeUnmanaged;
 }
 
 }  // namespace
@@ -222,7 +251,7 @@ namespace web_app {
 
 std::vector<web_app::PendingAppManager::AppInfo>
 ScanDirForExternalWebAppsForTesting(const base::FilePath& dir) {
-  return ScanDir(dir);
+  return ScanDir(dir, kUserTypeUnmanaged);
 }
 
 void ScanForExternalWebApps(Profile* profile,
@@ -246,7 +275,8 @@ void ScanForExternalWebApps(Profile* profile,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ScanDir, dir), std::move(callback));
+      base::BindOnce(&ScanDir, dir, DetermineUserType(profile)),
+      std::move(callback));
 }
 
 }  //  namespace web_app
