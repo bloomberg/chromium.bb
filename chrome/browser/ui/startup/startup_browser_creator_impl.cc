@@ -62,7 +62,7 @@
 #include "content/public/common/content_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

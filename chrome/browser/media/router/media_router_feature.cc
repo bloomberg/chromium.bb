@@ -15,7 +15,7 @@
 #include "crypto/random.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/chrome_features.h"

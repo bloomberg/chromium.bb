@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 namespace ui {
 

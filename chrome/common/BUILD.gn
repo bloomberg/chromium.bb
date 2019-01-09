@@ -546,7 +546,7 @@ static_library("non_code_constants") {
 
   public_deps = [
     "//printing/buildflags",
-    "//ui/base:ui_features",
+    "//ui/base:buildflags",
   ]
 }
 
@@ -572,7 +572,7 @@ component("chrome_features") {
   ]
 
   public_deps = [
-    "//ui/base:ui_features",
+    "//ui/base:buildflags",
   ]
 }
 

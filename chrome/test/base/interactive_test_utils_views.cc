@@ -9,7 +9,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {

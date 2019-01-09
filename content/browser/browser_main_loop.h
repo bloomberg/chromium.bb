@@ -19,7 +19,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/browser/media/keyboard_mic_registration.h"

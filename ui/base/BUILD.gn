@@ -50,8 +50,8 @@ component("ui_data_pack") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-buildflag_header("ui_features") {
-  header = "ui_features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [
     "ENABLE_HIDPI=$enable_hidpi",
     "ENABLE_MESSAGE_CENTER=$enable_message_center",
@@ -405,8 +405,8 @@ jumbo_component("base") {
   defines = [ "UI_BASE_IMPLEMENTATION" ]
 
   public_deps = [
+    ":buildflags",
     ":ui_data_pack",
-    ":ui_features",
     "//base",
     "//skia",
     "//ui/gfx",

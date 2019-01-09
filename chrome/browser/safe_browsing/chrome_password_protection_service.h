@@ -13,7 +13,7 @@
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "url/origin.h"
 
 struct AccountInfo;

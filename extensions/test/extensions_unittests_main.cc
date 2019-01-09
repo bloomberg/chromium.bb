@@ -17,8 +17,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_features.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "url/url_util.h"
 

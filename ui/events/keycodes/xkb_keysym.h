@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 #define UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 // This file provides definitions of the xkbcommon keysym type (xkb_keysym_t)
 // and values (XKB_KEY_...) for both xkbcommon and traditional X11.

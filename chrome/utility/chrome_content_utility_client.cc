@@ -32,7 +32,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/utility/importer/profile_import_impl.h"
