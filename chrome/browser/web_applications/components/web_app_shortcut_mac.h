@@ -63,15 +63,24 @@ class WebAppShortcutCreator {
 
   virtual ~WebAppShortcutCreator();
 
-  // Returns the base name for the shortcut.
-  virtual base::FilePath GetShortcutBasename() const;
+  // Returns the base name for the shortcut. This will be a sanitized version
+  // of the application title. If |copy_number| is not 1, then append it before
+  // the .app part of the extension.
+  virtual base::FilePath GetShortcutBasename(int copy_number = 1) const;
+
+  // Returns the fallback name for the shortcut. This name will be a combination
+  // of the profile name and extension id. This is used if the app title is
+  // unable to be used for the bundle path (e.g: "...").
+  base::FilePath GetFallbackBasename() const;
 
   // Returns a path to the Chrome Apps folder in the relevant applications
   // folder. E.g. ~/Applications or /Applications.
   virtual base::FilePath GetApplicationsDirname() const;
 
   // The full path to the app bundle under the relevant Applications folder.
-  base::FilePath GetApplicationsShortcutPath() const;
+  // If |avoid_conflicts| is true then return a path that does not yet exist (by
+  // appending " 2", " 3", etc, to the end of the file name).
+  base::FilePath GetApplicationsShortcutPath(bool avoid_conflicts) const;
 
   // Returns the paths to app bundles with the given id as found by launch
   // services, sorted by preference.

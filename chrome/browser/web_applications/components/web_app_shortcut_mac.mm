@@ -32,6 +32,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -65,6 +66,10 @@ namespace {
 
 // Launch Services Key to run as an agent app, which doesn't launch in the dock.
 NSString* const kLSUIElement = @"LSUIElement";
+
+// The maximum number to append to to an app name before giving up and using the
+// extension id.
+constexpr int kMaxConflictNumber = 999;
 
 // Writes |icons| to |path| in .icns format.
 bool WriteIconsToFile(const std::vector<gfx::Image>& icons,
@@ -141,24 +146,6 @@ base::FilePath GetResourcesPath(const base::FilePath& app_path) {
   return app_path.Append("Contents").Append("Resources");
 }
 
-bool HasExistingExtensionShim(const base::FilePath& destination_directory,
-                              const std::string& extension_id,
-                              const base::FilePath& own_basename) {
-  // Check if there any any other shims for the same extension.
-  base::FileEnumerator enumerator(destination_directory, false /* recursive */,
-                                  base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath shim_path = enumerator.Next(); !shim_path.empty();
-       shim_path = enumerator.Next()) {
-    if (shim_path.BaseName() != own_basename &&
-        base::EndsWith(shim_path.RemoveExtension().value(), extension_id,
-                       base::CompareCase::SENSITIVE)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 // Given the path to an app bundle, return the path to the Info.plist file.
 NSString* GetPlistPath(const base::FilePath& bundle_path) {
   return base::mac::FilePathToNSString(
@@ -167,6 +154,27 @@ NSString* GetPlistPath(const base::FilePath& bundle_path) {
 
 NSMutableDictionary* ReadPlist(NSString* plist_path) {
   return [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+}
+
+bool HasExistingExtensionShimForDifferentProfile(
+    const base::FilePath& destination_directory,
+    const std::string& extension_id,
+    const base::FilePath& profile_dir) {
+  // Check if there any any other shims for the same extension.
+  base::FileEnumerator enumerator(destination_directory, false /* recursive */,
+                                  base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath shim_path = enumerator.Next(); !shim_path.empty();
+       shim_path = enumerator.Next()) {
+    NSDictionary* plist = ReadPlist(GetPlistPath(shim_path));
+    std::string plist_extension_id = base::SysNSStringToUTF8(
+        [plist valueForKey:app_mode::kCrAppModeShortcutIDKey]);
+    base::FilePath plist_profile_dir(base::SysNSStringToUTF8(
+        [plist valueForKey:app_mode::kCrAppModeProfileDirKey]));
+    if (plist_extension_id == extension_id && plist_profile_dir != profile_dir)
+      return true;
+  }
+
+  return false;
 }
 
 // Takes the path to an app bundle and checks that the CrAppModeUserDataDir in
@@ -419,19 +427,12 @@ bool UpdateAppShortcutsSubdirLocalizedName(
   return true;
 }
 
-bool IsShimForProfile(const base::FilePath& base_name,
+bool IsShimForProfile(const base::FilePath& bundle_path,
                       const std::string& profile_base_name) {
-  if (!base::StartsWith(base_name.value(), profile_base_name,
-                        base::CompareCase::SENSITIVE))
-    return false;
-
-  if (base_name.Extension() != ".app")
-    return false;
-
-  std::string app_id = base_name.RemoveExtension().value();
-  // Strip (profile_base_name + " ") from the start.
-  app_id = app_id.substr(profile_base_name.size() + 1);
-  return crx_file::id_util::IdIsValid(app_id);
+  NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
+  std::string profile_dir = base::SysNSStringToUTF8(
+      [plist valueForKey:app_mode::kCrAppModeProfileDirKey]);
+  return profile_dir == profile_base_name;
 }
 
 std::vector<base::FilePath> GetAllAppBundlesInPath(
@@ -443,7 +444,7 @@ std::vector<base::FilePath> GetAllAppBundlesInPath(
                                   base::FileEnumerator::DIRECTORIES);
   for (base::FilePath bundle_path = enumerator.Next(); !bundle_path.empty();
        bundle_path = enumerator.Next()) {
-    if (IsShimForProfile(bundle_path.BaseName(), profile_base_name))
+    if (IsShimForProfile(bundle_path, profile_base_name))
       bundle_paths.push_back(bundle_path);
   }
 
@@ -515,18 +516,60 @@ WebAppShortcutCreator::WebAppShortcutCreator(const base::FilePath& app_data_dir,
 
 WebAppShortcutCreator::~WebAppShortcutCreator() {}
 
-base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath() const {
+base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
+    bool avoid_conflicts) const {
   base::FilePath applications_dir = GetApplicationsDirname();
-  return applications_dir.empty()
-             ? base::FilePath()
-             : applications_dir.Append(GetShortcutBasename());
+  if (applications_dir.empty())
+    return base::FilePath();
+
+  if (!avoid_conflicts)
+    return applications_dir.Append(GetShortcutBasename());
+
+  // Attempt to use the application's title for the file name. Resolve conflicts
+  // by appending 1 through kMaxConflictNumber, before giving up and using the
+  // concatenated profile and extension for a name name.
+  for (int i = 1; i <= kMaxConflictNumber; ++i) {
+    base::FilePath path = applications_dir.Append(GetShortcutBasename(i));
+    if (base::DirectoryExists(path))
+      continue;
+    return path;
+  }
+
+  // If all of those are taken, then use the combination of profile and
+  // extension id.
+  return applications_dir.Append(GetFallbackBasename());
 }
 
 base::FilePath WebAppShortcutCreator::GetInternalShortcutPath() const {
   return app_data_dir_.Append(GetShortcutBasename());
 }
 
-base::FilePath WebAppShortcutCreator::GetShortcutBasename() const {
+base::FilePath WebAppShortcutCreator::GetShortcutBasename(
+    int copy_number) const {
+  // For profile-less shortcuts, use the fallback naming scheme to avoid change.
+  if (info_->profile_name.empty())
+    return GetFallbackBasename();
+
+  // Strip all preceding '.'s from the path.
+  base::string16 title = info_->title;
+  size_t first_non_dot = 0;
+  while (first_non_dot < title.size() && title[first_non_dot] == '.')
+    first_non_dot += 1;
+  title = title.substr(first_non_dot);
+  if (title.empty())
+    return GetFallbackBasename();
+
+  // Finder will display ':' as '/', so replace all '/' instances with ':'.
+  std::replace(title.begin(), title.end(), '/', ':');
+
+  // Append the copy number.
+  std::string title_utf8 = base::UTF16ToUTF8(title);
+  if (copy_number != 1)
+    title_utf8 += base::StringPrintf(" %d", copy_number);
+  return base::FilePath(title_utf8 + ".app");
+}
+
+base::FilePath WebAppShortcutCreator::GetFallbackBasename() const {
   std::string app_name;
   // Check if there should be a separate shortcut made for different profiles.
   // Such shortcuts will have a |profile_name| set on the ShortcutInfo,
@@ -557,15 +600,20 @@ size_t WebAppShortcutCreator::CreateShortcutsAt(
     const std::vector<base::FilePath>& dst_app_paths,
     std::vector<base::FilePath>* updated_paths) const {
   DCHECK(updated_paths && updated_paths->empty());
+  DCHECK(!dst_app_paths.empty());
   size_t succeeded = 0;
 
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir())
     return 0;
 
-  // Create the bundle in staging_path.
+  // Create the bundle in |staging_path|. Note that the staging path will be
+  // encoded in CFBundleName, and only .apps with that exact name will have
+  // their display name overridden by localization. To that end, use the base
+  // name from dst_app_paths.front(), to ensure that the Applications copy has
+  // its display name set appropriately.
   base::FilePath staging_path =
-      scoped_temp_dir.GetPath().Append(GetShortcutBasename());
+      scoped_temp_dir.GetPath().Append(dst_app_paths.front().BaseName());
   if (!BuildShortcut(staging_path))
     return 0;
 
@@ -622,6 +670,13 @@ bool WebAppShortcutCreator::CreateShortcuts(
 
   std::vector<base::FilePath> app_paths;
 
+  bool shortcut_visible =
+      creation_locations.applications_menu_location != APP_MENU_LOCATION_HIDDEN;
+  if (shortcut_visible) {
+    app_paths.push_back(
+        GetApplicationsShortcutPath(true /* avoid_conflicts */));
+  }
+
   // The app list shim is not tied to a particular profile, so omit the copy
   // placed under the profile path. For shims, this copy is used when the
   // version under Applications is removed, and not needed for app list because
@@ -633,11 +688,6 @@ bool WebAppShortcutCreator::CreateShortcuts(
   } else {
     app_paths.push_back(GetInternalShortcutPath());
   }
-
-  bool shortcut_visible =
-      creation_locations.applications_menu_location != APP_MENU_LOCATION_HIDDEN;
-  if (shortcut_visible)
-    app_paths.push_back(GetApplicationsShortcutPath());
 
   DCHECK(!app_paths.empty());
   std::vector<base::FilePath> updated_app_paths;
@@ -724,7 +774,8 @@ bool WebAppShortcutCreator::UpdateShortcuts(
         // The bookmark app shortcut has been deleted by the user. Restore it,
         // as the Mac UI for bookmark apps creates the expectation that the app
         // will be added to Applications.
-        app_paths.push_back(GetApplicationsShortcutPath());
+        app_paths.push_back(
+            GetApplicationsShortcutPath(true /* avoid_conflicts */));
       }
     }
     // Update or create the copy under the profile directory only if there are
@@ -810,7 +861,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
     [plist setObject:[NSNumber numberWithBool:YES] forKey:kLSUIElement];
   }
 
-  base::FilePath app_name = app_path.BaseName().RemoveExtension();
+  base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)
             forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
 
@@ -831,8 +882,9 @@ bool WebAppShortcutCreator::UpdateDisplayName(
 
   NSString* bundle_name = base::SysUTF16ToNSString(info_->title);
   NSString* display_name = base::SysUTF16ToNSString(info_->title);
-  if (HasExistingExtensionShim(GetApplicationsDirname(), info_->extension_id,
-                               app_path.BaseName())) {
+  if (HasExistingExtensionShimForDifferentProfile(
+          GetApplicationsDirname(), info_->extension_id,
+          info_->profile_path.BaseName())) {
     display_name = [bundle_name
         stringByAppendingString:base::SysUTF8ToNSString(
                                     " (" + info_->profile_name + ")")];
@@ -910,7 +962,8 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
   std::vector<base::FilePath> paths = GetAppBundlesByIdUnsorted();
 
   // Sort the matches by preference.
-  base::FilePath default_path = GetApplicationsShortcutPath();
+  base::FilePath default_path =
+      GetApplicationsShortcutPath(false /* avoid_conflicts */);
   base::FilePath apps_dir = GetApplicationsDirname();
   auto compare = [default_path, apps_dir](const base::FilePath& a,
                                           const base::FilePath& b) {
