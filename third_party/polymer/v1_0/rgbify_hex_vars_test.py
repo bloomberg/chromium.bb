@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import rgbify_hex_vars
+import unittest
+
+
+class RgbifyHexVarsTest(unittest.TestCase):
+  def checkProduces(self, content, expected, prefix=''):
+    actual = rgbify_hex_vars.Rgbify(content, prefix=prefix)
+    self.assertEquals(actual, expected)
+
+  def checkSame(self, content):
+    self.checkProduces(content, content)
+
+  def testPrefixFiltering(self):
+    self.checkProduces('--google-blue-500: #010203;\n' +
+                       '--paper-green-300: #445566;',
+                       '--google-blue-500: #010203;\n' +
+                       '--google-blue-500-rgb: 1, 2, 3;\n' +
+                       '--paper-green-300: #445566;',
+                       prefix='google')
+
+  def testStuffToBeIgnored(self):
+    self.checkSame('#bada55 { color: red; }')
+    self.checkSame('--var-name: rgb(1, 2, 3);')
+    self.checkSame('--var-name: rgba(1, 2, 3, .5);')
+
+  def testValidHexVars(self):
+    self.checkProduces('--color-var: #010203;',
+                       '--color-var: #010203;\n' +
+                       '--color-var-rgb: 1, 2, 3;')
+    self.checkProduces('--hi: #102030;',
+                       '--hi: #102030;\n' +
+                       '--hi-rgb: 16, 32, 48;')
+
+
+if __name__ == '__main__':
+  unittest.main()
