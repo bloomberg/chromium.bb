@@ -3621,7 +3621,15 @@ bool HTMLMediaElement::HasPendingActivity() const {
 
   // When networkState is kNetworkLoading, progress and stalled events may be
   // fired.
-  if (network_state_ == kNetworkLoading)
+  //
+  // When connected to a MediaSource, ignore |network_state_|. The rest
+  // of this method's logic and the HasPendingActivity() of the various
+  // MediaSource API objects more precisely indicate whether or not any pending
+  // activity is expected on the group of connected HTMLMediaElement +
+  // MediaSource API objects. This lets the group of objects be garbage
+  // collected if there is no pending activity nor reachability from a GC root,
+  // even while in kNetworkLoading.
+  if (!media_source_ && network_state_ == kNetworkLoading)
     return true;
 
   {
@@ -3638,11 +3646,6 @@ bool HTMLMediaElement::HasPendingActivity() const {
 
   // When the seek finishes timeupdate and seeked events will be fired.
   if (seeking_)
-    return true;
-
-  // When connected to a MediaSource, e.g. setting MediaSource.duration will
-  // cause a durationchange event to be fired.
-  if (media_source_)
     return true;
 
   // Wait for any pending events to be fired.

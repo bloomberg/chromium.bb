@@ -75,10 +75,7 @@ WebSourceBufferImpl::WebSourceBufferImpl(const std::string& id,
                      base::Unretained(this)));
 }
 
-WebSourceBufferImpl::~WebSourceBufferImpl() {
-  DCHECK(!demuxer_) << "Object destroyed w/o removedFromMediaSource() call";
-  DCHECK(!client_);
-}
+WebSourceBufferImpl::~WebSourceBufferImpl() = default;
 
 void WebSourceBufferImpl::SetClient(blink::WebSourceBufferClient* client) {
   DCHECK(client);

@@ -128,7 +128,6 @@ MediaSource::MediaSource(ExecutionContext* context)
 
 MediaSource::~MediaSource() {
   BLINK_MSLOG << __func__ << " this=" << this;
-  DCHECK(IsClosed());
 }
 
 void MediaSource::LogAndThrowDOMException(ExceptionState& exception_state,
@@ -804,8 +803,15 @@ void MediaSource::OpenIfInEndedState() {
 }
 
 bool MediaSource::HasPendingActivity() const {
-  return attached_element_ || web_media_source_ ||
-         async_event_queue_->HasPendingEvents() ||
+  // Note that an unrevoked MediaSource objectUrl for an otherwise inactive,
+  // unreferenced HTMLME with MSE still attached will prevent GC of the whole
+  // group of objects. This is unfortunate, because it's conceivable that the
+  // app may actually still have a "reference" to the underlying MediaSource if
+  // it has the objectUrl in a string somewhere, for example. This is yet
+  // further motivation for apps to properly revokeObjectUrl and for the MSE
+  // spec, implementations and API users to transition to using HTMLME srcObject
+  // for MSE attachment instead of objectUrl.
+  return async_event_queue_->HasPendingEvents() ||
          added_to_registry_counter_ > 0;
 }
 

@@ -626,7 +626,14 @@ class CORE_EXPORT HTMLMediaElement
 
   DisplayMode display_mode_;
 
-  Member<HTMLMediaSource> media_source_;
+  // If any portion of an attached HTMLMediaElement (HTMLME) and the MediaSource
+  // Extensions (MSE) API is alive (having pending activity or traceable from a
+  // GC root), the whole group is not GC'ed. Here, using TraceWrapperMember,
+  // instead of Member, because |media_source_|'s wrapper needs to remain alive
+  // at least to successfully dispatch any events enqueued by behavior of the
+  // HTMLME+MSE API. It makes |media_source_|'s wrapper remain alive as long as
+  // this HTMLMediaElement's wrapper is alive.
+  TraceWrapperMember<HTMLMediaSource> media_source_;
 
   // Stores "official playback position", updated periodically from "current
   // playback position". Official playback position should not change while
