@@ -227,7 +227,7 @@ bool ChildAccountService::SetActive(bool active) {
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (sync_service->IsFirstSetupComplete()) {
+  if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     sync_service->ReconfigureDatatypeManager(
         /*bypass_setup_in_progress_check=*/false);
   }

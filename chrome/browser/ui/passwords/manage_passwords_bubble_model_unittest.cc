@@ -88,7 +88,6 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
   TransportState GetTransportState() const override {
     return TransportState::ACTIVE;
   }
-  bool IsFirstSetupComplete() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     switch (synced_types_) {
       case SyncedTypes::ALL:

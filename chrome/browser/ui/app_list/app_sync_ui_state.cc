@@ -118,8 +118,10 @@ void AppSyncUIState::SetStatus(Status status) {
 }
 
 void AppSyncUIState::CheckAppSync() {
-  if (!sync_service_ || !sync_service_->IsFirstSetupComplete())
+  if (!sync_service_ ||
+      !sync_service_->GetUserSettings()->IsFirstSetupComplete()) {
     return;
+  }
 
   const bool synced = sync_service_->IsSyncFeatureActive();
   const bool has_pending_extension = extensions::ExtensionSystem::Get(profile_)

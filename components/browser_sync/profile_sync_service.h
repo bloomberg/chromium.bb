@@ -209,7 +209,6 @@ class ProfileSyncService : public syncer::SyncService,
   const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
-  virtual bool IsFirstSetupComplete() const;  // Virtual for testing.
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
@@ -414,6 +413,9 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
+  // Shorthand for user_settings_.IsFirstSetupComplete().
+  bool IsFirstSetupComplete() const;
+
   // Virtual for testing.
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
