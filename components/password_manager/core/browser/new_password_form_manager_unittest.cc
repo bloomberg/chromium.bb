@@ -1299,6 +1299,8 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
 
   // Check that when the generated password is edited, then it's presaved.
   form_with_generated_password.password_value += ASCIIToUTF16("1");
+  form_data.fields[kPasswordFieldIndex].value =
+      form_with_generated_password.password_value;
   EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
       .WillOnce(SaveArg<0>(&saved_form));
 
@@ -1318,6 +1320,49 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
       base::make_optional(1u) /* shown automatically */,
       1 /* password generated */,
       base::make_optional(1u) /* password modified */};
+
+  CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
+}
+
+TEST_F(NewPasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({}, 0u);
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  form_manager_->SetGenerationPopupWasShown(
+      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+
+  // Check that the generated password is presaved.
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_));
+  PasswordForm form_with_generated_password = parsed_submitted_form_;
+  FormData& form_data = form_with_generated_password.form_data;
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+  Mock::VerifyAndClearExpectations(&form_saver);
+
+  // Check that when the username is edited, then it's presaved.
+  form_with_generated_password.username_value += ASCIIToUTF16("1");
+  form_data.fields[kUsernameFieldIndex].value =
+      form_with_generated_password.username_value;
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+  EXPECT_EQ(saved_form.username_value,
+            form_with_generated_password.username_value);
+  EXPECT_EQ(saved_form.password_value,
+            form_with_generated_password.password_value);
+
+  // Check UKM metrics.
+  form_manager_.reset();
+  ExpectedGenerationUKM expected_metrics = {
+      base::make_optional(1u) /* shown automatically */,
+      1 /* password generated */,
+      base::make_optional(0u) /* password modified */};
 
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
@@ -1464,6 +1509,7 @@ TEST_F(NewPasswordFormManagerTest, UserEventsForGeneration) {
     CreateFormManager(observed_form_);
     form_manager_->PresaveGeneratedPassword(submitted_form);
     form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("1");
+    submitted_form.password_value = form_data.fields[kPasswordFieldIndex].value;
     form_manager_->PresaveGeneratedPassword(submitted_form);
     form_manager_.reset();
     histogram_tester.ExpectUniqueSample(
@@ -1476,6 +1522,7 @@ TEST_F(NewPasswordFormManagerTest, UserEventsForGeneration) {
     CreateFormManager(observed_form_);
     form_manager_->PresaveGeneratedPassword(submitted_form);
     form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("2");
+    submitted_form.password_value = form_data.fields[kPasswordFieldIndex].value;
     form_manager_->PresaveGeneratedPassword(submitted_form);
     form_manager_->PasswordNoLongerGenerated();
     form_manager_.reset();

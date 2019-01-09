@@ -360,17 +360,22 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
     parsed_form.reset(new PasswordForm(form));
   }
 
-  // If a password had been generated already, a call to
-  // PresaveGeneratedPassword() implies that this password was modified.
   if (!HasGeneratedPassword()) {
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::
             kPasswordAccepted);
   } else {
-    votes_uploader_.set_generated_password_changed(true);
-    metrics_recorder_->SetGeneratedPasswordStatus(
-        PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordEdited);
+    // If the password is already generated and new value to presave differs
+    // from the presaved one, then mark that the generated password was changed.
+    // If a user recovers the original generated password, it will be recorded
+    // as a password change.
+    if (generated_password_ != form.password_value) {
+      votes_uploader_.set_generated_password_changed(true);
+      metrics_recorder_->SetGeneratedPasswordStatus(
+          PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+              kPasswordEdited);
+    }
   }
   votes_uploader_.set_has_generated_password(true);
 
