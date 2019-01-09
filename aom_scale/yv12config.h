@@ -32,6 +32,7 @@ extern "C" {
 #define AOM_BORDER_IN_PIXELS 160
 #else
 #define AOM_BORDER_IN_PIXELS 288
+#define AOM_ENC_NO_SCALE_BORDER 160
 #endif  // CONFIG_REDUCED_ENCODER_BORDER
 
 typedef struct yv12_buffer_config {

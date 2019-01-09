@@ -836,10 +836,10 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
 
   if (!cpi->lookahead)
-    cpi->lookahead =
-        av1_lookahead_init(oxcf->width, oxcf->height, seq_params->subsampling_x,
-                           seq_params->subsampling_y,
-                           seq_params->use_highbitdepth, oxcf->lag_in_frames);
+    cpi->lookahead = av1_lookahead_init(
+        oxcf->width, oxcf->height, seq_params->subsampling_x,
+        seq_params->subsampling_y, seq_params->use_highbitdepth,
+        oxcf->lag_in_frames, oxcf->border_in_pixels);
   if (!cpi->lookahead)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate lag buffers");
@@ -848,7 +848,7 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
   if (aom_realloc_frame_buffer(
           &cpi->alt_ref_buffer, oxcf->width, oxcf->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+          seq_params->use_highbitdepth, oxcf->border_in_pixels,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
@@ -860,7 +860,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   if (aom_realloc_frame_buffer(
           &cpi->last_frame_uf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
@@ -875,14 +875,14 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   if (aom_realloc_frame_buffer(
           &cpi->scaled_source, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled source buffer");
 
   if (aom_realloc_frame_buffer(
           &cpi->scaled_last_source, cm->width, cm->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+          seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled last source buffer");
@@ -3876,7 +3876,7 @@ static void scale_references(AV1_COMP *cpi) {
           if (aom_realloc_frame_buffer(
                   &new_fb->buf, cm->width, cm->height,
                   cm->seq_params.subsampling_x, cm->seq_params.subsampling_y,
-                  cm->seq_params.use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                  cm->seq_params.use_highbitdepth, cpi->oxcf.border_in_pixels,
                   cm->byte_alignment, NULL, NULL, NULL)) {
             if (force_scaling) {
               // Release the reference acquired in the get_free_fb() call above.
@@ -4127,7 +4127,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   if (aom_realloc_frame_buffer(
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
@@ -6120,7 +6120,7 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
       if (aom_realloc_frame_buffer(
               &frame_bufs[i].buf, cm->width, cm->height,
               seq_params->subsampling_x, seq_params->subsampling_y,
-              seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+              seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
               cm->byte_alignment, NULL, NULL, NULL))
         aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to allocate frame buffer");
