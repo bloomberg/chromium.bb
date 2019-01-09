@@ -74,8 +74,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
 
-  // Set up 'switch to tab' button.
-  if (match.ShouldShowTabMatch()) {
+  // Set up possible button.
+  if (match.ShouldShowButton()) {
     if (match.pedal) {
       const OmniboxPedal::LabelStrings& strings =
           match.pedal->GetLabelStrings();

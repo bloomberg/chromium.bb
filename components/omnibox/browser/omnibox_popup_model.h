@@ -32,7 +32,7 @@ class OmniboxPopupModel {
   enum LineState {
     NORMAL = 0,
     KEYWORD,
-    TAB_SWITCH
+    BUTTON_FOCUSED
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
@@ -141,9 +141,13 @@ class OmniboxPopupModel {
                           SkColor vector_icon_color);
 #endif
 
+  // Helper function to see if the current selection specifically has a
+  // tab switch button.
+  bool SelectedLineHasTabMatch();
+
   // Helper function to see if current selection has button and can accept
   // the tab key.
-  bool SelectedLineHasTabMatch();
+  bool SelectedLineHasButton();
 
   // The token value for selected_line_ and functions dealing with a "line
   // number" that indicates "no line".
