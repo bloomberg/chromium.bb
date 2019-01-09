@@ -40,17 +40,10 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   void OnWebStateCreated(WebState* web_state);
 
   // WebStateObserver implementation.
-  void NavigationItemsPruned(WebState* web_state,
-                             size_t pruned_item_count) override;
-  void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) override;
   void DidStartNavigation(WebState* web_state,
                           NavigationContext* navigation_context) override;
   void DidStartLoading(WebState* web_state) override;
   void DidStopLoading(WebState* web_state) override;
-  void PageLoaded(WebState* web_state,
-                  PageLoadCompletionStatus load_completion_status) override;
   void RenderProcessGone(WebState* web_state) override;
   void WebStateDestroyed(WebState* web_state) override;
 
