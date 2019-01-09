@@ -679,17 +679,27 @@
     "isolated_scripts": [
       {
         "args": [
-          "--enable-features=NetworkService"
+          "--enable-features=NetworkService",
+          "--gs-results-bucket=chromium-result-details"
         ],
         "isolate_name": "webview_cts_tests",
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "webview_cts_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "name": "webview_cts_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/android_webview/tools/cts_archive",
-              "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.1"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -697,6 +707,16 @@
               "device_os": "OPD3.170816.023",
               "device_type": "walleye",
               "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
           "shards": 3

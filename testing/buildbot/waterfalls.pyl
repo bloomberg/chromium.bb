@@ -583,6 +583,7 @@
           ],
         },
         'use_swarming': True,
+        'use_android_presentation': True,
         'os_type': 'android',
       },
       'Memory Infra Tester': {

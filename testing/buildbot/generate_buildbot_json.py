@@ -448,6 +448,43 @@ class BBJSONGenerator(object):
         ],
       }
 
+  def add_android_presentation_args(self, tester_config, test_name, result):
+    args = result.get('args', [])
+    args.append('--gs-results-bucket=chromium-result-details')
+    if (result['swarming']['can_use_on_swarming_builders'] and not
+        tester_config.get('skip_merge_script', False)):
+      result['merge'] = {
+        'args': [
+          '--bucket',
+          'chromium-result-details',
+          '--test-name',
+          test_name
+        ],
+        'script': '//build/android/pylib/results/presentation/'
+          'test_results_presentation.py',
+      }
+    if not tester_config.get('skip_cipd_packages', False):
+      result['swarming']['cipd_packages'] = [
+        {
+          'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
+          'location': 'bin',
+          'revision': 'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
+        }
+      ]
+    if not tester_config.get('skip_output_links', False):
+      result['swarming']['output_links'] = [
+        {
+          'link': [
+            'https://luci-logdog.appspot.com/v/?s',
+            '=android%2Fswarming%2Flogcats%2F',
+            '${TASK_ID}%2F%2B%2Funified_logcats',
+          ],
+          'name': 'shard #${SHARD_INDEX} logcats',
+        },
+      ]
+    if args:
+      result['args'] = args
+
   def generate_gtest(self, waterfall, tester_name, tester_config, test_name,
                      test_config):
     if not self.should_run_on_tester(
@@ -464,42 +501,8 @@ class BBJSONGenerator(object):
         result, tester_config, additional_arg_keys=['gtest_args'])
     if self.is_android(tester_config) and tester_config.get('use_swarming',
                                                             True):
-      args = result.get('args', [])
-      args.append('--gs-results-bucket=chromium-result-details')
-      if (result['swarming']['can_use_on_swarming_builders'] and not
-          tester_config.get('skip_merge_script', False)):
-        result['merge'] = {
-          'args': [
-            '--bucket',
-            'chromium-result-details',
-            '--test-name',
-            test_name
-          ],
-          'script': '//build/android/pylib/results/presentation/'
-            'test_results_presentation.py',
-        } # pragma: no cover
-      if not tester_config.get('skip_cipd_packages', False):
-        result['swarming']['cipd_packages'] = [
-          {
-            'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
-            'location': 'bin',
-            'revision': 'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
-          }
-        ]
-      if not tester_config.get('skip_output_links', False):
-        result['swarming']['output_links'] = [
-          {
-            'link': [
-              'https://luci-logdog.appspot.com/v/?s',
-              '=android%2Fswarming%2Flogcats%2F',
-              '${TASK_ID}%2F%2B%2Funified_logcats',
-            ],
-            'name': 'shard #${SHARD_INDEX} logcats',
-          },
-        ]
-      args.append('--recover-devices')
-      if args:
-        result['args'] = args
+      self.add_android_presentation_args(tester_config, test_name, result)
+      result['args'] = result.get('args', []) + ['--recover-devices']
 
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
@@ -516,6 +519,8 @@ class BBJSONGenerator(object):
     result['name'] = test_name
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
+    if tester_config.get('use_android_presentation', False):
+      self.add_android_presentation_args(tester_config, test_name, result)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
