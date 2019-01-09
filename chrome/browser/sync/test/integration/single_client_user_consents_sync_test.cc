@@ -186,22 +186,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
   EXPECT_TRUE(ExpectUserConsents({specifics1, specifics2}));
 }
 
-class SingleClientUserConsentsWithStandaloneTransportSyncTest
-    : public SingleClientUserConsentsSyncTest {
- public:
-  SingleClientUserConsentsWithStandaloneTransportSyncTest() {
-    features_.InitAndEnableFeature(switches::kSyncStandaloneTransport);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsWithStandaloneTransportSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
                        ShouldSubmitIfSignedInAlthoughFullSyncNotEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(switches::kSyncStandaloneTransport);
+
   // We avoid calling SetupSync(), because we don't want to turn on full sync,
   // only sign in such that the standalone transport starts.
   ASSERT_TRUE(SetupClients());

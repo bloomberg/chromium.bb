@@ -307,29 +307,21 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, DownloadProfileStorage) {
   ExpectNoHistogramsForAddressesDiff();
 }
 
-class SingleClientWalletWithAccountStorageSyncTest
-    : public SingleClientWalletSyncTest {
- public:
-  SingleClientWalletWithAccountStorageSyncTest() {
-    features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                              switches::kSyncUSSAutofillWalletData,
-                              autofill::features::
-                                  kAutofillEnableAccountWalletStorage},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
 // The account storage requires USS, so we only test the USS implementation
 // here.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        DownloadAccountStorage_Card) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncStandaloneTransport,
+                            switches::kSyncUSSAutofillWalletData,
+                            autofill::features::
+                                kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   pdm->OnSyncServiceInitialized(GetSyncService(0));
@@ -1269,8 +1261,16 @@ IN_PROC_BROWSER_TEST_F(
 // 3. Enable Sync-the-feature again -> profile storage.
 // 4. StopAndClear() -> account storage.
 // 5. Enable Sync-the-feature again -> profile storage.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncStandaloneTransport,
+                            switches::kSyncUSSAutofillWalletData,
+                            autofill::features::
+                                kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
