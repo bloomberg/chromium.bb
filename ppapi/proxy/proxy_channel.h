@@ -124,10 +124,12 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
-  virtual bool InitWithChannel(Delegate* delegate,
-                               base::ProcessId peer_pid,
-                               const IPC::ChannelHandle& channel_handle,
-                               bool is_client);
+  virtual bool InitWithChannel(
+      Delegate* delegate,
+      base::ProcessId peer_pid,
+      const IPC::ChannelHandle& channel_handle,
+      bool is_client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ProxyChannel::Delegate* delegate() const {
     return delegate_;

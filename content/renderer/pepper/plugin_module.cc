@@ -712,7 +712,8 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId peer_pid,
     int plugin_child_id,
-    bool is_external) {
+    bool is_external,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(new PepperHungPluginFilter(
       path, render_frame->GetRoutingID(), plugin_child_id));
   std::unique_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper(
@@ -732,7 +733,7 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
                         ppapi::Preferences(PpapiPreferencesBuilder::Build(
                             render_frame->render_view()->webkit_preferences(),
                             gpu_feature_info)),
-                        hung_filter.get())) {
+                        hung_filter.get(), task_runner)) {
     return nullptr;
   }
 
@@ -769,7 +770,8 @@ scoped_refptr<PluginModule> PluginModule::Create(
     RenderFrameImpl* render_frame,
     const WebPluginInfo& webplugin_info,
     const base::Optional<url::Origin>& origin_lock,
-    bool* pepper_plugin_was_registered) {
+    bool* pepper_plugin_was_registered,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   *pepper_plugin_was_registered = true;
 
   // See if a module has already been loaded for this plugin.
@@ -818,13 +820,10 @@ scoped_refptr<PluginModule> PluginModule::Create(
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, origin_lock,
                                                      module.get());
 
-  if (!module->CreateOutOfProcessModule(render_frame,
-                                        path,
-                                        permissions,
-                                        channel_handle,
-                                        peer_pid,
-                                        plugin_child_id,
-                                        false))  // is_external = false
+  if (!module->CreateOutOfProcessModule(render_frame, path, permissions,
+                                        channel_handle, peer_pid,
+                                        plugin_child_id, false,
+                                        task_runner))  // is_external = false
     return scoped_refptr<PluginModule>();
 
   return module;

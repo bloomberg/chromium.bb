@@ -2979,7 +2979,8 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
-      this, info, origin_lock, &pepper_plugin_was_registered));
+      this, info, origin_lock, &pepper_plugin_was_registered,
+      GetTaskRunner(blink::TaskType::kInternalDefault)));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
       return new PepperWebPluginImpl(

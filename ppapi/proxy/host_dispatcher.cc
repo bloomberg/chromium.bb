@@ -91,9 +91,10 @@ bool HostDispatcher::InitHostWithChannel(
     base::ProcessId peer_pid,
     const IPC::ChannelHandle& channel_handle,
     bool is_client,
-    const ppapi::Preferences& preferences) {
+    const ppapi::Preferences& preferences,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
-                                   is_client))
+                                   is_client, task_runner))
     return false;
   Send(new PpapiMsg_SetPreferences(preferences));
   return true;
