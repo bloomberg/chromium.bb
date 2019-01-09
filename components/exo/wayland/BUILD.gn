@@ -91,7 +91,7 @@ source_set("wayland") {
   deps = [
     "//base",
     "//components/exo",
-    "//components/exo/wayland/public:aura_shell_protocol",
+    "//components/exo/wayland/protocol:aura_shell_protocol",
     "//device/gamepad",
     "//services/viz/public/interfaces",
     "//skia",
@@ -189,12 +189,12 @@ source_set("client_support") {
 
   deps = [
     "//base",
-    "//components/exo/wayland/public:aura_shell_protocol",
     "//ui/gl",
     "//ui/gl/init",
   ]
 
   public_deps = [
+    "//components/exo/wayland/protocol:aura_shell_protocol",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:fullscreen_shell_protocol",
