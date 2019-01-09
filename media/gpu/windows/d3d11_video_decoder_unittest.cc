@@ -218,7 +218,7 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
 
-  DisableFeature(kD3D11EncryptedMedia);
+  DisableFeature(kHardwareSecureDecryption);
   EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
 }
 
@@ -228,7 +228,7 @@ TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
 
-  EnableFeature(kD3D11EncryptedMedia);
+  EnableFeature(kHardwareSecureDecryption);
   EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
 }
 
