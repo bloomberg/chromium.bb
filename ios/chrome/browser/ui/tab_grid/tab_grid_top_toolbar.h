@@ -9,15 +9,23 @@
 
 @class TabGridPageControl;
 
-// Toolbar view with two text buttons and a segmented control. The contents have
-// a fixed height and are pinned to the bottom of this view, therefore it is
-// intended to be used as a top toolbar.
-@interface TabGridTopToolbar : UIView
+// Top toolbar for TabGrid. In horizontal-compact and vertical-regular screen
+// size, the toolbar shows 3 components, with two text buttons on each side and
+// a TabGridPageControl in the middle. For other screen sizes, the toolbar only
+// shows the newTabButton on the right. The toolbar always has a translucent
+// background.
+@interface TabGridTopToolbar : UIToolbar
 // These components are publicly available to allow the user to set their
 // contents, visibility and actions.
-@property(nonatomic, weak, readonly) UIButton* leadingButton;
-@property(nonatomic, weak, readonly) UIButton* trailingButton;
-@property(nonatomic, weak, readonly) TabGridPageControl* pageControl;
+@property(nonatomic, strong, readonly) UIBarButtonItem* leadingButton;
+@property(nonatomic, strong, readonly) UIBarButtonItem* trailingButton;
+@property(nonatomic, strong, readonly) TabGridPageControl* pageControl;
+
+// Hides components and uses a black background color for tab grid transition
+// animation.
+- (void)hide;
+// Recovers the normal appearance for tab grid transition animation.
+- (void)show;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_TOP_TOOLBAR_H_

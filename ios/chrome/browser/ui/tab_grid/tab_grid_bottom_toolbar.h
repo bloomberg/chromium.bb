@@ -9,15 +9,26 @@
 
 @class TabGridNewTabButton;
 
-// Toolbar view with three buttons. The contents have a fixed height and are
-// pinned to the top of this view, therefore it is intended to be used as a
-// bottom toolbar.
-@interface TabGridBottomToolbar : UIView
+// Bottom toolbar for TabGrid. In horizontal-compact and vertical-regular screen
+// size, the toolbar has a translucent background and shows 3 buttons, with
+// newTabButton located in the middle. For other screen sizes, the toolbar has a
+// transparent background and only shows the newTabButton on the right.
+@interface TabGridBottomToolbar : UIToolbar
 // These components are publicly available to allow the user to set their
 // contents, visibility and actions.
-@property(nonatomic, weak, readonly) UIButton* leadingButton;
-@property(nonatomic, weak, readonly) UIButton* trailingButton;
-@property(nonatomic, weak, readonly) TabGridNewTabButton* centerButton;
+@property(nonatomic, strong, readonly) UIBarButtonItem* leadingButton;
+@property(nonatomic, strong, readonly) UIBarButtonItem* trailingButton;
+// Clang does not allow property getters to start with the reserved word "new",
+// but provides a workaround. The getter must be set before the property is
+// declared.
+- (TabGridNewTabButton*)newTabButton __attribute__((objc_method_family(none)));
+@property(nonatomic, strong, readonly) TabGridNewTabButton* newTabButton;
+
+// Hides components and uses a black background color for tab grid transition
+// animation.
+- (void)hide;
+// Recovers the normal appearance for tab grid transition animation.
+- (void)show;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_BOTTOM_TOOLBAR_H_

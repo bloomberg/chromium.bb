@@ -40,8 +40,7 @@ extern const CGFloat kTabGridEmptyStateVerticalInset;
 extern const CGFloat kTabGridEmptyStateHorizontalInset;
 
 // The insets from the edges for the floating button.
-extern const CGFloat kTabGridFloatingButtonVerticalInsetSmall;
-extern const CGFloat kTabGridFloatingButtonVerticalInsetLarge;
+extern const CGFloat kTabGridFloatingButtonVerticalInset;
 extern const CGFloat kTabGridFloatingButtonHorizontalInset;
 
 // Intrinsic heights of the tab grid toolbars.
