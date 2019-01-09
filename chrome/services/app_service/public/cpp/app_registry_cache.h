@@ -69,7 +69,20 @@ class AppRegistryCache {
   // from the internal cache, the delta comes from the argument) and then
   // merges the cached states with the deltas.
   //
-  // The callee may modify the deltas.
+  // Notification and merging might be delayed until after OnApps returns. For
+  // example, suppose that the initial set of states is (a0, b0, c0) for three
+  // app_id's ("a", "b", "c"). Now suppose OnApps is called with two updates
+  // (b1, c1), and when notified of b1, an observer calls OnApps again with
+  // (c2, d2). The c1 delta should be processed before the c2 delta, as it was
+  // sent first: c2 should be merged (with "newest wins" semantics) onto c1 and
+  // not vice versa. This means that processing c2 (scheduled by the second
+  // OnApps call) should wait until the first OnApps call has finished
+  // processing b1 (and then c1), which means that processing c2 is delayed
+  // until after the second OnApps call returns.
+  //
+  // The callee will consume the deltas. An apps::mojom::AppPtr has the
+  // ownership semantics of a unique_ptr, and will be deleted when out of
+  // scope. The caller presumably calls OnApps(std::move(deltas)).
   void OnApps(std::vector<apps::mojom::AppPtr> deltas);
 
   apps::mojom::AppType GetAppType(const std::string& app_id);
@@ -140,13 +153,30 @@ class AppRegistryCache {
   }
 
  private:
+  void DoOnApps(std::vector<apps::mojom::AppPtr> deltas);
+
   base::ObserverList<Observer> observers_;
 
   // Maps from app_id to the latest state: the "sum" of all previous deltas.
   std::map<std::string, apps::mojom::AppPtr> states_;
 
-  // Maps from app_id to the deltas being processed by OnApps.
+  // Track the deltas being processed or are about to be processed by OnApps.
+  // They are separate to manage the "notification and merging might be delayed
+  // until after OnApps returns" concern described above.
+  //
+  // OnApps calls DoOnApps zero or more times. If we're nested, so that there's
+  // multiple OnApps call to this AppRegistryCache in the call stack, the
+  // deeper OnApps call simply adds work to deltas_pending_ and returns without
+  // calling DoOnApps. If we're not nested, OnApps calls DoOnApps one or more
+  // times; "more times" happens if DoOnApps notifying observers leads to more
+  // OnApps calls that enqueue deltas_pending_ work. The deltas_in_progress_
+  // map (keyed by app_id) contains those deltas being considered by DoOnApps.
+  //
+  // Nested OnApps calls are expected to be rare (but still dealt with
+  // sensibly). In the typical case, OnApps should call DoOnApps exactly once,
+  // and deltas_pending_ will stay empty.
   std::map<std::string, apps::mojom::App*> deltas_in_progress_;
+  std::vector<apps::mojom::AppPtr> deltas_pending_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
 

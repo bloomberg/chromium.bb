@@ -49,10 +49,21 @@ void AppRegistryCache::RemoveObserver(Observer* observer) {
 void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  // TODO(nigeltao): do we need to do anything special for OnApps calling
-  // observers calling ForEachApp calling callbacks calling OnApps?
-  deltas_in_progress_.clear();
+  if (!deltas_in_progress_.empty()) {
+    std::move(deltas.begin(), deltas.end(),
+              std::back_inserter(deltas_pending_));
+    return;
+  }
 
+  DoOnApps(std::move(deltas));
+  while (!deltas_pending_.empty()) {
+    std::vector<apps::mojom::AppPtr> pending;
+    pending.swap(deltas_pending_);
+    DoOnApps(std::move(pending));
+  }
+}
+
+void AppRegistryCache::DoOnApps(std::vector<apps::mojom::AppPtr> deltas) {
   // Merge any deltas elements that have the same app_id. If an observer's
   // OnAppUpdate calls back into this AppRegistryCache then we can therefore
   // present a single delta for any given app_id.
@@ -69,13 +80,14 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   // deltas vector, so that OnAppUpdate is called only once per unique app_id.
 
   // Notify the observers for every de-duplicated delta.
-  for (const auto& delta : deltas_in_progress_) {
-    auto iter = states_.find(delta.second->app_id);
+  for (const auto& d_iter : deltas_in_progress_) {
+    auto s_iter = states_.find(d_iter.first);
     apps::mojom::App* state =
-        (iter != states_.end()) ? iter->second.get() : nullptr;
+        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
+    apps::mojom::App* delta = d_iter.second;
 
     for (auto& obs : observers_) {
-      obs.OnAppUpdate(AppUpdate(state, delta.second));
+      obs.OnAppUpdate(AppUpdate(state, delta));
     }
   }
 
@@ -95,9 +107,13 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
 apps::mojom::AppType AppRegistryCache::GetAppType(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  auto iter = states_.find(app_id);
-  if (iter != states_.end()) {
-    return iter->second->app_type;
+  auto d_iter = deltas_in_progress_.find(app_id);
+  if (d_iter != deltas_in_progress_.end()) {
+    return d_iter->second->app_type;
+  }
+  auto s_iter = states_.find(app_id);
+  if (s_iter != states_.end()) {
+    return s_iter->second->app_type;
   }
   return apps::mojom::AppType::kUnknown;
 }
