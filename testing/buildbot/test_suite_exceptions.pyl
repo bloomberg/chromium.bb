@@ -958,6 +958,29 @@
       },
     },
   },
+  'non_single_process_mash_browser_tests': {
+    'modifications': {
+      # chromium.chromiumos
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 30,
+        },
+      },
+      'Linux ChromiumOS MSan Tests': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+    },
+  },
   'not_site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
@@ -1024,29 +1047,6 @@
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
-  },
-  'single_process_mash_browser_tests': {
-    'modifications': {
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 30,
-        },
-      },
-      'Linux ChromiumOS MSan Tests': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-    },
   },
   'sizes': {
     'remove_from': [
