@@ -86,6 +86,7 @@ elevation_service.exe: %(VersionDir)s\
 # Widevine CDM sub-dir
 #
 WidevineCdm\manifest.json: %(VersionDir)s\WidevineCdm\
+WidevineCdm\LICENSE: %(VersionDir)s\WidevineCdm\
 WidevineCdm\_platform_specific\win_x86\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x86\
 WidevineCdm\_platform_specific\win_x86\widevinecdm.dll.sig: %(VersionDir)s\WidevineCdm\_platform_specific\win_x86\
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\

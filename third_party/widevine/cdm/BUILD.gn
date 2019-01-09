@@ -25,7 +25,7 @@ if (widevine_arch == "x86") {
 }
 
 widevine_cdm_binary_files = []
-widevine_cdm_manifest_file = []
+widevine_cdm_manifest_and_license_files = []
 
 # TODO(xhwang): widevine_cdm_version.h is only used in few places. Clean this up
 # so we don't need to copy it in most cases.
@@ -40,11 +40,17 @@ if (bundle_widevine_cdm) {
   } else if (is_win) {
     widevine_cdm_version_h_file = "win/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "win/$widevine_arch/widevinecdm.dll" ]
-    widevine_cdm_manifest_file = [ "win/$widevine_arch/manifest.json" ]
+    widevine_cdm_manifest_and_license_files = [
+      "win/$widevine_arch/manifest.json",
+      "../LICENSE",
+    ]
   } else if (is_mac) {
     widevine_cdm_version_h_file = "mac/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "mac/$widevine_arch/libwidevinecdm.dylib" ]
-    widevine_cdm_manifest_file = [ "mac/$widevine_arch/manifest.json" ]
+    widevine_cdm_manifest_and_license_files = [
+      "mac/$widevine_arch/manifest.json",
+      "../LICENSE",
+    ]
   } else {
     assert(false, "Platform not supported to bundle Widevine CDM.")
   }
@@ -88,15 +94,15 @@ source_set("headers") {
   ]
 }
 
-if (widevine_cdm_manifest_file != []) {
-  copy("widevine_cdm_manifest") {
-    sources = widevine_cdm_manifest_file
+if (widevine_cdm_manifest_and_license_files != []) {
+  copy("widevine_cdm_manifest_and_license") {
+    sources = widevine_cdm_manifest_and_license_files
     outputs = [
       "$root_out_dir/WidevineCdm/{{source_file_part}}",
     ]
   }
 } else {
-  group("widevine_cdm_manifest") {
+  group("widevine_cdm_manifest_and_license") {
     # NOP
   }
 }
@@ -122,13 +128,13 @@ group("cdm") {
   # See https://crbug.com/824493 for context.
   data_deps = [
     ":widevine_cdm_binary",
-    ":widevine_cdm_manifest",
+    ":widevine_cdm_manifest_and_license",
   ]
 
   # Needed at build time e.g. for mac bundle (//chrome:chrome_framework).
   public_deps = [
     ":widevine_cdm_binary",
-    ":widevine_cdm_manifest",
+    ":widevine_cdm_manifest_and_license",
   ]
 }
 
