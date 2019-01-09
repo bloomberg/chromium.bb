@@ -70,6 +70,7 @@ const char kGoogleSpeechSynthesisExtensionId[] =
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
 const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
+const char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
 #endif
 
 const char kAppStateNotInstalled[] = "not_installed";

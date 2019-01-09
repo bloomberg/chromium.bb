@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -271,6 +272,10 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
       continue;
     }
 
+    // Prevent old app camera pinning.
+    if (IsCameraApp(sync_peer.first))
+      continue;
+
     pin_infos.emplace_back(
         PinInfo(sync_peer.first, sync_peer.second->item_pin_ordinal));
   }
@@ -345,6 +350,8 @@ void SetPinPosition(Profile* profile,
                     const ash::ShelfID& shelf_id_before,
                     const std::vector<ash::ShelfID>& shelf_ids_after) {
   DCHECK(profile);
+  // Camera apps are mapped to the internal app.
+  DCHECK(!IsCameraApp(shelf_id.app_id));
 
   const std::string& app_id = shelf_id.app_id;
   if (!shelf_id.launch_id.empty()) {

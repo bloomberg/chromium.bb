@@ -23,8 +23,11 @@ class BrowserContext;
 
 namespace arc {
 
+extern const char kCameraAppId[];
+extern const char kCameraMigrationAppId[];
 extern const char kGoogleDuo[];
 extern const char kInfinitePainter[];
+extern const char kLegacyCameraAppId[];
 extern const char kLightRoom[];
 extern const char kPlayStoreAppId[];
 extern const char kPlayBooksAppId[];

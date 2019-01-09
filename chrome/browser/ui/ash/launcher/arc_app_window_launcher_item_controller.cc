@@ -13,10 +13,11 @@
 #include "ui/base/base_window.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
-    const std::string& arc_app_id)
-    : AppWindowLauncherItemController(ash::ShelfID(arc_app_id)) {}
+    const ash::ShelfID shelf_id)
+    : AppWindowLauncherItemController(shelf_id) {}
 
-ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
+ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() =
+    default;
 
 void ArcAppWindowLauncherItemController::AddTaskId(int task_id) {
   task_ids_.insert(task_id);
