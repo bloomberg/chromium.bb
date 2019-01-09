@@ -13,16 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace base {
-namespace trace_event {
-class TracedValue;
-}
-}
-
-namespace gfx {
-class GpuMemoryBuffer;
-}
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
 
@@ -41,6 +32,10 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
          bool is_overlay_candidate,
          bool y_invert);
   ~Buffer();
+
+  const gfx::GpuMemoryBuffer* gfx_buffer() const {
+    return gpu_memory_buffer_.get();
+  }
 
   // Set the callback to run when the buffer is no longer used by the
   // compositor. The client is free to re-use or destroy this buffer and
@@ -72,9 +67,6 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // Returns the format of the buffer.
   gfx::BufferFormat GetFormat() const;
-
-  // Returns a trace value representing the state of the buffer.
-  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   // Set the amount of time to wait for buffer release.
   void set_wait_for_release_delay_for_testing(
