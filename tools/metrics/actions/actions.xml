@@ -19764,6 +19764,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabContextMenu_AddToNewGroup">
+  <owner>bsep@google.com</owner>
+  <owner>tbergquist@google.com</owner>
+  <description>
+    User selected Add to new group from the tab context menu.
+  </description>
+</action>
+
 <action name="TabContextMenu_BookmarkAllTabs">
   <owner>wittman@chromium.org</owner>
   <description>

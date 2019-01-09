@@ -1015,6 +1015,8 @@ jumbo_split_static_library("ui") {
       "tabs/pinned_tab_service_factory.cc",
       "tabs/pinned_tab_service_factory.h",
       "tabs/tab_change_type.h",
+      "tabs/tab_group_data.cc",
+      "tabs/tab_group_data.h",
       "tabs/tab_menu_model.cc",
       "tabs/tab_menu_model.h",
       "tabs/tab_network_state.cc",

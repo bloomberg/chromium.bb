@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -155,6 +157,8 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   void set_pinned(bool value) { pinned_ = value; }
   bool blocked() const { return blocked_; }
   void set_blocked(bool value) { blocked_ = value; }
+  TabGroupData* group() const { return group_; }
+  void set_group(TabGroupData* value) { group_ = value; }
 
  private:
   // Make sure that if someone deletes this WebContents out from under us, it
@@ -179,6 +183,17 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
 
   // Whether the tab interaction is blocked by a modal dialog.
   bool blocked_ = false;
+
+  // The group that contains this tab, if any.
+  // TODO(https://crbug.com/915956): While tab groups are being prototyped
+  // (behind a feature flag), we are tracking group membership in the simplest
+  // possible way. There are some known issues intentionally punted here:
+  //   - Groups are meant to be contiguous, but this data organization doesn't
+  //     help to ensure that they stay contiguous. Any kind of tab movement may
+  //     break that guarantee, with undefined results.
+  //   - The exact shape of the group-related changes to the TabStripModel API
+  //     (and the relevant bits of the extension API) are TBD.
+  TabGroupData* group_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -744,6 +759,10 @@ bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
 }
 
+const TabGroupData* TabStripModel::GetTabGroupForTab(int index) const {
+  return contents_data_[index]->group();
+}
+
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
     if (!IsTabPinned(static_cast<int>(i)))
@@ -905,6 +924,64 @@ void TabStripModel::MoveTabPrevious() {
   MoveWebContentsAt(active_index(), new_index, true);
 }
 
+void TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
+  // TODO(https://crbug.com/915956): Tabs should be ungrouped before they are
+  // moved (once ungrouping is a thing) so that groups never get split up.
+
+  group_data_.push_back(std::make_unique<TabGroupData>());
+  TabGroupData* group = group_data_.back().get();
+
+  // If inserting tabs at |destination_index| would split an existing group,
+  // insert after the end of the group instead.
+  int destination_index = indices[0];
+  if (ContainsIndex(destination_index - 1)) {
+    const TabGroupData* split_group = GetTabGroupForTab(destination_index - 1);
+    if (split_group != nullptr) {
+      while (ContainsIndex(destination_index + 1) &&
+             GetTabGroupForTab(destination_index + 1) == split_group) {
+        destination_index++;
+      }
+    }
+  }
+
+  // Some tabs will need to be moved to the right, some to the left. We need to
+  // handle those separately. First, move tabs to the right, starting with the
+  // rightmost tab so we don't cause other tabs we are about to move to shift.
+  int numTabsMovingRight = 0;
+  for (size_t i = 0; i < indices.size() && indices[i] < destination_index;
+       i++) {
+    numTabsMovingRight++;
+  }
+  for (int i = numTabsMovingRight - 1; i >= 0; i--) {
+    int insertion_index = destination_index - numTabsMovingRight + i + 1;
+    MoveWebContentsAt(indices[i], insertion_index, false);
+    contents_data_[insertion_index]->set_group(group);
+  }
+
+  // Collect indices for tabs moving to the left, pinning them if any tabs in
+  // |indices| are pinned (or, equivalently, if the first tab is). Any tabs
+  // pinned here will no longer be in the position indicated in |indices|, so
+  // we need to record adjusted indices in |move_left_indices|. If we aren't
+  // pinning a tab, we can just collect its unmodified index.
+  std::vector<int> move_left_indices;
+  for (size_t i = numTabsMovingRight; i < indices.size(); i++) {
+    if (IsTabPinned(indices[0]) && !IsTabPinned(indices[i])) {
+      SetTabPinned(indices[i], true);
+      move_left_indices.push_back(IndexOfFirstNonPinnedTab() - 1);
+    } else {
+      move_left_indices.push_back(indices[i]);
+    }
+  }
+  // Move tabs to the left, starting with the leftmost tab.
+  int move_left_starting_index =
+      numTabsMovingRight == 0 ? destination_index : destination_index + 1;
+  for (size_t i = 0; i < move_left_indices.size(); i++) {
+    MoveWebContentsAt(move_left_indices[i], move_left_starting_index + i,
+                      false);
+    contents_data_[move_left_starting_index + i]->set_group(group);
+  }
+}
+
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index,
@@ -963,6 +1040,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return true;
 
     case CommandSendToMyDevices:
+      return true;
+
+    case CommandAddToNewGroup:
       return true;
 
     default:
@@ -1105,6 +1185,14 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       base::RecordAction(UserMetricsAction("TabContextMenu_BookmarkAllTabs"));
 
       delegate()->BookmarkAllTabs();
+      break;
+    }
+
+    case CommandAddToNewGroup: {
+      base::RecordAction(UserMetricsAction("TabContextMenu_AddToNewGroup"));
+
+      const std::vector<int>& indices = GetIndicesForCommand(context_index);
+      AddToNewGroup(indices);
       break;
     }
 

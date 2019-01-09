@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -27,6 +28,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
           : std::vector<int>{index};
   int num_affected_tabs = affected_indices.size();
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
+  if (base::FeatureList::IsEnabled(features::kTabGroups)) {
+    AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
+                        IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
+  }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
@@ -69,6 +74,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
                       IDS_TAB_CXMENU_CLOSETABSTORIGHT);
   AddSeparator(ui::NORMAL_SEPARATOR);
+
   const bool is_window = tab_strip->delegate()->GetRestoreTabType() ==
       TabStripModelDelegate::RESTORE_WINDOW;
   AddItemWithStringId(TabStripModel::CommandRestoreTab,
