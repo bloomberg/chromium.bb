@@ -79,6 +79,9 @@ extern const char kInstallLoginScreenAppList[];
 // loaded.
 extern const char kLastChromeVersion[];
 
+// Time of the last extensions auto-update check.
+extern const char kLastUpdateCheck[];
+
 // Blacklist and whitelist for Native Messaging Hosts.
 extern const char kNativeMessagingBlacklist[];
 extern const char kNativeMessagingWhitelist[];

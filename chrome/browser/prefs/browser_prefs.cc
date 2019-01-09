@@ -382,10 +382,6 @@ const char kNuxOnboardGroup[] = "browser.onboard_group";
 // perhaps be kept around longer than the others.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
-// Deprecated 1/2019.
-const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
-const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
-
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -413,8 +409,6 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kNuxOnboardGroup, 0);
   registry->RegisterDictionaryPref(kHttpServerProperties,
                                    PrefRegistry::LOSSY_PREF);
-  registry->RegisterIntegerPref(kLastUpdateCheck, 0);
-  registry->RegisterIntegerPref(kNextUpdateCheck, 0);
 }
 
 }  // namespace
@@ -893,8 +887,4 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 12/2018.
   profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
 #endif
-
-  // Added 1/2019.
-  profile_prefs->ClearPref(kLastUpdateCheck);
-  profile_prefs->ClearPref(kNextUpdateCheck);
 }
