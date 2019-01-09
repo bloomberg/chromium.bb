@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 328 tests; 326 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS 0.js - count (0 ?== 0)
 PASS 1.js - count (1 ?== 1)
 PASS 1.js - name (metric ?== metric)

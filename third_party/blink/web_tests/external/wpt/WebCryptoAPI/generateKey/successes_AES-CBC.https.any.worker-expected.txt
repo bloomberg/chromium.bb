@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 288 tests; 192 PASS, 96 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Success: generateKey({length: 128, name: AES-CBC}, false, [encrypt])
 PASS Success: generateKey({length: 128, name: AES-CBC}, true, [encrypt])
 PASS Success: generateKey({length: 128, name: AES-CBC}, false, [decrypt, encrypt])

@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 1000 tests; 949 PASS, 51 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Derived key of type name: AES-CBC length: 128  using long password, empty salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using long password, empty salt, SHA-384, with 100000 iterations with wrong (ECDH) key
 FAIL Derived key of type name: AES-CBC length: 192  using long password, empty salt, SHA-384, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code

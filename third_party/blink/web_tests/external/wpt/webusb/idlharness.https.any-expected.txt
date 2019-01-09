@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 260 tests; 180 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 FAIL USB device setup promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'configurations' of undefined"
 PASS Partial interface Navigator: original interface defined

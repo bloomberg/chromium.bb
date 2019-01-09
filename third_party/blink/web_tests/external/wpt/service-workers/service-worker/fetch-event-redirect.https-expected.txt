@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 56 tests; 51 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS initialize global state
 PASS Non-navigation, manual redirect, cors mode Request redirected to same-origin without credentials should succeed opaqueredirect interception and response should not be redirected
 PASS Non-navigation, manual redirect, cors mode Request redirected to no-cors without credentials should succeed opaqueredirect interception and response should not be redirected

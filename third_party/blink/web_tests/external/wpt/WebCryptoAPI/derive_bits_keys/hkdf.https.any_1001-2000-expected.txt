@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 1000 tests; 936 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Derived key of type name: AES-CTR length: 128  using short derivedKey, empty salt, SHA-1, with empty info with wrong (ECDH) key
 FAIL Derived key of type name: AES-CTR length: 192  using short derivedKey, empty salt, SHA-1, with empty info assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short derivedKey, empty salt, SHA-1, with empty info with bad hash name SHA1

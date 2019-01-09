@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 78 tests; 59 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS FontFace interface: existence and properties of interface object
 PASS FontFace interface object length

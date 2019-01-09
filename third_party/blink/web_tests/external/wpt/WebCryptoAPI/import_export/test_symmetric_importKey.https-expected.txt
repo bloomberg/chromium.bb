@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 234 tests; 186 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Good parameters: 128 bits (raw, {0: 1, 1: 2, 10: 11, 11: 12, 12: 13, 13: 14, 14: 15, 15: 16, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10}, {name: AES-CTR}, true, [encrypt])
 PASS Good parameters: 128 bits (jwk, {alg: A128CTR, k: AQIDBAUGBwgJCgsMDQ4PEA, kty: oct}, {name: AES-CTR}, true, [encrypt])
 PASS Good parameters: 128 bits (raw, {0: 1, 1: 2, 10: 11, 11: 12, 12: 13, 13: 14, 14: 15, 15: 16, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10}, {name: AES-CTR}, false, [encrypt])
