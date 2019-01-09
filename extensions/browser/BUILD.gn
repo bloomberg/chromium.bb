@@ -227,6 +227,8 @@ jumbo_source_set("browser_sources") {
     "guest_view/guest_view_events.h",
     "guest_view/mime_handler_view/mime_handler_stream_manager.cc",
     "guest_view/mime_handler_view/mime_handler_stream_manager.h",
+    "guest_view/mime_handler_view/mime_handler_view_attach_helper.cc",
+    "guest_view/mime_handler_view/mime_handler_view_attach_helper.h",
     "guest_view/mime_handler_view/mime_handler_view_constants.cc",
     "guest_view/mime_handler_view/mime_handler_view_constants.h",
     "guest_view/mime_handler_view/mime_handler_view_guest.cc",
