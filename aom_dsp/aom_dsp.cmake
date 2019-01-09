@@ -53,8 +53,8 @@ list(APPEND AOM_DSP_COMMON_ASM_SSE2
             "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_sse2.asm"
-            "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm"
-            "${AOM_ROOT}/aom_dsp/x86/intrapred_sse2.asm"
+            "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_asm_sse2.asm"
+            "${AOM_ROOT}/aom_dsp/x86/intrapred_asm_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/inv_wht_sse2.asm")
 
 list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
