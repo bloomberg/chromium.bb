@@ -253,6 +253,7 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
   ui_ = std::move(ui);
   DCHECK(ui_);
 
+  DCHECK(delegate);
   layout_delegate_ = delegate;
   show_on_keyboard_window_load_ = false;
   keyboard_locked_ = false;
@@ -847,12 +848,10 @@ void KeyboardController::PopulateKeyboardContent(
     parent_container_->AddChild(keyboard_window);
   }
 
-  if (layout_delegate_ != nullptr) {
-    if (display.is_valid())
-      layout_delegate_->MoveKeyboardToDisplay(display);
-    else
-      layout_delegate_->MoveKeyboardToTouchableDisplay();
-  }
+  if (display.is_valid())
+    layout_delegate_->MoveKeyboardToDisplay(display);
+  else
+    layout_delegate_->MoveKeyboardToTouchableDisplay();
 
   aura::Window* keyboard_window = GetKeyboardWindow();
   DCHECK(keyboard_window);

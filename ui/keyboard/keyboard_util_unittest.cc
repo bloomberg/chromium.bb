@@ -11,6 +11,7 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_layout_delegate.h"
 #include "ui/keyboard/test/test_keyboard_ui.h"
 
 namespace keyboard {
@@ -174,8 +175,9 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
 
   // Set keyboard_locked() to true.
   ui::DummyInputMethod input_method;
+  TestKeyboardLayoutDelegate layout_delegate;
   keyboard_controller_.EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(&input_method), nullptr);
+      std::make_unique<TestKeyboardUI>(&input_method), &layout_delegate);
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
