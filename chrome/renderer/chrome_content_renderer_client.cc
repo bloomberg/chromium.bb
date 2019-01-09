@@ -1082,10 +1082,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     bool is_nacl_unrestricted,
     const Extension* extension,
     WebPluginParams* params) {
-  // Temporarily allow these whitelisted apps and WebUIs to use NaCl.
-  bool is_whitelisted_web_ui =
-      app_url.spec() == chrome::kChromeUIAppListStartPageURL;
-
+  // Temporarily allow these whitelisted apps to use NaCl.
   bool is_invoked_by_webstore_installed_extension = false;
   bool is_extension_unrestricted = false;
   bool is_extension_force_installed = false;
@@ -1117,7 +1114,6 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   //     context (hosted app URL or chrome-extension:// scheme).
   //  5) --enable-nacl is set.
   bool is_nacl_allowed_by_location =
-      is_whitelisted_web_ui ||
       AppCategorizer::IsWhitelistedApp(manifest_url, app_url) ||
       is_extension_unrestricted ||
       is_extension_force_installed ||
