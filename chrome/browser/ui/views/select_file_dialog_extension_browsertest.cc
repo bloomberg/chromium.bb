@@ -570,3 +570,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_TRUE(listener_->canceled());
   ASSERT_EQ(this, listener_->params());
 }
+
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, MultipleOpenFile) {
+  // No use-after-free when Browser::OpenFile is called multiple times.
+  browser()->OpenFile();
+  browser()->OpenFile();
+}
