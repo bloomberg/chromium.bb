@@ -1,0 +1,23 @@
+This test verifies the hit test regions given to the compositor specifically around non-composited overflow scroll elements.
+
+scrollContent: layer(1,1 288x30) has hit test rect (0,10 273x12)
+
+scrollContainerWithHandler: layer(1,1 288x30) has hit test rect (0,0 273x30)
+scrollContainerWithHandler: layer(0,0 800x600) has hit test rect (13,89 290x32)
+
+nestedContent: layer(1,1 271x30) has hit test rect (0,10 256x12)
+
+fixedPositionContentContainer: layer(1,1 288x30) has hit test rect (0,10 273x12)
+fixedPositionContentContainer: layer(0,0 800x600) has hit test rect (310,190 132x12)
+
+overflowwithhandler: layer(1,1 271x25) has hit test rect (0,0 256x25)
+overflowwithhandler: layer(1,1 288x30) has hit test rect (0,10 273x20)
+
+divInsideNonScrollableLayer: layer(1,1 288x30) has hit test rect (0,20 273x10)
+
+divInsideCompositedLayer: layer(0,10 273x12) has hit test rect (0,0 273x12)
+
+overflowwithborder: layer(10,6 274x38) has hit test rect (0,4 255x34)
+overflowwithborder: layer(0,0 785x831) has hit test rect (13,336 290x50)
+
+

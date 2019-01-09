@@ -1941,7 +1941,8 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
       if (!touch_action_region.region().IsEmpty()) {
-        IntRect layer_rect(RoundedIntPoint(FloatPoint(layer->position())),
+        const auto& offset = layer->offset_to_transform_parent();
+        IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
                            IntSize(layer->bounds()));
 
         Vector<IntRect> layer_hit_test_rects;
