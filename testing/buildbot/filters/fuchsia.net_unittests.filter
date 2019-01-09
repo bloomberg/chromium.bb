@@ -33,3 +33,6 @@
 # SocketPosix::IsConnected has a different behavior on Fuchsia.
 # https://crbug.com/887587.
 -TCPSocketTest.BeforeConnectCallback
+
+# Flaky, https://crbug.com/918726.
+-HttpNetworkTransactionTest.MeasuresTimeToFirst100ResponseForSpdy
