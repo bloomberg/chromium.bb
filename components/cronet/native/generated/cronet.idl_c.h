@@ -644,35 +644,20 @@ Cronet_RequestFinishedInfoListener_GetClientContext(
 // app. The following concrete methods forward call to app implementation. The
 // app doesn't normally call them.
 CRONET_EXPORT
-Cronet_RESULT Cronet_RequestFinishedInfoListener_InitWithParams(
-    Cronet_RequestFinishedInfoListenerPtr self,
-    Cronet_ExecutorPtr executor);
-CRONET_EXPORT
 void Cronet_RequestFinishedInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
     Cronet_RequestFinishedInfoPtr request_info);
-CRONET_EXPORT
-Cronet_ExecutorPtr Cronet_RequestFinishedInfoListener_GetExecutor(
-    Cronet_RequestFinishedInfoListenerPtr self);
 // The app implements abstract interface Cronet_RequestFinishedInfoListener by
 // defining custom functions for each method.
-typedef Cronet_RESULT (*Cronet_RequestFinishedInfoListener_InitWithParamsFunc)(
-    Cronet_RequestFinishedInfoListenerPtr self,
-    Cronet_ExecutorPtr executor);
 typedef void (*Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc)(
     Cronet_RequestFinishedInfoListenerPtr self,
     Cronet_RequestFinishedInfoPtr request_info);
-typedef Cronet_ExecutorPtr (
-    *Cronet_RequestFinishedInfoListener_GetExecutorFunc)(
-    Cronet_RequestFinishedInfoListenerPtr self);
 // The app creates an instance of Cronet_RequestFinishedInfoListener by
 // providing custom functions for each method.
 CRONET_EXPORT Cronet_RequestFinishedInfoListenerPtr
 Cronet_RequestFinishedInfoListener_CreateWith(
-    Cronet_RequestFinishedInfoListener_InitWithParamsFunc InitWithParamsFunc,
     Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
-        OnRequestFinishedFunc,
-    Cronet_RequestFinishedInfoListener_GetExecutorFunc GetExecutorFunc);
+        OnRequestFinishedFunc);
 
 ///////////////////////
 // Struct Cronet_Error.
