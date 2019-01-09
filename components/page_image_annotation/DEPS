@@ -1,0 +1,5 @@
+include_rules = [
+  # Page image annotation is a layered component; subdirectories must explicitly
+  # introduce the ability to use the content layer as appropriate.
+  "-components/page_image_annotation/content",
+]
