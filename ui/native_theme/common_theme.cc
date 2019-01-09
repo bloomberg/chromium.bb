@@ -18,7 +18,28 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
-  // TODO(lgrey): High contrast dark mode.
+  // High contrast overrides the normal colors for certain ColorIds to be much
+  // darker or lighter.
+  if (base_theme->UsesHighContrastColors()) {
+    switch (color_id) {
+      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonHoverColor:
+      case NativeTheme::kColorId_MenuBorderColor:
+      case NativeTheme::kColorId_MenuSeparatorColor:
+      case NativeTheme::kColorId_SeparatorColor:
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+      case NativeTheme::kColorId_TabBottomBorder:
+        return base_theme->SystemDarkModeEnabled() ? SK_ColorWHITE
+                                                   : SK_ColorBLACK;
+      case NativeTheme::kColorId_FocusedBorderColor:
+      case NativeTheme::kColorId_ProminentButtonColor:
+        return base_theme->SystemDarkModeEnabled() ? gfx::kGoogleBlue100
+                                                   : gfx::kGoogleBlue900;
+      default:
+        break;
+    }
+  }
+
   if (base_theme->SystemDarkModeEnabled()) {
     switch (color_id) {
       case NativeTheme::kColorId_LabelEnabledColor:
@@ -58,26 +79,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_LinkPressed:
         return gfx::kGoogleBlue300;
 
-      default:
-        break;
-    }
-  }
-
-  // High contrast overrides the normal colors for certain ColorIds to be much
-  // darker or lighter.
-  if (base_theme->UsesHighContrastColors()) {
-    switch (color_id) {
-      case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ButtonHoverColor:
-      case NativeTheme::kColorId_MenuBorderColor:
-      case NativeTheme::kColorId_MenuSeparatorColor:
-      case NativeTheme::kColorId_SeparatorColor:
-      case NativeTheme::kColorId_UnfocusedBorderColor:
-      case NativeTheme::kColorId_TabBottomBorder:
-        return SK_ColorBLACK;
-      case NativeTheme::kColorId_FocusedBorderColor:
-      case NativeTheme::kColorId_ProminentButtonColor:
-        return gfx::kGoogleBlue900;
       default:
         break;
     }
