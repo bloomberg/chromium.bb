@@ -409,8 +409,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   if ((RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
        RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) &&
-      GetDocument().GetSettings() &&
-      GetDocument().GetSettings()->GetLazyLoadEnabled() &&
       !lazy_load_frame_observer_ &&
       // Only http:// or https:// URLs are eligible for lazy loading, excluding
       // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
@@ -446,7 +444,9 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled())
       lazy_load_frame_observer_->StartTrackingVisibilityMetrics();
 
-    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
+        GetDocument().GetSettings() &&
+        GetDocument().GetSettings()->GetLazyLoadEnabled()) {
       lazy_load_frame_observer_->DeferLoadUntilNearViewport(request,
                                                             child_load_type);
       return true;

@@ -115,7 +115,8 @@ class LazyLoadFramesParamsTest
     settings.SetLazyFrameLoadingDistanceThresholdPx2G(500);
     settings.SetLazyFrameLoadingDistanceThresholdPx3G(600);
     settings.SetLazyFrameLoadingDistanceThresholdPx4G(700);
-    settings.SetLazyLoadEnabled(true);
+    settings.SetLazyLoadEnabled(
+        RuntimeEnabledFeatures::LazyFrameLoadingEnabled());
   }
 
   int GetLoadingDistanceThreshold() const {
