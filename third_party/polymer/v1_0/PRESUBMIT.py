@@ -11,6 +11,7 @@ for more details on the presubmit API built into depot_tools.
 import os
 import json
 
+
 def _CheckBowerDependencies(input_api, output_api):
   os_path = input_api.os_path
   cwd = input_api.PresubmitLocalPath()
@@ -52,9 +53,28 @@ def _CheckBowerDependencies(input_api, output_api):
   return problems
 
 
+def _CommonChecks(input_api, output_api):
+  return _CheckBowerDependencies(input_api, output_api) + \
+         _RunUnitTestsIfNeeded(input_api, output_api)
+
+
+def _RunUnitTestsIfNeeded(input_api, output_api):
+  cwd, path = input_api.PresubmitLocalPath(), input_api.os_path
+  files = [path.basename(f.LocalPath()) for f in input_api.AffectedFiles()]
+  tests = []
+
+  if any(f for f in files if f.startswith('css_strip_prefixes')):
+    tests.append(path.join(cwd, 'css_strip_prefixes_test.py'))
+
+  if any(f for f in files if f.startswith('rgbify_hex_vars')):
+    tests.append(path.join(cwd, 'rgbify_hex_vars_test.py'))
+
+  return input_api.canned_checks.RunUnitTests(input_api, output_api, tests)
+
+
 def CheckChangeOnUpload(input_api, output_api):
-  return _CheckBowerDependencies(input_api, output_api)
+  return _CommonChecks(input_api, output_api)
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _CheckBowerDependencies(input_api, output_api)
+  return _CommonChecks(input_api, output_api)
