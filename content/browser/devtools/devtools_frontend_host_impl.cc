@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_frontend_host_impl.h"
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 
 #include "content/browser/bad_message.h"
@@ -24,11 +25,12 @@ const char kCompatibilityScriptSourceURL[] =
 }
 
 // static
-DevToolsFrontendHost* DevToolsFrontendHost::Create(
+std::unique_ptr<DevToolsFrontendHost> DevToolsFrontendHost::Create(
     RenderFrameHost* frame_host,
     const HandleMessageCallback& handle_message_callback) {
   DCHECK(!frame_host->GetParent());
-  return new DevToolsFrontendHostImpl(frame_host, handle_message_callback);
+  return std::make_unique<DevToolsFrontendHostImpl>(frame_host,
+                                                    handle_message_callback);
 }
 
 // static

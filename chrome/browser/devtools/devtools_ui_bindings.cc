@@ -1379,10 +1379,10 @@ void DevToolsUIBindings::ReadyToCommitNavigation(
       if (!opener_bindings || !opener_bindings->frontend_host_)
         return;
     }
-    frontend_host_.reset(content::DevToolsFrontendHost::Create(
+    frontend_host_ = content::DevToolsFrontendHost::Create(
         navigation_handle->GetRenderFrameHost(),
         base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
     return;
   }
 
