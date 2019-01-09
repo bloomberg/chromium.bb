@@ -505,6 +505,7 @@ source_set("browser_tests") {
 
     deps += [
       "//chromeos",
+      "//chromeos/audio",
       "//chromeos/dbus:media_perception_proto",
       "//chromeos/dbus:power_manager_proto",
       "//chromeos/login/login_state",

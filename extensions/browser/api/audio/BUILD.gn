@@ -18,18 +18,19 @@ source_set("audio") {
     "pref_names.h",
   ]
 
-  if (is_chromeos) {
-    sources += [ "audio_service_chromeos.cc" ]
-  } else {
-    sources += [ "audio_service.cc" ]
-  }
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 
   deps = [
     "//components/prefs",
     "//extensions/common/api",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  if (is_chromeos) {
+    deps += [ "//chromeos/audio" ]
+    sources += [ "audio_service_chromeos.cc" ]
+  } else {
+    sources += [ "audio_service.cc" ]
+  }
 }

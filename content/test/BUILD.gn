@@ -1196,7 +1196,10 @@ test("content_browsertests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos/audio",
+    ]
   }
 
   if (use_aura && !is_win) {
@@ -2075,7 +2078,10 @@ test("content_unittests") {
     libs = [ "IOSurface.framework" ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos/audio",
+    ]
   }
   if (is_android) {
     sources += [

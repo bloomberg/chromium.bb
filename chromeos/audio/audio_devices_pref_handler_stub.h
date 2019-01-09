@@ -9,13 +9,14 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 
 namespace chromeos {
 
 // Stub class for AudioDevicesPrefHandler, used for testing.
-class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
+class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandlerStub
     : public AudioDevicesPrefHandler {
  public:
   struct DeviceState {

@@ -272,7 +272,10 @@ source_set("audio") {
       "cras/cras_unified.h",
     ]
     configs += [ ":libcras" ]
-    deps += [ "//chromeos:chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos/audio",
+    ]
   }
 
   if (use_pulseaudio) {
@@ -431,7 +434,10 @@ source_set("unit_tests") {
     ]
 
     if (!is_chromecast) {
-      deps += [ "//chromeos:chromeos" ]
+      deps += [
+        "//chromeos",
+        "//chromeos/audio",
+      ]
     }
 
     if (use_cras) {
