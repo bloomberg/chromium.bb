@@ -46,9 +46,7 @@ class QemuTarget(target.Target):
   # Used by the context manager to ensure that QEMU is killed when the Python
   # process exits.
   def __exit__(self, exc_type, exc_val, exc_tb):
-    if self._IsQemuStillRunning():
-      logging.info('Shutting down QEMU.')
-      self._qemu_process.kill()
+    self.Shutdown();
 
   def Start(self):
     qemu_path = os.path.join(GetQemuRootForPlatform(), 'bin',
@@ -160,6 +158,11 @@ class QemuTarget(target.Target):
         logging.info("Kernel logs:\n" +
                      open(temporary_system_log_file.name, 'r').read())
       raise
+
+  def Shutdown(self):
+    if self._IsQemuStillRunning():
+      logging.info('Shutting down QEMU.')
+      self._qemu_process.kill()
 
   def _IsQemuStillRunning(self):
     if not self._qemu_process:
