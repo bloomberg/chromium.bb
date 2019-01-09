@@ -53,11 +53,89 @@ std::string GetSpecificsIdFromAutofillWalletSpecifics(
   return std::string();
 }
 
+std::string GetSpecificsIdFromAutofillProfile(const AutofillProfile& profile) {
+  // Both server_id and specifics_id are _not_ base64 encoded.
+  return profile.server_id();
+}
+
+std::string GetSpecificsIdFromCreditCard(const CreditCard& card) {
+  // Both server_id and specifics_id are _not_ base64 encoded.
+  return card.server_id();
+}
+
+std::string GetSpecificsIdFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data) {
+  // Both customer_id and specifics_id are _not_ base64 encoded.
+  return customer_data.customer_id;
+}
+
+// Returns the client tag for wallet data specifics id.
 std::string GetClientTagForWalletDataSpecificsId(
     const std::string& specifics_id) {
   // Unlike for the wallet_metadata model type, the wallet_data expects
   // specifics id directly as client tags.
   return specifics_id;
+}
+
+// Returns the storage key to be used for wallet data for the specified wallet
+// data |specifics_id|.
+std::string GetStorageKeyForWalletDataSpecificsId(
+    const std::string& specifics_id) {
+  // We use the (non-base64-encoded) |specifics_id| directly as the storage key,
+  // this function only hides this definition from all its call sites.
+  return specifics_id;
+}
+
+// Creates a EntityData object corresponding to the specified |address|.
+std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
+    const AutofillProfile& address) {
+  auto entity_data = std::make_unique<EntityData>();
+
+  std::string specifics_id = GetSpecificsIdFromAutofillProfile(address);
+  entity_data->non_unique_name =
+      GetClientTagForWalletDataSpecificsId(specifics_id);
+
+  AutofillWalletSpecifics* wallet_specifics =
+      entity_data->specifics.mutable_autofill_wallet();
+
+  SetAutofillWalletSpecificsFromServerProfile(address, wallet_specifics);
+
+  return entity_data;
+}
+
+// Creates a EntityData object corresponding to the specified |card|.
+std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card) {
+  std::string specifics_id = GetSpecificsIdFromCreditCard(card);
+
+  auto entity_data = std::make_unique<EntityData>();
+  entity_data->non_unique_name =
+      GetClientTagForWalletDataSpecificsId(specifics_id);
+
+  AutofillWalletSpecifics* wallet_specifics =
+      entity_data->specifics.mutable_autofill_wallet();
+
+  SetAutofillWalletSpecificsFromServerCard(card, wallet_specifics);
+
+  return entity_data;
+}
+
+// Creates a EntityData object corresponding to the specified |customer_data|.
+std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
+    const PaymentsCustomerData& customer_data) {
+  std::string specifics_id =
+      GetSpecificsIdFromPaymentsCustomerData(customer_data);
+
+  auto entity_data = std::make_unique<EntityData>();
+  entity_data->non_unique_name =
+      GetClientTagForWalletDataSpecificsId(specifics_id);
+
+  AutofillWalletSpecifics* wallet_specifics =
+      entity_data->specifics.mutable_autofill_wallet();
+
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     wallet_specifics);
+
+  return entity_data;
 }
 
 }  // namespace
@@ -162,7 +240,8 @@ void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
     wallet_address->set_id(GetBase64EncodedServerId(wallet_address->id()));
 
-    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromAutofillProfile(*entry)),
                std::move(entity_data));
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
@@ -178,12 +257,14 @@ void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
           GetBase64EncodedServerId(wallet_card->billing_address_id()));
     }
 
-    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromCreditCard(*entry)),
                std::move(entity_data));
   }
 
   if (customer_data) {
-    batch->Put(GetStorageKeyForEntryServerId(customer_data->customer_id),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromPaymentsCustomerData(*customer_data)),
                CreateEntityDataFromPaymentsCustomerData(*customer_data));
   }
   std::move(callback).Run(std::move(batch));
@@ -201,8 +282,9 @@ std::string AutofillWalletSyncBridge::GetClientTag(
 std::string AutofillWalletSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
-  return GetStorageKeyForSpecificsId(GetSpecificsIdFromAutofillWalletSpecifics(
-      entity_data.specifics.autofill_wallet()));
+  return GetStorageKeyForWalletDataSpecificsId(
+      GetSpecificsIdFromAutofillWalletSpecifics(
+          entity_data.specifics.autofill_wallet()));
 }
 
 bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
@@ -245,16 +327,19 @@ void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
-    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromAutofillProfile(*entry)),
                CreateEntityDataFromAutofillServerProfile(*entry));
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
-    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromCreditCard(*entry)),
                CreateEntityDataFromCard(*entry));
   }
 
   if (customer_data) {
-    batch->Put(GetStorageKeyForEntryServerId(customer_data->customer_id),
+    batch->Put(GetStorageKeyForWalletDataSpecificsId(
+                   GetSpecificsIdFromPaymentsCustomerData(*customer_data)),
                CreateEntityDataFromPaymentsCustomerData(*customer_data));
   }
   std::move(callback).Run(std::move(batch));
