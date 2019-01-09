@@ -153,10 +153,9 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
 bool ShouldShowManualFallbackForPreLollipop(syncer::SyncService* sync_service) {
 #if defined(OS_ANDROID)
-  return ((base::android::BuildInfo::GetInstance()->sdk_int() >=
-           base::android::SDK_VERSION_LOLLIPOP) ||
-          (password_manager_util::GetPasswordSyncState(sync_service) ==
-           SYNCING_NORMAL_ENCRYPTION));
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_LOLLIPOP ||
+         password_manager_util::IsSyncingWithNormalEncryption(sync_service);
 #else
   return true;
 #endif

@@ -53,6 +53,16 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
+bool IsSignedInAndSyncingPasswordsNormally(Profile* profile) {
+  return password_manager_util::IsSyncingWithNormalEncryption(
+      ProfileSyncServiceFactory::GetForProfile(profile));
+}
+
+bool IsGooglePasswordManagerEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kGooglePasswordManager);
+}
+
 }  // namespace
 
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
@@ -200,11 +210,11 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
 }
 
 bool ShouldManagePasswordsinGooglePasswordManager(Profile* profile) {
-  return base::FeatureList::IsEnabled(
-             password_manager::features::kGooglePasswordManager) &&
-         password_manager_util::GetPasswordSyncState(
-             ProfileSyncServiceFactory::GetForProfile(profile)) ==
-             password_manager::SYNCING_NORMAL_ENCRYPTION;
+  // To make sure that the experiment groups contain the same proportions of
+  // signed in and syncing users, we need to check the sync state before
+  // checking the feature flag.
+  return IsSignedInAndSyncingPasswordsNormally(profile) &&
+         IsGooglePasswordManagerEnabled();
 }
 
 // Navigation is handled differently on Android.
@@ -221,10 +231,15 @@ void NavigateToManagePasswordsPage(Browser* browser,
                                    ManagePasswordsReferrer referrer) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ManagePasswordsReferrer",
                             referrer);
-  if (ShouldManagePasswordsinGooglePasswordManager(browser->profile())) {
-    NavigateToGooglePasswordManager(browser->profile(), referrer);
-  } else {
-    chrome::ShowPasswordManager(browser);
+  if (IsSignedInAndSyncingPasswordsNormally(browser->profile())) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ManagePasswordsReferrerSignedInAndSyncing", referrer);
+    if (IsGooglePasswordManagerEnabled()) {
+      NavigateToGooglePasswordManager(browser->profile(), referrer);
+      return;
+    }
   }
+
+  chrome::ShowPasswordManager(browser);
 }
 #endif  // !defined(OS_ANDROID)

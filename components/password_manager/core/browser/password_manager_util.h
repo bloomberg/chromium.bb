@@ -46,6 +46,10 @@ void UpdateMetadataForUsage(autofill::PasswordForm* credential);
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service);
 
+// Reports whether passwords are synced with normal encryption, i.e. without a
+// custom passphrase.
+bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
+
 // Finds the forms with a duplicate sync tags in |forms|. The first one of
 // the duplicated entries stays in |forms|, the others are moved to
 // |duplicates|.
