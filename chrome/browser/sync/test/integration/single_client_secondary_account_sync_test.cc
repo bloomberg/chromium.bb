@@ -59,20 +59,12 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientSecondaryAccountSyncTest);
 };
 
-class SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest
-    : public SingleClientSecondaryAccountSyncTest {
- public:
-  SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest() {
-    features_.InitAndDisableFeature(switches::kSyncStandaloneTransport);
-  }
+IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
+                       DoesNotStartSyncWithStandaloneTransportDisabled) {
+  base::test::ScopedFeatureList disable_standalone_transport;
+  disable_standalone_transport.InitAndDisableFeature(
+      switches::kSyncStandaloneTransport);
 
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest,
-    DoesNotStartSyncWithStandaloneTransportDisabled) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Since standalone transport is disabled, just signing in (without making the
@@ -82,20 +74,12 @@ IN_PROC_BROWSER_TEST_F(
             GetSyncService(0)->GetTransportState());
 }
 
-class SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest
-    : public SingleClientSecondaryAccountSyncTest {
- public:
-  SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest() {
-    features_.InitAndDisableFeature(switches::kSyncSupportSecondaryAccount);
-  }
+IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
+                       DoesNotStartSyncWithSecondaryAccountSupportDisabled) {
+  base::test::ScopedFeatureList disable_secondary_account_support;
+  disable_secondary_account_support.InitAndDisableFeature(
+      switches::kSyncSupportSecondaryAccount);
 
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest,
-    DoesNotStartSyncWithSecondaryAccountSupportDisabled) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Since secondary account support is disabled, just signing in (without
