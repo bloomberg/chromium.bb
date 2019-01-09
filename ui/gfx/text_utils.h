@@ -39,13 +39,15 @@ GFX_EXPORT float GetStringWidthF(const base::string16& text,
 
 // Returns a valid cut boundary at or before |index|. The surrogate pair and
 // combining characters should not be separated.
-GFX_EXPORT size_t
-FindValidBoundaryBefore(const base::string16& text, size_t index);
+GFX_EXPORT size_t FindValidBoundaryBefore(const base::string16& text,
+                                          size_t index,
+                                          bool trim_whitespace = false);
 
 // Returns a valid cut boundary at or after |index|. The surrogate pair and
 // combining characters should not be separated.
-GFX_EXPORT size_t
-FindValidBoundaryAfter(const base::string16& text, size_t index);
+GFX_EXPORT size_t FindValidBoundaryAfter(const base::string16& text,
+                                         size_t index,
+                                         bool trim_whitespace = false);
 
 // If the UI layout is right-to-left, flip the alignment direction.
 GFX_EXPORT HorizontalAlignment MaybeFlipForRTL(HorizontalAlignment alignment);
