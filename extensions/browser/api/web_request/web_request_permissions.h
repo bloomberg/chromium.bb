@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/origin.h"
 
@@ -26,13 +27,15 @@ class WebRequestPermissions {
  public:
   // Different host permission checking modes for CanExtensionAccessURL.
   enum HostPermissionsCheck {
-    DO_NOT_CHECK_HOST = 0,            // No check.
-    REQUIRE_HOST_PERMISSION_FOR_URL,  // Permission needed for given request
-                                      // URL.
-    REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,  // Permission needed for
-                                                    // given request URL and its
-                                                    // initiator.
-    REQUIRE_ALL_URLS  // Permission needed for <all_urls>.
+    DO_NOT_CHECK_HOST = 0,  // No check.
+    // Permission needed for given request URL.
+    // TODO(karandeepb): Remove this checking mode.
+    REQUIRE_HOST_PERMISSION_FOR_URL,
+    // Same as REQUIRE_HOST_PERMISSION_FOR_URL but sub-resource requests will
+    // also need access to the request initiator.
+    REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+    // Permission needed for <all_urls>.
+    REQUIRE_ALL_URLS
   };
 
   // Returns true if the request shall not be reported to extensions.
@@ -52,7 +55,8 @@ class WebRequestPermissions {
       int tab_id,
       bool crosses_incognito,
       HostPermissionsCheck host_permissions_check,
-      const base::Optional<url::Origin>& initiator);
+      const base::Optional<url::Origin>& initiator,
+      const base::Optional<content::ResourceType>& resource_type);
 
   static bool CanExtensionAccessInitiator(
       const extensions::InfoMap* extension_info_map,
