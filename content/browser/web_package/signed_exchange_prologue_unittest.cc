@@ -40,6 +40,15 @@ TEST(SignedExchangePrologueTest, Parse3BytesEncodedLength) {
 }
 
 TEST(SignedExchangePrologueTest, BeforeFallbackUrl_Success) {
+  uint8_t bytes[] = {'s', 'x', 'g', '1', '-', 'b', '3', '\0', 0x12, 0x34};
+
+  BeforeFallbackUrl before_fallback_url = BeforeFallbackUrl::Parse(
+      base::make_span(bytes), nullptr /* devtools_proxy */);
+  EXPECT_TRUE(before_fallback_url.is_valid());
+  EXPECT_EQ(0x1234u, before_fallback_url.fallback_url_length());
+}
+
+TEST(SignedExchangePrologueTest, BeforeFallbackUrl_SuccessB2) {
   uint8_t bytes[] = {'s', 'x', 'g', '1', '-', 'b', '2', '\0', 0x12, 0x34};
 
   BeforeFallbackUrl before_fallback_url = BeforeFallbackUrl::Parse(

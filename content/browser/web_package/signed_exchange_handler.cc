@@ -78,7 +78,9 @@ base::Time GetVerificationTime() {
 
 bool IsSupportedSignedExchangeVersion(
     const base::Optional<SignedExchangeVersion>& version) {
-  return version == SignedExchangeVersion::kB2;
+  // TODO(crbug.com/919424) Remove support for kB2
+  return version == SignedExchangeVersion::kB2 ||
+         version == SignedExchangeVersion::kB3;
 }
 
 using VerifyCallback = base::OnceCallback<void(int32_t,
