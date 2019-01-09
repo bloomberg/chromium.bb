@@ -1410,6 +1410,9 @@
               # devices running an OS version at or above the LKGM. For now,
               # just accept any OS version.
               'device_type': 'kevin',
+              # Special pool is needed for the devices since they also run
+              # swarmbucket builds.
+              'pool': 'chrome-cros-dut',
             },
           ],
         },

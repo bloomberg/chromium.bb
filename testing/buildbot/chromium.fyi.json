@@ -3867,7 +3867,8 @@
           "dimension_sets": [
             {
               "device_type": "kevin",
-              "os": "ChromeOS"
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
             }
           ]
         },
@@ -3879,7 +3880,8 @@
           "dimension_sets": [
             {
               "device_type": "kevin",
-              "os": "ChromeOS"
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
             }
           ]
         },
@@ -3891,7 +3893,8 @@
           "dimension_sets": [
             {
               "device_type": "kevin",
-              "os": "ChromeOS"
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
             }
           ]
         },
