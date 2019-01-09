@@ -11,12 +11,14 @@
 ; Reads from the home directory.
 (allow file-read-data
   (path (user-homedir-path "/.CFUserTextEncoding"))
-  (path (user-homedir-path "/Library/Preferences/com.apple.universalaccess.plist")))
+  (path (user-homedir-path "/Library/Preferences/com.apple.universalaccess.plist"))
+)
 
 ; Reads of /dev devices.
 (allow file-read-data
   (path "/dev/autofs_nowait")
-  (path "/dev/fd"))
+  (path "/dev/fd")
+)
 
 ; Reads of signed Mach-O blobs created by the CVMS server.
 ; https://crbug.com/850021
@@ -24,7 +26,8 @@
   (allow file-read*
     (extension "com.apple.cvms.kernel")
     (prefix "/private/tmp/cvmsCodeSignObj")
-    (subpath "/private/var/db/CVMS")))
+    (subpath "/private/var/db/CVMS")
+  ))
 
 (allow file-write-data
   (require-all
@@ -43,30 +46,31 @@
   (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
   (subpath "/System/Library/CoreServices/SystemVersion.bundle")
   (subpath "/System/Library/Extensions")  ; https://crbug.com/847518
-  (subpath "/System/Library/LinguisticData"))
+  (subpath "/System/Library/LinguisticData")
+)
 
 ; Reads from /Library.
 (allow file-read-data
-  (subpath "/Library/GPUBundles"))  ; https://crbug.com/850021
+  (subpath "/Library/GPUBundles")  ; https://crbug.com/850021
+)
 
 ; IOKit
 (allow iokit-open
   (iokit-registry-entry-class "IOSurfaceRootUserClient")
-  (iokit-registry-entry-class "RootDomainUserClient"))
+  (iokit-registry-entry-class "RootDomainUserClient")
+)
 
 ; POSIX IPC
 (allow ipc-posix-shm-read-data
   (ipc-posix-name "apple.cfprefs.317580v1")
   (ipc-posix-name "apple.cfprefs.daemonv1")
-  ; crbug.com/792217
-  (ipc-posix-name "apple.shm.notification_center"))
+  (ipc-posix-name "apple.shm.notification_center")  ; https://crbug.com/792217
+)
 
 ; mach IPC
 (allow mach-lookup
-  ; crbug.com/792257
-  (global-name "com.apple.distributed_notifications@Uv3")
+  (global-name "com.apple.cvmsServ")  ; https://crbug.com/850021
+  (global-name "com.apple.distributed_notifications@Uv3")  ; https://crbug.com/792257
   (global-name "com.apple.lsd.mapdb")
-  ; https://crbug.com/850021
-  (global-name "com.apple.cvmsServ")
-  ; crbug.com/792217
-  (global-name "com.apple.system.notification_center"))
+  (global-name "com.apple.system.notification_center")  ; https://crbug.com/792217
+)
