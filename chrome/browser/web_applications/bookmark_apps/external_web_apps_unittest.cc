@@ -5,20 +5,42 @@
 #include "chrome/browser/web_applications/external_web_apps.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_path_override.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
+#endif
+
 namespace {
 
-static constexpr char kWebAppDefaultApps[] = "web_app_default_apps";
+constexpr char kGoodJsonTestDir[] = "good_json";
+constexpr char kWebAppDefaultApps[] = "web_app_default_apps";
+constexpr char kUserTypesTestDir[] = "user_types";
+
+#if defined(OS_CHROMEOS)
+constexpr char kAppChildUrl[] = "https://www.google.com/child";
+constexpr char kAppManagedUrl[] = "https://www.google.com/managed";
+constexpr char kAppUnmanagedUrl[] = "https://www.google.com/unmanaged";
+#endif
 
 // Returns the chrome/test/data/web_app_default_apps/sub_dir directory that
 // holds the *.json data files from which ScanDirForExternalWebAppsForTesting
@@ -38,16 +60,103 @@ using AppInfos = std::vector<web_app::PendingAppManager::AppInfo>;
 
 class ScanDirForExternalWebAppsTest : public testing::Test {};
 
+class ScanDirForExternalWebAppsWithProfileTest
+    : public ScanDirForExternalWebAppsTest {
+ public:
+  ScanDirForExternalWebAppsWithProfileTest() = default;
+  ~ScanDirForExternalWebAppsWithProfileTest() override = default;
+
+  // ScanDirForExternalWebAppsTest:
+  void SetUp() override {
+    testing::Test::SetUp();
+#if defined(OS_CHROMEOS)
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    user_manager_enabler_.reset();
+#endif
+    testing::Test::TearDown();
+  }
+
+ protected:
+  // Helper that makes blocking call to |web_app::ScanForExternalWebApps| and
+  // returns read app infos.
+  static AppInfos ScanApps(Profile* profile, const base::FilePath& test_dir) {
+#if defined(OS_CHROMEOS)
+    base::ScopedPathOverride path_override(
+        chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, test_dir);
+#endif
+    AppInfos result;
+    base::RunLoop run_loop;
+    web_app::ScanForExternalWebApps(
+        profile,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, AppInfos* result, AppInfos apps) {
+              *result = apps;
+              run_loop->Quit();
+            },
+            &run_loop, &result));
+    run_loop.Run();
+    return result;
+  }
+
+  // Helper that creates simple test profile.
+  std::unique_ptr<TestingProfile> CreateProfile() {
+    TestingProfile::Builder profile_builder;
+    return profile_builder.Build();
+  }
+
+#if defined(OS_CHROMEOS)
+  // Helper that creates simple test profile and logs it into user manager.
+  // This makes profile appears as a primary profile in ChromeOS.
+  std::unique_ptr<TestingProfile> CreateProfileAndLogin() {
+    std::unique_ptr<TestingProfile> profile = CreateProfile();
+    const AccountId account_id(AccountId::FromUserEmailGaiaId(
+        profile->GetProfileUserName(), "1234567890"));
+    user_manager()->AddUser(account_id);
+    user_manager()->LoginUser(account_id);
+    return profile;
+  }
+#endif
+
+ private:
+#if defined(OS_CHROMEOS)
+  chromeos::FakeChromeUserManager* user_manager() {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
+
+  // To supprot primary/non-primary users.
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+#endif
+
+  // To support context of browser threads.
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScanDirForExternalWebAppsWithProfileTest);
+};
+
+class ScanDirForExternalWebAppsNonPrimaryProfileTest
+    : public ScanDirForExternalWebAppsTest {
+  ScanDirForExternalWebAppsNonPrimaryProfileTest() = default;
+  ~ScanDirForExternalWebAppsNonPrimaryProfileTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScanDirForExternalWebAppsNonPrimaryProfileTest);
+};
+
 TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
-  auto app_infos =
-      web_app::ScanDirForExternalWebAppsForTesting(test_dir("good_json"));
+  const auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir(kGoodJsonTestDir));
 
   // The good_json directory contains two good JSON files:
   // chrome_platform_status.json and google_io_2016.json.
   // google_io_2016.json is missing a "create_shortcuts" field, so the default
   // value of false should be used.
-  EXPECT_EQ(2u, app_infos.size());
-
   std::vector<web_app::PendingAppManager::AppInfo> test_app_infos;
   {
     web_app::PendingAppManager::AppInfo info(
@@ -67,13 +176,15 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
     info.require_manifest = true;
     test_app_infos.push_back(std::move(info));
   }
-  for (const auto& app_info : test_app_infos) {
+
+  EXPECT_EQ(test_app_infos.size(), app_infos.size());
+  for (const auto app_info : test_app_infos) {
     EXPECT_TRUE(base::ContainsValue(app_infos, app_info));
   }
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, BadJson) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("bad_json"));
 
   // The bad_json directory contains one (malformed) JSON file.
@@ -81,7 +192,7 @@ TEST_F(ScanDirForExternalWebAppsTest, BadJson) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, TxtButNoJson) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("txt_but_no_json"));
 
   // The txt_but_no_json directory contains one file, and the contents of that
@@ -90,7 +201,7 @@ TEST_F(ScanDirForExternalWebAppsTest, TxtButNoJson) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, MixedJson) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("mixed_json"));
 
   // The mixed_json directory contains one empty JSON file, one malformed JSON
@@ -104,7 +215,7 @@ TEST_F(ScanDirForExternalWebAppsTest, MixedJson) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, MissingAppUrl) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("missing_app_url"));
 
   // The missing_app_url directory contains one JSON file which is correct
@@ -113,7 +224,7 @@ TEST_F(ScanDirForExternalWebAppsTest, MissingAppUrl) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, EmptyAppUrl) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("empty_app_url"));
 
   // The empty_app_url directory contains one JSON file which is correct
@@ -122,7 +233,7 @@ TEST_F(ScanDirForExternalWebAppsTest, EmptyAppUrl) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, InvalidAppUrl) {
-  auto app_infos =
+  const auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("invalid_app_url"));
 
   // The invalid_app_url directory contains one JSON file which is correct
@@ -131,7 +242,7 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidAppUrl) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, InvalidCreateShortcuts) {
-  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+  const auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
       test_dir("invalid_create_shortcuts"));
 
   // The invalid_create_shortcuts directory contains one JSON file which is
@@ -140,7 +251,7 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidCreateShortcuts) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, MissingLaunchContainer) {
-  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+  const auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
       test_dir("missing_launch_container"));
 
   // The missing_launch_container directory contains one JSON file which is
@@ -149,7 +260,7 @@ TEST_F(ScanDirForExternalWebAppsTest, MissingLaunchContainer) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, InvalidLaunchContainer) {
-  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+  const auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
       test_dir("invalid_launch_container"));
 
   // The invalidg_launch_container directory contains one JSON file which is
@@ -161,7 +272,7 @@ TEST_F(ScanDirForExternalWebAppsTest, EnabledByFinch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       base::Feature{"test_feature_name", base::FEATURE_DISABLED_BY_DEFAULT});
-  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+  const auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
       test_dir("enabled_by_finch"));
 
   // The enabled_by_finch directory contains two JSON file containing apps
@@ -171,7 +282,7 @@ TEST_F(ScanDirForExternalWebAppsTest, EnabledByFinch) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, NotEnabledByFinch) {
-  auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
+  const auto app_infos = web_app::ScanDirForExternalWebAppsForTesting(
       test_dir("enabled_by_finch"));
 
   // The enabled_by_finch directory contains two JSON file containing apps
@@ -179,3 +290,55 @@ TEST_F(ScanDirForExternalWebAppsTest, NotEnabledByFinch) {
   // be in our list of apps to install.
   EXPECT_EQ(0u, app_infos.size());
 }
+
+TEST_F(ScanDirForExternalWebAppsTest, RecursiveSearch) {
+  const auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir(kUserTypesTestDir));
+
+  // Search is recursive and includes sub-directories. |kUserTypesTestDir|
+  // contains sub-directories for child and managed users. All apps from these
+  // folders has to be included.
+  EXPECT_EQ(3u, app_infos.size());
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, UnmanagedUser) {
+  const auto app_infos =
+      ScanApps(CreateProfileAndLogin().get(), test_dir(kUserTypesTestDir));
+  // This contains all apps, including for child and managed users.
+  const std::set<GURL> expectations(
+      {GURL(kAppChildUrl), GURL(kAppManagedUrl), GURL(kAppUnmanagedUrl)});
+  EXPECT_EQ(expectations.size(), app_infos.size());
+  for (const auto& app_info : app_infos)
+    EXPECT_EQ(1u, expectations.count(app_info.url));
+}
+
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, ManagedUser) {
+  const auto profile = CreateProfileAndLogin();
+  profile->SetSupervisedUserId("asdf");
+  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
+  // This includes apps for managed users only.
+  ASSERT_EQ(1u, app_infos.size());
+  EXPECT_EQ(GURL(kAppManagedUrl), app_infos[0].url);
+}
+
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, ChildUser) {
+  const auto profile = CreateProfileAndLogin();
+  profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  const auto app_infos = ScanApps(profile.get(), test_dir(kUserTypesTestDir));
+  // This includes apps for child users only.
+  ASSERT_EQ(1u, app_infos.size());
+  EXPECT_EQ(GURL(kAppChildUrl), app_infos[0].url);
+}
+
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, NonPrimaryProfile) {
+  EXPECT_TRUE(
+      ScanApps(CreateProfile().get(), test_dir(kUserTypesTestDir)).empty());
+}
+#else
+// No app is expected for non-ChromeOS builds.
+TEST_F(ScanDirForExternalWebAppsWithProfileTest, NoApp) {
+  EXPECT_TRUE(
+      ScanApps(CreateProfile().get(), test_dir(kUserTypesTestDir)).empty());
+}
+#endif

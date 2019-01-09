@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -52,6 +53,14 @@ constexpr char kLaunchContainerTab[] = "tab";
 constexpr char kLaunchContainerWindow[] = "window";
 
 #if defined(OS_CHROMEOS)
+// Defines directory with web apps for child users.
+const base::FilePath::CharType kChildUsersSubdir[] =
+    FILE_PATH_LITERAL("child_users");
+
+// Defines directory with web apps for managed users.
+const base::FilePath::CharType kManagedUsersSubdir[] =
+    FILE_PATH_LITERAL("managed_users");
+
 // The sub-directory of the extensions directory in which to scan for external
 // web apps (as opposed to external extensions or external ARC apps).
 const base::FilePath::CharType kWebAppsSubDirectory[] =
@@ -82,11 +91,12 @@ bool IsFeatureEnabled(const std::string& feature_name) {
   return base::FeatureList::IsEnabled(*it->second);
 }
 
-std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
+std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
+    const base::FilePath& dir) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
-                                  false,  // Recursive.
+                                  true,  // Recursive.
                                   base::FileEnumerator::FILES);
 
   std::vector<web_app::PendingAppManager::AppInfo> app_infos;
@@ -187,6 +197,13 @@ base::FilePath DetermineScanDir(Profile* profile) {
       LOG(ERROR) << "ScanForExternalWebApps: base::PathService::Get failed";
     } else {
       dir = dir.Append(kWebAppsSubDirectory);
+
+      // Limit web apps for known type of users. Unmanaged users have all apps,
+      // including sub-dirs.
+      if (profile->IsChild())
+        dir = dir.Append(kChildUsersSubdir);
+      else if (profile->IsSupervised())
+        dir = dir.Append(kManagedUsersSubdir);
     }
   }
 
@@ -199,14 +216,14 @@ base::FilePath DetermineScanDir(Profile* profile) {
 namespace web_app {
 
 std::vector<web_app::PendingAppManager::AppInfo>
-ScanDirForExternalWebAppsForTesting(base::FilePath dir) {
+ScanDirForExternalWebAppsForTesting(const base::FilePath& dir) {
   return ScanDir(dir);
 }
 
 void ScanForExternalWebApps(Profile* profile,
                             ScanForExternalWebAppsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::FilePath dir = DetermineScanDir(profile);
+  const base::FilePath dir = DetermineScanDir(profile);
   if (dir.empty()) {
     std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
     return;

@@ -8,8 +8,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+
+namespace base {
+class FilePath;
+}
 
 class Profile;
 
@@ -27,7 +30,7 @@ void ScanForExternalWebApps(Profile* profile,
 //
 // This function performs file I/O, and must not be scheduled on UI threads.
 std::vector<web_app::PendingAppManager::AppInfo>
-ScanDirForExternalWebAppsForTesting(base::FilePath dir);
+ScanDirForExternalWebAppsForTesting(const base::FilePath& dir);
 
 }  // namespace web_app
 
