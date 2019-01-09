@@ -8200,14 +8200,25 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
+class NavigationControllerHistoryInterventionBrowserTest
+    : public NavigationControllerBrowserTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryManipulationIntervention);
+    NavigationControllerBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that the navigation entry is marked as skippable on back/forward button
 // if it does a renderer initiated navigation without ever getting a user
 // activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkipOnBackForward) {
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
@@ -8257,11 +8268,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that the navigation entry is marked as skippable on back/forward button
 // if it does a renderer initiated cross-site navigation without ever getting a
 // user activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkipOnBackForwardCrossSite) {
   base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
@@ -8362,13 +8371,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that the navigation entry is marked as skippable on back button if it
 // does a renderer initiated navigation without ever getting a user activation.
 // Also tests this for an entry added using history.pushState.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkippableMultipleGoBack) {
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
@@ -8419,13 +8426,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Same as above but tests the metrics on going forward.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkippableMultipleGoForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
@@ -8536,13 +8541,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that the navigation entry is not marked as skippable on back/forward
 // button if it does a renderer initiated navigation after getting a user
 // activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        UserActivationDoNotSkipOnBackForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
@@ -8586,13 +8589,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that the navigation entry should not be marked as skippable on
 // back/forward button if it is navigated away using a browser initiated
 // navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                        BrowserInitiatedNavigationDoNotSkipOnBackForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI";
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kHistoryManipulationIntervention);
 
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
