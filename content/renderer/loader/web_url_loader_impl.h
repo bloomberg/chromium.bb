@@ -71,6 +71,10 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
                                   blink::WebURLResponse* response,
                                   bool report_security_info,
                                   int request_id);
+  static blink::WebURLError PopulateURLError(
+      const network::URLLoaderCompletionStatus& status,
+      const GURL& url);
+
   // WebURLLoader methods:
   void LoadSynchronously(const blink::WebURLRequest& request,
                          blink::WebURLLoaderClient* client,

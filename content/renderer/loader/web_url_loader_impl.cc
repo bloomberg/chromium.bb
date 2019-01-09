@@ -925,16 +925,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (status.error_code != net::OK) {
-      const WebURLError::HasCopyInCache has_copy_in_cache =
-          status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
-                                 : WebURLError::HasCopyInCache::kFalse;
-      client_->DidFail(
-          status.cors_error_status
-              ? WebURLError(*status.cors_error_status, has_copy_in_cache, url_)
-              : WebURLError(status.error_code, status.extended_error_code,
-                            has_copy_in_cache,
-                            WebURLError::IsWebSecurityViolation::kFalse, url_),
-          total_transfer_size, encoded_body_size, status.decoded_body_length);
+      client_->DidFail(PopulateURLError(status, url_), total_transfer_size,
+                       encoded_body_size, status.decoded_body_length);
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
@@ -1228,6 +1220,21 @@ void WebURLLoaderImpl::PopulateURLResponse(
     response->AddHTTPHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
+}
+
+// static
+WebURLError WebURLLoaderImpl::PopulateURLError(
+    const network::URLLoaderCompletionStatus& status,
+    const GURL& url) {
+  DCHECK_NE(net::OK, status.error_code);
+  const WebURLError::HasCopyInCache has_copy_in_cache =
+      status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
+                             : WebURLError::HasCopyInCache::kFalse;
+  if (status.cors_error_status)
+    return WebURLError(*status.cors_error_status, has_copy_in_cache, url);
+  return WebURLError(status.error_code, status.extended_error_code,
+                     has_copy_in_cache,
+                     WebURLError::IsWebSecurityViolation::kFalse, url);
 }
 
 void WebURLLoaderImpl::LoadSynchronously(
