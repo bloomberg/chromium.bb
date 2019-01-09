@@ -63,6 +63,12 @@ class TabStripController {
   // Adds the selection the anchor to |index|.
   virtual void AddSelectionFromAnchorTo(int index) = 0;
 
+  // Prepares to close a tab. If closing the tab might require (for example) a
+  // user prompt, triggers that prompt and returns false, indicating that the
+  // current close operation should not proceed. If this method returns true,
+  // closing can proceed.
+  virtual bool BeforeCloseTab(int index, CloseTabSource source) = 0;
+
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 

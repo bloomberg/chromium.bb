@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -155,6 +156,16 @@ class Browser : public TabStripModelObserver,
     // that would be canceled.
     DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
   };
+
+  // Represents the result of the user being warned before closing the browser.
+  // See WarnBeforeClosingCallback and WarnBeforeClosing() below.
+  enum class WarnBeforeClosingResult { kOkToClose, kDoNotClose };
+
+  // Callback that receives the result of a user being warned about closing a
+  // browser window (for example, if closing the window would interrupt a
+  // download). The parameter is whether the close should proceed.
+  using WarnBeforeClosingCallback =
+      base::OnceCallback<void(WarnBeforeClosingResult)>;
 
   struct CreateParams {
     explicit CreateParams(Profile* profile, bool user_gesture);
@@ -338,9 +349,29 @@ class Browser : public TabStripModelObserver,
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
+  // Displays any necessary warnings to the user on taking an action that might
+  // close the browser (for example, warning if there are downloads in progress
+  // that would be interrupted).
+  //
+  // Distinct from ShouldCloseWindow() (which calls this method) because this
+  // method does not consider beforeunload handler, only things the user should
+  // be prompted about.
+  //
+  // If no warnings are needed, the method returns kOkToClose, indicating that
+  // the close can proceed immediately, and the callback is not called. If the
+  // method returns kDoNotClose, closing should be handled by |warn_callback|
+  // (and then only if the callback receives the kOkToClose value).
+  WarnBeforeClosingResult MaybeWarnBeforeClosing(
+      WarnBeforeClosingCallback warn_callback);
+
   // Gives beforeunload handlers the chance to cancel the close. Returns whether
   // to proceed with the close. If called while the process begun by
   // TryToCloseWindow is in progress, returns false without taking action.
+  //
+  // If you don't care about beforeunload handlers and just want to prompt the
+  // user that they might lose an in-progress operation, call
+  // MaybeWarnBeforeClosing() instead (ShouldCloseWindow() also calls this
+  // method).
   bool ShouldCloseWindow();
 
   // Begins the process of confirming whether the associated browser can be
@@ -379,12 +410,6 @@ class Browser : public TabStripModelObserver,
   void OnWindowClosing();
 
   // In-progress download termination handling /////////////////////////////////
-
-  // Called when the user has decided whether to proceed or not with the browser
-  // closure.  |cancel_downloads| is true if the downloads should be canceled
-  // and the browser closed, false if the browser should stay open and the
-  // downloads running.
-  void InProgressDownloadResponse(bool cancel_downloads);
 
   // Indicates whether or not this browser window can be closed, or
   // would be blocked by in-progress downloads.
@@ -840,6 +865,17 @@ class Browser : public TabStripModelObserver,
   // Returns true if the window can close, false otherwise.
   bool CanCloseWithInProgressDownloads();
 
+  // Called when the user has decided whether to proceed or not with the browser
+  // closure.  |cancel_downloads| is true if the downloads should be canceled
+  // and the browser closed, false if the browser should stay open and the
+  // downloads running.
+  void InProgressDownloadResponse(bool cancel_downloads);
+
+  // Called when all warnings have completed when attempting to close the
+  // browser directly (e.g. via hotkey, close button, terminate signal, etc.)
+  // Used as a WarnBeforeClosingCallback by ShouldCloseWindow().
+  void FinishWarnBeforeClosing(WarnBeforeClosingResult result);
+
   // Assorted utility functions ///////////////////////////////////////////////
 
   // Sets the specified browser as the delegate of the WebContents and all the
@@ -1039,6 +1075,8 @@ class Browser : public TabStripModelObserver,
   SigninViewController signin_view_controller_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
+
+  WarnBeforeClosingCallback warn_before_closing_callback_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;

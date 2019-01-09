@@ -59,6 +59,7 @@ class BrowserTabStripController : public TabStripController,
   void ExtendSelectionTo(int model_index) override;
   void ToggleSelected(int model_index) override;
   void AddSelectionFromAnchorTo(int model_index) override;
+  bool BeforeCloseTab(int model_index, CloseTabSource source) override;
   void CloseTab(int model_index, CloseTabSource source) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,

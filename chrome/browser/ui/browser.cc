@@ -714,9 +714,28 @@ base::string16 Browser::FormatTitleForDisplay(base::string16 title) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, OnBeforeUnload handling:
 
+Browser::WarnBeforeClosingResult Browser::MaybeWarnBeforeClosing(
+    Browser::WarnBeforeClosingCallback warn_callback) {
+  // If the browser can close right away (there are no pending downloads we need
+  // to prompt about) then there's no need to warn. In the future, we might need
+  // to check other conditions as well.
+  if (CanCloseWithInProgressDownloads())
+    return WarnBeforeClosingResult::kOkToClose;
+
+  DCHECK(!warn_before_closing_callback_)
+      << "Tried to close window during close warning; dialog should be modal.";
+  warn_before_closing_callback_ = std::move(warn_callback);
+  return WarnBeforeClosingResult::kDoNotClose;
+}
+
 bool Browser::ShouldCloseWindow() {
-  if (!CanCloseWithInProgressDownloads())
+  // If the user needs to see one or more warnings, hold off closing the
+  // browser.
+  const WarnBeforeClosingResult result = MaybeWarnBeforeClosing(base::BindOnce(
+      &Browser::FinishWarnBeforeClosing, weak_factory_.GetWeakPtr()));
+  if (result == WarnBeforeClosingResult::kDoNotClose)
     return false;
+
   if (IsFastTabUnloadEnabled())
     return fast_unload_controller_->ShouldCloseWindow();
   return unload_controller_->ShouldCloseWindow();
@@ -812,29 +831,6 @@ void Browser::OnWindowClosing() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // In-progress download termination handling:
-
-void Browser::InProgressDownloadResponse(bool cancel_downloads) {
-  if (cancel_downloads) {
-    cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
-    chrome::CloseWindow(this);
-    return;
-  }
-
-  // Sets the confirmation state to NOT_PROMPTED so that if the user tries to
-  // close again we'll show the warning again.
-  cancel_download_confirmation_state_ = NOT_PROMPTED;
-
-  // Show the download page so the user can figure-out what downloads are still
-  // in-progress.
-  chrome::ShowDownloads(this);
-
-  // Reset UnloadController::is_attempting_to_close_browser_ so that we don't
-  // prompt every time any tab is closed. http://crbug.com/305516
-  if (IsFastTabUnloadEnabled())
-    fast_unload_controller_->CancelWindowClose();
-  else
-    unload_controller_->CancelWindowClose();
-}
 
 Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
     int* num_downloads_blocking) const {
@@ -2483,6 +2479,42 @@ bool Browser::CanCloseWithInProgressDownloads() {
   // Return false so the browser does not close.  We'll close if the user
   // confirms in the dialog.
   return false;
+}
+
+void Browser::InProgressDownloadResponse(bool cancel_downloads) {
+  if (cancel_downloads) {
+    cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
+    std::move(warn_before_closing_callback_)
+        .Run(WarnBeforeClosingResult::kOkToClose);
+    return;
+  }
+
+  // Sets the confirmation state to NOT_PROMPTED so that if the user tries to
+  // close again we'll show the warning again.
+  cancel_download_confirmation_state_ = NOT_PROMPTED;
+
+  // Show the download page so the user can figure-out what downloads are still
+  // in-progress.
+  chrome::ShowDownloads(this);
+
+  std::move(warn_before_closing_callback_)
+      .Run(WarnBeforeClosingResult::kDoNotClose);
+}
+
+void Browser::FinishWarnBeforeClosing(WarnBeforeClosingResult result) {
+  switch (result) {
+    case WarnBeforeClosingResult::kOkToClose:
+      chrome::CloseWindow(this);
+      break;
+    case WarnBeforeClosingResult::kDoNotClose:
+      // Reset UnloadController::is_attempting_to_close_browser_ so that we
+      // don't prompt every time any tab is closed. http://crbug.com/305516
+      if (IsFastTabUnloadEnabled())
+        fast_unload_controller_->CancelWindowClose();
+      else
+        unload_controller_->CancelWindowClose();
+      break;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
