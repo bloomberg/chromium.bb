@@ -55,6 +55,7 @@ class BackendIO : public BackgroundIO {
 
   // The operations we proxy:
   void Init();
+  void OpenOrCreateEntry(const std::string& key, Entry** entry);
   void OpenEntry(const std::string& key, Entry** entry);
   void CreateEntry(const std::string& key, Entry** entry);
   void DoomEntry(const std::string& key);
@@ -98,6 +99,7 @@ class BackendIO : public BackgroundIO {
   enum Operation {
     OP_NONE = 0,
     OP_INIT,
+    OP_OPEN_OR_CREATE,
     OP_OPEN,
     OP_CREATE,
     OP_DOOM,
@@ -168,6 +170,9 @@ class InFlightBackendIO : public InFlightIO {
 
   // Proxied operations.
   void Init(net::CompletionOnceCallback callback);
+  void OpenOrCreateEntry(const std::string& key,
+                         Entry** entry,
+                         net::CompletionOnceCallback callback);
   void OpenEntry(const std::string& key,
                  Entry** entry,
                  net::CompletionOnceCallback callback);

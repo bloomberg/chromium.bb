@@ -97,6 +97,12 @@ void BackendIO::Init() {
   operation_ = OP_INIT;
 }
 
+void BackendIO::OpenOrCreateEntry(const std::string& key, Entry** entry) {
+  operation_ = OP_OPEN_OR_CREATE;
+  key_ = key;
+  entry_ptr_ = entry;
+}
+
 void BackendIO::OpenEntry(const std::string& key, Entry** entry) {
   operation_ = OP_OPEN;
   key_ = key;
@@ -237,8 +243,8 @@ void BackendIO::ReadyForSparseIO(EntryImpl* entry) {
 BackendIO::~BackendIO() = default;
 
 bool BackendIO::ReturnsEntry() {
-  return operation_ == OP_OPEN || operation_ == OP_CREATE ||
-      operation_ == OP_OPEN_NEXT;
+  return operation_ == OP_OPEN_OR_CREATE || operation_ == OP_OPEN ||
+         operation_ == OP_CREATE || operation_ == OP_OPEN_NEXT;
 }
 
 base::TimeDelta BackendIO::ElapsedTime() const {
@@ -251,6 +257,20 @@ void BackendIO::ExecuteBackendOperation() {
     case OP_INIT:
       result_ = backend_->SyncInit();
       break;
+    case OP_OPEN_OR_CREATE: {
+      scoped_refptr<EntryImpl> entry;
+      result_ = backend_->SyncOpenEntry(key_, &entry);
+
+      if (result_ == net::OK) {
+        *entry_ptr_ = LeakEntryImpl(std::move(entry));
+        break;
+      }
+
+      // Opening failed, create an entry instead.
+      result_ = backend_->SyncCreateEntry(key_, &entry);
+      *entry_ptr_ = LeakEntryImpl(std::move(entry));
+      break;
+    }
     case OP_OPEN: {
       scoped_refptr<EntryImpl> entry;
       result_ = backend_->SyncOpenEntry(key_, &entry);
@@ -376,6 +396,16 @@ void InFlightBackendIO::Init(net::CompletionOnceCallback callback) {
   scoped_refptr<BackendIO> operation(
       new BackendIO(this, backend_, std::move(callback)));
   operation->Init();
+  PostOperation(FROM_HERE, operation.get());
+}
+
+void InFlightBackendIO::OpenOrCreateEntry(
+    const std::string& key,
+    Entry** entry,
+    net::CompletionOnceCallback callback) {
+  scoped_refptr<BackendIO> operation(
+      new BackendIO(this, backend_, std::move(callback)));
+  operation->OpenOrCreateEntry(key, entry);
   PostOperation(FROM_HERE, operation.get());
 }
 

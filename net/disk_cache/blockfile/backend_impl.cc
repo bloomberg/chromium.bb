@@ -1253,6 +1253,15 @@ int32_t BackendImpl::GetEntryCount() const {
   return not_deleted;
 }
 
+net::Error BackendImpl::OpenOrCreateEntry(const std::string& key,
+                                          net::RequestPriority request_priority,
+                                          Entry** entry,
+                                          CompletionOnceCallback callback) {
+  DCHECK(!callback.is_null());
+  background_queue_.OpenOrCreateEntry(key, entry, std::move(callback));
+  return net::ERR_IO_PENDING;
+}
+
 net::Error BackendImpl::OpenEntry(const std::string& key,
                                   net::RequestPriority request_priority,
                                   Entry** entry,
