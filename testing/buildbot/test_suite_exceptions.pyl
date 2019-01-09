@@ -354,37 +354,6 @@
   },
   'content_browsertests': {
     'modifications': {
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'linux-chromeos-rel': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      # chromium.clang
-      'ToTLinuxTSan': {
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'ToTLinuxUBSanVptr': {
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'linux-win_cross-rel': {
-        # content_browsertests sometimes times out without this override on
-        # the cross bot, probably because of https://crbug.com/803591,
-        # see also https://crbug.com/838559
-        # TODO(thakis): Remove this once 803591 is fixed.
-        'swarming': {
-          'shards': 5,
-        },
-      },
       # chromium.linux
       'Cast Audio Linux': {
         'args': [
@@ -395,36 +364,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
-      },
-      # chromium.memory
-      'Linux ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # content_browsertests is slow on ASAN try bot. crbug.com/822461.
-        'swarming': {
-          'shards': 4,
-        }
-      },
-      'Linux TSan Tests': {
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'Mac ASan 64 Tests (1)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      # chromium.win
-      'Win7 Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 2,
-        },
       },
       # chromium.win
       'Win10 Tests x64 (dbg)': {
