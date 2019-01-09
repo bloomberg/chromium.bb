@@ -19,8 +19,6 @@ class FontUniqueNameLookupAndroid : public FontUniqueNameLookup {
   sk_sp<SkTypeface> MatchUniqueName(const String& font_unique_name) override;
 
  private:
-  bool EnsureMatchingServiceConnected();
-  std::unique_ptr<FontTableMatcher> font_table_matcher_;
   DISALLOW_COPY_AND_ASSIGN(FontUniqueNameLookupAndroid);
 };
 
