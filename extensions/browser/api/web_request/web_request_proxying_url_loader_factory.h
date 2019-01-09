@@ -151,6 +151,9 @@ class WebRequestProxyingURLLoaderFactory
     bool on_receive_response_received_ = false;
     bool on_receive_response_sent_ = false;
 
+    // TODO(https://crbug.com/918761): Remove this once the bug is fixed.
+    std::vector<std::string> debug_events_;
+
     bool request_completed_ = false;
 
     // If |uses_header_client_| is set to true, the request will be sent with
