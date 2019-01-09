@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -42,6 +43,8 @@ void AddLocalizedString(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
+
+  source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in md_bookmarks/command_manager.js
@@ -77,6 +80,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED);
   AddLocalizedString(source, "listAxLabel",
                      IDS_MD_BOOKMARK_MANAGER_LIST_AX_LABEL);
+  AddLocalizedString(source, "managedByOrg", IDS_MANAGED_BY_ORG_WITH_HYPERLINK);
   AddLocalizedString(source, "menuAddBookmark",
                      IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
   AddLocalizedString(source, "menuAddFolder",
@@ -204,6 +208,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("store_client.html",
                           IDR_MD_BOOKMARKS_STORE_CLIENT_HTML);
   source->AddResourcePath("store_client.js", IDR_MD_BOOKMARKS_STORE_CLIENT_JS);
+  source->AddResourcePath("strings.html", IDR_MD_BOOKMARKS_STRINGS_HTML);
   source->AddResourcePath("toast_manager.html",
                           IDR_MD_BOOKMARKS_TOAST_MANAGER_HTML);
   source->AddResourcePath("toast_manager.js",
