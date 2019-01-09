@@ -372,13 +372,10 @@ SkColor AppWindowFrameView::CurrentFrameColor() {
 void AppWindowFrameView::SetButtonImagesForFrame() {
   DCHECK(draw_frame_);
 
-  // If the frame is dark, we should use the light images so they have
-  // some contrast.
-  const uint8_t kLumaThreshold = 100;
-  bool use_light = color_utils::GetLuma(CurrentFrameColor()) < kLumaThreshold;
-
+  // If the frame is dark, we should use the light images so they have some
+  // contrast.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (use_light) {
+  if (color_utils::IsDark(CurrentFrameColor())) {
     maximize_button_->SetImage(
         views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_L).ToImageSkia());
