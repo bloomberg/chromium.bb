@@ -170,8 +170,12 @@
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux32 ASan': 'libfuzzer_asan_release_bot_x86',
       'Libfuzzer Upload Linux32 ASan Debug': 'libfuzzer_asan_debug_bot_x86',
+      'Libfuzzer Upload Linux32 V8-ARM ASan': 'libfuzzer_asan_release_bot_x86_v8_arm',
+      'Libfuzzer Upload Linux32 V8-ARM ASan Debug': 'libfuzzer_asan_debug_bot_x86_v8_arm',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot',
+      'Libfuzzer Upload Linux V8-ARM64 ASan': 'libfuzzer_asan_release_bot_v8_arm64',
+      'Libfuzzer Upload Linux V8-ARM64 ASan Debug': 'libfuzzer_asan_debug_bot_v8_arm64',
       'Libfuzzer Upload Linux MSan': 'libfuzzer_msan_release_bot',
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_release_bot',
@@ -1299,8 +1303,16 @@
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
+    'libfuzzer_asan_debug_bot_v8_arm64': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64',
+    ],
+
     'libfuzzer_asan_debug_bot_x86': [
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',
+    ],
+
+    'libfuzzer_asan_debug_bot_x86_v8_arm': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',
     ],
 
     'debug_trybot': [
@@ -1499,8 +1511,16 @@
       'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
+    'libfuzzer_asan_release_bot_v8_arm64': [
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64',
+    ],
+
     'libfuzzer_asan_release_bot_x86': [
       'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',
+    ],
+
+    'libfuzzer_asan_release_bot_x86_v8_arm': [
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',
     ],
 
     'libfuzzer_asan_release_trybot': [
@@ -2247,6 +2267,14 @@
 
     'use_vaapi': {
       'gn_args': 'use_vaapi=true',
+    },
+
+    'v8_simulate_arm': {
+      'gn_args': 'target_cpu="x86" v8_target_cpu="arm"',
+    },
+
+    'v8_simulate_arm64': {
+      'gn_args': 'target_cpu="x64" v8_target_cpu="arm64"',
     },
 
     'v8_enable_debugging_features': {
