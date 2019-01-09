@@ -175,16 +175,17 @@ PaymentsCustomerData CustomerDataFromSpecifics(
   return PaymentsCustomerData{/*customer_id=*/customer_data.id()};
 }
 
-}  // namespace
-
-std::string GetBase64EncodedServerId(const std::string& server_id) {
+// Returns the specified |id| encoded in base 64.
+std::string GetBase64EncodedId(const std::string& id) {
   std::string encoded_id;
-  base::Base64Encode(server_id, &encoded_id);
+  base::Base64Encode(id, &encoded_id);
   return encoded_id;
 }
 
+}  // namespace
+
 std::string GetSpecificsIdForMetadataId(const std::string& metadata_id) {
-  return GetBase64EncodedServerId(metadata_id);
+  return GetBase64EncodedId(metadata_id);
 }
 
 std::string GetStorageKeyForWalletMetadataSpecificsId(
@@ -201,13 +202,19 @@ std::string GetStorageKeyForMetadataId(const std::string& metadata_id) {
 
 void SetAutofillWalletSpecificsFromServerProfile(
     const AutofillProfile& address,
-    AutofillWalletSpecifics* wallet_specifics) {
+    AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8) {
   wallet_specifics->set_type(AutofillWalletSpecifics::POSTAL_ADDRESS);
 
   sync_pb::WalletPostalAddress* wallet_address =
       wallet_specifics->mutable_address();
 
-  wallet_address->set_id(address.server_id());
+  if (enforce_utf8) {
+    wallet_address->set_id(GetBase64EncodedId(address.server_id()));
+  } else {
+    wallet_address->set_id(address.server_id());
+  }
+
   wallet_address->set_language_code(TruncateUTF8(address.language_code()));
 
   if (address.HasRawInfo(NAME_FULL)) {
@@ -254,12 +261,28 @@ void SetAutofillWalletSpecificsFromServerProfile(
 
 void SetAutofillWalletSpecificsFromServerCard(
     const CreditCard& card,
-    AutofillWalletSpecifics* wallet_specifics) {
+    AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8) {
   wallet_specifics->set_type(AutofillWalletSpecifics::MASKED_CREDIT_CARD);
 
   sync_pb::WalletMaskedCreditCard* wallet_card =
       wallet_specifics->mutable_masked_card();
-  wallet_card->set_id(card.server_id());
+
+  if (enforce_utf8) {
+    wallet_card->set_id(GetBase64EncodedId(card.server_id()));
+    // The billing address id might refer to a local profile guid which doesn't
+    // need to be encoded.
+    if (base::IsStringUTF8(card.billing_address_id())) {
+      wallet_card->set_billing_address_id(card.billing_address_id());
+    } else {
+      wallet_card->set_billing_address_id(
+          GetBase64EncodedId(card.billing_address_id()));
+    }
+  } else {
+    wallet_card->set_id(card.server_id());
+    wallet_card->set_billing_address_id(card.billing_address_id());
+  }
+
   wallet_card->set_status(LocalToServerStatus(card));
   if (card.HasRawInfo(CREDIT_CARD_NAME_FULL)) {
     wallet_card->set_name_on_card(TruncateUTF8(
@@ -269,7 +292,6 @@ void SetAutofillWalletSpecificsFromServerCard(
   wallet_card->set_last_four(base::UTF16ToUTF8(card.LastFourDigits()));
   wallet_card->set_exp_month(card.expiration_month());
   wallet_card->set_exp_year(card.expiration_year());
-  wallet_card->set_billing_address_id(card.billing_address_id());
   wallet_card->set_card_class(WalletCardClassFromCardType(card.card_type()));
   wallet_card->set_bank_name(card.bank_name());
 }
