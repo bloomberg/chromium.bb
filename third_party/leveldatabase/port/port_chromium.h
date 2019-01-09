@@ -20,11 +20,6 @@
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 
-// Linux's ThreadIdentifier() needs this.
-#if defined(OS_LINUX)
-#  include <linux/unistd.h>
-#endif
-
 namespace leveldb {
 namespace port {
 
