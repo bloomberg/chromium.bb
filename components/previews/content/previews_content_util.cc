@@ -4,7 +4,9 @@
 
 #include "components/previews/content/previews_content_util.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 
@@ -93,6 +95,18 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   return previews_state;
 }
 
+void LogCommittedPreview(previews::PreviewsUserData* previews_data,
+                         PreviewsType type) {
+  net::EffectiveConnectionType navigation_ect = previews_data->navigation_ect();
+  UMA_HISTOGRAM_ENUMERATION("Previews.Triggered.EffectiveConnectionType2",
+                            navigation_ect,
+                            net::EFFECTIVE_CONNECTION_TYPE_LAST);
+  base::UmaHistogramEnumeration(
+      base::StringPrintf("Previews.Triggered.EffectiveConnectionType2.%s",
+                         GetStringNameForType(type).c_str()),
+      navigation_ect, net::EFFECTIVE_CONNECTION_TYPE_LAST);
+}
+
 content::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
@@ -106,6 +120,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Check if an offline preview was actually served.
   if (previews_data && previews_data->offline_preview_used()) {
     DCHECK(previews_state & content::OFFLINE_PAGE_ON);
+    LogCommittedPreview(previews_data, PreviewsType::OFFLINE);
     return content::OFFLINE_PAGE_ON;
   }
   previews_state &= ~content::OFFLINE_PAGE_ON;
@@ -117,6 +132,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Client LoFi bit on so that it is applied to both HTTP and HTTPS images.
   if (previews_state &
       (content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON)) {
+    LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE);
     return previews_state & (content::SERVER_LITE_PAGE_ON |
                              content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
   }
@@ -133,8 +149,10 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 
   // Check if a LITE_PAGE_REDIRECT preview was actually served.
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
-    if (IsLitePageRedirectPreviewURL(url))
+    if (IsLitePageRedirectPreviewURL(url)) {
+      LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE_REDIRECT);
       return content::LITE_PAGE_REDIRECT_ON;
+    }
     previews_state &= ~content::LITE_PAGE_REDIRECT_ON;
   }
   DCHECK(!IsLitePageRedirectPreviewURL(url));
@@ -148,6 +166,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
         previews_decider->ShouldCommitPreview(
             previews_data, url,
             previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
+      LogCommittedPreview(previews_data, PreviewsType::RESOURCE_LOADING_HINTS);
       return content::RESOURCE_LOADING_HINTS_ON;
     }
     // Remove RESOURCE_LOADING_HINTS_ON from |previews_state| since we decided
@@ -161,11 +180,13 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     if (is_https && previews_decider &&
         previews_decider->ShouldCommitPreview(
             previews_data, url, previews::PreviewsType::NOSCRIPT)) {
+      LogCommittedPreview(previews_data, PreviewsType::NOSCRIPT);
       return content::NOSCRIPT_ON;
     }
     return content::PREVIEWS_OFF;
   }
   if (previews_state & content::CLIENT_LOFI_ON) {
+    LogCommittedPreview(previews_data, PreviewsType::LOFI);
     return content::CLIENT_LOFI_ON;
   }
 

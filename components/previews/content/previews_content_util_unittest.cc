@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/previews/content/previews_user_data.h"
@@ -316,6 +317,9 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews,ClientLoFi,NoScriptPreviews,ResourceLoadingHints",
       std::string());
   PreviewsUserData user_data(1);
+  user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::HistogramTester histogram_tester;
+
   // Server bits take precedence over NoScript:
   EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                 content::CLIENT_LOFI_ON,
@@ -324,6 +328,11 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                     content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.LitePage",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 1);
 
   content::PreviewsState lite_page_redirect_enabled =
       content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
@@ -337,12 +346,22 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       previews::DetermineCommittedClientPreviewsState(
           &user_data, GURL("https://litepages.googlezip.net/?u=google.com"),
           lite_page_redirect_enabled, enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.LitePageRedirect",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 2);
 
   // Verify LITE_PAGE_REDIRECT_ON not committed for non-lite-page-sever URL.
   EXPECT_NE(content::LITE_PAGE_REDIRECT_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 lite_page_redirect_enabled, enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 3);
 
   // NoScript has precedence over Client LoFi - kept for committed HTTPS:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -350,6 +369,14 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.NoScript",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 4);
+
+  // Try different navigation ECT value.
+  user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   // RESOURCE_LOADING_HINTS has precedence over Client LoFi and NoScript.
   EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
@@ -358,6 +385,11 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
                     content::RESOURCE_LOADING_HINTS_ON,
                 enabled_previews_decider()));
+  histogram_tester.ExpectBucketCount(
+      "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 5);
 
   // NoScript has precedence over Client LoFi - dropped for committed HTTP:
   EXPECT_EQ(content::PREVIEWS_OFF,
@@ -372,6 +404,11 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON, enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.LoFi",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 6);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
