@@ -50,10 +50,10 @@ bool IsFrameSecure(blink::WebFrame* frame) {
 
 // An WebServiceWorkerNetworkProvider for frame. This wraps
 // ServiceWorkerNetworkProvider implementation and is owned by blink.
-class WebServiceWorkerNetworkProviderForFrame
+class WebServiceWorkerNetworkProviderImplForFrame
     : public blink::WebServiceWorkerNetworkProvider {
  public:
-  explicit WebServiceWorkerNetworkProviderForFrame(
+  explicit WebServiceWorkerNetworkProviderImplForFrame(
       std::unique_ptr<ServiceWorkerNetworkProvider> provider)
       : provider_(std::move(provider)) {}
 
@@ -180,7 +180,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   // If we shouldn't create a real ServiceWorkerNetworkProvider, return one with
   // an invalid id.
   if (!should_create_provider) {
-    return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
+    return std::make_unique<WebServiceWorkerNetworkProviderImplForFrame>(
         base::WrapUnique(new ServiceWorkerNetworkProvider()));
   }
 
@@ -204,7 +204,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
       route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
       provider_id, is_parent_frame_secure, std::move(controller_info),
       std::move(fallback_loader_factory)));
-  return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
+  return std::make_unique<WebServiceWorkerNetworkProviderImplForFrame>(
       std::move(provider));
 }
 
@@ -247,7 +247,7 @@ ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
     DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return nullptr;
   }
-  return static_cast<WebServiceWorkerNetworkProviderForFrame*>(provider)
+  return static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(provider)
       ->provider();
 }
 
