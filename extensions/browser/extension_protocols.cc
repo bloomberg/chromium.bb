@@ -211,7 +211,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
             network_delegate,
             base::FilePath(),
             base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         verify_job_(std::move(verify_job)),
         seek_position_(0),
