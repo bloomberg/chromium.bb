@@ -52,6 +52,14 @@ typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
 
 namespace {
 
+// Wait at least 60 seconds after browser startup before we do any checks. If
+// you change this value, make sure to update comments where it is used.
+const int kStartupWaitSeconds = 60;
+
+// The minimum number of seconds there should be for the delay passed to
+// ScheduleNextCheck.
+const int kScheduleNextCheckMinGapSecs = 1;
+
 // For sanity checking on update frequency - enforced in release mode only.
 #if defined(NDEBUG)
 const int kMinUpdateFrequencySeconds = 30;
@@ -138,8 +146,7 @@ ExtensionUpdater::ExtensionUpdater(
       service_(service),
       downloader_factory_(downloader_factory),
       update_service_(nullptr),
-      do_scheduled_checks_(true),
-      frequency_(base::TimeDelta::FromSeconds(frequency_seconds)),
+      frequency_seconds_(frequency_seconds),
       will_check_soon_(false),
       extension_prefs_(extension_prefs),
       prefs_(prefs),
@@ -148,13 +155,13 @@ ExtensionUpdater::ExtensionUpdater(
       crx_install_is_running_(false),
       extension_cache_(cache),
       weak_ptr_factory_(this) {
-  DCHECK_LE(frequency_seconds, kMaxUpdateFrequencySeconds);
+  DCHECK_GE(frequency_seconds_, 5);
+  DCHECK_LE(frequency_seconds_, kMaxUpdateFrequencySeconds);
 #if defined(NDEBUG)
   // In Release mode we enforce that update checks don't happen too often.
-  frequency_seconds = std::max(frequency_seconds, kMinUpdateFrequencySeconds);
+  frequency_seconds_ = std::max(frequency_seconds_, kMinUpdateFrequencySeconds);
 #endif
-  frequency_seconds = std::min(frequency_seconds, kMaxUpdateFrequencySeconds);
-  frequency_ = base::TimeDelta::FromSeconds(frequency_seconds);
+  frequency_seconds_ = std::min(frequency_seconds_, kMaxUpdateFrequencySeconds);
 }
 
 ExtensionUpdater::~ExtensionUpdater() {
@@ -170,6 +177,38 @@ void ExtensionUpdater::EnsureDownloaderCreated() {
   }
 }
 
+// The overall goal here is to balance keeping clients up to date while
+// avoiding a thundering herd against update servers.
+base::TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
+  DCHECK(alive_);
+  // If someone's testing with a quick frequency, just allow it.
+  if (frequency_seconds_ < kStartupWaitSeconds)
+    return base::TimeDelta::FromSeconds(frequency_seconds_);
+
+  // If we've never scheduled a check before, start at a random time up to
+  // frequency_seconds_ away.
+  if (!prefs_->HasPrefPath(pref_names::kNextUpdateCheck))
+    return base::TimeDelta::FromSeconds(
+        RandInt(kStartupWaitSeconds, frequency_seconds_));
+
+  // Read the persisted next check time, and use that if it isn't in the past
+  // or too far in the future (this can happen with system clock changes).
+  base::Time saved_next = base::Time::FromInternalValue(
+      prefs_->GetInt64(pref_names::kNextUpdateCheck));
+  base::Time now = base::Time::Now();
+  base::Time earliest =
+      now + base::TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs);
+  base::Time latest = now + base::TimeDelta::FromSeconds(frequency_seconds_);
+  if (saved_next > earliest && saved_next < latest) {
+    return saved_next - now;
+  }
+
+  // In most cases we'll get here because the persisted next check time passed
+  // while we weren't running, so pick something soon.
+  return base::TimeDelta::FromSeconds(
+      RandInt(kStartupWaitSeconds, kStartupWaitSeconds * 5));
+}
+
 void ExtensionUpdater::Start() {
   DCHECK(!alive_);
   // If these are NULL, then that means we've been called after Stop()
@@ -180,11 +219,8 @@ void ExtensionUpdater::Start() {
   DCHECK(profile_);
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   alive_ = true;
-  // Check soon, and set up the first delayed check.
-  if (do_scheduled_checks_) {
-    CheckSoon();
-    ScheduleNextCheck();
-  }
+  // Make sure our prefs are registered, then schedule the first check.
+  ScheduleNextCheck(DetermineFirstCheckDelay());
 }
 
 void ExtensionUpdater::Stop() {
@@ -194,31 +230,55 @@ void ExtensionUpdater::Stop() {
   extension_prefs_ = NULL;
   prefs_ = NULL;
   profile_ = NULL;
+  timer_.Stop();
   will_check_soon_ = false;
   downloader_.reset();
   update_service_ = nullptr;
 }
 
-void ExtensionUpdater::ScheduleNextCheck() {
+void ExtensionUpdater::ScheduleNextCheck(const base::TimeDelta& target_delay) {
   DCHECK(alive_);
+  DCHECK(!timer_.IsRunning());
+  DCHECK(target_delay >=
+         base::TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs));
 
-  // Jitter the frequency by +/- 20%.
-  const double jitter_factor = RandDouble() * 0.4 + 0.8;
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
-      static_cast<int64_t>(frequency_.InMilliseconds() * jitter_factor));
+  // Add +/- 10% random jitter.
+  double delay_ms = target_delay.InMillisecondsF();
+  double jitter_factor = (RandDouble() * .2) - 0.1;
+  delay_ms += delay_ms * jitter_factor;
+  base::TimeDelta actual_delay =
+      base::TimeDelta::FromMilliseconds(static_cast<int64_t>(delay_ms));
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
-      base::BindOnce(&ExtensionUpdater::NextCheck,
-                     weak_ptr_factory_.GetWeakPtr()),
-      delay);
+  // Save the time of next check.
+  base::Time next = base::Time::Now() + actual_delay;
+  prefs_->SetInt64(pref_names::kNextUpdateCheck, next.ToInternalValue());
+
+  timer_.Start(FROM_HERE, actual_delay, this, &ExtensionUpdater::TimerFired);
 }
 
-void ExtensionUpdater::NextCheck() {
-  if (!alive_ || !do_scheduled_checks_)
-    return;
+void ExtensionUpdater::TimerFired() {
+  DCHECK(alive_);
   CheckNow(CheckParams());
-  ScheduleNextCheck();
+
+  // If the user has overridden the update frequency, don't bother reporting
+  // this.
+  if (frequency_seconds_ == kDefaultUpdateFrequencySeconds) {
+    base::Time last = base::Time::FromInternalValue(
+        prefs_->GetInt64(pref_names::kLastUpdateCheck));
+    if (last.ToInternalValue() != 0) {
+      // Use counts rather than time so we can use minutes rather than millis.
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.UpdateCheckGap", (base::Time::Now() - last).InMinutes(),
+          base::TimeDelta::FromSeconds(kStartupWaitSeconds).InMinutes(),
+          base::TimeDelta::FromDays(40).InMinutes(),
+          50);  // 50 buckets seems to be the default.
+    }
+  }
+
+  // Save the last check time, and schedule the next check.
+  int64_t now = base::Time::Now().ToInternalValue();
+  prefs_->SetInt64(pref_names::kLastUpdateCheck, now);
+  ScheduleNextCheck(base::TimeDelta::FromSeconds(frequency_seconds_));
 }
 
 void ExtensionUpdater::CheckSoon() {
@@ -226,7 +286,7 @@ void ExtensionUpdater::CheckSoon() {
   if (will_check_soon_)
     return;
   if (base::PostTaskWithTraits(
-          FROM_HERE, {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&ExtensionUpdater::DoCheckSoon,
                          weak_ptr_factory_.GetWeakPtr()))) {
     will_check_soon_ = true;
@@ -244,8 +304,8 @@ void ExtensionUpdater::SetExtensionCacheForTesting(
   extension_cache_ = extension_cache;
 }
 
-void ExtensionUpdater::StopScheduledUpdatesForTesting() {
-  do_scheduled_checks_ = false;
+void ExtensionUpdater::StopTimerForTesting() {
+  timer_.Stop();
 }
 
 void ExtensionUpdater::DoCheckSoon() {

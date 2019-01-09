@@ -2808,7 +2808,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
       extensions::ExtensionPrefs::Get(browser()->profile());
 
   // Explicitly stop the timer to avoid all scheduled extension auto-updates.
-  service->updater()->StopScheduledUpdatesForTesting();
+  service->updater()->StopTimerForTesting();
 
   // Install the extension.
   EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
@@ -2881,7 +2881,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
       extensions::ExtensionPrefs::Get(browser()->profile());
 
   // Explicitly stop the timer to avoid all scheduled extension auto-updates.
-  service->updater()->StopScheduledUpdatesForTesting();
+  service->updater()->StopTimerForTesting();
 
   // Set the policy to require an even higher minimum version this time.
   {
