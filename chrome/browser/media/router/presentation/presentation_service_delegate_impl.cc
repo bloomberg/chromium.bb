@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -298,6 +299,55 @@ void PresentationFrame::ListenForConnectionStateChange(
                     route_id, state_changed_cb));
 }
 
+StartPresentationContext::StartPresentationContext(
+    const content::PresentationRequest& presentation_request,
+    PresentationConnectionCallback success_cb,
+    PresentationConnectionErrorCallback error_cb)
+    : presentation_request_(presentation_request),
+      success_cb_(std::move(success_cb)),
+      error_cb_(std::move(error_cb)) {
+  DCHECK(success_cb_);
+  DCHECK(error_cb_);
+}
+
+StartPresentationContext::~StartPresentationContext() {
+  if (success_cb_ && error_cb_) {
+    std::move(error_cb_).Run(blink::mojom::PresentationError(
+        blink::mojom::PresentationErrorType::UNKNOWN, "Unknown error."));
+  }
+}
+
+void StartPresentationContext::InvokeSuccessCallback(
+    const std::string& presentation_id,
+    const GURL& presentation_url,
+    const MediaRoute& route,
+    mojom::RoutePresentationConnectionPtr connection) {
+  if (success_cb_ && error_cb_) {
+    std::move(success_cb_)
+        .Run(blink::mojom::PresentationInfo(presentation_url, presentation_id),
+             std::move(connection), route);
+  }
+}
+
+void StartPresentationContext::InvokeErrorCallback(
+    const blink::mojom::PresentationError& error) {
+  if (success_cb_ && error_cb_) {
+    std::move(error_cb_).Run(error);
+  }
+}
+
+void StartPresentationContext::HandleRouteResponse(
+    mojom::RoutePresentationConnectionPtr connection,
+    const RouteRequestResult& result) {
+  if (!result.route()) {
+    InvokeErrorCallback(blink::mojom::PresentationError(
+        blink::mojom::PresentationErrorType::UNKNOWN, result.error()));
+  } else {
+    InvokeSuccessCallback(result.presentation_id(), result.presentation_url(),
+                          *result.route(), std::move(connection));
+  }
+}
+
 PresentationServiceDelegateImpl*
 PresentationServiceDelegateImpl::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
@@ -471,9 +521,6 @@ void PresentationServiceDelegateImpl::StartPresentation(
         PresentationErrorType::UNKNOWN, "Invalid presentation arguments."));
     return;
   }
-
-  // TODO(crbug.com/670848): Improve handling of invalid URLs in
-  // PresentationService::start().
   if (std::find_if_not(presentation_urls.begin(), presentation_urls.end(),
                        IsValidPresentationUrl) != presentation_urls.end()) {
     std::move(error_cb).Run(
@@ -481,15 +528,20 @@ void PresentationServiceDelegateImpl::StartPresentation(
                           "Invalid presentation URL."));
     return;
   }
-
+  auto presentation_context = std::make_unique<StartPresentationContext>(
+      request,
+      base::BindOnce(
+          &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
+          GetWeakPtr(), render_frame_host_id, std::move(success_cb)),
+      std::move(error_cb));
+  if (start_presentation_cb_) {
+    start_presentation_cb_.Run(std::move(presentation_context));
+    return;
+  }
   MediaRouterDialogController* controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
   if (!controller->ShowMediaRouterDialogForPresentation(
-          request,
-          base::BindOnce(
-              &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
-              GetWeakPtr(), render_frame_host_id, std::move(success_cb)),
-          std::move(error_cb))) {
+          std::move(presentation_context))) {
     LOG(ERROR)
         << "StartPresentation failed: unable to create Media Router dialog.";
   }

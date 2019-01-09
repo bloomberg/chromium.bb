@@ -22,6 +22,10 @@
                 "include_events": []
             },
             {
+                "domain": "Cast",
+                "async": ["startTabMirroring"]
+            },
+            {
                 "domain": "WindowManager"
             }
         ]

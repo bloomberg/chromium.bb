@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
@@ -20,49 +21,6 @@ class WebContents;
 }  // namespace content
 
 namespace media_router {
-
-class MediaRoute;
-class RouteRequestResult;
-
-// Helper data structure to hold information for a dialog initiated via the
-// Presentation API. Contains information on the PresentationRequest, and
-// success / error callbacks. Depending on the route creation outcome,
-// only one of the callbacks will be invoked exactly once.
-class StartPresentationContext {
- public:
-  using PresentationConnectionCallback =
-      base::OnceCallback<void(const blink::mojom::PresentationInfo&,
-                              mojom::RoutePresentationConnectionPtr,
-                              const MediaRoute&)>;
-  using PresentationConnectionErrorCallback =
-      content::PresentationConnectionErrorCallback;
-
-  // Handle route creation/joining response by invoking the right callback.
-  void HandleRouteResponse(mojom::RoutePresentationConnectionPtr connection,
-                           const RouteRequestResult& result);
-
-  StartPresentationContext(
-      const content::PresentationRequest& presentation_request,
-      PresentationConnectionCallback success_cb,
-      PresentationConnectionErrorCallback error_cb);
-  ~StartPresentationContext();
-
-  const content::PresentationRequest& presentation_request() const {
-    return presentation_request_;
-  }
-
-  // Invokes |success_cb_| or |error_cb_| with the given arguments.
-  void InvokeSuccessCallback(const std::string& presentation_id,
-                             const GURL& presentation_url,
-                             const MediaRoute& route,
-                             mojom::RoutePresentationConnectionPtr connection);
-  void InvokeErrorCallback(const blink::mojom::PresentationError& error);
-
- private:
-  content::PresentationRequest presentation_request_;
-  PresentationConnectionCallback success_cb_;
-  PresentationConnectionErrorCallback error_cb_;
-};
 
 // An abstract base class for Media Router dialog controllers. Tied to a
 // WebContents known as the |initiator|, and is lazily created when a Media
@@ -86,9 +44,7 @@ class MediaRouterDialogController {
   // If the dialog already exists, or dialog cannot be created, then false is
   // returned, and |error_cb| will be invoked.
   bool ShowMediaRouterDialogForPresentation(
-      const content::PresentationRequest& presentation_request,
-      StartPresentationContext::PresentationConnectionCallback success_cb,
-      StartPresentationContext::PresentationConnectionErrorCallback error_cb);
+      std::unique_ptr<StartPresentationContext> context);
 
   // Shows the media router dialog modal to |initiator_|.
   // Creates the dialog if it did not exist prior to this call, returns true.
