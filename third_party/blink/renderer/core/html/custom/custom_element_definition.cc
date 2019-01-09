@@ -10,11 +10,8 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_adopted_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_attribute_changed_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_connected_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_disconnected_callback_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -262,24 +259,20 @@ void CustomElementDefinition::EnqueueUpgradeReaction(
 }
 
 void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {
-  CustomElement::Enqueue(
-      element,
-      MakeGarbageCollected<CustomElementConnectedCallbackReaction>(this));
+  CustomElement::Enqueue(element,
+                         &CustomElementReactionFactory::CreateConnected(*this));
 }
 
 void CustomElementDefinition::EnqueueDisconnectedCallback(Element* element) {
   CustomElement::Enqueue(
-      element,
-      MakeGarbageCollected<CustomElementDisconnectedCallbackReaction>(this));
+      element, &CustomElementReactionFactory::CreateDisconnected(*this));
 }
 
 void CustomElementDefinition::EnqueueAdoptedCallback(Element* element,
                                                      Document* old_document,
                                                      Document* new_document) {
-  CustomElementReaction* reaction =
-      MakeGarbageCollected<CustomElementAdoptedCallbackReaction>(
-          this, old_document, new_document);
-  CustomElement::Enqueue(element, reaction);
+  CustomElement::Enqueue(element, &CustomElementReactionFactory::CreateAdopted(
+                                      *this, *old_document, *new_document));
 }
 
 void CustomElementDefinition::EnqueueAttributeChangedCallback(
@@ -287,10 +280,9 @@ void CustomElementDefinition::EnqueueAttributeChangedCallback(
     const QualifiedName& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
-  CustomElement::Enqueue(
-      element,
-      MakeGarbageCollected<CustomElementAttributeChangedCallbackReaction>(
-          this, name, old_value, new_value));
+  CustomElement::Enqueue(element,
+                         &CustomElementReactionFactory::CreateAttributeChanged(
+                             *this, name, old_value, new_value));
 }
 
 void CustomElementDefinition::EnqueueAttributeChangedCallbackForAllAttributes(
