@@ -5,9 +5,14 @@
 """Base classes for a test which uploads results (reference images,
 error images) to cloud storage."""
 
+import json
 import logging
 import os
 import re
+import subprocess
+from subprocess import CalledProcessError
+
+import sys
 import tempfile
 
 from py_utils import cloud_storage
@@ -23,6 +28,11 @@ default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 
 error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 
+goldctl_bin = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..', '..', 'tools',
+    'skia_goldctl', 'goldctl'))
+if sys.platform == 'win32':
+  goldctl_bin += '.exe'
 
 class _ReferenceImageParameters(object):
   def __init__(self):
@@ -50,6 +60,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   # SetParsedCommandLineOptions. If they are not, an error will be
   # raised when running the tests.
   _parsed_command_line_options = None
+
+  _skia_gold_temp_dir = None
 
   @classmethod
   def SetParsedCommandLineOptions(cls, options):
@@ -108,6 +120,18 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='(Mainly on Mac) don\'t restore the system\'s original color '
       'profile after the test completes; leave the system using the sRGB color '
       'profile. See http://crbug.com/784456.')
+    parser.add_option(
+      '--review-patch-issue',
+      help='For Skia Gold integration. Gerrit issue ID.',
+      default='')
+    parser.add_option(
+      '--review-patch-set',
+      help='For Skia Gold integration. Gerrit patch set number.',
+      default='')
+    parser.add_option(
+      '--buildbucket-build-id',
+      help='For Skia Gold integration. Buildbucket build ID.',
+      default='')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 device_pixel_ratio, test_machine_name):
@@ -217,6 +241,12 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def ResetGpuInfo(cls):
     cls._reference_image_parameters = None
+
+  @classmethod
+  def GetReferenceImageParameters(cls, tab, page):
+    if not cls._reference_image_parameters:
+      cls._ComputeGpuInfo(tab, page)
+    return cls._reference_image_parameters
 
   @classmethod
   def _ComputeGpuInfo(cls, tab, page):
@@ -371,6 +401,88 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       image_name = self._UrlToImageName(url)
       if self.GetParsedCommandLineOptions().test_machine_name:
         self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)
+      else:
+        self._WriteErrorImages(
+          self.GetParsedCommandLineOptions().generated_dir, image_name,
+          screenshot, None)
+      raise
+
+  def ToHex(self, num):
+    return hex(int(num))
+
+  def _UploadTestResultToSkiaGold(self, image_name, screenshot,
+                                  tab, page,
+                                  is_check_mode=True, build_id_args=None):
+    if build_id_args is None:
+      raise Exception('Requires build args to be specified, including --commit')
+    if self._skia_gold_temp_dir is None:
+      # TODO(kbr): this depends on Swarming to clean up the temporary
+      # directory to avoid filling up the local disk.
+      self._skia_gold_temp_dir = tempfile.mkdtemp()
+    # Write screenshot to PNG file on local disk.
+    png_temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
+    image_util.WritePngFile(screenshot, png_temp_file)
+    ref_img_params = self.GetReferenceImageParameters(tab, page)
+    # All values need to be strings, otherwise goldctl fails.
+    gpu_keys = {
+      'vendor_id': self.ToHex(ref_img_params.vendor_id),
+      'device_id': self.ToHex(ref_img_params.device_id),
+      'vendor_string': str(ref_img_params.vendor_string),
+      'device_string': str(ref_img_params.device_string),
+      'msaa': str(ref_img_params.msaa),
+      'model_name': str(ref_img_params.model_name),
+    }
+    mode = ['--passfail'] if is_check_mode else []
+    json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
+    failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+    with open(json_temp_file, 'w+') as f:
+      json.dump(gpu_keys, f)
+    try:
+      subprocess.check_output([goldctl_bin, 'imgtest', 'add'] + mode +
+                            ['--test-name', image_name,
+                             '--instance', 'chrome-gpu',
+                             '--keys-file', json_temp_file,
+                             '--png-file', png_temp_file,
+                             '--work-dir', self._skia_gold_temp_dir,
+                             '--failure-file', failure_file] +
+                            build_id_args, stderr=subprocess.STDOUT)
+    except CalledProcessError as e:
+      contents = ''
+      try:
+        with open(failure_file, 'r') as ff:
+          contents = ff.read()
+      except Exception:
+        logging.error('Failed to read contents of goldctl failure file')
+      logging.error('goldctl failed with output: %s', e.output)
+      raise Exception('goldctl command failed: ' + contents)
+
+  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page,
+                                             screenshot, expectations,
+                                             device_pixel_ratio,
+                                             build_id_args):
+    """Samples the given screenshot and verifies pixel color values.
+       The sample locations and expected color values are given in expectations.
+       In case any of the samples do not match the expected color, it raises
+       a Failure and dumps the screenshot locally or cloud storage depending on
+       what machine the test is being run."""
+    url = page.name
+    try:
+      self._CompareScreenshotSamples(
+        tab, screenshot, expectations,
+        device_pixel_ratio,
+        self.GetParsedCommandLineOptions().test_machine_name)
+    except Exception:
+      # An exception raised from self.fail() indicates a failure.
+      image_name = self._UrlToImageName(url)
+      if self.GetParsedCommandLineOptions().test_machine_name:
+        # TODO(https://crbug.com/850107): Generate a link to Skia Gold on
+        # failure.
+        self._UploadTestResultToSkiaGold(
+          image_name, screenshot,
+          tab, page,
+          # Always upload because we already did the check locally.
+          is_check_mode=False,
+          build_id_args=build_id_args)
       else:
         self._WriteErrorImages(
           self.GetParsedCommandLineOptions().generated_dir, image_name,

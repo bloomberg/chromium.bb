@@ -1223,6 +1223,16 @@ deps = {
   'src/tools/page_cycler/acid3':
     Var('chromium_git') + '/chromium/deps/acid3.git' + '@' + '6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
 
+  'src/tools/skia_goldctl': {
+      'packages': [
+        {
+          'package': 'skia/tools/goldctl/${{platform}}',
+          'version': 'git_revision:21cbe1f4cc524c5d54d563951bc4c0687d57a8e7',
+        },
+      ],
+      'dep_type': 'cipd',
+  },
+
   'src/tools/swarming_client':
     Var('chromium_git') + '/infra/luci/client-py.git' + '@' +  Var('swarming_revision'),
 

@@ -377,6 +377,16 @@ group("telemetry_gpu_integration_test") {
     "//media/test/data/four-colors-rot-180.mp4",
     "//media/test/data/four-colors-rot-270.mp4",
   ]
+
+  # For pixel_test and maps_pixel_test. Because this links to a CIPD
+  # dependency, which is a symlink on Unix platforms, refer to the
+  # actual executable rather than the whole directory; copying the
+  # whole directory doesn't work, at least with "mb.py zip".
+  if (is_win) {
+    data += [ "//tools/skia_goldctl/goldctl.exe" ]
+  } else {
+    data += [ "//tools/skia_goldctl/goldctl" ]
+  }
 }
 
 group("telemetry_gpu_integration_test_scripts_only") {
