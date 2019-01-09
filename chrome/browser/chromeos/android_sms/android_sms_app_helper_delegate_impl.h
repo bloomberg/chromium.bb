@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
+#define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
 
 #include <string>
 
@@ -24,9 +24,10 @@ class PendingAppManager;
 
 namespace chromeos {
 
-namespace multidevice_setup {
+namespace android_sms {
 
-class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
+class AndroidSmsAppHelperDelegateImpl
+    : public multidevice_setup::AndroidSmsAppHelperDelegate {
  public:
   explicit AndroidSmsAppHelperDelegateImpl(Profile* profile);
   ~AndroidSmsAppHelperDelegateImpl() override;
@@ -84,8 +85,8 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImpl);
 };
 
-}  // namespace multidevice_setup
+}  // namespace android_sms
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_

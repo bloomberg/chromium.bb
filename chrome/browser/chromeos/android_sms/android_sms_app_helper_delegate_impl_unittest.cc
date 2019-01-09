@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
 
 #include <memory>
 #include <vector>
@@ -84,7 +84,7 @@ class FakeCookieManager : public network::mojom::CookieManager {
 
 namespace chromeos {
 
-namespace multidevice_setup {
+namespace android_sms {
 
 class AndroidSmsAppHelperDelegateImplTest : public testing::Test {
  protected:
@@ -234,7 +234,8 @@ class AndroidSmsAppHelperDelegateImplTest : public testing::Test {
   std::unique_ptr<FakeCookieManager> fake_cookie_manager_;
   std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
   TestPwaFetcherDelegate* test_pwa_fetcher_delegate_;
-  std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
+  std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
+      android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImplTest);
 };
@@ -277,6 +278,6 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallAndLaunchMessagesApp) {
   // app here.
 }
 
-}  // namespace multidevice_setup
+}  // namespace android_sms
 
 }  // namespace chromeos

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
 
 #include <utility>
 
@@ -50,7 +50,7 @@ void OnAppUninstallResult(const GURL& app_url, bool succeeded) {
 
 namespace chromeos {
 
-namespace multidevice_setup {
+namespace android_sms {
 
 AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::PwaFetcherDelegate() =
     default;
@@ -223,6 +223,6 @@ void AndroidSmsAppHelperDelegateImpl::SetPwaFetcherDelegateForTesting(
   pwa_fetcher_delegate_ = std::move(test_pwa_fetcher_delegate);
 }
 
-}  // namespace multidevice_setup
+}  // namespace android_sms
 
 }  // namespace chromeos

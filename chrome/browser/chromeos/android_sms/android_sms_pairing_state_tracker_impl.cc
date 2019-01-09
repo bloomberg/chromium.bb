@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_pairing_state_tracker_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 
 #include <utility>
 
@@ -22,7 +22,7 @@ const char kPairedCookieValue[] = "true";
 
 namespace chromeos {
 
-namespace multidevice_setup {
+namespace android_sms {
 
 AndroidSmsPairingStateTrackerImpl::AndroidSmsPairingStateTrackerImpl(
     content::BrowserContext* browser_context)
@@ -92,6 +92,6 @@ AndroidSmsPairingStateTrackerImpl::GetCookieManager() {
   return partition->GetCookieManagerForBrowserProcess();
 }
 
-}  // namespace multidevice_setup
+}  // namespace android_sms
 
 }  // namespace chromeos

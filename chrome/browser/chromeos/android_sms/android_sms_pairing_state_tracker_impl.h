@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
+#define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
@@ -20,11 +20,11 @@ class CanonicalCookie;
 
 namespace chromeos {
 
-namespace multidevice_setup {
+namespace android_sms {
 
 // Concrete AndroidSmsPairingStateTracker implementation.
 class AndroidSmsPairingStateTrackerImpl
-    : public AndroidSmsPairingStateTracker,
+    : public multidevice_setup::AndroidSmsPairingStateTracker,
       public network::mojom::CookieChangeListener {
  public:
   explicit AndroidSmsPairingStateTrackerImpl(
@@ -51,8 +51,8 @@ class AndroidSmsPairingStateTrackerImpl
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsPairingStateTrackerImpl);
 };
 
-}  // namespace multidevice_setup
+}  // namespace android_sms
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_PAIRING_STATE_TRACKER_IMPL_H_
