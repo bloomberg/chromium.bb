@@ -30,4 +30,7 @@ interface ShellTestApi {
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
   AddRemoveDisplay();
+
+  // Set the minimum velocity to cause fling gesture.
+  SetMinFlingVelocity(float velocity);
 };

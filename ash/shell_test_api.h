@@ -62,6 +62,7 @@ class ShellTestApi : public mojom::ShellTestApi {
   void ToggleFullscreen(ToggleFullscreenCallback cb) override;
   void ToggleOverviewMode(ToggleOverviewModeCallback cb) override;
   void AddRemoveDisplay() override;
+  void SetMinFlingVelocity(float velocity) override;
 
  private:
   Shell* shell_;  // not owned

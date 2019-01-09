@@ -414,8 +414,7 @@ class DetachToBrowserTabDragControllerTest
     root_ = browser()->window()->GetNativeWindow()->GetRootWindow();
     // Disable flings which might otherwise inadvertently be generated from
     // tests' touch events.
-    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
-        std::numeric_limits<float>::max());
+    SetMinFlingVelocity(std::numeric_limits<float>::max());
     aura::test::WaitForAllChangesToComplete();
 #endif
 #if defined(OS_MACOSX)
@@ -430,6 +429,18 @@ class DetachToBrowserTabDragControllerTest
     return strstr(GetParam(), "mouse") ?
         INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
   }
+
+#if defined(OS_CHROMEOS)
+  void SetMinFlingVelocity(float velocity) {
+    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
+    ash::mojom::ShellTestApiPtr shell_test_api;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+    shell_test_api->SetMinFlingVelocity(velocity);
+    shell_test_api.FlushForTesting();
+  }
+#endif
 
 #if defined(OS_CHROMEOS)
   void SendTouchEventsSync(int action, int id, const gfx::Point& location) {
@@ -2919,7 +2930,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // Reduce the minimum fling velocity for this specific test case to cause the
   // fling-down gesture in the middle of tab-dragging. This should end up with
   // minimizing the window. See https://crbug.com/902897 for the details.
-  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
+  SetMinFlingVelocity(1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =

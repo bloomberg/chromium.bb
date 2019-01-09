@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ash {
 
@@ -119,6 +120,10 @@ void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
 
 void ShellTestApi::AddRemoveDisplay() {
   shell_->display_manager()->AddRemoveDisplay();
+}
+
+void ShellTestApi::SetMinFlingVelocity(float velocity) {
+  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
 }
 
 }  // namespace ash
