@@ -20,6 +20,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -564,6 +565,51 @@ INSTANTIATE_TEST_CASE_P(Real,
 INSTANTIATE_TEST_CASE_P(Mock,
                         RunLoopTest,
                         testing::Values(RunLoopTestType::kTestDelegate));
+
+TEST(ScopedRunTimeoutForTestTest, TimesOut) {
+  test::ScopedTaskEnvironment task_environment;
+  RunLoop run_loop;
+
+  static constexpr auto kArbitraryTimeout =
+      base::TimeDelta::FromMilliseconds(10);
+  RunLoop::ScopedRunTimeoutForTest run_timeout(kArbitraryTimeout);
+
+  // Since the delayed task will be posted only after the message pump starts
+  // running, the ScopedRunTimeoutForTest will already have started to elapse,
+  // so if Run() exits at the correct time then our delayed task will not run.
+  SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&SequencedTaskRunner::PostDelayedTask),
+                     SequencedTaskRunnerHandle::Get(), FROM_HERE,
+                     base::BindOnce(&ShouldNotRunTask), kArbitraryTimeout));
+
+  // This task should get to run before Run() times-out.
+  int counter = 0;
+  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&ShouldRunTask, &counter), kArbitraryTimeout);
+
+  run_loop.Run();
+  EXPECT_EQ(counter, 1);
+}
+
+TEST(ScopedRunTimeoutForTestTest, RunTasksUntilTimeout) {
+  test::ScopedTaskEnvironment task_environment;
+  RunLoop run_loop;
+
+  static constexpr auto kArbitraryTimeout =
+      base::TimeDelta::FromMilliseconds(10);
+  RunLoop::ScopedRunTimeoutForTest run_timeout(kArbitraryTimeout);
+
+  // Posting a task with the same delay as our timeout, immediately before
+  // calling Run(), means it should get to run.
+  int counter = 0;
+  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&QuitWhenIdleTask, &run_loop, &counter),
+      kArbitraryTimeout);
+
+  run_loop.Run();
+  EXPECT_EQ(counter, 1);
+}
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {
   TestBoundDelegate unbound_test_delegate_;

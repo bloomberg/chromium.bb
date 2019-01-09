@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -116,8 +117,8 @@ class BASE_EXPORT RunLoop {
   //   RunLoop run_loop;
   //   PostTask(run_loop.QuitClosure());
   //   run_loop.Run();
-  base::Closure QuitClosure();
-  base::Closure QuitWhenIdleClosure();
+  Closure QuitClosure();
+  Closure QuitWhenIdleClosure();
 
   // Returns true if there is an active RunLoop on this thread.
   // Safe to call before RegisterDelegateForCurrentThread().
@@ -191,7 +192,7 @@ class BASE_EXPORT RunLoop {
     // A vector-based stack is more memory efficient than the default
     // deque-based stack as the active RunLoop stack isn't expected to ever
     // have more than a few entries.
-    using RunLoopStack = base::stack<RunLoop*, std::vector<RunLoop*>>;
+    using RunLoopStack = stack<RunLoop*, std::vector<RunLoop*>>;
 
     RunLoopStack active_run_loops_;
     ObserverList<RunLoop::NestingObserver>::Unchecked nesting_observers_;
@@ -225,6 +226,55 @@ class BASE_EXPORT RunLoop {
   static void QuitCurrentWhenIdleDeprecated();
   static Closure QuitCurrentWhenIdleClosureDeprecated();
 
+  // Configures all RunLoop::Run() calls on the current thread to run the
+  // supplied |on_timeout| callback if they run for longer than |timeout|.
+  //
+  // Specifying Run() timeouts per-thread avoids the need to cope with Run()s
+  // executing concurrently with ScopedRunTimeoutForTest initialization or
+  // teardown, and allows "default" timeouts to be specified by suites, rather
+  // than explicitly configuring them for every RunLoop, in each test.
+  //
+  // Tests can temporarily override any currently-active Run() timeout, e.g. to
+  // allow a step to Run() for longer than the suite's default timeout, by
+  // creating a new ScopedRunTimeoutForTest on their stack, e.g:
+  //
+  //   ScopedRunTimeoutForTest default_timeout(kDefaultRunTimeout);
+  //   ... do other test stuff ...
+  //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
+  //   ...
+  //   {
+  //     ScopedRunTimeoutForTest test_specific_timeout(kTestSpecificTimeout);
+  //     RunLoop().Run(); // Run for up to kTestSpecificTimeout.
+  //   }
+  //   ...
+  //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
+  //
+  // The currently-active timeout can be temporarily disabled by passing a zero
+  // timeout e.g:
+  //   ScopedRunTimeoutForTest disable_timeout(TimeDelta());
+  //
+  // ScopedTaskEnvironment applies a default Run() timeout after which a
+  // LOG(FATAL) is performed, to dump a crash stack for diagnosis.
+  class BASE_EXPORT ScopedRunTimeoutForTest {
+   public:
+    explicit ScopedRunTimeoutForTest(TimeDelta timeout);
+    ScopedRunTimeoutForTest(TimeDelta timeout, RepeatingClosure on_timeout);
+    ~ScopedRunTimeoutForTest();
+
+    // Returns the active ScopedRunTimeoutForTest on the calling thread, if any,
+    // or null otherwise.
+    static const RunLoop::ScopedRunTimeoutForTest* Current();
+
+    TimeDelta timeout() const { return timeout_; }
+    const RepeatingClosure& on_timeout() const { return on_timeout_; }
+
+   private:
+    const TimeDelta timeout_;
+    const RepeatingClosure on_timeout_;
+    ScopedRunTimeoutForTest* const nested_timeout_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedRunTimeoutForTest);
+  };
+
   // Run() will DCHECK if called while there's a ScopedDisallowRunningForTesting
   // in scope on its thread. This is useful to add safety to some test
   // constructs which allow multiple task runners to share the main thread in
@@ -253,13 +303,13 @@ class BASE_EXPORT RunLoop {
 #if defined(OS_ANDROID)
   // Android doesn't support the blocking RunLoop::Run, so it calls
   // BeforeRun and AfterRun directly.
-  friend class base::MessagePumpForUI;
+  friend class MessagePumpForUI;
 #endif
 
 #if defined(OS_IOS)
   // iOS doesn't support the blocking RunLoop::Run, so it calls
   // BeforeRun directly.
-  friend class base::MessagePumpUIApplication;
+  friend class MessagePumpUIApplication;
 #endif
 
   // Return false to abort the Run.
@@ -301,7 +351,7 @@ class BASE_EXPORT RunLoop {
   const scoped_refptr<SingleThreadTaskRunner> origin_task_runner_;
 
   // WeakPtrFactory for QuitClosure safety.
-  base::WeakPtrFactory<RunLoop> weak_factory_;
+  WeakPtrFactory<RunLoop> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };

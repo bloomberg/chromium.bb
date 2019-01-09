@@ -18,6 +18,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,6 +27,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -312,7 +314,13 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                                          task_queue_->task_runner())
                                    : nullptr),
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
-      task_tracker_(new TestTaskTracker()) {
+      task_tracker_(new TestTaskTracker()),
+      // TODO(https://crbug.com/918724): Enable Run() timeouts even for
+      // instances created with *MOCK_TIME, and determine whether the timeout
+      // can be reduced from action_max_timeout() to action_timeout().
+      run_loop_timeout_(
+          mock_time_domain_ ? TimeDelta() : TestTimeouts::action_max_timeout(),
+          BindRepeating([]() { LOG(FATAL) << "Run() timed out."; })) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
