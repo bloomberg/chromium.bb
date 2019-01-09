@@ -491,6 +491,7 @@
   'dawn_end2end_tests': {
     'remove_from': [
       # chromium.gpu.fyi
+      'Linux FYI Experimental Release (NVIDIA)', # https://crbug.com/918942
       'Linux FYI Release (AMD R7 240)', # https://crbug.com/915430
     ],
   },
