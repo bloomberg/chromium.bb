@@ -234,10 +234,8 @@ struct Cronet_RequestFinishedInfoListener {
   }
   Cronet_ClientContext client_context() const { return client_context_; }
 
-  virtual Cronet_RESULT InitWithParams(Cronet_ExecutorPtr executor) = 0;
   virtual void OnRequestFinished(
       Cronet_RequestFinishedInfoPtr request_info) = 0;
-  virtual Cronet_ExecutorPtr GetExecutor() = 0;
 
  private:
   Cronet_ClientContext client_context_ = nullptr;
