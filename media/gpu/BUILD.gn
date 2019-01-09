@@ -251,7 +251,6 @@ component("gpu") {
 
   if (is_win) {
     sources += [
-      "windows/d3d11_create_device_cb.h",
       "windows/d3d11_h264_accelerator.cc",
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
@@ -622,8 +621,6 @@ source_set("unit_tests") {
     sources += [
       "windows/d3d11_cdm_proxy_unittest.cc",
       "windows/d3d11_decryptor_unittest.cc",
-      "windows/d3d11_mocks.cc",
-      "windows/d3d11_mocks.h",
       "windows/d3d11_video_decoder_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]

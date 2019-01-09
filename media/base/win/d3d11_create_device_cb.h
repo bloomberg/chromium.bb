@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_WINDOWS_D3D11_CREATE_DEVICE_CB_H_
-#define MEDIA_GPU_WINDOWS_D3D11_CREATE_DEVICE_CB_H_
+#ifndef MEDIA_BASE_WIN_D3D11_CREATE_DEVICE_CB_H_
+#define MEDIA_BASE_WIN_D3D11_CREATE_DEVICE_CB_H_
 
 #include <d3d11_1.h>
 #include <wrl/client.h>
@@ -30,4 +30,4 @@ using D3D11CreateDeviceCB =
                                     ID3D11DeviceContext**)>;
 }  // namespace media
 
-#endif  // MEDIA_GPU_WINDOWS_D3D11_CREATE_DEVICE_CB_H_
+#endif  // MEDIA_BASE_WIN_D3D11_CREATE_DEVICE_CB_H_

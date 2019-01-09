@@ -15,8 +15,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/callback_registry.h"
+#include "media/base/win/d3d11_mocks.h"
 #include "media/cdm/cdm_proxy_context.h"
-#include "media/gpu/windows/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Microsoft::WRL::ComPtr;

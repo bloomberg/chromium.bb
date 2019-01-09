@@ -21,7 +21,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
-#include "media/gpu/windows/d3d11_mocks.h"
+#include "media/base/win/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
