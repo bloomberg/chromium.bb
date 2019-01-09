@@ -10,7 +10,6 @@
 #include "ui/gfx/buffer_types.h"
 
 namespace media {
-namespace gpu {
 
 // Create platform dependent media::VideoFrame. |buffer_usage| is passed to
 // CreateNativePixmap(). See //media/base/video_frame.h for other parameters.
@@ -22,7 +21,6 @@ MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     gfx::BufferUsage buffer_usage,
     base::TimeDelta timestamp);
 
-}  // namespace gpu
 }  // namespace media
 
 #endif  // MEDIA_GPU_PLATFORM_VIDEO_FRAME_H_
