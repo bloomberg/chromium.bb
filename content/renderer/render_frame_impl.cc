@@ -6541,14 +6541,15 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
   if (render_thread) {
     loader_factories_->Update(render_thread->blink_platform_impl()
                                   ->CreateDefaultURLLoaderFactoryBundle()
-                                  ->PassInterface(),
-                              base::nullopt);
+                                  ->PassInterface());
   }
 
   if (info) {
     loader_factories_->Update(
-        std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)),
-        std::move(subresource_overrides));
+        std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)));
+  }
+  if (subresource_overrides) {
+    loader_factories_->UpdateSubresourceOverrides(&*subresource_overrides);
   }
   if (prefetch_loader_factory) {
     loader_factories_->SetPrefetchLoaderFactory(

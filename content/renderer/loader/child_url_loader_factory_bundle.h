@@ -106,9 +106,9 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
 
-  void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
-              base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-                  subresource_overrides);
+  void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info);
+  void UpdateSubresourceOverrides(
+      std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
   void SetPrefetchLoaderFactory(
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
 

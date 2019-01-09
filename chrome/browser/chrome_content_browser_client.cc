@@ -307,6 +307,7 @@
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
@@ -4514,7 +4515,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (network_service_enabled) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     result.push_back(
         std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
             resource_context, request.resource_type, frame_tree_node_id));
