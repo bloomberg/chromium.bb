@@ -8,13 +8,13 @@ JavaScriptConsoleMessage::JavaScriptConsoleMessage() {}
 
 JavaScriptConsoleMessage::JavaScriptConsoleMessage(
     const JavaScriptConsoleMessage& other)
-    : origin(other.origin),
+    : url(other.url),
       level(other.level),
       message(base::Value::ToUniquePtrValue(other.message->Clone())) {}
 
 JavaScriptConsoleMessage& JavaScriptConsoleMessage::operator=(
     JavaScriptConsoleMessage other) {
-  origin = other.origin;
+  url = other.url;
   level = other.level;
   message = std::move(other.message);
   return *this;
