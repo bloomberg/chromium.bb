@@ -41490,6 +41490,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="SetRemoteAnswerResolved"/>
 </enum>
 
+<enum name="PeerConnectionOfferExtmapAllowMixed">
+  <int value="0" label="Default"/>
+  <int value="1" label="Enabled"/>
+  <int value="2" label="Disabled"/>
+</enum>
+
 <enum name="PeerConnectionRtcpMux">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled"/>

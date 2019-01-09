@@ -76,6 +76,13 @@ const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",
 const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Determines if the SDP attrbute extmap-allow-mixed should be offered by
+// default or not. The default value can be overridden by passing
+// {offerExtmapAllowMixed:true} as an argument to the RTCPeerConnection
+// constructor.
+const base::Feature kRTCOfferExtmapAllowMixed{
+    "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
 // clicked by the user will be extracted and recorded.

@@ -258,6 +258,24 @@ SdpSemanticRequested GetSdpSemanticRequested(
   return kSdpSemanticRequestedDefault;
 }
 
+enum class OfferExtmapAllowMixedSetting {
+  kDefault,
+  kEnabled,
+  kDisabled,
+  kMaxValue = kDisabled
+};
+
+OfferExtmapAllowMixedSetting GetOfferExtmapAllowMixedSetting(
+    const blink::RTCConfiguration* configuration) {
+  if (!configuration->hasOfferExtmapAllowMixed()) {
+    return OfferExtmapAllowMixedSetting::kDefault;
+  }
+
+  return configuration->offerExtmapAllowMixed()
+             ? OfferExtmapAllowMixedSetting::kEnabled
+             : OfferExtmapAllowMixedSetting::kDisabled;
+}
+
 // Helper class for RTCPeerConnection::generateCertificate.
 class WebRTCCertificateObserver : public WebRTCCertificateCallback {
  public:
@@ -344,6 +362,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       // --enable-blink-features=RTCUnifiedPlanByDefault.
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
+  }
+
+  if (configuration->hasOfferExtmapAllowMixed()) {
+    web_configuration.offer_extmap_allow_mixed =
+        configuration->offerExtmapAllowMixed();
+  } else {
+    web_configuration.offer_extmap_allow_mixed =
+        base::FeatureList::IsEnabled(features::kRTCOfferExtmapAllowMixed);
   }
 
   if (configuration->hasIceServers()) {
@@ -675,6 +701,9 @@ RTCPeerConnection* RTCPeerConnection::Create(
   UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.SdpSemanticRequested",
                             GetSdpSemanticRequested(rtc_configuration),
                             kSdpSemanticRequestedMax);
+
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.OfferExtmapAllowMixed",
+                            GetOfferExtmapAllowMixedSetting(rtc_configuration));
 
   return peer_connection;
 }
