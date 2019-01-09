@@ -51,6 +51,15 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   // multiplier constant, this method returns that constant (in DIPs). If mouse
   // wheels can specify an arbitrary delta this returns 0.
   virtual int GetMouseWheelMinimumGranularity() const = 0;
+
+  // This method will cause the system to flush and process all input before
+  // resolving the given callback. This is used to ensure that all effects of a
+  // gesture have been fully propagated through the system before performing
+  // further actions.
+  virtual void WaitForTargetAck(
+      SyntheticGestureParams::GestureType type,
+      SyntheticGestureParams::GestureSourceType source,
+      base::OnceClosure callback) const = 0;
 };
 
 }  // namespace content

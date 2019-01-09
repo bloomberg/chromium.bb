@@ -101,6 +101,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const std::vector<gfx::Rect>& bounds) override;
   void SetMouseCapture(bool capture) override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
+  void WaitForInputProcessed(base::OnceClosure callback) override;
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::Binding<mojom::WidgetInputHandlerHost>&

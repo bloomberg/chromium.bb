@@ -260,6 +260,13 @@ interface WidgetInputHandler {
   // after the event is processed.
   DispatchNonBlockingEvent(Event event);
 
+  // Forces input to be flushed and resolves the callback only once the input
+  // has been fully processed, meaning its effects are visible to the full
+  // system. In practice, this will force a redraw and wait until the new
+  // CompositorFrame (containing all changes caused by prior input) has been
+  // displayed.
+  WaitForInputProcessed() => ();
+
   // Attach the synchronous compositor interface. This method only
   // should be called for Android WebView.
   AttachSynchronousCompositor(
