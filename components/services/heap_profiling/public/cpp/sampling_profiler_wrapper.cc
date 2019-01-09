@@ -43,6 +43,10 @@ void SamplingProfilerWrapper::StartProfiling(size_t sampling_rate) {
   sampler->Start();
 }
 
+void SamplingProfilerWrapper::StopProfiling() {
+  base::PoissonAllocationSampler::Get()->Stop();
+}
+
 void SamplingProfilerWrapper::SampleAdded(
     void* address,
     size_t size,

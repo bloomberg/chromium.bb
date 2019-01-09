@@ -55,7 +55,8 @@ Client::~Client() {
   if (!started_profiling_)
     return;
 
-  StopAllocatorShimDangerous();
+  sampling_profiler_->StopProfiling();
+  FlushBuffersAndClosePipe();
 
   base::trace_event::MallocDumpProvider::GetInstance()->EnableMetrics();
 
@@ -130,14 +131,7 @@ void Client::FlushMemlogPipe(uint32_t barrier_id) {
 void Client::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
   uint32_t sampling_rate = params->sampling_rate;
   InitAllocationRecorder(sender_pipe_.get(), std::move(params));
-  bool sampling_v2_enabled = base::GetFieldTrialParamByFeatureAsBool(
-      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingV2,
-      /* default_value */ false);
-  if (sampling_v2_enabled) {
-    sampling_profiler_->StartProfiling(sampling_rate);
-  } else {
-    InitAllocatorShim();
-  }
+  sampling_profiler_->StartProfiling(sampling_rate);
   AllocatorHooksHaveBeenInitialized();
 }
 
