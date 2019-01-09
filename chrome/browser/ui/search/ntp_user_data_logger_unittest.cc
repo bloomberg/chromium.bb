@@ -76,23 +76,7 @@ class TestNTPUserDataLogger : public NTPUserDataLogger {
   bool is_custom_background_configured_ = false;
 };
 
-class NTPUserDataLoggerTest : public testing::Test {
- public:
-  NTPUserDataLoggerTest() = default;
-  ~NTPUserDataLoggerTest() override = default;
-
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kNtpBackgrounds},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NTPUserDataLoggerTest);
-};
+using NTPUserDataLoggerTest = testing::Test;
 
 MATCHER_P3(IsBucketBetween, lower_bound, upper_bound, count, "") {
   return arg.min >= lower_bound && arg.min <= upper_bound && arg.count == count;

@@ -61,23 +61,15 @@ constexpr char kScopePhotos[] = "https://www.googleapis.com/auth/photos";
 
 NtpBackgroundService::NtpBackgroundService(
     identity::IdentityManager* const identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const base::Optional<GURL>& collections_api_url_override,
-    const base::Optional<GURL>& collection_images_api_url_override,
-    const base::Optional<GURL>& albums_api_url_override,
-    const base::Optional<GURL>& photos_api_base_url_override,
-    const base::Optional<std::string>& image_options_override)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  collections_api_url_ =
-      collections_api_url_override.value_or(GURL(kCollectionsUrl));
-  collection_images_api_url_ =
-      collection_images_api_url_override.value_or(GURL(kCollectionImagesUrl));
-  albums_api_url_ = albums_api_url_override.value_or(GURL(kAlbumsUrl));
-  photos_api_base_url_ =
-      photos_api_base_url_override.value_or(GURL(kAlbumPhotosBaseUrl));
-  image_options_ = image_options_override.value_or(kImageOptions);
+  collections_api_url_ = GURL(kCollectionsUrl);
+  collection_images_api_url_ = GURL(kCollectionImagesUrl);
+  albums_api_url_ = GURL(kAlbumsUrl);
+  photos_api_base_url_ = GURL(kAlbumPhotosBaseUrl);
+  image_options_ = kImageOptions;
 }
 
 NtpBackgroundService::~NtpBackgroundService() = default;
@@ -562,6 +554,10 @@ GURL NtpBackgroundService::FormatAlbumPhotosBaseApiUrl(
       base::StringPrintf(kPhotosUrlRequestFormat, album_id.c_str(),
                          photo_container_id.c_str()));
   return api_url;
+}
+
+std::string NtpBackgroundService::GetImageOptionsForTesting() {
+  return kImageOptions;
 }
 
 GURL NtpBackgroundService::GetAlbumPhotosApiUrl() const {

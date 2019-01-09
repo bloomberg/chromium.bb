@@ -1299,11 +1299,6 @@ const char kNtlmV2EnabledDescription[] =
     "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
 #endif
 
-const char kNtpBackgroundsName[] = "New Tab Page Background Selection";
-const char kNtpBackgroundsDescription[] =
-    "Allow selection of a custom background image on the New Tab Page. "
-    "Implicitly enables 'ntp-ui-md'.";
-
 const char kNtpCustomLinksName[] = "New Tab Page Custom Links";
 const char kNtpCustomLinksDescription[] =
     "Enable customization of shortcuts on the New Tab Page and replaces Most "

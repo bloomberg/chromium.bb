@@ -40,41 +40,8 @@ NtpBackgroundServiceFactory::~NtpBackgroundServiceFactory() = default;
 
 KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!features::IsCustomBackgroundsEnabled()) {
-    return nullptr;
-  }
-
-  std::string collections_api_url = base::GetFieldTrialParamValueByFeature(
-      features::kNtpBackgrounds, "background-collections-api-url");
-  std::string collection_images_api_url =
-      base::GetFieldTrialParamValueByFeature(
-          features::kNtpBackgrounds, "background-collection-images-api-url");
-  std::string albums_api_url = base::GetFieldTrialParamValueByFeature(
-      features::kNtpBackgrounds, "background-albums-api-url");
-  std::string photos_api_base_url = base::GetFieldTrialParamValueByFeature(
-      features::kNtpBackgrounds, "background-photos-api-url");
-  std::string image_options = base::GetFieldTrialParamValueByFeature(
-      features::kNtpBackgrounds, "background-collections-image-options");
-  base::Optional<GURL> collection_api_url_override;
-  base::Optional<GURL> collection_images_api_url_override;
-  base::Optional<GURL> albums_api_url_override;
-  base::Optional<GURL> photos_api_base_url_override;
-  base::Optional<std::string> image_options_override;
-  if (!collections_api_url.empty()) {
-    collection_api_url_override = GURL(collections_api_url);
-  }
-  if (!collection_images_api_url.empty()) {
-    collection_images_api_url_override = GURL(collection_images_api_url);
-  }
-  if (!albums_api_url.empty()) {
-    albums_api_url_override = GURL(albums_api_url);
-  }
-  if (!photos_api_base_url.empty()) {
-    photos_api_base_url_override = GURL(photos_api_base_url);
-  }
-  if (!image_options.empty()) {
-    image_options_override = image_options;
-  }
+  // TODO(crbug.com/914898): Background service URLs should be
+  // configurable server-side, so they can be changed mid-release.
 
   Profile* profile = Profile::FromBrowserContext(context);
   identity::IdentityManager* identity_manager =
@@ -83,8 +50,5 @@ KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
-  return new NtpBackgroundService(
-      identity_manager, url_loader_factory, collection_api_url_override,
-      collection_images_api_url_override, albums_api_url_override,
-      photos_api_base_url_override, image_options_override);
+  return new NtpBackgroundService(identity_manager, url_loader_factory);
 }

@@ -3798,10 +3798,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"ntp-backgrounds", flag_descriptions::kNtpBackgroundsName,
-     flag_descriptions::kNtpBackgroundsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNtpBackgrounds)},
-
     {"ntp-custom-links", flag_descriptions::kNtpCustomLinksName,
      flag_descriptions::kNtpCustomLinksDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_tiles::kNtpCustomLinks)},
