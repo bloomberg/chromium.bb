@@ -189,6 +189,27 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     load_entries_loop.Run();
   }
 
+  void LoadKeysAndEntriesInRange(
+      SharedProtoDatabaseClient<TestProto>* client,
+      const std::string& start,
+      const std::string& end,
+      bool expect_success,
+      std::unique_ptr<std::map<std::string, TestProto>>* entries) {
+    base::RunLoop load_entries_in_range_loop;
+    client->LoadKeysAndEntriesInRange(
+        start, end,
+        base::BindOnce(
+            [](std::unique_ptr<std::map<std::string, TestProto>>* entries_ptr,
+               base::OnceClosure signal, bool expect_success, bool success,
+               std::unique_ptr<std::map<std::string, TestProto>> entries) {
+              ASSERT_EQ(success, expect_success);
+              *entries_ptr = std::move(entries);
+              std::move(signal).Run();
+            },
+            entries, load_entries_in_range_loop.QuitClosure(), expect_success));
+    load_entries_in_range_loop.Run();
+  }
+
   void LoadKeys(SharedProtoDatabaseClient<TestProto>* client,
                 bool expect_success,
                 std::unique_ptr<std::vector<std::string>>* keys) {
@@ -426,6 +447,44 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
   ASSERT_EQ(entries->size(), 1U);
   ASSERT_TRUE(ContainsEntries({"entry2124"}, *entries, kDefaultNamespace2,
                               kDefaultTypePrefix));
+}
+
+TEST_F(SharedProtoDatabaseClientTest, LoadKeysAndEntriesInRange) {
+  auto status = Enums::InitStatus::kError;
+  auto client_a =
+      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
+  auto client_b =
+      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
+
+  std::vector<std::string> key_list_a = {"entry0", "entry1",           "entry2",
+                                         "entry3", "entry3notinrange", "entry4",
+                                         "entry5"};
+  UpdateEntries(client_a.get(), key_list_a, leveldb_proto::KeyVector(), true);
+  std::vector<std::string> key_list_b = {"entry2", "entry3", "entry4"};
+  UpdateEntries(client_b.get(), key_list_b, leveldb_proto::KeyVector(), true);
+
+  std::unique_ptr<std::map<std::string, TestProto>> keys_and_entries_a;
+  LoadKeysAndEntriesInRange(client_a.get(), "entry1", "entry3", true,
+                            &keys_and_entries_a);
+
+  std::unique_ptr<std::map<std::string, TestProto>> keys_and_entries_b;
+  LoadKeysAndEntriesInRange(client_b.get(), "entry0", "entry1", true,
+                            &keys_and_entries_b);
+
+  std::vector<TestProto> entries;
+
+  for (auto& pair : *keys_and_entries_a) {
+    entries.push_back(pair.second);
+  }
+
+  ASSERT_EQ(keys_and_entries_a->size(), 3U);
+  ASSERT_EQ(keys_and_entries_b->size(), 0U);
+  ASSERT_TRUE(ContainsEntries({"entry1", "entry2", "entry3"}, entries,
+                              kDefaultNamespace, kDefaultTypePrefix));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {

@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -32,6 +34,10 @@ namespace {
 const int kMaxApproxMemoryUseMB = 16;
 
 }  // namespace
+
+bool PrefixStopCallback(const std::string& prefix, const std::string& key) {
+  return base::StartsWith(key, prefix, base::CompareCase::SENSITIVE);
+}
 
 LevelDB::LevelDB(const char* client_name)
     : open_histogram_(nullptr), destroy_histogram_(nullptr) {
@@ -222,14 +228,26 @@ bool LevelDB::LoadKeysAndEntriesWithFilter(
     std::map<std::string, std::string>* keys_entries,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix) {
+  return LoadKeysAndEntriesWhile(
+      filter, keys_entries, options, target_prefix,
+      base::BindRepeating(&PrefixStopCallback, target_prefix));
+}
+
+bool LevelDB::LoadKeysAndEntriesWhile(
+    const KeyFilter& filter,
+    std::map<std::string, std::string>* keys_entries,
+    const leveldb::ReadOptions& options,
+    const std::string& start_key,
+    const KeyFilter& while_callback) {
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
     return false;
 
   std::unique_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
-  leveldb::Slice target(target_prefix);
-  for (db_iterator->Seek(target);
-       db_iterator->Valid() && db_iterator->key().starts_with(target);
+  leveldb::Slice start(start_key);
+  for (db_iterator->Seek(start);
+       db_iterator->Valid() &&
+       while_callback.Run(db_iterator->key().ToString());
        db_iterator->Next()) {
     leveldb::Slice key_slice = db_iterator->key();
     std::string key_slice_str(key_slice.data(), key_slice.size());

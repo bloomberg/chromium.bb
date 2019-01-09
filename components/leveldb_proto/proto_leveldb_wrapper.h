@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -96,6 +97,20 @@ class ProtoLevelDBWrapper {
       const LevelDB::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
+
+  template <typename T>
+  void LoadKeysAndEntriesWhile(
+      const LevelDB::KeyFilter& while_callback,
+      const LevelDB::KeyFilter& filter,
+      const leveldb::ReadOptions& options,
+      const std::string& target_prefix,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
+
+  template <typename T>
+  void LoadKeysAndEntriesInRange(
+      const std::string& start,
+      const std::string& end,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
 
   void LoadKeys(Callbacks::LoadKeysCallback callback);
@@ -212,6 +227,7 @@ bool UpdateEntriesWithRemoveFilterFromTaskRunner(
 
 template <typename T>
 void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
+                                      const LevelDB::KeyFilter& while_callback,
                                       const LevelDB::KeyFilter& filter,
                                       const leveldb::ReadOptions& options,
                                       const std::string& target_prefix,
@@ -223,8 +239,8 @@ void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
   keys_entries->clear();
 
   std::map<std::string, std::string> loaded_entries;
-  *success = database->LoadKeysAndEntriesWithFilter(filter, &loaded_entries,
-                                                    options, target_prefix);
+  *success = database->LoadKeysAndEntriesWhile(filter, &loaded_entries, options,
+                                               target_prefix, while_callback);
 
   for (const auto& pair : loaded_entries) {
     T entry;
@@ -379,6 +395,36 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
+  LoadKeysAndEntriesWhile<T>(
+      base::BindRepeating(
+          [](const std::string& prefix, const std::string& key) {
+            return base::StartsWith(key, prefix, base::CompareCase::SENSITIVE);
+          },
+          target_prefix),
+      key_filter, options, target_prefix, std::move(callback));
+}
+
+template <typename T>
+void ProtoLevelDBWrapper::LoadKeysAndEntriesInRange(
+    const std::string& start,
+    const std::string& end,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
+  LoadKeysAndEntriesWhile<T>(
+      base::BindRepeating(
+          [](const std::string& range_end, const std::string& key) {
+            return key.compare(range_end) <= 0;
+          },
+          end),
+      LevelDB::KeyFilter(), leveldb::ReadOptions(), start, std::move(callback));
+}
+
+template <typename T>
+void ProtoLevelDBWrapper::LoadKeysAndEntriesWhile(
+    const LevelDB::KeyFilter& while_callback,
+    const LevelDB::KeyFilter& filter,
+    const leveldb::ReadOptions& options,
+    const std::string& target_prefix,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
   auto keys_entries = std::make_unique<std::map<std::string, T>>();
@@ -388,8 +434,8 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(LoadKeysAndEntriesFromTaskRunner<T>, base::Unretained(db_),
-                     key_filter, options, target_prefix, metrics_id_, success,
-                     keys_entries_ptr),
+                     while_callback, filter, options, target_prefix,
+                     metrics_id_, success, keys_entries_ptr),
       base::BindOnce(RunLoadKeysAndEntriesCallback<T>, std::move(callback),
                      base::Owned(success), std::move(keys_entries)));
 }

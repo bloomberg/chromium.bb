@@ -141,6 +141,15 @@ class ProtoDatabase {
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) = 0;
+  // Asynchronously loads entries and their keys for keys in range [start, end]
+  // (both inclusive) and invokes |callback| when complete.
+  // Range is defined as |start| <= returned keys <= |end|.
+  // When |start| = 'bar' and |end| = 'foo' then the keys within brackets are
+  // returned: baa, [bar, bara, barb, foa, foo], fooa, fooz, fop.
+  virtual void LoadKeysAndEntriesInRange(
+      const std::string& start,
+      const std::string& end,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) = 0;
 
   // Asynchronously loads all keys from the database and invokes |callback| with
   // those keys when complete.

@@ -118,6 +118,11 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
+  void LoadKeysAndEntriesInRange(
+      const std::string& start,
+      const std::string& end,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
 
   void GetEntry(const std::string& key,
                 typename Callbacks::Internal<T>::GetCallback callback) override;
@@ -322,6 +327,19 @@ void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesWithFilter(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   unique_db_->LoadKeysAndEntriesWithFilter(
       filter, options, prefix_ + target_prefix,
+      base::BindOnce(
+          &SharedProtoDatabaseClient<T>::StripPrefixLoadKeysAndEntriesCallback,
+          std::move(callback), prefix_));
+}
+
+template <typename T>
+void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesInRange(
+    const std::string& start,
+    const std::string& end,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  unique_db_->LoadKeysAndEntriesInRange(
+      prefix_ + start, prefix_ + end,
       base::BindOnce(
           &SharedProtoDatabaseClient<T>::StripPrefixLoadKeysAndEntriesCallback,
           std::move(callback), prefix_));

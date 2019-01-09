@@ -80,6 +80,13 @@ class MockDB : public LevelDB {
                     std::map<std::string, std::string>*,
                     const leveldb::ReadOptions&,
                     const std::string&));
+  MOCK_METHOD5(LoadKeysAndEntriesWhile,
+               bool(const KeyFilter&,
+                    std::map<std::string, std::string>*,
+                    const leveldb::ReadOptions&,
+                    const std::string&,
+                    const KeyFilter&));
+
   MOCK_METHOD4(Get,
                bool(const std::string&, bool*, std::string*, leveldb::Status*));
   MOCK_METHOD0(Destroy, leveldb::Status());
@@ -167,6 +174,27 @@ EntryMap GetSmallModel() {
 
   model["2"].set_id("2");
   model["2"].set_data("http://baz.com/1");
+
+  return model;
+}
+
+EntryMap GetRangeTestModel() {
+  EntryMap model;
+
+  model["a"].set_id("a");
+  model["a"].set_data("entry_a");
+
+  model["b"].set_id("b");
+  model["b"].set_data("entry_b");
+
+  model["c"].set_id("c");
+  model["c"].set_data("entry_c");
+
+  model["d"].set_id("d");
+  model["d"].set_data("entry_d");
+
+  model["e"].set_id("e");
+  model["e"].set_data("entry_e");
 
   return model;
 }
@@ -336,7 +364,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBLoadSuccess) {
                         base::BindOnce(&MockDatabaseCaller::InitStatusCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadKeysAndEntriesWithFilter(_, _, _, _))
+  EXPECT_CALL(*mock_db, LoadKeysAndEntriesWhile(_, _, _, _, _))
       .WillOnce(AppendLoadKeysAndEntries(model));
   EXPECT_CALL(caller, LoadKeysAndEntriesCallback1(true, _))
       .WillOnce(VerifyLoadKeysAndEntries(testing::ByRef(model)));
@@ -363,6 +391,88 @@ TEST_F(UniqueProtoDatabaseTest, TestDBLoadFailure) {
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
                                   base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(UniqueProtoDatabaseTest, TestDBLoadInRangeSuccess) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  MockDatabaseCaller caller;
+  EntryMap model = GetRangeTestModel();
+  EntryMap expected;
+  expected["b"] = model["b"];
+  expected["c"] = model["c"];
+  expected["d"] = model["d"];
+
+  EXPECT_CALL(caller, InitStatusCallback(_));
+  db_->InitWithDatabase(db.get(), temp_dir.GetPath(), CreateSimpleOptions(),
+                        base::BindOnce(&MockDatabaseCaller::InitStatusCallback,
+                                       base::Unretained(&caller)));
+
+  auto save_entries =
+      std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>();
+  std::map<std::string, TestProto> load_keys_entries;
+  std::unique_ptr<KeyVector> remove_keys(new KeyVector());
+
+  for (const auto& pair : model)
+    save_entries->push_back(std::make_pair(pair.second.id(), pair.second));
+
+  leveldb::Status status;
+  EXPECT_CALL(caller, SaveCallback(true));
+  db_->UpdateEntries(std::move(save_entries), std::move(remove_keys),
+                     base::BindOnce(&MockDatabaseCaller::SaveCallback,
+                                    base::Unretained(&caller)));
+
+  EXPECT_CALL(caller, LoadKeysAndEntriesCallback1(true, _))
+      .WillOnce(VerifyLoadKeysAndEntries(testing::ByRef(expected)));
+  db_->LoadKeysAndEntriesInRange(
+      "b", "d",
+      base::BindOnce(&MockDatabaseCaller::LoadKeysAndEntriesCallback,
+                     base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(UniqueProtoDatabaseTest, TestDBLoadInRangeSuccessSameKey) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  MockDatabaseCaller caller;
+  EntryMap model = GetRangeTestModel();
+  EntryMap expected;
+
+  expected["d"] = model["d"];
+
+  EXPECT_CALL(caller, InitStatusCallback(_));
+  db_->InitWithDatabase(db.get(), temp_dir.GetPath(), CreateSimpleOptions(),
+                        base::BindOnce(&MockDatabaseCaller::InitStatusCallback,
+                                       base::Unretained(&caller)));
+
+  auto save_entries =
+      std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>();
+  std::map<std::string, TestProto> load_keys_entries;
+  std::unique_ptr<KeyVector> remove_keys(new KeyVector());
+
+  for (const auto& pair : model) {
+    save_entries->push_back(std::make_pair(pair.second.id(), pair.second));
+  }
+
+  leveldb::Status status;
+  EXPECT_CALL(caller, SaveCallback(true));
+  db_->UpdateEntries(std::move(save_entries), std::move(remove_keys),
+                     base::BindOnce(&MockDatabaseCaller::SaveCallback,
+                                    base::Unretained(&caller)));
+
+  EXPECT_CALL(caller, LoadKeysAndEntriesCallback1(true, _))
+      .WillOnce(VerifyLoadKeysAndEntries(testing::ByRef(expected)));
+  db_->LoadKeysAndEntriesInRange(
+      "d", "d",
+      base::BindOnce(&MockDatabaseCaller::LoadKeysAndEntriesCallback,
+                     base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -853,6 +963,47 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadKeysAndEntries) {
     TestProto entry;
     ASSERT_TRUE(entry.ParseFromString(pair.second));
     EXPECT_EQ(entry.SerializeAsString(), model[pair.first].SerializeAsString());
+  }
+}
+
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadKeysAndEntriesWhile) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  EntryMap model = GetRangeTestModel();
+  EntryMap expected;
+  expected["b"] = model["b"];
+  expected["c"] = model["c"];
+  expected["d"] = model["d"];
+
+  KeyValueVector save_entries;
+  std::map<std::string, std::string> load_keys_entries;
+  KeyVector remove_keys;
+
+  for (const auto& pair : model) {
+    save_entries.push_back(
+        std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
+  }
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
+  leveldb::Status status;
+  EXPECT_TRUE(db->Save(save_entries, remove_keys, &status));
+
+  EXPECT_TRUE(db->LoadKeysAndEntriesWhile(
+      LevelDB::KeyFilter(), &load_keys_entries, leveldb::ReadOptions(), "b",
+      base::BindRepeating(
+          [](const std::string& range_end, const std::string& key) {
+            return key.compare(range_end) <= 0;
+          },
+          "d")));
+
+  EXPECT_EQ(load_keys_entries.size(), expected.size());
+  for (const auto& pair : load_keys_entries) {
+    TestProto entry;
+    ASSERT_TRUE(entry.ParseFromString(pair.second));
+    EXPECT_EQ(entry.SerializeAsString(),
+              expected[pair.first].SerializeAsString());
   }
 }
 
