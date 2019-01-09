@@ -44,6 +44,7 @@ source_set("tests") {
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:internals_test_support",
     "//components/signin/core/browser:shared",
+    "//components/signin/core/browser:test_support",
     "//components/sync_preferences:test_support",
     "//mojo/public/cpp/bindings",
     "//services/identity/public/cpp",
