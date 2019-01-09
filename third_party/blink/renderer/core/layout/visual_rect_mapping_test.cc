@@ -486,10 +486,14 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // (-2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (40, 10, 50, 80), then is added by container's offset in LayoutView
   // (222, 111).
-  // TODO(crbug.com/600039): rect.X() should be 262 (left + border-left), but is
-  // offset by extra horizontal border-widths because of layout error.
-  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
-                                   LayoutRect(322, 121, 50, 80));
+
+  LayoutRect expectation(262, 121, 50, 80);
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // TODO(crbug.com/600039): rect.X() should be 262 (left + border-left), but
+    // is offset by extra horizontal border-widths because of layout error.
+    expectation = LayoutRect(322, 121, 50, 80);
+  }
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(), expectation);
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -503,11 +507,13 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   EXPECT_TRUE(container->MapToVisualRectInAncestorSpace(container, rect));
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), rect);
 
-  // TODO(crbug.com/600039): rect.x() should be 222 (left), but is offset by
-  // extra horizontal
-  // border-widths because of layout error.
-  CheckPaintInvalidationVisualRect(*container, GetLayoutView(),
-                                   LayoutRect(282, 111, 110, 120));
+  expectation = LayoutRect(222, 111, 110, 120);
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // TODO(crbug.com/600039): rect.x() should be 222 (left), but is offset by
+    // extra horizontal border-widths because of layout error.
+    expectation = LayoutRect(282, 111, 110, 120);
+  }
+  CheckPaintInvalidationVisualRect(*container, GetLayoutView(), expectation);
 }
 
 TEST_P(VisualRectMappingTest, ContainerOverflowHidden) {
