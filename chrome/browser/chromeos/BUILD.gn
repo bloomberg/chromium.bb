@@ -1749,8 +1749,6 @@ source_set("chromeos") {
     "profiles/profile_helper.h",
     "profiles/profile_util.cc",
     "profiles/profile_util.h",
-    "proxy_cros_settings_parser.cc",
-    "proxy_cros_settings_parser.h",
     "reset/metrics.h",
     "resource_reporter/resource_reporter.cc",
     "resource_reporter/resource_reporter.h",
