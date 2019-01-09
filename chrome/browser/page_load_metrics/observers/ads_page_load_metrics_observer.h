@@ -30,8 +30,7 @@ class AdsPageLoadMetricsObserver
   enum AdType {
     AD_TYPE_GOOGLE = 0,
     AD_TYPE_SUBRESOURCE_FILTER = 1,
-    AD_TYPE_ALL = 2,
-    AD_TYPE_MAX = AD_TYPE_ALL
+    AD_TYPE_MAX = AD_TYPE_SUBRESOURCE_FILTER
   };
 
   // The origin of the ad relative to the main frame's origin.
@@ -55,7 +54,7 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kOther,
   };
 
-  using AdTypes = std::bitset<AD_TYPE_MAX>;
+  using AdTypes = std::bitset<AD_TYPE_MAX + 1>;
 
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.

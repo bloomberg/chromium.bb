@@ -242,8 +242,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AnyParentFrame."
       "AdFrames",
       2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.All.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
 }
 
 class AdsPageLoadMetricsTestWaiter
