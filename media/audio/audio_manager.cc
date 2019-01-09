@@ -148,15 +148,17 @@ AudioManager* AudioManager::Get() {
 bool AudioManager::Shutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Do not attempt to stop the audio thread if it is hung.
-  // Otherwise the current thread will hang too: crbug.com/729494
-  // TODO(olka, grunell): Will be fixed when audio is its own process.
-  if (audio_thread_->IsHung())
-    return false;
-
   if (audio_thread_->GetTaskRunner()->BelongsToCurrentThread()) {
+    // If this is the audio thread, there is no need to check if it's hung
+    // (since it's clearly not). https://crbug.com/919854.
     ShutdownOnAudioThread();
   } else {
+    // Do not attempt to stop the audio thread if it is hung.
+    // Otherwise the current thread will hang too: https://crbug.com/729494
+    // TODO(olka, grunell): Will be fixed when audio is its own process.
+    if (audio_thread_->IsHung())
+      return false;
+
     audio_thread_->GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&AudioManager::ShutdownOnAudioThread,
                                   base::Unretained(this)));
