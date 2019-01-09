@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -216,7 +216,7 @@ TEST_F(RelativePositioningTest, ComparisonSanityTest2) {
 // Exercise comparision functions by sorting and re-sorting the list.
 TEST_F(RelativePositioningTest, SortPositions) {
   ASSERT_EQ(kNumPositions, kNumSortedPositions);
-  UniquePosition positions[arraysize(kPositionArray)];
+  UniquePosition positions[std::extent<decltype(kPositionArray)>()];
   for (size_t i = 0; i < kNumPositions; ++i) {
     positions[i] = kPositionArray[i];
   }
@@ -232,7 +232,7 @@ TEST_F(RelativePositioningTest, SortPositions) {
 // Some more exercise for the comparison function.
 TEST_F(RelativePositioningTest, ReverseSortPositions) {
   ASSERT_EQ(kNumPositions, kNumSortedPositions);
-  UniquePosition positions[arraysize(kPositionArray)];
+  UniquePosition positions[std::extent<decltype(kPositionArray)>()];
   for (size_t i = 0; i < kNumPositions; ++i) {
     positions[i] = kPositionArray[i];
   }
