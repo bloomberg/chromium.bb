@@ -330,7 +330,16 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
   });
 });
 
-TEST_F('ChromeVoxLiveRegionsTest', 'LiveStatusOff', function() {
+if (this.GEN_BLOCK) {
+  GEN_BLOCK(function() {/*!
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LiveStatusOff DISABLED_LiveStatusOff
+#else
+#define MAYBE_LiveStatusOff LiveStatusOff
+#endif
+  */});
+}
+TEST_F('ChromeVoxLiveRegionsTest', 'MAYBE_LiveStatusOff', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div><input aria-live="off" type="text"></input></div>
