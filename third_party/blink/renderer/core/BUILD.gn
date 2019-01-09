@@ -1861,7 +1861,6 @@ jumbo_source_set("unit_tests") {
     "feature_policy/policy_test.cc",
     "fetch/blob_bytes_consumer_test.cc",
     "fetch/body_stream_buffer_test.cc",
-    "fetch/buffering_bytes_consumer_test.cc",
     "fetch/bytes_consumer_for_data_consumer_handle_test.cc",
     "fetch/bytes_consumer_test.cc",
     "fetch/bytes_consumer_test_util.cc",
