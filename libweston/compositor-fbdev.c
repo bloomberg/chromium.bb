@@ -362,6 +362,27 @@ fbdev_set_screen_info(int fd, struct fbdev_screeninfo *info)
 	return 1;
 }
 
+static int
+fbdev_wakeup_screen(int fd, struct fbdev_screeninfo *info)
+{
+	struct fb_var_screeninfo varinfo;
+
+	/* Grab the current screen information. */
+	if (ioctl(fd, FBIOGET_VSCREENINFO, &varinfo) < 0) {
+		return -1;
+	}
+
+	/* force the framebuffer to wake up */
+	varinfo.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
+
+	/* Set the device's screen information. */
+	if (ioctl(fd, FBIOPUT_VSCREENINFO, &varinfo) < 0) {
+		return -1;
+	}
+
+	return 1;
+}
+
 /* Returns an FD for the frame buffer device. */
 static int
 fbdev_frame_buffer_open(const char *fb_dev,
@@ -390,8 +411,8 @@ fbdev_frame_buffer_open(const char *fb_dev,
 
 	/* Attempt to wake up the framebuffer device, needed for secondary
 	 * framebuffer devices */
-	if (fbdev_set_screen_info(fd, screen_info) < 0) {
-		weston_log("Failed to set mode settings. "
+	if (fbdev_wakeup_screen(fd, screen_info) < 0) {
+		weston_log("Failed to activate framebuffer display. "
 		           "Attempting to open output anyway.\n");
 	}
 
