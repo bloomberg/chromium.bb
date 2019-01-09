@@ -93,10 +93,13 @@ class WebAppShortcutCreatorTest : public testing::Test {
     destination_dir_ = temp_destination_dir_.GetPath();
 
     info_ = GetShortcutInfo();
-    shim_base_name_ = base::FilePath(info_->profile_path.BaseName().value() +
-                                     " " + info_->extension_id + ".app");
-    internal_shim_path_ = app_data_dir_.Append(shim_base_name_);
+    fallback_shim_base_name_ =
+        base::FilePath(info_->profile_path.BaseName().value() + " " +
+                       info_->extension_id + ".app");
+
+    shim_base_name_ = base::FilePath(base::UTF16ToUTF8(info_->title) + ".app");
     shim_path_ = destination_dir_.Append(shim_base_name_);
+    internal_shim_path_ = app_data_dir_.Append(shim_base_name_);
   }
 
   // Needed by DCHECK_CURRENTLY_ON in ShortcutInfo destructor.
@@ -108,8 +111,9 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath destination_dir_;
 
   std::unique_ptr<web_app::ShortcutInfo> info_;
-  base::FilePath shim_base_name_;
+  base::FilePath fallback_shim_base_name_;
   base::FilePath internal_shim_path_;
+  base::FilePath shim_base_name_;
   base::FilePath shim_path_;
 
  private:
@@ -179,6 +183,47 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
         << base::SysNSStringToUTF8(key) << ":"
         << base::SysNSStringToUTF8(value);
   }
+}
+
+TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
+  base::FilePath strings_file =
+      destination_dir_.Append(".localized").Append("en_US.strings");
+
+  // Create a conflicting .app.
+  EXPECT_FALSE(base::PathExists(shim_path_));
+  base::CreateDirectory(shim_path_);
+  EXPECT_TRUE(base::PathExists(shim_path_));
+
+  // Ensure that the " (2).app" path does not yet exist.
+  base::FilePath conflict_base_name(base::UTF16ToUTF8(info_->title) + " 2.app");
+  base::FilePath conflict_path = destination_dir_.Append(conflict_base_name);
+  EXPECT_FALSE(base::PathExists(conflict_path));
+
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
+
+  // We should have created the " 2.app" path.
+  EXPECT_TRUE(base::PathExists(conflict_path));
+  EXPECT_TRUE(base::PathExists(destination_dir_));
+}
+
+TEST_F(WebAppShortcutCreatorTest, NormalizeTitle) {
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
+
+  info_->title = base::UTF8ToUTF16("../../Evil/");
+  EXPECT_EQ(destination_dir_.Append(":..:Evil:.app"),
+            shortcut_creator.GetApplicationsShortcutPath(false));
+
+  info_->title = base::UTF8ToUTF16("....");
+  EXPECT_EQ(destination_dir_.Append(fallback_shim_base_name_),
+            shortcut_creator.GetApplicationsShortcutPath(false));
 }
 
 TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
@@ -405,7 +450,7 @@ TEST_F(WebAppShortcutCreatorTest, SortAppBundles) {
   base::FilePath app_dir("/home/apps");
   NiceMock<WebAppShortcutCreatorSortingMock> shortcut_creator(app_dir,
                                                               info_.get());
-  base::FilePath a = shortcut_creator.GetApplicationsShortcutPath();
+  base::FilePath a = shortcut_creator.GetApplicationsShortcutPath(false);
   base::FilePath b = shortcut_creator.GetApplicationsDirname().Append("a");
   base::FilePath c = shortcut_creator.GetApplicationsDirname().Append("z");
   base::FilePath d("/a/b/c");
