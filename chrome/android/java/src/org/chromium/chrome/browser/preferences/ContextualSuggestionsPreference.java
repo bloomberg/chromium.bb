@@ -93,8 +93,9 @@ public class ContextualSuggestionsPreference
             final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
                 if (isUnifiedConsentEnabled) {
                     if (isSignedIn) {
-                        PreferencesLauncher.launchSettingsPage(
-                                context, SyncAndServicesPreferences.class);
+                        PreferencesLauncher.launchSettingsPage(context,
+                                SyncAndServicesPreferences.class,
+                                SyncAndServicesPreferences.createArguments(false));
                     } else {
                         startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
                                 context, SigninAccessPoint.SETTINGS, null));

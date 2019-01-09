@@ -77,6 +77,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
                    ProfileSyncService.SyncStateChangedListener {
+    private static final String IS_FROM_SIGNIN_SCREEN =
+            "SyncAndServicesPreferences.isFromSigninScreen";
+
     @VisibleForTesting
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
     @VisibleForTesting
@@ -136,6 +139,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
 
+    private boolean mIsFromSigninScreen;
+
     private SignInPreference mSigninPreference;
     private Preference mSyncErrorCard;
     private Preference mSyncErrorCardDivider;
@@ -177,9 +182,22 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private boolean mIsSyncEnabled;
     private @SyncError int mCurrentSyncError = SyncError.NO_ERROR;
 
+    /**
+     * Creates an argument bundle for this fragment.
+     * @param isFromSigninScreen Whether the screen is started from the sign-in screen.
+     */
+    public static Bundle createArguments(boolean isFromSigninScreen) {
+        Bundle result = new Bundle();
+        result.putBoolean(IS_FROM_SIGNIN_SCREEN, isFromSigninScreen);
+        return result;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mIsFromSigninScreen =
+                IntentUtils.safeGetBoolean(getArguments(), IS_FROM_SIGNIN_SCREEN, false);
 
         mPrivacyPrefManager.migrateNetworkPredictionPreferences();
 
