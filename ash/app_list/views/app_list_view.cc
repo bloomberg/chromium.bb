@@ -1083,6 +1083,12 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
 
 void AppListView::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
+
+  // Bottom shelf is enforced in tablet mode. When tablet mode ends, the
+  // AppListView is destroyed so no need to update |is_side_shelf_|.
+  if (started)
+    is_side_shelf_ = false;
+
   search_box_view_->OnTabletModeChanged(started);
   search_model_->SetTabletMode(started);
   GetAppsContainerView()->OnTabletModeChanged(started);
