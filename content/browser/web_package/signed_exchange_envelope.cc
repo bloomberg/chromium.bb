@@ -349,6 +349,7 @@ bool ParseResponseMap(const cbor::Value& value,
 
 // static
 base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
+    SignedExchangeVersion version,
     const signed_exchange_utils::URLWithRawString& fallback_url,
     base::StringPiece signature_header_field,
     base::span<const uint8_t> cbor_header,
@@ -367,39 +368,51 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
                            cbor::Reader::ErrorCodeToString(error)));
     return base::nullopt;
   }
-  if (!value->is_array()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf(
-            "Expected top-level Value to be an array. Actual type : %d",
-            static_cast<int>(value->type())));
-    return base::nullopt;
-  }
-
-  const cbor::Value::ArrayValue& top_level_array = value->GetArray();
-  constexpr size_t kTopLevelArraySize = 2;
-  if (top_level_array.size() != kTopLevelArraySize) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        base::StringPrintf("Expected top-level array to have 2 elements. "
-                           "Actual element count: %" PRIuS,
-                           top_level_array.size()));
-    return base::nullopt;
-  }
 
   SignedExchangeEnvelope ret;
   ret.set_cbor_header(cbor_header);
   ret.set_request_url(request_url);
 
-  if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, "Failed to parse request map.");
-    return base::nullopt;
-  }
-  if (!ParseResponseMap(top_level_array[1], &ret, devtools_proxy)) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, "Failed to parse response map.");
-    return base::nullopt;
+  // TODO(crbug.com/919424) Remove support for kB2.
+  if (version == SignedExchangeVersion::kB2) {
+    if (!value->is_array()) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
+          base::StringPrintf(
+              "Expected top-level Value to be an array. Actual type : %d",
+              static_cast<int>(value->type())));
+      return base::nullopt;
+    }
+
+    const cbor::Value::ArrayValue& top_level_array = value->GetArray();
+    constexpr size_t kTopLevelArraySize = 2;
+    if (top_level_array.size() != kTopLevelArraySize) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
+          base::StringPrintf("Expected top-level array to have 2 elements. "
+                             "Actual element count: %" PRIuS,
+                             top_level_array.size()));
+      return base::nullopt;
+    }
+
+    if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "Failed to parse request map.");
+      return base::nullopt;
+    }
+    if (!ParseResponseMap(top_level_array[1], &ret, devtools_proxy)) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "Failed to parse response map.");
+      return base::nullopt;
+    }
+  } else {
+    ret.set_request_method("GET");
+
+    if (!ParseResponseMap(*value, &ret, devtools_proxy)) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "Failed to parse response map.");
+      return base::nullopt;
+    }
   }
 
   base::Optional<std::vector<SignedExchangeSignatureHeaderField::Signature>>

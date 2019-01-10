@@ -405,6 +405,8 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                "SignedExchangeHandler::ParseHeadersAndFetchCertificate");
   DCHECK_EQ(state_, State::kReadingHeaders);
 
+  DCHECK(version_.has_value());
+
   base::StringPiece data(header_buf_->data(), header_read_buf_->size());
   base::StringPiece signature_header_field = data.substr(
       0, prologue_fallback_url_and_after_.signature_header_field_length());
@@ -413,8 +415,8 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
           prologue_fallback_url_and_after_.signature_header_field_length(),
           prologue_fallback_url_and_after_.cbor_header_length())));
   envelope_ = SignedExchangeEnvelope::Parse(
-      prologue_fallback_url_and_after_.fallback_url(), signature_header_field,
-      cbor_header, devtools_proxy_.get());
+      *version_, prologue_fallback_url_and_after_.fallback_url(),
+      signature_header_field, cbor_header, devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
   if (!envelope_) {
@@ -427,7 +429,6 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
   // may be empty.
   DCHECK(cert_url.is_valid());
-  DCHECK(version_.has_value());
 
   DCHECK(cert_fetcher_factory_);
 
