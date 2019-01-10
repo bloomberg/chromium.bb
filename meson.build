@@ -66,21 +66,14 @@ cc = meson.get_compiler('c')
 
 global_args = []
 global_args_maybe = [
+	'-Wno-unused-parameter',
+	'-Wno-shift-negative-value', # required due to Pixman
+	'-Wno-missing-field-initializers',
 	'-fvisibility=hidden',
-]
-global_wnoargs_maybe = [
-	'unused-parameter',
-	'shift-negative-value', # required due to Pixman
-	'missing-field-initializers',
 ]
 foreach a : global_args_maybe
 	if cc.has_argument(a)
 		global_args += a
-	endif
-endforeach
-foreach a : global_wnoargs_maybe
-	if cc.has_argument('-W' + a)
-		global_args += '-Wno-' + a
 	endif
 endforeach
 add_global_arguments(global_args, language: 'c')
