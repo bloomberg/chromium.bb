@@ -486,10 +486,11 @@ void SignedExchangeHandler::OnCertReceived(
                              cert_fetch_duration);
   unverified_cert_chain_ = std::move(cert_chain);
 
+  DCHECK(version_.has_value());
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
-          *envelope_, unverified_cert_chain_->cert(), GetVerificationTime(),
-          devtools_proxy_.get());
+          *version_, *envelope_, unverified_cert_chain_->cert(),
+          GetVerificationTime(), devtools_proxy_.get());
   UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
                             verify_result);
   if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {

@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
@@ -68,7 +69,8 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     DISALLOW_COPY_AND_ASSIGN(IgnoreErrorsSPKIList);
   };
 
-  static Result Verify(const SignedExchangeEnvelope& envelope,
+  static Result Verify(SignedExchangeVersion version,
+                       const SignedExchangeEnvelope& envelope,
                        scoped_refptr<net::X509Certificate> certificate,
                        const base::Time& verification_time,
                        SignedExchangeDevToolsProxy* devtools_proxy);

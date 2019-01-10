@@ -52,6 +52,19 @@ constexpr uint8_t kMessageHeader[] =
     // draft-specific string beginning with "HTTP Exchange 1 " instead."
     // [spec text]
     // 5.3. "A single 0 byte which serves as a separator." [spec text]
+    "HTTP Exchange 1 b3";
+constexpr uint8_t kMessageHeaderB2[] =
+    // 5.1. "A string that consists of octet 32 (0x20) repeated 64 times."
+    // [spec text]
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
+    // 5.2. "A context string: the ASCII encoding of "HTTP Exchange 1"." ...
+    // "but implementations of drafts MUST NOT use it and MUST use another
+    // draft-specific string beginning with "HTTP Exchange 1 " instead."
+    // [spec text]
+    // 5.3. "A single 0 byte which serves as a separator." [spec text]
     "HTTP Exchange 1 b2";
 
 constexpr base::TimeDelta kOneWeek = base::TimeDelta::FromDays(7);
@@ -137,6 +150,7 @@ void AppendToBuf8BytesBigEndian(std::vector<uint8_t>* buf, uint64_t n) {
 }
 
 base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
+    SignedExchangeVersion version,
     const SignedExchangeEnvelope& envelope) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "GenerateSignedMessage");
@@ -147,8 +161,13 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
   // Step 5. "Let message be the concatenation of the following byte strings."
   std::vector<uint8_t> message;
   // see kMessageHeader for Steps 5.1 to 5.3.
-  message.insert(message.end(), std::begin(kMessageHeader),
-                 std::end(kMessageHeader));
+  if (version == SignedExchangeVersion::kB2) {
+    message.insert(message.end(), std::begin(kMessageHeaderB2),
+                   std::end(kMessageHeaderB2));
+  } else {
+    message.insert(message.end(), std::begin(kMessageHeader),
+                   std::end(kMessageHeader));
+  }
 
   // Step 5.4. "If cert-sha256 is set, a byte holding the value 32 followed by
   // the 32 bytes of the value of cert-sha256. Otherwise a 0 byte." [spec text]
@@ -246,6 +265,7 @@ bool ShouldIgnoreTimestampError(
 }  // namespace
 
 SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
+    SignedExchangeVersion version,
     const SignedExchangeEnvelope& envelope,
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time,
@@ -287,7 +307,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     return Result::kErrCertificateSHA256Mismatch;
   }
 
-  auto message = GenerateSignedMessage(envelope);
+  auto message = GenerateSignedMessage(version, envelope);
   if (!message) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to reconstruct signed message.");
