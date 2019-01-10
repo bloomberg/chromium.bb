@@ -156,10 +156,8 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB2(
 // static
 std::unique_ptr<SignedExchangeCertificateChain>
 SignedExchangeCertificateChain::Parse(
-    SignedExchangeVersion version,
     base::span<const uint8_t> cert_response_body,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  DCHECK_EQ(version, SignedExchangeVersion::kB2);
   return ParseB2(cert_response_body, devtools_proxy);
 }
 
