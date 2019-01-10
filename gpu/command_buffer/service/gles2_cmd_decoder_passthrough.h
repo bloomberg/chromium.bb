@@ -111,11 +111,13 @@ struct PassthroughResources {
 
 class ScopedFramebufferBindingReset {
  public:
-  explicit ScopedFramebufferBindingReset(gl::GLApi* api);
+  explicit ScopedFramebufferBindingReset(gl::GLApi* api,
+                                         bool supports_separate_fbo_bindings);
   ~ScopedFramebufferBindingReset();
 
  private:
   gl::GLApi* api_;
+  bool supports_separate_fbo_bindings_;
   GLint draw_framebuffer_;
   GLint read_framebuffer_;
 };
@@ -767,7 +769,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     EmulatedDefaultFramebuffer(
         gl::GLApi* api,
         const EmulatedDefaultFramebufferFormat& format_in,
-        const FeatureInfo* feature_info);
+        const FeatureInfo* feature_info,
+        bool supports_separate_fbo_bindings);
     ~EmulatedDefaultFramebuffer();
 
     // Set a new color buffer, return the old one
@@ -781,6 +784,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     void Destroy(bool have_context);
 
     gl::GLApi* api;
+    bool supports_separate_fbo_bindings = false;
 
     // Service ID of the framebuffer
     GLuint framebuffer_service_id = 0;
@@ -822,6 +826,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // State tracking of currently bound draw and read framebuffers (client IDs)
   GLuint bound_draw_framebuffer_;
   GLuint bound_read_framebuffer_;
+
+  // If this context supports both read and draw framebuffer bindings
+  bool supports_separate_fbo_bindings_ = false;
 
   // Tracing
   std::unique_ptr<GPUTracer> gpu_tracer_;
