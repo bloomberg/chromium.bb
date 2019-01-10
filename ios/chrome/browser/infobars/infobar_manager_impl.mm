@@ -75,9 +75,11 @@ void InfoBarManagerImpl::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   DCHECK_EQ(web_state_, web_state);
-  OnNavigation(CreateNavigationDetails(
-      web_state->GetNavigationManager()->GetLastCommittedItem(),
-      navigation_context->IsSameDocument()));
+  if (navigation_context->HasCommitted()) {
+    OnNavigation(CreateNavigationDetails(
+        web_state->GetNavigationManager()->GetLastCommittedItem(),
+        navigation_context->IsSameDocument()));
+  }
 }
 
 void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {
