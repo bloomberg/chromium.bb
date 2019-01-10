@@ -61,20 +61,13 @@
 </if>
 
 <if expr="not chromeos">
-    <a class="settings-box first two-line inherit-color no-outline"
-        tabindex="-1" target="_blank"
-        href="https://chrome.google.com/webstore/category/collection/accessibility">
-      <div class="start">
-        $i18n{moreFeaturesLink}
-        <div class="secondary" id="moreFeaturesSecondary">
-          $i18n{a11yWebStore}
-        </div>
-      </div>
-      <paper-icon-button-light actionable class="icon-external">
-        <button aria-label="$i18n{moreFeaturesLink}"
-            aria-describedby="moreFeaturesSecondary"></button>
-      </paper-icon-button-light>
-    </a>
+    <cr-link-row
+        class="hr"
+        icon-class="icon-external"
+        label="$i18n{moreFeaturesLink}"
+        on-click="onMoreFeaturesLinkClick_"
+        sub-label="$i18n{a11yWebStore}">
+    </cr-link-row>
 </if>
 
   </template>
