@@ -261,6 +261,8 @@ public abstract class ChromeFeatureList {
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PASSWORDS_KEYBOARD_ACCESSORY = "PasswordsKeyboardAccessory";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
+    public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
+            "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PROGRESS_BAR_THROTTLE = "ProgressBarThrottle";
     public static final String PWA_PERSISTENT_NOTIFICATION = "PwaPersistentNotification";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
