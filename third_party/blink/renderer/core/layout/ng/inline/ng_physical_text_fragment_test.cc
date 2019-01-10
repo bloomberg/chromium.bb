@@ -180,9 +180,11 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
   const NGPhysicalTextFragment& ellipsis = *text_fragments[1];
   EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abcdef.TextType());
   EXPECT_FALSE(abcdef.IsGeneratedText());
+  EXPECT_FALSE(abcdef.IsAnonymousText());
   EXPECT_EQ(u8"abc", GetText(abcdef));
   EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
+  EXPECT_TRUE(ellipsis.IsAnonymousText());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
 }
 

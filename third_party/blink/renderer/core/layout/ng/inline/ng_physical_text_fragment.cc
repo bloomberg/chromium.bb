@@ -91,11 +91,14 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
   line_orientation_ =
       static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
-  is_anonymous_text_ =
-      IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
 
-  if (UNLIKELY(StyleVariant() == NGStyleVariant::kEllipsis))
+  if (UNLIKELY(StyleVariant() == NGStyleVariant::kEllipsis)) {
     EnsureRareData()->style_ = std::move(builder->style_);
+    is_anonymous_text_ = true;
+  } else {
+    is_anonymous_text_ =
+        IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
+  }
 
   UpdateSelfInkOverflow();
 }
