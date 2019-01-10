@@ -103,6 +103,10 @@ message SystemProfileProto {
     // of whether the operating system has been jailbroken.
     optional bool is_jailbroken = 4;
 
+    // The build number for the OS version. The same OS version may have a
+    // different build number. The meaning of this field is OS-dependent.
+    optional string build_number = 5;
+
     // The version of the kernel. Linux based operating systems, such as
     // ChromeOS and Android, have a kernel version that the OS release version
     // was built with that differs from the version field above.
@@ -113,7 +117,9 @@ message SystemProfileProto {
   // Information on the user's hardware.
   // Next tag: 19
   message Hardware {
-    // The CPU architecture (x86, PowerPC, x86_64, ...)
+    // CPU architecture. Taken from uname -m and modified in Chromium logic.
+    // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
+    // Not recorded on iOS.
     optional string cpu_architecture = 1;
 
     // The amount of RAM present on the system, in megabytes.
