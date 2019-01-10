@@ -137,7 +137,6 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 - (void)loadView {
   self.view = [[UIView alloc] init];
-  self.view.accessibilityViewIsModal = YES;
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
   NSMutableArray<UIView*>* icons = [[NSMutableArray alloc] init];
