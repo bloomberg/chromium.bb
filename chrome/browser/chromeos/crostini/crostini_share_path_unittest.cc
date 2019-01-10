@@ -360,7 +360,35 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
+// TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
+TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
+  crostini_share_path()->SharePath(
+      "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
+                     "pc", Success::YES, ""));
+  run_loop()->Run();
+}
+
+// TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
+TEST_F(CrostiniSharePathTest, Bug917920DriveFsComputersGrandRoot) {
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
+  crostini_share_path()->SharePath(
+      "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::NO,
+                     SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                     "Path is not allowed"));
+  run_loop()->Run();
+}
+
+// TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
+TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
   features_.InitWithFeatures(
       {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
@@ -370,6 +398,34 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
                      "pc", Success::YES, ""));
+  run_loop()->Run();
+}
+
+// TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
+TEST_F(CrostiniSharePathTest, Bug917920DriveFsComputerRoot) {
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
+  crostini_share_path()->SharePath(
+      "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::NO,
+                     SeneschalClientCalled::NO, nullptr, "", Success::NO,
+                     "Path is not allowed"));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, SuccessDriveFsComputersLevel3) {
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
+  crostini_share_path()->SharePath(
+      "vm-running",
+      drivefs_.Append("Computers").Append("pc").Append("SyncFolder"),
+      PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
+                     "pc/SyncFolder", Success::YES, ""));
   run_loop()->Run();
 }
 

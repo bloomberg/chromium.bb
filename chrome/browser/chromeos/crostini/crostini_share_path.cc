@@ -203,6 +203,14 @@ void CrostiniSharePath::CallSeneschalSharePath(
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS);
+
+      // TODO(crbug.com/917920): Do not allow Computers Grand Root, or single
+      // Computer Root to be shared until DriveFS enforces allowed write paths.
+      std::vector<base::FilePath::StringType> components;
+      relative_path.GetComponents(&components);
+      if (components.size() < 2) {
+        allowed_path = false;
+      }
     } else if (trash == drivefs_path || trash.IsParent(drivefs_path)) {
       // Note: Do not expose .Trash which would allow linux apps to make
       // permanent deletes from Drive.  This branch is not especially required,

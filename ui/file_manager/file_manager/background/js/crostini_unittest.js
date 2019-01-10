@@ -136,9 +136,11 @@ function testCanSharePath() {
 
   // Test with DriveFs disabled.
   setDriveFsEnabled(false);
-  const disallowed = new Map(CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE);
-  disallowed.set('test', 'test');
-  for (let type of disallowed.keys()) {
+  const disallowed = [
+    'computers_grand_root', 'computer', 'drive', 'team_drives_grand_root',
+    'team_drive', 'test'
+  ];
+  for (const type of disallowed) {
     volumeManagerRootType =
         /** @type {!VolumeManagerCommon.RootType<string>} */ (type);
     assertFalse(crostini.canSharePath(root, true));
@@ -155,11 +157,13 @@ function testCanSharePath() {
 
   // Test with DriveFs enabled.
   setDriveFsEnabled(true);
-  const allowed = new Map([
-    ...CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE,
-    ...CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE
-  ]);
-  for (let type of allowed.keys()) {
+  // TODO(crbug.com/917920): Add computers_grand_root and computers when DriveFS
+  // enforces allowed write paths.
+  const allowed = [
+    'downloads', 'removable', 'android_files', 'drive',
+    'team_drives_grand_root', 'team_drive'
+  ];
+  for (const type of allowed) {
     volumeManagerRootType = type;
     assertTrue(crostini.canSharePath(root, true));
     assertTrue(crostini.canSharePath(root, false));
@@ -172,4 +176,21 @@ function testCanSharePath() {
     assertTrue(crostini.canSharePath(fooFolder, true));
     assertTrue(crostini.canSharePath(fooFolder, false));
   }
+
+  // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
+  const grandRootFolder = new MockDirectoryEntry(mockFileSystem, '/Computers');
+  const computerRootFolder =
+      new MockDirectoryEntry(mockFileSystem, '/Computers/My');
+  const computerFolder =
+      new MockDirectoryEntry(mockFileSystem, '/Computers/My/foo');
+  volumeManagerRootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
+  assertFalse(crostini.canSharePath(root, false));
+  assertFalse(crostini.canSharePath(grandRootFolder, false));
+  assertFalse(crostini.canSharePath(computerRootFolder, false));
+  assertFalse(crostini.canSharePath(computerFolder, false));
+  volumeManagerRootType = VolumeManagerCommon.RootType.COMPUTER;
+  assertFalse(crostini.canSharePath(root, false));
+  assertFalse(crostini.canSharePath(grandRootFolder, false));
+  assertFalse(crostini.canSharePath(computerRootFolder, false));
+  assertTrue(crostini.canSharePath(computerFolder, false));
 }
