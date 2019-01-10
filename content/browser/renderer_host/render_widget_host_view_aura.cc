@@ -1404,9 +1404,17 @@ bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
 
 bool RenderWidgetHostViewAura::GetCompositionTextRange(
     gfx::Range* range) const {
-  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!text_input_manager_ || !GetFocusedWidget())
+    return false;
+
+  const TextInputManager::CompositionRangeInfo* composition_range_info =
+      text_input_manager_->GetCompositionRangeInfo();
+  if (!composition_range_info || !composition_range_info->range.IsValid())
+    return false;
+
+  range->set_start(composition_range_info->range.start());
+  range->set_end(composition_range_info->range.end());
+  return true;
 }
 
 bool RenderWidgetHostViewAura::GetEditableSelectionRange(
