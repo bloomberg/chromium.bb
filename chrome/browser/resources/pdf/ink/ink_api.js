@@ -67,6 +67,25 @@ class InkAPI {
     this.brush_.setStrokeWidth(tool.size);
   }
 
+  flush() {
+    return new Promise(resolve => this.embed_.flush(resolve));
+  }
+
+  /** @param {string} hexColor */
+  setOutOfBoundsColor(hexColor) {
+    this.embed_.setOutOfBoundsColor(ink.Color.fromString(hexColor));
+  }
+
+  /** @param {string} url */
+  setBorderImage(url) {
+    this.embed_.setBorderImage(url);
+  }
+
+  /** @param {number} spacing in points */
+  setPageSpacing(spacing) {
+    this.embed_.setVerticalPageLayout(spacing);
+  }
+
   dispatchPointerEvent(type, init) {
     const event = new PointerEvent(type, init);
     document.querySelector('#ink-engine').dispatchEvent(event);
@@ -77,7 +96,6 @@ class InkAPI {
 window.initInk = async function() {
   const config = new ink.embed.Config();
   const embed = await ink.embed.EmbedComponent.execute(config);
-  const hostCameraControl = 15;
-  embed.assignFlag(hostCameraControl, true);
+  embed.assignFlag(ink.proto.Flag.ENABLE_HOST_CAMERA_CONTROL, true);
   return new InkAPI(embed);
 };

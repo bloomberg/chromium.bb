@@ -9,6 +9,8 @@ const State = {
   IDLE: 'idle'
 };
 
+const BACKGROUND_COLOR = '#525659';
+
 /**
  * Hosts the Ink component which is responsible for both PDF rendering and
  * annotation when in annotation mode.
@@ -30,6 +32,9 @@ Polymer({
 
   /** @private {PointerEvent} */
   activePointer_: null,
+
+  /** @private {?number} */
+  lastZoom_: null,
 
   /**
    * Whether we should suppress pointer events due to a gesture,
@@ -154,6 +159,12 @@ Polymer({
     this.ink_.setPDF(data);
     this.state_ = State.ACTIVE;
     this.viewportChanged(viewport);
+    // TODO(dstockwell): we shouldn't need this extra flush.
+    await this.ink_.flush();
+    await this.ink_.flush();
+    this.ink_.setOutOfBoundsColor(BACKGROUND_COLOR);
+    const spacing = Viewport.PAGE_SHADOW.top + Viewport.PAGE_SHADOW.bottom;
+    this.ink_.setPageSpacing(spacing);
     this.style.visibility = 'visible';
   },
 
@@ -181,6 +192,12 @@ Polymer({
       right: (x + size.width) * scale,
       bottom: (-y - size.height) * scale,
     };
+    // Ink doesn't scale the shadow, so we must update it each time the zoom
+    // changes.
+    if (this.lastZoom_ !== zoom) {
+      this.lastZoom_ = zoom;
+      this.updateShadow_(zoom);
+    }
     this.ink_.setCamera(camera);
   },
 
@@ -198,4 +215,35 @@ Polymer({
       dataToSave: this.buffer_,
     };
   },
+
+  /** @param {number} zoom */
+  updateShadow_(zoom) {
+    const boxWidth = (50 * zoom) |0;
+    const shadowWidth = (8 * zoom) |0;
+    const width = boxWidth + shadowWidth * 2 + 2;
+    const boxOffset = (width - boxWidth) / 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = width;
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'black';
+    ctx.shadowColor = 'black';
+    ctx.shadowBlur = shadowWidth;
+    ctx.fillRect(boxOffset, boxOffset, boxWidth, boxWidth);
+    ctx.shadowBlur = 0;
+
+    // 9-piece markers
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, 1);
+      ctx.fillStyle = 'black';
+      ctx.fillRect(shadowWidth + 1, 0, boxWidth, 1);
+      ctx.rotate(0.5 * Math.PI);
+      ctx.translate(0, -width);
+    }
+
+    this.ink_.setBorderImage(canvas.toDataURL());
+  }
 });
