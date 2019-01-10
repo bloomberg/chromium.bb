@@ -6,7 +6,7 @@
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
@@ -51,9 +51,7 @@ RTCRtpReceiver::getSynchronizationSources() {
   UpdateSourcesIfNeeded();
   HeapVector<Member<RTCRtpSynchronizationSource>> synchronization_sources;
   for (const auto& web_source : web_sources_) {
-    // TODO(https://crbug.com/893172): Rename WebRTCRtpContributingSource to
-    // reflect that it is used for both SSRCs and CSRCs, e.g. "WebRTCRtpSource".
-    if (web_source->SourceType() != WebRTCRtpContributingSourceType::SSRC)
+    if (web_source->SourceType() != WebRTCRtpSource::Type::kSSRC)
       continue;
     RTCRtpSynchronizationSource* synchronization_source =
         MakeGarbageCollected<RTCRtpSynchronizationSource>();
@@ -69,7 +67,7 @@ RTCRtpReceiver::getContributingSources() {
   UpdateSourcesIfNeeded();
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources;
   for (const auto& web_source : web_sources_) {
-    if (web_source->SourceType() != WebRTCRtpContributingSourceType::CSRC)
+    if (web_source->SourceType() != WebRTCRtpSource::Type::kCSRC)
       continue;
     RTCRtpContributingSource* contributing_source =
         MakeGarbageCollected<RTCRtpContributingSource>();
