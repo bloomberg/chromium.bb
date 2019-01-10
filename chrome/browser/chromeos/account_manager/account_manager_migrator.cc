@@ -203,6 +203,11 @@ void AccountManagerMigrator::Start() {
   if (!chromeos::switches::IsAccountManagerEnabled())
     return;
 
+  // Account migration does not make sense for ephemeral (Guest, Managed
+  // Session, Kiosk, Demo etc.) sessions.
+  if (user_manager::UserManager::Get()->IsCurrentUserCryptohomeDataEphemeral())
+    return;
+
   chromeos::AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
