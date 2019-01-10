@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_media.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -74,7 +75,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
-#include "third_party/blink/renderer/core/frame/pausable_timer.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/frame/screen.h"
 #include "third_party/blink/renderer/core/frame/scroll_to_options.h"
@@ -107,78 +107,13 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
 // Timeout for link preloads to be used after window.onload
 static constexpr TimeDelta kUnusedPreloadTimeout = TimeDelta::FromSeconds(3);
-
-class PostMessageTimer final
-    : public GarbageCollectedFinalized<PostMessageTimer>,
-      public PausableTimer {
-  USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
-
- public:
-  PostMessageTimer(LocalDOMWindow& window,
-                   MessageEvent* event,
-                   scoped_refptr<const SecurityOrigin> target_origin,
-                   std::unique_ptr<SourceLocation> location,
-                   UserGestureToken* user_gesture_token)
-      : PausableTimer(window.document(), TaskType::kPostedMessage),
-        event_(event),
-        window_(&window),
-        target_origin_(std::move(target_origin)),
-        location_(std::move(location)),
-        user_gesture_token_(user_gesture_token),
-        disposal_allowed_(true) {}
-
-  MessageEvent* Event() const { return event_; }
-  const SecurityOrigin* TargetOrigin() const { return target_origin_.get(); }
-  std::unique_ptr<SourceLocation> TakeLocation() {
-    return std::move(location_);
-  }
-  UserGestureToken* GetUserGestureToken() const {
-    return user_gesture_token_.get();
-  }
-  void ContextDestroyed(ExecutionContext* destroyed_context) override {
-    PausableTimer::ContextDestroyed(destroyed_context);
-
-    if (disposal_allowed_)
-      Dispose();
-  }
-
-  // Eager finalization is needed to promptly stop this timer object.
-  // (see DOMTimer comment for more.)
-  EAGERLY_FINALIZE();
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(event_);
-    visitor->Trace(window_);
-    PausableTimer::Trace(visitor);
-  }
-
-  // TODO(alexclarke): Override timerTaskRunner() to pass in a document specific
-  // default task runner.
-
- private:
-  void Fired() override {
-    probe::AsyncTask async_task(window_->document(), this);
-    disposal_allowed_ = false;
-    window_->PostMessageTimerFired(this);
-    Dispose();
-    // Oilpan optimization: unregister as an observer right away.
-    ClearContext();
-  }
-
-  void Dispose() { window_->RemovePostMessageTimer(this); }
-
-  Member<MessageEvent> event_;
-  Member<LocalDOMWindow> window_;
-  scoped_refptr<const SecurityOrigin> target_origin_;
-  std::unique_ptr<SourceLocation> location_;
-  scoped_refptr<UserGestureToken> user_gesture_token_;
-  bool disposal_allowed_;
-};
 
 static void UpdateSuddenTerminationStatus(
     LocalDOMWindow* dom_window,
@@ -603,37 +538,35 @@ void LocalDOMWindow::SchedulePostMessage(
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
   std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
-  PostMessageTimer* timer = MakeGarbageCollected<PostMessageTimer>(
-      *this, event, std::move(target), std::move(location),
-      UserGestureIndicator::CurrentToken());
-  timer->StartOneShot(TimeDelta(), FROM_HERE);
-  timer->PauseIfNeeded();
-  probe::AsyncTaskScheduled(document(), "postMessage", timer);
-  post_message_timers_.insert(timer);
+  document_->GetTaskRunner(TaskType::kPostedMessage)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
+                           WrapPersistent(this), WrapPersistent(event),
+                           WrapRefCounted(UserGestureIndicator::CurrentToken()),
+                           std::move(target), std::move(location)));
+  probe::AsyncTaskScheduled(document(), "postMessage", event);
 }
 
-void LocalDOMWindow::PostMessageTimerFired(PostMessageTimer* timer) {
+void LocalDOMWindow::DispatchPostMessage(
+    MessageEvent* event,
+    scoped_refptr<UserGestureToken> token,
+    scoped_refptr<const SecurityOrigin> intended_target_origin,
+    std::unique_ptr<SourceLocation> location) {
+  probe::AsyncTask async_task(document(), event);
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  MessageEvent* event = timer->Event();
-
-  UserGestureToken* token = timer->GetUserGestureToken();
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && token &&
       token->HasGestures() && document()) {
     gesture_indicator =
-        LocalFrame::NotifyUserActivation(document()->GetFrame(), token);
+        LocalFrame::NotifyUserActivation(document()->GetFrame(), token.get());
   }
 
   event->EntangleMessagePorts(document());
 
-  DispatchMessageEventWithOriginCheck(timer->TargetOrigin(), event,
-                                      timer->TakeLocation());
-}
-
-void LocalDOMWindow::RemovePostMessageTimer(PostMessageTimer* timer) {
-  post_message_timers_.erase(timer);
+  DispatchMessageEventWithOriginCheck(intended_target_origin.get(), event,
+                                      std::move(location));
 }
 
 void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
@@ -1594,7 +1527,6 @@ void LocalDOMWindow::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(external_);
   visitor->Trace(application_cache_);
-  visitor->Trace(post_message_timers_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);
   visitor->Trace(trusted_types_);
