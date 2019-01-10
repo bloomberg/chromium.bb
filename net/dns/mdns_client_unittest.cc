@@ -15,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/mock_timer.h"
+#include "net/base/address_family.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/rand_callback.h"
@@ -22,6 +23,7 @@
 #include "net/dns/mdns_client_impl.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "net/dns/record_rdata.h"
+#include "net/log/net_log.h"
 #include "net/socket/udp_client_socket.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1259,6 +1261,15 @@ TEST_F(MDnsConnectionSendTest, SendQueued) {
               SendToInternal(sample_packet_, "[ff02::fb]:5353", _))
       .WillOnce(Return(OK));
   callback.Run(OK);
+}
+
+TEST(MDnsSocketTest, CreateSocket) {
+  // Verifies that socket creation hasn't been broken.
+  NetLog net_log;
+  auto socket =
+      CreateAndBindMDnsSocket(AddressFamily::ADDRESS_FAMILY_IPV4, 1, &net_log);
+  EXPECT_TRUE(socket);
+  socket->Close();
 }
 
 }  // namespace net
