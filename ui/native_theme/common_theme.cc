@@ -62,6 +62,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
         return gfx::kGoogleGrey900;
+      case NativeTheme::kColorId_ProminentButtonDisabledColor:
+        return gfx::kGoogleGrey800;
+      case NativeTheme::kColorId_ButtonBorderColor:
+        return gfx::kGoogleGrey700;
       case NativeTheme::kColorId_TextfieldSelectionColor:
       case NativeTheme::kColorId_LabelTextSelectionColor:
         return color_utils::AlphaBlend(
@@ -146,6 +150,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return SK_ColorTRANSPARENT;
     case NativeTheme::kColorId_ButtonDisabledColor:
       return kDisabledTextColor;
+    case NativeTheme::kColorId_ProminentButtonDisabledColor:
+      return gfx::kGoogleGrey100;
+    case NativeTheme::kColorId_ButtonBorderColor:
+      return gfx::kGoogleGrey300;
 
     // MenuItem
     case NativeTheme::kColorId_TouchableMenuItemLabelColor:

@@ -199,14 +199,20 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
+      return GetBgColor(
+          "GtkButton#button.text-button.default.suggested-action");
     case ui::NativeTheme::kColorId_ProminentButtonFocusedColor:
       return GetBgColor(
-          "GtkTreeView#treeview.view "
-          "GtkTreeView#treeview.view.cell:selected:focus");
+          "GtkButton#button.text-button.default.suggested-action:selected:"
+          "focus");
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
       return GetFgColor(
-          "GtkTreeView#treeview.view "
-          "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
+          "GtkButton#button.text-button.default.suggested-action GtkLabel");
+    case ui::NativeTheme::kColorId_ProminentButtonDisabledColor:
+      return GetBgColor(
+          "GtkButton#button.text-button.default.suggested-action:disabled");
+    case ui::NativeTheme::kColorId_ButtonBorderColor:
+      return GetBorderColor("GtkButton#button.text-button");
 
     // TabbedPane
     case ui::NativeTheme::kColorId_TabTitleColorActive:
