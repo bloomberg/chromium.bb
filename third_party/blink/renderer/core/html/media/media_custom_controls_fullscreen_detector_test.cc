@@ -71,8 +71,8 @@ class MediaCustomControlsFullscreenDetectorTest
                                      const IntRect& root_rect,
                                      const IntRect& intersection_rect) {
     return MediaCustomControlsFullscreenDetector::
-        ComputeIsDominantVideoForTests(target_rect, root_rect,
-                                       intersection_rect);
+        ComputeIsDominantVideoForTests(target_rect.Size(), root_rect.Size(),
+                                       intersection_rect.Size());
   }
 
  private:

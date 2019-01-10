@@ -10,7 +10,9 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/intersection_geometry.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -27,6 +29,7 @@ constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     HTMLVideoElement& video)
     : video_element_(video),
+      viewport_intersection_observer_(nullptr),
       check_viewport_intersection_timer_(
           video.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -43,9 +46,19 @@ void MediaCustomControlsFullscreenDetector::Attach() {
       event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().addEventListener(
       event_type_names::kFullscreenchange, this, true);
+  viewport_intersection_observer_ = IntersectionObserver::Create(
+      {}, {}, &(video_element_->GetDocument()),
+      WTF::BindRepeating(
+          &MediaCustomControlsFullscreenDetector::OnIntersectionChanged,
+          WrapWeakPersistent(this)),
+      IntersectionObserver::kFractionOfTarget, 0, false, true);
 }
 
 void MediaCustomControlsFullscreenDetector::Detach() {
+  if (viewport_intersection_observer_) {
+    viewport_intersection_observer_->disconnect();
+    viewport_intersection_observer_ = nullptr;
+  }
   VideoElement().removeEventListener(event_type_names::kLoadedmetadata, this,
                                      true);
   VideoElement().GetDocument().removeEventListener(
@@ -59,16 +72,16 @@ void MediaCustomControlsFullscreenDetector::Detach() {
 }
 
 bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
-    const IntRect& target_rect,
-    const IntRect& root_rect,
-    const IntRect& intersection_rect) {
-  if (target_rect.IsEmpty() || root_rect.IsEmpty())
+    const IntSize& target_size,
+    const IntSize& root_size,
+    const IntSize& intersection_size) {
+  if (target_size.IsEmpty() || root_size.IsEmpty())
     return false;
 
   const float x_occupation_proportion =
-      1.0f * intersection_rect.Width() / root_rect.Width();
+      1.0f * intersection_size.Width() / root_size.Width();
   const float y_occupation_proportion =
-      1.0f * intersection_rect.Height() / root_rect.Height();
+      1.0f * intersection_size.Height() / root_size.Height();
 
   // If the viewport is mostly occupied by the video, return true.
   if (std::min(x_occupation_proportion, y_occupation_proportion) >=
@@ -86,12 +99,12 @@ bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
   // If the video is mostly visible in the indominant dimension, return true.
   // Otherwise return false.
   if (x_occupation_proportion > y_occupation_proportion) {
-    return target_rect.Height() *
+    return target_size.Height() *
                kMostlyFillViewportThresholdOfVisibleProportion <
-           intersection_rect.Height();
+           intersection_size.Height();
   }
-  return target_rect.Width() * kMostlyFillViewportThresholdOfVisibleProportion <
-         intersection_rect.Width();
+  return target_size.Width() * kMostlyFillViewportThresholdOfVisibleProportion <
+         intersection_size.Width();
 }
 
 void MediaCustomControlsFullscreenDetector::Invoke(ExecutionContext* context,
@@ -123,15 +136,35 @@ void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
 void MediaCustomControlsFullscreenDetector::
     OnCheckViewportIntersectionTimerFired(TimerBase*) {
   DCHECK(IsVideoOrParentFullscreen());
+  if (viewport_intersection_observer_)
+    viewport_intersection_observer_->observe(&VideoElement());
+}
 
-  // TODO(crbug.com/906258): This can cause a crash when DCHECKs are enabled!
-  IntersectionGeometry geometry(nullptr, VideoElement(), Vector<Length>(),
-                                true);
-  geometry.ComputeGeometry();
+void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  if (!viewport_intersection_observer_ || !VideoElement().GetLayoutObject())
+    return;
+
+  // We only want a single notification, then stop observing.
+  viewport_intersection_observer_->disconnect();
+
+  const Member<IntersectionObserverEntry>& last_entry = entries.back();
+
+  // Target and intersection rects must be converted from CSS to device pixels.
+  float zoom = VideoElement().GetLayoutObject()->StyleRef().EffectiveZoom();
+  DOMRectReadOnly* target_rect = last_entry->boundingClientRect();
+  FloatSize target_size(target_rect->width(), target_rect->height());
+  target_size.Scale(zoom);
+  DOMRectReadOnly* intersection_rect = last_entry->intersectionRect();
+  FloatSize intersection_size(intersection_rect->width(),
+                              intersection_rect->height());
+  intersection_size.Scale(zoom);
+  DOMRectReadOnly* root_rect = last_entry->rootBounds();
+  FloatSize root_size(root_rect->width(), root_rect->height());
 
   bool is_dominant = ComputeIsDominantVideoForTests(
-      geometry.TargetIntRect(), geometry.RootIntRect(),
-      geometry.IntersectionIntRect());
+      RoundedIntSize(target_size), RoundedIntSize(root_size),
+      RoundedIntSize(intersection_size));
 
   if (!is_dominant) {
     VideoElement().SetIsEffectivelyFullscreen(
@@ -165,6 +198,7 @@ bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {
 void MediaCustomControlsFullscreenDetector::Trace(blink::Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
+  visitor->Trace(viewport_intersection_observer_);
 }
 
 }  // namespace blink

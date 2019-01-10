@@ -81,6 +81,7 @@ class CORE_EXPORT IntersectionObserver final
       ThresholdInterpretation semantics = kFractionOfTarget,
       DOMHighResTimeStamp delay = 0,
       bool track_visbility = false,
+      bool always_report_root_bounds = false,
       ExceptionState& = ASSERT_NO_EXCEPTION);
 
   static void ResumeSuspendedObservers();
@@ -91,7 +92,8 @@ class CORE_EXPORT IntersectionObserver final
                                 const Vector<float>& thresholds,
                                 ThresholdInterpretation semantics,
                                 DOMHighResTimeStamp delay,
-                                bool track_visibility);
+                                bool track_visibility,
+                                bool always_report_root_bounds);
 
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -113,6 +115,8 @@ class CORE_EXPORT IntersectionObserver final
   // weak pointer, we cannot surmise that this observer tracks the implicit
   // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
+
+  bool AlwaysReportRootBounds() const { return always_report_root_bounds_; }
 
   DOMHighResTimeStamp GetTimeStamp() const;
   DOMHighResTimeStamp GetEffectiveDelay() const;
@@ -151,6 +155,7 @@ class CORE_EXPORT IntersectionObserver final
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
   unsigned track_fraction_of_root_ : 1;
+  unsigned always_report_root_bounds_ : 1;
 };
 
 }  // namespace blink

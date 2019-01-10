@@ -73,8 +73,9 @@ void IntersectionObservation::Compute(unsigned flags) {
   root_margin[1] = observer_->RightMargin();
   root_margin[2] = observer_->BottomMargin();
   root_margin[3] = observer_->LeftMargin();
-  bool report_root_bounds =
-      (flags & kReportImplicitRootBounds) || !observer_->RootIsImplicit();
+  bool report_root_bounds = observer_->AlwaysReportRootBounds() ||
+                            (flags & kReportImplicitRootBounds) ||
+                            !observer_->RootIsImplicit();
   IntersectionGeometry geometry(observer_->root(), *Target(), root_margin,
                                 report_root_bounds);
   geometry.ComputeGeometry();

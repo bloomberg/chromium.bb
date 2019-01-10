@@ -173,7 +173,7 @@ TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
       MakeGarbageCollected<IntersectionObserver>(
           *target_observer_delegate, nullptr, Vector<Length>(),
           Vector<float>{kExpectedFractionOfTarget / 2},
-          IntersectionObserver::kFractionOfTarget, 0, false);
+          IntersectionObserver::kFractionOfTarget, 0, false, false);
   DummyExceptionStateForTesting exception_state;
   target_observer->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -184,7 +184,7 @@ TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
       MakeGarbageCollected<IntersectionObserver>(
           *root_observer_delegate, nullptr, Vector<Length>(),
           Vector<float>{kExpectedFractionOfRoot / 2},
-          IntersectionObserver::kFractionOfRoot, 0, false);
+          IntersectionObserver::kFractionOfRoot, 0, false, false);
   root_observer->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 

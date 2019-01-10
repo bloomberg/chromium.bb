@@ -7,12 +7,13 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class HTMLVideoElement;
-class IntRect;
+class IntSize;
 class TimerBase;
 
 class CORE_EXPORT MediaCustomControlsFullscreenDetector final
@@ -36,15 +37,18 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   HTMLVideoElement& VideoElement() { return *video_element_; }
 
   void OnCheckViewportIntersectionTimerFired(TimerBase*);
+  void OnIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
 
   bool IsVideoOrParentFullscreen();
 
-  static bool ComputeIsDominantVideoForTests(const IntRect& target_rect,
-                                             const IntRect& root_rect,
-                                             const IntRect& intersection_rect);
+  static bool ComputeIsDominantVideoForTests(const IntSize& target_size,
+                                             const IntSize& root_size,
+                                             const IntSize& intersection_size);
 
   // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;
+  Member<IntersectionObserver> viewport_intersection_observer_;
   TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
       check_viewport_intersection_timer_;
 };
