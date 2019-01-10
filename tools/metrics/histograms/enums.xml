@@ -48359,7 +48359,7 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="SmartLockAuthResultFailureReason">
   <int value="0" label="Unlock not allowed"/>
-  <int value="1" label="Already attempting auth"/>
+  <int value="1" label="Already attempting auth (deprecated)"/>
   <int value="2" label="Empty user account"/>
   <int value="3" label="Invalid account id"/>
   <int value="4" label="Auth attempt cannot start"/>
