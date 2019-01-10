@@ -701,9 +701,8 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
   const VisiblePosition& end =
       EndOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
   ABORT_EDITING_COMMAND_IF(end.IsNull());
-  // Node* outer_block = start.DeepEquivalent().AnchorNode()->parentNode();
   Node* const outer_block = HighestEnclosingNodeOfType(
-      start.DeepEquivalent(), &IsInline, kCanCrossEditingBoundary, nullptr);
+      start.DeepEquivalent(), &IsInline, kCannotCrossEditingBoundary, nullptr);
   MoveParagraphWithClones(
       start, end, list_item_element,
       outer_block ? outer_block : start.DeepEquivalent().AnchorNode(),
