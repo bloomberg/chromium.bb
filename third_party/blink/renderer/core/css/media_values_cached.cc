@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -30,7 +31,8 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       strict_mode(true),
       display_mode(kWebDisplayModeBrowser),
       display_shape(kDisplayShapeRect),
-      color_gamut(ColorSpaceGamut::kUnknown) {}
+      color_gamut(ColorSpaceGamut::kUnknown),
+      preferred_color_scheme(WebColorScheme::kNoPreference) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
@@ -69,6 +71,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     media_type = MediaValues::CalculateMediaType(frame);
     display_shape = MediaValues::CalculateDisplayShape(frame);
     color_gamut = MediaValues::CalculateColorGamut(frame);
+    preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
   }
 }
 
@@ -190,6 +193,10 @@ DisplayShape MediaValuesCached::GetDisplayShape() const {
 
 ColorSpaceGamut MediaValuesCached::ColorGamut() const {
   return data_.color_gamut;
+}
+
+WebColorScheme MediaValuesCached::PreferredColorScheme() const {
+  return data_.preferred_color_scheme;
 }
 
 }  // namespace blink

@@ -1196,5 +1196,10 @@
     // pan-up,
     // pan-down
     // none
+
+    // (prefers-color-scheme:) media feature
+    "no-preference",
+    "dark",
+    "light",
   ],
 }

@@ -918,6 +918,9 @@
 "reset-size"
 "dynamic"
 "non-scaling-stroke"
+"no-preference"
+"light"
+"dark"
 
 # at-rules
 "@charset"

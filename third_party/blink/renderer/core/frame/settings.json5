@@ -1008,5 +1008,14 @@
       initial: 800,
       type: "int",
     },
+
+    // Preferred color scheme from the OS/application passed to the renderer for
+    // evaluating the prefers-color-scheme media query.
+    {
+      name: "preferredColorScheme",
+      initial: "WebColorScheme::kNoPreference",
+      invalidate: "MediaQuery",
+      type: "WebColorScheme",
+    },
   ],
 }
