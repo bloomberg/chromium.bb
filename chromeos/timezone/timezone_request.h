@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "url/gurl.h"
 
@@ -24,7 +24,7 @@ class SimpleURLLoader;
 
 namespace chromeos {
 
-struct CHROMEOS_EXPORT TimeZoneResponseData {
+struct COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneResponseData {
   enum Status {
     OK,
     INVALID_REQUEST,
@@ -48,7 +48,7 @@ struct CHROMEOS_EXPORT TimeZoneResponseData {
 };
 
 // Returns default timezone service URL.
-CHROMEOS_EXPORT GURL DefaultTimezoneProviderURL();
+COMPONENT_EXPORT(CHROMEOS_TIMEZONE) GURL DefaultTimezoneProviderURL();
 
 // Takes Geoposition and sends it to a server to get local timezone information.
 // It performs formatting of the request and interpretation of the response.
@@ -57,7 +57,7 @@ CHROMEOS_EXPORT GURL DefaultTimezoneProviderURL();
 // Request is owned and destroyed by caller (usually TimeZoneProvider).
 // If request is destroyed while callback has not beed called yet, request
 // is silently cancelled.
-class CHROMEOS_EXPORT TimeZoneRequest {
+class COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneRequest {
  public:
   // Called when a new geo timezone information is available.
   // The second argument indicates whether there was a server error or not.

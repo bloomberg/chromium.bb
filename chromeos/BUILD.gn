@@ -32,8 +32,10 @@ component("chromeos") {
     ":policy_certificate_provider",
     ":tools",
     "//chromeos/dbus",
+    "//chromeos/geolocation",
     "//chromeos/network",
     "//chromeos/settings",
+    "//chromeos/timezone",
     "//dbus",
   ]
   deps = [
@@ -65,14 +67,6 @@ component("chromeos") {
     "account_manager/account_manager_factory.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
-    "geolocation/geoposition.cc",
-    "geolocation/geoposition.h",
-    "geolocation/simple_geolocation_provider.cc",
-    "geolocation/simple_geolocation_provider.h",
-    "geolocation/simple_geolocation_request.cc",
-    "geolocation/simple_geolocation_request.h",
-    "geolocation/simple_geolocation_request_test_monitor.cc",
-    "geolocation/simple_geolocation_request_test_monitor.h",
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
     "policy/weekly_time/time_utils.cc",
@@ -115,12 +109,6 @@ component("chromeos") {
     "system/name_value_pairs_parser.h",
     "system/statistics_provider.cc",
     "system/statistics_provider.h",
-    "timezone/timezone_provider.cc",
-    "timezone/timezone_provider.h",
-    "timezone/timezone_request.cc",
-    "timezone/timezone_request.h",
-    "timezone/timezone_resolver.cc",
-    "timezone/timezone_resolver.h",
   ]
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines = [ "BINDER_IPC_32BIT" ]
@@ -260,11 +248,13 @@ test("chromeos_unittests") {
     "//chromeos/dbus:unit_tests",
     "//chromeos/dbus/services:unit_tests",
     "//chromeos/disks:unit_tests",
+    "//chromeos/geolocation:unit_tests",
     "//chromeos/login/auth:unit_tests",
     "//chromeos/login/login_state:unit_tests",
     "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",
+    "//chromeos/timezone:unit_tests",
     "//chromeos/tpm:unit_tests",
     "//components/account_id",
     "//components/onc",
@@ -289,7 +279,6 @@ test("chromeos_unittests") {
   sources = [
     "account_manager/account_manager_unittest.cc",
     "app_mode/kiosk_oem_manifest_parser_unittest.cc",
-    "geolocation/simple_geolocation_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",
@@ -304,7 +293,6 @@ test("chromeos_unittests") {
     "system/factory_ping_embargo_check_unittest.cc",
     "system/name_value_pairs_parser_unittest.cc",
     "test/run_all_unittests.cc",
-    "timezone/timezone_unittest.cc",
     "tools/variable_expander_unittest.cc",
   ]
 

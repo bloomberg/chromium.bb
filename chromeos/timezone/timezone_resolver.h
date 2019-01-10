@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/chromeos_export.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -25,7 +25,7 @@ namespace chromeos {
 struct TimeZoneResponseData;
 
 // This class implements periodic timezone synchronization.
-class CHROMEOS_EXPORT TimeZoneResolver {
+class COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneResolver {
  public:
   class TimeZoneResolverImpl;
 
