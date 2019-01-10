@@ -1300,13 +1300,11 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
     }
 
     const int color_id = ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
-    if (tp->HasCustomColor(color_id)) {
-      default_color = tp->GetColor(color_id);
-    } else {
-      default_color = color_utils::IsDark(background_color)
-                          ? gfx::kGoogleGrey400
-                          : gfx::kGoogleGrey800;
-    }
+    default_color =
+        tp->HasCustomColor(color_id)
+            ? tp->GetColor(color_id)
+            : color_utils::PickContrastingColor(
+                  gfx::kGoogleGrey400, gfx::kGoogleGrey800, background_color);
   }
 
   if (!is_active_frame) {

@@ -23,9 +23,6 @@ using views::Widget;
 
 namespace {
 
-// Color for the window title text.
-constexpr SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
-constexpr SkColor kLightTitleTextColor = SK_ColorWHITE;
 // This is 2x of the slide ainmation duration.
 constexpr int kColorUpdateDurationMs = 240;
 
@@ -161,8 +158,8 @@ views::CaptionButtonLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
 }
 
 SkColor DefaultFrameHeader::GetTitleColor() const {
-  return color_utils::IsDark(GetCurrentFrameColor()) ? kLightTitleTextColor
-                                                     : kTitleTextColor;
+  return color_utils::PickContrastingColor(
+      SK_ColorWHITE, SkColorSetRGB(40, 40, 40), GetCurrentFrameColor());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
