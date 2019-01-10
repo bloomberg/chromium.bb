@@ -7,8 +7,7 @@ test(function() {
     canvas = document.createElement('canvas');
     var ctx_2d = canvas.getContext('2d', {lowLatency : true});
     assert_true(ctx_2d instanceof CanvasRenderingContext2D);
-    // TODO(mcasas): Check ctx_2d.getContextAttributes().lowLatency after
-    // https://github.com/whatwg/html/issues/2563.
+    assert_true(ctx_2d.getContextAttributes().lowLatency);
 
     var ctx_2d_second = canvas.getContext('2d', {lowLatency : true});
     assert_equals(ctx_2d, ctx_2d_second);

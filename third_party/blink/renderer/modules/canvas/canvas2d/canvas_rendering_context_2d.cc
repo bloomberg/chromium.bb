@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
@@ -936,6 +937,8 @@ CanvasRenderingContext2D::getContextAttributes() const {
     settings->setColorSpace(ColorSpaceAsString());
     settings->setPixelFormat(PixelFormatAsString());
   }
+  if (origin_trials::LowLatencyCanvasEnabled(&canvas()->GetDocument()))
+    settings->setLowLatency(canvas()->LowLatencyEnabled());
   return settings;
 }
 
