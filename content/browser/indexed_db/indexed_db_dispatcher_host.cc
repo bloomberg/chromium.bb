@@ -28,12 +28,6 @@ namespace content {
 
 namespace {
 
-const char kInvalidOrigin[] = "Origin is invalid";
-
-bool IsValidOrigin(const url::Origin& origin) {
-  return !origin.opaque();
-}
-
 blink::mojom::IDBStatus GetIndexedDBStatus(leveldb::Status status) {
   if (status.ok())
     return blink::mojom::IDBStatus::OK;
@@ -144,11 +138,6 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 void IndexedDBDispatcherHost::AddBinding(
     blink::mojom::IDBFactoryRequest request,
     const url::Origin& origin) {
-  if (!IsValidOrigin(origin)) {
-    mojo::ReportBadMessage(kInvalidOrigin);
-    return;
-  }
-
   bindings_.AddBinding(this, std::move(request), {origin});
 }
 
