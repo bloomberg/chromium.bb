@@ -135,7 +135,7 @@
     },
     {
       name: "BlinkGenPropertyTrees",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "BlinkRuntimeCallStats",
