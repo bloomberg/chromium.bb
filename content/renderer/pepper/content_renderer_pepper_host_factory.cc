@@ -17,7 +17,6 @@
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_audio_output_host.h"
 #include "content/renderer/pepper/pepper_camera_device_host.h"
-#include "content/renderer/pepper/pepper_compositor_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
@@ -67,19 +66,6 @@ static bool CanUseCameraDeviceAPI(RendererPpapiHost* host,
       document_url);
 }
 
-bool CanUseCompositorAPI(RendererPpapiHost* host, PP_Instance instance) {
-  blink::WebPluginContainer* container =
-      host->GetContainerForInstance(instance);
-  if (!container)
-    return false;
-
-  GURL document_url = container->GetDocument().Url();
-  ContentRendererClient* content_renderer_client =
-      GetContentClient()->renderer();
-  return content_renderer_client->IsPluginAllowedToUseCompositorAPI(
-      document_url);
-}
-
 }  // namespace
 
 ContentRendererPepperHostFactory::ContentRendererPepperHostFactory(
@@ -107,11 +93,6 @@ ContentRendererPepperHostFactory::CreateResourceHost(
 
   // Public interfaces.
   switch (message.type()) {
-    case PpapiHostMsg_Compositor_Create::ID: {
-      if (!CanUseCompositorAPI(host_, instance))
-        return nullptr;
-      return std::make_unique<PepperCompositorHost>(host_, instance, resource);
-    }
     case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
       std::string internal_path;

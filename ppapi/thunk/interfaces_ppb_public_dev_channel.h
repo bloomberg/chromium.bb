@@ -5,13 +5,12 @@
 // Please see inteface_ppb_public_stable for the documentation on the format of
 // this file.
 
+// no-include-guard-because-multiply-included
+
 #include "ppapi/thunk/interfaces_preamble.h"
 
 // Interfaces go here.
 PROXIED_IFACE(PPB_AUDIOENCODER_INTERFACE_0_1, PPB_AudioEncoder_0_1)
-PROXIED_IFACE(PPB_COMPOSITOR_INTERFACE_0_1, PPB_Compositor_0_1)
-PROXIED_IFACE(PPB_COMPOSITORLAYER_INTERFACE_0_1, PPB_CompositorLayer_0_1)
-PROXIED_IFACE(PPB_COMPOSITORLAYER_INTERFACE_0_2, PPB_CompositorLayer_0_2)
 PROXIED_IFACE(PPB_VIDEODECODER_INTERFACE_0_1, PPB_VideoDecoder_0_1)
 PROXIED_IFACE(PPB_VIDEOENCODER_INTERFACE_0_1, PPB_VideoEncoder_0_1)
 PROXIED_IFACE(PPB_VPNPROVIDER_INTERFACE_0_1, PPB_VpnProvider_0_1)

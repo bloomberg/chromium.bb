@@ -229,11 +229,6 @@ const char* const kPredefinedAllowedCameraDeviceOrigins[] = {
   "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
   "4EB74897CB187C7633357C2FE832E0AD6A44883A"
 };
-
-const char* const kPredefinedAllowedCompositorOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"
-};
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -350,8 +345,6 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (const char* origin : kPredefinedAllowedCameraDeviceOrigins)
     allowed_camera_device_origins_.insert(origin);
-  for (const char* origin : kPredefinedAllowedCompositorOrigins)
-    allowed_compositor_origins_.insert(origin);
 #endif
 }
 
@@ -1420,22 +1413,6 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
 #endif
 
   return false;
-}
-
-bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
-    const GURL& url) {
-#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePepperTesting))
-    return true;
-  if (IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_))
-    return true;
-
-  version_info::Channel channel = chrome::GetChannel();
-  return channel <= version_info::Channel::DEV;
-#else
-  return false;
-#endif
 }
 
 content::BrowserPluginDelegate*

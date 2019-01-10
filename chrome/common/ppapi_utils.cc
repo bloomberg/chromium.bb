@@ -31,8 +31,6 @@
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_audio_encoder.h"
-#include "ppapi/c/ppb_compositor.h"
-#include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"

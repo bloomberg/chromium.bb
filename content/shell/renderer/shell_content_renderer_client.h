@@ -42,7 +42,6 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of web tests?
-  bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 
   void DidInitializeWorkerContextOnWorkerThread(

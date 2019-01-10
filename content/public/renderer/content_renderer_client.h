@@ -295,9 +295,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if the page at |url| can use Pepper CameraDevice APIs.
   virtual bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url);
 
-  // Returns true if the page at |url| can use Pepper Compositor APIs.
-  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url);
-
   // Returns true if dev channel APIs are available for plugins.
   virtual bool IsPluginAllowedToUseDevChannelAPIs();
 
