@@ -94,6 +94,11 @@ const char kReportDeviceVersionInfo[] =
 const char kReportDeviceActivityTimes[] =
     "cros.device_status.report_activity_times";
 
+// A boolean pref that determines whether the board status should be
+// included in status reports to the device management server.
+const char kReportDeviceBoardStatus[] =
+    "cros.device_status.report_board_status";
+
 // A boolean pref that indicates whether the state of the dev mode switch at
 // boot should be reported along with device policy requests.
 const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
@@ -106,6 +111,16 @@ const char kReportDeviceLocation[] = "cros.device_status.report_location";
 // in device status reports to the device management server.
 const char kReportDeviceNetworkInterfaces[] =
     "cros.device_status.report_network_interfaces";
+
+// A boolean pref that determines whether the device power status should be
+// included in status reports to the device management server.
+const char kReportDevicePowerStatus[] =
+    "cros.device_status.report_power_status";
+
+// A boolean pref that determines whether the storage status should be
+// included in status reports to the device management server.
+const char kReportDeviceStorageStatus[] =
+    "cros.device_status.report_storage_status";
 
 // Determines whether the device reports recently logged in users in device
 // status reports to the device management server.

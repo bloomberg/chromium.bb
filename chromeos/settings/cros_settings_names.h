@@ -61,9 +61,12 @@ CHROMEOS_EXPORT extern const char kReleaseChannelDelegated[];
 
 CHROMEOS_EXPORT extern const char kReportDeviceVersionInfo[];
 CHROMEOS_EXPORT extern const char kReportDeviceActivityTimes[];
+CHROMEOS_EXPORT extern const char kReportDeviceBoardStatus[];
 CHROMEOS_EXPORT extern const char kReportDeviceBootMode[];
 CHROMEOS_EXPORT extern const char kReportDeviceLocation[];
 CHROMEOS_EXPORT extern const char kReportDeviceNetworkInterfaces[];
+CHROMEOS_EXPORT extern const char kReportDevicePowerStatus[];
+CHROMEOS_EXPORT extern const char kReportDeviceStorageStatus[];
 CHROMEOS_EXPORT extern const char kReportDeviceUsers[];
 CHROMEOS_EXPORT extern const char kReportDeviceHardwareStatus[];
 CHROMEOS_EXPORT extern const char kReportDeviceSessionStatus[];

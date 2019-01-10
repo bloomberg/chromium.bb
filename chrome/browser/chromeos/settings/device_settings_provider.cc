@@ -98,9 +98,12 @@ const char* const kKnownSettings[] = {
     kReleaseChannel,
     kReleaseChannelDelegated,
     kReportDeviceActivityTimes,
+    kReportDeviceBoardStatus,
     kReportDeviceBootMode,
     kReportDeviceHardwareStatus,
     kReportDeviceLocation,
+    kReportDevicePowerStatus,
+    kReportDeviceStorageStatus,
     kReportDeviceNetworkInterfaces,
     kReportDeviceSessionStatus,
     kReportDeviceUsers,
@@ -470,6 +473,18 @@ void DecodeReportingPolicies(
     if (reporting_policy.has_report_running_kiosk_app()) {
       new_values_cache->SetBoolean(kReportRunningKioskApp,
                                    reporting_policy.report_running_kiosk_app());
+    }
+    if (reporting_policy.has_report_power_status()) {
+      new_values_cache->SetBoolean(kReportDevicePowerStatus,
+                                   reporting_policy.report_power_status());
+    }
+    if (reporting_policy.has_report_storage_status()) {
+      new_values_cache->SetBoolean(kReportDeviceStorageStatus,
+                                   reporting_policy.report_storage_status());
+    }
+    if (reporting_policy.has_report_board_status()) {
+      new_values_cache->SetBoolean(kReportDeviceBoardStatus,
+                                   reporting_policy.report_board_status());
     }
     if (reporting_policy.has_device_status_frequency()) {
       new_values_cache->SetInteger(
