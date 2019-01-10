@@ -40,6 +40,12 @@ void PositionView(UIView* view, CGPoint point) {
 }  // namespace
 
 @interface GridCell ()
+// The constraints enabled under accessibility font size.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* accessibilityConstraints;
+// The constraints enabled under normal font size.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* nonAccessibilityConstraints;
 // Header height of the cell.
 @property(nonatomic, strong) NSLayoutConstraint* topBarHeight;
 // Visual components of the cell.
@@ -66,7 +72,6 @@ void PositionView(UIView* view, CGPoint point) {
 // Private properties.
 @synthesize topBarHeight = _topBarHeight;
 @synthesize topBar = _topBar;
-@synthesize iconView = _iconView;
 @synthesize snapshotView = _snapshotView;
 @synthesize titleLabel = _titleLabel;
 @synthesize closeIconView = _closeIconView;
@@ -130,6 +135,20 @@ void PositionView(UIView* view, CGPoint point) {
     [NSLayoutConstraint activateConstraints:constraints];
   }
   return self;
+}
+
+#pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  BOOL isPreviousAccessibilityCategory =
+      UIContentSizeCategoryIsAccessibilityCategory(
+          previousTraitCollection.preferredContentSizeCategory);
+  BOOL isCurrentAccessibilityCategory =
+      UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory);
+  if (isPreviousAccessibilityCategory ^ isCurrentAccessibilityCategory) {
+    [self updateTopBar];
+  }
 }
 
 #pragma mark - UICollectionViewCell
@@ -254,7 +273,15 @@ void PositionView(UIView* view, CGPoint point) {
   _titleLabel = titleLabel;
   _closeIconView = closeIconView;
 
-  NSArray* constraints = @[
+  _accessibilityConstraints = @[
+    [titleLabel.leadingAnchor
+        constraintEqualToAnchor:topBar.leadingAnchor
+                       constant:kGridCellHeaderLeadingInset],
+    [iconView.widthAnchor constraintEqualToConstant:0],
+    [iconView.heightAnchor constraintEqualToConstant:0],
+  ];
+
+  _nonAccessibilityConstraints = @[
     [iconView.leadingAnchor
         constraintEqualToAnchor:topBar.leadingAnchor
                        constant:kGridCellHeaderLeadingInset],
@@ -264,6 +291,9 @@ void PositionView(UIView* view, CGPoint point) {
     [titleLabel.leadingAnchor
         constraintEqualToAnchor:iconView.trailingAnchor
                        constant:kGridCellHeaderLeadingInset],
+  ];
+
+  NSArray* constraints = @[
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [titleLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:closeIconView.leadingAnchor
@@ -283,7 +313,23 @@ void PositionView(UIView* view, CGPoint point) {
                                       forAxis:UILayoutConstraintAxisHorizontal];
   [closeIconView setContentHuggingPriority:UILayoutPriorityRequired
                                    forAxis:UILayoutConstraintAxisHorizontal];
+
+  [self updateTopBar];
   return topBar;
+}
+
+// Update constraints of top bar when system font size changes. If accessibility
+// font size is chosen, the favicon will be hidden, and the title text will be
+// shown in two lines.
+- (void)updateTopBar {
+  if (UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory)) {
+    [NSLayoutConstraint deactivateConstraints:_nonAccessibilityConstraints];
+    [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
+  } else {
+    [NSLayoutConstraint deactivateConstraints:_accessibilityConstraints];
+    [NSLayoutConstraint activateConstraints:_nonAccessibilityConstraints];
+  }
 }
 
 // Sets up the selection border. The tint color is set when the theme is
