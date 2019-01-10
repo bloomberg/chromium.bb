@@ -49,7 +49,6 @@ public:
 
   virtual void StartPreXmppAuth(
     const Jid& jid,
-    const rtc::SocketAddress& server,
     const std::string& pass,
     const std::string& auth_mechanism,
     const std::string& auth_token) = 0;
