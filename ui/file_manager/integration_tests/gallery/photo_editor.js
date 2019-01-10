@@ -278,6 +278,47 @@ function resizeImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Tests deleting an image while editing to ensure the edit toolbar
+ * is hidden.
+ *
+ * For reference: crbug.com/912489
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function deleteImageWhileEditing(testVolumeName, volumeType) {
+  var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
+  return launchedPromise.then(function(args) {
+    var appId = args.appId;
+
+    return gallery.waitAndClickElement(appId, 'button.delete')
+        .then(result => {
+          chrome.test.assertTrue(!!result);
+          // Wait and click delete button of confirmation dialog.
+          return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
+        })
+        .then(() => {
+          // Wait for the edit mode toolbar to hide.
+          return repeatUntil(function() {
+            return gallery
+                .waitForElementStyles(
+                    appId, '.edit-mode-toolbar', ['visibility'])
+                .then(function(result) {
+                  if (result.styles.visibility != 'hidden') {
+                    return pending(
+                        'Expected edit-mode-toolbar to be hidden but was %s',
+                        result.styles.visibility);
+                  }
+                  return result;
+                });
+          });
+        });
+  });
+}
+
+/**
  * Tests whether overwrite original checkbox is enabled or disabled properly.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -438,4 +479,20 @@ testcase.enableDisableOverwriteOriginalCheckboxOnDownloads = function() {
  */
 testcase.enableDisableOverwriteOriginalCheckboxOnDrive = function() {
   return enableDisableOverwriteOriginalCheckbox('drive', 'drive');
+};
+
+/**
+ * The deleteImageWhileEditing test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteImageWhileEditingOnDownloads = function() {
+  return deleteImageWhileEditing('local', 'downloads');
+};
+
+/**
+ * The deleteImageWhileEditing test for Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteImageWhileEditingOnDrive = function() {
+  return deleteImageWhileEditing('drive', 'drive');
 };

@@ -355,4 +355,14 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ShiftSelectFromNothingSelectedOnDrive
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageWhileEditingOnDownloads) {
+  set_test_case_name("deleteImageWhileEditingOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageWhileEditingOnDrive) {
+  set_test_case_name("deleteImageWhileEditingOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager
