@@ -621,6 +621,9 @@ class WebLocalFrame : public WebFrame {
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
+  // Dispatches an event when a Portal gets activated.
+  virtual void OnPortalActivated() = 0;
+
   // Scheduling ---------------------------------------------------------------
 
   virtual FrameScheduler* Scheduler() const = 0;
