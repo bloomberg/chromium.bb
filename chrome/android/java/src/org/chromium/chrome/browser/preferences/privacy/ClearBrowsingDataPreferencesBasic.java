@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -40,8 +40,7 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
 
         historyCheckbox.setLinkClickDelegate(() -> {
             new TabDelegate(false /* incognito */)
-                    .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD,
-                            TabModel.TabLaunchType.FROM_CHROME_UI);
+                    .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD, TabLaunchType.FROM_CHROME_UI);
         });
 
         if (ChromeSigninController.get().isSignedIn()) {

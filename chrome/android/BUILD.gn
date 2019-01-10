@@ -406,6 +406,7 @@ android_library("chrome_java") {
     "//components/signin/core/browser:investigated_scenario_java",
     "//components/supervised_user_error_page:enums_srcjar",
     "//components/ui_metrics:ui_metrics_enums_java",
+    "//chrome/browser/ui:tab_model_enums_java",
     ":vr_build_config",
   ]
 

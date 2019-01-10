@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 
 /**
  * This class acts as a controller for determining where tabs should be inserted

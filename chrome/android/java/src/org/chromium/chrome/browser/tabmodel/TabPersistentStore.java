@@ -629,8 +629,9 @@ public class TabPersistentStore extends TabPersister {
             }
 
             Log.w(TAG, "Failed to restore TabState; creating Tab with last known URL.");
-            Tab fallbackTab = mTabCreatorManager.getTabCreator(isIncognito).createNewTab(
-                    new LoadUrlParams(tabToRestore.url), TabModel.TabLaunchType.FROM_RESTORE, null);
+            Tab fallbackTab = mTabCreatorManager.getTabCreator(isIncognito)
+                                      .createNewTab(new LoadUrlParams(tabToRestore.url),
+                                              TabLaunchType.FROM_RESTORE, null);
 
             if (fallbackTab == null) return;
 

@@ -129,8 +129,8 @@ public abstract class TabModelJniBridge implements TabModel {
      */
     @CalledByNative
     protected Tab createNewTabForDevTools(String url) {
-        return getTabCreator(false).createNewTab(new LoadUrlParams(url),
-                TabModel.TabLaunchType.FROM_CHROME_UI, null);
+        return getTabCreator(false).createNewTab(
+                new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, null);
     }
 
     @Override

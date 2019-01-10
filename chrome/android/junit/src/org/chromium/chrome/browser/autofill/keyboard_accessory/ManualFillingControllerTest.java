@@ -23,10 +23,10 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutProperties.TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_NEW;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_USER;
+import static org.chromium.chrome.browser.tabmodel.TabLaunchType.FROM_BROWSER_ACTIONS;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_CLOSE;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_NEW;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;

@@ -37,34 +37,64 @@ class TabModelObserver;
 // with Android's Tabs and Tab Model.
 class TabModel : public content::NotificationObserver {
  public:
-  // TODO(chrisha): Clean up these enums so that the Java ones are generated
-  // from them.
-  // https://chromium.googlesource.com/chromium/src/+/lkcr/docs/android_accessing_cpp_enums_in_java.md
-
-  // Various ways tabs can be launched. See TabModel.java.
+  // Various ways tabs can be launched.
+  // Values must be numbered from 0 and can't have gaps.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.tabmodel
   enum class TabLaunchType {
+    // Opened from a link. Sets up a relationship between the newly created tab
+    // and its parent.
     FROM_LINK,
+    // Opened by an external app.
     FROM_EXTERNAL_APP,
+    // Catch-all for Tabs opened by Chrome UI not covered by more specific
+    // TabLaunchTypes.
+    // Examples include:
+    // - Tabs created by the options menu.
+    // - Tabs created via the New Tab button in the tab stack overview.
+    // - Tabs created via Push Notifications.
+    // - Tabs opened via a keyboard shortcut.
     FROM_CHROME_UI,
+    // Opened during the restoration process on startup or when merging two
+    //  instances of
+    // Chrome in Android N+ multi-instance mode.
     FROM_RESTORE,
+    // Opened from the long press context menu. Will be brought to the
+    // foreground.
+    // Like FROM_CHROME_UI, but also sets up a parent/child relationship like
+    // FROM_LINK.
     FROM_LONGPRESS_FOREGROUND,
+    // Opened from the long press context menu. Will not be brought to the
+    // foreground.
+    // Like FROM_CHROME_UI, but also sets up a parent/child relationship like
+    // FROM_LINK.
     FROM_LONGPRESS_BACKGROUND,
+    // Changed windows by moving from one activity to another. Will be opened
+    // in the foreground.
     FROM_REPARENTING,
+    // Opened from a launcher shortcut.
     FROM_LAUNCHER_SHORTCUT,
+    // The tab is created by CCT in the background and detached from
+    // ChromeActivity.
     FROM_SPECULATIVE_BACKGROUND_CREATION,
+    // Opened in the background from Browser Actions context menu.
     FROM_BROWSER_ACTIONS,
-
     // Must be last.
     SIZE
   };
 
-  // Various ways tabs can be selected. See TabModel.java.
+  // Various ways tabs can be selected.
+  // Values must be numbered from 0 and can't have gaps.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.tabmodel
   enum class TabSelectionType {
+    // Selection of adjacent tab when the active tab is closed in foreground.
     FROM_CLOSE,
+    // Selection of adjacent tab when the active tab is closed upon app exit.
     FROM_EXIT,
+    // Selection of newly created tab (e.g. for a URL intent or NTP).
     FROM_NEW,
+    // User-originated switch to existing tab or selection of main tab on app
+    // startup.
     FROM_USER,
-
     // Must be last.
     SIZE
   };

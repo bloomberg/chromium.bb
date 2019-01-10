@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**

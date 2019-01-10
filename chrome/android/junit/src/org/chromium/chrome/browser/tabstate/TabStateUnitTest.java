@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -39,7 +39,7 @@ public class TabStateUnitTest {
     private static final int THEME_COLOR = 4;
     private static final boolean SHOULD_PRESERVE = true;
     private static final String OPENER_APP_ID = "test";
-    private static final @Nullable @TabModel.TabLaunchType Integer LAUNCH_TYPE_AT_CREATION = null;
+    private static final @Nullable @TabLaunchType Integer LAUNCH_TYPE_AT_CREATION = null;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

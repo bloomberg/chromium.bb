@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.EphemeralTabSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
@@ -151,8 +151,7 @@ public class EphemeralTabPanel extends OverlayPanel {
             } else if (canPromoteToNewTab() && mUrl != null) {
                 closePanel(StateChangeReason.TAB_PROMOTION, false);
                 mActivity.getCurrentTabCreator().createNewTab(
-                        new LoadUrlParams(mUrl, PageTransition.LINK),
-                        TabModel.TabLaunchType.FROM_LINK,
+                        new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
                         mActivity.getActivityTabProvider().getActivityTab());
             }
         }

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.subresource_filter.TestSubresourceFilterPublisher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -147,7 +148,7 @@ public final class SubresourceFilterTest {
         TabModel tabModel = mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
         ThreadUtils.runOnUiThreadBlocking(() -> tabModel.addObserver(new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabModel.TabLaunchType int type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (tab.getUrl().equals(LEARN_MORE_PAGE)) tabCreatedCallback.notifyCalled();
             }
         }));

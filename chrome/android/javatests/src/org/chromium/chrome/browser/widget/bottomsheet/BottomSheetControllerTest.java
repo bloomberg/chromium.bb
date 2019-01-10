@@ -26,8 +26,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
@@ -210,7 +210,7 @@ public class BottomSheetControllerTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             activity.getTabModelSelector().getCurrentModel().setIndex(
-                    originalTabIndex, TabModel.TabSelectionType.FROM_USER);
+                    originalTabIndex, TabSelectionType.FROM_USER);
         });
 
         // Request content be shown again.
@@ -280,8 +280,7 @@ public class BottomSheetControllerTest {
         mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().addObserver(
                 new EmptyTabModelObserver() {
                     @Override
-                    public void didSelectTab(
-                            Tab tab, @TabModel.TabSelectionType int type, int lastId) {
+                    public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                         tabSelectedHelper.notifyCalled();
                     }
                 });
@@ -290,8 +289,8 @@ public class BottomSheetControllerTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getActivity().getTabCreator(false).createNewTab(
-                    new LoadUrlParams("about:blank"),
-                    TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
+                    new LoadUrlParams("about:blank"), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                    null);
         });
 
         tabSelectedHelper.waitForCallback(previousCallCount, 1);

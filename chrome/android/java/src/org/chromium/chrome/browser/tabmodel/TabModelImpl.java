@@ -162,7 +162,7 @@ public class TabModelImpl extends TabModelJniBridge {
             for (TabModelObserver obs : mObservers) obs.didAddTab(tab, type);
 
             // setIndex takes care of making sure the appropriate model is active.
-            if (selectTab) setIndex(newIndex, TabModel.TabSelectionType.FROM_NEW);
+            if (selectTab) setIndex(newIndex, TabSelectionType.FROM_NEW);
         } finally {
             TraceEvent.end("TabModelImpl.addTab");
         }

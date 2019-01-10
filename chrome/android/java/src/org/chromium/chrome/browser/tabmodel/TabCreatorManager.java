@@ -10,7 +10,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
@@ -39,7 +38,7 @@ public interface TabCreatorManager {
          */
         @Nullable
         public abstract Tab createNewTab(
-                LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type, Tab parent);
+                LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent);
 
         /**
          * On restore, allows us to create a frozen version of a tab using saved tab state we read
@@ -60,7 +59,7 @@ public interface TabCreatorManager {
          * @return The new tab or null if no tab was created.
          */
         @Nullable
-        public abstract Tab launchUrl(String url, @TabModel.TabLaunchType int type);
+        public abstract Tab launchUrl(String url, @TabLaunchType int type);
 
         /**
          * Creates a Tab to host the given WebContents.
@@ -94,7 +93,7 @@ public interface TabCreatorManager {
         public final void launchNTP() {
             try {
                 TraceEvent.begin("TabCreator.launchNTP");
-                launchUrl(UrlConstants.NTP_URL, TabModel.TabLaunchType.FROM_CHROME_UI);
+                launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             } finally {
                 TraceEvent.end("TabCreator.launchNTP");
             }
