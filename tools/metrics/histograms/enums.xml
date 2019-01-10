@@ -55856,6 +55856,14 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Shortcut CLSID is Unknown"/>
 </enum>
 
+<enum name="WindowsUniqueLocalFontInstantiationResult">
+  <int value="0" label="Font instantiation succeeded"/>
+  <int value="1"
+      label="Font instantiation failed, font outside of Windows Fonts
+             directory."/>
+  <int value="2" label="Font instantiation failed, reason unknown."/>
+</enum>
+
 <enum name="WindowsVersion">
   <int value="0" label="Pre-XP"/>
   <int value="1" label="XP"/>
