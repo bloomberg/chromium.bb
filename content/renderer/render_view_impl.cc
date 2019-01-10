@@ -786,6 +786,11 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->SetSpatialNavigationEnabled(prefs.spatial_navigation_enabled);
+  // Spatnav depends on KeyboardFocusableScrollers. The WebUI team has
+  // disabled KFS because they need more time to update their custom elements,
+  // crbug.com/907284. Meanwhile, we pre-ship KFS to spatnav users.
+  if (prefs.spatial_navigation_enabled)
+    WebRuntimeFeatures::EnableKeyboardFocusableScrollers(true);
 
   settings->SetSelectionIncludesAltImageText(true);
 

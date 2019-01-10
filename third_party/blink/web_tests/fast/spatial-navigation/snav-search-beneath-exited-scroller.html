@@ -14,7 +14,7 @@
 </style>
 
 <button id="a">a</button><br>
-<div>
+<div id="scroller">
   <button id='b'>b</button>
   <p>some text</p>
 </div>
@@ -26,6 +26,7 @@ off screen, #c is reachable once the div is fully scrolled.</p>
 <script>
   let resultMap = [
     ['Down', 'a'],
+    ['Down', 'scroller'],
     ['Down', 'b'],
     ['Down', 'b'],
     ['Down', 'b'],
