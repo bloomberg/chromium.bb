@@ -536,7 +536,6 @@ void SetUpV8() {
   const char* recommended = FPDF_GetRecommendedV8Flags();
   v8::V8::SetFlagsFromString(recommended, strlen(recommended));
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
   DCHECK(!g_isolate_holder);
   g_isolate_holder = new gin::IsolateHolder(

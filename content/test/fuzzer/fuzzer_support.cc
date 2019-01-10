@@ -42,7 +42,6 @@ Env::Env() {
   gin::V8Initializer::LoadV8Natives();
 #endif
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
   adapter = std::make_unique<RenderViewTestAdapter>();

@@ -46,12 +46,6 @@ class GIN_EXPORT IsolateHolder {
     kAllowAtomicsWait
   };
 
-  // Indicates whether V8 works with stable or experimental v8 extras.
-  enum V8ExtrasMode {
-    kStableV8Extras,
-    kStableAndExperimentalV8Extras,
-  };
-
   // Indicates how the Isolate instance will be created.
   enum class IsolateCreationMode {
     kNormal,
@@ -96,7 +90,6 @@ class GIN_EXPORT IsolateHolder {
   // external references, |reference_table| needs to point an array of those
   // reference pointers. Otherwise, it can be nullptr.
   static void Initialize(ScriptMode mode,
-                         V8ExtrasMode v8_extras_mode,
                          v8::ArrayBuffer::Allocator* allocator,
                          const intptr_t* reference_table = nullptr);
 

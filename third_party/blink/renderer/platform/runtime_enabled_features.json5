@@ -461,10 +461,6 @@
       status: "experimental"
     },
     {
-      name: "ExperimentalV8Extras",
-      status: "experimental",
-    },
-    {
       name: "ExtendedTextMetrics",
       status: "experimental",
     },

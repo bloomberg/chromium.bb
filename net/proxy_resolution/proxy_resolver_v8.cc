@@ -392,7 +392,6 @@ class SharedIsolateFactory {
 
         gin::IsolateHolder::Initialize(
             gin::IsolateHolder::kNonStrictMode,
-            gin::IsolateHolder::kStableV8Extras,
             gin::ArrayBufferAllocator::SharedInstance());
 
         has_initialized_v8_ = true;
