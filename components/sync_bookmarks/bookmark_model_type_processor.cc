@@ -206,9 +206,9 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   const bool got_new_encryption_requirements =
       bookmark_tracker_->model_type_state().encryption_key_name() !=
       model_type_state.encryption_key_name();
-  updates_handler.Process(updates, got_new_encryption_requirements);
   bookmark_tracker_->set_model_type_state(
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
+  updates_handler.Process(updates, got_new_encryption_requirements);
   // Schedule save just in case one is needed.
   schedule_save_closure_.Run();
 }

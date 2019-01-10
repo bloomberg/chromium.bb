@@ -10,12 +10,14 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync_bookmarks/bookmark_model_merger.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -790,7 +792,7 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
 }
 
 TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
-     ShouldRecommitWhenEncryptionKeyNameMistmatch) {
+     ShouldRecommitWhenEncryptionIsOutOfDate) {
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
       bookmarks::TestBookmarkClient::CreateModel();
   auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
@@ -811,7 +813,7 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       CreateUpdateResponseData(/*server_id=*/kId0,
                                /*parent_id=*/kBookmarkBarId,
                                /*is_deletion=*/false);
-  response_data.encryption_key_name = "another_encryption_key_name";
+  response_data.encryption_key_name = "out_of_date_encryption_key_name";
   updates.push_back(response_data);
 
   BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
@@ -853,6 +855,73 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   // and synced down.
   EXPECT_THAT(tracker.GetEntityForSyncId(kBookmarkBarId)->IsUnsynced(),
               Eq(false));
+}
+
+TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
+     ShouldNotRecommitWhenEncryptionKeyNameMistmatchWithConflictWithDeletions) {
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
+  model_type_state->set_encryption_key_name("encryption_key_name");
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::move(model_type_state));
+
+  const syncer::UpdateResponseDataList permanent_folder_updates =
+      CreatePermanentFoldersUpdateData();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&permanent_folder_updates, bookmark_model.get(),
+                      &favicon_service, &tracker)
+      .Merge();
+  // Create the bookmark with same encryption key name.
+  const std::string kId = "id";
+  const std::string kTitle = "title";
+  syncer::UpdateResponseDataList updates;
+  syncer::UpdateResponseData response_data =
+      CreateUpdateResponseData(/*server_id=*/kId,
+                               /*parent_id=*/kBookmarkBarId,
+                               /*is_deletion=*/false);
+  response_data.encryption_key_name = "encryption_key_name";
+  updates.push_back(response_data);
+
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
+  updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  // The bookmark has been added and tracked.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(tracker.GetEntityForSyncId(kId), NotNull());
+
+  // Remove the bookmark from the local bookmark model.
+  bookmark_model->Remove(bookmark_bar_node->GetChild(0));
+  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(0));
+
+  // Mark the entity as deleted locally.
+  tracker.MarkDeleted(/*sync_id=*/kId);
+  tracker.IncrementSequenceNumber(/*sync_id=*/kId);
+  ASSERT_THAT(tracker.GetEntityForSyncId(kId)->IsUnsynced(), Eq(true));
+
+  // Push a remote deletion for the same entity with an out of date encryption
+  // key name.
+  updates.clear();
+  response_data = CreateUpdateResponseData(/*server_id=*/kId,
+                                           /*parent_id=*/kBookmarkBarId,
+                                           /*is_deletion=*/true);
+  response_data.encryption_key_name = "out_of_date_encryption_key_name";
+  // Increment the server version to make sure the update isn't discarded as
+  // reflection.
+  response_data.response_version++;
+  updates.push_back(response_data);
+
+  base::HistogramTester histogram_tester;
+  updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+
+  // There should have been conflict, and it should have been resolved by
+  // removing local entity since both changes are deletions.
+  EXPECT_THAT(tracker.GetEntityForSyncId(kId), IsNull());
+  histogram_tester.ExpectBucketCount(
+      "Sync.ResolveConflict",
+      /*sample=*/syncer::ConflictResolution::CHANGES_MATCH, /*count=*/1);
 }
 
 TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
