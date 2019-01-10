@@ -76,6 +76,38 @@ std::ostream& operator<<(std::ostream& os, SandboxOption sandbox_option) {
   }
 }
 
+// Allow PageLoadMetricsTestWaiter to be initialized for a new web content
+// before the first commit.
+class PopupPageLoadMetricsWaiterInitializer : public TabStripModelObserver {
+ public:
+  PopupPageLoadMetricsWaiterInitializer(
+      TabStripModel* tab_strip_model,
+      std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>* waiter)
+      : waiter_(waiter), scoped_observer_(this) {
+    scoped_observer_.Add(tab_strip_model);
+  }
+
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() == TabStripModelChange::kInserted &&
+        selection.active_tab_changed()) {
+      DCHECK(waiter_ && !(*waiter_));
+      *waiter_ = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+          tab_strip_model->GetActiveWebContents());
+    }
+  }
+
+ private:
+  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>* waiter_ =
+      nullptr;
+  ScopedObserver<TabStripModel, PopupPageLoadMetricsWaiterInitializer>
+      scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PopupPageLoadMetricsWaiterInitializer);
+};
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -586,9 +618,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 }
 
 // Download gets blocked when LoadPolicy is DISALLOW for the navigation
-// to download
+// to download.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       DownloadBlocked) {
+                       SubframeNavigationDownloadBlockedByLoadPolicy) {
   ResetConfiguration(subresource_filter::Configuration(
       subresource_filter::mojom::ActivationLevel::kEnabled,
       subresource_filter::ActivationScope::ALL_SITES));
@@ -616,52 +648,155 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   OpenLinkInFrame(rfh, "blocked_nav_download_id", false /* gesture*/);
 
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectTotalCount("Download.FrameGesture", 0);
+  histogram_tester.ExpectTotalCount("Download.Subframe.SandboxOriginAdGesture",
+                                    0);
 }
 
-class MainFrameDownloadHasGestureBrowserTest
+class MainFrameDownloadFlagsBrowserTest
     : public AdsPageLoadMetricsObserverResourceBrowserTest,
       public ::testing::WithParamInterface<
-          std::tuple<Origin, bool /* has_gesture */>> {};
+          std::tuple<Origin,
+                     bool /* enable_blocking_downloads_in_sandbox */,
+                     SandboxOption,
+                     bool /* has_gesture */>> {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    bool enable_blocking_downloads_in_sandbox;
+    std::tie(std::ignore, enable_blocking_downloads_in_sandbox, std::ignore,
+             std::ignore) = GetParam();
+    std::string cmd = enable_blocking_downloads_in_sandbox
+                          ? "enable-blink-features"
+                          : "disable-blink-features";
+    command_line->AppendSwitchASCII(cmd, "BlockingDownloadsInSandbox");
+  }
+};
 
 // Main frame download events are reported correctly.
-IN_PROC_BROWSER_TEST_P(MainFrameDownloadHasGestureBrowserTest, Download) {
+IN_PROC_BROWSER_TEST_P(MainFrameDownloadFlagsBrowserTest, Download) {
   Origin origin;
+  bool enable_blocking_downloads_in_sandbox;
+  SandboxOption sandbox_option;
   bool has_gesture;
-  std::tie(origin, has_gesture) = GetParam();
-  SCOPED_TRACE(::testing::Message() << "origin = " << origin << ", "
-                                    << "has_gesture = " << has_gesture);
+  std::tie(origin, enable_blocking_downloads_in_sandbox, sandbox_option,
+           has_gesture) = GetParam();
+  SCOPED_TRACE(::testing::Message()
+               << "origin = " << origin << ", "
+               << "enable_blocking_downloads_in_sandbox = "
+               << enable_blocking_downloads_in_sandbox << ", "
+               << "sandbox_option = " << sandbox_option << ", "
+               << "has_gesture = " << has_gesture);
+
+  bool expected_download =
+      !enable_blocking_downloads_in_sandbox ||
+      sandbox_option != SandboxOption::kSandboxDisallowDownloads;
+  bool expected_sandbox_bit = !enable_blocking_downloads_in_sandbox &&
+                              sandbox_option != SandboxOption::kNoSandbox;
 
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  std::unique_ptr<content::DownloadTestObserver> download_observer(
-      new content::DownloadTestObserverTerminal(
-          content::BrowserContext::GetDownloadManager(browser()->profile()),
-          1 /* wait_count */,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "chrome/test/data/ad_tagging");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL main_url = embedded_test_server()->GetURL("foo.com", "/download.html");
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  std::string host_name = "foo.com";
+  GURL main_url = embedded_test_server()->GetURL(host_name, "/download.html");
+
+  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
+      web_feature_waiter;
+
+  if (sandbox_option == SandboxOption::kNoSandbox) {
+    if (expected_sandbox_bit) {
+      web_feature_waiter =
+          std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+              web_contents());
+    }
+    ui_test_utils::NavigateToURL(browser(), main_url);
+  } else {
+    GURL first_tab_url =
+        embedded_test_server()->GetURL(host_name, "/frame_factory.html");
+    ui_test_utils::NavigateToURL(browser(), first_tab_url);
+    const char* method = "createFrame";
+    std::string subframe_url =
+        embedded_test_server()->GetURL(host_name, "/frame_factory.html").spec();
+    const char* id = "test";
+    const char* sandbox_param =
+        sandbox_option == SandboxOption::kSandboxDisallowDownloads
+            ? "'allow-scripts allow-same-origin allow-popups'"
+            : "'allow-scripts allow-same-origin allow-popups allow-downloads'";
+    content::TestNavigationObserver navigation_observer(web_contents());
+    std::string script = base::StringPrintf(
+        "%s('%s','%s',%s);", method, subframe_url.c_str(), id, sandbox_param);
+    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16(script));
+    navigation_observer.Wait();
+
+    content::RenderFrameHost* child = content::FrameMatchingPredicate(
+        web_contents(), base::BindRepeating(&content::FrameMatchesName, id));
+
+    std::unique_ptr<PopupPageLoadMetricsWaiterInitializer> waiter_initializer;
+    if (expected_sandbox_bit) {
+      waiter_initializer =
+          std::make_unique<PopupPageLoadMetricsWaiterInitializer>(
+              browser()->tab_strip_model(), &web_feature_waiter);
+    }
+    content::TestNavigationObserver popup_observer(main_url);
+    popup_observer.StartWatchingNewWebContents();
+    EXPECT_TRUE(
+        ExecuteScript(child, "window.open(\"" + main_url.spec() + "\");"));
+    popup_observer.Wait();
+    ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  }
+
+  DCHECK(!expected_sandbox_bit || web_feature_waiter);
+  if (expected_sandbox_bit) {
+    blink::mojom::WebFeature feature =
+        origin == Origin::kNavigation
+            ? has_gesture ? blink::mojom::WebFeature::
+                                kNavigationDownloadInSandboxWithUserGesture
+                          : blink::mojom::WebFeature::
+                                kNavigationDownloadInSandboxWithoutUserGesture
+            : has_gesture
+                  ? blink::mojom::WebFeature::
+                        kHTMLAnchorElementDownloadInSandboxWithUserGesture
+                  : blink::mojom::WebFeature::
+                        kHTMLAnchorElementDownloadInSandboxWithoutUserGesture;
+    web_feature_waiter->AddWebFeatureExpectation(feature);
+  }
 
   std::string link_id =
       origin == Origin::kNavigation ? "nav_download_id" : "anchor_download_id";
 
+  std::unique_ptr<content::DownloadTestObserver> download_observer(
+      new content::DownloadTestObserverTerminal(
+          content::BrowserContext::GetDownloadManager(browser()->profile()),
+          expected_download /* wait_count */,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   OpenLinkInFrame(web_contents(), link_id, has_gesture);
-
   download_observer->WaitForFinished();
+  if (web_feature_waiter)
+    web_feature_waiter->Wait();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectUniqueSample("Download.MainFrame.HasGesture",
-                                      has_gesture, 1 /* expected_count */);
+
+  if (!expected_download) {
+    histogram_tester.ExpectTotalCount("Download.MainFrame.SandboxGesture",
+                                      0 /* expected_count */);
+    return;
+  }
+
+  blink::DownloadStats::MainFrameDownloadFlags expected_flags;
+  expected_flags.has_sandbox = expected_sandbox_bit;
+  expected_flags.has_gesture = has_gesture;
+  histogram_tester.ExpectUniqueSample("Download.MainFrame.SandboxGesture",
+                                      expected_flags.ToUmaValue(),
+                                      1 /* expected_count */);
 
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::MainFrameDownload::kEntryName);
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntrySourceHasUrl(entries.back(), main_url);
+  ukm_recorder.ExpectEntryMetric(
+      entries.back(), ukm::builders::MainFrameDownload::kHasSandboxName,
+      expected_sandbox_bit);
   ukm_recorder.ExpectEntryMetric(
       entries.back(), ukm::builders::MainFrameDownload::kHasGestureName,
       has_gesture);
@@ -669,10 +804,14 @@ IN_PROC_BROWSER_TEST_P(MainFrameDownloadHasGestureBrowserTest, Download) {
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    MainFrameDownloadHasGestureBrowserTest,
-    ::testing::Combine(::testing::Values(Origin::kNavigation,
-                                         Origin::kAnchorAttribute),
-                       ::testing::Bool()));
+    MainFrameDownloadFlagsBrowserTest,
+    ::testing::Combine(
+        ::testing::Values(Origin::kNavigation, Origin::kAnchorAttribute),
+        ::testing::Bool(),
+        ::testing::Values(SandboxOption::kNoSandbox,
+                          SandboxOption::kSandboxDisallowDownloads,
+                          SandboxOption::kSandboxAllowDownloads),
+        ::testing::Bool()));
 
 class SubframeDownloadDownloadFlagsBrowserTest
     : public AdsPageLoadMetricsObserverResourceBrowserTest,
@@ -715,20 +854,16 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadDownloadFlagsBrowserTest, Download) {
 
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  size_t expected_download_count =
-      enable_blocking_downloads_in_sandbox &&
-              sandbox_option == SandboxOption::kSandboxDisallowDownloads
-          ? 0
-          : 1;
-  bool expected_sandbox_bit =
-      enable_blocking_downloads_in_sandbox
-          ? sandbox_option == SandboxOption::kSandboxDisallowDownloads
-          : sandbox_option != SandboxOption::kNoSandbox;
+  bool expected_download =
+      !enable_blocking_downloads_in_sandbox ||
+      sandbox_option != SandboxOption::kSandboxDisallowDownloads;
+  bool expected_sandbox_bit = !enable_blocking_downloads_in_sandbox &&
+                              sandbox_option != SandboxOption::kNoSandbox;
 
   std::unique_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverTerminal(
           content::BrowserContext::GetDownloadManager(browser()->profile()),
-          expected_download_count /* wait_count */,
+          expected_download /* wait_count */,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -740,32 +875,30 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadDownloadFlagsBrowserTest, Download) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   std::unique_ptr<AdsPageLoadMetricsTestWaiter> waiter;
-  if (expected_download_count > 0) {
-    if (is_ad_frame) {
-      if (!waiter)
-        waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
-      blink::mojom::WebFeature feature =
-          has_gesture
-              ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
-              : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture;
-      waiter->AddWebFeatureExpectation(feature);
-    }
-    if (expected_sandbox_bit) {
-      if (!waiter)
-        waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
-      blink::mojom::WebFeature feature =
-          origin == Origin::kNavigation
-              ? has_gesture ? blink::mojom::WebFeature::
-                                  kNavigationDownloadInSandboxWithUserGesture
-                            : blink::mojom::WebFeature::
-                                  kNavigationDownloadInSandboxWithoutUserGesture
-              : has_gesture
-                    ? blink::mojom::WebFeature::
-                          kHTMLAnchorElementDownloadInSandboxWithUserGesture
-                    : blink::mojom::WebFeature::
-                          kHTMLAnchorElementDownloadInSandboxWithoutUserGesture;
-      waiter->AddWebFeatureExpectation(feature);
-    }
+  if (expected_download && is_ad_frame) {
+    if (!waiter)
+      waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
+    blink::mojom::WebFeature feature =
+        has_gesture
+            ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
+            : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture;
+    waiter->AddWebFeatureExpectation(feature);
+  }
+  if (expected_sandbox_bit) {
+    if (!waiter)
+      waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
+    blink::mojom::WebFeature feature =
+        origin == Origin::kNavigation
+            ? has_gesture ? blink::mojom::WebFeature::
+                                kNavigationDownloadInSandboxWithUserGesture
+                          : blink::mojom::WebFeature::
+                                kNavigationDownloadInSandboxWithoutUserGesture
+            : has_gesture
+                  ? blink::mojom::WebFeature::
+                        kHTMLAnchorElementDownloadInSandboxWithUserGesture
+                  : blink::mojom::WebFeature::
+                        kHTMLAnchorElementDownloadInSandboxWithoutUserGesture;
+    waiter->AddWebFeatureExpectation(feature);
   }
 
   std::string host_name = "foo.com";
@@ -806,13 +939,13 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadDownloadFlagsBrowserTest, Download) {
     waiter->Wait();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  if (expected_download_count == 0) {
+  if (!expected_download) {
     histogram_tester.ExpectTotalCount(
         "Download.Subframe.SandboxOriginAdGesture", 0 /* expected_count */);
     return;
   }
 
-  blink::DownloadStats::DownloadFlags expected_flags;
+  blink::DownloadStats::SubframeDownloadFlags expected_flags;
   expected_flags.has_sandbox =
       enable_blocking_downloads_in_sandbox
           ? sandbox_option == SandboxOption::kSandboxDisallowDownloads
@@ -820,9 +953,8 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadDownloadFlagsBrowserTest, Download) {
   expected_flags.is_cross_origin = is_cross_origin;
   expected_flags.is_ad_frame = is_ad_frame;
   expected_flags.has_gesture = has_gesture;
-  unsigned expected_value = blink::DownloadStats::ToUmaValue(expected_flags);
   histogram_tester.ExpectUniqueSample(
-      "Download.Subframe.SandboxOriginAdGesture", expected_value,
+      "Download.Subframe.SandboxOriginAdGesture", expected_flags.ToUmaValue(),
       1 /* expected_count */);
 
   auto entries = ukm_recorder.GetEntriesByName(

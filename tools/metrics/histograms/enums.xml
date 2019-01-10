@@ -33161,6 +33161,19 @@ from previous Chrome versions.
   <int value="1999" label="Unknown CBError code"/>
 </enum>
 
+<enum name="MainFrameDownloadSandboxGesture">
+  <summary>
+    For a download that occurs in top frame, record whether the frame is
+    sandboxed and whether the download involves a transient user gesture. It is
+    only recorded for downloads originated from navigations or from HTML anchor
+    download attributes.
+  </summary>
+  <int value="0" label="NotSandboxed_NoGesture"/>
+  <int value="1" label="NotSandboxed_Gesture"/>
+  <int value="2" label="Sandboxed_NoGesture"/>
+  <int value="3" label="Sandboxed_Gesture"/>
+</enum>
+
 <enum name="MainFrameStorable">
   <int value="0" label="Storable"/>
   <int value="1" label="cache-control: no-store"/>

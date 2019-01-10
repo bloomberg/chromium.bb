@@ -22,28 +22,39 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DownloadStats {
  public:
-  struct DownloadFlags {
+  struct BLINK_COMMON_EXPORT MainFrameDownloadFlags {
+    bool has_sandbox;
+    bool has_gesture;
+
+    MainFrameDownloadFlags() = default;
+
+    unsigned ToUmaValue() const;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MainFrameDownloadFlags);
+  };
+
+  struct BLINK_COMMON_EXPORT SubframeDownloadFlags {
     bool has_sandbox;
     bool is_cross_origin;
     bool is_ad_frame;
     bool has_gesture;
 
-    DownloadFlags() = default;
+    SubframeDownloadFlags() = default;
+
+    unsigned ToUmaValue() const;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(DownloadFlags);
+    DISALLOW_COPY_AND_ASSIGN(SubframeDownloadFlags);
   };
 
-  // It's only public for testing purposes.
-  static unsigned ToUmaValue(const DownloadFlags& flags);
-
-  // Log the gesture bit for main frame download to UMA and UKM.
-  static void RecordMainFrameHasGesture(bool has_gesture,
-                                        ukm::SourceId source_id,
-                                        ukm::UkmRecorder* ukm_recorder);
+  // Log the bits in |flags| for a main frame download to UMA and UKM.
+  static void RecordMainFrameDownloadFlags(const MainFrameDownloadFlags& flags,
+                                           ukm::SourceId source_id,
+                                           ukm::UkmRecorder* ukm_recorder);
 
   // Log the bits in |flags| for a subframe download to UMA and UKM.
-  static void RecordSubframeDownloadFlags(const DownloadFlags& flags,
+  static void RecordSubframeDownloadFlags(const SubframeDownloadFlags& flags,
                                           ukm::SourceId source_id,
                                           ukm::UkmRecorder* ukm_recorder);
 
@@ -52,11 +63,17 @@ class BLINK_COMMON_EXPORT DownloadStats {
 
   // These values are used to construct an enum in UMA. They should never be
   // changed.
-  static constexpr unsigned kGestureBit = 0x1 << 0;
-  static constexpr unsigned kAdBit = 0x1 << 1;
-  static constexpr unsigned kCrossOriginBit = 0x1 << 2;
-  static constexpr unsigned kSandboxBit = 0x1 << 3;
+  static constexpr unsigned kSubframeGestureBit = 0x1 << 0;
+  static constexpr unsigned kSubframeAdBit = 0x1 << 1;
+  static constexpr unsigned kSubframeCrossOriginBit = 0x1 << 2;
+  static constexpr unsigned kSubframeSandboxBit = 0x1 << 3;
   static constexpr unsigned kCountSandboxOriginAdGesture = 16;
+
+  // These values are used to construct an enum in UMA. They should never be
+  // changed.
+  static constexpr unsigned kMainFrameGestureBit = 0x1 << 0;
+  static constexpr unsigned kMainFrameSandboxBit = 0x1 << 1;
+  static constexpr unsigned kCountSandboxGesture = 4;
 };
 
 }  // namespace blink
