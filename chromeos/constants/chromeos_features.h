@@ -19,6 +19,7 @@ CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
 CHROMEOS_EXPORT extern const base::Feature kAutoScreenBrightness;
 CHROMEOS_EXPORT extern const base::Feature
     kAutoScreenBrightnessContinuedAdjustment;
+CHROMEOS_EXPORT extern const base::Feature kCrostiniBackup;
 CHROMEOS_EXPORT extern const base::Feature kCrostiniFiles;
 CHROMEOS_EXPORT extern const base::Feature kCrostiniUsbSupport;
 CHROMEOS_EXPORT extern const base::Feature kCryptAuthV2Enrollment;
