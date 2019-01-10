@@ -104,10 +104,6 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
         remove_mask |=
             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
         break;
-      case browsing_data::BrowsingDataType::MEDIA_LICENSES:
-        // Media licenses are deleted as part of cookies.
-        NOTREACHED();
-        break;
       case browsing_data::BrowsingDataType::DOWNLOADS:
       case browsing_data::BrowsingDataType::HOSTED_APPS_DATA:
         // Only implemented on Desktop.

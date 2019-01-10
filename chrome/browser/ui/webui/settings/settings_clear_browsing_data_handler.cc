@@ -56,7 +56,6 @@ const char* kCounterPrefsAdvanced[] = {
     browsing_data::prefs::kDeleteDownloadHistory,
     browsing_data::prefs::kDeleteFormData,
     browsing_data::prefs::kDeleteHostedAppsData,
-    browsing_data::prefs::kDeleteMediaLicenses,
     browsing_data::prefs::kDeletePasswords,
     browsing_data::prefs::kDeleteSiteSettings,
 };
@@ -197,9 +196,6 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         remove_mask |=
             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
         break;
-      case BrowsingDataType::MEDIA_LICENSES:
-        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
-        break;
       case BrowsingDataType::HOSTED_APPS_DATA:
         remove_mask |= site_data_mask;
         origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
@@ -237,7 +233,6 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         BrowsingDataType::HISTORY,        BrowsingDataType::DOWNLOADS,
         BrowsingDataType::CACHE,          BrowsingDataType::COOKIES,
         BrowsingDataType::FORM_DATA,      BrowsingDataType::HOSTED_APPS_DATA,
-        BrowsingDataType::MEDIA_LICENSES,
     };
     static size_t num_other_types = base::size(other_types);
     int checked_other_types =

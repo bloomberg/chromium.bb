@@ -1131,7 +1131,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
   SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
@@ -1140,7 +1140,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
   // which should not remove the recently created Media License.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
                 delete_begin, kLastHour);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
@@ -1174,7 +1174,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
   SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));

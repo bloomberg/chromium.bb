@@ -275,8 +275,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteHostedAppsData] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[browsing_data::prefs::kDeleteMediaLicenses] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteTimePeriod] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[browsing_data::prefs::kDeleteTimePeriodBasic] =

@@ -10,7 +10,6 @@
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/downloads_counter.h"
-#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/counters/signin_data_counter.h"
 #include "chrome/browser/browsing_data/counters/site_data_counter.h"
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
@@ -107,10 +106,6 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeleteDownloadHistory) {
     return std::make_unique<DownloadsCounter>(profile);
-  }
-
-  if (pref_name == browsing_data::prefs::kDeleteMediaLicenses) {
-    return MediaLicensesCounter::Create(profile);
   }
 
   if (pref_name == browsing_data::prefs::kDeleteSiteSettings) {
