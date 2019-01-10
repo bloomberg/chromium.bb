@@ -138,8 +138,8 @@ Polymer({
    * to render immediately.
    *
    * @param {string} fileName The name of the PDF file.
-   * @param {ArrayBuffer} data The contents of the PDF document.
-   * @param {Viewport} viewport
+   * @param {!ArrayBuffer} data The contents of the PDF document.
+   * @param {!Viewport} viewport
    * @return {!Promise} void value.
    */
   load: async function(fileName, data, viewport) {
