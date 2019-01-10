@@ -281,18 +281,14 @@ testcase.fileSearchNotFound = async function() {
  * the default volume.
  */
 testcase.fileDisplayWithoutDownloadsVolume = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
+  // Mount Drive.
+  await sendTestMessage({name: 'mountDrive'});
 
-  // Unmount Downloads volume which the default volume.
-  await sendTestMessage({name: 'unmountDownloads'});
-
-  // Wait until all volumes are removed.
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 2, args);
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -306,18 +302,9 @@ testcase.fileDisplayWithoutDownloadsVolume = async function() {
  * Tests Files app opening without errors when there are no volumes at all.
  */
 testcase.fileDisplayWithoutVolumes = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
-
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
-
-  // Unmount all default volumes.
-  await sendTestMessage({name: 'unmountAllVolumes'});
-
-  // Wait until all volumes are removed.
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 0, args);
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -333,18 +320,9 @@ testcase.fileDisplayWithoutVolumes = async function() {
  * files.
  */
 testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
-
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
-
-  // Unmount all default volumes.
-  await sendTestMessage({name: 'unmountAllVolumes'});
-
-  // Wait until all volumes are removed.
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 0, args);
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -353,8 +331,11 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
   // Wait for Files app to finish loading.
   await remoteCall.waitFor('isFileManagerLoaded', appId, true);
 
-  // Remount Downloads.
+  // Mount Downloads.
   await sendTestMessage({name: 'mountDownloads'});
+
+  // Wait until Downloads is mounted.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
 
   // Downloads should appear in My files in the directory tree.
   await remoteCall.waitForElement(appId, '[volume-type-icon="downloads"]');
@@ -371,18 +352,9 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
  * files.
  */
 testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
-
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
-
-  // Unmount all default volumes.
-  await sendTestMessage({name: 'unmountAllVolumes'});
-
-  // Wait until all volumes are removed.
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 0, args);
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -402,6 +374,9 @@ testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
   // Drive FakeItem to My Drive.
   await sendTestMessage({name: 'mountDrive'});
 
+  // Wait until Drive is mounted.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+
   // Add an entry to Drive.
   await addEntries(['drive'], [ENTRIES.newlyAdded]);
 
@@ -413,21 +388,15 @@ testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
  * Tests Files app opening without Drive mounted.
  */
 testcase.fileDisplayWithoutDrive = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
-
-  // Unmount all default volumes.
-  await sendTestMessage({name: 'unmountAllVolumes'});
-
-  // Remount Downloads.
+  // Mount Downloads.
   await sendTestMessage({name: 'mountDownloads'});
 
   // Wait until downloads is re-added
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 1, args);
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
 
   // Open the files app.
   const appId = await setupAndWaitUntilReady(
@@ -437,7 +406,7 @@ testcase.fileDisplayWithoutDrive = async function() {
   await remoteCall.waitForElement(
       appId, '#list-container paper-progress[hidden]');
 
-  // Navigate to Drive.
+  // Navigate to the fake Google Drive.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['[root-type-icon=\'drive\']']);
   await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Google Drive');
@@ -455,24 +424,18 @@ testcase.fileDisplayWithoutDrive = async function() {
  * re-enabling Drive.
  */
 testcase.fileDisplayWithoutDriveThenDisable = async function() {
-  // Wait for the Files app background page to mount the default volumes.
-  const args = [];
+  // Ensure no volumes are mounted.
+  chrome.test.assertEq(
+      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
 
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 3, args);
-
-  // Unmount all default volumes.
-  await sendTestMessage({name: 'unmountAllVolumes'});
-
-  // Remount Downloads.
+  // Mount Downloads.
   await sendTestMessage({name: 'mountDownloads'});
 
   // Add a file to Downloads.
   await addEntries(['local'], [ENTRIES.newlyAdded]);
 
-  // Wait until all volumes are removed.
-  await remoteCall.waitFor(
-      'getVolumesCount', null, (count) => count === 1, args);
+  // Wait until it mounts.
+  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);

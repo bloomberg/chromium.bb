@@ -62,6 +62,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& DontMountVolumes() {
+    mount_no_volumes = true;
+    return *this;
+  }
+
   // Show the startup browser. Some tests invoke the file picker dialog during
   // the test. Requesting a file picker from a background page is forbidden by
   // the apps platform, and it's a bug that these tests do so.
@@ -104,6 +109,7 @@ struct TestCase {
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
+  bool mount_no_volumes = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
@@ -181,6 +187,10 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   bool GetIsOffline() const override { return GetParam().offline; }
 
+  bool GetStartWithNoVolumesMounted() const override {
+    return GetParam().mount_no_volumes;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
@@ -226,19 +236,28 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayUsbPartition"),
         TestCase("fileSearch"),
         TestCase("fileSearch").EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutDownloadsVolume"),
-        TestCase("fileDisplayWithoutDownloadsVolume").EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutVolumes"),
-        TestCase("fileDisplayWithoutVolumes").EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutVolumesThenMountDownloads"),
-        TestCase("fileDisplayWithoutVolumesThenMountDrive").DisableDriveFs(),
-        TestCase("fileDisplayWithoutVolumesThenMountDrive").EnableDriveFs(),
+        TestCase("fileDisplayWithoutDownloadsVolume").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDownloadsVolume")
+            .DontMountVolumes()
+            .EnableMyFilesVolume(),
+        TestCase("fileDisplayWithoutVolumes").DontMountVolumes(),
+        TestCase("fileDisplayWithoutVolumes")
+            .DontMountVolumes()
+            .EnableMyFilesVolume(),
+        TestCase("fileDisplayWithoutVolumesThenMountDownloads")
+            .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive")
+            .DontMountVolumes()
+            .EnableDriveFs(),
+        TestCase("fileDisplayWithoutVolumesThenMountDrive")
+            .DontMountVolumes()
             .EnableDriveFs()
             .EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutDrive"),
-        TestCase("fileDisplayWithoutDriveThenDisable"),
-        TestCase("fileDisplayWithoutDriveThenDisable").EnableMyFilesVolume(),
+        TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDriveThenDisable")
+            .DontMountVolumes()
+            .EnableMyFilesVolume(),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayMountWithFakeItemSelected").EnableMyFilesVolume(),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
