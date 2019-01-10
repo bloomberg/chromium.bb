@@ -1151,6 +1151,7 @@ TEST_F(NewPasswordFormManagerTest, Clone) {
   ASSERT_TRUE(cloned_manager->GetSubmittedForm());
   EXPECT_EQ(*form_manager_->GetSubmittedForm(),
             *cloned_manager->GetSubmittedForm());
+  EXPECT_TRUE(cloned_manager->is_submitted());
 }
 
 // Extracts the information whether parsing was successful from a metric
