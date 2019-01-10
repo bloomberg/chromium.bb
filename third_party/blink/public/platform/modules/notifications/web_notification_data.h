@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
 
+#include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -21,14 +22,9 @@ namespace blink {
 // ultimately WebNotificationData will also be replaced by the mojom one there
 // via Onion Soup effort.
 struct WebNotificationData {
-  enum Direction {
-    kDirectionLeftToRight,
-    kDirectionRightToLeft,
-    kDirectionAuto
-  };
-
   WebString title;
-  Direction direction = kDirectionLeftToRight;
+  mojom::NotificationDirection direction =
+      mojom::NotificationDirection::LEFT_TO_RIGHT;
   WebString lang;
   WebString body;
   WebString tag;

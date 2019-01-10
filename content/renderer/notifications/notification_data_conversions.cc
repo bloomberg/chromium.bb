@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -23,16 +24,15 @@ WebNotificationData ToWebNotificationData(
     const blink::PlatformNotificationData& platform_data) {
   WebNotificationData web_data;
   web_data.title = WebString::FromUTF16(platform_data.title);
-
   switch (platform_data.direction) {
     case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
-      web_data.direction = WebNotificationData::kDirectionLeftToRight;
+      web_data.direction = blink::mojom::NotificationDirection::LEFT_TO_RIGHT;
       break;
     case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
-      web_data.direction = WebNotificationData::kDirectionRightToLeft;
+      web_data.direction = blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
       break;
     case blink::PlatformNotificationData::DIRECTION_AUTO:
-      web_data.direction = WebNotificationData::kDirectionAuto;
+      web_data.direction = blink::mojom::NotificationDirection::AUTO;
       break;
   }
 

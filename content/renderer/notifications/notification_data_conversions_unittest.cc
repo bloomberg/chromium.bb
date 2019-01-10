@@ -77,7 +77,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
 
   blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
-  EXPECT_EQ(blink::WebNotificationData::kDirectionLeftToRight,
+  EXPECT_EQ(blink::mojom::NotificationDirection::LEFT_TO_RIGHT,
             web_data.direction);
   EXPECT_EQ(kNotificationLang, web_data.lang);
   EXPECT_EQ(kNotificationBody, web_data.body);

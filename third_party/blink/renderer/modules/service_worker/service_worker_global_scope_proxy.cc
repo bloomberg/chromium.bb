@@ -93,21 +93,6 @@ namespace mojo {
 
 namespace {
 
-blink::mojom::NotificationDirection ToMojomNotificationDirection(
-    blink::WebNotificationData::Direction input) {
-  switch (input) {
-    case blink::WebNotificationData::kDirectionLeftToRight:
-      return blink::mojom::NotificationDirection::LEFT_TO_RIGHT;
-    case blink::WebNotificationData::kDirectionRightToLeft:
-      return blink::mojom::NotificationDirection::RIGHT_TO_LEFT;
-    case blink::WebNotificationData::kDirectionAuto:
-      return blink::mojom::NotificationDirection::AUTO;
-  }
-
-  NOTREACHED();
-  return blink::mojom::NotificationDirection::AUTO;
-}
-
 blink::mojom::NotificationActionType ToMojomNotificationActionType(
     blink::WebNotificationAction::Type input) {
   switch (input) {
@@ -158,11 +143,10 @@ struct TypeConverter<blink::mojom::blink::NotificationDataPtr,
     }
 
     return blink::mojom::blink::NotificationData::New(
-        input.title, ToMojomNotificationDirection(input.direction), input.lang,
-        input.body, input.tag, input.image, input.icon, input.badge,
-        std::move(vibration_pattern), input.timestamp, input.renotify,
-        input.silent, input.require_interaction, std::move(data),
-        std::move(actions));
+        input.title, input.direction, input.lang, input.body, input.tag,
+        input.image, input.icon, input.badge, std::move(vibration_pattern),
+        input.timestamp, input.renotify, input.silent,
+        input.require_interaction, std::move(data), std::move(actions));
   }
 };
 
