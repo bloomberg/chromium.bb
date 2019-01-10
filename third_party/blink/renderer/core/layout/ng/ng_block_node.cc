@@ -248,7 +248,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       if (!constraint_space.IsIntermediateLayout() && first_child &&
           first_child.IsInline()) {
         block_flow->UpdatePaintFragmentFromCachedLayoutResult(
-            break_token, layout_result->PhysicalFragment(),
+            ToNGBlockBreakToken(break_token), layout_result->PhysicalFragment(),
             layout_result->Offset());
       }
       return layout_result;
@@ -354,13 +354,14 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
             Style().IsFlippedBlocksWritingMode());
       }
 
-      block_flow->SetPaintFragment(break_token,
+      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token),
                                    layout_result->PhysicalFragment(),
                                    layout_result->Offset());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
-      block_flow->SetPaintFragment(break_token, nullptr, NGPhysicalOffset());
+      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token), nullptr,
+                                   NGPhysicalOffset());
     }
   }
 
