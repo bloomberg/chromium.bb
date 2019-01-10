@@ -22,6 +22,9 @@ Polymer({
   /** @private {?string} */
   fileName_: null,
 
+  /** @private {ArrayBuffer} */
+  buffer_: null,
+
   /** @private {State} */
   state_: State.IDLE,
 
@@ -186,9 +189,13 @@ Polymer({
    *     The serialized PDF document including any annotations that were made.
    */
   saveDocument: async function() {
+    if (this.state_ == State.ACTIVE) {
+      this.buffer_ = await this.ink_.getPDFDestructive().buffer;
+      this.state_ = State.IDLE;
+    }
     return {
       fileName: this.fileName_,
-      dataToSave: await this.ink_.getPDF(),
+      dataToSave: this.buffer_,
     };
   },
 });

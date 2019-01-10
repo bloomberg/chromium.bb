@@ -36,10 +36,17 @@ class InkAPI {
   }
 
   /**
-   * @return {Promise<Uint8Array>}
+   * @return {!Promise<Uint8Array>}
    */
   getPDF() {
     return this.embed_.getPDF();
+  }
+
+  /**
+   * @return {!Uint8Array}
+   */
+  getPDFDestructive() {
+    return this.embed_.getPDFDestructive();
   }
 
   setCamera(camera) {
