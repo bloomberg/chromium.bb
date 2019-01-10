@@ -505,6 +505,7 @@ class CONTENT_EXPORT CacheStorageCache {
   int64_t last_reported_size_ = 0;
   size_t max_query_size_bytes_;
   size_t handle_ref_count_ = 0;
+  int query_cache_recursive_depth_ = 0;
   CacheStorageCacheObserver* cache_observer_;
   std::unique_ptr<CacheStorageCacheEntryHandler> cache_entry_handler_;
 

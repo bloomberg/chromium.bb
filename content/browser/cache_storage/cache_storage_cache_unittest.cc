@@ -2094,6 +2094,22 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   EXPECT_EQ(2, sequence_out);
 }
 
+TEST_P(CacheStorageCacheTestP, KeysWithManyCacheEntries) {
+  constexpr int kNumEntries = 1000;
+
+  std::vector<std::string> expected_keys;
+  for (int i = 0; i < kNumEntries; ++i) {
+    GURL url(kNoBodyUrl.spec() + "?n=" + std::to_string(i));
+    expected_keys.push_back(url.spec());
+    blink::mojom::FetchAPIRequestPtr request = CreateFetchAPIRequest(
+        url, "GET", kHeaders, blink::mojom::Referrer::New(), false);
+    EXPECT_TRUE(Put(request, CreateNoBodyResponse()));
+  }
+
+  EXPECT_TRUE(Keys());
+  EXPECT_EQ(expected_keys, callback_strings_);
+}
+
 INSTANTIATE_TEST_CASE_P(CacheStorageCacheTest,
                         CacheStorageCacheTestP,
                         ::testing::Values(false, true));
