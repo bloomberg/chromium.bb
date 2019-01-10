@@ -71,9 +71,6 @@ void PerfettoService::CreateServiceOnSequence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   service_ = perfetto::TracingService::CreateInstance(
       std::make_unique<MojoSharedMemory::Factory>(), &perfetto_task_runner_);
-  // Chromium uses scraping of the shared memory chunks to ensure that data
-  // from threads without a MessageLoop doesn't get lost.
-  service_->SetSMBScrapingEnabled(true);
   DCHECK(service_);
 }
 
