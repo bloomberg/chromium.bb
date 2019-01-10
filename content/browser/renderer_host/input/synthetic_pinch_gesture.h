@@ -26,8 +26,6 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
   SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
-  void WaitForTargetAck(base::OnceClosure callback,
-                        SyntheticGestureTarget* target) const override;
 
  private:
   SyntheticPinchGestureParams params_;

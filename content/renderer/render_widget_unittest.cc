@@ -203,10 +203,7 @@ class InteractiveRenderWidget : public RenderWidget {
   }
 
  protected:
-  ~InteractiveRenderWidget() override {
-    Close();
-    webwidget_internal_ = nullptr;
-  }
+  ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
   // Overridden from RenderWidget:
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {

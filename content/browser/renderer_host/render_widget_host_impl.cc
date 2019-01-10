@@ -319,9 +319,6 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
       std::unique_ptr<content::InputEvent> event) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
-  void WaitForInputProcessed(WaitForInputProcessedCallback callback) override {
-    DLOG(WARNING) << "Input request on unbound interface";
-  }
   void AttachSynchronousCompositor(
       mojom::SynchronousCompositorControlHostPtr control_host,
       mojom::SynchronousCompositorHostAssociatedPtrInfo host,
@@ -1276,18 +1273,6 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   MouseWheelEventWithLatencyInfo wheel_with_latency(wheel_event, latency);
   DispatchInputEventWithLatencyInfo(wheel_event, &wheel_with_latency.latency);
   input_router_->SendWheelEvent(wheel_with_latency);
-}
-
-void RenderWidgetHostImpl::WaitForInputProcessed(
-    SyntheticGestureParams::GestureType type,
-    SyntheticGestureParams::GestureSourceType source,
-    base::OnceClosure callback) {
-  // TODO(bokan): Input can be queued and delayed in InputRouterImpl based on
-  // the kind of events we're getting. To be truly robust, we should wait until
-  // those queues are flushed before issuing this message. This will be done in
-  // a follow-up and is the reason for the currently unused type and source
-  // params. https://crbug.com/902446.
-  input_router_->WaitForInputProcessed(std::move(callback));
 }
 
 void RenderWidgetHostImpl::ForwardEmulatedGestureEvent(
