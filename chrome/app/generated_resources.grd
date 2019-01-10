@@ -8595,6 +8595,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is capturing desktop contents.">
         This tab is sharing your screen.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING" desc="Extra tool tip text, when the tab is presenting VR content to a headset.">
+        This tab is presenting VR content to a headset.
+      </message>
 
       <!-- Tab accessibility labels -->
       <message name="IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT" desc="Accessibility label text, when the tab is recording media. Example: 'Google Hangouts - Camera or microphone recording'">
@@ -8626,6 +8629,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT" desc="Accessibility label text, when the tab is capturing and sharing desktop content using screen sharing. Example: 'Google Hangouts - Desktop content shared'">
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Desktop content shared
+      </message>
+      <message name="IDS_TAB_AX_LABEL_VR_PRESENTING" desc="Accessibility label text, when the tab is presenting VR content to a headset. Example: 'A VR-enabled website - VR presenting to headset'">
+        <ph name="WINDOW_TITLE">
+          $1<ex>A VR-enabled website</ex>
+        </ph> - VR presenting to headset
       </message>
 
       <!-- ProcessSingleton -->
