@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 module arc.mojom;
 
@@ -52,6 +52,10 @@ struct TextInputState {
   // Android IMEs need this flag to know the latest state after their operation
   // becomes effective.
   bool first_update_after_operation;
+  // The range of the composition text in 16-bit code units index
+  // in the overall text of the text field.
+  [MinVersion=6] int32 composition_text_range_start;
+  [MinVersion=6] int32 composition_text_range_end;
 };
 
 // This interface provides methods to control a text field.

@@ -83,16 +83,18 @@ void InputConnectionImpl::UpdateTextInputState(
 mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
     bool is_input_state_update_requested) const {
   ui::TextInputClient* client = GetTextInputClient();
-  gfx::Range text_range, selection_range;
+  gfx::Range text_range, selection_range, composition_text_range;
   base::string16 text;
   client->GetTextRange(&text_range);
   client->GetEditableSelectionRange(&selection_range);
+  client->GetCompositionTextRange(&composition_text_range);
   client->GetTextFromRange(text_range, &text);
 
   return mojom::TextInputStatePtr(
       base::in_place, selection_range.start(), text, text_range,
       selection_range, client->GetTextInputType(), client->ShouldDoLearning(),
-      client->GetTextInputFlags(), is_input_state_update_requested);
+      client->GetTextInputFlags(), is_input_state_update_requested,
+      composition_text_range.start(), composition_text_range.end());
 }
 
 void InputConnectionImpl::CommitText(const base::string16& text,
