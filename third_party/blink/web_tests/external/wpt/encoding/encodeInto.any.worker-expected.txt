@@ -52,6 +52,6 @@ PASS Invalid encodeInto() destination: function Uint8ClampedArray() { [native co
 PASS Invalid encodeInto() destination: function Float32Array() { [native code] }
 PASS Invalid encodeInto() destination: function Float64Array() { [native code] }
 PASS Invalid encodeInto() destination: ArrayBuffer
-FAIL encodeInto() cannot operate on a detached buffer (intermediate value).encodeInto is not a function
+FAIL encodeInto() and a detached output buffer (intermediate value).encodeInto is not a function
 Harness: the test ran to completion.
 
