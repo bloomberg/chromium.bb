@@ -98,6 +98,7 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
   CreateLayoutAndChildren();
+  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
 }
 
 PasswordGenerationPopupViewViews::~PasswordGenerationPopupViewViews() = default;
