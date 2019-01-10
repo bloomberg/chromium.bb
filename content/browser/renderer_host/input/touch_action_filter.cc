@@ -140,13 +140,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   base::Optional<cc::TouchAction> touch_action =
       active_touch_action_.has_value() ? active_touch_action_
                                        : white_listed_touch_action_;
-  if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "scroll-gestures", base::debug::CrashKeySize::Size256);
-    base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-    base::debug::DumpWithoutCrashing();
-    gesture_sequence_.clear();
-  }
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
@@ -162,13 +155,19 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         }
       }
       gesture_sequence_.append("B");
-      if (!compositor_touch_action_enabled_) {
-        if (!active_touch_action_.has_value()) {
-          static auto* crash_key = base::debug::AllocateCrashKeyString(
-              "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
-          base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-          gesture_sequence_.clear();
-        }
+      if (!compositor_touch_action_enabled_ &&
+          !active_touch_action_.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        gesture_sequence_.clear();
+      }
+      if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "scroll-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        base::debug::DumpWithoutCrashing();
+        gesture_sequence_.clear();
       }
       DCHECK(touch_action.has_value());
       drop_scroll_events_ =
