@@ -108,6 +108,9 @@ _CONFIG = [
             'base::IsTypeInRangeForNumericType',
             'base::IsValueNegative',
 
+            # //base/strings/char_traits.h.
+            'base::CharTraits',
+
             # //base/synchronization/waitable_event.h.
             'base::WaitableEvent',
 
