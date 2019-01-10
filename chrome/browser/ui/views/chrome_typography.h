@@ -51,8 +51,14 @@ enum ChromeTextContext {
 enum ChromeTextStyle {
   CHROME_TEXT_STYLE_START = views::style::VIEWS_TEXT_STYLE_END,
 
+  // Similar to views::style::STYLE_PRIMARY but with a monospaced typeface.
+  STYLE_PRIMARY_MONOSPACED,
+
   // Secondary text. May be lighter than views::style::PRIMARY.
   STYLE_SECONDARY = CHROME_TEXT_STYLE_START,
+
+  // Similar to STYLE_SECONDARY but with a monospaced typeface.
+  STYLE_SECONDARY_MONOSPACED,
 
   // "Hint" text, usually a line that gives context to something more important.
   STYLE_HINT,
