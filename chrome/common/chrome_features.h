@@ -153,6 +153,11 @@ extern const base::Feature kDownloadsLocationChange;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableIncognitoWindowCounter;
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kEventBasedStatusReporting;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExperimentalAppBanners;
 

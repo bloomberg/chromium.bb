@@ -240,6 +240,12 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
 const base::Feature kEnableIncognitoWindowCounter{
     "EnableIncognitoWindowCounter", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Enables event-based status reporting for child accounts in Chrome OS.
+const base::Feature kEventBasedStatusReporting{
+    "EventBasedStatusReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // An experimental way of showing app banners, which has modal banners and gives
 // developers more control over when to show them.
 const base::Feature kExperimentalAppBanners {

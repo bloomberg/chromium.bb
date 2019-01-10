@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/child_accounts/event_based_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -58,6 +60,10 @@ ConsumerStatusReportingService::ConsumerStatusReportingService(
           base::Unretained(this)));
 
   CreateStatusUploaderIfNeeded(user_cloud_policy_manager_->core()->client());
+
+  if (base::FeatureList::IsEnabled(features::kEventBasedStatusReporting)) {
+    EventBasedStatusReportingServiceFactory::GetForBrowserContext(context);
+  }
 }
 
 ConsumerStatusReportingService::~ConsumerStatusReportingService() = default;
