@@ -16,13 +16,38 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace blink {
 struct WebMediaTrackConstraintSet;
 }
 
 namespace content {
+
+template <typename ConstraintType>
+bool ConstraintHasMax(const ConstraintType& constraint) {
+  return constraint.HasMax() || constraint.HasExact();
+}
+
+template <typename ConstraintType>
+bool ConstraintHasMin(const ConstraintType& constraint) {
+  return constraint.HasMin() || constraint.HasExact();
+}
+
+template <typename ConstraintType>
+auto ConstraintMax(const ConstraintType& constraint)
+    -> decltype(constraint.Max()) {
+  DCHECK(ConstraintHasMax(constraint));
+  return constraint.HasExact() ? constraint.Exact() : constraint.Max();
+}
+
+template <typename ConstraintType>
+auto ConstraintMin(const ConstraintType& constraint)
+    -> decltype(constraint.Min()) {
+  DCHECK(ConstraintHasMin(constraint));
+  return constraint.HasExact() ? constraint.Exact() : constraint.Min();
+}
+
 namespace media_constraints {
 
 // This class template represents a set of candidates suitable for a numeric
