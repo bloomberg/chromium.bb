@@ -28,7 +28,6 @@ enum class BrowsingDataType {
   BOOKMARKS,
   // Only for Desktop:
   DOWNLOADS,
-  MEDIA_LICENSES,
   HOSTED_APPS_DATA,
   NUM_TYPES
 };

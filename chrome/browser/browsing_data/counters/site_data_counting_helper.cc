@@ -22,6 +22,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -105,6 +106,21 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   Done(cdm::MediaDrmStorageImpl::GetOriginsModifiedSince(profile_->GetPrefs(),
                                                          begin_));
 #endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  // Count origins with media licenses.
+  storage::FileSystemContext* file_system_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetFileSystemContext();
+  media_license_helper_ =
+      BrowsingDataMediaLicenseHelper::Create(file_system_context);
+  if (media_license_helper_) {
+    tasks_ += 1;
+    media_license_helper_->StartFetching(base::BindRepeating(
+        &SiteDataCountingHelper::SitesWithMediaLicensesCallback,
+        base::Unretained(this)));
+  }
+#endif
 
   // Counting site usage data and durable permissions.
   auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -191,6 +207,17 @@ void SiteDataCountingHelper::SitesWithFlashDataCallback(
   std::vector<GURL> origins;
   for (const std::string& site : sites) {
     origins.push_back(GURL(site));
+  }
+  Done(origins);
+}
+
+void SiteDataCountingHelper::SitesWithMediaLicensesCallback(
+    const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>&
+        media_license_info_list) {
+  std::vector<GURL> origins;
+  for (const auto& info : media_license_info_list) {
+    if (info.last_modified_time >= begin_)
+      origins.push_back(info.origin);
   }
   Done(origins);
 }

@@ -233,8 +233,6 @@ jumbo_split_static_library("browser") {
     "browsing_data/counters/cache_counter.h",
     "browsing_data/counters/downloads_counter.cc",
     "browsing_data/counters/downloads_counter.h",
-    "browsing_data/counters/media_licenses_counter.cc",
-    "browsing_data/counters/media_licenses_counter.h",
     "browsing_data/counters/signin_data_counter.cc",
     "browsing_data/counters/signin_data_counter.h",
     "browsing_data/counters/site_data_counter.cc",

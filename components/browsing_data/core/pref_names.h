@@ -26,7 +26,6 @@ extern const char kDeleteCookiesBasic[];
 extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
 extern const char kDeleteHostedAppsData[];
-extern const char kDeleteMediaLicenses[];
 extern const char kDeleteSiteSettings[];
 
 extern const char kLastClearBrowsingDataTime[];
