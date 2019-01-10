@@ -438,14 +438,7 @@ bool IsArcOobeOptInActive() {
 
   // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
   // is new.
-  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
-    return false;
-
-  // Differentiate the case when Assistant Wizard is started later for the new
-  // user session. For example, OOBE was shown and user pressed Skip button.
-  // Later in the same user session user activates Assistant and we show
-  // Assistant Wizard with ARC terms. This case is not considered as OOBE OptIn.
-  return !IsArcOptInWizardForAssistantActive();
+  return user_manager::UserManager::Get()->IsCurrentUserNew();
 }
 
 bool IsArcOobeOptInConfigurationBased() {
@@ -465,28 +458,6 @@ bool IsArcOobeOptInConfigurationBased() {
   if (!auto_accept)
     return false;
   return auto_accept->GetBool();
-}
-
-bool IsArcOptInWizardForAssistantActive() {
-  // Check if Assistant Wizard is currently showing.
-  // TODO(b/65861628): Redesign the OptIn flow since there is no longer reason
-  // to have two different OptIn flows.
-  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
-  if (!host || !host->IsVoiceInteractionOobe())
-    return false;
-
-  // Make sure the wizard controller is active and have the ARC ToS screen
-  // showing for the voice interaction OptIn flow.
-  const chromeos::WizardController* wizard_controller =
-      host->GetWizardController();
-  if (!wizard_controller)
-    return false;
-
-  const chromeos::BaseScreen* screen = wizard_controller->current_screen();
-  if (!screen)
-    return false;
-  return screen->screen_id() ==
-         chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
 }
 
 bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
@@ -613,8 +584,7 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::switches::IsAssistantEnabled() &&
-      !chromeos::switches::IsVoiceInteractionFlagsEnabled()) {
+  if (!chromeos::switches::IsAssistantEnabled()) {
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
   }
 
@@ -627,45 +597,28 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (profile->IsLegacySupervised())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
-  if (chromeos::switches::IsVoiceInteractionFlagsEnabled()) {
-    if (!chromeos::switches::IsVoiceInteractionLocalesSupported())
-      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
-
-    const PrefService* prefs = profile->GetPrefs();
-    if (prefs->IsManagedPreference(prefs::kArcEnabled) &&
-        !prefs->GetBoolean(prefs::kArcEnabled)) {
-      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY;
-    }
-
-    if (!IsArcAllowedForProfile(profile))
-      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED;
-  }
-
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  if (chromeos::switches::IsAssistantEnabled()) {
-    const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,
-                                           ULOC_CANADA_FRENCH};
+  const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,
+                                         ULOC_CANADA_FRENCH};
 
-    const PrefService* prefs = profile->GetPrefs();
-    std::string pref_locale =
-        prefs->GetString(language::prefs::kApplicationLocale);
+  const PrefService* prefs = profile->GetPrefs();
+  std::string pref_locale =
+      prefs->GetString(language::prefs::kApplicationLocale);
 
-    if (!pref_locale.empty()) {
-      base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-      bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale);
+  if (!pref_locale.empty()) {
+    base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
+    bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale);
 
-      if (disallowed &&
-          base::CommandLine::ForCurrentProcess()
-                  ->GetSwitchValueASCII(
-                      chromeos::switches::kVoiceInteractionLocales)
-                  .find(pref_locale) == std::string::npos) {
-        return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
-      }
+    if (disallowed && base::CommandLine::ForCurrentProcess()
+                              ->GetSwitchValueASCII(
+                                  chromeos::switches::kVoiceInteractionLocales)
+                              .find(pref_locale) == std::string::npos) {
+      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
     }
   }
 

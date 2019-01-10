@@ -184,8 +184,6 @@ class ASH_EXPORT AppListControllerImpl
 
   void OnVisibilityChanged(bool visible);
   void OnTargetVisibilityChanged(bool visible);
-  void StartVoiceInteractionSession();
-  void ToggleVoiceInteractionSession();
 
   void FlushForTesting();
 

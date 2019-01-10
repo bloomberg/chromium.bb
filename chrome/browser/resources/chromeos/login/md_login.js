@@ -55,8 +55,6 @@ cr.define('cr.ui.Oobe', function() {
       login.UnrecoverableCryptohomeErrorScreen.register();
       login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
       login.EncryptionMigrationScreen.register();
-      login.VoiceInteractionValuePropScreen.register();
-      login.WaitForContainerReadyScreen.register();
       login.SupervisionTransitionScreen.register();
       login.UpdateRequiredScreen.register();
       login.DiscoverScreen.register();

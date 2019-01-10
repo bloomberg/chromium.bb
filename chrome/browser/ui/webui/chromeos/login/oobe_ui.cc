@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -75,8 +76,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/voice_interaction_value_prop_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/wait_for_container_ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
@@ -416,10 +415,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>());
 
-  AddScreenHandler(std::make_unique<VoiceInteractionValuePropScreenHandler>());
-
-  AddScreenHandler(std::make_unique<WaitForContainerReadyScreenHandler>());
-
   AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>());
 
   AddScreenHandler(std::make_unique<UpdateRequiredScreenHandler>());
@@ -604,15 +599,6 @@ DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
 
 EncryptionMigrationScreenView* OobeUI::GetEncryptionMigrationScreenView() {
   return GetView<EncryptionMigrationScreenHandler>();
-}
-
-VoiceInteractionValuePropScreenView*
-OobeUI::GetVoiceInteractionValuePropScreenView() {
-  return GetView<VoiceInteractionValuePropScreenHandler>();
-}
-
-WaitForContainerReadyScreenView* OobeUI::GetWaitForContainerReadyScreenView() {
-  return GetView<WaitForContainerReadyScreenHandler>();
 }
 
 SupervisionTransitionScreenView* OobeUI::GetSupervisionTransitionScreenView() {

@@ -85,10 +85,6 @@ class UsbHostHost;
 class UsbHostInstance;
 class VideoHost;
 class VideoInstance;
-class VoiceInteractionArcHomeHost;
-class VoiceInteractionArcHomeInstance;
-class VoiceInteractionFrameworkHost;
-class VoiceInteractionFrameworkInstance;
 class VolumeMounterHost;
 class VolumeMounterInstance;
 class WakeLockHost;
@@ -227,16 +223,6 @@ class ArcBridgeService {
   ConnectionHolder<mojom::VideoInstance, mojom::VideoHost>* video() {
     return &video_;
   }
-  ConnectionHolder<mojom::VoiceInteractionArcHomeInstance,
-                   mojom::VoiceInteractionArcHomeHost>*
-  voice_interaction_arc_home() {
-    return &voice_interaction_arc_home_;
-  }
-  ConnectionHolder<mojom::VoiceInteractionFrameworkInstance,
-                   mojom::VoiceInteractionFrameworkHost>*
-  voice_interaction_framework() {
-    return &voice_interaction_framework_;
-  }
   ConnectionHolder<mojom::VolumeMounterInstance, mojom::VolumeMounterHost>*
   volume_mounter() {
     return &volume_mounter_;
@@ -302,12 +288,6 @@ class ArcBridgeService {
   ConnectionHolder<mojom::TtsInstance, mojom::TtsHost> tts_;
   ConnectionHolder<mojom::UsbHostInstance, mojom::UsbHostHost> usb_host_;
   ConnectionHolder<mojom::VideoInstance, mojom::VideoHost> video_;
-  ConnectionHolder<mojom::VoiceInteractionArcHomeInstance,
-                   mojom::VoiceInteractionArcHomeHost>
-      voice_interaction_arc_home_;
-  ConnectionHolder<mojom::VoiceInteractionFrameworkInstance,
-                   mojom::VoiceInteractionFrameworkHost>
-      voice_interaction_framework_;
   ConnectionHolder<mojom::VolumeMounterInstance, mojom::VolumeMounterHost>
       volume_mounter_;
   ConnectionHolder<mojom::WakeLockInstance, mojom::WakeLockHost> wake_lock_;

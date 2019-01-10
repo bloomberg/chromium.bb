@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -46,8 +48,6 @@ const char* kScreenNames[] = {
     "userBoard",                       // SCREEN_USER_SELECTION
     "ad-password-change",            // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
     "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
-    "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
-    "wait-for-container-ready",      // SCREEN_WAIT_FOR_CONTAINTER_READY
     "supervision-transition",        // SCREEN_SUPERVISION_TRANSITION
     "update-required",               // SCREEN_UPDATE_REQUIRED
     "assistant-optin-flow",          // SCREEN_ASSISTANT_OPTIN_FLOW

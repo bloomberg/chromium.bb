@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -167,10 +166,6 @@ constexpr ArcState kManagedArcStates[] = {
 constexpr ArcState kUnmanagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_UNMANAGED,
     ArcState::ARC_WITHOUT_PLAY_STORE,
-};
-
-constexpr ArcState kUnmanagedArcStatesWithPlayStore[] = {
-    ArcState::ARC_PLAY_STORE_UNMANAGED,
 };
 
 void OnPaiStartedCallback(bool* started_flag) {
@@ -711,67 +706,6 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
-};
-
-class ArcVoiceInteractionTest : public ArcPlayStoreAppTest {
- public:
-  ArcVoiceInteractionTest() = default;
-  ~ArcVoiceInteractionTest() override = default;
-
-  void SetUp() override {
-    ArcPlayStoreAppTest::SetUp();
-
-    arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
-    DCHECK(session_manager);
-
-    pai_starter_ = session_manager->pai_starter();
-    DCHECK(pai_starter_);
-    DCHECK(!pai_starter_->started());
-    DCHECK(!pai_starter_->locked());
-
-    voice_service_ = std::make_unique<arc::ArcVoiceInteractionArcHomeService>(
-        profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
-    voice_service()->OnAssistantStarted();
-
-    SendPlayStoreApp();
-
-    DCHECK(!pai_starter_->started());
-    DCHECK(pai_starter_->locked());
-  }
-
-  void TearDown() override {
-    ArcPlayStoreAppTest::TearDown();
-    voice_service_.reset();
-  }
-
- protected:
-  void SendAssistantAppStarted() {
-    arc::mojom::AppInfo app;
-    app.name = "Assistant";
-    app.package_name =
-        arc::ArcVoiceInteractionArcHomeService::kAssistantPackageName;
-    app.activity = "some_activity";
-
-    app_instance()->SendTaskCreated(1, app, std::string());
-  }
-
-  void SendAssistantAppStopped() { app_instance()->SendTaskDestroyed(1); }
-
-  void WaitForPaiStarted() {
-    while (!pai_starter()->started())
-      base::RunLoop().RunUntilIdle();
-  }
-
-  arc::ArcVoiceInteractionArcHomeService* voice_service() {
-    return voice_service_.get();
-  }
-  arc::ArcPaiStarter* pai_starter() { return pai_starter_; }
-
- private:
-  arc::ArcPaiStarter* pai_starter_ = nullptr;
-  std::unique_ptr<arc::ArcVoiceInteractionArcHomeService> voice_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcVoiceInteractionTest);
 };
 
 TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -1623,42 +1557,6 @@ TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
   EXPECT_FALSE(pai_starter->started());
   SendPlayStoreApp();
   EXPECT_FALSE(pai_starter->started());
-}
-
-TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionNormalFlow) {
-  voice_service()->OnAssistantAppRequested();
-
-  SendAssistantAppStarted();
-  SendAssistantAppStopped();
-
-  voice_service()->OnVoiceInteractionOobeSetupComplete();
-
-  EXPECT_TRUE(pai_starter()->started());
-}
-
-TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionCancel) {
-  voice_service()->OnAssistantCanceled();
-  EXPECT_TRUE(pai_starter()->started());
-  EXPECT_FALSE(pai_starter()->locked());
-}
-
-TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionAppNotStarted) {
-  voice_service()->set_assistant_started_timeout_for_testing(
-      base::TimeDelta::FromMilliseconds(100));
-  voice_service()->OnAssistantAppRequested();
-
-  WaitForPaiStarted();
-}
-
-TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionWizardNotComplete) {
-  voice_service()->set_wizard_completed_timeout_for_testing(
-      base::TimeDelta::FromMilliseconds(100));
-  voice_service()->OnAssistantAppRequested();
-
-  SendAssistantAppStarted();
-  SendAssistantAppStopped();
-
-  WaitForPaiStarted();
 }
 
 TEST_P(ArcPlayStoreAppTest,
@@ -2712,9 +2610,6 @@ INSTANTIATE_TEST_CASE_P(,
 INSTANTIATE_TEST_CASE_P(,
                         ArcPlayStoreAppTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcVoiceInteractionTest,
-                        ::testing::ValuesIn(kUnmanagedArcStatesWithPlayStore));
 INSTANTIATE_TEST_CASE_P(,
                         ArcAppModelBuilderRecreate,
                         ::testing::ValuesIn(kUnmanagedArcStates));

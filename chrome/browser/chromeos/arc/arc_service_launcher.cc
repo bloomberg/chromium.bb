@@ -41,8 +41,6 @@
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
@@ -198,8 +196,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcUsbHostBridge::GetForBrowserContext(profile);
   ArcUsbHostPermissionManager::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
-  ArcVoiceInteractionArcHomeService::GetForBrowserContext(profile);
-  ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile);
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
   ArcWakeLockBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);

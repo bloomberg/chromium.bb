@@ -474,12 +474,6 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   request.set_skip_boot_completed_broadcast(
       !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature));
 
-  // We only enable /vendor/priv-app when voice interaction is enabled
-  // because voice interaction service apk would be bundled in this
-  // location.
-  request.set_scan_vendor_priv_app(
-      chromeos::switches::IsVoiceInteractionEnabled());
-
   // Set packages cache mode coming from autotests.
   const std::string packages_cache_mode_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

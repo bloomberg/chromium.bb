@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
@@ -547,13 +548,6 @@ void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
 }
 
 bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
-  // The focus should not move to the system tray if voice interaction OOBE is
-  // active.
-  if (LoginDisplayHost::default_host() &&
-      LoginDisplayHost::default_host()->IsVoiceInteractionOobe()) {
-    return false;
-  }
-
   LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
   return true;
 }

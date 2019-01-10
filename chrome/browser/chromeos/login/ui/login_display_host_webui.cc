@@ -709,10 +709,6 @@ void LoginDisplayHostWebUI::OnStartArcKiosk() {
   login_view_->set_should_emit_login_prompt_visible(false);
 }
 
-bool LoginDisplayHostWebUI::IsVoiceInteractionOobe() {
-  return is_voice_interaction_oobe_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, public
 
@@ -835,11 +831,6 @@ void LoginDisplayHostWebUI::OnDisplayMetricsChanged(
   }
 
   if (GetOobeUI()) {
-    // Reset widget size for voice interaction OOBE, since the screen rotation
-    // will break the widget size if it is not full screen.
-    if (is_voice_interaction_oobe_)
-      login_window_->SetSize(primary_display.work_area_size());
-
     const gfx::Size& size = primary_display.size();
     GetOobeUI()->GetCoreOobeView()->SetClientAreaSize(size.width(),
                                                       size.height());
@@ -992,20 +983,11 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = CalculateScreenBounds(gfx::Size());
-  // Disable fullscreen state for voice interaction OOBE since the shelf should
-  // be visible.
-  if (!is_voice_interaction_oobe_)
-    params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 
-  // Put the voice interaction oobe inside AlwaysOnTop container instead of
-  // LockScreenContainer.
-  if (is_voice_interaction_oobe_) {
-    params.keep_on_top = true;
-  } else {
-    ash_util::SetupWidgetInitParamsForContainer(
-        &params, ash::kShellWindowId_LockScreenContainer);
-  }
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash::kShellWindowId_LockScreenContainer);
   login_window_ = new views::Widget;
   login_window_->Init(params);
 
@@ -1017,13 +999,9 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
     DisableRestrictiveProxyCheckForTest();
   }
 
-  // For voice interaction OOBE, we do not want the animation here.
-  if (!is_voice_interaction_oobe_) {
-    login_window_->SetVisibilityAnimationDuration(
-        base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
-    login_window_->SetVisibilityAnimationTransition(
-        views::Widget::ANIMATE_HIDE);
-  }
+  login_window_->SetVisibilityAnimationDuration(
+      base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
+  login_window_->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
 
   login_window_->AddObserver(this);
   login_window_->AddRemovalsObserver(this);
@@ -1106,14 +1084,6 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
   }
 }
 
-void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {
-  is_voice_interaction_oobe_ = true;
-  finalize_animation_type_ = ANIMATION_NONE;
-  StartWizard(OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
-  // We should emit this signal only at login screen (after reboot or sign out).
-  login_view_->set_should_emit_login_prompt_visible(false);
-}
-
 void LoginDisplayHostWebUI::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
@@ -1162,7 +1132,7 @@ void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
   if (login_prompt_visible_time_.is_null())
     return;
 
-  if (is_voice_interaction_oobe_ || !CanPlayStartupSound())
+  if (!CanPlayStartupSound())
     return;
 
   need_to_play_startup_sound_ = false;

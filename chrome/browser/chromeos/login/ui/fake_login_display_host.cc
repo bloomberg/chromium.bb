@@ -94,14 +94,6 @@ void FakeLoginDisplayHost::StartDemoAppLaunch() {}
 
 void FakeLoginDisplayHost::StartArcKiosk(const AccountId& account_id) {}
 
-void FakeLoginDisplayHost::StartVoiceInteractionOobe() {
-  is_voice_interaction_oobe_ = true;
-}
-
-bool FakeLoginDisplayHost::IsVoiceInteractionOobe() {
-  return is_voice_interaction_oobe_;
-}
-
 void FakeLoginDisplayHost::CompleteLogin(const UserContext& user_context) {}
 
 void FakeLoginDisplayHost::OnGaiaScreenReady() {}

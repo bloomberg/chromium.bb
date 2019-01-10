@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -70,8 +69,6 @@
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
-#include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen.h"
-#include "chrome/browser/chromeos/login/screens/wait_for_container_ready_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -429,12 +426,6 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
     return std::make_unique<EncryptionMigrationScreen>(
         this, oobe_ui->GetEncryptionMigrationScreenView());
-  } else if (screen == OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP) {
-    return std::make_unique<VoiceInteractionValuePropScreen>(
-        this, oobe_ui->GetVoiceInteractionValuePropScreenView());
-  } else if (screen == OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY) {
-    return std::make_unique<WaitForContainerReadyScreen>(
-        this, oobe_ui->GetWaitForContainerReadyScreenView());
   } else if (screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION) {
     return std::make_unique<SupervisionTransitionScreen>(
         this, oobe_ui->GetSupervisionTransitionScreenView());
@@ -606,14 +597,8 @@ void WizardController::ShowArcTermsOfServiceScreen() {
     UpdateStatusAreaVisibilityForScreen(
         OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
     SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
-    // Assistant Wizard also uses wizard for ARC opt-in, unlike other scenarios
-    // which use ArcSupport for now, because we're interested in only OOBE flow.
-    // Note that this part also needs to be updated on b/65861628.
-    // TODO(khmel): add unit test once we have support for OobeUI.
-    if (!GetLoginDisplayHost()->IsVoiceInteractionOobe()) {
-      ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-          arc::prefs::kArcTermsShownInOobe, true);
-    }
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+        arc::prefs::kArcTermsShownInOobe, true);
   } else {
     ShowAssistantOptInFlowScreen();
   }
@@ -670,33 +655,6 @@ void WizardController::ShowEncryptionMigrationScreen() {
   VLOG(1) << "Showing encryption migration screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
-}
-
-void WizardController::ShowVoiceInteractionValuePropScreen() {
-  if (ShouldShowVoiceInteractionValueProp()) {
-    VLOG(1) << "Showing voice interaction value prop screen.";
-    UpdateStatusAreaVisibilityForScreen(
-        OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
-    SetCurrentScreen(
-        GetScreen(OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP));
-  } else {
-    OnOobeFlowFinished();
-  }
-}
-
-void WizardController::ShowWaitForContainerReadyScreen() {
-  DCHECK(is_in_session_oobe_);
-  // At this point we could make sure the value prop flow has been accepted.
-  // Set the value prop pref as accepted in framework service.
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-          ProfileManager::GetActiveUserProfile());
-  if (service)
-    service->SetVoiceInteractionSetupCompleted();
-
-  UpdateStatusAreaVisibilityForScreen(
-      OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY));
 }
 
 void WizardController::ShowSupervisionTransitionScreen() {
@@ -986,11 +944,6 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  if (is_in_session_oobe_) {
-    ShowWaitForContainerReadyScreen();
-    return;
-  }
-
   // If the recommend app screen should be shown, show it after the user
   // finished with the PlayStore Terms of Service. Otherwise, advance to the
   // assistant opt-in flow screen.
@@ -1017,23 +970,6 @@ void WizardController::OnRecommendAppsSelected() {
 
 void WizardController::OnAppDownloadingFinished() {
   ShowAssistantOptInFlowScreen();
-}
-
-void WizardController::OnVoiceInteractionValuePropSkipped() {
-  OnOobeFlowFinished();
-}
-
-void WizardController::OnVoiceInteractionValuePropAccepted() {
-  if (is_in_session_oobe_ && arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-    ShowArcTermsOfServiceScreen();
-    return;
-  }
-  ShowWaitForContainerReadyScreen();
-}
-
-void WizardController::OnWaitForContainerReadyFinished() {
-  OnOobeFlowFinished();
-  StartVoiceInteractionSetupWizard();
 }
 
 void WizardController::OnSupervisionTransitionFinished() {
@@ -1382,10 +1318,6 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowDeviceDisabledScreen();
   } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
     ShowEncryptionMigrationScreen();
-  } else if (screen == OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP) {
-    ShowVoiceInteractionValuePropScreen();
-  } else if (screen == OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY) {
-    ShowWaitForContainerReadyScreen();
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     ShowUpdateRequiredScreen();
   } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
@@ -1530,18 +1462,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();
-      break;
-    case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED:
-      OnVoiceInteractionValuePropSkipped();
-      break;
-    case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_ACCEPTED:
-      OnVoiceInteractionValuePropAccepted();
-      break;
-    case ScreenExitCode::WAIT_FOR_CONTAINER_READY_FINISHED:
-      OnWaitForContainerReadyFinished();
-      break;
-    case ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR:
-      OnOobeFlowFinished();
       break;
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       OnSyncConsentFinished();
@@ -1824,31 +1744,6 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 
   on_timezone_resolved_for_testing_ = callback;
   return true;
-}
-
-bool WizardController::ShouldShowVoiceInteractionValueProp() const {
-  // If the OOBE flow was initiated from voice interaction shortcut, we will
-  // show Arc terms later.
-  if (!is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(
-                                  ProfileManager::GetActiveUserProfile())) {
-    VLOG(1) << "Skip Voice Interaction Value Prop screen because Arc Terms is "
-            << "skipped.";
-    return false;
-  }
-  if (!chromeos::switches::IsVoiceInteractionEnabled()) {
-    VLOG(1) << "Skip Voice Interaction Value Prop screen because voice "
-            << "interaction service is disabled.";
-    return false;
-  }
-  return true;
-}
-
-void WizardController::StartVoiceInteractionSetupWizard() {
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-          ProfileManager::GetActiveUserProfile());
-  if (service)
-    service->StartVoiceInteractionSetupWizard();
 }
 
 void WizardController::StartEnrollmentScreen(bool force_interactive) {

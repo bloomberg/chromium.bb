@@ -70,8 +70,6 @@ class UserBoardView;
 class UserImageView;
 class UpdateView;
 class UpdateRequiredView;
-class VoiceInteractionValuePropScreenView;
-class WaitForContainerReadyScreenView;
 class SupervisionTransitionScreenView;
 class WelcomeView;
 class WrongHWIDScreenView;
@@ -136,8 +134,6 @@ class OobeUI : public ui::MojoWebUIController,
   HIDDetectionView* GetHIDDetectionView();
   DeviceDisabledScreenView* GetDeviceDisabledScreenView();
   EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
-  VoiceInteractionValuePropScreenView* GetVoiceInteractionValuePropScreenView();
-  WaitForContainerReadyScreenView* GetWaitForContainerReadyScreenView();
   SupervisionTransitionScreenView* GetSupervisionTransitionScreenView();
   UpdateRequiredView* GetUpdateRequiredScreenView();
   AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();

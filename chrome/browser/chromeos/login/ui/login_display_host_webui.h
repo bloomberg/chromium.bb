@@ -74,8 +74,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
   void OnStartArcKiosk() override;
-  bool IsVoiceInteractionOobe() override;
-  void StartVoiceInteractionOobe() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(
       bool can_close,
@@ -269,8 +267,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // SoundsManager.
   // After OOBE is completed, this is always initialized with true.
   bool oobe_startup_sound_played_ = false;
-
-  bool is_voice_interaction_oobe_ = false;
 
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;

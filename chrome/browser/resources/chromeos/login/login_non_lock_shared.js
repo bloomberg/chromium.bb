@@ -13,8 +13,6 @@
 // <include src="oobe_screen_enable_kiosk.js">
 // <include src="oobe_screen_terms_of_service.js">
 // <include src="oobe_screen_user_image.js">
-// <include src="oobe_screen_voice_interaction_value_prop.js">
-// <include src="oobe_screen_wait_for_container_ready.js">
 // <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
