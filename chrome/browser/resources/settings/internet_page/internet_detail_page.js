@@ -857,39 +857,6 @@ Polymer({
   },
 
   /**
-   * @param {!Event} event
-   * @private
-   */
-  toggleAdvancedExpanded_: function(event) {
-    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG) {
-      return;
-    }  // Already handled.
-    this.advancedExpanded_ = !this.advancedExpanded_;
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  toggleNetworkExpanded_: function(event) {
-    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG) {
-      return;
-    }  // Already handled.
-    this.networkExpanded_ = !this.networkExpanded_;
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  toggleProxyExpanded_: function(event) {
-    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG) {
-      return;
-    }  // Already handled.
-    this.proxyExpanded_ = !this.proxyExpanded_;
-  },
-
-  /**
    * Event triggered for elements associated with network properties.
    * @param {!{detail: !{field: string, value: !CrOnc.NetworkPropertyType}}} e
    * @private

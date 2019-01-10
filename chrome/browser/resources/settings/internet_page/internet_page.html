@@ -38,15 +38,13 @@
         </network-summary>
         <template is="dom-if" if="[[allowAddConnection_(globalPolicy_,
             managedNetworkAvailable)]]">
-          <div actionable class="settings-box two-line"
-              on-click="onExpandAddConnectionsTap_">
-            <div class="start layout horizontal center settings-box-text">
-              <div>$i18n{internetAddConnection}</div>
-            </div>
-            <cr-expand-button alt="$i18n{internetAddConnectionExpandA11yLabel}"
-                id="expandAddConnections" expanded="{{addConnectionExpanded_}}">
-            </cr-expand-button>
-          </div>
+          <cr-expand-button
+              alt="$i18n{internetAddConnectionExpandA11yLabel}"
+              class="settings-box two-line"
+              expanded="{{addConnectionExpanded_}}"
+              id="expandAddConnections">
+            $i18n{internetAddConnection}
+          </cr-expand-button>
           <template is="dom-if" if="[[addConnectionExpanded_]]">
             <div class="list-frame vertical-list">
               <template is="dom-if"

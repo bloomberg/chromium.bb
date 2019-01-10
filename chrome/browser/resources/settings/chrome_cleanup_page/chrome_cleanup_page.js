@@ -298,24 +298,6 @@ Polymer({
   },
 
   /**
-   * Toggles the expand button within the element being listened to.
-   * @param {!Event} e
-   * @private
-   */
-  toggleExpandButton_: function(e) {
-    // The expand button handles toggling itself.
-    const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag) {
-      return;
-    }
-
-    /** @type {!CrExpandButtonElement} */
-    const expandButton = e.currentTarget.querySelector(expandButtonTag);
-    assert(expandButton);
-    expandButton.expanded = !expandButton.expanded;
-  },
-
-  /**
    * Notifies Chrome that the details section was opened or closed.
    * @private
    */
