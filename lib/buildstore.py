@@ -142,7 +142,7 @@ class BuildStore(object):
     """Insert a build stage entry into database.
 
     Args:
-      build_id: primary key of the build in buildTable
+      build_id: primary key of the build in buildTable.
       name: Full name of build stage.
       board: (Optional) board name, if this is a board-specific stage.
       status: (Optional) stage status, one of constants.BUILDER_ALL_STATUSES.
@@ -154,6 +154,33 @@ class BuildStore(object):
     self.InitializeClients()
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
+
+  def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
+    """Retrieve the build statuses of list of builds.
+
+    Args:
+      buildbucket_ids: list of buildbucket_id's to query.
+      build_ids: list of CIDB id's to query.
+
+    Returns:
+      A list of Dictionaries with keys (id, build_config, start_time,
+      finish_time, status, platform_version, full_version,
+      milestone_version, important).
+    """
+    self.InitializeClients()
+    if not self._read_from_bb:
+      if buildbucket_ids:
+        statuses = self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
+            buildbucket_ids)
+        assert len(statuses) == len(buildbucket_ids)
+      elif build_ids:
+        statuses = self.cidb_conn.GetBuildStatuses(build_ids)
+        assert len(statuses) == len(build_ids)
+      else:
+        raise BuildStoreException('GetBuildStatuses needs either build_ids'
+                                  'or buildbucket_ids.')
+
+      return statuses
 
 
 class FakeBuildStore(object):
@@ -198,3 +225,9 @@ class FakeBuildStore(object):
     build_stage_id = self.fake_cidb.InsertBuildStage(build_id, name, board,
                                                      status)
     return build_stage_id
+
+  def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
+    if buildbucket_ids:
+      return self.fake_cidb.GetBuildStatusesWithBuildbucketIds(buildbucket_ids)
+    elif build_ids:
+      return self.fake_cidb.GetBuildStatuses(build_ids)

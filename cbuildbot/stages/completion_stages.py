@@ -862,7 +862,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       child_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
       child_build_ids = [
           c['id']
-          for c in db.GetBuildStatusesWithBuildbucketIds(child_buildbucket_ids)]
+          for c in self.buildstore.GetBuildStatuses(
+              buildbucket_ids=child_buildbucket_ids)]
       stages = db.GetBuildsStages(child_build_ids)
 
       passed_set = set([

@@ -69,7 +69,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
 
       # Record CQ wall-clock metric.
       submitted_any = len(submitted_change_strategies) > 0
-      bi = db.GetBuildStatus(build_id)
+      bi = self.buildstore.GetBuildStatuses(build_ids=[build_id])[0]
       current_time = db.GetTime()
       elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
       self_destructed = self._run.attrs.metadata.GetValueWithDefault(
@@ -101,7 +101,8 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     # Get slave stages.
     child_build_ids = [
         c['id']
-        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
+        for c in self.buildstore.GetBuildStatuses(
+            buildbucket_ids=slave_buildbucket_ids)]
 
     child_stages = db.GetBuildsStages(child_build_ids)
     for stage in child_stages:
