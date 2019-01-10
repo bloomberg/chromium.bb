@@ -17,6 +17,7 @@ import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.ByteArrayInputStream;
@@ -49,8 +50,8 @@ import javax.security.auth.x500.X500Principal;
  * Utility functions for verifying X.509 certificates.
  */
 @JNINamespace("net")
+@MainDex
 public class X509Util {
-
     private static final String TAG = "X509Util";
 
     private static final class TrustStorageListener extends BroadcastReceiver {
