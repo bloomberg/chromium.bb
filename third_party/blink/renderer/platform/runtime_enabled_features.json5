@@ -224,10 +224,6 @@
       status: "experimental",
     },
     {
-      name: "ConstructableStylesheets",
-      status: "experimental",
-    },
-    {
       name: "ContactsManager",
       status: "experimental",
     },
