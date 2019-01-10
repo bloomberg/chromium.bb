@@ -9609,20 +9609,20 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   LocalDOMWindow* main_window =
       ToWebLocalFrameImpl(MainFrame())->GetFrame()->DomWindow();
 
-  String destination = "data:text/html:destination";
+  KURL destination = ToKURL("data:text/html:destination");
   NonThrowableExceptionState exception_state;
   main_window->open(
       USVStringOrTrustedURL::FromTrustedURL(TrustedURL::Create(destination)),
       "frame1", "", main_window, main_window, exception_state);
   ASSERT_FALSE(remote_client.LastRequest().IsNull());
-  EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(KURL(destination)));
+  EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(destination));
 
   // Pointing a named frame to an empty URL should just return a reference to
   // the frame's window without navigating it.
   DOMWindow* result = main_window->open(
-      USVStringOrTrustedURL::FromTrustedURL(TrustedURL::Create("")), "frame1",
-      "", main_window, main_window, exception_state);
-  EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(KURL(destination)));
+      USVStringOrTrustedURL::FromTrustedURL(TrustedURL::Create(ToKURL(""))),
+      "frame1", "", main_window, main_window, exception_state);
+  EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(destination));
   EXPECT_EQ(result, WebFrame::ToCoreFrame(*remote_frame)->DomWindow());
 
   Reset();

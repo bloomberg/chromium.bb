@@ -189,43 +189,23 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScript) {
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
               FromTrustedScriptURL(script_url);
   GetStringFromTrustedTypeWorks(trusted_value, "http://www.example.com/");
-}
-
-TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL_Relative) {
-  String url_address = "relative/url.html";
-  TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
-  StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
-      trusted_value =
-          StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
-              FromTrustedScriptURL(script_url);
-  GetStringFromTrustedTypeWorks(trusted_value, "relative/url.html");
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedURL* url = TrustedURL::Create(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
               FromTrustedURL(url);
   GetStringFromTrustedTypeWorks(trusted_value, "http://www.example.com/");
-}
-
-TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedURL_Relative) {
-  String url_address = "relative/url.html";
-  TrustedURL* url = TrustedURL::Create(url_address);
-  StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
-      trusted_value =
-          StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
-              FromTrustedURL(url);
-  GetStringFromTrustedTypeWorks(trusted_value, "relative/url.html");
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_String) {
@@ -259,7 +239,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedScript) {
 
 TEST(TrustedTypesUtilTest,
      GetStringFromTrustedTypeWithoutCheck_TrustedScriptURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
@@ -270,7 +250,7 @@ TEST(TrustedTypesUtilTest,
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedURL* url = TrustedURL::Create(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
@@ -326,7 +306,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedScript_String) {
 
 // GetStringFromTrustedScriptURL tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_TrustedScriptURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
   StringOrTrustedScriptURL trusted_value =
       StringOrTrustedScriptURL::FromTrustedScriptURL(script_url);
@@ -341,7 +321,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_String) {
 
 // GetStringFromTrustedURL tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedURL_TrustedURL) {
-  String url_address = "http://www.example.com/";
+  KURL url_address("http://www.example.com/");
   TrustedURL* url = TrustedURL::Create(url_address);
   USVStringOrTrustedURL trusted_value =
       USVStringOrTrustedURL::FromTrustedURL(url);
