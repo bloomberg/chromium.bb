@@ -75,4 +75,10 @@ Polymer({
     settings.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
   },
   // </if>
+
+  /** private */
+  onMoreFeaturesLinkClick_: function() {
+    window.open(
+        'https://chrome.google.com/webstore/category/collection/accessibility');
+  },
 });
