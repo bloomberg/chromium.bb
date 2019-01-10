@@ -13,6 +13,14 @@ import optparse
 # Matches the include statement in the braille table files.
 INCLUDE_RE = re.compile(r"^\s*include\s+([^#\s]+)")
 
+# Exclude these files from table validation.
+IGNORE_TABLES = set()
+IGNORE_TABLES.add('boxes.ctb')
+IGNORE_TABLES.add('unicode-braille.utb')
+IGNORE_TABLES.add('IPA.utb')
+IGNORE_TABLES.add('spaces.ctb')
+IGNORE_TABLES.add('ethio-g1.ctb')
+IGNORE_TABLES.add('or-in-g1.utb')
 
 def Error(msg):
   print >> sys.stderr, 'liblouis_list_tables: %s' % msg
@@ -40,6 +48,14 @@ def FindFile(filename, directories):
   Error('File not found: %s' % filename)
 
 
+def FindAllTableFiles(directory):
+  ret = set()
+  for filename in os.listdir(directory):
+    if filename.endswith(".ctb") or filename.endswith(".utb"):
+      ret.add(filename)
+  return ret
+
+
 def GetIncludeFiles(filename):
   result = []
   with open(ToNativePath(filename), 'r') as fh:
@@ -50,13 +66,13 @@ def GetIncludeFiles(filename):
   return result
 
 
-def ProcessFile(output_set, filename, directories):
+def ProcessFile(output_set, filename, directories, indent=0):
   fullname = FindFile(filename, directories)
   if fullname in output_set:
     return
-  output_set.add(fullname)
+  output_set.add(indent*" " + fullname)
   for include_file in GetIncludeFiles(fullname):
-    ProcessFile(output_set, include_file, directories)
+    ProcessFile(output_set, include_file, directories, indent=2)
 
 
 def GetTableFiles(tables_file, directories, extra_files):
@@ -69,6 +85,25 @@ def GetTableFiles(tables_file, directories, extra_files):
     ProcessFile(output_set, name, directories)
   return output_set
 
+
+def CheckTables(tables_file):
+  tables = LoadTablesFile(tables_file)
+  actual_set = set();
+  for table in tables:
+    for name in table['fileNames'].split(','):
+      actual_set.add(name)
+  expected_set = FindAllTableFiles("src/tables")
+  output = []
+  for table in actual_set:
+    if table not in expected_set and table not in IGNORE_TABLES:
+      output.append("Error: obsolete table not in liblouis " + table)
+
+  new_tables = []
+  for table in expected_set:
+    if table not in actual_set and table not in IGNORE_TABLES:
+      output.append("Error: table not found in tables file " + table)
+      new_tables.append(table)
+  return (output, new_tables)
 
 def DoMain(argv):
   "Entry point for gyp's pymod_do_main command."
