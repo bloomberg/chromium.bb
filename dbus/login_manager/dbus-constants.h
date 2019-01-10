@@ -17,22 +17,9 @@ const char kSessionManagerSaveLoginPassword[] = "SaveLoginPassword";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
-const char kSessionManagerStorePolicy[] = "StorePolicy";
 const char kSessionManagerStorePolicyEx[] = "StorePolicyEx";
-const char kSessionManagerStoreUnsignedPolicy[] = "StoreUnsignedPolicy";
 const char kSessionManagerStoreUnsignedPolicyEx[] = "StoreUnsignedPolicyEx";
-const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerRetrievePolicyEx[] = "RetrievePolicyEx";
-const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
-const char kSessionManagerStoreUnsignedPolicyForUser[] =
-    "StoreUnsignedPolicyForUser";
-const char kSessionManagerRetrievePolicyForUser[] = "RetrievePolicyForUser";
-const char kSessionManagerRetrievePolicyForUserWithoutSession[] =
-    "RetrievePolicyForUserWithoutSession";
-const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
-    "StoreDeviceLocalAccountPolicy";
-const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
-    "RetrieveDeviceLocalAccountPolicy";
 const char kSessionManagerListStoredComponentPolicies[] =
     "ListStoredComponentPolicies";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
