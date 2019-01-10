@@ -16,26 +16,30 @@ let AnnotationTool;
  * across an IFrame boundary.
  */
 class InkAPI {
+  /** @param {!ink.embed.EmbedComponent} embed */
   constructor(embed) {
-    /** @type {*} */
     this.embed_ = embed;
-
-    /** @type {ArrayBuffer} */
-    this.buffer_ = null;
+    this.brush_ = ink.BrushModel.getInstance(embed);
   }
 
   /**
-   * @param {ArrayBuffer} buffer
+   * @param {!ArrayBuffer} buffer
    */
   setPDF(buffer) {
-    this.buffer_ = buffer;
+    // We change the type from ArrayBuffer to Uint8Array due to the consequences
+    // of the buffer being passed across the iframe boundary. This realm has a
+    // different ArrayBuffer constructor than `buffer`.
+    // TODO(dstockwell): Update Ink to allow Uint8Array here.
+    this.embed_.setPDF(
+        /** @type {!ArrayBuffer} */ (
+            /** @type {!*} */ (new Uint8Array(buffer))));
   }
 
   /**
-   * @return {ArrayBuffer}
+   * @return {Promise<Uint8Array>}
    */
   getPDF() {
-    return this.buffer_;
+    return this.embed_.getPDF();
   }
 
   setCamera(camera) {
@@ -44,23 +48,29 @@ class InkAPI {
 
   /** @param {AnnotationTool} tool */
   setAnnotationTool(tool) {
-    // TODO(dstockwell): Use Ink api to convert `tool` to `Brush`
-    this.embed_.setTool(tool);
+    const shape = {
+      eraser: 'MAGIC_ERASE',
+      pen: 'INKPEN',
+      highlighter: 'HIGHLIGHTER',
+    }[tool.tool];
+    this.brush_.setShape(shape);
+    if (tool.tool != 'eraser') {
+      this.brush_.setColor(tool.color);
+    }
+    this.brush_.setStrokeWidth(tool.size);
   }
 
   dispatchPointerEvent(type, init) {
-    // TODO(dstockwell): dispatch to #ink-engine
+    const event = new PointerEvent(type, init);
+    document.querySelector('#ink-engine').dispatchEvent(event);
   }
 }
 
-/**
- * @return {InkAPI}
- */
-window.initInk = function() {
-  // TODO(dstockwell): Create real Ink embed and pass to InkAPI.
-  const embed = {
-    setCamera: function() {},
-    setTool: function() {},
-  };
+/** @return {Promise<InkAPI>} */
+window.initInk = async function() {
+  const config = new ink.embed.Config();
+  const embed = await ink.embed.EmbedComponent.execute(config);
+  const hostCameraControl = 15;
+  embed.assignFlag(hostCameraControl, true);
   return new InkAPI(embed);
 };
