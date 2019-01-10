@@ -50,7 +50,7 @@
 #include "media/media_buildflags.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
-#include "ui/gl/gl_features.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"

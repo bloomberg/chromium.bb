@@ -25,7 +25,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gfx/extension_set.h"
-#include "ui/gl/gl_features.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)

@@ -157,7 +157,7 @@ jumbo_source_set("config_sources") {
     "//media:media_buildflags",
     "//third_party/re2",
     "//ui/gl",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
 

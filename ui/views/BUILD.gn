@@ -44,8 +44,8 @@ aggregate_vector_icons("views_vector_icons") {
   ]
 }
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags =
       [ "ENABLE_NATIVE_WINDOW_NAV_BUTTONS=$enable_native_window_nav_buttons" ]
 }
@@ -494,7 +494,7 @@ jumbo_component("views") {
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
-    ":features",
+    ":buildflags",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",

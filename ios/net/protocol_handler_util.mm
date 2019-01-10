@@ -18,8 +18,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_version.h"
 #include "net/url_request/url_request.h"
+#include "url/buildflags.h"
 #include "url/gurl.h"
-#include "url/url_features.h"
 
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "base/i18n/encoding_detection.h"  // nogncheck

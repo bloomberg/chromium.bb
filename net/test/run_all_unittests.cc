@@ -10,7 +10,7 @@
 #include "crypto/nss_util.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/test/net_test_suite.h"
-#include "url/url_features.h"
+#include "url/buildflags.h"
 
 using net::internal::ClientSocketPoolBaseHelper;
 

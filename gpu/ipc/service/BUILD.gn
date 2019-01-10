@@ -56,7 +56,7 @@ jumbo_component("service") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
     "//ui/gl/init",
     "//url",
   ]

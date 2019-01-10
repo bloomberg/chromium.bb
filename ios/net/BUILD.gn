@@ -25,7 +25,7 @@ source_set("net") {
     ":ios_net_buildflags",
     "//base",
     "//net",
-    "//url:url_features",
+    "//url:buildflags",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -23,7 +23,7 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
-#include "ui/gl/gl_features.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"

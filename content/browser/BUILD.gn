@@ -211,7 +211,7 @@ jumbo_source_set("browser") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
     "//ui/latency",
     "//ui/native_theme",
     "//ui/resources",

@@ -140,7 +140,7 @@
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
-#include "ui/gl/gl_features.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/native_theme/native_theme_features.h"

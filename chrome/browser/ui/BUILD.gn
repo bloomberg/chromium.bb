@@ -2869,7 +2869,7 @@ jumbo_split_static_library("ui") {
       "//components/payments/content",
       "//components/payments/core",
       "//services/ws/public/cpp/input_devices",
-      "//ui/views:features",
+      "//ui/views:buildflags",
     ]
 
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]

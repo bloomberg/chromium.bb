@@ -18,8 +18,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 

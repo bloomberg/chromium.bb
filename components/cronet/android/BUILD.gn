@@ -160,7 +160,7 @@ source_set("cronet_static") {
     "//net",
     "//third_party/zlib:zlib",
     "//url",
-    "//url:url_features",
+    "//url:buildflags",
   ]
   sources = [
     "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",

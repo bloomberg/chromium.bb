@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace ui {

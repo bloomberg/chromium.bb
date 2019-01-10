@@ -11,8 +11,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("url_features") {
-  header = "url_features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "USE_PLATFORM_ICU_ALTERNATIVES=$use_platform_icu_alternatives" ]
 }
 
@@ -73,7 +73,7 @@ component("url") {
     if (is_android) {
       sources += [ "url_idna_icu_alternatives_android.cc" ]
       deps += [
-        ":url_features",
+        ":buildflags",
         ":url_java",
         ":url_jni_headers",
         "//base",

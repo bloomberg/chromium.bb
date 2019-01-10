@@ -14,8 +14,8 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/skia_font_delegate.h"
 #include "ui/shell_dialogs/shell_dialog_linux.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/features.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
 
