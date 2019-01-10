@@ -97,6 +97,7 @@ class LookalikeUrlNavigationObserverBrowserTest
     NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::CURRENT_TAB;
     params.is_renderer_initiated = true;
+    params.initiator_origin = url::Origin::Create(url);
     ui_test_utils::NavigateToURL(&params);
   }
 

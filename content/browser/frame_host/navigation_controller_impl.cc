@@ -2800,10 +2800,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     FrameNavigationEntry* frame_entry) {
   DCHECK_EQ(-1, GetIndexOfEntry(entry));
   DCHECK(frame_entry);
-  // TODO(nasko): Enforce this check once all code is updated to supply
-  // initiator_origin for renderer initiated navigations.
-  // DCHECK(!params.is_renderer_initiated ||
-  // params.initiator_origin.has_value());
+  // All renderer-initiated navigations must have an initiator_origin.
+  DCHECK(!params.is_renderer_initiated || params.initiator_origin.has_value());
 
   GURL url_to_load;
   GURL virtual_url;

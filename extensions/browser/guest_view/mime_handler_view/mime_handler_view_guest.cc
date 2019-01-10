@@ -369,6 +369,7 @@ bool MimeHandlerViewGuest::ShouldCreateWebContents(
   content::OpenURLParams open_params(target_url, content::Referrer(),
                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                      ui::PAGE_TRANSITION_LINK, true);
+  open_params.initiator_origin = opener->GetLastCommittedOrigin();
   // Extensions are allowed to open popups under circumstances covered by
   // running as a mime handler.
   open_params.user_gesture = true;
