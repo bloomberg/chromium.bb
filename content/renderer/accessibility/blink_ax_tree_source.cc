@@ -966,6 +966,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   }
 
   if (src.IsScrollableContainer()) {
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
     const gfx::Point& scroll_offset = src.GetScrollOffset();
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scroll_offset.x());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scroll_offset.y());
