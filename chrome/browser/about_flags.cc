@@ -3998,13 +3998,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncStandaloneTransportDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncStandaloneTransport)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-chromevox-developer-option",
-     flag_descriptions::kEnableChromevoxDeveloperOptionName,
-     flag_descriptions::kEnableChromevoxDeveloperOptionDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromevoxDeveloperOption)},
-#endif
-
     {"sync-USS-autofill-profile",
      flag_descriptions::kSyncUSSAutofillProfileName,
      flag_descriptions::kSyncUSSAutofillProfileDescription, kOsAll,
