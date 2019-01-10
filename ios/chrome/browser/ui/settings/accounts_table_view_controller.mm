@@ -9,18 +9,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#import "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -48,6 +43,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "net/base/mac/url_conversions.h"
 #import "services/identity/public/cpp/identity_manager.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -84,12 +80,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface AccountsTableViewController () <
     ChromeIdentityServiceObserver,
     ChromeIdentityBrowserOpener,
-    OAuth2TokenServiceObserverBridgeDelegate,
+    IdentityManagerObserverBridgeDelegate,
     SyncObserverModelBridge> {
   ios::ChromeBrowserState* _browserState;  // weak
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
-  std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserver;
   // Modal alert for sign out.
   AlertCoordinator* _alertCoordinator;
   // Whether an authentication operation is in progress (e.g switch accounts,
@@ -138,9 +135,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       // in the "Google Services and sync" settings.
       _syncObserver.reset(new SyncObserverBridge(self, syncService));
     }
-    _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
-        self));
+    _identityManagerObserver =
+        std::make_unique<identity::IdentityManagerObserverBridge>(
+            IdentityManagerFactory::GetForBrowserState(_browserState), self);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(willStartSwitchAccount)
@@ -167,7 +164,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)stopBrowserStateServiceObservers {
-  _tokenServiceObserver.reset();
+  _identityManagerObserver.reset();
   _syncObserver.reset();
 }
 
@@ -215,15 +212,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[NSMutableDictionary alloc] init];
 
   // Account cells.
-  ProfileOAuth2TokenService* oauth2_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
-  AccountTrackerService* accountTracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState);
   [model addSectionWithIdentifier:SectionIdentifierAccounts];
   [model setHeader:[self header]
       forSectionWithIdentifier:SectionIdentifierAccounts];
-  for (const std::string& account_id : oauth2_service->GetAccounts()) {
-    AccountInfo account = accountTracker->GetAccountInfo(account_id);
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(_browserState);
+  for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
@@ -428,9 +422,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - OAuth2TokenServiceObserverBridgeDelegate
+#pragma mark - IdentityManagerObserverBridgeDelegate
 
-- (void)onEndBatchChanges {
+- (void)onEndBatchOfRefreshTokenStateChanges {
   [self reloadData];
   [self popViewIfSignedOut];
   if (![self authService] -> IsAuthenticated() && _settingsDetails) {
