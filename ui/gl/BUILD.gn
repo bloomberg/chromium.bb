@@ -26,8 +26,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("gl_features") {
-  header = "gl_features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   use_egl_on_mac = use_egl && is_mac
   flags = [
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
@@ -151,7 +151,7 @@ jumbo_component("gl") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
-    ":gl_features",
+    ":buildflags",
     "//base/third_party/dynamic_annotations",
 
     # ANGLE includes are used cross-platform.

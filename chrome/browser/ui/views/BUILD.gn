@@ -48,7 +48,7 @@ component("views") {
     sources += [ "nav_button_provider.h" ]
     deps += [
       "//ui/views",
-      "//ui/views:features",
+      "//ui/views:buildflags",
     ]
   }
 }

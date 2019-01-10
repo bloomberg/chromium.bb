@@ -1981,7 +1981,7 @@ jumbo_split_static_library("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
     "//ui/message_center",
     "//ui/message_center/public/cpp",
     "//ui/resources",

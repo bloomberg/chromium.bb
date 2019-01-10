@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_NAV_BUTTON_PROVIDER_H_
 
 #include "build/buildflag.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/features.h"
 
 #if !BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 #error "Include not allowed."

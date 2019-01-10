@@ -32,7 +32,7 @@
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "third_party/zlib/zlib.h"
-#include "url/url_features.h"
+#include "url/buildflags.h"
 #include "url/url_util.h"
 
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
