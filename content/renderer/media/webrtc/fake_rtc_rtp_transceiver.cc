@@ -117,7 +117,7 @@ blink::WebVector<blink::WebString> FakeRTCRtpReceiver::StreamIds() const {
   return web_stream_ids;
 }
 
-blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>>
 FakeRTCRtpReceiver::GetSources() {
   NOTIMPLEMENTED();
   return {};

@@ -8,8 +8,8 @@
 #include <map>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
@@ -66,7 +66,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   // The current SSRCs and CSRCs. getSynchronizationSources() returns the SSRCs
   // and getContributingSources() returns the CSRCs.
-  WebVector<std::unique_ptr<WebRTCRtpContributingSource>> web_sources_;
+  WebVector<std::unique_ptr<WebRTCRtpSource>> web_sources_;
   bool web_sources_needs_updating_ = true;
   Member<RTCRtpTransceiver> transceiver_;
 };

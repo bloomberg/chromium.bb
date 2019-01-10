@@ -12,9 +12,9 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 
 namespace content {
@@ -63,8 +63,8 @@ class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   uintptr_t Id() const override;
   const blink::WebMediaStreamTrack& Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
-  GetSources() override;
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
+      override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
                 blink::RTCStatsFilter) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
