@@ -434,11 +434,12 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
   }
 }
 
-void LocalStorageContextMojo::PerformCleanup(base::OnceClosure callback) {
+void LocalStorageContextMojo::PerformStorageCleanup(
+    base::OnceClosure callback) {
   if (connection_state_ != CONNECTION_FINISHED) {
-    RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::PerformCleanup,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    std::move(callback)));
+    RunWhenConnected(
+        base::BindOnce(&LocalStorageContextMojo::PerformStorageCleanup,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
   if (database_) {

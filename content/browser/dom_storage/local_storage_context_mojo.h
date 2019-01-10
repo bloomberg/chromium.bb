@@ -63,7 +63,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // GetStorageUsage() will not return entries for |origin| anymore.
   void DeleteStorage(const url::Origin& origin, base::OnceClosure callback);
   // Ensure that no traces of deleted data are left in the backing storage.
-  void PerformCleanup(base::OnceClosure callback);
+  void PerformStorageCleanup(base::OnceClosure callback);
   void Flush();
   void FlushOriginForTesting(const url::Origin& origin);
 

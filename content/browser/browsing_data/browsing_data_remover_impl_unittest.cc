@@ -190,7 +190,7 @@ class StoragePartitionRemovalTestStoragePartition
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
                  CookieDeletionFilterPtr cookie_deletion_filter,
-                 bool perform_cleanup,
+                 bool perform_storage_cleanup,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override {
