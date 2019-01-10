@@ -472,8 +472,6 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
   // TODO(crbug.com/516866): Handle the case of conflict as a result of
   // re-encryption request.
 
-  // TODO(crbug.com/516866): Add basic unit test for this function.
-
   // Can only conflict with existing nodes.
   DCHECK(tracked_entity);
   DCHECK_EQ(tracked_entity,
