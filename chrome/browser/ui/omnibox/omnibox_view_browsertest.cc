@@ -562,27 +562,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
             UTF16ToUTF8(omnibox_view->GetText()));
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Escape) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
-  chrome::FocusLocationBar(browser());
-
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-
-  base::string16 old_text = omnibox_view->GetText();
-  EXPECT_FALSE(old_text.empty());
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-
-  // Delete all text in omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-  EXPECT_TRUE(omnibox_view->GetText().empty());
-
-  // Escape shall revert the text in omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
-  EXPECT_EQ(old_text, omnibox_view->GetText());
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-}
-
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
