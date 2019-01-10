@@ -44,6 +44,10 @@ const char kAccountChildAccountStatusPath[] = "is_child_account";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
 
+// TODO(knn): Remove once deprecated service flags have been migrated from
+// preferences.
+const char kChildAccountServiceFlag[] = "uca";
+
 // Account folders used for storing account related data at disk.
 const base::FilePath::CharType kAccountsFolder[] =
     FILE_PATH_LITERAL("Accounts");
@@ -103,8 +107,6 @@ void RemoveImage(const base::FilePath& image_path) {
 }  // namespace
 
 const char AccountTrackerService::kAccountInfoPref[] = "account_info";
-
-const char AccountTrackerService::kChildAccountServiceFlag[] = "uca";
 
 // This must be a string which can never be a valid domain.
 const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";

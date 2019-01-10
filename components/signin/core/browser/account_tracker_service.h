@@ -48,11 +48,6 @@ class AccountTrackerService : public KeyedService {
   // Value representing no picture URL associated with an account.
   static const char kNoPictureURLFound[];
 
-  // TODO(knn): Move to ChildAccountInfoFetcher once deprecated service flags
-  // have been migrated from preferences.
-  // Child account service flag name.
-  static const char kChildAccountServiceFlag[];
-
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
   class Observer {
