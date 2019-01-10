@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_UNINSTALL_DIALOG_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_UNINSTALL_DIALOG_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -60,15 +62,13 @@ class ExtensionUninstallDialog
   // Creates a platform specific implementation of ExtensionUninstallDialog. The
   // dialog will be modal to |parent|, or a non-modal dialog if |parent| is
   // NULL.
-  static ExtensionUninstallDialog* Create(Profile* profile,
-                                          gfx::NativeWindow parent,
-                                          Delegate* delegate);
+  static std::unique_ptr<ExtensionUninstallDialog>
+  Create(Profile* profile, gfx::NativeWindow parent, Delegate* delegate);
 
   // Create the Views implementation of ExtensionUninstallDialog, for use on
   // platforms where that is not the native platform implementation.
-  static ExtensionUninstallDialog* CreateViews(Profile* profile,
-                                               gfx::NativeWindow parent,
-                                               Delegate* delegate);
+  static std::unique_ptr<ExtensionUninstallDialog>
+  CreateViews(Profile* profile, gfx::NativeWindow parent, Delegate* delegate);
 
   ~ExtensionUninstallDialog() override;
 

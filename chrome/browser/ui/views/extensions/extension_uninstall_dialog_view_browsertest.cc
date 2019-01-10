@@ -158,9 +158,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   std::unique_ptr<extensions::ExtensionUninstallDialog> dialog;
   {
     base::RunLoop run_loop;
-    dialog.reset(extensions::ExtensionUninstallDialog::Create(
+    dialog = extensions::ExtensionUninstallDialog::Create(
         app_browser->profile(), app_browser->window()->GetNativeWindow(),
-        nullptr));
+        nullptr);
     run_loop.RunUntilIdle();
   }
 
@@ -313,9 +313,9 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
         ->extension_service()
         ->AddExtension(extension_.get());
 
-    dialog_.reset(extensions::ExtensionUninstallDialog::Create(
+    dialog_ = extensions::ExtensionUninstallDialog::Create(
         browser()->profile(), browser()->window()->GetNativeWindow(),
-        &delegate_));
+        &delegate_);
     if (uninstall_method_ == UNINSTALL_BY_EXTENSION) {
       triggering_extension_ =
           extensions::ExtensionBuilder("TestExtensionRemover").Build();

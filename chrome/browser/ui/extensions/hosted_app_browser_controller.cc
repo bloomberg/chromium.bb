@@ -344,8 +344,8 @@ bool HostedAppBrowserController::CanUninstall() const {
 
 void HostedAppBrowserController::Uninstall(UninstallReason reason,
                                            UninstallSource source) {
-  uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-      browser_->profile(), browser_->window()->GetNativeWindow(), this));
+  uninstall_dialog_ = ExtensionUninstallDialog::Create(
+      browser_->profile(), browser_->window()->GetNativeWindow(), this);
   uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
 }
 
