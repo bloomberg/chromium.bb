@@ -48,7 +48,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   AtkRole GetAtkRole();
   void GetAtkState(AtkStateSet* state_set);
-  void GetAtkRelations(AtkRelationSet* atk_relation_set);
+  AtkRelationSet* GetAtkRelations();
   void GetExtents(gint* x, gint* y, gint* width, gint* height,
                   AtkCoordType coord_type);
   void GetPosition(gint* x, gint* y, AtkCoordType coord_type);
@@ -132,6 +132,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
   void DestroyAtkObjects();
+  void AddRelationToSet(AtkRelationSet*, AtkRelationType, int target_id);
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();

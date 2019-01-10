@@ -9,6 +9,7 @@
 #include <atk/atk.h>
 
 #include <utility>
+#include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -1332,6 +1333,156 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectSetSizePosInSet) {
   EnsureAtkObjectHasAttributeWithValue(radiobutton3_atk_object, "posinset",
                                        "5");
   EnsureAtkObjectHasAttributeWithValue(radiobutton3_atk_object, "setsize", "5");
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelations) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kStaticText;
+
+  root.child_ids.push_back(2);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kStaticText;
+  std::vector<int32_t> labelledby_ids = {1, 4};
+  child2.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                             labelledby_ids);
+
+  root.child_ids.push_back(3);
+
+  AXNodeData child3;
+  child3.id = 4;
+  child3.role = ax::mojom::Role::kStaticText;
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId, 1);
+
+  root.child_ids.push_back(4);
+
+  Init(root, child1, child2, child3);
+
+  // We don't test relations that are too new for the runtime version of ATK.
+  GEnumClass* enum_class =
+      G_ENUM_CLASS(g_type_class_ref(atk_relation_type_get_type()));
+  int max_relation_type = enum_class->maximum;
+  g_type_class_unref(enum_class);
+
+  auto assert_contains_relation = [&](AtkObject* object, AtkObject* target,
+                                      AtkRelationType relation) {
+    if (relation > max_relation_type)
+      return;
+
+    AtkRelationSet* relations = atk_object_ref_relation_set(object);
+    ASSERT_TRUE(atk_relation_set_contains(relations, relation));
+    ASSERT_TRUE(atk_relation_set_contains_target(relations, relation, target));
+    g_object_unref(G_OBJECT(relations));
+  };
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  AtkObject* atk_child1(AtkObjectFromNode(GetRootNode()->children()[0]));
+  AtkObject* atk_child2(AtkObjectFromNode(GetRootNode()->children()[1]));
+  AtkObject* atk_child3(AtkObjectFromNode(GetRootNode()->children()[2]));
+
+  assert_contains_relation(root_atk_object, atk_child1, ATK_RELATION_DETAILS);
+  assert_contains_relation(atk_child1, root_atk_object,
+                           ATK_RELATION_DETAILS_FOR);
+  assert_contains_relation(atk_child3, atk_child1, ATK_RELATION_DETAILS);
+  assert_contains_relation(atk_child1, atk_child3, ATK_RELATION_DETAILS_FOR);
+
+  assert_contains_relation(atk_child2, root_atk_object,
+                           ATK_RELATION_LABELLED_BY);
+  assert_contains_relation(root_atk_object, atk_child2, ATK_RELATION_LABEL_FOR);
+  assert_contains_relation(atk_child2, atk_child3, ATK_RELATION_LABELLED_BY);
+  assert_contains_relation(atk_child3, atk_child2, ATK_RELATION_LABEL_FOR);
+
+  assert_contains_relation(atk_child3, root_atk_object, ATK_RELATION_MEMBER_OF);
+
+  g_object_unref(root_atk_object);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAllReverseAtkRelations) {
+  // We don't test relations that are too new for the runtime version of ATK.
+  GEnumClass* enum_class =
+      G_ENUM_CLASS(g_type_class_ref(atk_relation_type_get_type()));
+  int max_relation_type = enum_class->maximum;
+  g_type_class_unref(enum_class);
+
+  auto test_relation = [&](auto attribute_setter,
+                           AtkRelationType expected_relation,
+                           AtkRelationType expected_reverse_relation) {
+    if (expected_relation > max_relation_type ||
+        expected_reverse_relation > max_relation_type)
+      return;
+
+    AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kRootWebArea;
+    attribute_setter(&root_data, 2);
+
+    AXNodeData child_data;
+    child_data.id = 2;
+    child_data.role = ax::mojom::Role::kStaticText;
+    root_data.child_ids.push_back(2);
+    Init(root_data, child_data);
+
+    AtkObject* source(GetRootAtkObject());
+    AtkObject* target(AtkObjectFromNode(GetRootNode()->children()[0]));
+
+    AtkRelationSet* relations = atk_object_ref_relation_set(source);
+    ASSERT_TRUE(atk_relation_set_contains(relations, expected_relation));
+    ASSERT_TRUE(
+        atk_relation_set_contains_target(relations, expected_relation, target));
+    g_object_unref(G_OBJECT(relations));
+
+    relations = atk_object_ref_relation_set(target);
+    ASSERT_TRUE(
+        atk_relation_set_contains(relations, expected_reverse_relation));
+    ASSERT_TRUE(atk_relation_set_contains_target(
+        relations, expected_reverse_relation, source));
+    g_object_unref(G_OBJECT(relations));
+  };
+
+  auto test_int_relation = [&](ax::mojom::IntAttribute relation,
+                               AtkRelationType expected_relation,
+                               AtkRelationType expected_reverse_relation) {
+    auto setter = [&](AXNodeData* data, int target_id) {
+      data->AddIntAttribute(relation, target_id);
+    };
+    test_relation(setter, expected_relation, expected_reverse_relation);
+  };
+
+  auto test_int_list_relation = [&](ax::mojom::IntListAttribute relation,
+                                    AtkRelationType expected_relation,
+                                    AtkRelationType expected_reverse_relation) {
+    auto setter = [&](AXNodeData* data, int target_id) {
+      std::vector<int32_t> ids = {target_id};
+      data->AddIntListAttribute(relation, ids);
+    };
+    test_relation(setter, expected_relation, expected_reverse_relation);
+  };
+
+  test_int_relation(ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
+                    ATK_RELATION_DETAILS_FOR);
+  test_int_relation(ax::mojom::IntAttribute::kErrormessageId,
+                    ATK_RELATION_ERROR_MESSAGE, ATK_RELATION_ERROR_FOR);
+  test_int_list_relation(ax::mojom::IntListAttribute::kControlsIds,
+                         ATK_RELATION_CONTROLLER_FOR,
+                         ATK_RELATION_CONTROLLED_BY);
+  test_int_list_relation(ax::mojom::IntListAttribute::kDescribedbyIds,
+                         ATK_RELATION_DESCRIBED_BY,
+                         ATK_RELATION_DESCRIPTION_FOR);
+  test_int_list_relation(ax::mojom::IntListAttribute::kFlowtoIds,
+                         ATK_RELATION_FLOWS_TO, ATK_RELATION_FLOWS_FROM);
+  test_int_list_relation(ax::mojom::IntListAttribute::kLabelledbyIds,
+                         ATK_RELATION_LABELLED_BY, ATK_RELATION_LABEL_FOR);
 }
 
 }  // namespace ui

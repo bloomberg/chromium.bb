@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -15,6 +16,7 @@
 
 #include "base/command_line.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -302,15 +304,9 @@ static AtkObject* AXPlatformNodeAuraLinuxRefChild(AtkObject* atk_object,
 static AtkRelationSet* AXPlatformNodeAuraLinuxRefRelationSet(
     AtkObject* atk_object) {
   AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  AtkRelationSet* atk_relation_set =
-      ATK_OBJECT_CLASS(kAXPlatformNodeAuraLinuxParentClass)
-          ->ref_relation_set(atk_object);
-
   if (!obj)
-    return atk_relation_set;
-
-  obj->GetAtkRelations(atk_relation_set);
-  return atk_relation_set;
+    return atk_relation_set_new();
+  return obj->GetAtkRelations();
 }
 
 static AtkAttributeSet* AXPlatformNodeAuraLinuxGetAttributes(
@@ -1968,8 +1964,114 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
-void AXPlatformNodeAuraLinux::GetAtkRelations(
-    AtkRelationSet* atk_relation_set) {
+struct AtkIntRelation {
+  ax::mojom::IntAttribute attribute;
+  AtkRelationType relation;
+  base::Optional<AtkRelationType> reverse_relation;
+};
+
+static AtkIntRelation kIntRelations[] = {
+    {ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
+     ATK_RELATION_DETAILS_FOR},
+    {ax::mojom::IntAttribute::kMemberOfId, ATK_RELATION_MEMBER_OF,
+     base::nullopt},
+    {ax::mojom::IntAttribute::kErrormessageId, ATK_RELATION_ERROR_MESSAGE,
+     ATK_RELATION_ERROR_FOR},
+};
+
+struct AtkIntListRelation {
+  ax::mojom::IntListAttribute attribute;
+  AtkRelationType relation;
+  base::Optional<AtkRelationType> reverse_relation;
+};
+
+static AtkIntListRelation kIntListRelations[] = {
+    {ax::mojom::IntListAttribute::kControlsIds, ATK_RELATION_CONTROLLER_FOR,
+     ATK_RELATION_CONTROLLED_BY},
+    {ax::mojom::IntListAttribute::kDescribedbyIds, ATK_RELATION_DESCRIBED_BY,
+     ATK_RELATION_DESCRIPTION_FOR},
+    {ax::mojom::IntListAttribute::kFlowtoIds, ATK_RELATION_FLOWS_TO,
+     ATK_RELATION_FLOWS_FROM},
+    {ax::mojom::IntListAttribute::kLabelledbyIds, ATK_RELATION_LABELLED_BY,
+     ATK_RELATION_LABEL_FOR},
+};
+
+void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
+                                               AtkRelationType relation,
+                                               int target_id) {
+  // Avoid adding self-referential relations.
+  if (target_id == GetData().id)
+    return;
+
+  // If we were compiled with a newer version of ATK than the runtime version,
+  // it's possible that we might try to add a relation that doesn't exist in
+  // the runtime version of the AtkRelationType enum. This will cause a runtime
+  // error, so return early here if we are about to do that.
+  static base::Optional<int> max_relation_type = base::nullopt;
+  if (!max_relation_type.has_value()) {
+    GEnumClass* enum_class =
+        G_ENUM_CLASS(g_type_class_ref(atk_relation_type_get_type()));
+    max_relation_type = enum_class->maximum;
+    g_type_class_unref(enum_class);
+  }
+  if (relation > max_relation_type.value())
+    return;
+
+  AXPlatformNode* target = GetDelegate()->GetFromNodeID(target_id);
+  if (!target)
+    return;
+  atk_relation_set_add_relation_by_type(relation_set, relation,
+                                        target->GetNativeViewAccessible());
+}
+
+AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
+  AtkRelationSet* relation_set = atk_relation_set_new();
+
+  // For each possible relation defined by an IntAttribute, we test that
+  // attribute and then look for reverse relations. AddRelationToSet handles
+  // discarding self-referential relations.
+  for (unsigned i = 0; i < G_N_ELEMENTS(kIntRelations); i++) {
+    const AtkIntRelation& relation = kIntRelations[i];
+
+    int target_id;
+    if (GetIntAttribute(relation.attribute, &target_id))
+      AddRelationToSet(relation_set, relation.relation, target_id);
+
+    if (!relation.reverse_relation.has_value())
+      continue;
+
+    std::set<int32_t> target_ids =
+        GetDelegate()->GetReverseRelations(relation.attribute, GetData().id);
+    for (int32_t target_id : target_ids) {
+      AddRelationToSet(relation_set, relation.reverse_relation.value(),
+                       target_id);
+    }
+  }
+
+  // Now we do the same for each possible relation defined by an
+  // IntListAttribute. In this case we need to handle each target in the list.
+  for (unsigned i = 0; i < G_N_ELEMENTS(kIntListRelations); i++) {
+    const AtkIntListRelation& relation = kIntListRelations[i];
+
+    std::vector<int32_t> target_ids;
+    if (GetIntListAttribute(relation.attribute, &target_ids)) {
+      for (int32_t target_id : target_ids) {
+        AddRelationToSet(relation_set, relation.relation, target_id);
+      }
+    }
+
+    if (!relation.reverse_relation.has_value())
+      continue;
+
+    std::set<int32_t> reverse_target_ids =
+        GetDelegate()->GetReverseRelations(relation.attribute, GetData().id);
+    for (int32_t target_id : reverse_target_ids) {
+      AddRelationToSet(relation_set, relation.reverse_relation.value(),
+                       target_id);
+    }
+  }
+
+  return relation_set;
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux() = default;
