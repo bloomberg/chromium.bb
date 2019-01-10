@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -31,6 +32,7 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gr_cache_controller.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -235,6 +237,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void ScheduleDelayedWorkOnGpuThread();
 
   bool MakeCurrent();
+
+  base::Optional<gles2::ProgramCache::ScopedCacheUse> CreateCacheUse();
 
   // Client callbacks are posted back to |origin_task_runner_|, or run
   // synchronously if there's no task runner or message loop.

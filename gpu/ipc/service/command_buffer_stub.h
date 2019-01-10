@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
@@ -175,6 +176,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void Destroy();
 
   bool MakeCurrent();
+
+  gles2::ProgramCache::ScopedCacheUse CreateCacheUse();
 
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id);

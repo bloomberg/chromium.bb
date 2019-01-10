@@ -1094,10 +1094,6 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   surface_ = nullptr;
 
   if (group_) {
-    if (group_->has_program_cache()) {
-      group_->get_program_cache()->ResetCacheProgramCallback();
-    }
-
     group_->Destroy(this, have_context);
     group_ = nullptr;
   }
@@ -1260,13 +1256,6 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
                   "MakeCurrent.";
     group_->LoseContexts(error::kUnknown);
     return false;
-  }
-
-  // Establish the program binary caching callback.
-  if (group_->has_program_cache()) {
-    auto program_callback = base::BindRepeating(&DecoderClient::CacheShader,
-                                                base::Unretained(client_));
-    group_->get_program_cache()->SetCacheProgramCallback(program_callback);
   }
 
   ProcessReadPixels(false);

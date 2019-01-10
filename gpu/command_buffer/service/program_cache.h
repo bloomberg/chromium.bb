@@ -14,11 +14,13 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sha1.h"
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/program_manager.h"
-#include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/common/gl2_types.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+
+class DecoderClient;
+
 namespace gles2 {
 
 class Shader;
@@ -40,6 +42,18 @@ class GPU_GLES2_EXPORT ProgramCache {
   enum ProgramLoadResult {
     PROGRAM_LOAD_FAILURE,
     PROGRAM_LOAD_SUCCESS
+  };
+
+  class GPU_GLES2_EXPORT ScopedCacheUse {
+   public:
+    ScopedCacheUse(ProgramCache* cache, CacheProgramCallback callback);
+    ~ScopedCacheUse();
+
+    ScopedCacheUse(ScopedCacheUse&&) = default;
+    ScopedCacheUse& operator=(ScopedCacheUse&& other) = default;
+
+   private:
+    ProgramCache* cache_;
   };
 
   explicit ProgramCache(size_t max_cache_size_bytes);
@@ -94,9 +108,6 @@ class GPU_GLES2_EXPORT ProgramCache {
   // Reduces cache usage based on the given MemoryPressureLevel
   void HandleMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  void SetCacheProgramCallback(CacheProgramCallback callback);
-  void ResetCacheProgramCallback();
 
  protected:
   size_t max_size_bytes() const { return max_size_bytes_; }

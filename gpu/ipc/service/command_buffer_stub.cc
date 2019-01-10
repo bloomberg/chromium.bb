@@ -165,6 +165,7 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
   bool have_context = false;
+  base::Optional<gles2::ProgramCache::ScopedCacheUse> cache_use;
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
@@ -179,6 +180,7 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuCommandBufferMsg_SignalQuery::ID) {
     if (!MakeCurrent())
       return false;
+    cache_use.emplace(CreateCacheUse());
     have_context = true;
   }
 
@@ -257,6 +259,7 @@ void CommandBufferStub::PerformWork() {
                                                                         : "0");
   if (decoder_context_.get() && !MakeCurrent())
     return;
+  auto cache_use = CreateCacheUse();
 
   if (decoder_context_) {
     uint32_t current_unprocessed_num =
@@ -345,6 +348,12 @@ bool CommandBufferStub::MakeCurrent() {
   return false;
 }
 
+gles2::ProgramCache::ScopedCacheUse CommandBufferStub::CreateCacheUse() {
+  return gles2::ProgramCache::ScopedCacheUse(
+      channel_->gpu_channel_manager()->program_cache(),
+      base::BindRepeating(&DecoderClient::CacheShader, base::Unretained(this)));
+}
+
 void CommandBufferStub::Destroy() {
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
@@ -384,6 +393,11 @@ void CommandBufferStub::Destroy() {
     have_context =
         decoder_context_->GetGLContext()->MakeCurrent(surface_.get());
   }
+
+  base::Optional<gles2::ProgramCache::ScopedCacheUse> cache_use;
+  if (have_context)
+    cache_use.emplace(CreateCacheUse());
+
   for (auto& observer : destruction_observers_)
     observer.OnWillDestroyStub(have_context);
 

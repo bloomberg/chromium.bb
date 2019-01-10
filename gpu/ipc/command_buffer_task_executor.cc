@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace gpu {

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 
 namespace gpu {
 
