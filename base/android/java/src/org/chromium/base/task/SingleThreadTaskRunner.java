@@ -15,5 +15,5 @@ public interface SingleThreadTaskRunner extends SequencedTaskRunner {
      *
      * @return true iff this SingleThreadTaskRunner is bound to the current thread.
      */
-    public boolean belongsToCurrentThread();
+    boolean belongsToCurrentThread();
 }

@@ -17,7 +17,7 @@ class TaskRunnerAndroid {
   explicit TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner);
   ~TaskRunnerAndroid();
 
-  void Finalize(JNIEnv* env, const base::android::JavaRef<jobject>& caller);
+  void Destroy(JNIEnv* env, const base::android::JavaRef<jobject>& caller);
 
   void PostTask(JNIEnv* env,
                 const base::android::JavaRef<jobject>& caller,

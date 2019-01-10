@@ -44,13 +44,28 @@ public class TaskRunnerImpl implements TaskRunner {
     }
 
     @Override
-    protected void finalize() {
-        if (mNativeTaskRunnerAndroid != 0) nativeFinalize(mNativeTaskRunnerAndroid);
+    public void destroy() {
+        synchronized (mLock) {
+            if (mNativeTaskRunnerAndroid != 0) nativeDestroy(mNativeTaskRunnerAndroid);
+            mNativeTaskRunnerAndroid = 0;
+            mPreNativeTasks = null;
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            // Calling destroy as a fallback in case destroy wasn't called by the user.
+            destroy();
+        } finally {
+            super.finalize();
+        }
     }
 
     @Override
     public void postTask(Runnable task) {
         synchronized (mLock) {
+            assert mNativeTaskRunnerAndroid != 0 || mPreNativeTasks != null;
             if (mNativeTaskRunnerAndroid != 0) {
                 nativePostTask(mNativeTaskRunnerAndroid, task);
                 return;
@@ -90,19 +105,21 @@ public class TaskRunnerImpl implements TaskRunner {
     @Override
     public void initNativeTaskRunner() {
         synchronized (mLock) {
-            mNativeTaskRunnerAndroid = nativeInit(mTaskTraits.mPrioritySetExplicitly,
-                    mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mExtensionId,
-                    mTaskTraits.mExtensionData);
-            for (Runnable task : mPreNativeTasks) {
-                nativePostTask(mNativeTaskRunnerAndroid, task);
+            if (mPreNativeTasks != null) {
+                mNativeTaskRunnerAndroid = nativeInit(mTaskTraits.mPrioritySetExplicitly,
+                        mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mExtensionId,
+                        mTaskTraits.mExtensionData);
+                for (Runnable task : mPreNativeTasks) {
+                    nativePostTask(mNativeTaskRunnerAndroid, task);
+                }
+                mPreNativeTasks = null;
             }
-            mPreNativeTasks = null;
         }
     }
 
     // NB due to Proguard obfuscation it's easiest to pass the traits via arguments.
     private static native long nativeInit(boolean prioritySetExplicitly, int priority,
             boolean mayBlock, byte extensionId, byte[] extensionData);
-    private native void nativeFinalize(long nativeTaskRunnerAndroid);
+    private native void nativeDestroy(long nativeTaskRunnerAndroid);
     private native void nativePostTask(long nativeTaskRunnerAndroid, Runnable task);
 }
