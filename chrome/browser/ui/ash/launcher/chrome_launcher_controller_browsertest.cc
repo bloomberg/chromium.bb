@@ -955,12 +955,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
 // activates the right window.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   MaximizeWindow(browser()->window());
-  content::WindowedNotificationObserver open_observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
-  chrome::NewEmptyWindow(browser()->profile());
-  open_observer.Wait();
-  Browser* browser2 = content::Source<Browser>(open_observer.source()).ptr();
+  // Load about:blank in a new window.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  EXPECT_NE(browser(), browser2);
   TabStripModel* tab_strip = browser2->tab_strip_model();
   int tab_count = tab_strip->count();
   MaximizeWindow(browser2->window());
@@ -1746,7 +1743,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
             prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
 
   base::Time time_before_launch = base::Time::Now();
-  chrome::NewEmptyWindow(profile());
+  // Load about:blank in a new window.
+  CreateBrowser(profile());
   base::Time time_after_launch = base::Time::Now();
   const base::Time time_launch =
       prefs->GetLastLaunchTime(extension_misc::kChromeAppId);
