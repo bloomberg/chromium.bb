@@ -135,7 +135,6 @@ public class OfflinePageBridge {
     /**
      * @return True if offline pages sharing is enabled.
      */
-    @VisibleForTesting
     public static boolean isPageSharingEnabled() {
         return nativeIsPageSharingEnabled();
     }
@@ -173,39 +172,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Gets all available offline pages, returning results via the provided callback.
-     *
-     * @param callback The callback to run when the operation completes.
-     */
-    @VisibleForTesting
-    public void getAllPages(final Callback<List<OfflinePageItem>> callback) {
-        List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
-    }
-
-    /**
-     * Gets the offline pages associated with the provided client IDs.
-     *
-     * @param clientIds Client's IDs associated with offline pages.
-     * @return A list of {@link OfflinePageItem} matching the provided IDs, or an empty list if none
-     * exist.
-     */
-    @VisibleForTesting
-    public void getPagesByClientIds(
-            final List<ClientId> clientIds, final Callback<List<OfflinePageItem>> callback) {
-        String[] namespaces = new String[clientIds.size()];
-        String[] ids = new String[clientIds.size()];
-
-        for (int i = 0; i < clientIds.size(); i++) {
-            namespaces[i] = clientIds.get(i).getNamespace();
-            ids[i] = clientIds.get(i).getId();
-        }
-
-        List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetPagesByClientId(mNativeOfflinePageBridge, result, namespaces, ids, callback);
-    }
-
-    /**
      * Gets the offline pages associated with the provided origin.
      * @param origin The JSON-like string of the app's package name and encrypted signature hash.
      * @return A list of {@link OfflinePageItem} matching the provided origin, or an empty
@@ -234,7 +200,6 @@ public class OfflinePageBridge {
      *
      * @return A list of {@link SavePageRequest} representing all the queued requests.
      */
-    @VisibleForTesting
     public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
         nativeGetRequestsInQueue(mNativeOfflinePageBridge, callback);
     }
@@ -840,23 +805,16 @@ public class OfflinePageBridge {
     private static native boolean nativeIsPageSharingEnabled();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
-    @VisibleForTesting
-    native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
-            final Callback<List<OfflinePageItem>> callback);
+
     private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
 
-    @VisibleForTesting
-    native void nativeGetRequestsInQueue(
+    private native void nativeGetRequestsInQueue(
             long nativeOfflinePageBridge, Callback<SavePageRequest[]> callback);
-    @VisibleForTesting
-    native void nativeRemoveRequestsFromQueue(
+    private native void nativeRemoveRequestsFromQueue(
             long nativeOfflinePageBridge, long[] requestIds, RequestsRemovedCallback callback);
-    @VisibleForTesting
-    native void nativeGetPageByOfflineId(
+    private native void nativeGetPageByOfflineId(
             long nativeOfflinePageBridge, long offlineId, Callback<OfflinePageItem> callback);
-    @VisibleForTesting
-    native void nativeGetPagesByClientId(long nativeOfflinePageBridge, List<OfflinePageItem> result,
-            String[] namespaces, String[] ids, Callback<List<OfflinePageItem>> callback);
+
     native void nativeGetPagesByRequestOrigin(long nativeOfflinePageBridge,
             List<OfflinePageItem> result, String requestOrigin,
             Callback<List<OfflinePageItem>> callback);
@@ -871,10 +829,8 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeDeletePagesByOfflineId(
             long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);
-    @VisibleForTesting
     private native void nativePublishInternalPageByOfflineId(
             long nativeOfflinePageBridge, long offlineId, Callback<String> publishedCallback);
-    @VisibleForTesting
     private native void nativePublishInternalPageByGuid(
             long nativeOfflinePageBridge, String guid, Callback<String> publishedCallback);
     private native void nativeSelectPageForOnlineUrl(
