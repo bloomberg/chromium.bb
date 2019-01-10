@@ -127,6 +127,7 @@
     },
     {
       name: "Badging",
+      origin_trial_feature_name: "Badging",
       status: "experimental",
     },
     {
