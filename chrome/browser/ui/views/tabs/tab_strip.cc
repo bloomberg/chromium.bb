@@ -71,6 +71,7 @@
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -1151,14 +1152,13 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
   if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
     return;
 
-  if (!hover_card_ && !should_show)
-    return;
-
-  // The view tracker is used to prevent us from accessing the hover card after
-  // it has been deleted by the owning widget.
-  if (!hover_card_ || !hover_card_view_tracker_.view()) {
+  if (!hover_card_) {
+    // There is nothing to be done if the hover card doesn't exist and we are
+    // not trying to show it.
+    if (!should_show)
+      return;
     hover_card_ = new TabHoverCardBubbleView(tab, tab->data());
-    hover_card_view_tracker_.SetView(hover_card_);
+    hover_card_->views::View::AddObserver(this);
   }
 
   if (should_show) {
@@ -2847,6 +2847,13 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
       return ConvertPointToViewAndGetEventHandler(this, tab, point);
   }
   return this;
+}
+
+void TabStrip::OnViewIsDeleting(views::View* observed_view) {
+  if (observed_view == hover_card_) {
+    hover_card_->views::View::RemoveObserver(this);
+    hover_card_ = nullptr;
+  }
 }
 
 void TabStrip::OnTouchUiChanged() {
