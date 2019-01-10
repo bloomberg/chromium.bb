@@ -25,9 +25,6 @@
 
 // https://html.spec.whatwg.org/#media-elements
 
-// The `URLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 [
     ActiveScriptWrappable

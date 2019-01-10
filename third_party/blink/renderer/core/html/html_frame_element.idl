@@ -20,9 +20,6 @@
 
 // https://html.spec.whatwg.org/#htmlframeelement
 
-// The `URLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 [HTMLConstructor]
 interface HTMLFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
