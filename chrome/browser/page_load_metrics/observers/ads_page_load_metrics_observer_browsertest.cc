@@ -43,7 +43,8 @@
 namespace {
 
 const char kCrossOriginHistogramId[] =
-    "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
+    "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
+    "OriginStatus";
 
 enum class Origin {
   kNavigation,
@@ -115,7 +116,7 @@ class AdsPageLoadMetricsObserverBrowserTest
  public:
   AdsPageLoadMetricsObserverBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kAdsFeature);
+    scoped_feature_list_.InitAndEnableFeature(subresource_filter::kAdTagging);
   }
   ~AdsPageLoadMetricsObserverBrowserTest() override {}
 
@@ -125,6 +126,12 @@ class AdsPageLoadMetricsObserverBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents();
     return std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
         web_contents);
+  }
+
+  void SetUpOnMainThread() override {
+    SubresourceFilterBrowserTest::SetUpOnMainThread();
+    SetRulesetWithRules(
+        {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
   }
 
  private:
@@ -141,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/ads_observer/srcdoc_embedded_ad.html"));
-  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->AddMinimumCompleteResourcesExpectation(4);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(
@@ -168,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/ads_observer/same_origin_ad.html"));
-  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->AddMinimumCompleteResourcesExpectation(4);
   waiter->Wait();
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -236,14 +243,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(
                                    "/ads_observer/docwrite_blank_frame.html"));
-  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->AddMinimumCompleteResourcesExpectation(5);
   waiter->Wait();
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
+      "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AnyParentFrame."
+      "AdFrames",
+      1, 1);
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total",
+      "PageLoad.Clients.Ads.SubresourceFilter.Bytes.AdFrames.Aggregate.Total",
       0 /* < 1 KB */, 1);
 }
 

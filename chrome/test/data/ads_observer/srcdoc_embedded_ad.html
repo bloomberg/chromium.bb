@@ -1,6 +1,14 @@
 <html>
+<body>
+
+<script src="ad_iframe_writer.js"></script>
+
 <!-- Should be counted as same-origin even though it's about:contents. -->
-<iframe id="srcdoc_frame_content" name="google_ads_iframe"
-        srcdoc="<hmtl> <img src=pixel.png> </html>">
-</iframe>
+<script>
+    let adIframe = createAdIframe();
+    adIframe.id = "srcdoc_frame_content";
+    adIframe.srcdoc = "<html> <img src=pixel.png> </html>"
+</script>
+
+</body>
 </html>

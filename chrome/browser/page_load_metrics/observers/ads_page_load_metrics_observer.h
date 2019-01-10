@@ -26,13 +26,6 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-  // The types of ads that one can filter on.
-  enum AdType {
-    AD_TYPE_GOOGLE = 0,
-    AD_TYPE_SUBRESOURCE_FILTER = 1,
-    AD_TYPE_MAX = AD_TYPE_SUBRESOURCE_FILTER
-  };
-
   // The origin of the ad relative to the main frame's origin.
   // Note: Logged to UMA, keep in sync with CrossOriginAdStatus in enums.xml.
   //   Add new entries to the end, and do not renumber.
@@ -54,8 +47,6 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kOther,
   };
 
-  using AdTypes = std::bitset<AD_TYPE_MAX + 1>;
-
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded();
@@ -70,7 +61,7 @@ class AdsPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void RecordAdFrameData(FrameTreeNodeId ad_id,
-                         AdTypes ad_types,
+                         bool is_adframe,
                          content::RenderFrameHost* ad_host,
                          bool frame_navigated);
   void OnDidFinishSubFrameNavigation(
@@ -93,7 +84,6 @@ class AdsPageLoadMetricsObserver
  private:
   struct AdFrameData {
     AdFrameData(FrameTreeNodeId frame_tree_node_id,
-                AdTypes ad_types,
                 AdOriginStatus origin_status,
                 bool frame_navigated);
 
@@ -101,7 +91,6 @@ class AdsPageLoadMetricsObserver
     size_t frame_bytes;
     size_t frame_bytes_uncached;
     const FrameTreeNodeId frame_tree_node_id;
-    AdTypes ad_types;
     AdOriginStatus origin_status;
     bool frame_navigated;
   };
@@ -122,7 +111,7 @@ class AdsPageLoadMetricsObserver
   // This should only be called once per frame navigation, as the
   // SubresourceFilter detector clears its state about detected frames after
   // each call in order to free up memory.
-  AdTypes DetectAds(content::NavigationHandle* navigation_handle);
+  bool DetectAds(content::NavigationHandle* navigation_handle);
 
   void ProcessResourceForFrame(
       FrameTreeNodeId frame_tree_node_id,
@@ -150,7 +139,7 @@ class AdsPageLoadMetricsObserver
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
-  void RecordHistogramsForType(int ad_type);
+  void RecordHistogramsForAdTagging();
 
   // Checks to see if a resource is waiting for a navigation with the given
   // |frame_tree_node_id| to commit before it can be processed. If so, call
