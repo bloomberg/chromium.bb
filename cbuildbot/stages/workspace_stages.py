@@ -116,6 +116,20 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
         self._orig_root,
         config_lib.GetSiteParams().EXTERNAL_MANIFEST_VERSIONS_PATH)
 
+  def GetWorkspaceReleaseTag(self):
+    workspace_version_info = self.GetWorkspaceVersionInfo()
+
+    if self._run.options.debug:
+      build_id, _ = self._run.GetCIDBHandle()
+      return 'R%s-%s-b%s' % (
+          workspace_version_info.chrome_branch,
+          workspace_version_info.VersionString(),
+          build_id)
+    else:
+      return 'R%s-%s' % (
+          workspace_version_info.chrome_branch,
+          workspace_version_info.VersionString())
+
 
 class SyncStage(WorkspaceStageBase):
   """Perform a repo sync."""
@@ -222,7 +236,6 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
 class WorkspaceSyncChromeStage(WorkspaceStageBase):
   """Stage that syncs Chrome sources if needed."""
-
   option_name = 'managed_chrome'
   category = constants.PRODUCT_CHROME_STAGE
 
@@ -342,7 +355,7 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
                                constants.DEFAULT_CHROOT_DIR)
 
     # Worksapce chroots are always wiped by cleanup stage, no need to update.
-    cmd = ['cros_sdk', '--create']
+    cmd = ['cros_sdk', '--create', '--cache-dir', self._run.options.cache_dir]
     commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
 
     post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
@@ -360,7 +373,8 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
         self._build_root, board=self._current_board, usepkg=usepkg,
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env, chroot_upgrade=True,
-        profile=self._run.options.profile or self._run.config.profile)
+        profile=self._run.options.profile or self._run.config.profile,
+        chroot_args=['--cache-dir', self._run.options.cache_dir])
 
 
 class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
@@ -389,7 +403,7 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.config.nobuildretry:
       cmd.append('--nobuildretry')
 
-    chroot_args = []
+    chroot_args = ['--cache-dir', self._run.options.cache_dir]
     if self._run.options.chrome_root:
       chroot_args.append('--chrome_root=%s' % self._run.options.chrome_root)
 
