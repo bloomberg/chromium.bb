@@ -40,7 +40,11 @@ PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
-    : profile_(profile), pending_app_manager_(pending_app_manager) {
+    : profile_(profile), pending_app_manager_(pending_app_manager) {}
+
+SystemWebAppManager::~SystemWebAppManager() = default;
+
+void SystemWebAppManager::Init() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateSingleThreadTaskRunnerWithTraits(
@@ -48,8 +52,6 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
       base::BindOnce(&SystemWebAppManager::StartAppInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
 }
-
-SystemWebAppManager::~SystemWebAppManager() = default;
 
 // static
 bool SystemWebAppManager::ShouldEnableForProfile(Profile* profile) {

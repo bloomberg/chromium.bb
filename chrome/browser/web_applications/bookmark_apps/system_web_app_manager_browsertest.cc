@@ -12,10 +12,10 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
@@ -32,6 +32,8 @@
 #include "url/gurl.h"
 
 namespace web_app {
+
+namespace {
 
 constexpr char kSystemAppManifestText[] =
     R"({
@@ -78,6 +80,8 @@ class TestWebUIController : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(TestWebUIController);
 };
 
+}  // namespace
+
 // WebUIControllerFactory that serves our TestWebUIController.
 class TestWebUIControllerFactory : public content::WebUIControllerFactory {
  public:
@@ -113,25 +117,60 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
       {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
   content::WebUIControllerFactory::RegisterFactory(factory_.get());
 }
+
 SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() {
   content::WebUIControllerFactory::UnregisterFactoryForTesting(factory_.get());
 }
 
-void SystemWebAppManagerBrowserTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
-
-  // Reset WebAppProvider so that its SystemWebAppManager doesn't interfere
-  // with tests.
-  WebAppProvider::Get(browser()->profile())->Reset();
+void SystemWebAppManagerBrowserTest::SetUpInProcessBrowserTestFixture() {
+  will_create_browser_context_services_subscription_ =
+      BrowserContextDependencyManager::GetInstance()
+          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+              base::BindRepeating(&SystemWebAppManagerBrowserTest::
+                                      OnWillCreateBrowserContextServices,
+                                  base::Unretained(this)));
 }
 
-Browser* SystemWebAppManagerBrowserTest::InstallAndLaunchSystemApp() {
-  Profile* profile = browser()->profile();
+void SystemWebAppManagerBrowserTest::OnWillCreateBrowserContextServices(
+    content::BrowserContext* context) {
+  WebAppProviderFactory::GetInstance()->SetTestingFactory(
+      context,
+      base::BindRepeating(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
+                          base::Unretained(this)));
+}
+
+std::unique_ptr<KeyedService>
+SystemWebAppManagerBrowserTest::CreateWebAppProvider(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  if (!SystemWebAppManager::ShouldEnableForProfile(profile))
+    return nullptr;
+
+  auto provider = std::make_unique<TestWebAppProvider>(profile);
+  // Create all real subsystems:
+  provider->CreateSubsystems();
+
+  // But override SystemWebAppManager with TestSystemWebAppManager:
+  DCHECK(!test_system_web_app_manager_);
+  auto test_system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
+      profile, &provider->pending_app_manager());
+  test_system_web_app_manager_ = test_system_web_app_manager.get();
+  provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
+
   std::vector<GURL> system_apps;
   system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
-  extensions::PendingBookmarkAppManager pending_app_manager(profile);
-  TestSystemWebAppManager system_web_app_manager(profile, &pending_app_manager,
-                                                 std::move(system_apps));
+  test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
+
+  // Initialize all subsystems:
+  provider->Init();
+
+  return provider;
+}
+
+Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch() {
+  Profile* profile = browser()->profile();
+
   const extensions::Extension* app =
       extensions::TestExtensionRegistryObserver(
           extensions::ExtensionRegistry::Get(profile))
@@ -142,7 +181,7 @@ Browser* SystemWebAppManagerBrowserTest::InstallAndLaunchSystemApp() {
 
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
-  const extensions::Extension* app = InstallAndLaunchSystemApp()
+  const extensions::Extension* app = WaitForSystemAppInstallAndLaunch()
                                          ->hosted_app_controller()
                                          ->GetExtensionForTesting();
   EXPECT_EQ("Test System App", app->name());

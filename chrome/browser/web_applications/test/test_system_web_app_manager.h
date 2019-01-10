@@ -18,9 +18,10 @@ namespace web_app {
 class TestSystemWebAppManager : public SystemWebAppManager {
  public:
   TestSystemWebAppManager(Profile* profile,
-                          PendingAppManager* pending_app_manager,
-                          std::vector<GURL> system_apps);
+                          PendingAppManager* pending_app_manager);
   ~TestSystemWebAppManager() override;
+
+  void SetSystemApps(std::vector<GURL> system_apps);
 
   // Overridden from SystemWebAppManager:
   std::vector<GURL> CreateSystemWebApps() override;
