@@ -97,6 +97,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
     is_anonymous_text_ = true;
   } else {
     is_anonymous_text_ =
+        builder->text_type_ == kGeneratedText ||
         IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
   }
 
