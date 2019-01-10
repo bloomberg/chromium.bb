@@ -1219,7 +1219,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFlushMappedBufferRange(
 
   base::CheckedNumeric<size_t> range_start(offset);
   base::CheckedNumeric<size_t> range_end = offset + size;
-  if (!range_end.IsValid() && range_end.ValueOrDefault(0) > map_info.size) {
+  if (!range_end.IsValid() || range_end.ValueOrDefault(0) > map_info.size) {
     InsertError(GL_INVALID_OPERATION,
                 "Flush range is not within the original mapping size.");
     return error::kNoError;

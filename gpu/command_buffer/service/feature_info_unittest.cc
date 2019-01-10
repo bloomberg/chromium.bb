@@ -166,16 +166,6 @@ class FeatureInfoTest
   scoped_refptr<FeatureInfo> info_;
 };
 
-namespace {
-
-struct FormatInfo {
-   GLenum format;
-   const GLenum* types;
-   size_t count;
-};
-
-}  // anonymous namespace.
-
 static const MockedGLVersionKind kGLVersionKinds[] = {
   ES2_on_Version3_0,
   ES2_on_Version3_2Compatibility,

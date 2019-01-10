@@ -99,8 +99,10 @@ class GPU_EXPORT CommonDecoder {
 
    private:
     bool OffsetSizeValid(size_t offset, size_t size) const {
-      size_t temp = offset + size;
-      return temp <= size_ && temp >= offset;
+      size_t end = 0;
+      if (!base::CheckAdd<size_t>(offset, size).AssignIfValid(&end))
+        return false;
+      return end <= size_;
     }
 
     size_t size_;
