@@ -670,7 +670,7 @@ PASS translate (type: translateList) has testInterpolation function
 PASS translate with two unspecified values
 PASS translate with one unspecified value
 PASS translate with all three values specified
-FAIL translate with combination of percentages and lengths assert_equals: The value should be 200px calc(25% - 50.5px) 200px at 500ms expected "200px calc(25% - 50.5px) 200px" but got "200px calc(25% + -50.5px) 200px"
+FAIL translate with combination of percentages and lengths assert_equals: The value should be calc(0% + 200px) calc(25% - 50.5px) 200px at 500ms expected "calc(0% + 200px) calc(25% - 50.5px) 200px" but got "200px calc(25% + -50.5px) 200px"
 PASS scale (type: scaleList) has testInterpolation function
 FAIL scale with two unspecified values assert_equals: The value should be 4 at 500ms expected "4" but got "4 1"
 FAIL scale with one unspecified value assert_equals: The value should be 4 at 500ms expected "4" but got "4 4"
