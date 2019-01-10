@@ -84,6 +84,10 @@ const uint64_t kPaddingRange = 14431 * 1024;
 //   2: Uniform random 14,431K.
 const int32_t kCachePaddingAlgorithmVersion = 2;
 
+// Maximum number of recursive QueryCacheOpenNextEntry() calls we permit
+// before forcing an asynchronous task.
+const int kMaxQueryCacheRecursiveDepth = 20;
+
 using MetadataCallback =
     base::OnceCallback<void(std::unique_ptr<proto::CacheMetadata>)>;
 
@@ -1008,6 +1012,14 @@ void CacheStorageCache::QueryCacheOpenNextEntry(
     std::unique_ptr<QueryCacheContext> query_cache_context) {
   DCHECK_EQ(nullptr, query_cache_context->enumerated_entry);
 
+  query_cache_recursive_depth_ += 1;
+  auto cleanup = base::ScopedClosureRunner(base::BindOnce(
+      [](CacheStorageCache* self) {
+        DCHECK(self->query_cache_recursive_depth_ > 0);
+        self->query_cache_recursive_depth_ -= 1;
+      },
+      base::Unretained(this)));
+
   if (!query_cache_context->backend_iterator) {
     // Iteration is complete.
     std::sort(query_cache_context->matches->begin(),
@@ -1029,8 +1041,20 @@ void CacheStorageCache::QueryCacheOpenNextEntry(
 
   int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
-  if (rv != net::ERR_IO_PENDING)
+  if (rv == net::ERR_IO_PENDING)
+    return;
+
+  // In most cases we can immediately invoke the callback when there is no
+  // pending IO.  We must be careful, however, to avoid blowing out the stack
+  // when iterating a large cache.  Only invoke the callback synchronously
+  // if we have not recursed past a threshold depth.
+  if (query_cache_recursive_depth_ <= kMaxQueryCacheRecursiveDepth) {
     std::move(open_entry_callback).Run(rv);
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(open_entry_callback), rv));
 }
 
 void CacheStorageCache::QueryCacheFilterEntry(
