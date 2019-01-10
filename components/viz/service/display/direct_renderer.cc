@@ -388,18 +388,17 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   if (!skip_drawing_root_render_pass)
     DrawRenderPassAndExecuteCopyRequests(root_render_pass);
 
-  // Use a fence to synchronize display of the overlays. Note that gpu_fence_id
-  // may have the special value 0 ("no fence") if fences are not supported. In
-  // that case synchronization will happen through other means on the service
-  // side. We are currently using the output surface fence for all the overlays,
-  // which is functionally correct due to the position of this fence in the
-  // command stream.
+  // Use a fence to synchronize display of the main fb used by the output
+  // surface. Note that gpu_fence_id may have the special value 0 ("no fence")
+  // if fences are not supported. In that case synchronization will happen
+  // through other means on the service side.
   // TODO(afrantzis): Consider using per-overlay fences instead of the one
   // associated with the output surface when possible.
   if (!current_frame()->overlay_list.empty()) {
-    auto gpu_fence_id = output_surface_->UpdateGpuFence();
-    for (auto& overlay : current_frame()->overlay_list)
-      overlay.gpu_fence_id = gpu_fence_id;
+    for (auto& overlay : current_frame()->overlay_list) {
+      if (overlay.use_output_surface_for_resource)
+        overlay.gpu_fence_id = output_surface_->UpdateGpuFence();
+    }
   }
 
   FinishDrawingFrame();

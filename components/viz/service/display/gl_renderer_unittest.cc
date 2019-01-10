@@ -4096,6 +4096,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
 
   static constexpr unsigned kSurfaceOverlayTextureId = 33;
   static constexpr unsigned kGpuFenceId = 66;
+  static constexpr unsigned kGpuNoFenceId = 0;
 
   TestContextSupport* test_context_support_;
 
@@ -4109,7 +4110,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
   MockOverlayScheduler overlay_scheduler;
 };
 
-TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPass) {
+TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPassOverlay) {
   gfx::Size viewport_size(100, 100);
   RenderPass* root_pass = cc::AddRenderPass(
       &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
@@ -4123,7 +4124,8 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPass) {
   DrawFrame(renderer_.get(), viewport_size);
 }
 
-TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
+TEST_F(GLRendererWithGpuFenceTest,
+       GpuFenceIdIsUsedOnlyForRootRenderPassOverlay) {
   gfx::Size viewport_size(100, 100);
   RenderPass* root_pass = cc::AddRenderPass(
       &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
@@ -4138,14 +4140,12 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
   gfx::PointF uv_top_left(0, 0);
   gfx::PointF uv_bottom_right(1, 1);
 
-  // Add a draw quad covering the whole viewport. This causes the root
-  // render pass to be skipped.
   TextureDrawQuad* overlay_quad =
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(viewport_size), gfx::Rect(viewport_size),
-                       false, false, 1, SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(50, 50), gfx::Rect(viewport_size), false,
+                       false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(
       shared_state, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
       needs_blending, create_overlay_resource(), premultiplied_alpha,
@@ -4159,7 +4159,7 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
       .Times(1);
   EXPECT_CALL(overlay_scheduler,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
-                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
+                       gfx::Rect(viewport_size), _, _, kGpuNoFenceId))
       .Times(1);
   DrawFrame(renderer_.get(), viewport_size);
 }
