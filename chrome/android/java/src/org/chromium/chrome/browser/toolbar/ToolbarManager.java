@@ -1148,7 +1148,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         if (mOmniboxStartupMetrics != null) {
             // Record the histogram before destroying, if we have the data.
-            mOmniboxStartupMetrics.maybeRecordHistograms();
+            if (mInitializedWithNative) mOmniboxStartupMetrics.maybeRecordHistograms();
             mOmniboxStartupMetrics.destroy();
             mOmniboxStartupMetrics = null;
         }
