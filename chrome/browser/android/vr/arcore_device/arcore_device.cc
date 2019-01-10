@@ -202,7 +202,8 @@ void ArCoreDevice::RequestArModule(int render_process_id,
     on_request_ar_module_result_callback_ =
         base::BindOnce(&ArCoreDevice::OnRequestArModuleResult, GetWeakPtr(),
                        render_process_id, render_frame_id, has_user_activation);
-    arcore_install_utils_->RequestInstallArModule();
+    arcore_install_utils_->RequestInstallArModule(render_process_id,
+                                                  render_frame_id);
     return;
   }
 

@@ -25,9 +25,9 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
-import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -37,7 +37,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @JNINamespace("vr")
 @UsedByReflection("ArDelegate.java")
-public class ArCoreJavaUtils {
+public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     private static final int MIN_SDK_VERSION = Build.VERSION_CODES.O;
     private static final String AR_CORE_PACKAGE = "com.google.ar.core";
     private static final String METADATA_KEY_MIN_APK_VERSION = "com.google.ar.core.min_apk_version";
@@ -64,6 +64,7 @@ public class ArCoreJavaUtils {
     private long mNativeArCoreJavaUtils;
     private boolean mAppInfoInitialized;
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
+    private Tab mTab;
 
     @UsedByReflection("ArDelegate.java")
     public static void installArCoreDeviceProviderFactory() {
@@ -92,6 +93,18 @@ public class ArCoreJavaUtils {
             return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
                     .findLibrary("arcore_sdk_c");
         }
+    }
+
+    @Override
+    public void onRetry() {
+        if (mNativeArCoreJavaUtils == 0) return;
+        requestInstallArModule(mTab);
+    }
+
+    @Override
+    public void onCancel() {
+        if (mNativeArCoreJavaUtils == 0) return;
+        nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, /* success = */ false);
     }
 
     private ArCoreJavaUtils(long nativeArCoreJavaUtils) {
@@ -161,22 +174,19 @@ public class ArCoreJavaUtils {
     }
 
     @CalledByNative
-    private void requestInstallArModule() {
-        // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-        Toast.makeText(ContextUtils.getApplicationContext(), R.string.ar_module_install_start_text,
-                     Toast.LENGTH_SHORT)
-                .show();
-
+    private void requestInstallArModule(Tab tab) {
+        mTab = tab;
+        ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.ar_module_install_text_title, this);
+        ui.showInstallStartUi();
         ModuleInstaller.install("ar", success -> {
             assert shouldRequestInstallArModule() != success;
             if (mNativeArCoreJavaUtils != 0) {
-                // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is
-                // spec'd.
-                int toastTextRes = success ? R.string.ar_module_install_success_text
-                                           : R.string.ar_module_install_failure_text;
-                Toast.makeText(
-                             ContextUtils.getApplicationContext(), toastTextRes, Toast.LENGTH_SHORT)
-                        .show();
+                if (!success) {
+                    ui.showInstallFailureUi();
+                    return;
+                }
+
+                ui.showInstallSuccessUi();
                 nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, success);
             }
         });

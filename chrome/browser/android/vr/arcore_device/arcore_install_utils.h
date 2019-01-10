@@ -14,7 +14,8 @@ class ArCoreInstallUtils {
  public:
   virtual ~ArCoreInstallUtils() = default;
   virtual bool ShouldRequestInstallArModule() = 0;
-  virtual void RequestInstallArModule() = 0;
+  virtual void RequestInstallArModule(int render_process_id,
+                                      int render_frame_id) = 0;
   virtual bool ShouldRequestInstallSupportedArCore() = 0;
   virtual void RequestInstallSupportedArCore(int render_process_id,
                                              int render_frame_id) = 0;
