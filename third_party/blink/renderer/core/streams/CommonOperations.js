@@ -478,20 +478,17 @@
       const {type, value} = callFunction(binding.MessageEvent_data_get, evt);
       // assert(type === kChunk || type === kClose || type === kAbort ||
       //        type=kError);
+      if (finished) {
+        return;
+      }
       switch (type) {
         case kChunk:
-          if (finished) {
-            return;
-          }
           binding.ReadableStreamDefaultControllerEnqueue(controller, value);
           resolvePromise(backpressurePromise);
           backpressurePromise = v8.createPromise();
           break;
 
         case kClose:
-          if (finished) {
-            return;
-          }
           finished = true;
           binding.ReadableStreamDefaultControllerClose(controller);
           callFunction(binding.MessagePort_close, port);
@@ -499,9 +496,6 @@
 
         case kAbort:
         case kError:
-          if (finished) {
-            return;
-          }
           finished = true;
           binding.ReadableStreamDefaultControllerError(
               controller, unpackReason(value));
