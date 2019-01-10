@@ -33,14 +33,11 @@ class FakeAccountFetcherService : public AccountFetcherService {
                                 const std::string& given_name,
                                 const std::string& locale,
                                 const std::string& picture_url);
-  void FakeSetIsChildAccount(const std::string& account_id,
-                             bool is_child_account);
 
   FakeAccountFetcherService();
 
  private:
   void StartFetchingUserInfo(const std::string& account_id) override;
-  void StartFetchingChildInfo(const std::string& account_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
 };

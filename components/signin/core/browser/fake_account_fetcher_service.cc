@@ -31,18 +31,7 @@ void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
   account_tracker_service()->SetAccountInfoFromUserInfo(account_id, &user_info);
 }
 
-void FakeAccountFetcherService::FakeSetIsChildAccount(
-    const std::string& account_id,
-    bool is_child_account) {
-  SetIsChildAccount(account_id, is_child_account);
-}
-
 void FakeAccountFetcherService::StartFetchingUserInfo(
-    const std::string& account_id) {
-  // In tests, don't do actual network fetch.
-}
-
-void FakeAccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
 }

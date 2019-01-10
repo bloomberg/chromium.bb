@@ -115,12 +115,8 @@ static_library("browser") {
     "account_reconcilor_delegate.h",
     "avatar_icon_util.cc",
     "avatar_icon_util.h",
-    "child_account_info_fetcher.cc",
-    "child_account_info_fetcher.h",
     "child_account_info_fetcher_android.cc",
     "child_account_info_fetcher_android.h",
-    "child_account_info_fetcher_impl.cc",
-    "child_account_info_fetcher_impl.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
     "cookie_settings_util.cc",
@@ -131,6 +127,8 @@ static_library("browser") {
     "dice_header_helper.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
+    "oauth2_token_service_delegate_android.cc",
+    "oauth2_token_service_delegate_android.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",
     "signin_header_helper.cc",
@@ -204,14 +202,6 @@ static_library("browser") {
   }
 
   if (is_android) {
-    sources -= [
-      "child_account_info_fetcher_impl.cc",
-      "child_account_info_fetcher_impl.h",
-    ]
-    sources += [
-      "oauth2_token_service_delegate_android.cc",
-      "oauth2_token_service_delegate_android.h",
-    ]
     deps += [ "android:jni_headers" ]
   }
 }

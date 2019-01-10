@@ -21,7 +21,6 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -32,6 +31,10 @@
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
+#endif
 
 namespace {
 // Simple wrapper around a static string; used to avoid implicit conversion
@@ -232,7 +235,9 @@ testing::AssertionResult AccountTrackerObserver::CheckEvents(
 class AccountTrackerServiceTest : public testing::Test {
  public:
   AccountTrackerServiceTest() : signin_client_(&pref_service_) {
-    ChildAccountInfoFetcher::InitializeForTests();
+#if defined(OS_ANDROID)
+    ChildAccountInfoFetcherAndroid::InitializeForTests();
+#endif
 
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     AccountFetcherService::RegisterPrefs(pref_service_.registry());
