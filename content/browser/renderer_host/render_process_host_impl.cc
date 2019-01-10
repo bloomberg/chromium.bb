@@ -2053,6 +2053,14 @@ void RenderProcessHostImpl::BindIndexedDB(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (origin.opaque()) {
+    // Opaque origins aren't valid for IndexedDB access, so we won't bind
+    // |request| to |indexed_db_factory_|.  Return early here which will cause
+    // |request| to be freed.  When |request| is freed, we expect the pipe on
+    // the client will be closed.
+    return;
+  }
+
   // Send the binding to IO thread to let IndexedDB handle Mojo IPC on the IO
   // thread.
   base::PostTaskWithTraits(
