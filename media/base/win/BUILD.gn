@@ -14,8 +14,7 @@ config("delay_load_mf") {
   ]
 }
 
-jumbo_component("win") {
-  output_name = "media_win_util"
+jumbo_component("media_foundation_util") {
   defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
   set_sources_assignment_filter([])
   sources = [

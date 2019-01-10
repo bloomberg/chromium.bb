@@ -200,7 +200,7 @@ jumbo_component("capture_lib") {
       "video/win/video_capture_device_win.cc",
       "video/win/video_capture_device_win.h",
     ]
-    deps += [ "//media/base/win" ]
+    deps += [ "//media/base/win:media_foundation_util" ]
     libs = [
       "mf.lib",
       "mfplat.lib",
