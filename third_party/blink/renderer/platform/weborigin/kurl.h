@@ -309,32 +309,6 @@ PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&,
 
 PLATFORM_EXPORT String EncodeWithURLEscapeSequences(const String&);
 
-// Inlines.
-
-inline bool operator==(const KURL& a, const KURL& b) {
-  return a.GetString() == b.GetString();
-}
-
-inline bool operator==(const KURL& a, const String& b) {
-  return a.GetString() == b;
-}
-
-inline bool operator==(const String& a, const KURL& b) {
-  return a == b.GetString();
-}
-
-inline bool operator!=(const KURL& a, const KURL& b) {
-  return a.GetString() != b.GetString();
-}
-
-inline bool operator!=(const KURL& a, const String& b) {
-  return a.GetString() != b;
-}
-
-inline bool operator!=(const String& a, const KURL& b) {
-  return a != b.GetString();
-}
-
 }  // namespace blink
 
 namespace WTF {

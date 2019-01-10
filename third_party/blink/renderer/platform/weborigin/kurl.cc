@@ -874,5 +874,28 @@ KURL::operator GURL() const {
   StringUTF8Adaptor utf8(string_);
   return GURL(utf8.Data(), utf8.length(), parsed_, is_valid_);
 }
+bool operator==(const KURL& a, const KURL& b) {
+  return a.GetString() == b.GetString();
+}
+
+bool operator==(const KURL& a, const String& b) {
+  return a.GetString() == b;
+}
+
+bool operator==(const String& a, const KURL& b) {
+  return a == b.GetString();
+}
+
+bool operator!=(const KURL& a, const KURL& b) {
+  return a.GetString() != b.GetString();
+}
+
+bool operator!=(const KURL& a, const String& b) {
+  return a.GetString() != b;
+}
+
+bool operator!=(const String& a, const KURL& b) {
+  return a != b.GetString();
+}
 
 }  // namespace blink
