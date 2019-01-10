@@ -196,13 +196,10 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
         return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey900
                                                      : SK_ColorWHITE;
       case views::style::STYLE_DISABLED:
-        return native_theme->SystemDarkModeEnabled()
-                   ? gfx::kGoogleGrey600
-                   : SkColorSetRGB(0x9e, 0x9e, 0x9e);
+        return gfx::kGoogleGrey600;
       default:
-        return native_theme->SystemDarkModeEnabled()
-                   ? gfx::kGoogleBlue300
-                   : SkColorSetRGB(0x75, 0x75, 0x75);
+        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleBlue300
+                                                     : gfx::kGoogleBlue600;
     }
   }
 

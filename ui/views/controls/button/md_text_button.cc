@@ -227,11 +227,11 @@ void MdTextButton::UpdateColors() {
   if (!explicitly_set_normal_color()) {
     const auto colors = explicitly_set_colors();
     LabelButton::SetEnabledTextColors(enabled_text_color);
-    // Non-prominent, disabled buttons need the disabled color explicitly set.
+    // Disabled buttons need the disabled color explicitly set.
     // This ensures that label()->enabled_color() returns the correct color as
     // the basis for calculating the stroke color. enabled_text_color isn't used
     // since a descendant could have overridden the label enabled color.
-    if (is_disabled && !is_prominent_) {
+    if (is_disabled) {
       LabelButton::SetTextColor(STATE_DISABLED,
                                 style::GetColor(*this, label()->text_context(),
                                                 style::STYLE_DISABLED));
@@ -239,13 +239,7 @@ void MdTextButton::UpdateColors() {
     set_explicitly_set_colors(colors);
   }
 
-  // Prominent buttons keep their enabled text color; disabled state is conveyed
-  // by shading the background instead.
-  if (is_prominent_)
-    SetTextColor(STATE_DISABLED, enabled_text_color);
-
   ui::NativeTheme* theme = GetNativeTheme();
-  SkColor text_color = label()->enabled_color();
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
 
@@ -255,10 +249,9 @@ void MdTextButton::UpdateColors() {
     bg_color = theme->GetSystemColor(
         HasFocus() ? ui::NativeTheme::kColorId_ProminentButtonFocusedColor
                    : ui::NativeTheme::kColorId_ProminentButtonColor);
-    if (is_disabled) {
-      bg_color = color_utils::BlendTowardMaxContrast(
-          bg_color, gfx::kDisabledControlAlpha);
-    }
+    if (is_disabled)
+      bg_color = theme->GetSystemColor(
+          ui::NativeTheme::kColorId_ProminentButtonDisabledColor);
   }
 
   if (state() == STATE_PRESSED) {
@@ -271,25 +264,11 @@ void MdTextButton::UpdateColors() {
   if (is_prominent_) {
     stroke_color = SK_ColorTRANSPARENT;
   } else {
-    int stroke_alpha;
-    if (is_disabled) {
-      // Disabled, non-prominent buttons need a lighter stroke. This alpha
-      // value will take the disabled button colors, a1a192 @ 1.0 alpha for
-      // non-Harmony, 9e9e9e @ 1.0 alpha for Harmony and turn it into
-      // e6e6e6 @ 1.0 alpha (or very close to it) or an effective 000000 @ 0.1
-      // alpha for the stroke color. The same alpha value will work with both
-      // Harmony and non-Harmony colors.
-      stroke_alpha = 0x43;
-    } else {
-      // These alpha values will take the enabled button colors, 757575 @ 1.0
-      // alpha turn it into an effective b2b2b2 @ 1.0 alpha or 000000 @ 0.3 for
-      // the stroke_color.
-      stroke_alpha = 0x8f;
-    }
-    stroke_color = SkColorSetA(text_color, stroke_alpha);
+    stroke_color = SkColorSetA(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBorderColor),
+        is_disabled ? 0x43 : SK_AlphaOPAQUE);
   }
 
-  DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateRoundRectWith1PxBorderPainter(
           bg_color, stroke_color, corner_radius_)));
