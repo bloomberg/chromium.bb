@@ -1649,26 +1649,11 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
   EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, observer.net_error_code());
 }
 
-// This class allows running tests with PlzNavigate enabled, regardless of
-// default test configuration.
-// TODO(clamy): Make those regular NavigationHandleImplBrowserTests.
-class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {
- public:
-  PlzNavigateNavigationHandleImplBrowserTest() {}
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-};
-
 // Test to verify that error pages caused by NavigationThrottle blocking a
 // request in the main frame from being made are properly committed in a
 // separate error page process.
-IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        ErrorPageBlockedNavigation) {
-  SetupCrossSiteRedirector(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL blocked_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
 
@@ -1823,11 +1808,7 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
 // Test to verify that error pages caused by network error or other
 // recoverable error are properly committed in the process for the
 // destination URL.
-IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
-                       ErrorPageNetworkError) {
-  SetupCrossSiteRedirector(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
@@ -1865,7 +1846,7 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
 // blocked (net::ERR_BLOCKED_BY_CLIENT) while departing from a privileged WebUI
 // page (chrome://gpu). It is a security risk for the error page to commit in
 // the privileged process.
-IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        BlockedRequestAfterWebUI) {
   GURL web_ui_url("chrome://gpu");
   WebContents* web_contents = shell()->web_contents();
