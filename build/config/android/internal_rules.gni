@@ -31,6 +31,10 @@ _java_target_whitelist = [
   "*:*_resources",
   "*:*_grd",
   "*:*locale_paks",
+  "*_bundle_module",
+
+  # TODO(crbug.com/908819): Remove item below once downstream module target
+  # names have been changed to *_bundle_module.
   "*_module",
 
   # TODO(agrieve): Rename targets below to match above patterns.
