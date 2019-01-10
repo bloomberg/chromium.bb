@@ -30,7 +30,6 @@ public:
     client_(client),
     socket_(),
     engine_(),
-    proxy_port_(0),
     pre_engine_error_(XmppEngine::ERROR_NONE),
     pre_engine_subcode_(0),
     signal_closed_(false),
@@ -53,8 +52,6 @@ public:
   std::string auth_mechanism_;
   std::string auth_token_;
   rtc::SocketAddress server_;
-  std::string proxy_host_;
-  int proxy_port_;
   XmppEngine::Error pre_engine_error_;
   int pre_engine_subcode_;
   CaptchaChallenge captcha_challenge_;
@@ -133,8 +130,6 @@ XmppReturnStatus XmppClient::Connect(
   d_->auth_mechanism_ = settings.auth_mechanism();
   d_->auth_token_ = settings.auth_token();
   d_->server_ = settings.server();
-  d_->proxy_host_ = settings.proxy_host();
-  d_->proxy_port_ = settings.proxy_port();
   d_->allow_plain_ = settings.allow_plain();
   d_->pre_auth_.reset(pre_auth);
 
