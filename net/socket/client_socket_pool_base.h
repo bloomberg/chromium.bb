@@ -51,6 +51,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/stream_socket.h"
 
 namespace base {
@@ -64,110 +65,6 @@ namespace net {
 
 class ClientSocketHandle;
 struct NetLogSource;
-
-// ConnectJob provides an abstract interface for "connecting" a socket.
-// The connection may involve host resolution, tcp connection, ssl connection,
-// etc.
-class NET_EXPORT_PRIVATE ConnectJob {
- public:
-  class NET_EXPORT_PRIVATE Delegate {
-   public:
-    Delegate() {}
-    virtual ~Delegate() {}
-
-    // Alerts the delegate that the connection completed. |job| must
-    // be destroyed by the delegate. A std::unique_ptr<> isn't used because
-    // the caller of this function doesn't own |job|.
-    virtual void OnConnectJobComplete(int result,
-                                      ConnectJob* job) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  // A |timeout_duration| of 0 corresponds to no timeout.
-  ConnectJob(const std::string& group_name,
-             base::TimeDelta timeout_duration,
-             RequestPriority priority,
-             const SocketTag& socket_tag,
-             ClientSocketPool::RespectLimits respect_limits,
-             Delegate* delegate,
-             const NetLogWithSource& net_log);
-  virtual ~ConnectJob();
-
-  // Accessors
-  const std::string& group_name() const { return group_name_; }
-  const NetLogWithSource& net_log() { return net_log_; }
-  RequestPriority priority() const { return priority_; }
-  ClientSocketPool::RespectLimits respect_limits() const {
-    return respect_limits_;
-  }
-
-  // Releases ownership of the underlying socket to the caller.
-  // Returns the released socket, or NULL if there was a connection
-  // error.
-  std::unique_ptr<StreamSocket> PassSocket();
-
-  void ChangePriority(RequestPriority priority);
-
-  // Begins connecting the socket.  Returns OK on success, ERR_IO_PENDING if it
-  // cannot complete synchronously without blocking, or another net error code
-  // on error.  In asynchronous completion, the ConnectJob will notify
-  // |delegate_| via OnConnectJobComplete.  In both asynchronous and synchronous
-  // completion, ReleaseSocket() can be called to acquire the connected socket
-  // if it succeeded.
-  int Connect();
-
-  virtual LoadState GetLoadState() const = 0;
-
-  // If Connect returns an error (or OnConnectJobComplete reports an error
-  // result) this method will be called, allowing the pool to add
-  // additional error state to the ClientSocketHandle (post late-binding).
-  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) {}
-
-  const LoadTimingInfo::ConnectTiming& connect_timing() const {
-    return connect_timing_;
-  }
-
-  const NetLogWithSource& net_log() const { return net_log_; }
-
- protected:
-  void set_priority(RequestPriority priority) { priority_ = priority; }
-  const SocketTag& socket_tag() const { return socket_tag_; }
-  void SetSocket(std::unique_ptr<StreamSocket> socket);
-  StreamSocket* socket() { return socket_.get(); }
-  void NotifyDelegateOfCompletion(int rv);
-  void ResetTimer(base::TimeDelta remainingTime);
-
-  // Connection establishment timing information.
-  LoadTimingInfo::ConnectTiming connect_timing_;
-
- private:
-  virtual int ConnectInternal() = 0;
-
-  virtual void ChangePriorityInternal(RequestPriority priority) = 0;
-
-  void LogConnectStart();
-  void LogConnectCompletion(int net_error);
-
-  // Alerts the delegate that the ConnectJob has timed out.
-  void OnTimeout();
-
-  const std::string group_name_;
-  const base::TimeDelta timeout_duration_;
-  RequestPriority priority_;
-  const SocketTag socket_tag_;
-  const ClientSocketPool::RespectLimits respect_limits_;
-  // Timer to abort jobs that take too long.
-  base::OneShotTimer timer_;
-  Delegate* delegate_;
-  std::unique_ptr<StreamSocket> socket_;
-  NetLogWithSource net_log_;
-  // A ConnectJob is idle until Connect() has been called.
-  bool idle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectJob);
-};
 
 namespace internal {
 

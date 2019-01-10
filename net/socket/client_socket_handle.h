@@ -88,6 +88,24 @@ class NET_EXPORT ClientSocketHandle {
            PoolType* pool,
            const NetLogWithSource& net_log);
 
+  // Temporary overload of Init that takes a bool instead of
+  // ClientSocketPool::RespectLimits.
+  // TODO(mmenke): Remove once the socket pool refactor is complete.
+  template <typename PoolType>
+  int Init(const std::string& group_name,
+           const scoped_refptr<typename PoolType::SocketParams>& socket_params,
+           RequestPriority priority,
+           const SocketTag& socket_tag,
+           bool respect_limits,
+           CompletionOnceCallback callback,
+           PoolType* pool,
+           const NetLogWithSource& net_log) {
+    return Init(group_name, socket_params, priority, socket_tag,
+                respect_limits ? ClientSocketPool::RespectLimits::ENABLED
+                               : ClientSocketPool::RespectLimits::DISABLED,
+                std::move(callback), pool, net_log);
+  }
+
   // Changes the priority of the ClientSocketHandle to the passed value.
   // This function is a no-op if |priority| is the same as the current
   // priority, of if Init() has not been called since the last time
