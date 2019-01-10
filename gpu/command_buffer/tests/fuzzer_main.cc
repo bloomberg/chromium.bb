@@ -400,26 +400,33 @@ class CommandBufferSetup {
   }
 
   void ResetDecoder() {
+    bool context_lost = false;
+    if (decoder_) {
 #if !defined(GPU_FUZZER_USE_RASTER_DECODER)
-    // Keep a reference to the translators, which keeps them in the cache even
-    // after the decoder is reset. They are expensive to initialize, but they
-    // don't keep state.
-    scoped_refptr<gles2::ShaderTranslatorInterface> translator =
-        decoder_->GetTranslator(GL_VERTEX_SHADER);
-    if (translator)
-      translator->AddRef();
-    translator = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
-    if (translator)
-      translator->AddRef();
+      // Keep a reference to the translators, which keeps them in the cache even
+      // after the decoder is reset. They are expensive to initialize, but they
+      // don't keep state.
+      scoped_refptr<gles2::ShaderTranslatorInterface> translator =
+          decoder_->GetTranslator(GL_VERTEX_SHADER);
+      if (translator)
+        translator->AddRef();
+      translator = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
+      if (translator)
+        translator->AddRef();
 #endif
-    bool context_lost =
-        decoder_->WasContextLost() || !decoder_->CheckResetStatus();
-    decoder_->Destroy(!context_lost);
-    decoder_.reset();
-    if (recreate_context_ || context_lost) {
-      context_->ReleaseCurrent(nullptr);
-      context_ = nullptr;
+      context_lost =
+          decoder_->WasContextLost() || !decoder_->CheckResetStatus();
+      decoder_->Destroy(!context_lost);
+      decoder_.reset();
     }
+
+    if (context_) {
+      if (recreate_context_ || context_lost) {
+        context_->ReleaseCurrent(nullptr);
+        context_ = nullptr;
+      }
+    }
+
     command_buffer_.reset();
   }
 
@@ -438,8 +445,10 @@ class CommandBufferSetup {
     if (padded_size > kCommandBufferSize)
       return;
 
-    if (!InitDecoder())
+    if (!InitDecoder()) {
+      ResetDecoder();
       return;
+    }
 
     uint32_t buffer_size = buffer_->size();
     CHECK_LE(padded_size, buffer_size);
