@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -75,27 +76,48 @@ void TableCellPainter::PaintBoxDecorationBackground(
       !layout_table_cell_.FirstChild())
     return;
 
+  bool is_painting_scrolling_background =
+      BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_table_cell_,
+                                                           paint_info);
+  const DisplayItemClient* client = nullptr;
+  LayoutRect paint_rect;
+  base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
+  if (is_painting_scrolling_background) {
+    // See BoxPainter::PaintBoxDecorationBackground() for explanations.
+    // TODO(wangxianzhu): Perhaps we can merge them for CompositeAfterPaint.
+    paint_rect = layout_table_cell_.PhysicalLayoutOverflowRect();
+    contents_paint_state.emplace(paint_info, paint_offset, layout_table_cell_);
+    paint_rect.MoveBy(contents_paint_state->PaintOffset());
+    paint_rect.Expand(layout_table_cell_.BorderBoxOutsets());
+    client = &layout_table_cell_.GetScrollableArea()
+                  ->GetScrollingBackgroundDisplayItemClient();
+  } else {
+    paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
+    client = &layout_table_cell_;
+  }
+
   bool has_background = style.HasBackground();
-  bool has_box_shadow = style.BoxShadow();
-  bool needs_to_paint_border =
-      style.HasBorderDecoration() && !table->ShouldCollapseBorders();
-  if (has_background || has_box_shadow || needs_to_paint_border) {
+  bool should_paint_box_shadow =
+      !is_painting_scrolling_background && style.BoxShadow();
+  bool should_paint_border = !is_painting_scrolling_background &&
+                             style.HasBorderDecoration() &&
+                             !table->ShouldCollapseBorders();
+
+  if (has_background || should_paint_box_shadow || should_paint_border) {
     if (!DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, layout_table_cell_,
+            paint_info.context, *client,
             DisplayItem::kBoxDecorationBackground)) {
       // TODO(chrishtr): the pixel-snapping here is likely incorrect.
-      DrawingRecorder recorder(paint_info.context, layout_table_cell_,
+      DrawingRecorder recorder(paint_info.context, *client,
                                DisplayItem::kBoxDecorationBackground);
 
-      LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
-
-      if (has_box_shadow)
+      if (should_paint_box_shadow)
         BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
 
       if (has_background)
         PaintBackground(paint_info, paint_rect, layout_table_cell_);
 
-      if (has_box_shadow) {
+      if (should_paint_box_shadow) {
         // If the table collapses borders, the inner rect is the border box rect
         // inset by inner half widths of collapsed borders (which are returned
         // from the overriden BorderXXX() methods). Otherwise the following code
@@ -108,7 +130,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
             paint_info, inner_rect, layout_table_cell_.StyleRef());
       }
 
-      if (needs_to_paint_border) {
+      if (should_paint_border) {
         BoxPainterBase::PaintBorder(
             layout_table_cell_, layout_table_cell_.GetDocument(),
             layout_table_cell_.GeneratingNode(), paint_info, paint_rect, style);
@@ -117,9 +139,8 @@ void TableCellPainter::PaintBoxDecorationBackground(
   }
 
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    LayoutRect rect = PaintRectNotIncludingVisualOverflow(paint_offset);
     BoxPainter(layout_table_cell_)
-        .RecordHitTestData(paint_info, rect, layout_table_cell_);
+        .RecordHitTestData(paint_info, paint_rect, *client);
   }
 }
 
