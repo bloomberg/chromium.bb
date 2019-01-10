@@ -12,12 +12,12 @@ SerialPort::SerialPort(mojom::blink::SerialPortInfoPtr info)
 
 SerialPort::~SerialPort() = default;
 
-ScriptValue SerialPort::in(ScriptState* script_state) {
-  return ScriptValue::CreateNull(script_state);
+ReadableStream* SerialPort::in() {
+  return nullptr;
 }
 
-ScriptValue SerialPort::out(ScriptState* script_state) {
-  return ScriptValue::CreateNull(script_state);
+WritableStream* SerialPort::out() {
+  return nullptr;
 }
 
 ScriptPromise SerialPort::open(ScriptState* script_state,
