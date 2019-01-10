@@ -6,6 +6,7 @@
 #define DEVICE_GAMEPAD_ABSTRACT_HAPTIC_GAMEPAD_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -83,6 +84,7 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
       playing_effect_callback_;
   scoped_refptr<base::SequencedTaskRunner> callback_runner_;
   THREAD_CHECKER(thread_checker_);
+  base::WeakPtrFactory<AbstractHapticGamepad> weak_factory_;
 };
 
 }  // namespace device
