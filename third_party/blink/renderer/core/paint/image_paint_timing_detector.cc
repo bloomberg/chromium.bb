@@ -24,6 +24,7 @@
 namespace blink {
 
 namespace {
+#ifndef NDEBUG
 String GetImageUrl(const LayoutObject& object) {
   if (object.IsImage()) {
     const ImageResourceContent* cached_image =
@@ -55,6 +56,7 @@ String GetImageUrl(const LayoutObject& object) {
   }
   return concatenated_result.ToString();
 }
+#endif
 
 bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
   DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
@@ -123,7 +125,9 @@ void ImagePaintTimingDetector::PopulateTraceValue(
     const ImageRecord& first_image_paint,
     unsigned candidate_index) const {
   value.SetInteger("DOMNodeId", static_cast<int>(first_image_paint.node_id));
+#ifndef NDEBUG
   value.SetString("imageUrl", first_image_paint.image_url);
+#endif
   value.SetInteger("size", static_cast<int>(first_image_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
   value.SetString("frame",
@@ -340,7 +344,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     // Non-trivial image is found.
     std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
     record->node_id = node_id;
+#ifndef NDEBUG
     record->image_url = GetImageUrl(object);
+#endif
     // Mind that first_size has to be assigned at the push of
     // size_ordered_set_ since it's the sorting key.
     record->first_size = rect_size;
