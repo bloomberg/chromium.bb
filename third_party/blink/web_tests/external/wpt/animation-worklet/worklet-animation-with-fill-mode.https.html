@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <title>Test that worklet animation works with different fill modes</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<link rel="help" href="https://drafts.css-houdini.org/css-animationworklet/">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="common.js"></script>
 
 <style>
 .target {
@@ -10,6 +12,7 @@
   background-color: green;
 }
 </style>
+
 <script>
 function CreateTest(target, effect, verify, test_name) {
   async_test(t => {
@@ -47,7 +50,6 @@ registerAnimator("test_animator", class {
 <div id="target5" class='target'></div>
 <div id="target6" class='target'></div>
 
-<script src="resources/animation-worklet-tests.js"></script>
 <script>
   const effect_with_fill_forwards = new KeyframeEffect(
       target1,
