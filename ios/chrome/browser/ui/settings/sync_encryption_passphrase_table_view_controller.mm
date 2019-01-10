@@ -4,20 +4,20 @@
 
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 
+#include <memory>
+
 #include "base/i18n/time_formatting.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#import "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -49,7 +50,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 }  // namespace
 
 @interface SyncEncryptionPassphraseTableViewController () <
-    OAuth2TokenServiceObserverBridgeDelegate,
+    IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol> {
   ios::ChromeBrowserState* browserState_;
   // Whether the decryption progress is currently being shown.
@@ -57,7 +58,8 @@ const CGFloat kSpinnerButtonPadding = 18;
   NSString* savedTitle_;
   UIBarButtonItem* savedLeftButton_;
   std::unique_ptr<SyncObserverBridge> syncObserver_;
-  std::unique_ptr<OAuth2TokenServiceObserverBridge> tokenServiceObserver_;
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      identityManagerObserver_;
   UITextField* passphrase_;
 }
 
@@ -100,9 +102,9 @@ const CGFloat kSpinnerButtonPadding = 18;
     _processingMessage = l10n_util::GetNSString(IDS_SYNC_LOGIN_SETTING_UP);
     _footerMessage = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
-    tokenServiceObserver_.reset(new OAuth2TokenServiceObserverBridge(
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(browserState_),
-        self));
+    identityManagerObserver_ =
+        std::make_unique<identity::IdentityManagerObserverBridge>(
+            IdentityManagerFactory::GetForBrowserState(browserState_), self);
   }
   return self;
 }
@@ -406,7 +408,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   // phase to avoid observing sync events for a browser state that is being
   // killed.
   syncObserver_.reset();
-  tokenServiceObserver_.reset();
+  identityManagerObserver_.reset();
 }
 
 #pragma mark - UIControl events listener
@@ -473,9 +475,9 @@ const CGFloat kSpinnerButtonPadding = 18;
   [self reloadData];
 }
 
-#pragma mark - OAuth2TokenServiceObserverBridgeDelegate
+#pragma mark - IdentityManagerObserverBridgeDelegate
 
-- (void)onEndBatchChanges {
+- (void)onEndBatchOfRefreshTokenStateChanges {
   if (AuthenticationServiceFactory::GetForBrowserState(browserState_)
           ->IsAuthenticated()) {
     return;
