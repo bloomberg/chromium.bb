@@ -1837,7 +1837,7 @@ void PropertyTrees::SetOuterViewportContainerBoundsDelta(
 
 bool PropertyTrees::ElementIsAnimatingChanged(
     const MutatorHost* mutator_host,
-    const PropertyToElementIdMap& element_id_map,
+    ElementId element_id,
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state,
@@ -1849,19 +1849,6 @@ bool PropertyTrees::ElementIsAnimatingChanged(
         !mask.potentially_animating[property])
       continue;
 
-    // The mask represents which properties have had their state changed. This
-    // can include properties for which there are no longer any animations, in
-    // which case there will not be an entry in the map.
-    //
-    // It is unclear whether this is desirable; it may be that we are missing
-    // updates to property nodes here because we no longer have the required
-    // ElementId to look them up. See http://crbug.com/912574 for context around
-    // why this code was rewritten.
-    auto it = element_id_map.find(static_cast<TargetProperty::Type>(property));
-    if (it == element_id_map.end())
-      continue;
-
-    const ElementId element_id = it->second;
     switch (property) {
       case TargetProperty::TRANSFORM:
         if (TransformNode* transform_node =

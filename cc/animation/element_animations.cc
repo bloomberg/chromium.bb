@@ -84,8 +84,7 @@ TargetProperties ElementAnimations::GetPropertiesMaskForAnimationState() {
   return properties;
 }
 
-void ElementAnimations::ClearAffectedElementTypes(
-    const PropertyToElementIdMap& element_id_map) {
+void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
   TargetProperties disable_properties = GetPropertiesMaskForAnimationState();
@@ -97,7 +96,7 @@ void ElementAnimations::ClearAffectedElementTypes(
   // mutator_host_client() to be null.
   if (has_element_in_active_list() && animation_host()->mutator_host_client()) {
     animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::ACTIVE, disabled_state_mask,
+        element_id(), ElementListType::ACTIVE, disabled_state_mask,
         disabled_state);
   }
   set_has_element_in_active_list(false);
@@ -105,7 +104,7 @@ void ElementAnimations::ClearAffectedElementTypes(
   if (has_element_in_pending_list() &&
       animation_host()->mutator_host_client()) {
     animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::PENDING, disabled_state_mask,
+        element_id(), ElementListType::PENDING, disabled_state_mask,
         disabled_state);
   }
   set_has_element_in_pending_list(false);
@@ -350,17 +349,15 @@ void ElementAnimations::UpdateClientAnimationState() {
   DCHECK(pending_state_.IsValid());
   DCHECK(active_state_.IsValid());
 
-  PropertyToElementIdMap element_id_map = GetPropertyToElementIdMap();
-
   if (has_element_in_active_list() && prev_active != active_state_) {
     PropertyAnimationState diff_active = prev_active ^ active_state_;
     animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::ACTIVE, diff_active, active_state_);
+        element_id(), ElementListType::ACTIVE, diff_active, active_state_);
   }
   if (has_element_in_pending_list() && prev_pending != pending_state_) {
     PropertyAnimationState diff_pending = prev_pending ^ pending_state_;
     animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::PENDING, diff_pending, pending_state_);
+        element_id(), ElementListType::PENDING, diff_pending, pending_state_);
   }
 }
 
@@ -468,60 +465,6 @@ gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   }
 
   return gfx::ScrollOffset();
-}
-
-PropertyToElementIdMap ElementAnimations::GetPropertyToElementIdMap() const {
-  // As noted in the header documentation, this method assumes that each
-  // property type maps to at most one ElementId. This is not conceptually true
-  // for cc/animations, but it is true for the current clients:
-  //
-  //   * ui/ does not set per-keyframe-model ElementIds, so this map will be
-  //   each property type mapping to the same ElementId (i.e. element_id()).
-  //
-  //   * blink guarantees that any two keyframe models that it creates which
-  //   target the same property on the same target will have the same ElementId.
-  //
-  // In order to make this as little of a footgun as possible for future-us,
-  // this method DCHECKs that the assumption holds.
-
-  std::vector<PropertyToElementIdMap::value_type> entries;
-  for (int property_index = TargetProperty::FIRST_TARGET_PROPERTY;
-       property_index <= TargetProperty::LAST_TARGET_PROPERTY;
-       ++property_index) {
-    TargetProperty::Type property =
-        static_cast<TargetProperty::Type>(property_index);
-    ElementId element_id_for_property;
-    for (auto& keyframe_effect : keyframe_effects_list_) {
-      KeyframeModel* model = keyframe_effect.GetKeyframeModel(property);
-      if (model) {
-        // We deliberately use two branches here so that the DCHECK can
-        // differentiate between models with different element ids, and the case
-        // where some models don't have an element id.
-        // TODO(crbug.com/900241): All KeyframeModels should have an ElementId.
-        if (model->element_id()) {
-          DCHECK(!element_id_for_property ||
-                 element_id_for_property == model->element_id())
-              << "Different KeyframeModels for the same target must have the "
-              << "same ElementId";
-          element_id_for_property = model->element_id();
-        } else {
-          // This DCHECK isn't perfect; you could have a case where one model
-          // has an ElementId and the other doesn't, but model->element_id() ==
-          // this->element_id() and so the DCHECK passes. That is unlikely
-          // enough that we don't bother guarding against it specifically.
-          DCHECK(!element_id_for_property ||
-                 element_id_for_property == element_id())
-              << "Either all models should have an ElementId or none should";
-          element_id_for_property = element_id();
-        }
-      }
-    }
-
-    if (element_id_for_property)
-      entries.emplace_back(property, element_id_for_property);
-  }
-
-  return PropertyToElementIdMap(std::move(entries));
 }
 
 bool ElementAnimations::KeyframeModelAffectsActiveElements(

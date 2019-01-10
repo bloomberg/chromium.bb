@@ -126,17 +126,18 @@ void TestHostClient::SetElementScrollOffsetMutated(
 }
 
 void TestHostClient::ElementIsAnimatingChanged(
-    const PropertyToElementIdMap& element_id_map,
+    ElementId element_id,
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
-  for (const auto& it : element_id_map) {
-    TestLayer* layer = FindTestLayer(it.second, list_type);
-    if (!layer)
-      continue;
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  if (!layer)
+    return;
 
-    TargetProperty::Type target_property = it.first;
-    int property = static_cast<int>(target_property);
+  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
+       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+    TargetProperty::Type target_property =
+        static_cast<TargetProperty::Type>(property);
     if (mask.potentially_animating[property])
       layer->set_has_potential_animation(target_property,
                                          state.potentially_animating[property]);

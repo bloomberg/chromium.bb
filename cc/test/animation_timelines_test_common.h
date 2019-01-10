@@ -119,7 +119,7 @@ class TestHostClient : public MutatorHostClient {
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
 
-  void ElementIsAnimatingChanged(const PropertyToElementIdMap& element_id_map,
+  void ElementIsAnimatingChanged(ElementId element_id,
                                  ElementListType list_type,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state) override;

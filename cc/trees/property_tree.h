@@ -657,7 +657,7 @@ class CC_EXPORT PropertyTrees final {
   // this property tree. Returns whether a draw property update is
   // needed.
   bool ElementIsAnimatingChanged(const MutatorHost* mutator_host,
-                                 const PropertyToElementIdMap& element_id_map,
+                                 ElementId element_id,
                                  ElementListType list_type,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state,
