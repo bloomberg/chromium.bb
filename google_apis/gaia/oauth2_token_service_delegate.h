@@ -5,6 +5,10 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -43,14 +47,23 @@ class OAuth2TokenServiceDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) = 0;
 
+  // Returns |true| if a refresh token is available for |account_id|, and
+  // |false| otherwise.
+  // Note: Implementations must make sure that |RefreshTokenIsAvailable| returns
+  // |true| if and only if |account_id| is contained in the list of accounts
+  // returned by |GetAccounts|.
   virtual bool RefreshTokenIsAvailable(const std::string& account_id) const = 0;
   virtual GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const;
   virtual void UpdateAuthError(const std::string& account_id,
                                const GoogleServiceAuthError& error) {}
 
+  // Returns a list of accounts for which a refresh token is maintained by
+  // |this| instance.
+  // Note: If tokens have not been fully loaded yet, an empty list is returned.
+  // Also, see |RefreshTokenIsAvailable|.
   virtual std::vector<std::string> GetAccounts();
-  virtual void RevokeAllCredentials(){};
+  virtual void RevokeAllCredentials() {}
 
   virtual void InvalidateAccessToken(const std::string& account_id,
                                      const std::string& client_id,
