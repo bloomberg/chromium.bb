@@ -7497,6 +7497,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="IOSInspectPageVisited">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when the user loads the chrome://inspect page on iOS.
+  </description>
+</action>
+
 <action name="IOSLaunchedBySearchInChromeIntent">
   <owner>justincohen@chromium.org</owner>
   <description>

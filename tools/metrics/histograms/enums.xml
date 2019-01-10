@@ -28123,6 +28123,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Chrome on Mac"/>
 </enum>
 
+<enum name="IOSInspectConsoleAction">
+  <int value="0" label="Start Logging"/>
+  <int value="1" label="Stop Logging"/>
+</enum>
+
 <enum name="IOSITunesURLsStoreKitHandlingResult">
   <int value="0" label="Handling failed"/>
   <int value="1" label="Single App URL, handled"/>
