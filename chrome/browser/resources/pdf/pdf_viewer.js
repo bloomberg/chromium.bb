@@ -250,8 +250,7 @@ function PDFViewer(browserApi) {
     this.toolbar_ = $('toolbar');
     this.toolbar_.hidden = false;
     this.toolbar_.addEventListener('save', () => this.save());
-    this.toolbar_.addEventListener(
-        'print', () => this.currentController_.print());
+    this.toolbar_.addEventListener('print', () => this.print());
     this.toolbar_.addEventListener(
         'rotate-right', () => this.currentController_.rotateClockwise());
     this.toolbar_.addEventListener(
@@ -531,12 +530,15 @@ PDFViewer.prototype = {
 
   /**
    * Exits annotation mode if active.
+   *
+   * @return {Promise<void>}
    */
-  exitAnnotationMode_: function() {
+  exitAnnotationMode_: async function() {
     if (!this.toolbar_.annotationMode) {
       return;
     }
     this.toolbar_.toggleAnnotation();
+    await this.loaded;
   },
 
   /**
@@ -1146,6 +1148,11 @@ PDFViewer.prototype = {
     // Saving in Annotation mode is destructive: crbug.com/919364
     this.exitAnnotationMode_();
   },
+
+  print: async function() {
+    await this.exitAnnotationMode_();
+    this.currentController_.print();
+  }
 };
 
 /** @abstract */
@@ -1181,7 +1188,6 @@ class ContentController {
 
   /**
    * Triggers printing of the current document.
-   * @abstract
    */
   print() {}
 
@@ -1240,11 +1246,6 @@ class InkController extends ContentController {
   /** @override */
   rotateCounterClockwise() {
     // TODO(dstockwell): implement rotation
-  }
-
-  /** @override */
-  print() {
-    // TODO(dstockwell): implement printing
   }
 
   /** @override */
