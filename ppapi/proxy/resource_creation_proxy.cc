@@ -11,7 +11,6 @@
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/audio_output_resource.h"
 #include "ppapi/proxy/camera_device_resource.h"
-#include "ppapi/proxy/compositor_resource.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
@@ -228,10 +227,6 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
 PP_Resource ResourceCreationProxy::CreateCameraDevicePrivate(
     PP_Instance instance) {
   return (new CameraDeviceResource(GetConnection(), instance))->GetReference();
-}
-
-PP_Resource ResourceCreationProxy::CreateCompositor(PP_Instance instance) {
-  return (new CompositorResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFileChooser(

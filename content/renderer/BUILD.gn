@@ -856,8 +856,6 @@ target(link_target_type, "renderer") {
       "pepper/pepper_browser_connection.h",
       "pepper/pepper_camera_device_host.cc",
       "pepper/pepper_camera_device_host.h",
-      "pepper/pepper_compositor_host.cc",
-      "pepper/pepper_compositor_host.h",
       "pepper/pepper_device_enumeration_host_helper.cc",
       "pepper/pepper_device_enumeration_host_helper.h",
       "pepper/pepper_file_chooser_host.cc",

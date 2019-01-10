@@ -164,16 +164,6 @@ void ShellContentRendererClient::PrepareErrorPageForHttpStatusError(
   }
 }
 
-bool ShellContentRendererClient::IsPluginAllowedToUseCompositorAPI(
-    const GURL& url) {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePepperTesting);
-#else
-  return false;
-#endif
-}
-
 bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

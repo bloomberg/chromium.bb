@@ -33,8 +33,6 @@
   F(PPB_Buffer_API)                     \
   F(PPB_CameraCapabilities_API)         \
   F(PPB_CameraDevice_API)               \
-  F(PPB_Compositor_API)                 \
-  F(PPB_CompositorLayer_API)            \
   F(PPB_DeviceRef_API)                  \
   F(PPB_Ext_CrxFileSystem_Private_API)  \
   F(PPB_FileChooser_API)                \

@@ -165,7 +165,6 @@ class ChromeContentRendererClient
   bool IsKeySystemsUpdateNeeded() override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
   bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url) override;
-  bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const content::WebPluginInfo& info,
@@ -296,7 +295,6 @@ class ChromeContentRendererClient
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::set<std::string> allowed_camera_device_origins_;
-  std::set<std::string> allowed_compositor_origins_;
 #endif
 
 #if defined(OS_WIN)

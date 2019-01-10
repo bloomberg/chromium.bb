@@ -9,7 +9,6 @@ group("examples") {
     "//ppapi/examples/audio",
     "//ppapi/examples/audio_encode",
     "//ppapi/examples/audio_input",
-    "//ppapi/examples/compositor",
     "//ppapi/examples/crxfs",
     "//ppapi/examples/enumerate_devices",
     "//ppapi/examples/file_chooser",

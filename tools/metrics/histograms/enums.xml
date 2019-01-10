@@ -41584,7 +41584,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8760108" label="PPB_Testing_Private;1.0"/>
   <int value="10714106" label="PPB_OutputProtection_Private;0.1"/>
   <int value="11143977" label="PPB_PlatformVerification_Private;0.2"/>
-  <int value="12033600" label="PPB_Compositor;0.1"/>
+  <int value="12033600" label="PPB_Compositor;0.1 (Removed)"/>
   <int value="13662160" label="PPB_CharSet(Dev);0.4"/>
   <int value="22816901" label="PPB_FileChooser(Dev);0.5"/>
   <int value="28187368" label="PPB_IMEInputEvent(Dev);0.2"/>
@@ -41603,14 +41603,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="156766028" label="PPB_UMA_Private;0.3"/>
   <int value="162107265" label="PPB_NetworkMonitor;1.0"/>
   <int value="180906214" label="PPB_Instance_Private;0.1"/>
-  <int value="206043276" label="PPB_CompositorLayer;0.1"/>
+  <int value="206043276" label="PPB_CompositorLayer;0.1 (Removed)"/>
   <int value="221802429" label="PPB_URLUtil(Dev);0.7"/>
   <int value="225125520" label="PPB_Find(Private);0.3"/>
   <int value="226206264" label="PPB_FileRef;1.1"/>
   <int value="229560990" label="PPB_Var(Deprecated);0.3"/>
   <int value="250764663" label="PPB_Graphics2D(Dev);0.2"/>
   <int value="320267009" label="PPB_Flash_File_ModuleLocal;3"/>
-  <int value="344923193" label="PPB_CompositorLayer;0.2"/>
+  <int value="344923193" label="PPB_CompositorLayer;0.2 (Removed)"/>
   <int value="348907389" label="PPB_TCPSocket_Private;0.4"/>
   <int value="382780521" label="PPB_FileRef;1.2"/>
   <int value="415548516" label="PPB_MessageLoop;1.0"/>

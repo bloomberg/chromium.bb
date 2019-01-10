@@ -50,10 +50,6 @@ void ResourceHost::SendReply(const ReplyMessageContext& context,
   host_->SendReply(context, msg);
 }
 
-bool ResourceHost::IsCompositorHost() {
-  return false;
-}
-
 bool ResourceHost::IsFileRefHost() {
   return false;
 }

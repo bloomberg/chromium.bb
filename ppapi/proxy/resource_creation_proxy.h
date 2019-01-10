@@ -108,7 +108,6 @@ class ResourceCreationProxy : public InterfaceProxy,
                                 PP_AudioSampleRate sample_rate,
                                 uint32_t sample_frame_count) override;
   PP_Resource CreateCameraDevicePrivate(PP_Instance instance) override;
-  PP_Resource CreateCompositor(PP_Instance instance) override;
   PP_Resource CreateFileChooser(PP_Instance instance,
                                 PP_FileChooserMode_Dev mode,
                                 const PP_Var& accept_types) override;

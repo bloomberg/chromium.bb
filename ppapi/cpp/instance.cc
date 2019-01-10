@@ -10,7 +10,6 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_message_handler.h"
-#include "ppapi/cpp/compositor.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
@@ -124,13 +123,6 @@ bool Instance::BindGraphics(const Graphics3D& graphics) {
     return false;
   return PP_ToBool(get_interface<PPB_Instance_1_0>()->BindGraphics(
       pp_instance(), graphics.pp_resource()));
-}
-
-bool Instance::BindGraphics(const Compositor& compositor) {
-  if (!has_interface<PPB_Instance_1_0>())
-    return false;
-  return PP_ToBool(get_interface<PPB_Instance_1_0>()->BindGraphics(
-      pp_instance(), compositor.pp_resource()));
 }
 
 bool Instance::IsFullFrame() {

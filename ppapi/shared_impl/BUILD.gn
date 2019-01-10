@@ -21,8 +21,6 @@ jumbo_component("shared_impl") {
     "array_writer.h",
     "callback_tracker.cc",
     "callback_tracker.h",
-    "compositor_layer_data.cc",
-    "compositor_layer_data.h",
     "dictionary_var.cc",
     "dictionary_var.h",
     "file_growth.cc",

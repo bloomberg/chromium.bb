@@ -42,7 +42,6 @@
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_compositor_api.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -54,7 +53,6 @@
 
 using ppapi::thunk::EnterInstanceNoLock;
 using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_Compositor_API;
 using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_Instance_API;
@@ -197,13 +195,11 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
         PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
     if (!resource || resource->pp_instance() != instance)
       return PP_FALSE;
-    // We need to pass different resource to Graphics 2D, 3D and Compositor
-    // right now.  Once 3D is migrated to the new design, we should be able to
-    // unify this.
+    // We need to pass different resource to Graphics 2D and 3D right now.  Once
+    // 3D is migrated to the new design, we should be able to unify this.
     if (resource->AsPPB_Graphics3D_API()) {
       pp_resource = resource->host_resource().host_resource();
-    } else if (resource->AsPPB_Graphics2D_API() ||
-               resource->AsPPB_Compositor_API()) {
+    } else if (resource->AsPPB_Graphics2D_API()) {
       pp_resource = resource->pp_resource();
     } else {
       // A bad resource.

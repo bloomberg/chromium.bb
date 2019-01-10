@@ -12,8 +12,6 @@
 #include "ppapi/cpp/audio_buffer.h"
 #include "ppapi/cpp/audio_config.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/compositor.h"
-#include "ppapi/cpp/compositor_layer.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/device_ref_dev.h"
