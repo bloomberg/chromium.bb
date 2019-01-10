@@ -31,8 +31,6 @@ component("google_toolbox_for_mac") {
       "src/AppKit/GTMUILocalizerAndLayoutTweaker.m",
       "src/DebugUtils/GTMDebugSelectorValidation.h",
       "src/DebugUtils/GTMTypeCasting.h",
-      "src/Foundation/GTMServiceManagement.c",
-      "src/Foundation/GTMServiceManagement.h",
     ]
 
     libs = [
