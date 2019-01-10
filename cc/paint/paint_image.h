@@ -219,7 +219,7 @@ class CC_PAINT_EXPORT PaintImage {
   sk_sp<SkImage> GetSkImageForFrame(size_t index,
                                     GeneratorClientId client_id) const;
 
-  PaintWorkletInput* paint_worklet_input() {
+  PaintWorkletInput* paint_worklet_input() const {
     return paint_worklet_input_.get();
   }
 

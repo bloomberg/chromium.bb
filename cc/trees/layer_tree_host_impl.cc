@@ -3142,7 +3142,7 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
 
 void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
-  painter_ = std::move(painter);
+  tile_manager_.SetPaintWorkletLayerPainter(std::move(painter));
 }
 
 LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
