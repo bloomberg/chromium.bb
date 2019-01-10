@@ -1921,16 +1921,6 @@ LayoutUnit LayoutGrid::RowAxisOffsetForChild(const LayoutBox& child) const {
   return LayoutUnit();
 }
 
-bool LayoutGrid::GridPositionIsAutoForOutOfFlow(
-    GridPosition position,
-    GridTrackSizingDirection direction) const {
-  return (position.IsAuto() ||
-          (position.IsNamedGridArea() &&
-           !NamedLineCollection::IsValidNamedLineOrArea(
-               position.NamedGridLine(), StyleRef(),
-               GridPositionsResolver::InitialPositionSide(direction))));
-}
-
 LayoutUnit LayoutGrid::ResolveAutoStartGridPosition(
     GridTrackSizingDirection direction) const {
   if (direction == kForRows || StyleRef().IsLeftToRightDirection())
@@ -1993,10 +1983,9 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
                                   : child.StyleRef().GridRowEnd();
 
   bool start_is_auto =
-      GridPositionIsAutoForOutOfFlow(start_position, direction) ||
-      start_line < 0 || start_line > last_line;
-  bool end_is_auto = GridPositionIsAutoForOutOfFlow(end_position, direction) ||
-                     end_line < 0 || end_line > last_line;
+      start_position.IsAuto() || start_line < 0 || start_line > last_line;
+  bool end_is_auto =
+      end_position.IsAuto() || end_line < 0 || end_line > last_line;
 
   if (start_is_auto && end_is_auto)
     return is_row_axis ? ClientLogicalWidth() : ClientLogicalHeight();
