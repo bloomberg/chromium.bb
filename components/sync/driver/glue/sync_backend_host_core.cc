@@ -51,13 +51,13 @@ void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
       fetcher, data_use_measurement::DataUseUserData::SYNC);
 }
 
-void RecordPerModelTypeInvalidation(int model_type, int number_of_ids) {
+void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
                             static_cast<int>(syncer::MODEL_TYPE_COUNT));
-  if (number_of_ids == 1) {
+  if (!is_grouped) {
     // When recording metrics it's important to distinguish between
-    // many/one case, since "many" case is only common in the deprecated
-    // implementation.
+    // many/one case, since "many" aka grouped case is only common in
+    // the deprecated implementation.
     UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidation", model_type,
                               static_cast<int>(syncer::MODEL_TYPE_COUNT));
   }
@@ -266,7 +266,8 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
                                 ModelTypeToHistogramInt(type),
                                 static_cast<int>(MODEL_TYPE_COUNT));
 
-      RecordPerModelTypeInvalidation(ModelTypeToHistogramInt(type), ids.size());
+      bool is_grouped = (ids.size() != 1);
+      RecordPerModelTypeInvalidation(ModelTypeToHistogramInt(type), is_grouped);
       SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
       for (Invalidation invalidation : invalidation_set) {
@@ -279,6 +280,11 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
                    << invalidation.version() << ", last seen version was "
                    << last_invalidation->second;
           continue;
+        }
+        if (!is_grouped && !invalidation.is_unknown_version()) {
+          UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidationKnownVersion",
+                                    ModelTypeToHistogramInt(type),
+                                    static_cast<int>(MODEL_TYPE_COUNT));
         }
         std::unique_ptr<InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));
