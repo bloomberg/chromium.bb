@@ -20,9 +20,11 @@ namespace blink {
 
 using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_CAP_TEST_CASE_P(BlockPainterTest);
+INSTANTIATE_PAINT_TEST_CASE_P(BlockPainterTest);
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -115,6 +117,8 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
 }
 
 TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -180,6 +184,33 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
               .GetDisplayItemList()[scroll_hit_test_chunk.begin_index]);
   EXPECT_EQ(contents_transform,
             &scroll_hit_test_display_item.scroll_offset_node());
+}
+
+TEST_P(BlockPainterTest, OverflowRectForCullRectTesting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller' style='width: 50px; height: 50px; overflow: scroll'>
+      <div style='width: 50px; height: 5000px'></div>
+    </div>
+  )HTML");
+  auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+              BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
+  } else {
+    EXPECT_EQ(LayoutRect(0, 0, 50, 50),
+              BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
+  }
+}
+
+TEST_P(BlockPainterTest, OverflowRectCompositedScrollingForCullRectTesting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller' style='width: 50px; height: 50px; overflow: scroll; will-change: transform'>
+      <div style='width: 50px; height: 5000px'></div>
+    </div>
+  )HTML");
+  auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+            BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
 }
 
 class BlockPainterTestWithPaintTouchAction

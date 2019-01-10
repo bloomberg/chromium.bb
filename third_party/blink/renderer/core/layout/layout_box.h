@@ -1313,14 +1313,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            !BorderBoxRect().Contains(
                overflow_->visual_overflow->SelfVisualOverflowRect());
   }
-  bool HasVisualOverflow() const {
-    return VisualOverflowIsSet() &&
-           !BorderBoxRect().Contains(VisualOverflowRect());
-  }
-  bool HasLayoutOverflow() const {
-    return LayoutOverflowIsSet() &&
-           !BorderBoxRect().Contains(LayoutOverflowRect());
-  }
+
+  bool HasVisualOverflow() const { return VisualOverflowIsSet(); }
+  bool HasLayoutOverflow() const { return LayoutOverflowIsSet(); }
 
   // Return true if re-laying out the containing block of this object means that
   // we need to recalculate the preferred min/max logical widths of this object.
