@@ -165,6 +165,24 @@ class CustomElementFormAssociatedCallbackReaction final
 
 // ----------------------------------------------------------------
 
+class CustomElementFormResetCallbackReaction final
+    : public CustomElementReaction {
+ public:
+  CustomElementFormResetCallbackReaction(CustomElementDefinition& definition)
+      : CustomElementReaction(&definition) {
+    DCHECK(definition.HasFormResetCallback());
+  }
+
+ private:
+  void Invoke(Element* element) override {
+    definition_->RunFormResetCallback(element);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementFormResetCallbackReaction);
+};
+
+// ----------------------------------------------------------------
+
 class CustomElementDisabledStateChangedCallbackReaction final
     : public CustomElementReaction {
  public:
@@ -228,6 +246,12 @@ CustomElementReaction& CustomElementReactionFactory::CreateFormAssociated(
     HTMLFormElement* nullable_form) {
   return *MakeGarbageCollected<CustomElementFormAssociatedCallbackReaction>(
       definition, nullable_form);
+}
+
+CustomElementReaction& CustomElementReactionFactory::CreateFormReset(
+    CustomElementDefinition& definition) {
+  return *MakeGarbageCollected<CustomElementFormResetCallbackReaction>(
+      definition);
 }
 
 CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(

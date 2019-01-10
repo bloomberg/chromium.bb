@@ -37,6 +37,7 @@ class ScriptCustomElementDefinitionData {
   Member<V8CustomElementAdoptedCallback> adopted_callback_;
   Member<V8CustomElementAttributeChangedCallback> attribute_changed_callback_;
   Member<V8CustomElementFormAssociatedCallback> form_associated_callback_;
+  Member<V8VoidFunction> form_reset_callback_;
   Member<V8CustomElementDisabledStateChangedCallback>
       disabled_state_changed_callback_;
   Member<V8CustomElementValueSetter> value_setter_;

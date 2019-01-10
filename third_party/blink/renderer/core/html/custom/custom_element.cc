@@ -272,6 +272,14 @@ void CustomElement::EnqueueFormAssociatedCallback(
   }
 }
 
+void CustomElement::EnqueueFormResetCallback(Element& element) {
+  auto& definition = *DefinitionForElementWithoutCheck(element);
+  if (definition.HasFormResetCallback()) {
+    Enqueue(&element,
+            &CustomElementReactionFactory::CreateFormReset(definition));
+  }
+}
+
 void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
                                                         bool is_disabled) {
   auto& definition = *DefinitionForElementWithoutCheck(element);

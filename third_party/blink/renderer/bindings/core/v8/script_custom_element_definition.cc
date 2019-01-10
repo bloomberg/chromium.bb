@@ -110,6 +110,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
       adopted_callback_(data.adopted_callback_),
       attribute_changed_callback_(data.attribute_changed_callback_),
       form_associated_callback_(data.form_associated_callback_),
+      form_reset_callback_(data.form_reset_callback_),
       disabled_state_changed_callback_(data.disabled_state_changed_callback_) {}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
@@ -120,6 +121,7 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(adopted_callback_);
   visitor->Trace(attribute_changed_callback_);
   visitor->Trace(form_associated_callback_);
+  visitor->Trace(form_reset_callback_);
   visitor->Trace(disabled_state_changed_callback_);
   CustomElementDefinition::Trace(visitor);
 }
@@ -265,6 +267,10 @@ bool ScriptCustomElementDefinition::HasFormAssociatedCallback() const {
   return form_associated_callback_;
 }
 
+bool ScriptCustomElementDefinition::HasFormResetCallback() const {
+  return form_reset_callback_;
+}
+
 bool ScriptCustomElementDefinition::HasDisabledStateChangedCallback() const {
   return disabled_state_changed_callback_;
 }
@@ -310,6 +316,12 @@ void ScriptCustomElementDefinition::RunFormAssociatedCallback(
   if (!form_associated_callback_)
     return;
   form_associated_callback_->InvokeAndReportException(element, nullable_form);
+}
+
+void ScriptCustomElementDefinition::RunFormResetCallback(Element* element) {
+  if (!form_reset_callback_)
+    return;
+  form_reset_callback_->InvokeAndReportException(element);
 }
 
 void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(

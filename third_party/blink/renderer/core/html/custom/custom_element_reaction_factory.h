@@ -39,6 +39,8 @@ class CustomElementReactionFactory {
   static CustomElementReaction& CreateFormAssociated(
       CustomElementDefinition& definition,
       HTMLFormElement* nullable_form);
+  static CustomElementReaction& CreateFormReset(
+      CustomElementDefinition& definition);
   static CustomElementReaction& CreateDisabledStateChanged(
       CustomElementDefinition& definition,
       bool is_disabled);
