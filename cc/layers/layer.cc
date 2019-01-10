@@ -1193,17 +1193,19 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
 std::string Layer::ToString() const {
   return base::StringPrintf(
       "layer_id: %d\n"
-      "  element_id: %s\n"
-      "  bounds: %s\n"
-      "  position: %s\n"
-      "  offset_to_transform_parent: %s\n"
+      "  Bounds: %s\n"
+      "  ElementId: %s\n"
+      "  OffsetToTransformParent: %s\n"
+      "  Position: %s\n"
       "  scrollable: %d\n"
-      "  property tree indices: transform(%d) clip(%d) effect(%d) scroll(%d)\n",
-      id(), element_id().ToString().c_str(), bounds().ToString().c_str(),
-      position().ToString().c_str(),
-      offset_to_transform_parent().ToString().c_str(), scrollable(),
-      transform_tree_index(), clip_tree_index(), effect_tree_index(),
-      scroll_tree_index());
+      "  clip_tree_index: %d\n"
+      "  effect_tree_index: %d\n"
+      "  scroll_tree_index: %d\n"
+      "  transform_tree_index: %d\n",
+      id(), bounds().ToString().c_str(), element_id().ToString().c_str(),
+      offset_to_transform_parent().ToString().c_str(),
+      position().ToString().c_str(), scrollable(), clip_tree_index(),
+      effect_tree_index(), scroll_tree_index(), transform_tree_index());
 }
 
 void Layer::SetUseParentBackfaceVisibility(bool use) {
