@@ -710,6 +710,10 @@
       // This is enabled by features::kLazyInitializeMediaControls.
     },
     {
+      name: "LegacyPerformanceMemoryCounters",
+      origin_trial_feature_name: "LegacyPerformanceMemoryCounters",
+    },
+    {
       name: "LongTaskV2",
     },
     {

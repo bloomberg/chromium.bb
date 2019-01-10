@@ -40,12 +40,13 @@ namespace blink {
 
 struct HeapInfo {
   DISALLOW_NEW();
-  HeapInfo()
-      : used_js_heap_size(0), total_js_heap_size(0), js_heap_size_limit(0) {}
 
-  size_t used_js_heap_size;
-  size_t total_js_heap_size;
-  size_t js_heap_size_limit;
+  size_t used_js_heap_size = 0;
+  size_t total_js_heap_size = 0;
+  size_t js_heap_size_limit = 0;
+  // Values for origin trial: "Legacy Performance Memory Counters".
+  size_t used_js_heap_size_without_external_memory = 0;
+  size_t total_js_heap_size_without_external_memory = 0;
 };
 
 class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
@@ -66,6 +67,12 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
   size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
   size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
+  size_t usedJSHeapSizeWithoutExternalMemory() const {
+    return info_.used_js_heap_size_without_external_memory;
+  }
+  size_t totalJSHeapSizeWithoutExternalMemory() const {
+    return info_.total_js_heap_size_without_external_memory;
+  }
 
  private:
   HeapInfo info_;
