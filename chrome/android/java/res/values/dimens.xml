@@ -295,6 +295,7 @@
     <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>
     <dimen name="omnibox_suggestion_second_line_text_size">14sp</dimen>
     <dimen name="omnibox_suggestion_answer_line2_vertical_spacing">3dp</dimen>
+    <dimen name="omnibox_suggestion_edit_url_min_height">60dp</dimen>
     <!-- omnibox_suggestion_answer_line2_vertical_spacing + 2dp -->
     <dimen name="omnibox_suggestion_answer_image_vertical_spacing">5dp</dimen>
     <dimen name="omnibox_suggestion_answer_image_horizontal_spacing">4dp</dimen>

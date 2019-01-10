@@ -821,6 +821,20 @@
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
     </style>
 
+    <!-- Omnibox suggestions -->
+    <!-- TODO(mdjones): Use unified styles for omnibox suggestions: crbug.com/915785 -->
+    <style name="TextAppearance.OmniboxSuggestionSecondLine">
+        <item name="android:textSize">@dimen/omnibox_suggestion_second_line_text_size</item>
+        <item name="android:textColor">@color/suggestion_url_dark_modern</item>
+    </style>
+
+    <style name="OmniboxSuggestionIconButton">
+        <item name="android:background">@null</item>
+        <item name="android:layout_width">@dimen/min_touch_target_size</item>
+        <item name="android:layout_height">@dimen/min_touch_target_size</item>
+        <item name="tint">@color/default_icon_color_blue</item>
+    </style>
+
     <!-- Trusted Web Activities -->
     <style name="ClearDataDialogActivityTheme" parent="FullscreenTransparentActivityTheme">
         <item name="android:windowBackground">@android:color/transparent</item>

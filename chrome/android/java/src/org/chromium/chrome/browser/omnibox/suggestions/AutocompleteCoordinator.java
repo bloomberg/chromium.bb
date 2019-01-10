@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
+import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -49,7 +50,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     /**
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.
      */
-    public interface AutocompleteDelegate {
+    public interface AutocompleteDelegate extends EditUrlSuggestionCoordinator.LocationBarDelegate {
         /**
          * Notified that the URL text has changed.
          */
@@ -80,11 +81,6 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
          * @param inputStart The time the input started for the load request.
          */
         void loadUrl(String url, @PageTransition int transition, long inputStart);
-
-        /**
-         * Requests that the specified text be set as the current editing text in the omnibox.
-         */
-        void setOmniboxEditingText(String text);
 
         /**
          * @return Whether the omnibox was focused via the NTP fakebox.
