@@ -1743,7 +1743,6 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//chrome/browser/chromeos",
-      "//chrome/browser/chromeos/android_sms:android_sms_urls",
       "//chromeos/audio",
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",
