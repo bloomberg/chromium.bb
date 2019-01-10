@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <title>Tests that ScrollTimeline works properly with writing mode and directionality</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<link rel="help" href="https://drafts.css-houdini.org/css-animationworklet/">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="common.js"></script>
 
 <script id="worklet_code"  type="text/worklet">
 registerAnimator("test_animator", class {
@@ -11,7 +13,6 @@ registerAnimator("test_animator", class {
 });
 </script>
 
-<script src="resources/animation-worklet-tests.js"></script>
 <script>
 // Creates a DOM structure like:
 //   - container
