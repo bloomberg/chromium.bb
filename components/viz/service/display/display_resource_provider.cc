@@ -891,8 +891,10 @@ DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
 }
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
-    DisplayResourceProvider* resource_provider)
-    : resource_provider_(resource_provider) {}
+    DisplayResourceProvider* resource_provider,
+    const CreateSkImageCallback& callback)
+    : resource_provider_(resource_provider),
+      create_sk_image_callback_(callback) {}
 
 DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
   DCHECK(resources_.empty());
@@ -903,6 +905,16 @@ ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
   DCHECK(!base::ContainsValue(resources_, id));
   resources_.push_back(id);
   return resource_provider_->LockForExternalUse(id);
+}
+
+sk_sp<SkImage>
+DisplayResourceProvider::LockSetForExternalUse::LockResourceAndCreateSkImage(
+    ResourceId id) {
+  auto metadata = LockResource(id);
+  auto& sk_image = resource_provider_->resource_sk_image_[id];
+  if (!sk_image)
+    sk_image = create_sk_image_callback_.Run(std::move(metadata));
+  return sk_image;
 }
 
 void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(
