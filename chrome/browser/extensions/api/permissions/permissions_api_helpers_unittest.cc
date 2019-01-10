@@ -330,4 +330,28 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_UnsupportedAPIPermission) {
       APIPermission::kWallpaper));
 }
 
+// Tests that unpacking works correctly with wildcard schemes (which are
+// interesting, because they only match http | https, and not all schemes).
+TEST(ExtensionPermissionsAPIHelpers, Unpack_WildcardSchemes) {
+  constexpr char kWildcardSchemePattern[] = "*://*/*";
+
+  PermissionSet optional_permissions(
+      APIPermissionSet(), ManifestPermissionSet(),
+      URLPatternSet({URLPattern(Extension::kValidHostPermissionSchemes,
+                                kWildcardSchemePattern)}),
+      URLPatternSet());
+
+  Permissions permissions_object;
+  permissions_object.origins = std::make_unique<std::vector<std::string>>(
+      std::vector<std::string>({kWildcardSchemePattern}));
+
+  std::string error;
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+      UnpackPermissionSet(permissions_object, PermissionSet(),
+                          optional_permissions, true, &error);
+  ASSERT_TRUE(unpack_result) << error;
+  EXPECT_THAT(GetPatternsAsStrings(unpack_result->optional_explicit_hosts),
+              testing::ElementsAre(kWildcardSchemePattern));
+}
+
 }  // namespace extensions
