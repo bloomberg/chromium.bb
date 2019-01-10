@@ -4,97 +4,300 @@
 <script src="/w3c/resources/testharnessreport.js"></script>
 <script>
 
-async_test(function(test) {
-    var video = document.createElement("video");
-    var media_source = new MediaSource();
-    var object_url = URL.createObjectURL(media_source);
+function TestScope() {
+    this.video = null;
+    this.media_source = null;
+    this.object_url = null;
+    this.source_buffer_list = null;
+    this.expect_durationchange = false;
+    this.expect_sourceclose = false;
+    this.received_sourceclose = false;
+    this.expect_error = false;
+    this.received_error = false;
+}
 
-    media_source.onsourceopen = test.step_func(function() {
-        URL.revokeObjectURL(object_url);
-        video = null;
-        // We still have a reference to the MediaSource, so gc() shouldn't collect
-        // HTMLME+MSE.
+function setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb) {
+    // |handler_setup_cb|, if not null, is synchronously called after
+    // test_scope is populated with HTMLME and MSE references, but prior to
+    // attaching HTMLME to MSE API.
+    //
+    // Next, attaches the HTMLME to the MediaSource object and sets a timeout to later
+    // call |setup_done_cb| so that hopefully any pending events or other work
+    // are complete before the main part of the test proceeds.
+
+    test_scope.video = document.createElement("video");
+    test_scope.media_source = new MediaSource();
+    test_scope.object_url = URL.createObjectURL(test_scope.media_source);
+    if (handler_setup_cb != null)
+        handler_setup_cb();
+
+    test_scope.media_source.onsourceopen = test.step_func(function() {
+        test_scope.media_source.onsourceopen = null;
+        URL.revokeObjectURL(test_scope.object_url);
+        setTimeout(setup_done_cb, 0);
+    });
+
+    test_scope.video.src = test_scope.object_url;
+}
+
+async_test(function(test) {
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = null;
+
+    var setup_done_cb = test.step_func(function() {
+        test_scope.video = null;
+        // |test_scope.media_source| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+
+        // Debug note: setting test_scope.media_source to null here, and commenting out the assert_equals()
+        // and test.done() lines, below, demonstrates with debug logging that HTMLME+MSE is collected, followed
+        // eventually by a timeout.
         gc();
 
-        setTimeout(test.step_func(function() {
-            assert_equals(media_source.readyState, "open", "MediaSource object is open.");
-            // Setting |media_source|.duration should synchronously enqueue a
-            // 'durationchange' event on the media element (for which we have
-            // no reference, but we do have an event listener -- see below).
-            media_source.duration = 100;
-
-            // Though we drop the reference to the MediaSource here, gc()
-            // shouldn't collect HTMLME+MSE due to pending 'durationchange'
-            // event dispatch on HTMLME.
-            media_source = null;
-            gc();
-        }), 0);
-    });
-
-    video.ondurationchange = test.step_func_done();
-    video.src = object_url;
-
-    // Debugging notes: If this test times out, it's likely due to failure in
-    // keeping HTMLME+MSE alive and pending event dispatch on their wrappers alive
-    // through gc(); either gc() over-collected HTMLME+MSE or event dispatch was
-    // perturbed by gc().
-}, "GC of HTMLME+MediaSource preserves HTMLME+MediaSource when only MediaSource reference is alive, then HTMLME.ondurationchange is dispatched if it was pending when GC occurred with no HTMLME+MSE references");
-
-async_test(function(test) {
-    var video = document.createElement("video");
-    var media_source = new MediaSource();
-    var object_url = URL.createObjectURL(media_source);
-    var source_opened = false;
-    var detach_started = false;
-
-    media_source.onsourceopen = test.step_func(function() {
-        URL.revokeObjectURL(object_url);
-        source_opened = true;
-    });
-
-    media_source.onsourceclose = test.step_func(function() {
-        assert_true(source_opened, "sourceopen should fire before sourceclose");
-        assert_true(detach_started, "We should explicitly start detachment before receiving sourceclose");
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open after gc().");
         test.done();
     });
 
-    // Forget all live references to the MediaSource, except object_url (until
-    // that is also revoked later during sourceopen handling.)
-    media_source = null;
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least MediaSource when only the MediaSource reference is held by JS");
 
-    video.src = object_url;
+async_test(function(test) {
+    // This test builds on the previous test. It should fail if the previous test fails.
 
-    var gc_then_detach_if_attached = test.step_func(function() {
-        // GC shouldn't collect HTMLME+MSE, even if source_opened is true and
-        // object_url has been revoked, because we still have a reference to HTMLME.
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = test.step_func(function() {
+        test_scope.video.ondurationchange = test.step_func(function() {
+            assert_true(test_scope.expect_durationchange, "HTMLME durationchange event is expected only after changing MediaSource duration");
+            test.done();
+        });
+    });
+
+    var setup_done_cb = test.step_func(function() {
+        test_scope.video = null;
+        // |test_scope.media_source| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
         gc();
-        if (!source_opened) {
-            // Keep trying until we're attached.
-            setTimeout(gc_then_detach_if_attached, 10);
-            return;
-        }
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open after gc().");
 
-        // Invoking the load algorithm by setting src to '' should detach MSE and also
-        // schedule a 'sourceclose' event on the previously attached MediaSource.
-        detach_started = true;
+        // Verify that HTMLME is still alive by changing the MediaSource object's duration, which causes
+        // a durationchange event to become queued for dispatch on the attached HTMLME (and such dispatch ends this
+        // test.)
+        // Debug note: commenting out the next line should result in test timeout.
+        test_scope.media_source.duration = 100;
+        test_scope.expect_durationchange = true;
+    });
 
-        video.src = '';
-        // There should be a pending sourceclose event on the MediaSource, so even if we drop
-        // the reference to the HTMLME here, gc() still shouldn't collect the MediaSource
-        // due to that pending event dispatch on it.
-        video = null;
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least MediaSource and HTMLME when only the MediaSource reference is held by JS");
+
+async_test(function(test) {
+    // This test builds on the previous two tests. It should fail if either of the previous two tests fails.
+
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = test.step_func(function() {
+        test_scope.video.ondurationchange = test.step_func(function(e) {
+            assert_true(test_scope.expect_durationchange, "HTMLME durationchange event is expected only after changing MediaSource duration");
+            assert_equals(e.target.custom_test_wrapper_update, "testing", "HTMLME wrapper, as adjusted by the test, should be retained");
+            test.done();
+        });
+    });
+
+    var setup_done_cb = test.step_func(function() {
+        // Update the HTMLME JS wrapper with a custom property to be verified later.
+        test_scope.video.custom_test_wrapper_update = "testing";
+        test_scope.video = null;
+        // |test_scope.media_source| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+        gc();
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open after gc().");
+
+        // Verify that HTMLME is still alive by changing the MediaSource object's duration, which causes
+        // a durationchange event to become queued for dispatch on the attached HTMLME (and such dispatch ends this
+        // test.)
+        // Debug note: commenting out the next line demonstrates with debug logging that HTMLME+MSE is collected,
+        // followed eventually by a timeout.
+        test_scope.media_source.duration = 100;
+
+        test_scope.expect_durationchange = true;
+        test_scope.media_source = null;
         gc();
     });
 
-    gc_then_detach_if_attached();
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least HTMLME and its wrapper when no references held by JS, but there is a pending HTMLME event");
 
-    // Debugging notes: If this test times out, it's likely due to failure in
-    // keeping HTMLME+MSE alive and pending event dispatch on their wrappers alive
-    // through gc(); either gc() over-collected HTMLME+MSE or event dispatch was
-    // perturbed by gc().
-    // If the asserts in media_source.onsourceclose fail, they are self-explanatory.
-}, "GC of HTMLME+MediaSource preserves HTMLME+MediaSource when only HTMLMediaElement reference is alive, then MediaSource.onsourceclose is dispatched if it was pending when GC occurred with no HTMLME+MSE references");
+async_test(function(test) {
+    var test_scope = new TestScope();
 
+    var handler_setup_cb = null;
+
+    var setup_done_cb = test.step_func(function() {
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+        test_scope.media_source = null;
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct before gc().");
+        // |test_scope.video| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+
+        // Debug note: setting test_scope.video to null here, and commenting out the assert_equals()
+        // and test.done() lines, below, demonstrates with debug logging that HTMLME+MSE is collected, followed
+        // eventually by a timeout.
+        gc();
+
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct after gc().");
+        test.done();
+    });
+
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least HTMLME when only the HTMLME reference is held by JS");
+
+async_test(function(test) {
+    // This test builds on the previous test. It should fail if the previous test fails.
+
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = test.step_func(function() {
+        test_scope.media_source.onsourceclose = test.step_func(function() {
+            assert_true(test_scope.expect_sourceclose, "MediaSource sourceclose event is expected only after clearing HTMLME src attribute");
+            // Both HTMLME.onerror and MediaSource.onsourceclose are required to finish this test.
+            if (test_scope.received_error)
+               test.done();
+            test_scope.received_sourceclose = true;
+            test_scope.expect_sourceclose = false;  // Only one sourceclose is expected.
+        });
+
+        test_scope.video.onerror = test.step_func(function() {
+            assert_true(test_scope.expect_error, "HTMLME error event is expected only after clearing HTMLME src attribute");
+            // Both HTMLME.onerror and MediaSource.onsourceclose are required to finish this test.
+            if (test_scope.received_sourceclose)
+               test.done();
+            test_scope.received_error = true;
+            test_scope.expect_error = false;  // Only one error is expected.
+        });
+    });
+
+    var setup_done_cb = test.step_func(function() {
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+        test_scope.media_source = null;
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct before gc().");
+        // |test_scope.video| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+
+        gc();
+
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct after gc().");
+
+        // Verify that MediaSource is still alive by clearing the HTMLME object's src attribute, which causes a
+        // sourceclose event to become queued for dispatch on the previously attached MediaSource and an error
+        // event to become queued for dispatch on the HTMLME object (and such dispatches end this test.)
+        // Debug note: commenting out the next line should result in test timeout.
+        test_scope.video.src = "";
+        test_scope.expect_sourceclose = true;
+        test_scope.expect_error = true;
+    });
+
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least MediaSource and HTMLME when only the HTMLME reference is held by JS");
+
+async_test(function(test) {
+    // This test builds on the previous two tests. It should fail if either of the previous two tests fails.
+
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = test.step_func(function() {
+        test_scope.media_source.onsourceclose = test.step_func(function(e) {
+            assert_true(test_scope.expect_sourceclose, "MediaSource sourceclose event is expected only after clearing HTMLME src attribute");
+            assert_equals(e.target.custom_test_wrapper_update, "testing-mediasource", "MediaSource wrapper, as adjusted by the test, should be retained");
+            // Both HTMLME.onerror and MediaSource.onsourceclose are required to finish this test.
+            if (test_scope.received_error)
+               test.done();
+            test_scope.received_sourceclose = true;
+            test_scope.expect_sourceclose = false;  // Only one sourceclose is expected.
+        });
+
+        test_scope.video.onerror = test.step_func(function(e) {
+            assert_true(test_scope.expect_error, "HTMLME error event is expected only after clearing HTMLME src attribute");
+            assert_equals(e.target.custom_test_wrapper_update, "testing-htmlme", "HTMLME wrapper, as adjusted by the test, should be retained");
+            // Both HTMLME.onerror and MediaSource.onsourceclose are required to finish this test.
+            if (test_scope.received_sourceclose)
+               test.done();
+            test_scope.received_error = true;
+            test_scope.expect_error = false;  // Only one error is expected.
+        });
+    });
+
+    var setup_done_cb = test.step_func(function() {
+        // Update the HTMLME and MediaSource JS wrappers with custom properties to be verified later.
+        test_scope.video.custom_test_wrapper_update = "testing-htmlme";
+        test_scope.media_source.custom_test_wrapper_update = "testing-mediasource";
+
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+        test_scope.media_source = null;
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct before gc().");
+        // |test_scope.video| should be the only remaining reference to HTMLME+MSE.
+        // GC shouldn't collect HTMLME+MSE due to that live reference.
+
+        gc();
+
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct after gc().");
+
+        // Verify that MediaSource is still alive by clearing the HTMLME object's src attribute, which causes a
+        // sourceclose event to become queued for dispatch on the previously attached MediaSource and an error
+        // event to become queued for dispatch on the HTMLME object (and such dispatches end this test.)
+        // Debug note: commenting out the next line demonstrates with debug logging that HTMLME+MSE is collected,
+        // followed eventually by a timeout.
+        test_scope.video.src = "";
+
+        test_scope.expect_sourceclose = true;
+        test_scope.expect_error = true;
+        test_scope.video = null;
+        gc();
+    });
+
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource preserves at least MediaSource and HTMLME and their wrappers when no references held by JS, but there is a pending event on each of HTMLME and MediaSource");
+
+async_test(function(test) {
+    var test_scope = new TestScope();
+
+    var handler_setup_cb = null;
+
+    var setup_done_cb = test.step_func(function() {
+        var source_buffer = test_scope.media_source.addSourceBuffer('video/webm; codecs="vp8"');
+        test_scope.source_buffer_list = test_scope.media_source.sourceBuffers;
+        source_buffer.custom_test_wrapper_update = "testing-sourcebuffer";
+        assert_true(source_buffer === test_scope.source_buffer_list[0]);
+
+        assert_equals(test_scope.media_source.readyState, "open", "MediaSource object is open before gc().");
+        assert_equals(test_scope.video.src, test_scope.object_url, "HTMLME src attribute is correct before gc().");
+
+        source_buffer = null;
+        test_scope.media_source = null;
+        test_scope.video = null;
+
+
+        // |test_scope.source_buffer_list| should be the only remaining reference to HTMLME+MSE+SBL+SB.
+        // GC shouldn't collected this group due to that live reference.
+
+        // Debug note: setting test_scope.source_buffer_list to null here, and commenting out the assert_equals()
+        // and test.done() lines, below, demonstrates with debug logging that HTMLME+MSE is collected, followed
+        // eventually by a timeout.
+        gc();
+
+        assert_equals(test_scope.source_buffer_list.length, 1, "SBL should survive gc().");
+        assert_equals(test_scope.source_buffer_list[0].custom_test_wrapper_update, "testing-sourcebuffer", "SBL[0]'s wrapper should survive gc().");
+        test.done();
+    });
+
+    setup_htmlme_mse_lifetime_test(test, test_scope, handler_setup_cb, setup_done_cb)
+}, "GC of HTMLME+MediaSource+SBL+SB preserves at least SBL+SB when only the SourceBufferList reference is held by JS");
+
+// TODO(wolenetz): Consider further refactoring to extract specific testing concerns from the following test:
 async_test(function(test) {
     var video = document.createElement("video");
     var media_source = new MediaSource();
@@ -113,6 +316,7 @@ async_test(function(test) {
         assert_true(source_buffer === source_buffer_list[0]);
         source_buffer = null;
         media_source = null;
+        video = null;
         // source_buffer_list's reference by us is the only thing keeping HTMLME+MSE alive.
         gc();
 
