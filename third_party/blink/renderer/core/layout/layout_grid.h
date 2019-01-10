@@ -199,8 +199,6 @@ class LayoutGrid final : public LayoutBlock {
       PositionedLayoutBehavior = kDefaultLayout) override;
   void PopulateGridPositionsForDirection(GridTrackSizingDirection);
 
-  bool GridPositionIsAutoForOutOfFlow(GridPosition,
-                                      GridTrackSizingDirection) const;
   LayoutUnit ResolveAutoStartGridPosition(GridTrackSizingDirection) const;
   LayoutUnit ResolveAutoEndGridPosition(GridTrackSizingDirection) const;
   LayoutUnit LogicalOffsetForChild(const LayoutBox&,

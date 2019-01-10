@@ -32,10 +32,6 @@ class NamedLineCollection {
                       size_t last_line,
                       size_t auto_repeat_tracks_count);
 
-  static bool IsValidNamedLineOrArea(const String& named_line,
-                                     const ComputedStyle&,
-                                     GridPositionSide);
-
   bool HasNamedLines();
   size_t FirstPosition();
 
