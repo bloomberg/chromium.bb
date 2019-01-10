@@ -522,31 +522,25 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   if (!element && hit_test_result.GetScrollbar())
     return WebInputEventResult::kHandledSystem;
 
-  if (Page* page = frame_->GetPage()) {
-    // If focus shift is blocked, we eat the event. Note we should never
-    // clear swallowEvent if the page already set it (e.g., by canceling
-    // default behavior).
-    if (element) {
-      if (SlideFocusOnShadowHostIfNecessary(*element))
-        return WebInputEventResult::kHandledSystem;
-      if (!page->GetFocusController().SetFocusedElement(
-              element, frame_,
-              FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeMouse,
-                          source_capabilities)))
-        return WebInputEventResult::kHandledSystem;
-    } else {
-      // We call setFocusedElement even with !element in order to blur
-      // current focus element when a link is clicked; this is expected by
-      // some sites that rely on onChange handlers running from form
-      // fields before the button click is processed.
-      if (!page->GetFocusController().SetFocusedElement(
-              nullptr, frame_,
-              FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone,
-                          source_capabilities)))
-        return WebInputEventResult::kHandledSystem;
-    }
-  }
+  Page* const page = frame_->GetPage();
+  if (!page)
+    return WebInputEventResult::kNotHandled;
 
+  // If focus shift is blocked, we eat the event. Note we should never
+  // clear swallowEvent if the page already set it (e.g., by canceling
+  // default behavior).
+  if (element && SlideFocusOnShadowHostIfNecessary(*element))
+    return WebInputEventResult::kHandledSystem;
+
+  // We call setFocusedElement even with !element in order to blur
+  // current focus element when a link is clicked; this is expected by
+  // some sites that rely on onChange handlers running from form
+  // fields before the button click is processed.
+  if (!page->GetFocusController().SetFocusedElement(
+          element, frame_,
+          FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeMouse,
+                      source_capabilities)))
+    return WebInputEventResult::kHandledSystem;
   return WebInputEventResult::kNotHandled;
 }
 
