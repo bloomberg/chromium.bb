@@ -1,12 +1,14 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-  var trueAttributes = {
+  var defaultAttributes = {
     alpha : true,
+    lowLatency : false,
   };
 
   var falseAttributes = {
     alpha : false,
+    lowLatency : false,
   };
 
   function testAttributes(expectedAttributes, checkValue) {
@@ -33,12 +35,12 @@
   }
 
   test(function(t) {
-    testAttributes(trueAttributes);
+    testAttributes(defaultAttributes);
   }, 'Test default value');
 
   test(function(t) {
-    testAttributes(trueAttributes, undefined);
-  }, 'Test undfined value');
+    testAttributes(defaultAttributes, undefined);
+  }, 'Test undefined value');
 
   test(function(t) {
     testAttributes(falseAttributes, null);
