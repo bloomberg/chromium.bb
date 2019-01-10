@@ -86,7 +86,13 @@ CreditCardSaveManager::CreditCardSaveManager(
       weak_ptr_factory_(this) {
   // This is to initialize StrikeDatabase is if it hasn't been already, so that
   // its cache would be loaded and ready to use when the first CCSM is created.
-  client_->GetStrikeDatabase();
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+    // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled. If
+    // flag is off and LegacyStrikeDatabase instead of StrikeDatabase is used,
+    // this init will cause failure on GetStrikes().
+    client_->GetStrikeDatabase();
+  }
 }
 
 CreditCardSaveManager::~CreditCardSaveManager() {}
