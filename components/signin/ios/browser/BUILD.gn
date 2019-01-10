@@ -31,6 +31,7 @@ source_set("browser") {
     "//google_apis",
     "//ios/web",
     "//net",
+    "//services/identity/public/cpp:cpp",
   ]
 }
 
@@ -83,6 +84,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/cpp:test_support",
     "//third_party/ocmock",
   ]
 }
