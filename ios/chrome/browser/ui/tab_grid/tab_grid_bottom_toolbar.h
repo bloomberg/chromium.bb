@@ -7,13 +7,27 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
+
 @class TabGridNewTabButton;
 
-// Bottom toolbar for TabGrid. In horizontal-compact and vertical-regular screen
-// size, the toolbar has a translucent background and shows 3 buttons, with
-// newTabButton located in the middle. For other screen sizes, the toolbar has a
-// transparent background and only shows the newTabButton on the right.
+// Bottom toolbar for TabGrid. The appearance of the toolbar is decided by
+// screen size and current TabGrid page:
+//
+// Horizontal-compact and vertical-regular screen size:
+//   Small newTabButton, translucent background.
+//   Incognito & Regular page: [leadingButton, newTabButton, trailingButton]
+//   Remote page:              [                             trailingButton]
+//
+// Other screen size:
+//   Large newTabButton, transparent background.
+//   Incognito & Regular page: [                               newTabButton]
+//   Remote page:              [                                           ]
 @interface TabGridBottomToolbar : UIToolbar
+// This property together with self.traitCollection control the items shown
+// in toolbar and its background color. Setting this property will also set it
+// on |newTabButton|.
+@property(nonatomic, assign) TabGridPage page;
 // These components are publicly available to allow the user to set their
 // contents, visibility and actions.
 @property(nonatomic, strong, readonly) UIBarButtonItem* leadingButton;

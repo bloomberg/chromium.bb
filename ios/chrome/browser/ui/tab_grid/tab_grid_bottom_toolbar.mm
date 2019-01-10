@@ -43,29 +43,47 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  [self setItemsForTraitCollection:self.traitCollection];
+  [self updateLayout];
+}
+
+#pragma mark - Public
+
+- (void)setPage:(TabGridPage)page {
+  if (page == _page)
+    return;
+  _page = page;
+  self.newTabButton.page = page;
+  [self updateLayout];
 }
 
 #pragma mark - Private
 
-- (void)setItemsForTraitCollection:(UITraitCollection*)traitCollection {
-  if ([self shouldUseCompactLayout]) {
-    _newTabButton.sizeClass = TabGridNewTabButtonSizeClassSmall;
-    [self setItems:@[
-      self.leadingButton, _spaceItem, _newTabButton, _spaceItem,
-      self.trailingButton
-    ]];
-    self.clipsToBounds = NO;
-    [self setBackgroundImage:_translucentBackground
-          forToolbarPosition:UIBarPositionAny
-                  barMetrics:UIBarMetricsDefault];
+- (void)updateLayout {
+  if (self.page == TabGridPageRemoteTabs) {
+    if ([self shouldUseCompactLayout]) {
+      [self setItems:@[ _spaceItem, self.trailingButton ]];
+    } else {
+      [self setItems:@[]];
+    }
   } else {
-    _newTabButton.sizeClass = TabGridNewTabButtonSizeClassLarge;
-    [self setItems:@[ _spaceItem, _newTabButton ]];
-    self.clipsToBounds = YES;
-    [self setBackgroundImage:_transparentBackground
-          forToolbarPosition:UIToolbarPositionAny
-                  barMetrics:UIBarMetricsDefault];
+    if ([self shouldUseCompactLayout]) {
+      self.newTabButton.sizeClass = TabGridNewTabButtonSizeClassSmall;
+      [self setItems:@[
+        self.leadingButton, _spaceItem, _newTabButton, _spaceItem,
+        self.trailingButton
+      ]];
+      self.clipsToBounds = NO;
+      [self setBackgroundImage:_translucentBackground
+            forToolbarPosition:UIBarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    } else {
+      self.newTabButton.sizeClass = TabGridNewTabButtonSizeClassLarge;
+      [self setItems:@[ _spaceItem, _newTabButton ]];
+      self.clipsToBounds = YES;
+      [self setBackgroundImage:_transparentBackground
+            forToolbarPosition:UIToolbarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    }
   }
 }
 
@@ -97,7 +115,7 @@
                                    barMetrics:UIBarMetricsDefault];
   _transparentBackground = [[UIImage alloc] init];
 
-  [self setItemsForTraitCollection:self.traitCollection];
+  [self updateLayout];
 }
 
 // Returns YES if should use compact bottom toolbar layout.
