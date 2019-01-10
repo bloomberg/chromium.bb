@@ -7190,18 +7190,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
 
-      <if expr="chromeos">
-        <!-- The URL for the Google mailto service. -->
-        <message name="IDS_GOOGLE_MAILTO_HANDLER_URL">
-          https://mail.google.com/mail/?extsrc=mailto&amp;url=%s
-        </message>
-
-        <!-- The URL for the Google webcal service. -->
-        <message name="IDS_GOOGLE_WEBCAL_HANDLER_URL">
-          https://www.google.com/calendar/render?cid=%s
-        </message>
-      </if>
-
       <!-- Translate Bubble -->
       <if expr="toolkit_views">
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
