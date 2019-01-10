@@ -14,6 +14,7 @@
 #include "net/base/request_priority.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/socket/connect_job_test_util.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
@@ -21,36 +22,6 @@
 
 namespace net {
 namespace {
-
-class TestConnectJobDelegate : public ConnectJob::Delegate {
- public:
-  TestConnectJobDelegate() = default;
-  ~TestConnectJobDelegate() override = default;
-
-  void OnConnectJobComplete(int result, ConnectJob* job) override {
-    result_ = result;
-    std::unique_ptr<StreamSocket> socket = job->PassSocket();
-    // socket.get() should be NULL iff result != OK
-    EXPECT_EQ(socket == nullptr, result != OK);
-    has_result_ = true;
-    run_loop_.Quit();
-  }
-
-  int WaitForResult() {
-    run_loop_.Run();
-    DCHECK(has_result_);
-    return result_;
-  }
-
-  bool has_result() const { return has_result_; }
-
- private:
-  bool has_result_ = false;
-  int result_ = ERR_IO_PENDING;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnectJobDelegate);
-};
 
 class TestConnectJob : public ConnectJob {
  public:
