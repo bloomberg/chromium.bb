@@ -10,29 +10,17 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
-#include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
-#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "services/content/public/cpp/navigable_contents_view.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/events/event.h"
-#include "ui/events/event_sink.h"
-#include "ui/events/event_utils.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 
@@ -55,184 +43,6 @@ constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
-
-// Helpers ---------------------------------------------------------------------
-
-void CreateAndSendMouseClick(aura::WindowTreeHost* host,
-                             const gfx::Point& location_in_pixels) {
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_pixels,
-                             location_in_pixels, ui::EventTimeForNow(),
-                             ui::EF_LEFT_MOUSE_BUTTON,
-                             ui::EF_LEFT_MOUSE_BUTTON);
-
-  // Send an ET_MOUSE_PRESSED event.
-  ui::EventDispatchDetails details =
-      host->event_sink()->OnEventFromSource(&press_event);
-
-  if (details.dispatcher_destroyed)
-    return;
-
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, location_in_pixels,
-                               location_in_pixels, ui::EventTimeForNow(),
-                               ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
-
-  // Send an ET_MOUSE_RELEASED event.
-  ignore_result(host->event_sink()->OnEventFromSource(&release_event));
-}
-
-// CardElementViewHolder -------------------------------------------------------
-
-// TODO(dmblack): Move this class to standalone file as part of clean up effort.
-// This class uses a child widget to host a view for a card element that has an
-// aura::Window. The child widget's layer becomes the root of the card's layer
-// hierarchy.
-class CardElementViewHolder : public views::NativeViewHost,
-                              public views::ViewObserver,
-                              public content::NavigableContentsObserver {
- public:
-  CardElementViewHolder(AssistantController* assistant_controller,
-                        AssistantCardElement* card_element,
-                        views::Widget* context)
-      : assistant_controller_(assistant_controller),
-        contents_(card_element->contents()) {
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-
-    params.name = GetClassName();
-    params.context = context->GetNativeWindow();
-    params.delegate = new views::WidgetDelegateView();
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-
-    child_widget_ = std::make_unique<views::Widget>();
-    child_widget_->Init(params);
-
-    contents_view_ = params.delegate->GetContentsView();
-    contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
-    contents_view_->AddChildView(contents_->GetView()->view());
-
-    // We observe the |contents_| view to receive notification of preferred size
-    // changes and we observe |contents_| to receive events pertaining to the
-    // underlying web contents.
-    contents_->GetView()->view()->AddObserver(this);
-    contents_->AddObserver(this);
-
-    // OverrideDescription() doesn't work. Only names are read automatically.
-    GetViewAccessibility().OverrideName(card_element->fallback());
-  }
-
-  ~CardElementViewHolder() override {
-    contents_->GetView()->view()->RemoveObserver(this);
-    contents_->RemoveObserver(this);
-  }
-
-  // views::NativeViewHost:
-  const char* GetClassName() const override { return "CardElementViewHolder"; }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    // We need to route GESTURE_TAP events to our Assistant card because links
-    // should be tappable. The Assistant card window will not receive gesture
-    // events so we convert the gesture into analogous mouse events.
-    if (event->type() != ui::ET_GESTURE_TAP) {
-      views::View::OnGestureEvent(event);
-      return;
-    }
-
-    // Consume the original event.
-    event->StopPropagation();
-    event->SetHandled();
-
-    aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-
-    // Get the appropriate event location in pixels.
-    gfx::Point location_in_pixels = event->location();
-    ConvertPointToScreen(this, &location_in_pixels);
-    aura::WindowTreeHost* host = root_window->GetHost();
-    host->ConvertDIPToPixels(&location_in_pixels);
-
-    wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
-
-    // We want to prevent the cursor from changing its visibility during our
-    // mouse events because we are actually handling a gesture. To accomplish
-    // this, we cache the cursor's visibility and lock it in its current state.
-    const bool visible = cursor_manager->IsCursorVisible();
-    cursor_manager->LockCursor();
-
-    CreateAndSendMouseClick(host, location_in_pixels);
-
-    // Restore the original cursor visibility that may have changed during our
-    // sequence of mouse events. This change would not have been perceivable to
-    // the user since it occurred within our lock.
-    if (visible)
-      cursor_manager->ShowCursor();
-    else
-      cursor_manager->HideCursor();
-
-    // Release our cursor lock.
-    cursor_manager->UnlockCursor();
-  }
-
-  // content::NavigableContentsObserver:
-  void DidAutoResizeView(const gfx::Size& new_size) override {
-    contents_->GetView()->view()->SetPreferredSize(new_size);
-  }
-
-  void DidSuppressNavigation(const GURL& url,
-                             WindowOpenDisposition disposition,
-                             bool from_user_gesture) override {
-    // We delegate navigation to the AssistantController so that it can apply
-    // special handling to deep links.
-    if (from_user_gesture)
-      assistant_controller_->OpenUrl(url);
-  }
-
-  // views::ViewObserver:
-  void OnViewPreferredSizeChanged(views::View* view) override {
-    DCHECK_EQ(contents_->GetView()->view(), view);
-
-    gfx::Size preferred_size = view->GetPreferredSize();
-
-    if (border()) {
-      // When a border is present we need to explicitly account for it in our
-      // size calculations by enlarging our preferred size by the border insets.
-      const gfx::Insets insets = border()->GetInsets();
-      preferred_size.Enlarge(insets.width(), insets.height());
-    }
-
-    contents_view_->SetPreferredSize(preferred_size);
-    SetPreferredSize(preferred_size);
-  }
-
-  void Attach() {
-    views::NativeViewHost::Attach(child_widget_->GetNativeView());
-
-    aura::Window* const top_level_window = native_view()->GetToplevelWindow();
-
-    // Find the window for the Assistant card.
-    aura::Window* window = native_view();
-    while (window->parent() != top_level_window)
-      window = window->parent();
-
-    // The Assistant card window will consume all events that enter it. This
-    // prevents us from being able to scroll the native view hierarchy
-    // vertically. As such, we need to prevent the Assistant card window from
-    // receiving events it doesn't need. It needs mouse click events for
-    // handling links.
-    AssistantContainerView::OnlyAllowMouseClickEvents(window);
-  }
-
- private:
-  AssistantController* const assistant_controller_;  // Owned by Shell.
-
-  // Owned by AssistantCardElement.
-  content::NavigableContents* const contents_;
-
-  std::unique_ptr<views::Widget> child_widget_;
-
-  views::View* contents_view_ = nullptr;  // Owned by |child_widget_|.
-
-  DISALLOW_COPY_AND_ASSIGN(CardElementViewHolder);
-};
 
 }  // namespace
 
@@ -364,14 +174,6 @@ void UiElementContainerView::OnResponseChanged(
 }
 
 void UiElementContainerView::OnResponseCleared() {
-  // We need to detach native view hosts before they are removed from the view
-  // hierarchy and destroyed.
-  if (!native_view_hosts_.empty()) {
-    for (views::NativeViewHost* native_view_host : native_view_hosts_)
-      native_view_host->Detach();
-    native_view_hosts_.clear();
-  }
-
   // We can prevent over-propagation of the PreferredSizeChanged event by
   // stopping propagation during batched view hierarchy add/remove operations.
   SetPropagatePreferredSizeChanged(false);
@@ -425,9 +227,8 @@ void UiElementContainerView::OnCardElementAdded(
   if (!card_element->contents())
     return;
 
-  auto* view_holder = new CardElementViewHolder(
-      assistant_controller_, const_cast<AssistantCardElement*>(card_element),
-      /*context=*/GetWidget());
+  auto* card_element_view =
+      new AssistantCardElementView(assistant_controller_, card_element);
 
   if (is_first_card_) {
     is_first_card_ = false;
@@ -440,15 +241,11 @@ void UiElementContainerView::OnCardElementAdded(
                                    : kFirstCardMarginTopDip - kSpacingDip;
 
     // We effectively create a top margin by applying an empty border.
-    view_holder->SetBorder(views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
+    card_element_view->SetBorder(
+        views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
   }
 
-  content_view()->AddChildView(view_holder);
-  view_holder->Attach();
-
-  // Cache a reference to the attached native view host so that it can be
-  // detached prior to being removed from the view hierarchy and destroyed.
-  native_view_hosts_.push_back(view_holder);
+  content_view()->AddChildView(card_element_view);
 
   // The view will be animated on its own layer, so we need to do some initial
   // layer setup. We're going to fade the view in, so hide it. Note that we
@@ -456,13 +253,13 @@ void UiElementContainerView::OnCardElementAdded(
   // a DCHECK that requires aura::Windows to have a target opacity > 0% when
   // shown. Because our window will be animated to full opacity from this
   // value, it should be safe to circumnavigate this DCHECK.
-  view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
-  view_holder->native_view()->layer()->SetOpacity(0.0001f);
+  card_element_view->native_view()->layer()->SetFillsBoundsOpaquely(false);
+  card_element_view->native_view()->layer()->SetOpacity(0.0001f);
 
   // We cache the native view for use during animations and its desired
   // opacity that we'll animate to while processing the next query response.
   ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
-      view_holder->native_view(), kCardElementAnimationFadeOutOpacity));
+      card_element_view->native_view(), kCardElementAnimationFadeOutOpacity));
 }
 
 void UiElementContainerView::OnTextElementAdded(
