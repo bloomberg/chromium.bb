@@ -243,18 +243,8 @@ class PreviewsInfoBarDelegateUnitTest
     field_trial_list_.reset(new base::FieldTrialList(nullptr));
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 
-    const std::string kTrialName = "TrialName";
-    const std::string kGroupName = "GroupName";
-
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, variation_params);
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        previews::features::kStalePreviewsTimestamp.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        previews::features::kStalePreviewsTimestamp, variation_params);
   }
 
   void TestStalePreviews(

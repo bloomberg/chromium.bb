@@ -39,6 +39,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/history/core/browser/history_service.h"
@@ -198,41 +199,23 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         base::Unretained(this)));
     ASSERT_TRUE(slow_http_server_->Start());
 
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    {
-      // The trial and group names are dummy values.
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
-      std::map<std::string, std::string> feature_parameters = {
-          {"previews_host", previews_server().spec()},
-          {"blacklisted_path_suffixes", ".mp4,.jpg"},
-          {"trigger_on_localhost", "true"},
-          {"navigation_timeout_milliseconds",
-           use_timeout ? base::IntToString(kTimeoutMs) : "0"},
-          {"control_group", is_control ? "true" : "false"}};
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          "TrialName1", "GroupName1", feature_parameters);
+    std::map<std::string, std::string> feature_parameters = {
+        {"previews_host", previews_server().spec()},
+        {"blacklisted_path_suffixes", ".mp4,.jpg"},
+        {"trigger_on_localhost", "true"},
+        {"navigation_timeout_milliseconds",
+         use_timeout ? base::IntToString(kTimeoutMs) : "0"},
+        {"control_group", is_control ? "true" : "false"}};
 
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kLitePageServerPreviews.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
-    {
-      // The trial and group names are dummy values.
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kPreviews.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kOptimizationHints.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kResourceLoadingHints.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
+        previews::features::kLitePageServerPreviews, feature_parameters);
+
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kPreviews, previews::features::kOptimizationHints,
+         previews::features::kResourceLoadingHints,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
+        {});
   }
 
   void SetUpOnMainThread() override {
@@ -648,6 +631,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  base::test::ScopedFeatureList scoped_parameterized_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;

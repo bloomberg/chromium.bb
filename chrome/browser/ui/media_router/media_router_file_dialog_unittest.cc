@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_scheduler/task_scheduler.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -69,10 +68,6 @@ class MediaRouterFileDialogTest : public Test {
  public:
   MediaRouterFileDialogTest() {
     fake_path = base::FilePath(FILE_PATH_LITERAL("im/a/fake_path.mp3"));
-
-    scoped_feature_list_.InitFromCommandLine(
-        "EnableCastLocalMedia" /* enabled features */,
-        std::string() /* disabled features */);
   }
 
   void SetUp() override {
@@ -121,7 +116,6 @@ class MediaRouterFileDialogTest : public Test {
   base::FilePath fake_path;
   base::string16 fake_path_name;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
