@@ -140,9 +140,6 @@ config("feature_flags") {
   } else {
     defines += [ "CHROMIUM_BUILD" ]
   }
-  if (!fieldtrial_testing_like_official_build && !is_chrome_branded) {
-    defines += [ "FIELDTRIAL_TESTING_ENABLED" ]
-  }
 
   # ==============================================
   #   PLEASE DO NOT ADD MORE THINGS TO THIS LIST

@@ -40,11 +40,6 @@ declare_args() {
     safe_browsing_mode = 1
   }
 
-  # Set to true make a build that disables activation of field trial tests
-  # specified in testing/variations/fieldtrial_testing_config_*.json.
-  # Note: this setting is ignored if is_chrome_branded.
-  fieldtrial_testing_like_official_build = is_chrome_branded
-
   # libudev usage. This currently only affects the content layer.
   use_udev = is_linux && !is_chromecast
 
