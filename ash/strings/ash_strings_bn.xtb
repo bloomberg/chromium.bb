@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1012876632442809908">USB-C ডিভাইস (সামনের পোর্ট)</translation>
-<translation id="1013923882670373915">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
+<translation id="1013923882670373915">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পিন কোড দিন: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">স্টাইলাসের চার্জ কমে গেছে</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="1056775291175587022">কোনও নেটওয়ার্ক নেই</translation>
@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">সাম্প্রতিক <ph name="SYSTEM_APP_NAME" /> আপডেট সম্পর্কে আরও জানুন</translation>
 <translation id="1995660704900986789">পাওয়ার বন্ধ করুন</translation>
+<translation id="1999763610967697511">ড্র্যাগ করে ড্রপ করুন</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">একটি মেসেজ লিখুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
@@ -83,7 +84,7 @@
 <translation id="2292698582925480719">স্কেল প্রদর্শন করুন</translation>
 <translation id="2302092602801625023">এই অ্যাকাউন্টটি Family Link দ্বারা ম্যানেজ করা</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
-<translation id="2339073806695260576">একটি নোট, স্ক্রিনশট নিতে, লেজার পয়েন্টার বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেল্ফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
+<translation id="2339073806695260576">একটি নোট, স্ক্রিনশট নিতে, লেজার পয়েন্টার বা আতশ কাচ ব্যবহার করার জন্য শেল্ফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="2341729377289034582">স্ক্রিনটি পোর্ট্রেট মোডে লক করা আছে</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
@@ -94,7 +95,8 @@
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
 <translation id="2413728805700750528"><ph name="DOMAIN" /> দ্বারা পরিচালিত <ph name="DISPLAY_NAME" /> একটি পরিচালিত সেশন</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
-<translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
+<translation id="2427507373259914951">বাঁদিকের বোতামে ক্লিক করুন</translation>
+<translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, এই পাস কীটি ডিভাইসে প্রদর্শিত হয়েছে কিনা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2484513351006226581">কীবোর্ড লে-আউট পরিবর্তন করতে <ph name="KEYBOARD_SHORTCUT" /> টিপুন।</translation>
 <translation id="2501920221385095727">স্টিকি কীজ</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3255483164551725916">আপনি কি করতে পারেন?</translation>
 <translation id="3294437725009624529">অতিথি</translation>
+<translation id="3308453408813785101">তা সত্ত্বেও, <ph name="USER_EMAIL_ADDRESS" /> পরে সাইন-ইন করতে পারবেন।</translation>
 <translation id="332587331255250389">অনুগ্রহ করে ব্যাটারি পাল্টান</translation>
 <translation id="3351879221545518001">আপনি বর্তমানে স্ক্রিন কাস্ট করছেন।</translation>
 <translation id="3364721542077212959">স্টাইলাস টুল</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4849058404725798627">কিবোর্ড ফোকাসের মাধ্যমে হাইলাইট করুন</translation>
+<translation id="485592688953820832">কোনও অ্যাকশন নেবেন না (পজ)</translation>
 <translation id="4872237917498892622">Alt+Search অথবা Shift</translation>
 <translation id="4890187583552566966">আপনার প্রশাসকের দ্বারা Google সহায়ক অক্ষম করা হয়েছে।</translation>
 <translation id="4895488851634969361">ব্যাটারি পূর্ণ৷</translation>
@@ -307,7 +311,7 @@
 <translation id="6259254695169772643">বেছে নিতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
 <translation id="6284232397434400372">রেজোলিউশন পরিবর্তন করা হয়েছে</translation>
-<translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
+<translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="6344698853700675736">নাইট লাইট টগল করুন</translation>
 <translation id="6376931439017688372">ব্লুটুথ চালু আছে</translation>
@@ -328,7 +332,7 @@
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
-<translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
+<translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পাস কীটি দিন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহারের অনুমতি দেয়</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
@@ -391,7 +395,7 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{১টি বিজ্ঞপ্তি}one{#টি বিজ্ঞপ্তি}other{#টি বিজ্ঞপ্তি}}</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
 <translation id="7780159184141939021">স্ক্রিন ঘোরান</translation>
-<translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google সহায়ক, লেজার পয়েন্টার, বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
+<translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google অ্যাসিস্ট্যান্ট, লেজার পয়েন্টার বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">সমস্ত অ্যাপের জন্য চালু আছে</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
 <translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>
+<translation id="8142441511840089262">ডবল ক্লিক করুন</translation>
 <translation id="8142699993796781067">ব্যক্তিগত নেটওয়ার্ক</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
 <translation id="8192202700944119416">বিজ্ঞপ্তি লুকানো আছে।</translation>
+<translation id="8203795194971602413">ডানদিকের বোতামে ক্লিক করুন</translation>
 <translation id="8236042855478648955">বিরতির সময় হয়েছে</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8297006494302853456">দুর্বল</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>
 <translation id="8877788021141246043">রিমাইন্ডার সেট করুন</translation>
 <translation id="8878886163241303700">স্ক্রিন সম্প্রসারণ করা হচ্ছে</translation>
-<translation id="8898978413391960553">০০:০০ সেকেন্ড</translation>
 <translation id="8921624153894383499">Google সহায়ক এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>

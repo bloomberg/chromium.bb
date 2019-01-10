@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Aizvērt visas cilnes</translation>
 <translation id="1254117744268754948">Mapes izvēle</translation>
 <translation id="1265739287306757398">Uzzināt, kā to izdarīt</translation>
-<translation id="127138278192656016">Sinhronizēšanas un visu pakalpojumu izmantošana</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1323735185997015385">Dzēst</translation>
 <translation id="132683371494960526">Veiciet dubultskārienu, lai mainītu vecākmapi.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Kopēt attēlu</translation>
 <translation id="1612730193129642006">Rādīt ciļņu režģi</translation>
 <translation id="1644574205037202324">Vēsture</translation>
+<translation id="1650222530560417226">Pieskarieties pogai “Start Logging” (Sākt datu reģistrēšanu žurnālā), lai apkopotu turpmākus JavaScript konsoles žurnālus un kļūdas no visām cilnēm. Žurnāli tiks apkopoti (un uzglabāti tikai atmiņā), līdz tiks aizvērta šī lapa vai līdz pieskarsieties pogai “Stop Logging” (Pārtraukt datu reģistrēšanu žurnālā).</translation>
 <translation id="1657011748321897393">Nevarēja kopīgot, jo nav izveidots savienojums ar tīklu.</translation>
 <translation id="165877110639533037">Nav atvērtu ciļņu</translation>
 <translation id="168715261339224929">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, ieslēdziet sinhronizāciju.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968">Atlasītas: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Divreiz pieskarieties, lai instalētu.</translation>
 <translation id="1746815479209538200">Lai pārlūkotu tīmekli, pievienojiet jaunu cilni.</translation>
-<translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1752547299766512813">Sagl. paroles</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
 <translation id="1809939268435598390">Dzēst mapi</translation>
 <translation id="1813414402673211292">Dzēst pārlūkošanas datus</translation>
 <translation id="1820259098641718022">Pievienota lasīšanas sarakstam</translation>
 <translation id="1821253160463689938">Izmanto sīkfailus, lai iegaumētu jūsu preferences, pat ja neapmeklējāt šīs lapas</translation>
+<translation id="1828824471510190776">Ieteikt paroli...</translation>
 <translation id="1876721852596493031">Sūtīt liet. datus</translation>
 <translation id="1886928167269928266">No paša sākuma</translation>
 <translation id="1911619930368729126">Augšupielādēt Google diskā</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Pirmsiel. tīm. lapas</translation>
 <translation id="3691593122358196899">Grāmatzīme saglabāta mapē <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognito režīma cilnes</translation>
+<translation id="3771149149411027381">Meklēt kopēto tekstu</translation>
 <translation id="3779810277399252432">Nav interneta savienojuma.</translation>
 <translation id="3783017676699494206">Saglabāt attēlu</translation>
 <translation id="3789841737615482174">Instalēt</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Meklēt</translation>
 <translation id="4121993058175073134">Neto eksporta datu sūtīšanai konfigurējiet e-pasta kontu iestatījumos.</translation>
 <translation id="4124987746317609294">Laika periods</translation>
+<translation id="4155190233692914060">Apmeklēt kopēto saiti</translation>
 <translation id="4172051516777682613">Vienmēr rādīt</translation>
 <translation id="418156467088430727">Skatīt bezsaistes versiju jaunā cilnē</translation>
 <translation id="4237682350741091554">Pārvaldiet Chrome sinhronizāciju un personalizēšanu <ph name="BEGIN_LINK" />iestatījumos<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4854345657858711387">Piekļuves koda iestatīšana</translation>
 <translation id="4860895144060829044">Zvanīt</translation>
 <translation id="4881695831933465202">Atvērt</translation>
-<translation id="4882831918239250449">Kontrolējiet, kā jūsu pārlūkošanas vēsture tiek izmantota Meklēšanas, reklāmu un cita satura personalizēšanai</translation>
 <translation id="4895709476292058519">Mainīt kontus</translation>
 <translation id="4904877109095351937">Atzīmēt kā izlasītus</translation>
 <translation id="4930268273022498155">Dzēst esošos datus. Varat tos izgūt, pārslēdzoties atpakaļ uz kontu <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Diemžēl, kopīgojot jūsu vienumu, radās problēma.</translation>
 <translation id="4979397965658815378">Pierakstieties Google kontā, lai izmantotu savas grāmatzīmes, paroles, vēsturi un citus Chrome datus visās jūsu ierīcēs.</translation>
-<translation id="5004416275253351869">Google aktivitātes vadīklas</translation>
 <translation id="5005498671520578047">Paroles kopēšana</translation>
 <translation id="5010803260590204777">Atveriet inkognito režīma cilni, lai privāti pārlūkotu tīmekli.</translation>
 <translation id="5011684439661633295">Sveiki, <ph name="FULL_ACCOUNT_NAME" />!</translation>
@@ -257,7 +257,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5186185447130319458">Privāti</translation>
 <translation id="5190835502935405962">Grāmatzīmju josla</translation>
 <translation id="5197255632782567636">Internets</translation>
-<translation id="5215116848420601511">Adreses un maksājumu veidi, kuros tiek izmantots pakalpojums Google Pay</translation>
 <translation id="5228579091201413441">Iespējot sinhronizāciju</translation>
 <translation id="5244474230056479698">Sinhronizēšana ar <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Rādīt</translation>

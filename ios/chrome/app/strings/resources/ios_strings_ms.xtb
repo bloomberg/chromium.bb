@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Tutup Semua Tab</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Ketahui Caranya</translation>
-<translation id="127138278192656016">Gunakan penyegerakan dan semua perkhidmatan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1323735185997015385">Padam</translation>
 <translation id="132683371494960526">Ketik dua kali untuk menukar folder induk.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Salin Imej</translation>
 <translation id="1612730193129642006">Tunjukkan Grid Tab</translation>
 <translation id="1644574205037202324">Sejarah</translation>
+<translation id="1650222530560417226">Ketik butang "Hentikan Pengelogan" untuk mengumpulkan log konsol JavaScript yang akan datang dan ralat daripada semua tab. Log akan dikumpulkan (dan disimpan dalam memori sahaja) hingga halaman ini ditutup atau "Hentikan Pengelogan" diketik.</translation>
 <translation id="1657011748321897393">Perkongsian gagal kerana anda tidak disambungkan ke rangkaian.</translation>
 <translation id="165877110639533037">Tiada Tab Terbuka</translation>
 <translation id="168715261339224929">Hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dipilih</translation>
 <translation id="1740468249224277719">Ketik dua kali untuk memasang.</translation>
 <translation id="1746815479209538200">Untuk menyemak imbas web, tambahkan tab baharu.</translation>
-<translation id="17513872634828108">Buka tab</translation>
 <translation id="1752547299766512813">Simpan K/Laluan</translation>
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
 <translation id="1809939268435598390">Padam Folder</translation>
 <translation id="1813414402673211292">Kosongkan Data Semakan Imbas</translation>
 <translation id="1820259098641718022">Ditambahkan pada Senarai Bacaan</translation>
 <translation id="1821253160463689938">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
+<translation id="1828824471510190776">Cadangkan Kata Laluan...</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1886928167269928266">Permulaan Masa</translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
+<translation id="3771149149411027381">Cari Teks Disalin</translation>
 <translation id="3779810277399252432">Tiada sambungan Internet.</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="3789841737615482174">Pasang</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Cari</translation>
 <translation id="4121993058175073134">Tetapkn akaun e-mel anda dahulu dlm apl Tetapan utk mhantar data net-eksport.</translation>
 <translation id="4124987746317609294">Julat Masa</translation>
+<translation id="4155190233692914060">Lawati Pautan Disalin</translation>
 <translation id="4172051516777682613">Sentiasa paparkan</translation>
 <translation id="418156467088430727">Lihat Versi Luar Talian di Tab Baharu</translation>
 <translation id="4237682350741091554">Urus Penyegerakan Chrome dan pemperibadian dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4854345657858711387">Tetapkan Kod Laluan</translation>
 <translation id="4860895144060829044">Hubungi</translation>
 <translation id="4881695831933465202">Buka</translation>
-<translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
 <translation id="4895709476292058519">Tukar Akaun</translation>
 <translation id="4904877109095351937">Tandakan Dibaca</translation>
 <translation id="4930268273022498155">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terdapat masalah mengongsi item anda.</translation>
 <translation id="4979397965658815378">Log masuk dengan Akaun Google anda untuk mendapatkan penanda halaman, kata laluan, sejarah dan tetapan anda yang lain pada semua peranti anda</translation>
-<translation id="5004416275253351869">Kawalan aktiviti Google</translation>
 <translation id="5005498671520578047">Salin kata laluan</translation>
 <translation id="5010803260590204777">Buka tab inkognito untuk menyemak imbas web secara sulit.</translation>
 <translation id="5011684439661633295">Hai, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -257,7 +257,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5186185447130319458">Peribadi</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5215116848420601511">Kaedah pembayaran dan alamat yang menggunakan Google Pay</translation>
 <translation id="5228579091201413441">Dayakan penyegerakan</translation>
 <translation id="5244474230056479698">Menyegerak ke <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Paparkan</translation>

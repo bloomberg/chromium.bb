@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Más información sobre la actualización más reciente de <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Apagar</translation>
+<translation id="1999763610967697511">Arrastrar y soltar</translation>
 <translation id="2012624427112548395">Ctrl+Buscar+H</translation>
 <translation id="2016340657076538683">Escribe un mensaje</translation>
 <translation id="2050339315714019657">Vertical</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Actualización disponible</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> es una sesión administrada por <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Conexión establecida con <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Clic con botón izquierdo</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Antes de aceptar, debes confirmar que aparece la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2484513351006226581">Presiona <ph name="KEYBOARD_SHORTCUT" /> para cambiar de diseño de teclado.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
 <translation id="3255483164551725916">¿Qué puedes hacer?</translation>
 <translation id="3294437725009624529">Invitado</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas de pluma stylus</translation>
@@ -231,6 +234,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el enfoque del teclado</translation>
+<translation id="485592688953820832">No es necesaria ninguna acción (pausa)</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4890187583552566966">Tu administrador inhabilitó el Asistente de Google.</translation>
 <translation id="4895488851634969361">La batería está completa.</translation>
@@ -420,9 +424,12 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8113423164597455979">Activadas para todas las apps</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
+<translation id="8142441511840089262">Doble clic</translation>
 <translation id="8142699993796781067">Red privada</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> en uso</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
+<translation id="8203795194971602413">Clic con botón derecho</translation>
 <translation id="8236042855478648955">Es hora de descansar</translation>
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8297006494302853456">Débil</translation>
@@ -467,7 +474,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8877788021141246043">Establecer un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>

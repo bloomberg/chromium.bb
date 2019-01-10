@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Κλείσιμο όλων των καρτελών</translation>
 <translation id="1254117744268754948">Επιλογή φακέλου</translation>
 <translation id="1265739287306757398">Μάθετε με ποιον τρόπο</translation>
-<translation id="127138278192656016">Χρήση συγχρονισμού και όλων των υπηρεσιών</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1323735185997015385">Διαγραφή</translation>
 <translation id="132683371494960526">Πατήστε δύο φορές για να αλλάξετε τον γονικό φάκελο.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Αντιγραφή εικόνας</translation>
 <translation id="1612730193129642006">Εμφάνιση πλέγματος καρτελών</translation>
 <translation id="1644574205037202324">Ιστορικό</translation>
+<translation id="1650222530560417226">Πατήστε το κουμπί "Έναρξη καταγραφής" για να συλλέξετε τα μελλοντικά αρχεία καταγραφής της κονσόλας JavaScript και τα σφάλματα από όλες τις καρτέλες. Τα αρχεία καταγραφής θα συλλέγονται (και θα αποθηκεύονται μόνο στη μνήμη) έως ότου κλείσει αυτή η σελίδα ή πατηθεί η επιλογή "Διακοπή καταγραφής".</translation>
 <translation id="1657011748321897393">Η κοινοποίηση απέτυχε επειδή δεν έχετε συνδεθεί στο δίκτυο.</translation>
 <translation id="165877110639533037">Δεν υπάρχουν ανοικτές καρτέλες</translation>
 <translation id="168715261339224929">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία επιλεγμένα</translation>
 <translation id="1740468249224277719">Πατήστε δύο φορές για εγκατάσταση.</translation>
 <translation id="1746815479209538200">Για να περιηγηθείτε στον ιστό, προσθέστε μια νέα καρτέλα.</translation>
-<translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1752547299766512813">Απ. κωδ. πρόσβ.</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
 <translation id="1809939268435598390">Διαγραφή φακέλου</translation>
 <translation id="1813414402673211292">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="1820259098641718022">Προστέθηκε στη λίστα ανάγνωσης</translation>
 <translation id="1821253160463689938">Χρησιμοποιεί cookie για την απομνημόνευση των προτιμήσεών σας, ακόμα κι αν δεν επισκέπτεστε αυτές τις σελίδες</translation>
+<translation id="1828824471510190776">Πρόταση κωδ. πρόσβ…</translation>
 <translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
 <translation id="1886928167269928266">Από την αρχή</translation>
 <translation id="1911619930368729126">Μεταφόρ.στο Google Drive</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Προφόρτ. ιστοσελίδων</translation>
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
+<translation id="3771149149411027381">Αντιγραφή κειμένου αναζήτησης</translation>
 <translation id="3779810277399252432">Δεν υπάρχει σύνδεση στο διαδίκτυο.</translation>
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Αναζήτηση</translation>
 <translation id="4121993058175073134">Για αποστ. δεδομ.εξαγ.δικτ.,διαμορφ. το email σας στην εφ. "Ρυθμίσεις"</translation>
 <translation id="4124987746317609294">Χρονικό εύρος</translation>
+<translation id="4155190233692914060">Επίσκεψη στον σύνδεσμο που αντιγράφηκε</translation>
 <translation id="4172051516777682613">Εμφάνιση πάντα</translation>
 <translation id="418156467088430727">Προβολή έκδοσης εκτός σύνδεσης σε νέα καρτέλα</translation>
 <translation id="4237682350741091554">Διαχειριστείτε το Chrome Sync και την εξατομίκευση στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@
 <translation id="4854345657858711387">Ορισμός κωδικού πρόσβασης</translation>
 <translation id="4860895144060829044">Κλήση</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
-<translation id="4882831918239250449">Ελέγξτε τον τρόπο με τον οποίο το ιστορικό περιήγησής σας χρησιμοποιείται για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων στοιχείων</translation>
 <translation id="4895709476292058519">Αλλαγή λογαριασμού</translation>
 <translation id="4904877109095351937">Επισήμ. ως αναγνωσμένων</translation>
 <translation id="4930268273022498155">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα επαναφέρετε επιστρέφοντας στον λογαριασμό <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Παρουσιάστηκε πρόβλημα με την κοινοποίηση του στοιχείου σας.</translation>
 <translation id="4979397965658815378">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό και άλλες ρυθμίσεις σε όλες τις συσκευές σας</translation>
-<translation id="5004416275253351869">Στοιχεία ελέγχου δραστηριότητας Google</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
 <translation id="5010803260590204777">Άνοιγμα καρτέλας ανώνυμης περιήγησης για ιδιωτική περιήγηση στον ιστό</translation>
 <translation id="5011684439661633295">Γεια σας, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -257,7 +257,6 @@
 <translation id="5186185447130319458">Ιδιωτικό</translation>
 <translation id="5190835502935405962">Γραμμή σελιδοδεικτών</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5215116848420601511">Τρόποι πληρωμής και διευθύνσεις που χρησιμοποιούν το Google Pay</translation>
 <translation id="5228579091201413441">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="5244474230056479698">Συγχρονισμός με <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Εμφάνιση</translation>

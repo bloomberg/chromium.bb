@@ -522,10 +522,6 @@
 <translation id="214901426630414675">Restrict printing duplex mode</translation>
 <translation id="2149330464730004005">Enable colour printing</translation>
 <translation id="2156132677421487971">Configure policies for <ph name="PRODUCT_NAME" />, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
-<translation id="2163878108829382394">
-        If this policy is set to true, cloud management enrolment is mandatory and blocks Chrome launch process if failed.
-
-        If this policy is left unset or set to false, cloud management enrolment is optional and does not block Chrome launch process if failed.</translation>
 <translation id="2166472654199325139">Do not filter sites for adult content</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>

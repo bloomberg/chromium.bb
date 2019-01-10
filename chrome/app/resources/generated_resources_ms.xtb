@@ -3,6 +3,7 @@
 <translationbundle lang="ms">
 <translation id="1000498691615767391">Pilih folder untuk dibuka</translation>
 <translation id="1003088604756913841">Buka Pautan dalam Tetingkap <ph name="APP" /> baharu</translation>
+<translation id="1004218526896219317">Akses tapak</translation>
 <translation id="1005274289863221750">Gunakan mikrofon dan kamera anda</translation>
 <translation id="1007408791287232274">Tidak dapat memuatkan peranti.</translation>
 <translation id="1008186147501209563">Eksport penanda halaman</translation>
@@ -250,10 +251,9 @@
 <translation id="1361655923249334273">Tidak digunakan</translation>
 <translation id="1361872463926621533">Mainkan bunyi semasa permulaan</translation>
 <translation id="1363028406613469049">Penjejakan</translation>
+<translation id="1364702626840264065">{NUM_TABS,plural, =1{Tutup tab}other{Tutup tab}}</translation>
 <translation id="1367951781824006909">Pilih fail</translation>
-<translation id="1370553626198299309">Pastikan Chromebook anda disambungkan ke Internet dan Bluetooth telefon anda dihidupkan</translation>
 <translation id="1371301976177520732">Penanda halaman, kata laluan, sejarah dan pelbagai lagi item anda pada semua peranti anda</translation>
-<translation id="1372681413396468867">{NUM_ITEMS,plural, =1{1 item untuk dialih keluar}other{# item untuk dialih keluar}}</translation>
 <translation id="1372841398847029212">Segerakkan ke akaun anda</translation>
 <translation id="1374844444528092021">Sijil yang diperlukan oleh rangkaian "<ph name="NETWORK_NAME" />" sama ada tidak dipasang atau tidak lagi sah.  Sila dapatkan sijil baharu dan cuba menyambung semula.</translation>
 <translation id="1375321115329958930">Kata Laluan Disimpan</translation>
@@ -335,6 +335,7 @@
 <translation id="1489664337021920575">Buat pilihan lain</translation>
 <translation id="1493892686965953381">Menunggu untuk <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> peranti lain yang tersedia.</translation>
+<translation id="1495677929897281669">Kembali ke tab</translation>
 <translation id="1497522201463361063">Tidak dapat menamakan semula "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Peranti tidak diketahui [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Akaun pemilik ini perlu menjadi akaun dilog masuk yang pertama dalam sesi berbilang log masuk.</translation>
@@ -401,6 +402,7 @@
 <translation id="158849752021629804">Perlukan rangkaian rumah</translation>
 <translation id="1588870296199743671">Buka Pautan Dengan...</translation>
 <translation id="1589055389569595240">Tunjukkan Ejaan dan Tatabahasa</translation>
+<translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1593594475886691512">Memformatkan...</translation>
 <translation id="159359590073980872">Cache Imej</translation>
 <translation id="1593926297800505364">Simpan kaedah pembayaran</translation>
@@ -487,6 +489,7 @@
 <translation id="1719312230114180055">Nota: Cap jari anda mungkin kurang selamat berbanding kata laluan atau PIN yang kukuh.</translation>
 <translation id="1720318856472900922">Pengesahan Pelayan TLS WWW</translation>
 <translation id="1721937473331968728">Anda boleh menambah pencetak klasik yang disambungkan pada komputer anda ke <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="1722487484194605434">Mengezip <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="1723824996674794290">&amp;Tetingkap baharu</translation>
 <translation id="1725149567830788547">Paparkan &amp;Kawalan</translation>
 <translation id="1726100011689679555">Pelayan nama</translation>
@@ -509,6 +512,7 @@
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
 <translation id="1756681705074952506">Kaedah input</translation>
+<translation id="1757301747492736405">Penyahpasangan belum selesai</translation>
 <translation id="175772926354468439">Dayakan tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Lihat di Gedung Web Chrome</translation>
@@ -577,6 +581,7 @@
 <translation id="1848219224579402567">Log keluar apabila penutup ditutup</translation>
 <translation id="1849186935225320012">Halaman ini mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="1850508293116537636">Putar &amp;ikut arah jam</translation>
+<translation id="1852141627593563189">Cari perisian berbahaya</translation>
 <translation id="1852799913675865625">Terdapat ralat ketika cuba membaca fail: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Tab inkognito baharu</translation>
 <translation id="1854180393107901205">Berhenti menghantar</translation>
@@ -611,6 +616,7 @@
 <translation id="1895934970388272448">Anda mesti sahkan pendaftaran pada pencetak anda untuk melengkapkan proses ini - semaknya sekarang.</translation>
 <translation id="1901303067676059328">Pilih &amp;semua</translation>
 <translation id="1902576642799138955">Tempoh Masa Sah</translation>
+<translation id="1904394285866191268">{NUM_TABS,plural, =1{Redam tab}other{Redam tab}}</translation>
 <translation id="1905375423839394163">Nama peranti Chromebook</translation>
 <translation id="1905710495812624430">Melebihi had maksimum percubaan yang dibenarkan.</translation>
 <translation id="1909880997794698664">Adakah anda pasti mahu peranti ini menggunakan mod kios secara kekal?</translation>
@@ -632,6 +638,7 @@
 <translation id="1931152874660185993">Tiada komponen dipasang.</translation>
 <translation id="1932026958134051332">Pilihan tukar akses</translation>
 <translation id="1932098463447129402">Bukan Sebelum</translation>
+<translation id="1933345018156373194">Pengalihan gagal, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Sila sambungkan tetikus atau papan kekunci. Jika anda menggunakan peranti Buetooth, pastikan ia sedia untuk digandingkan.</translation>
 <translation id="1936157145127842922">Paparkan dalam Folder</translation>
 <translation id="1938351510777341717">Perintah Luaran</translation>
@@ -733,6 +740,7 @@
 <translation id="2115103655317273167">Hantar ke telefon</translation>
 <translation id="2119349053129246860">Buka dalam <ph name="APP" /></translation>
 <translation id="2120297377148151361">Aktiviti dan interaksi</translation>
+<translation id="2120478168904746065">{NUM_TABS,plural, =1{Nyahredam Tab}other{Nyahredam Tab}}</translation>
 <translation id="2121825465123208577">Ubah saiz</translation>
 <translation id="2124930039827422115">{1,plural, =1{Dinilai <ph name="AVERAGE_RATING" /> oleh seorang pengguna.}other{Dinilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
@@ -746,6 +754,7 @@
 <translation id="2136476978468204130">Ungkapan laluan yang anda masukkan tidak betul</translation>
 <translation id="2137068468602026500">Klik <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> di bawah Penyemak Imbas Web</translation>
 <translation id="2138398485845393913">Sambungan ke "<ph name="DEVICE_NAME" />" masih berlangsung</translation>
+<translation id="2138867954865495510">Tidak dapat membuka "<ph name="PATH" />": <ph name="ERROR_MESSAGE" /></translation>
 <translation id="214169863967063661">Buka tetapan penampilan</translation>
 <translation id="2142328300403846845">Buka Pautan sebagai</translation>
 <translation id="2143765403545170146">Sentiasa Tunjukkan Bar Alat dalam Skrin Penuh</translation>
@@ -765,6 +774,7 @@
 <translation id="2157875535253991059">Halaman ini kini dalam skrin penuh.</translation>
 <translation id="216169395504480358">Tambah Wi-Fi...</translation>
 <translation id="2162155940152307086">Penyegerakan akan bermula selepas anda meninggalkan tetapan penyegerakan</translation>
+<translation id="2163152940313951844">Aksara tidak sah: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2163470535490402084">Sila sambung ke Internet untuk melog masuk ke <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">Log masuk juga</translation>
@@ -775,7 +785,6 @@
 <translation id="2178098616815594724">Pemalam <ph name="PEPPER_PLUGIN_NAME" /> di <ph name="PEPPER_PLUGIN_DOMAIN" /> ingin mengakses komputer anda</translation>
 <translation id="2178614541317717477">Tolak ansur CA</translation>
 <translation id="218070003709087997">Gunakan nombor untuk menunjukkan bilangan salinan untuk dicetak (1 hingga 999).</translation>
-<translation id="2182253583899676504">Teks yang anda taip dalam medan teks akan dihantar kepada Google.</translation>
 <translation id="2184515124301515068">Benarkan Chrome memilih masa tapak boleh memainkan bunyi (disyorkan)</translation>
 <translation id="2187895286714876935">Ralat Import Sijil Pelayan</translation>
 <translation id="2187906491731510095">Sambungan dikemas kini</translation>
@@ -787,7 +796,6 @@
 <translation id="2192505247865591433">Daripada:</translation>
 <translation id="2193365732679659387">Tetapan percaya</translation>
 <translation id="2195729137168608510">Perlindungan E-mel</translation>
-<translation id="2198757192731523470">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="2199298570273670671">Ralat</translation>
 <translation id="2199719347983604670">Data daripada penyegerakan Chrome</translation>
 <translation id="2200094388063410062">E-mel</translation>
@@ -797,9 +805,11 @@
 <translation id="2202898655984161076">Terdapat masalah menyenaraikan pencetak. Beberapa pencetak anda mungkin tidak berjaya didaftarkan dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Enjin carian yang digunakan dalam <ph name="BEGIN_LINK" />bar alamat<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Baca dan ubah apa sahaja yang anda taip</translation>
+<translation id="220792432208469595">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="2208158072373999562">Arkib zip</translation>
 <translation id="220858061631308971">Sila masukkan kod PIN ini pada "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2214884991347062907">Kata laluan salah, cuba lagi</translation>
+<translation id="2214893006758804920">{LINE_COUNT,plural, =1{&lt;1 garisan tidak ditunjukkan&gt;}other{&lt;<ph name="NUMBER_OF_LINES" /> garisan tidak ditunjukkan&gt;}}</translation>
 <translation id="2217501013957346740">Cipta nama -</translation>
 <translation id="2218019600945559112">Tetikus dan pad sentuh</translation>
 <translation id="2218320521449013367">Ralat berlaku semasa Chrome mengalih keluar perisian yang berbahaya</translation>
@@ -810,6 +820,7 @@
 <translation id="2220572644011485463">PIN atau kata laluan</translation>
 <translation id="2224444042887712269">Tetapan ini milik <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Edit nama folder</translation>
+<translation id="2225536596944493418">Adakah anda pasti anda mahu memadamkan <ph name="NUMBER_OF_ITEMS" /> item?</translation>
 <translation id="2226449515541314767">Tapak ini telah disekat daripada mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="2226720438730111184">Beritahu Kami Perkara Yang Berlaku</translation>
 <translation id="2229161054156947610">Tinggal lebih 1 jam</translation>
@@ -856,12 +867,15 @@
 <translation id="2282155092769082568">URL autokonfigurasi:</translation>
 <translation id="2288181517385084064">Beralih kepada perakam video</translation>
 <translation id="2288735659267887385">Tetapan kebolehaksesan</translation>
+<translation id="2291538123825441971">Membuka <ph name="NUMBER_OF_FILES" /> fail.</translation>
 <translation id="2292848386125228270">Sila mulakan <ph name="PRODUCT_NAME" /> sebagai pengguna biasa. Jika anda perlu menjalankan apl sebagai akar untuk pembangunan, jalankan semula dengan --bendera tanpa kotak pasir.</translation>
 <translation id="2294358108254308676">Adakah anda mahu memasang <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2297705863329999812">Cari pencetak</translation>
 <translation id="2300383962156589922">Sesuaikan dan kawal <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Direktori akar sambungan adalah tidak sah.</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" telah meminta kebenaran tambahan.</translation>
+<translation id="2303301624314357662">Membuka fail <ph name="FILE_NAME" />.</translation>
+<translation id="2305020378527873881"><ph name="VOLUME_NAME" />telah dikeluarkan.</translation>
 <translation id="2307462900900812319">Konfigurasikan rangkaian</translation>
 <translation id="230927227160767054">Halaman ini mahu memasang pengendali perkhidmatan.</translation>
 <translation id="2309620859903500144">Tapak ini telah disekat daripada mengakses penderia gerakan atau cahaya anda.</translation>
@@ -908,6 +922,7 @@
 <translation id="2371076942591664043">Buka apabila &amp;selesai</translation>
 <translation id="2375406435414127095">Sambung ke telefon anda</translation>
 <translation id="2377319039870049694">Tukar kepada paparan senarai</translation>
+<translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> folder dikongsi dengan Linux</translation>
 <translation id="2377667304966270281">Kesalahan Keras</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fail dipilih</translation>
 <translation id="237828693408258535">Terjemah halaman ini?</translation>
@@ -1046,7 +1061,6 @@
     Pengguna diselia hanya dilaksanakan pada peranti ini.</translation>
 <translation id="258932246702879617">Pilih <ph name="BEGIN_BOLD" />Semat pada bar tugas<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Cari Google atau taipkan URL</translation>
-<translation id="2600115369439982409">Fail dan program:</translation>
 <translation id="2603115962224169880">Bersihkan komputer</translation>
 <translation id="2603463522847370204">Buka dalam tetingkap &amp;inkognito</translation>
 <translation id="2604255671529671813">Ralat sambungan rangkaian</translation>
@@ -1058,6 +1072,7 @@
 <translation id="2610260699262139870">Saiz S&amp;ebenar</translation>
 <translation id="2610780100389066815">Menandatangani Senarai Kepercayaan Microsoft</translation>
 <translation id="2612676031748830579">Nombor kad</translation>
+<translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2616366145935564096">Baca dan tukar data anda di <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">Kad SIM dikunci</translation>
 <translation id="2619761439309613843">Muat Semula Harian</translation>
@@ -1158,7 +1173,6 @@
 <translation id="2755628026949580719">Jika kunci keselamatan anda tidak tersenarai, tekan butang kunci selama sekurang-kurangnya 5 saat.</translation>
 <translation id="275662540872599901">skrin dimatikan</translation>
 <translation id="2761898608071930085">Gunakan Akaun Lain</translation>
-<translation id="276233135255363312">{0,plural, =1{Satu tetingkap inkognito sedang terbuka.}other{# tetingkap inkognito sedang terbuka.}}</translation>
 <translation id="2762441749940182211">Kamera disekat</translation>
 <translation id="2765217105034171413">Kecil</translation>
 <translation id="2766006623206032690">Ta&amp;mpal dan pergi</translation>
@@ -1247,7 +1261,6 @@
 <translation id="2889064240420137087">Buka pautan dengan...</translation>
 <translation id="2889925978073739256">Teruskan menyekat pemalam tanpa kotak pasir</translation>
 <translation id="2893168226686371498">Penyemak imbas lalai</translation>
-<translation id="2895734772884435517">Anda boleh menyesuaikan tetapan ini pada bila-bila masa.</translation>
 <translation id="289644616180464099">Kad SIM dikunci</translation>
 <translation id="289695669188700754">ID Kekunci: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Adakah anda pasti anda mahu buka tab <ph name="TAB_COUNT" />?</translation>
@@ -1277,10 +1290,12 @@
 <translation id="2938225289965773019">Buka pautan <ph name="PROTOCOL" /></translation>
 <translation id="2939938020978911855">Tunjukkan peranti Bluetooth yang tersedia</translation>
 <translation id="2941112035454246133">Rendah</translation>
+<translation id="2941880727166628951">Hantar ke peranti saya</translation>
 <translation id="2942560570858569904">Menunggu...</translation>
 <translation id="2942581856830209953">Peribadikan halaman ini</translation>
 <translation id="2943400156390503548">Slaid</translation>
 <translation id="2943503720238418293">Gunakan nama yang lebih pendek</translation>
+<translation id="2944060181911631861">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Tambah sambungan</translation>
 <translation id="2948300991547862301">Pergi ke <ph name="PAGE_TITLE" /></translation>
 <translation id="29488703364906173">Penyemak imbas web yang pantas, mudah dan selamat, yang dibina untuk web moden.</translation>
@@ -1438,6 +1453,7 @@
 <translation id="321356136776075234">OU Peranti (mis. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3217843140356091325">Buat pintasan?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
+<translation id="321834671654278338">Penyahpasang Linux</translation>
 <translation id="3220586366024592812">Proses penyambung <ph name="CLOUD_PRINT_NAME" /> telah mengalami nahas. Mulakan semula?</translation>
 <translation id="3221634914176615296">Teroka kandungan peranti dalam apl Fail.</translation>
 <translation id="3222066309010235055">Prapaparan: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
@@ -1552,6 +1568,7 @@
 <translation id="3406605057700382950">&amp;Tunjukkan bar penanda halaman</translation>
 <translation id="3407837288045706722">Untuk mendapatkan lebih banyak tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan pemperibadian<ph name="END_LINK" /></translation>
 <translation id="3409785640040772790">Peta</translation>
+<translation id="3410832398355316179">Semua fail dan data setempat yang berkaitan dengan pengguna ini akan dipadamkan secara kekal selepas pengguna ini dialih keluar. <ph name="USER_EMAIL" /> masih dapat log masuk nanti.</translation>
 <translation id="3412265149091626468">Lompat ke Pemilihan</translation>
 <translation id="3413122095806433232">Pengeluar CA: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Memformat media mudah alih akan memadamkan semua data. Adakah anda ingin teruskan?</translation>
@@ -1604,6 +1621,7 @@
 <translation id="3473479545200714844">Penggadang skrin</translation>
 <translation id="3475447146579922140">Hamparan Google</translation>
 <translation id="3475843873335999118">Maaf, cap jari anda masih tidak dikenali. Sila masukkan kata laluan anda.</translation>
+<translation id="3476303763173086583">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. <ph name="BEGIN_LINK1" />Tetapan<ph name="END_LINK1" /> ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke akaun Googlenya. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">Op!  Sistem gagal mengambil dasar untuk peranti anda.</translation>
 <translation id="347785443197175480">Teruskan membenarkan <ph name="HOST" /> untuk mengakses kamera dan mikrofon anda</translation>
 <translation id="3478685642445675458">Sila buka kunci profil anda sebelum mengalih keluar seseorang.</translation>
@@ -1775,6 +1793,7 @@
 <translation id="3722108462506185496">Ralat semasa memulakan perkhidmatan mesin maya. Sila cuba lagi.</translation>
 <translation id="3723158278575423087">Selamat datang ke pengalaman Cast dalam Chromium!</translation>
 <translation id="3725367690636977613">halaman</translation>
+<translation id="3726137731714254362">Tindakan mengalih keluar folder dari sini akan menghentikan perkongsian tetapi tidak akan memadamkan fail.</translation>
 <translation id="3726463242007121105">Peranti ini tidak boleh dibuka kerana sistem failnya tidak disokong.</translation>
 <translation id="3727148787322499904">Tindakan menukar tetapan ini akan menjejaskan semua rangkaian yang dikongsi</translation>
 <translation id="3727187387656390258">Periksa pop muncul</translation>
@@ -1817,6 +1836,7 @@
 <translation id="3778868487658107119">Tanya soalan dan berikannya tugas. Peranti ini ialah Google peribadi anda yang sentiasa bersedia untuk membantu.</translation>
 <translation id="3780536599611287598">Anda tiada kebenaran untuk mengalihkan fail ke dalam '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="378312418865624974">Baca pengecam unik untuk komputer ini</translation>
+<translation id="3785071023202624850">{NUM_TABS,plural, =1{Redam Tab}other{Redam Tab}}</translation>
 <translation id="3785308913036335955">Paparkan Pintasan Apl</translation>
 <translation id="3785727820640310185">Kata laluan disimpan untuk tapak ini</translation>
 <translation id="3786301125658655746">Anda di luar talian</translation>
@@ -1905,6 +1925,7 @@
 <translation id="3905761538810670789">Baiki apl</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> sudah lapuk</translation>
 <translation id="3908501907586732282">Dayakan sambungan</translation>
+<translation id="3909477809443608991"><ph name="URL" /> mahu memainkan kandungan yang dilindungi. Identiti peranti anda akan disahkan oleh Google dan mungkin diakses oleh tapak ini.</translation>
 <translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> dan 1 yang lain</translation>
 <translation id="3909791450649380159">Po&amp;tong</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (nama yang digunakan pada peranti ini)</translation>
@@ -1970,6 +1991,7 @@
 <translation id="3994374631886003300">Buka kunci telefon anda dan rapatkan untuk membuka kunci <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="3994878504415702912">&amp;Zum</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
+<translation id="3996366967769547206">{NUM_TABS,plural, =1{Nyahsemat Tab}other{Nyahsemat Tab}}</translation>
 <translation id="4002066346123236978">Tajuk</translation>
 <translation id="4002440992267487163">Persediaan PIN</translation>
 <translation id="4005817994523282006">Kaedah pengesanan zon waktu</translation>
@@ -2008,6 +2030,7 @@
 <translation id="4068506536726151626">Halaman ini mengandungi unsur daripada tapak berikut yang menjejaki lokasi anda:</translation>
 <translation id="4068776064906523561">Cap jari disimpan</translation>
 <translation id="407173827865827707">Apabila diklik</translation>
+<translation id="4072793381000095">{NUM_TABS,plural, =1{Nyahsemat tab}other{Nyahsemat tab}}</translation>
 <translation id="4074900173531346617">Sijil Penandatangan E-mel</translation>
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Tidak dapat menghantar <ph name="FILE_NAME" />.</translation>
@@ -2066,7 +2089,6 @@
 <translation id="4157869833395312646">Kriptografi Berpintu Pelayan Microsoft</translation>
 <translation id="4158739975813877944">Buka senarai main</translation>
 <translation id="4159681666905192102">Ini ialah akaun untuk kanak-kanak yang diurus oleh <ph name="CUSTODIAN_EMAIL" /> dan <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
-<translation id="4162259808650104522">https://maps.google.com</translation>
 <translation id="4163560723127662357">Papan kekunci yang tidak diketahui.</translation>
 <translation id="4168015872538332605">Beberapa tetapan milik <ph name="PRIMARY_EMAIL" /> sedang dikongsikan dengan anda. Tetapan ini hanya mempengaruhi akaun anda semasa menggunakan berbilang log masuk.</translation>
 <translation id="4170314459383239649">Kosongkan Apabila Keluar</translation>
@@ -2094,7 +2116,9 @@
 <translation id="4209464433672152343">Dokumen <ph name="BEGIN_LINK_HELP" />dihantar kepada Google<ph name="END_LINK_HELP" /> bagi persediaan untuk dicetak. Lihat, edit dan urus pencetak serta sejarah pencetak anda di <ph name="BEGIN_LINK_DASHBOARD" />papan pemuka Cetakan Awan Google<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421017592316736757">Anda mesti berada dalam talian untuk mengakses fail ini.</translation>
 <translation id="421182450098841253">&amp;Tunjukkan Bar Penanda Halaman</translation>
+<translation id="4211851069413100178">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. <ph name="BEGIN_LINK1" />Tetapan<ph name="END_LINK1" /> ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke akaun Google anda. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksport</translation>
+<translation id="4212740939091998969">Fail bernama "<ph name="FOLDER_NAME" />" sudah wujud. Sila pilih nama lain.</translation>
 <translation id="42137655013211669">Akses kepada sumber ini dilarang oleh pelayan.</translation>
 <translation id="4215350869199060536">Alamak, simbol tidak sah terdapat dalam nama!</translation>
 <translation id="4215448920900139318">Menyandarkan <ph name="FILE_COUNT" /></translation>
@@ -2152,8 +2176,11 @@
 <translation id="4316850752623536204">Tapak Web Pembangun</translation>
 <translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4320948194796820126">Tambahkan penanda halaman pada e-mel anda</translation>
+<translation id="4321442524549817090">T&amp;unjukkan URL</translation>
 <translation id="4322394346347055525">Tutup Tab Lain</translation>
 <translation id="4324577459193912240">Fail tidak lengkap</translation>
+<translation id="4325237902968425115">Menyahpasang <ph name="LINUX_APP_NAME" />...</translation>
+<translation id="4328203388435897516">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "Ok Google" untuk mendapatkan bantuan pada bila-bila masa. Pergi ke tetapan Assistant untuk membuat perubahan.</translation>
 <translation id="4330387663455830245">Jangan Sekali-kali Terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 Dengan Penyulitan RSA</translation>
 <translation id="4336032328163998280">Operasi menyalin gagal. <ph name="ERROR_MESSAGE" /></translation>
@@ -2228,7 +2255,6 @@
 <translation id="4450974146388585462">Diagnosis</translation>
 <translation id="4451757071857432900">Disekat di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan (disyorkan)</translation>
 <translation id="4453946976636652378">Cari <ph name="SEARCH_ENGINE_NAME" /> atau taipkan URL</translation>
-<translation id="4461835665417498653">Menghantar beberapa maklumat sistem dan kandungan halaman kepada Google secara awanama.</translation>
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
 <translation id="4467101674048705704">Kembangkan <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Disekat di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
@@ -2300,6 +2326,7 @@
 <translation id="4572659312570518089">Pengesahan dibatalkan semasa menyambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fail <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lagi...</translation>
+<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Gandingkan peranti Bluetooth</translation>
 <translation id="4579581181964204535">Tidak dapat menghantar <ph name="HOST_NAME" />.</translation>
 <translation id="4582497162516204941">Pasang dengan Linux (Beta)</translation>
@@ -2398,6 +2425,7 @@
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4742746985488890273">Sematkan pada Rak</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Ketahui cara mengemas kini aplikasi<ph name="END_LINK" /></translation>
+<translation id="4744981231093950366">{NUM_TABS,plural, =1{Nyahredam tapak}other{Nyahredam tapak}}</translation>
 <translation id="4746351372139058112">Mesej</translation>
 <translation id="4746971725921104503">Nampaknya anda sudah mengurus pengguna dengan nama tersebut. Adakah anda ingin <ph name="LINK_START" />mengimport<ph name="USER_DISPLAY_NAME" /> ke peranti ini<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Memerlukan sambungan daripada Gedung Web Chrome</translation>
@@ -2422,8 +2450,10 @@
 <translation id="4780321648949301421">Simpan Halaman Sebagai...</translation>
 <translation id="4784330909746505604">Persembahan PowerPoint</translation>
 <translation id="4788092183367008521">Sila semak sambungan rangkaian dan cuba lagi.</translation>
+<translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> KB</translation>
 <translation id="4790972063719531840">Hantar data diagnostik dan penggunaan kepada Google secara automatik</translation>
 <translation id="4792711294155034829">&amp;Laporkan Isu...</translation>
+<translation id="4795022432560487924">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Laman Web, HTML Sahaja</translation>
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (dalaman Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akaun</translation>
@@ -2475,6 +2505,7 @@
 <translation id="4870903493621965035">Tiada peranti digandingkan</translation>
 <translation id="4871308555310586478">Bukan dari Kedai Web Chrome.</translation>
 <translation id="4871370605780490696">Tambah penanda halaman</translation>
+<translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bait</translation>
 <translation id="4873312501243535625">Penyemak Fail Media</translation>
 <translation id="4876273079589074638">Bantu jurutera kami menyiasat dan menyelesaikan ranap ini. Senaraikan langkah sebenar jika boleh. Setiap butiran penting!</translation>
 <translation id="4876895919560854374">Kunci dan buka kunci skrin</translation>
@@ -2495,8 +2526,10 @@
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Buka Dengan Pemapar Sistem</translation>
 <translation id="488785315393301722">Tunjukkan Butiran</translation>
+<translation id="4890242622846228088">Assistant menggunakan rakaman ini dan permintaan lisan anda untuk membuat dan mengemas kini model suara anda, yang hanya disimpan pada peranti yang telah dihidupkan ciri Voice Matchnya. Lihat atau padamkan aktiviti suara dalam kawalan aktiviti Google anda.</translation>
 <translation id="4890773143211625964">Tunjukkan pilihan terperinci pencetak</translation>
 <translation id="4891089016822695758">Forum beta</translation>
+<translation id="4892969127351273348">Tidak dapat membuka fail menggunakan <ph name="APP_NAME" /></translation>
 <translation id="4893336867552636863">Tindakan ini akan memadamkan data penyemakan imbas anda daripada peranti ini selama-lamanya.</translation>
 <translation id="4893522937062257019">Pada skrin kunci</translation>
 <translation id="4898011734382862273">Sijil "<ph name="CERTIFICATE_NAME" />" mewakili Pihak Berkuasa Pensijilan</translation>
@@ -2546,12 +2579,15 @@
 <translation id="4972129977812092092">Edit pencetak</translation>
 <translation id="4972164225939028131">Kata laluan salah</translation>
 <translation id="4973307593867026061">Tambah pencetak</translation>
+<translation id="4973325300212422370">{NUM_TABS,plural, =1{Redam tapak}other{Redam tapak}}</translation>
 <translation id="4973523518332075481">Gunakan nama yang mengandungi tidak lebih daripada <ph name="MAX_LENGTH" /> aksara</translation>
+<translation id="4973970068702235170">Gagal mengezip, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4974733135013075877">Keluar dan kunci kanak-kanak</translation>
 <translation id="4977942889532008999">Sahkan Akses</translation>
 <translation id="4980805016576257426">Sambungan ini mengandungi perisian hasad.</translation>
 <translation id="4981449534399733132">Untuk mengosongkan data semakan imbas daripada semua peranti tersegerak dan Akaun Google anda, <ph name="BEGIN_LINK" />log masuk<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Ubah tetapan anda yang mengawal akses tapak web kepada ciri seperti kuki, JavaScript, pemalam, geolokasi, mikrofon, kamera, dsb.</translation>
+<translation id="4988205478593450158">Adakah anda pasti anda mahu memadamkan "<ph name="FILE_NAME" />"?</translation>
 <translation id="4988526792673242964">Halaman</translation>
 <translation id="49896407730300355">Putar m&amp;elawan arah jam</translation>
 <translation id="4989966318180235467">Halaman periksa &amp;latar belakang</translation>
@@ -2670,6 +2706,7 @@
 <translation id="5177526793333269655">Paparan lakaran kenit</translation>
 <translation id="5177549709747445269">Anda menggunakan data mudah alih</translation>
 <translation id="5178667623289523808">Cari Sebelumnya</translation>
+<translation id="5179127818058486126">{NUM_TABS,plural, =1{Nyahredam tab}other{Nyahredam tab}}</translation>
 <translation id="5181140330217080051">Memuat turun</translation>
 <translation id="5184063094292164363">&amp;Konsol JavaScript</translation>
 <translation id="5184662919967270437">Mengemas kini peranti anda</translation>
@@ -2707,6 +2744,7 @@
 <translation id="5242724311594467048">Dayakan "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Sila cuba lagi dalam beberapa ketika</translation>
 <translation id="5244474230056479698">Menyegerak ke <ph name="EMAIL" /></translation>
+<translation id="52446585071384036">Untuk membuka fail dengan <ph name="APP_NAME" />, salin ke folder fail Linux dahulu.</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> telah mengalami nahas. Klik belon ini untuk memulakan semula apl.</translation>
 <translation id="5247051749037287028">Nama paparan (pilihan)</translation>
 <translation id="5249624017678798539">Penyemak imbas telah ranap sebelum muat turun selesai.</translation>
@@ -2733,6 +2771,7 @@
 <translation id="5269977353971873915">Cetakan Gagal</translation>
 <translation id="5270167208902136840">Tunjukkan <ph name="NUMBER_OF_MORE_APPS" /> lagi apl</translation>
 <translation id="5275352920323889391">Anjing</translation>
+<translation id="5275776633505022322">Baki percubaan: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="5275973617553375938">Fail yang diperoleh semula dari Google Drive</translation>
 <translation id="527605982717517565">Sentiasa benarkan JavaScript di <ph name="HOST" /></translation>
 <translation id="5280426389926346830">Buat Pintasan?</translation>
@@ -2796,6 +2835,7 @@
 <translation id="5360150013186312835">Tunjukkan dalam Bar Alat</translation>
 <translation id="5362741141255528695">Pilih fail kunci persendirian.</translation>
 <translation id="5363109466694494651">Powerwash dan Berbalik</translation>
+<translation id="5365881113273618889">Folder yang anda pilih mengandungi fail sensitif. Adakah anda pasti anda mahu memberi "<ph name="APP_NAME" />" akses tulis kekal kepada folder ini?</translation>
 <translation id="5367091008316207019">Membaca fail..</translation>
 <translation id="5368191757080475556">Kongsi folder dengan Linux</translation>
 <translation id="5368720394188453070">Telefon anda dikunci. Buka kuncinya untuk masuk.</translation>
@@ -2911,6 +2951,7 @@
 <translation id="5530766185686772672">Tutup tab inkognito</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> ingin</translation>
+<translation id="5533102081734025921">Imej <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534304873398226603">Buang foto atau video</translation>
 <translation id="5534520101572674276">Mengira saiz</translation>
 <translation id="5535941515421698170">Turut mengalih keluar data sedia ada anda daripada peranti ini</translation>
@@ -2956,7 +2997,6 @@
 <translation id="5585912436068747822">Pemformatan gagal</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Memuatkan apl...</translation>
-<translation id="5592010267127539419"><ph name="URL_HOST" /> mahu bergandingan dengan peranti</translation>
 <translation id="5592595402373377407">Data yang mencukupi belum tersedia lagi.</translation>
 <translation id="5593357315997824387">Segerakkan fail saya</translation>
 <translation id="5595152862129936745">Sangat jauh</translation>
@@ -2997,6 +3037,7 @@
 <translation id="5639549361331209298">Muat semula halaman ini, tahan untuk melihat lagi pilihan</translation>
 <translation id="5642508497713047">Penandatangan CRL</translation>
 <translation id="5643620609347735571">Kosongkan dan teruskan</translation>
+<translation id="5646376287012673985">Lokasi</translation>
 <translation id="5646558797914161501">Ahli perniagaan</translation>
 <translation id="5648166631817621825">7 hari terakhir</translation>
 <translation id="5649053991847567735">Muat turun automatik</translation>
@@ -3044,6 +3085,7 @@
 <translation id="5719603411793408026">Enjin carian lalai</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
 <translation id="572155275267014074">Tetapan Android</translation>
+<translation id="5722930212736070253">Oh, Tidak! Zip Archiver telah mengalami ralat.</translation>
 <translation id="572328651809341494">Tab terbaharu</translation>
 <translation id="5723508132121499792">Tiada apl latar belakang dijalankan</translation>
 <translation id="5727728807527375859">Sambungan, apl dan tema boleh membahayakan komputer anda. Adakah anda pasti anda mahu meneruskan?</translation>
@@ -3079,6 +3121,7 @@
 <translation id="577624874850706961">Cari kuki</translation>
 <translation id="5777468213129569553">Buka Chrome</translation>
 <translation id="5778747455497889540">Di bawah ini ialah kata laluan modul selamat yang dijana secara rawak yang telah diperuntukkan kepada komputer anda:</translation>
+<translation id="5780011244986845107">Folder yang anda pilih mengandungi fail sensitif. Adakah anda pasti anda mahu memberi "<ph name="APP_NAME" />" akses baca kekal kepada folder ini?</translation>
 <translation id="5780973441651030252">Keutamaan proses</translation>
 <translation id="5781092003150880845">Segerakkan sebagai <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="5781865261247219930">Hantar perintah kepada <ph name="EXTENSION_NAME" /></translation>
@@ -3135,6 +3178,7 @@
 <translation id="5855773610748894548">Oops, ralat modul selamat.</translation>
 <translation id="5856721540245522153">Dayakan ciri penyahpepijatan</translation>
 <translation id="5857090052475505287">Folder Baharu</translation>
+<translation id="5857774240076772505">Beri Linux kebenaran apl untuk mengubah fail dalam folder <ph name="FOLDER_NAME" /></translation>
 <translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">Meta Luaran</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
@@ -3171,6 +3215,7 @@
 <translation id="5911737117543891828">Fail luar talian sementara Google Drive akan dipadamkan. Fail yang telah ditetapkan sebagai tersedia di luar talian tidak akan dipadamkan daripada peranti ini.</translation>
 <translation id="5911887972742538906">Ralat telah berlaku semasa pemasangan aplikasi Linux anda.</translation>
 <translation id="5912378097832178659">&amp;Edit enjin carian...</translation>
+<translation id="5913638992615760742">Operasi salin gagal, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5914724413750400082">Modulus (<ph name="MODULUS_NUM_BITS" /> bit):
   <ph name="MODULUS_HEX_DUMP" />
 
@@ -3196,12 +3241,13 @@
 <translation id="5941153596444580863">Tambah orang...</translation>
 <translation id="5941343993301164315">Sila log masuk ke <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimumkan</translation>
+<translation id="5945188205370098537">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID Laporan <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
+<translation id="5949281959820712067">Beri Linux kebenaran apl untuk mengubah fail dalam Google Drive anda. Perubahan akan disegerakkan ke peranti anda yang lain.</translation>
 <translation id="5949544233750246342">Tidak dapat menghurai fail</translation>
 <translation id="5955282598396714173">Kata laluan anda telah tamat tempoh. Sila log keluar, kemudian log masuk semula untuk menukarnya.</translation>
 <translation id="5955809630138889698">Peranti ini mungkin layak untuk mod tunjuk cara dalam talian sahaja. Sila hubungi wakil sokongan anda untuk mendapatkan butiran lanjut.</translation>
 <translation id="5956585768868398362">Adakah ini halaman carian yang anda jangkakan?</translation>
-<translation id="595685469232282893">https://chrome.google.com/webstore</translation>
 <translation id="5957613098218939406">Lebih Banyak Pilihan</translation>
 <translation id="5957987129450536192">Ketik ikon Pilih untuk Cakap berdekatan imej profil anda, kemudian pilih apa yang hendak anda dengar.</translation>
 <translation id="5958529069007801266">Pengguna diselia</translation>
@@ -3414,7 +3460,6 @@
 <translation id="6267166720438879315">Pilih sijil untuk mengesahkan dengan sendiri pada <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka menggunakan <ph name="APP" /></translation>
 <translation id="6268747994388690914">Import Penanda Halaman dari Fail HTML...</translation>
-<translation id="6270770586500173387">Hantar <ph name="BEGIN_LINK1" />maklumat sistem dan apl<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Terdapat ralat (<ph name="ERROR" />) semasa memuat turun pemalam</translation>
 <translation id="6273677812470008672">Kualiti</translation>
 <translation id="6277105963844135994">Tamat masa rangkaian</translation>
@@ -3486,7 +3531,7 @@
 <translation id="6388429472088318283">Cari bahasa</translation>
 <translation id="6390799748543157332">Halaman yang anda lihat dalam tetingkap ini tidak akan dipaparkan dalam sejarah penyemak imbas dan halaman ini tidak akan meninggalkan kesan lain, seperti kuki, pada komputer selepas anda menutup semua tetingkap Tetamu yang terbuka. Walau bagaimanapun, sebarang fail yang anda muat turun akan disimpan.</translation>
 <translation id="6390994422085833176">Semak ciri penyegerakan dan pemeribadian selepas penyediaan dilakukan</translation>
-<translation id="6395423953133416962">Hantar <ph name="BEGIN_LINK1" />maklumat sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
+<translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> item</translation>
 <translation id="6397094776139756010">Pilihan penyegerakan dan pemperibadian</translation>
 <translation id="6397592254427394018">Buka semua penanda halaman dalam tetingkap &amp;inkognito</translation>
 <translation id="6398715114293939307">Alih keluar Gedung Google Play</translation>
@@ -3641,6 +3686,7 @@
 <translation id="6629841649550503054">Semua telah disandarkan pada <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> inginkan akses tetap kepada sijil untuk mengesahkan dirinya sendiri bagi pihak anda.</translation>
 <translation id="6635956300022133031">Pilih dan sesuaikan suara teks ke pertuturan</translation>
+<translation id="6638159827131921706">Cari aktiviti</translation>
 <translation id="6639554308659482635">Memori SQLite</translation>
 <translation id="6641138807883536517">Kata laluan modul selamat yang dijana secara rawak tidak tersedia. Perkara ini biasa berlaku selepas Powerwash.</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
@@ -3680,6 +3726,7 @@
 <translation id="6691331417640343772">Urus data disegerak pada Papan Pemuka Google</translation>
 <translation id="6691936601825168937">&amp;Majukan</translation>
 <translation id="6697492270171225480">Tunjukkan cadangan untuk halaman yang serupa apabila halaman tidak ditemui</translation>
+<translation id="6697690052557311665">Untuk berkongsi, klik kanan folder dalam apl Fail, kemudian pilih "Kongsi dengan Linux".</translation>
 <translation id="6698810901424468597">Baca dan tukar data anda di <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /></translation>
 <translation id="6700480081846086223">Hantar <ph name="HOST_NAME" /></translation>
 <translation id="6701535245008341853">Tidak boleh mendapatkan profil.</translation>
@@ -3699,6 +3746,7 @@
 <translation id="6723839937902243910">Kuasa</translation>
 <translation id="6725073593266469338">Perkhidmatan UI</translation>
 <translation id="6725206449694821596">Protokol Cetakan Internet (IPP)</translation>
+<translation id="67269783048918309">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. <ph name="BEGIN_LINK1" />Tetapan<ph name="END_LINK1" /> ini dikuatkuasakan oleh pemilik. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke akaun Googlenya. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="6732801395666424405">Sijil tidak dimuatkan</translation>
 <translation id="6732900235521116609">Tidak dapat mengalih keluar pintasan</translation>
 <translation id="6735304988756581115">Tunjukkan kuki dan data tapak yang lain...</translation>
@@ -3795,6 +3843,7 @@
 <translation id="6886476658664859389">Kunci keselamatan NFC</translation>
 <translation id="6886871292305414135">Buka pautan dalam &amp;tab baharu</translation>
 <translation id="6892812721183419409">Buka Pautan sebagai <ph name="USER" /></translation>
+<translation id="6895032998810961280">Laporkan butiran tentang perisian, tetapan sistem dan proses berbahaya yang ditemui pada komputer anda semasa pembersihan ini kepada Google</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6898440773573063262">Aplikasi kios kini boleh dikonfigurasikan supaya autolancar pada peranti ini.</translation>
 <translation id="6898699227549475383">Organisasi (O)</translation>
@@ -3809,9 +3858,9 @@
 <translation id="6911324888870229398">Sambungan rangkaian terputus. Sila semak sambungan anda atau cuba rangkaian Wi-Fi lain.</translation>
 <translation id="6911734910326569517">Jejak memori</translation>
 <translation id="6914783257214138813">Kata laluan anda akan kelihatan kepada sesiapa yang dapat melihat fail yang dieksport.</translation>
+<translation id="691516599546977041">Tidak boleh disimpan ke <ph name="FOLDER_NAME" />. Imej yang diedit akan disimpan dalam folder Muat Turun.</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6916590542764765824">Urus Sambungan</translation>
-<translation id="691914323712916303">https://news.google.com</translation>
 <translation id="6920989436227028121">Buka seperti tab biasa</translation>
 <translation id="6921709132208495314">Berhenti menggunakan data pada halaman ini</translation>
 <translation id="6923132443355966645">Tatal / Klik</translation>
@@ -3948,6 +3997,7 @@
 <translation id="711902386174337313">Baca senarai peranti anda yang dilog masuk</translation>
 <translation id="7120865473764644444">Tidak dapat menyambung ke pelayan penyegerakan. Mencuba semula...</translation>
 <translation id="7121362699166175603">Mengosongkan sejarah dan autoselesai dalam bar alamat. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7121389946694989825">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="7123360114020465152">Tidak disokong lagi</translation>
 <translation id="7124929488592184705">Ralat mencetak <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;cari di Drive&lt;/em&gt;</translation>
@@ -3988,6 +4038,7 @@
 <translation id="7186088072322679094">Simpan dalam Bar Alat</translation>
 <translation id="7187428571767585875">Masukan daftaran yang hendak dialih keluar atau diubah:</translation>
 <translation id="7189234443051076392">Pastikan ruang pada peranti anda mencukupi</translation>
+<translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7189965711416741966">Cap jari ditambahkan.</translation>
 <translation id="7191159667348037">Pencetak Tidak Diketahui (USB)</translation>
 <translation id="7191454237977785534">Simpan fail sebagai</translation>
@@ -4001,6 +4052,7 @@
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' dipadamkan</translation>
 <translation id="7206693748120342859">Memuat turun <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Keluar daripada halaman}other{Keluar daripada halaman}}</translation>
+<translation id="7207631048330366454">Cari apl</translation>
 <translation id="7210499381659830293">Pencetak sambungan</translation>
 <translation id="721467499098558573">Tekan dan tahan butang pada kunci keselamatan anda selama sekurang-kurangnya 5 saat</translation>
 <translation id="7216409898977639127">Penyedia selular</translation>
@@ -4097,13 +4149,14 @@
 <translation id="7352651011704765696">Kesilapan telah berlaku</translation>
 <translation id="735361434055555355">Memasang Linux...</translation>
 <translation id="735745346212279324">VPN diputuskan sambungan</translation>
+<translation id="7359359531237882347">Menyalin <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="7359588939039777303">Iklan disekat.</translation>
 <translation id="7360183604634508679">Menu penanda halaman</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> halaman ke <ph name="PRINTER_NAME" /></translation>
 <translation id="7361297102842600584">Klik kanan untuk menjalankan <ph name="PLUGIN_NAME" /></translation>
 <translation id="7361537270840348817">Putuskan sambungan telefon anda daripada Chromebook</translation>
-<translation id="7362862325990022643">https://youtube.com</translation>
 <translation id="7363117941401515667">Dikemas kini <ph name="HOURS" /> jam yang lalu</translation>
+<translation id="7363260028279024205">{NUM_TABS,plural, =1{Semat Tab}other{Semat Tab}}</translation>
 <translation id="7364796246159120393">Pilih Fail</translation>
 <translation id="7366415735885268578">Tambahkan tapak</translation>
 <translation id="7366909168761621528">Data penyemakan imbas</translation>
@@ -4117,6 +4170,7 @@
 <translation id="7378812711085314936">Dapatkan sambungan data</translation>
 <translation id="7384292194278095697">Peranti ini tidak disokong lagi</translation>
 <translation id="7385854874724088939">Sesuatu tidak kena apabila mencuba untuk mencetak.  Sila periksa pencetak anda dan cuba semula.</translation>
+<translation id="7385896526023870365">Sambungan ini tiada akses tapak tambahan.</translation>
 <translation id="7388044238629873883">Anda hampir selesai!</translation>
 <translation id="7388222713940428051">Buka tetingkap Tetamu</translation>
 <translation id="7392118418926456391">Imbasan virus gagal</translation>
@@ -4132,6 +4186,7 @@
 <translation id="741204030948306876">Ya, saya setuju</translation>
 <translation id="7412226954991670867">Memori GPU</translation>
 <translation id="7414464185801331860">18x</translation>
+<translation id="7415353017141825619">{NUM_TABS,plural, =1{Semat tab}other{Semat tab}}</translation>
 <translation id="7416362041876611053">Ralat rangkaian tidak diketahui</translation>
 <translation id="7417705661718309329">Peta Google</translation>
 <translation id="741906494724992817">Apl ini tidak memerlukan kebenaran khas.</translation>
@@ -4180,10 +4235,10 @@
 <translation id="7494065396242762445">Buka Tetapan Windows</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Terlupa kata laluan lama anda?</translation>
+<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> dan data yang berkaitan akan dialih keluar daripada peranti ini.</translation>
 <translation id="7497215489070763236">Sijil CA pelayan</translation>
 <translation id="7497981768003291373">Anda tiada log teks WebRTC yang dirakam baru-baru ini.</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
-<translation id="7503127198245469314">Alih keluar set kepala untuk menyekat atau membenarkan paparan pada desktop</translation>
 <translation id="7503191893372251637">Jenis Sijil Netscape</translation>
 <translation id="7503821294401948377">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan penyemak imbas.</translation>
 <translation id="750509436279396091">Buka folder muat turun</translation>
@@ -4271,6 +4326,7 @@
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" ingin mengalih keluar "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7652808307838961528">Edit orang, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apl, sambungan dan skrip pengguna tidak boleh ditambahkan daripada tapak web ini</translation>
+<translation id="7654209398114106148">Mengalihkan <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="7654941827281939388">Akaun ini telah digunakan pada komputer ini.</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7659584679870740384">Anda tiada kebenaran untuk menggunakan peranti ini. Sila hubungi pentadbir untuk mendapatkan kebenaran log masuk.</translation>
@@ -4409,6 +4465,7 @@
     <ph name="BR" />
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" />  Sistem akan mengebut semula semasa proses ini.</translation>
+<translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7829298379596169484">Mengakses input audio</translation>
 <translation id="7831491651892296503">Ralat mengkonfigurasi rangkaian</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -4440,6 +4497,7 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Digandingkan</translation>
 <translation id="7870730066603611552">Semak pilihan penyegerakan selepas persediaan</translation>
 <translation id="7870790288828963061">Tiada apl Kiosk dengan versi lebih baharu dijumpai. Tiada apa-apa untuk dikemas kini. Sila alih keluar batang USB.</translation>
+<translation id="7873831373602885875">Tidak boleh disimpan ke <ph name="FOLDER_NAME" />. Semua pengeditan akan disimpan ke <ph name="DOWNLOADS_FOLDER" /> dalam folder Muat Turun.</translation>
 <translation id="7874257161694977650">Latar Chrome</translation>
 <translation id="7877451762676714207">Ralat pelayan tidak diketahui. Sila cuba lagi atau hubungi pentadbir pelayan.</translation>
 <translation id="7877680364634660272">Lawatan</translation>
@@ -4476,11 +4534,11 @@
 <translation id="7925285046818567682">Menunggu untuk <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Jangan gunakan data mudah alih untuk penyegerakan</translation>
 <translation id="7926423016278357561">Ini bukan saya.</translation>
-<translation id="7927336497913514109">Persediaan Lebih Baik Bersama tidak dapat diselesaikan</translation>
 <translation id="7928710562641958568">Keluarkan peranti</translation>
 <translation id="7930294771522048157">Kaedah pembayaran yang disimpan akan dipaparkan di sini</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> berkongsi skrin dan audio anda.</translation>
 <translation id="7931318309563332511">Tidak diketahui</translation>
+<translation id="7933314993013528982">{NUM_TABS,plural, =1{Nyahredam Tapak}other{Nyahredam Tapak}}</translation>
 <translation id="7934414805353235750"><ph name="URL" /> mahu memainkan kandungan yang dilindungi. Identiti peranti anda akan disahkan oleh Google.</translation>
 <translation id="793531125873261495">Ralat memuat turun mesin maya. Sila cuba lagi.</translation>
 <translation id="7938594894617528435">Di luar talian pada masa ini</translation>
@@ -4533,6 +4591,7 @@ Fail Kunci: <ph name="KEY_FILE" />
 Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta versi baharu sambungan anda.</translation>
 <translation id="799923393800005025">Boleh lihat</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
+<translation id="8000467600002607205">{NUM_TABS,plural, =1{Tutup Tab}other{Tutup Tab}}</translation>
 <translation id="8004582292198964060">Penyemak Imbas</translation>
 <translation id="8005600846065423578">Sentiasa benarkan <ph name="HOST" /> untuk melihat papan keratan</translation>
 <translation id="8008356846765065031">Internet terputus sambungan. Sila periksa sambungan internet anda.</translation>
@@ -4563,6 +4622,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8037357227543935929">Tanya (lalai)</translation>
 <translation id="803771048473350947">Fail</translation>
 <translation id="8038111231936746805">(lalai)</translation>
+<translation id="8042602468072383151">Audio <ph name="AUDIO_TYPE" /></translation>
 <translation id="8044899503464538266">Perlahan</translation>
 <translation id="8045253504249021590">Penyegerakan telah dihentikan melalui Papan Pemuka Google.</translation>
 <translation id="8045923671629973368">Masukkan ID aplikasi atau URL gedung web</translation>
@@ -4578,6 +4638,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8059417245945632445">&amp;Periksa peranti</translation>
 <translation id="8063235345342641131">Avatar hijau lalai</translation>
 <translation id="8064671687106936412">Kekunci:</translation>
+<translation id="8066773524873206594">Semua pengeditan akan disimpan ke <ph name="DOWNLOADS_FOLDER" />.</translation>
 <translation id="806812017500012252">Aturkan semula mengikut tajuk</translation>
 <translation id="8068253693380742035">Sentuh untuk mengelog masuk</translation>
 <translation id="8069615408251337349">Cetakan Awan Google</translation>
@@ -4648,6 +4709,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8177196903785554304">Butiran Rangkaian</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">halaman</translation>
+<translation id="8180294223783876911">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" boleh membaca dan memadamkan fail imej, video dan bunyi di lokasi yang ditandai.</translation>
 <translation id="8181215761849004992">Tidak dapat menghubungkan domain. Semak akaun anda untuk mengetahui sama ada anda mempunyai keistimewaan yang mencukupi untuk menambahkan peranti.</translation>
 <translation id="8182664696082410784"><ph name="REASON" />
@@ -4670,6 +4732,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8203732864715032075">Hantar pemberitahuan kepada anda dan tetapkan mengingati komputer ini untuk Messages sebagai pilihan lalai. <ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="8203795194971602413">Klik kanan</translation>
 <translation id="8206354486702514201">Tetapan ini dikuatkuasakan oleh pentadbir anda.</translation>
+<translation id="8206581664590136590">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Sayu</translation>
 <translation id="8209677645716428427">Pengguna diselia boleh meneroka web dengan bimbingan anda. Sebagai pengurus pengguna diselia dalam Chrome, anda boleh:</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung}other{Muat turun sedang berlangsung}}</translation>
@@ -4757,6 +4820,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8343956361364550006">Gunakan lebar jalur tinggi untuk mendapatkan video dan animasi yang terbaik. Orang lain yang menggunakan sambungan perlahan mungkin tidak dapat melihat kandungan anda.</translation>
 <translation id="8351419472474436977">Pelanjutan telah mengambil alih kawalan tetapan proksi anda, yang bermakna pelanjutan ini boleh mengubah, menghentikan atau mendengar secara senyap terhadap apa sahaja yang anda lakukan dalam talian. Jika anda tidak pasti mengapa 
 perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
+<translation id="835238322900896202">Ralat berlaku semasa penyahpasangan. Sila nyahpasang melalui Terminal.</translation>
 <translation id="8352772353338965963">Tambahkan akaun untuk berbilang log masuk. Semua akaun dilog masuk boleh diakses tanpa kata laluan, jadi ciri ini mesti digunakan dengan akaun yang dipercayai sahaja.</translation>
 <translation id="8353683614194668312">Item boleh:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> - <ph name="COUNT" /></translation>
@@ -4767,6 +4831,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8366396658833131068">Sambungan rangkaian anda sudah dipulihkan. Sila pilih rangkaian lain atau tekan butang 'Teruskan' di bawah untuk melancarkan apl kios anda.</translation>
 <translation id="8368859634510605990">&amp;Buka semua penanda halaman</translation>
 <translation id="8371695176452482769">Cakap sekarang</translation>
+<translation id="8371925839118813971">{NUM_TABS,plural, =1{Redam Tapak}other{Redam Tapak}}</translation>
 <translation id="8372369524088641025">Kekunci WEP teruk</translation>
 <translation id="8378714024927312812">Diurus oleh organisasi anda</translation>
 <translation id="8379878387931047019">Peranti ini tidak menyokong jenis kunci keselamatan yang diminta oleh tapak web ini</translation>
@@ -4889,7 +4954,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8571213806525832805">4 minggu terakhir</translation>
 <translation id="8574990355410201600">Sentiasa benarkan bunyi pada <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Tekan dan tahan <ph name="KEY_EQUIVALENT" /> untuk Berhenti</translation>
-<translation id="8578421807258988326">{0,plural, =1{Tutup tetingkap ini}other{Tutup semua tetingkap inkognito}}</translation>
 <translation id="8578639784464423491">Tidak boleh melebihi 99 huruf</translation>
 <translation id="8579285237314169903">Menyegerakkan <ph name="NUMBER_OF_FILES" /> item...</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>
@@ -4898,6 +4962,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8588866096426746242">Tunjukkan statistik profil</translation>
 <translation id="8590375307970699841">Sediakan kemas kini automatik</translation>
 <translation id="8592141010104017453">Jangan tunjukkan pemberitahuan sama sekali</translation>
+<translation id="8593121833493516339">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8594908476761052472">Rakam video</translation>
 <translation id="8596540852772265699">Fail Tersuai</translation>
 <translation id="8597845839771543242">Format sifat:</translation>
@@ -4988,6 +5053,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8717864919010420084">Salin Pautan</translation>
 <translation id="8719653885894320876">Muat turun <ph name="PLUGIN_NAME" /> gagal</translation>
 <translation id="8720816553731218127">Pemulaan atribut masa pemasangan telah tamat masa.</translation>
+<translation id="8722912030556880711">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">Apabila anda melihat ikon ini, gunakan cap jari anda untuk pengenalan atau untuk membenarkan pembelian.</translation>
 <translation id="8724409975248965964">Cap jari ditambahkan</translation>
 <translation id="8724859055372736596">&amp;Paparkan dalam Folder</translation>
@@ -5049,6 +5115,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Kedai Web</translation>
 <translation id="8808686172382650546">Kucing</translation>
+<translation id="8810671769985673465">Gagal mengezip, item wujud: "<ph name="FILE_NAME" />"</translation>
 <translation id="8813698869395535039">Tidak dapat mengelog masuk ke <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">helai kertas</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -5074,7 +5141,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8846141544112579928">Mencari papan kekunci...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Apabila anda menyambungkan peranti anda, anda bersetuju bahawa Chromebook anda boleh:</translation>
-<translation id="8858253359017755945">https://translate.google.com</translation>
 <translation id="8859057652521303089">Pilih bahasa anda:</translation>
 <translation id="8859174528519900719">Subbingkai: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Hamparan Excel</translation>
@@ -5098,6 +5164,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8888432776533519951">Warna:</translation>
 <translation id="8890516388109605451">Sumber</translation>
 <translation id="8892168913673237979">Sudah bersedia!</translation>
+<translation id="8893801527741465188">Penyahpasangan selesai</translation>
 <translation id="8893928184421379330">Maaf, peranti <ph name="DEVICE_LABEL" /> tidak dapat dikenali.</translation>
 <translation id="8895454554629927345">Senarai penanda halaman</translation>
 <translation id="8898786835233784856">Pilih Tab Seterusnya</translation>
@@ -5110,6 +5177,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8910222113987937043">Perubahan kepada penanda halaman, sejarah, kata laluan dan tetapan anda yang lain tidak akan disegerakkan ke Akaun Google anda lagi. Namun begitu, data anda yang sedia ada akan terus disimpan dalam Akaun Google anda dan boleh diurus di <ph name="BEGIN_LINK" />Papan Pemuka Google<ph name="END_LINK" />.</translation>
 <translation id="8912362522468806198">Akaun Google</translation>
 <translation id="8912793549644936705">Regang</translation>
+<translation id="891365694296252935">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Jika Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Memuatkan cadangan</translation>
 <translation id="8916476537757519021">Subbingkai Inkognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919275547519617350">Log masuk dan hidupkan penyegerakan untuk mendapatkan semua kata laluan anda pada semua peranti anda.</translation>
@@ -5187,6 +5255,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Tunjukkan Yang Asal</translation>
 <translation id="9038430547971207796">Selepas ini, telefon anda akan membuka kunci <ph name="DEVICE_TYPE" />. Matikan Smart Lock dalam Tetapan.</translation>
+<translation id="9038620279323455325">Fail bernama "<ph name="FILE_NAME" />" sudah wujud. Sila pilih nama lain.</translation>
 <translation id="9038649477754266430">Gunakan perkhidmatan ramalan untuk memuatkan halaman lebih cepat</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Kemas kini kata laluan untuk <ph name="ORIGIN" />?</translation>
@@ -5230,6 +5299,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9101691533782776290">Lancarkan apl</translation>
 <translation id="9102610709270966160">Dayakan Sambungan</translation>
 <translation id="9103868373786083162">Tekan untuk kembali, menu konteks untuk melihat sejarah</translation>
+<translation id="9104396740804929809">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Untuk mengosongkan ruang, padamkan fail daripada storan peranti.</translation>
 <translation id="9110990317705400362">Kami sentiasa mencari cara-cara untuk membuat penyemakan imbas anda lebih selamat. Sebelum ini, mana-mana laman web boleh menggesa anda untuk menambah sambungan ke dalam penyemak imbas anda. Dalam versi terbaharu Google Chrome, anda mesti memberitahu Chrome dengan jelas bahawa anda mahu memasang sambungan ini dengan menambahnya melalui halaman Sambungan. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>
@@ -5245,7 +5315,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> lagi)</translation>
 <translation id="9128870381267983090">Sambung ke rangkaian</translation>
-<translation id="9129010913019873477"><ph name="PERCENTAGE" /> (lalai)</translation>
 <translation id="9130015405878219958">Mod tidak sah dimasukkan.</translation>
 <translation id="9130775360844693113">Ahli '<ph name="DESTINATION_NAME" />' akan mendapat akses ke item ini.</translation>
 <translation id="9131487537093447019">Hantar mesej kepada dan terima mesej daripada peranti Bluetooth.</translation>
@@ -5276,12 +5345,14 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="9170884462774788842">Program lain pada komputer anda menambah tema yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="9173995187295789444">Mengimbas peranti Bluetooth...</translation>
+<translation id="9176476835295860688">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. <ph name="BEGIN_LINK1" />Tetapan<ph name="END_LINK1" /> ini dikuatkuasakan oleh pemilik. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke akaun Google anda. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Peranti Bluetooth disambungkan</translation>
 <translation id="9177499212658576372">Anda sedang disambungkan ke rangkaian <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9179734824669616955">Sediakan Linux (Beta) pada <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="9180281769944411366">Proses ini mungkin mengambil masa beberapa minit. Memulakan bekas Linux.</translation>
 <translation id="9180380851667544951">Tapak boleh berkongsi skrin anda</translation>
 <translation id="9188441292293901223">Sila kemas kini telefon anda kepada versi Android yang lebih baharu untuk membuka kunci <ph name="DEVICE_TYPE" /> ini.</translation>
+<translation id="9188732951356337132">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + kekunci praperkongsian</translation>
 <translation id="920045321358709304">Cari <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Pilihan kunci skrin</translation>
@@ -5297,7 +5368,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9220525904950070496">Alih keluar akaun</translation>
 <translation id="9220820413868316583">Angkat kemudian cuba lagi.</translation>
 <translation id="923467487918828349">Paparkan Semua</translation>
-<translation id="928985544179707652">Sambungan:</translation>
 <translation id="930268624053534560">Cap Masa Terperinci</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="932508678520956232">Tidak dapat memulakan percetakan.</translation>
@@ -5341,6 +5411,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="984275831282074731">Kaedah pembayaran</translation>
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="987897973846887088">Tiada imej tersedia</translation>
+<translation id="988685240266037636">Fail bernama "<ph name="FILE_NAME" />" sudah wujud. Adakah anda mahu menggantikannya?</translation>
 <translation id="988978206646512040">Ungkapan laluan yang dikosongkan tidak dibenarkan</translation>
 <translation id="992032470292211616">Sambungan, apl dan tema boleh mengancam peranti anda. Adakah anda pasti mahu meneruskan?</translation>
 <translation id="992592832486024913">Lumpuhkan ChromeVox (maklum balas dituturkan)</translation>
@@ -5348,5 +5419,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="994289308992179865">&amp;Gelung</translation>
 <translation id="995782501881226248">YouTube</translation>
 <translation id="996250603853062861">Mengukuhkan sambungan selamat...</translation>
+<translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>
 <translation id="998747458861718449">S&amp;emak</translation>
 </translationbundle>

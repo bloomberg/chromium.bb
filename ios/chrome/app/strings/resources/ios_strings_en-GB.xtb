@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Close All Tabs</translation>
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1265739287306757398">Learn How</translation>
-<translation id="127138278192656016">Use sync and all services</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1323735185997015385">Delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
@@ -55,7 +54,6 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
 <translation id="1740468249224277719">Double tap to install.</translation>
 <translation id="1746815479209538200">To browse the web, add a new tab.</translation>
-<translation id="17513872634828108">Open tabs</translation>
 <translation id="1752547299766512813">Save Passwords</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="1809939268435598390">Delete Folder</translation>
@@ -242,13 +240,11 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4854345657858711387">Set A Passcode</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4881695831933465202">Open</translation>
-<translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
 <translation id="4895709476292058519">Change accounts</translation>
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
 <translation id="4979397965658815378">Sign in with your Google Account to get your bookmarks, passwords, history and other settings on all your devices</translation>
-<translation id="5004416275253351869">Google activity controls</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
 <translation id="5011684439661633295">Hi <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -261,7 +257,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5186185447130319458">Private</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5215116848420601511">Payment methods and addresses using Google Pay</translation>
 <translation id="5228579091201413441">Enable sync</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Show</translation>

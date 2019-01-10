@@ -129,7 +129,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1943432128510653496">Save passwords</translation>
 <translation id="1946005195648379376">Control how Google uses your browsing history to personalise Search and other Google services.</translation>
 <translation id="1952172573699511566">Websites will show text in your preferred language, when possible.</translation>
-<translation id="195283394249132567">Personalised Google services</translation>
 <translation id="1960290143419248813">Chrome updates are no longer supported for this version of Android</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
@@ -257,7 +256,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2910701580606108292">Ask before allowing sites to play protected content</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
-<translation id="2943166482989655199">Improve Chrome and its security by sending system and usage data to Google</translation>
+<translation id="2941880727166628951">Send to my devices</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
@@ -291,6 +290,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3236059992281584593">1 min left</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
+<translation id="3259723213051400722">Please try again.</translation>
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3269956123044984603">To get your tabs from your other devices, turn on “Auto-sync data” in Android account settings.</translation>
@@ -315,7 +315,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3445014427084483498">Just now</translation>
 <translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
-<translation id="3485359633434254965">{FILES,plural, =1{%1$d file downloaded}other{%1$d files downloaded}}</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -326,7 +325,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3552151358455404883">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Add to contacts</translation>
 <translation id="3568688522516854065">To get your tabs from your other devices, sign in and turn on sync</translation>
-<translation id="3569641550016028782">In Lite mode, Chrome loads pages faster and uses up to 60% less data.</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="358794129225322306">Allow a site to download multiple files automatically.</translation>
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
@@ -398,7 +396,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Managed by your administrator</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
-<translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmarks}}</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4159800535322890630">Block sites from accessing your sensors</translation>
 <translation id="4165986682804962316">Site settings</translation>
@@ -508,7 +505,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4943872375798546930">No results</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
 <translation id="4961107849584082341">Translate this page to any language</translation>
-<translation id="4961334780091921942">Your passwords, history &amp; more on all devices</translation>
 <translation id="4961700429721424617">You are signing out of an account managed by <ph name="MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
 <translation id="497421865427891073">go forward</translation>
 <translation id="4988210275050210843">Downloading file (<ph name="MEGABYTES" />).</translation>
@@ -541,7 +537,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5224771365102442243">With video</translation>
 <translation id="5233638681132016545">New tab</translation>
-<translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /> can be customised at any time. Google may use content on sites that you visit, plus browser activity and interactions, to personalise Chrome and other Google services such as Translate, Search and ads.</translation>
 <translation id="526421993248218238">Can't load this page</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
@@ -555,12 +550,12 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
-<translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5363230136052241468">Tap the home button to load the new tab page</translation>
 <translation id="5372829067651257087">URL copied.</translation>
 <translation id="5391532827096253100">Your connection to this site is not secure. Site information</translation>
 <translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
+<translation id="5411915800973845744">*New* Sneak peek image</translation>
 <translation id="5414836363063783498">Verifying…</translation>
 <translation id="5423934151118863508">Your most visited pages will appear here</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB available</translation>
@@ -649,7 +644,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
-<translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="6000066717592683814">Keep Google</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
@@ -670,6 +664,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6171019622954353983">By continuing, you agree that Chrome will send data from Chrome Auto-fill, the site’s URL and its content to Google to provide this service.\n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Auto-fill.  <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Blocked for current search engine</translation>
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="618993374665929060">More like this opened at full height</translation>
@@ -769,8 +764,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6864459304226931083">Download image</translation>
 <translation id="6865313869410766144">Autofill form data</translation>
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
-<translation id="6873650893489565150">In Lite mode, Chrome loads pages faster and uses up to 60% less data. Google's cloud technology optimises the pages that 
-you visit.</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Unlock to copy your password</translation>
 <translation id="6896758677409633944">Copy</translation>
@@ -1001,6 +994,7 @@ you visit.</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
 <translation id="860043288473659153">Cardholder name</translation>
+<translation id="8604763363205185560">Help improve Chrome and its security</translation>
 <translation id="8609465669617005112">Move up</translation>
 <translation id="8616006591992756292">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
@@ -1030,7 +1024,6 @@ you visit.</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d open tab, tap to switch tabs}other{%1$d open tabs, tap to switch tabs}}</translation>
 <translation id="8905378131945614900">Failed to install VR module</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>

@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1340068511406764697">మీరు తప్పనిసరిగా పోస్టల్ కోడ్‌ను అందించాలి, ఉదాహరణకు <ph name="EXAMPLE" />. మీ పోస్టల్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
+<translation id="1340068511406764697">మీరు తప్పనిసరిగా పోస్టల్ కోడ్‌ను అందించాలి. ఉదాహరణకు <ph name="EXAMPLE" />. మీ పోస్టల్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
 <translation id="2053553514270667976">జిప్ కోడ్</translation>
 <translation id="2096368010154057602">శాఖ</translation>
 <translation id="2577522251608256362">పరిసరాలు</translation>
-<translation id="3050787670591910834">మీరు తప్పనిసరిగా పోస్టల్ కోడ్‌ను అందించాలి, ఉదాహరణకు <ph name="EXAMPLE" />.</translation>
+<translation id="3050787670591910834">మీరు తప్పనిసరిగా పోస్టల్ కోడ్‌ను అందించాలి. ఉదాహరణకు <ph name="EXAMPLE" />.</translation>
 <translation id="3174168572213147020">దీవి</translation>
-<translation id="3713769522066937702">ఈ జిప్ కోడ్ ఆకృతి గుర్తించబడలేదు. ఇది చెల్లుబాటు అయ్యే జిప్ కోడ్‌కు ఉదాహరణ: <ph name="EXAMPLE" />. మీ జిప్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
+<translation id="3713769522066937702">ఈ జిప్ కోడ్ ఆకృతి గుర్తించబడలేదు. ఇది చెల్లుబాటు అయ్యే జిప్ కోడ్‌కు ఉదాహరణ: <ph name="EXAMPLE" />. మీ జిప్ కోడ్ తెలియదా? దాన్ని<ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
 <translation id="3882422586004212847">ఈ పోస్టల్ కోడ్ ఆకృతి గుర్తించబడలేదు. ఇది చెల్లుబాటు అయ్యే పోస్టల్ కోడ్‌కు ఉదాహరణ: <ph name="EXAMPLE" />.</translation>
 <translation id="3885155851504623709">పారిష్</translation>
 <translation id="43113324827158664">మీరు దీన్ని ఖాళీగా వదిలిపెట్టకూడదు.</translation>
 <translation id="4376888869070172068">ఈ పోస్టల్ కోడ్ ఆకృతి గుర్తించబడలేదు.</translation>
-<translation id="4518701284698680367">మీరు తప్పనిసరిగా జిప్ కోడ్‌ను అందించాలి, ఉదాహరణకు <ph name="EXAMPLE" />. మీ జిప్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
+<translation id="4518701284698680367">మీరు తప్పనిసరిగా జిప్ కోడ్‌ను అందించాలి. ఉదాహరణకు <ph name="EXAMPLE" />. మీ జిప్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
 <translation id="5089810972385038852">రాష్ట్రం</translation>
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
 <translation id="5327248766486351172">పేరు</translation>
@@ -43,5 +43,5 @@
 <translation id="8449204988444194299">తపాలా పట్టణం</translation>
 <translation id="8471101563037901452">ఈ పోస్టల్ కోడ్ ఈ చిరునామాలో మిగిలిన భాగానికి సరిపోలడం లేదు. మీ పోస్టల్ కోడ్ తెలియదా? దాన్ని <ph name="BEGIN_LINK" />ఇక్కడ<ph name="END_LINK" /> కనుగొనండి.</translation>
 <translation id="9104066683700680171">ఈ పోస్టల్ కోడ్ ఈ చిరునామాలోని మిగిలిన భాగానికి సరిపోలుతున్నట్లు కనిపించడం లేదు.</translation>
-<translation id="9207002871037636573">మీరు తప్పనిసరిగా జిప్ కోడ్‌ను అందించాలి, ఉదాహరణకు <ph name="EXAMPLE" />.</translation>
+<translation id="9207002871037636573">మీరు తప్పనిసరిగా జిప్ కోడ్‌ను అందించాలి. ఉదాహరణకు <ph name="EXAMPLE" />.</translation>
 </translationbundle>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Meer informatie over de laatste update van <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Uitschakelen</translation>
+<translation id="1999763610967697511">Slepen en neerzetten</translation>
 <translation id="2012624427112548395">Ctrl+Zoeken+H</translation>
 <translation id="2016340657076538683">Typ een bericht</translation>
 <translation id="2050339315714019657">Staand</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Update beschikbaar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is een beheerde sessie die wordt beheerd door <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Verbonden met <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Klik met linkermuisknop</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt weergegeven: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2484513351006226581">Druk op <ph name="KEYBOARD_SHORTCUT" /> om van toetsenbordindeling te wisselen.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
 <translation id="3255483164551725916">Wat kun je doen?</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan later nog inloggen.</translation>
 <translation id="332587331255250389">Vervang de batterij</translation>
 <translation id="3351879221545518001">Je cast momenteel een scherm.</translation>
 <translation id="3364721542077212959">Stylustools</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="4849058404725798627">Object met toetsenbordfocus markeren</translation>
+<translation id="485592688953820832">Geen actie (onderbreken)</translation>
 <translation id="4872237917498892622">Alt+Zoeken of Shift</translation>
 <translation id="4890187583552566966">De Google Assistent is uitgeschakeld door je beheerder.</translation>
 <translation id="4895488851634969361">De batterij is vol.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Ingeschakeld, alle apps</translation>
 <translation id="8132793192354020517">Verbonden met <ph name="NAME" /></translation>
 <translation id="813913629614996137">Starten...</translation>
+<translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> in gebruik</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
 <translation id="8192202700944119416">Meldingen zijn verborgen.</translation>
+<translation id="8203795194971602413">Klik met rechtermuisknop</translation>
 <translation id="8236042855478648955">Tijd voor een pauze</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8297006494302853456">Zwak</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Niet verbonden</translation>
 <translation id="8877788021141246043">Stel een herinnering in</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="8940956008527784070">Batterij is bijna leeg (<ph name="PERCENTAGE" />%)</translation>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Vaadake lisateavet operatsioonisüsteemi <ph name="SYSTEM_APP_NAME" /> uusima värskenduse kohta</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
+<translation id="1999763610967697511">Pukseerimine</translation>
 <translation id="2012624427112548395">Ctrl + otsinguklahv + H</translation>
 <translation id="2016340657076538683">Sisestage sõnum</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Värskendus on saadaval</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> on hallatud seanss, mida haldab <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Ühendatud võrguga <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Vasakklikk</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="2484513351006226581">Klaviatuuripaigutuse muutmiseks vajutage klahvikombinatsiooni <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Ühtegi mobiilsidevõrku pole saadaval</translation>
 <translation id="3255483164551725916">Mida sa teha oskad?</translation>
 <translation id="3294437725009624529">Külaline</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> saab siiski hiljem sisse logida.</translation>
 <translation id="332587331255250389">Vahetage akut</translation>
 <translation id="3351879221545518001">Kannate praegu oma ekraani üle.</translation>
 <translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
@@ -231,6 +234,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4849058404725798627">Klaviatuuri fookusega objekti esiletõstmine</translation>
+<translation id="485592688953820832">Toiming puudub (peatamine)</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="4890187583552566966">Administraator on Google'i assistendi keelanud.</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
@@ -420,9 +424,12 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8113423164597455979">Sisse lülitatud, kõik rakendused</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
+<translation id="8142441511840089262">Topeltklikk</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
+<translation id="8167567890448493835">Kasutusel: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
 <translation id="8192202700944119416">Märguanded on peidetud.</translation>
+<translation id="8203795194971602413">Paremklikk</translation>
 <translation id="8236042855478648955">Aeg pausi pidada</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8297006494302853456">Nõrk</translation>
@@ -467,7 +474,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8874184842967597500">Ühendus puudub</translation>
 <translation id="8877788021141246043">Määra meeldetuletus</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google'i assistent ei räägi selles keeles.</translation>
 <translation id="8938800817013097409">C-tüüpi USB-seade (parempoolne port taga)</translation>
 <translation id="8940956008527784070">Aku tühjeneb (<ph name="PERCENTAGE" />%)</translation>

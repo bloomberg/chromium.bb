@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Leggi ulteriori informazioni sull'ultimo aggiornamento di <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Spegni</translation>
+<translation id="1999763610967697511">Trascinare</translation>
 <translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
 <translation id="2016340657076538683">Digita un messaggio</translation>
 <translation id="2050339315714019657">Verticale</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Aggiornamento disponibile</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> è una sessione gestita da <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Connesso a <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Clic con il pulsante sinistro</translation>
 <translation id="2429753432712299108">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2484513351006226581">Premi <ph name="KEYBOARD_SHORTCUT" /> per cambiare il layout della tastiera.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3294437725009624529">Ospite</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
+<translation id="485592688953820832">Nessuna azione (pausa)</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
 <translation id="4890187583552566966">L'Assistente Google è stato disattivato dall'amministratore.</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">Attive, tutte le app</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
+<translation id="8142441511840089262">Doppio clic</translation>
 <translation id="8142699993796781067">Rete privata</translation>
+<translation id="8167567890448493835">In uso: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
+<translation id="8203795194971602413">Clic con il pulsante destro</translation>
 <translation id="8236042855478648955">È ora di fare una pausa</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8297006494302853456">Debole</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">Non connessa</translation>
 <translation id="8877788021141246043">Imposta un promemoria</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">L'Assistente Google non parla questa lingua.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE" />%)</translation>

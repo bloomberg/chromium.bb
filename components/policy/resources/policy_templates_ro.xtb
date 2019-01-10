@@ -24,6 +24,14 @@
       Dacă această politică este dezactivată sau nu este configurată, cookie-urile setate de furnizorul de identitate sunt transferate în profilul utilizatorului doar la prima sa conectare pe un dispozitiv.
 
       Această politică afectează doar utilizatorii ale căror domenii corespund cu domeniul de înregistrare al dispozitivului. Pentru ceilalți utilizatori, cookie-urile setate de furnizorul de identitate sunt transferate în profilurile acestora doar la prima conectare pe un dispozitiv.</translation>
+<translation id="1030120600562044329">Permite raportarea anonimă la Google a datelor despre utilizare și blocări referitoare la <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Dacă activezi această setare, raportarea anonimă a datelor despre utilizare și blocări este trimisă la Google.  Dacă dezactivezi setarea, aceste informații nu sunt trimise
+      la Google.  În ambele cazuri, utilizatorii nu pot modifica sau anula această setare.
+      Dacă această politică nu este configurată, setarea va fi ceea ce utilizatorul a ales la instalare sau la prima rulare.
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.
+      (Pentru Chrome OS, consultați DeviceMetricsReportingEnabled.)</translation>
 <translation id="1035385378988781231">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> va folosi NTLM la autentificare.
 
       Când această politică este activată, va fi folosit protocolul NTLM pentru autentificare la dispozitivele de stocare SMB dacă este necesar.
@@ -59,6 +67,11 @@ Această politică va înlocui UnsafelyTreatInsecureOriginAsSecure dacă este pr
 
 Pentru mai multe informații despre contextele sigure, accesează https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="1107764601871839136">Specifică întreaga perioadă (în ore) a memoriei cache Group Policy Object (GPO). În loc să descarce din nou GPO-urile la fiecare preluare a politicii, sistemul poate reutiliza GPO-urile din cache atât timp cât versiunea lor nu se schimbă. Politica specifică durata maximă în care CPO-urile din cache pot fi reutilizate înainte să fie descărcate din nou. Repornirea și deconectarea șterge memoria cache.
+
+      Dacă politica nu este configurată, GPO-urile din cache pot fi reutilizate timp de cel mult 25 de ore.
+
+      Dacă politica este setată la 0, stocarea GPO-urilor în memoria cache este dezactivată. Reține că acest lucru crește gradul de încărcare a serverului, deoarece GPO-urile sunt descărcate din nou la fiecare preluare a politicii, chiar dacă nu s-au modificat.</translation>
 <translation id="1117535567637097036">Handlerele de protocol stabilite prin această politică nu sunt folosite pentru gestionarea intențiilor Android.</translation>
 <translation id="1118093128235245168">Permite site-urilor să-i solicite utilizatorului să acorde accesul la un dispozitiv USB conectat</translation>
 <translation id="1128903365609589950">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca fișierele din memoria cache pe disc.
@@ -155,6 +168,19 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
+<translation id="1431272318313028342">Activează funcția Navigare sigură din <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
+
+      Dacă activezi această setare, Navigarea sigură este activată întotdeauna.
+
+      Dacă dezactivezi această setare, Navigarea sigură nu este niciodată activată.
+
+      Dacă activezi sau dezactivezi această setare, utilizatorii nu pot modifica sau ignora setarea „Activează protecția împotriva phishingului și a programelor malware” din <ph name="PRODUCT_NAME" />.
+
+      Dacă politica nu este configurată, această opțiune va fi activată, dar utilizatorul va putea să o modifice.
+
+      Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
 <translation id="1438739959477268107">Setarea prestabilită pentru generarea cheilor</translation>
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -261,9 +287,25 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1675002386741412210">Acceptat de:</translation>
 <translation id="1689963000958717134">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Setează o limită la preluarea valorii de bază pentru Variante</translation>
+<translation id="1717817358640580294">Dacă nu este configurată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba apoi utilizatorul dacă dorește să elimine software-ul nedorit. Utilizatorul poate alege să trimită la Google rezultatele curățării pentru a contribui la detectarea software-ului nedorit în viitor. Aceste rezultate conțin metadate ale fișierului, extensii instalate automat și chei de registru, așa cum este prevăzut în Documentația privind confidențialitatea Google Chrome.
+
+      Dacă este dezactivată, în cazul în care Chrome Cleanup detectează software nedorit, nu va trimite la Google rapoarte cu metadate privind scanarea, ignorând orice politică setată de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit.  Rezultatele curățării nu vor fi trimise la Google și utilizatorul nu va avea opțiunea de a le raporta.
+
+      Dacă este activată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit.  Rezultatele curățării vor fi trimise la Google și utilizatorul nu va avea opțiunea de a împiedica această acțiune.
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="172374442286684480">Permiteți tuturor site-urilor să seteze date locale</translation>
 <translation id="1734716591049455502">Configurați opțiunile de acces la distanță</translation>
 <translation id="1736269219679256369">Permite continuarea navigării de pe pagina de avertisment SSL</translation>
+<translation id="1745780278307622857">Identifică dacă <ph name="PRODUCT_NAME" /> poate permite descărcarea fără verificările funcției Navigare sigură atunci când fișierele provin dintr-o sursă de încredere.
+
+      Când nu este activată, fișierele descărcate nu vor fi trimise spre a fi analizate de Navigarea sigură atunci când fișierele provin dintr-o sursă de încredere.
+
+      Când nu este configurată (sau când este activată), fișierele descărcate sunt trimise spre a fi analizate de Navigarea sigură, chiar și atunci când fișierele provin dintr-o sursă de încredere.
+
+      Reține că aceste restricții se aplică descărcărilor declanșate din conținutul paginii web și din opțiunea meniului contextual „descarcă linkul...”. Aceste restricții nu se aplică la salvarea/descărcarea paginii afișate sau la salvarea ca PDF din opțiunile de printare.
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="1749815929501097806">Setează Termenii și condițiile pe care trebuie să le accepte utilizatorul înainte de a începe o sesiune cu un cont local de pe dispozitiv.
 
       Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> va descărca Termenii și condițiile și i le va afișa utilizatorului de fiecare dată când începe o sesiune cu un cont local de pe dispozitiv. Utilizatorul va putea începe sesiunea doar după acceptarea Termenilor și a condițiilor.
@@ -274,6 +316,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1750315445671978749">Blochează toate descărcările</translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
+<translation id="1798559516913615713">Întreaga perioadă a memoriei cache GPO</translation>
 <translation id="1803646570632580723">Listare aplicații fixate de afișat în lansator</translation>
 <translation id="1808715480127969042">Blochează cookie-urile de pe aceste site-uri</translation>
 <translation id="1810261428246410396">Permite folosirea funcției Tethering instantaneu.</translation>
@@ -281,6 +324,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Politica trebuie să fie indicată ca un șir care exprimă adresa URL și hashingul în format JSON.</translation>
 <translation id="1827523283178827583">Utilizează servere proxy fixe</translation>
+<translation id="1831495419375964631">Această politică este o adresă URL care direcționează spre un fișier XML cu același format ca cel al politicii <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer. Această politică încarcă reguli dintr-un fișier XML, fără să permită accesul Internet Explorer la ele.
+
+      Când această politică nu este configurată sau nu este setată la o adresă URL validă, <ph name="PRODUCT_NAME" /> nu o folosește ca sursă de reguli pentru comutarea browserelor.
+
+      Când această politică este setată la un URL, <ph name="PRODUCT_NAME" /> descarcă lista de site-uri de la acea adresă URL și aplică regulile ca și când ar fi fost configurate cu politica <ph name="SITELIST_POLICY_NAME" />.
+
+      Pentru mai multe informații despre politica <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">Rata de actualizare pentru politica privind utilizatorii</translation>
 <translation id="1844620919405873871">Configurează politicile privind deblocarea rapidă.</translation>
 <translation id="1847960418907100918">Specifică parametrii utilizați la căutarea instant cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
@@ -327,6 +377,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este dezactivată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată.
 
       Dacă politica nu este configurată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată pe dispozitivele negestionate și activată pe dispozitivele gestionate.</translation>
+<translation id="1907431809333268751">Configurează lista de adrese URL de autentificare ca întreprindere (doar schemele HTTP și HTTPS). Amprenta parolei va fi scanată la aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprenta parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta parolei la aceste adrese URL pentru a detecta refolosirea parolelor.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta parolei doar la https://accounts.google.com.
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="1920046221095339924">Permite sesiunea gestionată pe dispozitiv</translation>
 <translation id="1929709556673267855">Specifică configurațiile pentru imprimantele companiei asociate dispozitivelor.
 
@@ -400,6 +456,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="209586405398070749">Canalul în versiune stabilă</translation>
 <translation id="2098658257603918882">Activează raportarea datelor privind utilizarea și blocările</translation>
 <translation id="2104418465060359056">Raportează informații despre extensii și pluginuri</translation>
+<translation id="2107601598727098402">
+        Această politică este învechită în M72. Folosește CloudManagementEnrollmentToken în schimb.
+        </translation>
 <translation id="2111016292707172233">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
 
       Dacă activezi această setare, funcția Atinge pentru a căuta va fi disponibilă utilizatorului și acesta va putea activa sau dezactiva funcția.
@@ -442,10 +501,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="214901426630414675">Restricționează modul de printare duplex</translation>
 <translation id="2149330464730004005">Activează printarea color</translation>
 <translation id="2156132677421487971">Configurează politicile pentru <ph name="PRODUCT_NAME" />, o funcție cu ajutorul căreia utilizatorii pot să trimită conținutul filelor, al site-urilor sau al desktopului din browser pe ecrane și sisteme audio aflate la distanță.</translation>
-<translation id="2163878108829382394">
-        Dacă această politică este activată, înregistrarea în gestionarea pentru cloud este obligatorie și blochează procesul de lansare al Chrome dacă eșuează.
-
-        Dacă această politică nu este setată sau este dezactivată, înregistrarea în gestionarea pentru cloud este opțională și nu blochează procesul de lansare al Chrome dacă eșuează.</translation>
 <translation id="2166472654199325139">Nu filtra conținutul pentru adulți de pe site-uri</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
@@ -587,6 +642,20 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această setare este dezactivată, utilizatorii nu pot să printeze din <ph name="PRODUCT_NAME" />. Printarea este dezactivată în meniul cheie, în extensii, în aplicațiile JavaScript etc. În momentul printării, utilizatorii pot printa din pluginuri care ocolesc <ph name="PRODUCT_NAME" />. De exemplu, anumite aplicații Flash au opțiunea de printare în propriul meniu contextual, care nu este inclus în această politică.</translation>
 <translation id="2518231489509538392">Permiteți redarea audio</translation>
 <translation id="2521581787935130926">Afișați comanda rapidă pentru aplicații în bara de marcaje</translation>
+<translation id="2529659024053332711">Îți permite să specifici comportamentul la pornire.
+
+          Dacă alegi „Deschide pagina Filă nouă”, pagina Filă nouă va fi întotdeauna deschisă atunci când pornești <ph name="PRODUCT_NAME" />.
+
+          Dacă alegi „Restabilește ultima sesiune”, vor fi redeschise adresele URL care au fost deschise ultima dată când <ph name="PRODUCT_NAME" /> a fost închis, iar sesiunea de navigare va fi restabilită de unde ai rămas.
+          Dacă alegi această opțiune, se dezactivează anumite setări care se bazează pe sesiuni sau care efectuează acțiuni la ieșire (cum ar fi datele de navigare sau cookie-urile de sesiune se șterg la ieșire).
+
+          Dacă alegi „Deschide o listă de adrese URL”, lista cu „Adrese URL de deschis la pornire” va fi cea deschisă când un utilizator pornește <ph name="PRODUCT_NAME" />.
+
+          Dacă activezi această setare, utilizatorii nu o pot modifica sau suprascrie în <ph name="PRODUCT_NAME" />.
+
+          Dacă dezactivezi această setare este ca și cum ai lăsa-o neconfigurată. Utilizatorul va putea însă modifica setarea în <ph name="PRODUCT_NAME" />.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2536525645274582300">Utilizatorul decide dacă să activeze serviciile de localizare Google</translation>
@@ -748,6 +817,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           |created_time_millis| este marcajul temporal UTC pentru crearea modificării și este trimis ca șir, deoarece n-ar încăpea într-un întreg. Se folosește pentru a stabili dacă modificarea mai trebuie aplicată. Dacă funcția actuală de limitare a timpului (limita de timp de folosire sau limita ferestrei de timp) a început după crearea modificării, nu trebuie aplicată. Dacă modificarea a fost creată înainte de ultima modificare a valorii time_window_limit sau time_usage_window active, nu trebuie aplicată.
 
           Pot fi trimise mai multe modificări, dintre care se va aplica cea mai nouă intrare validă.</translation>
+<translation id="2905984450136807296">Durata totală a memoriei cache pentru datele de autentificare</translation>
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicații</translation>
 <translation id="2907992746861405243">Controlează care imprimante din <ph name="BULK_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
 
@@ -780,6 +850,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
 <translation id="3016255526521614822">Trece în lista albă aplicațiile pentru creat note permise pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Numărul de repere pentru care este permisă revenirea la versiunea anterioară</translation>
+<translation id="3023572080620427845">Adresa URL a unui fișier XML care conține adrese URL ce trebuie încărcate într-un browser secundar.</translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
 <translation id="3034580675120919256">Vă permite să setați dacă site-urile web au permisiunea de a rula JavaScript. Rularea JavaScript poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „AllowJavaScript”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="3038323923255997294">Continuă executarea aplicațiilor de fundal atunci când <ph name="PRODUCT_NAME" /> este închis</translation>
@@ -831,6 +902,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare DHE din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a activa suitele de codificare DHE și pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.
 
       Se recomandă ca serverele să fie migrate la suitele de codificare ECDHE. Dacă acestea nu sunt disponibile, asigură-te că este activată o suită de codificare care folosește schimbul de chei RSA.</translation>
+<translation id="3117706142826400449">Dacă este dezactivată, împiedică Chrome Cleanup să scaneze sistemul pentru a detecta software nedorit și să îl elimine. Declanșarea manuală a funcției Chrome Cleanup din chrome://settings/cleanup este dezactivată.
+
+      Dacă este activată sau neconfigurată, funcția Chrome Cleanup scanează periodic sistemul pentru a detecta software nedorit și, dacă detectează un astfel de software, va întreba utilizatorul dacă dorește să îl elimine. Declanșarea manuală a funcției Chrome Cleanup din chrome://settings este activată.
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
+<translation id="3165808775394012744">Aceste politici sunt incluse aici pentru a fi mai ușor de eliminat.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Șablon pentru numele de gazdă al dispozitivului din rețea</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
@@ -1518,6 +1595,19 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5058573563327660283">Selectează strategia folosită pentru eliberarea spațiului pe disc în timpul curățării automate (învechită)</translation>
 <translation id="5067143124345820993">Lista albă a utilizatorilor cu permisiuni de conectare</translation>
 <translation id="5068140065960598044">Politica în cloud <ph name="PRODUCT_NAME" /> înlocuiește politica dispozitivului.</translation>
+<translation id="5076274878326940940">Permite utilizarea unui furnizor de căutare prestabilit.
+
+          Dacă activezi această setare, este efectuată o căutare prestabilită atunci când utilizatorul introduce în caseta polivalentă un text care ​​nu este o adresă URL.
+
+          Poți să indici furnizorul de căutare prestabilit care să fie utilizat prin setarea celorlalte politici de căutare prestabilite. Dacă sunt lăsate necompletate, utilizatorul poate alege furnizorul prestabilit.
+
+          Dacă dezactivezi această setare, când utilizatorul introduce în caseta polivalentă un text care nu este o adresă URL, nu este efectuată nicio căutare.
+
+          Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />.
+
+          Dacă politica nu este configurată, este activat furnizorul de căutare prestabilit, iar utilizatorul va putea configura lista furnizorilor de căutare.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="5085647276663819155">Dezactivați Previzualizarea înainte de printare</translation>
 <translation id="5090209345759901501">Extinde setarea privind conținutul Flash la tot conținutul</translation>
 <translation id="5093540029655764852">Specifică frecvența (în zile) cu care un client schimbă parola contului de dispozitiv. Parola este generată aleatoriu de client și nu este vizibilă utilizatorului.
@@ -1531,6 +1621,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că parolele pot deveni mai vechi decât numărul specificat de zile dacă clientul a fost offline o perioadă lungă de timp.</translation>
 <translation id="5105313908130842249">Interval până la blocarea ecranului la funcționarea pe baterie</translation>
 <translation id="5108031557082757679">Imprimantele dezactivate asociate dispozitivelor companiei</translation>
+<translation id="5113732180192599620">Această politică controlează lista site-urilor care nu declanșează niciodată comutarea browserului.
+
+      Reține că pot fi adăugate elemente pe listă folosind și politicile <ph name="USE_IE_SITELIST_POLICY_NAME" /> și <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Când această politică nu este configurată, nu sunt adăugate site-uri pe listă.
+
+      Când această politică este activată, fiecare element este considerat o regulă, similar cu politica <ph name="URL_LIST_POLICY_NAME" />. Cu toate acestea, logica este inversată: regulile care se potrivesc nu vor deschide un browser secundar.
+
+      Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste adrese URL în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5130288486815037971">Specifică dacă suitele de codificare RC4 din TLS sunt activate</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="5142301680741828703">Redă întotdeauna următoarele șabloane de adrese URL în <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1561,6 +1660,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este dezactivată, ciclurile de viață ale filelor sunt dezactivate și toate filele vor fi lăsate să ruleze normal.
 
       Dacă politica este activată sau nu este specificată, ciclurile de viață ale filelor sunt activate.</translation>
+<translation id="5207823059027350538">Configurează adresa URL prestabilită pentru pagina Filă nouă și împiedică utilizatorii să o modifice.
+
+          Pagina Filă nouă este pagina deschisă când se creează file noi (inclusiv pagina deschisă în fereastră nouă).
+
+          Această politică nu stabilește ce pagini trebuie deschise la pornire. Aceste pagini sunt controlate de politicile <ph name="RESTORE_ON_STARTUP_POLICY_NAME" />. Această politică afectează, însă, Pagina principală, dacă este configurată să deschidă pagina Filă nouă, precum și pagina de pornire, dacă este configurată să deschidă pagina Filă nouă.
+
+          Dacă politica nu este configurată sau completată, este folosită pagina Filă nouă implicită.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5213038356678567351">Site-uri care nu trebuie să declanșeze niciodată comutarea browserului.</translation>
 <translation id="5219844027738217407">În cazul aplicațiilor Android, această politică afectează numai microfonul. Când politica este activată, microfonul este dezactivat pentru toate aplicațiile Android, fără excepții.</translation>
@@ -1672,6 +1780,17 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="546726650689747237">Interval până la reducerea luminozității ecranului la funcționarea pe c.a.</translation>
 <translation id="5469143988693423708">Utilizatorul are permisiunea de a rula Crostini</translation>
 <translation id="5469825884154817306">Blochează imagini de pe aceste site-uri</translation>
+<translation id="5472668698895343595">Această politică controlează lista de site-uri care se vor deschide într-un browser secundar.
+
+      Reține că pot fi adăugate elemente pe listă folosind și politicile <ph name="USE_IE_SITELIST_POLICY_NAME" /> și <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Când această politică nu este configurată, nu sunt adăugate site-uri pe listă.
+
+      Când această politică este configurată, fiecare element este considerat o regulă pentru ca ceva să se deschidă într-un browser secundar. <ph name="PRODUCT_NAME" /> folosește aceste reguli când alege dacă un URL se va deschide sau nu în browserul secundar.
+
+      Când suplimentul Internet Explorer este prezent și activat, Internet Explorer revine la <ph name="PRODUCT_NAME" /> când regulile nu se potrivesc.
+
+      Dacă regulile se contrazic, <ph name="PRODUCT_NAME" /> folosește regula cea mai specifică.</translation>
 <translation id="5475361623548884387">Activează printarea</translation>
 <translation id="547601067149622666">Nu permite anunțurile pe site-urile cu anunțuri deranjante</translation>
 <translation id="5499375345075963939">Această politică este activă numai în modul Vânzare.
@@ -1750,6 +1869,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această setare este dezactivată sau nu este configurată, utilizatorii pot folosi pe dispozitivele lor toate tipurile de dispozitive de stocare externe acceptate.</translation>
 <translation id="5697306356229823047">Raportează utilizatorii dispozitivului</translation>
+<translation id="5699487516670033016">Specifică Întreaga perioadă (în ore) a memoriei cache pentru datele de autentificare. Memoria cache este folosită pentru a accelera conectarea. Conține date generale (numele grupului de lucru etc.) despre domenii afiliate, de exemplu domeniile de încredere pentru domeniul dispozitivului. Nu sunt stocate în memoria cache date specifice ale utilizatorilor și nici date pentru domeniile neafiliate. Repornirea dispozitivului șterge memoria cache.
+
+      Dacă politica nu este configurată, datele de autentificare din memoria cache pot fi reutilizate timp de cel mult 73 de ore.
+
+      Dacă politica este setată la 0, stocarea datelor de autentificare în memoria cache este dezactivată. Aceasta poate încetini semnificativ conectarea utilizatorilor afiliați, deoarece datele specifice domeniului trebuie preluate la fiecare conectare.
+
+      Reține că datele domeniului sunt stocate în memoria cache chiar și pentru utilizatorii efemeri. Memoria cache trebuie dezactivată dacă urmărirea domeniului utilizatorilor efemeri nu este permisă.</translation>
 <translation id="570062449808736508">Când această politică este setată la un șir completat, WebView va citi restricțiile privind adresele URL de la furnizorul de conținut cu numele de autoritate indicat.</translation>
 <translation id="5701714006401683963">Dacă această politică este dezactivată, sesiunea pentru invitați gestionată se va comporta așa cum este descris la https://support.google.com/chrome/a/answer/3017014 - „Sesiunea publică” standard.
 
@@ -1795,6 +1921,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este dezactivată, descărcările vor începe imediat și utilizatorului nu i se va arăta unde să salveze fișierul.
       Dacă politica nu este configurată, utilizatorul va putea să modifice această setare.
       </translation>
+<translation id="5832274826894536455">Politici învechite</translation>
 <translation id="5835124959204887277">Specifică adresele URL și domeniile pentru care nu va fi afișată nicio solicitare atunci când sunt solicitate certificate de atestare de la Cheile de securitate. În plus, va fi transmis un semnal către Cheia de securitate, indicând faptul că poate fi folosită atestarea individuală. Fără aceasta, utilizatorii vor fi atenționați în Chrome 65+ atunci când site-urile necesită atestarea Cheilor de securitate.
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
@@ -2042,6 +2169,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este dezactivată, utilizatorii nu vor fi raportați.</translation>
 <translation id="6394350458541421998">Această politică a fost retrasă începând cu <ph name="PRODUCT_OS_NAME" /> versiunea 29. Utilizați, în schimb, politica PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Deconectați utilizatorul</translation>
+<translation id="6406448383934634215">Dacă selectezi „Deschide o listă de adrese URL” ca acțiune la pornire, vei putea specifica lista cu adrese URL care sunt deschise. Dacă nu este configurată, nicio adresă URL nu va fi deschisă la pornire.
+
+          Această politică funcționează numai dacă politica „RestoreOnStartup” este setată la „RestoreOnStartupIsURLs”.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="6426205278746959912">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte:
 
           Dacă alegi opțiunea „nu folosi niciodată un server proxy”, aplicațiile Android sunt informate că nu este configurat niciun proxy.
@@ -2057,7 +2189,26 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="645425387487868471">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Activează completarea automată pentru adrese</translation>
 <translation id="6473623140202114570">Configurează lista de domenii pe care Navigarea sigură nu va declanșa avertismente.</translation>
+<translation id="6488627892044759800">Configurează tipul paginii principale prestabilite în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice preferințele pentru pagina principală. Pagina principală poate fi setată la o adresă URL pe care o specifici sau la pagina Filă nouă.
+
+          Dacă activezi această setare, pagina Filă nouă este folosită întotdeauna pentru pagina principală, iar locația adresei URL a paginii principale este ignorată.
+
+          Dacă dezactivezi această setare, pagina de pornire a utilizatorului nu va fi niciodată pagina Filă nouă, cu excepția cazului în care adresa URL a acesteia este setată la „chrome://newtab”.
+
+          Dacă activezi sau dezactivezi această setare, utilizatorii nu își pot schimba tipul paginii de pornire în <ph name="PRODUCT_NAME" />.
+
+          Dacă această politică nu este configurată, utilizatorul va putea să aleagă singur dacă pagina Filă nouă este pagina sa de pornire.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="6491139795995924304">Permite Bluetooth pe dispozitiv</translation>
+<translation id="6495328383950074966">Configurează lista de domenii în care Navigarea sigură va avea încredere. Aceasta înseamnă că:
+      Navigarea sigură nu va verifica dacă există resurse periculoase (de exemplu, phishing, programe malware sau software nedorit) dacă adresele URL corespund acestor domenii;
+      serviciul de protecție a descărcării pentru Navigarea sigură nu va verifica descărcările găzduite pe aceste domenii;
+      serviciul de protecție prin parolă pentru Navigarea sigură nu va verifica refolosirea parolei dacă adresa URL a paginii corespunde acestor domenii.
+
+      Dacă setarea este activată, Navigarea sigură va avea încredere în aceste domenii.
+      Dacă setarea este dezactivată sau neconfigurată, protecția prestabilită prin Navigarea sigură se aplică tuturor resurselor.
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="6520802717075138474">Importați motoarele de căutare din browserul prestabilit, la prima rulare</translation>
 <translation id="6525955212636890608">Dacă activezi această setare, tot conținutul Flash încorporat pe site-urile care au fost setate să permită Flash în setările privind conținutul, de către utilizator sau de politica de companie, va rula, inclusiv conținutul cu alte origini sau conținutul redus ca importanță.
 
@@ -2170,6 +2321,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este setată sau dacă valoarea după înlocuire nu este un nume de gazdă valid, nu va fi setat niciun nume de gazdă în solicitarea DHCP. </translation>
 <translation id="6835883744948188639">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este recomandată</translation>
+<translation id="6837480141980366278">Stabilește dacă clientul DNS integrat este folosit în <ph name="PRODUCT_NAME" />.
+
+      Dacă această politică este activată, va fi utilizat clientul DNS integrat, atunci când este disponibil.
+
+      Dacă această politică este dezactivată, clientul DNS integrat nu va fi utilizat niciodată.
+
+      Dacă această politică nu este configurată, clientul DNS integrat va fi activat în mod implicit pe MacOS, Android (când nu este activat nici DNS privat, nici VPN) și ChromeOS, iar utilizatorii vor putea alege dacă se utilizează clientul DNS integrat, modificând chrome://flags sau specificând un semnalizator în linia de comandă.</translation>
 <translation id="6838056959556423778">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
 
       Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
@@ -2201,6 +2359,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Imprimantele conectate la <ph name="CLOUD_PRINT_NAME" /> intră în categoria <ph name="PRINTER_TYPE_CLOUD" />, iar restul imprimantelor sunt clasificate ca <ph name="PRINTER_TYPE_LOCAL" />.
       Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Vizualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
       Șabloanele expresiei regulate trebuie să respecte sintaxa RegExp JavaScript, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
+<translation id="6843296367238757293">Această politică este învechită. Nu se recomandă folosirea ei. Citește mai multe la https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Această politică a fost eliminată în <ph name="PRODUCT_NAME" /> 68 și înlocuită cu <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Această politică este învechită și eliminată din M66, deoarece a fost folosită doar pentru testare internă și reprezintă un risc de securitate.
 
@@ -2372,6 +2531,17 @@ nu poate fi stabilit de utilizator din setările browserului.
           Redarea automată este permisă numai pentru domeniile listate în mod explicit în politica <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Dacă dorești să activezi redarea automată pentru toate site-urile, îți recomandăm să adaugi http://* și https://* în această listă.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
+<translation id="7229876938563670511">Configurează adresa URL a paginii de pornire prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
+
+          Pagina de pornire este cea pe care o deschizi apăsând pe butonul Pagina de pornire. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
+
+          Tipul paginii de pornire poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
+
+          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii de pornire din <ph name="PRODUCT_NAME" />, dar pot, totuși, să aleagă pagina Filă nouă ca pagină de pornire.
+
+          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina de pornire, atunci când nu este setată nici HomepageIsNewTabPage.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="7229975860249300121">Conține o expresie regulată folosită pentru a stabili ce Conturi Google pot fi setate drept conturi principale în browser în <ph name="PRODUCT_NAME" /> (de exemplu contul ales în timpul înscrierii la sincronizare).
 
       Este afișată o eroare corespunzătoare dacă un utilizator încearcă să seteze un cont principal de browser cu un nume de utilizator care nu se potrivește cu acest model.
@@ -2702,6 +2872,17 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="793473937901685727">Setează disponibilitatea certificatelor pentru aplicațiile ARC</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
+<translation id="7952002811557367112">Această politică împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
+
+      Un șablon de adrese URL trebuie să fie formatat conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate
+
+      Reține că nu este recomandat să blochezi adresele URL interne de tipul „chrome://*”, deoarece pot rezulta erori neașteptate.
+
+      Reține că această politică nu împiedică actualizarea dinamică a paginii prin JavaScript. De exemplu, dacă blochezi „example.com/abc”, utilizatorii pot încă să acceseze „example.com” și să dea clic pe un link pentru a accesa „example.com/abc”, atât timp cât pagina nu se actualizează.
+
+      Dacă această politică nu este configurată, în browser nu va fi adăugată nicio adresă URL în lista neagră.</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7961779417826583251">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de autorități de certificare vechi</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
@@ -2868,6 +3049,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8367209241899435947">Activează Chrome Cleanup în Windows</translation>
 <translation id="8369602308428138533">Interval până la oprirea ecranului la funcționarea pe c.a.</translation>
 <translation id="8371178326720637170">Permite extensiilor gestionate să folosească API-ul Enterprise Hardware Platform</translation>
+<translation id="8377433219608936819">
+      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica dispozitivului.
+      Când politica este dezactivată sau nu este configurată, politica dispozitivului are prioritate dacă este în conflict cu politica în cloud.
+      Pentru mai multe detalii despre prioritatea politicilor, accesează: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
 <translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.
@@ -3030,6 +3217,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8758831693895931466">Activează înregistrarea obligatorie în gestionarea pentru cloud</translation>
 <translation id="8759829385824155666">Tipuri de criptare Kerberos permise</translation>
 <translation id="8764119899999036911">Specifică dacă numele SPN generat în protocolul Kerberos are la bază numele DNS canonic sau numele inițial introdus. Dacă activați această setare, căutarea CNAME va fi ignorată, iar numele serverului va fi utilizat așa cum este introdus. Dacă dezactivați această setare sau o lăsați nesetată, numele canonic al serverului va fi determinat prin intermediul căutării CNAME.</translation>
+<translation id="8765776988041674792">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute la https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Dacă această setare este activată, serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție a parolei va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
+      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="8782750230688364867">Specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când dispozitivul este în modul de prezentare.
 
           Dacă această politică este setată, ea specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când dispozitivul este în modul de prezentare. La ajustarea intervalului până la reducerea luminozității ecranului, intervalele până la oprirea ecranului, blocarea ecranului și trecerea la modul inactiv sunt modificate pentru a se păstra distanțele configurate inițial față de intervalul până la reducerea luminozității ecranului.

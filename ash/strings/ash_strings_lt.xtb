@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Sužinokite daugiau apie naujausią „<ph name="SYSTEM_APP_NAME" />“ naujinį</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
+<translation id="1999763610967697511">Nuvilkti</translation>
 <translation id="2012624427112548395">„Ctrl“ + paieškos klavišas + H</translation>
 <translation id="2016340657076538683">Įveskite pranešimą</translation>
 <translation id="2050339315714019657">Stačias</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> yra valdoma sesija, kurią valdo <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Prisijungta prie „<ph name="NETWORK_NAME" />“</translation>
+<translation id="2427507373259914951">Spustelėti kairiuoju klavišu</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="2484513351006226581">Paspauskite <ph name="KEYBOARD_SHORTCUT" />, kad perjungtumėte klaviatūros išdėstymą.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="3255483164551725916">„What can you do?“ (Ką gali atlikti?)</translation>
 <translation id="3294437725009624529">Svečias</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vis tiek galės vėliau prisijungti.</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
 <translation id="3351879221545518001">Šiuo metu perduodate ekrano vaizdą.</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
 <translation id="4849058404725798627">Paryškinti objektą jį suaktyvinus klaviatūra</translation>
+<translation id="485592688953820832">Nesiimti jokių veiksmų (pristabdyti)</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
 <translation id="4890187583552566966">„Google“ padėjėją išjungė administratorius.</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">Visų programų pranešimai įjungti</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
 <translation id="813913629614996137">Inicijuojama...</translation>
+<translation id="8142441511840089262">Dukart spustelėti</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
+<translation id="8167567890448493835">Naudojama: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
 <translation id="8192202700944119416">Pranešimai yra paslėpti.</translation>
+<translation id="8203795194971602413">Spustelėti dešiniuoju klavišu</translation>
 <translation id="8236042855478648955">Laikas padaryti pertrauką</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8297006494302853456">Silpnas</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">Neprisijungta</translation>
 <translation id="8877788021141246043">„Set a reminder“ (Nustatyk priminimą)</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
-<translation id="8898978413391960553">00:00 sek.</translation>
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="8940956008527784070">Akumuliatorius senka (<ph name="PERCENTAGE" /> %)</translation>

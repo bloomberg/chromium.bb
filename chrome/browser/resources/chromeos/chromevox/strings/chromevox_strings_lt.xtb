@@ -54,6 +54,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1346059596910821859">Arbatpinigiai</translation>
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="135978014023467274">Atnaujinta į 63 versijos „ChromeVox“!</translation>
+<translation id="1360699455582016846">Spustelėkite <ph name="ROUTING_KEY_NUMBER" /> maršruto parinkimo klavišo elementą</translation>
 <translation id="136718599399906424">Kita lentelės eilutė</translation>
 <translation id="1377925789329510816">Tai yra paskutinė antraštė. Paspauskite „Search“ + H, kad pereitumėte į pirmą antraštę, arba „Search“ + „Shift“ + H, kad pereitumėte į antrą antraštę šiame puslapyje.</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
@@ -112,6 +113,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1905379170753160525">Rodyti antraščių sąrašą</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> akordas</translation>
 <translation id="1954623340234317532">Metų savaitės valdiklis</translation>
 <translation id="1964135212174907577">Kitas objektas</translation>
 <translation id="1969092762068865084">Liepa</translation>
@@ -267,6 +269,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="316542773973815724">Naršymas</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{tarpas}one{# tarpas}few{# tarpai}many{# spaces}other{# tarpų}}</translation>
 <translation id="320961988183078793">įvesta <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">įklijuoti „<ph name="TEXT" />“.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, skirtukas</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Nuoroda, kuria apsilankyta</translation>
@@ -344,12 +347,14 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3468959318854349468">Nėra pavadinimo</translation>
 <translation id="3473644018603298796">pas. elem.: <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Nuo <ph name="V1" /> iki <ph name="V2" /></translation>
+<translation id="3490765818161916458">Sąrašo tinklelis</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{uždaromasis laužtinis skliaustas}one{# uždaromasis laužtinis skliaustas}few{# uždaromieji laužtiniai skliaustai}many{# right brackets}other{# uždaromųjų laužtinių skliaustų}}</translation>
 <translation id="3493915602752813531">Nėra kito prieraišo.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{klaustukas}one{# klaustukas}few{# klaustukai}many{# question marks}other{# klaustukų}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{stogelio ženklas}one{# stogelio ženklas}few{# stogelio ženklai}many{# carets}other{# stogelio ženklų}}</translation>
 <translation id="352577523970648069">Redaguotinas teksto laukas</translation>
+<translation id="3549141990712742152">iškirpti „<ph name="TEXT" />“.</translation>
 <translation id="3549680091535286226">Jei norite laikinai sustabdyti kalbą, palieskite dviem pirštais</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, žymimasis laukelis nepažymėtas</translation>
 <translation id="3589661172894441357">Aiškinamasis terminų žodynas</translation>
@@ -381,6 +386,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3856075812838139784">Tik skaitoma</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Meniu</translation>
+<translation id="3907138069015388678">Sąr. tinkl.</translation>
 <translation id="3909320334364316587">Ankstesnė 6 lygio antraštė</translation>
 <translation id="3914173277599553213">Būtina</translation>
 <translation id="3914732343065571127">„ChromeVox“ komandų nuorodos</translation>
@@ -674,6 +680,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6129953537138746214">Tarpas</translation>
 <translation id="6132506484792346370">Sąrašo laukelis arba jungtinis laukelis</translation>
 <translation id="6142308968191113180">4 antraštė</translation>
+<translation id="6158882249329863701"><ph name="TABLECELLROWINDEX" /> eilutė, <ph name="TABLECELLCOLUMNINDEX" /> stulpelis</translation>
 <translation id="6164829606128959761">matuoklis</translation>
 <translation id="6169420925157477918">Vaizdas su ilgu aprašu</translation>
 <translation id="6186305613600865047">Pereinama į puslapio apačią</translation>
@@ -689,6 +696,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6307969636681130414">Paspausta</translation>
 <translation id="6322856989298155004">Garsai</translation>
 <translation id="6324551002951139333">Aptikta gramatikos klaida</translation>
+<translation id="6325241889020214828">kopijuoti „<ph name="TEXT" />“.</translation>
 <translation id="6348657800373377022">Jungtinis laukelis</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{skrituliukas}one{# skrituliukas}few{# skrituliukai}many{# skrituliuko}other{# skrituliukų}}</translation>
 <translation id="6355910664415701303">Nėra ankstesnio sąrašo elemento.</translation>
@@ -960,6 +968,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Modifikavimo klavišai</translation>
 <translation id="8943175951035496220">Nėra langelio dešinėje.</translation>
+<translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" /> e. <ph name="TABLECELLCOLUMNINDEX" /> s.</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Pamiršti</translation>
 <translation id="900114243503212879">failas</translation>

@@ -24,6 +24,13 @@
       Wanneer dit beleid is ingesteld op 'False' of wanneer er geen waarde voor dit beleid is opgegeven, worden cookies die door de IdP zijn ingesteld, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.
 
       Dit beleid is alleen van invloed op gebruikers waarvan het domein overeenkomt met het inschrijvingsdomein van het apparaat. Voor alle overige gebruikers worden cookies die zijn ingesteld door de IdP, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.</translation>
+<translation id="1030120600562044329">Hiermee kun je anoniem gebruiks- en crashgerelateerde gegevens over <ph name="PRODUCT_NAME" /> aan Google melden en voorkomen dat gebruikers deze instelling wijzigen.
+
+      Als deze instelling ingeschakeld is, worden er anoniem gebruiks- en crashgerelateerde gegevens naar Google verzonden.  Als deze instelling is uitgeschakeld, worden deze gegevens niet naar Google verzonden.  In beide gevallen kunnen gebruikers de instelling niet wijzigen of overschrijven.
+      Als dit beleid niet is ingesteld, wordt de instelling gebruikt die de gebruiker tijdens de installatie/eerste uitvoering heeft gekozen.
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.
+      (Zie DeviceMetricsReportingEnabled voor Chrome OS.)</translation>
 <translation id="1035385378988781231">Dit beleid bepaalt of de functie Network File Shares voor <ph name="PRODUCT_NAME" /> NTLM gebruikt voor verificatie.
 
       Wanneer dit beleid is ingesteld op 'true', wordt NTLM indien nodig gebruikt voor verificatie van SMB-fileshares.
@@ -72,6 +79,11 @@
       Voor meer informatie over een veilige context ga je naar
       https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="1107764601871839136">Hiermee wordt de levensduur (in uren) van het GPO-cachegeheugen (Group Policy Object) opgegeven. Het systeem kan de in het cachegeheugen opgeslagen GPO's opnieuw gebruiken in plaats van die opnieuw te moeten downloaden bij het ophalen van elk beleid, zolang de versie van de GPO's maar niet is gewijzigd. Met dit beleid kun je aangeven hoelang de GPO's maximaal opnieuw mogen worden gebruikt voordat ze opnieuw worden gedownload. Wanneer je opnieuw opstart of uitlogt, wordt het cachegeheugen gewist.
+
+      Als dit beleid niet is ingesteld, mogen in het cachegeheugen opgeslagen GPO's maximaal gedurende 25 uur opnieuw worden gebruikt.
+
+      Als dit beleid is ingesteld op 0, worden er geen GPO's in het cachegeheugen opgeslagen. Houd er rekening mee dat de server hierdoor zwaarder wordt belast, aangezien GPO's telkens opnieuw worden gedownload wanneer er beleid wordt opgehaald, zelfs als ze niet zijn gewijzigd.</translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
 <translation id="1118093128235245168">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een aangesloten USB-apparaat</translation>
 <translation id="1128903365609589950">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
@@ -168,6 +180,19 @@
 <translation id="142346659686073702">Toestaan dat niet-gelieerde gebruikers Crostini gebruiken</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
+<translation id="1431272318313028342">Hiermee schakel je de functie Safe Browsing van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling inschakelt, is Safe Browsing altijd actief.
+
+      Als je deze instelling uitschakelt, is Safe Browsing nooit actief.
+
+      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of overschrijven.
+
+      Als dit beleid niet wordt ingesteld, wordt het beleid ingeschakeld, maar kan de gebruiker dit wijzigen.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="1438739959477268107">Standaardinstelling voor het genereren van sleutels</translation>
 <translation id="1454846751303307294">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript niet mogen uitvoeren.
@@ -273,9 +298,25 @@
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="1689963000958717134">Hiermee kun je een netwerkconfiguratie toepassen voor alle gebruikers van een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">De beperking voor het ophalen van de seed voor varianten instellen</translation>
+<translation id="1717817358640580294">Als deze optie niet is ingesteld en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker vervolgens of de ongewenste software moet worden opgeschoond. De gebruiker kan ervoor kiezen om de resultaten van de opschoonbewerking met Google te delen en bij te dragen aan de toekomstige detectie van ongewenste software. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels zoals beschreven in de whitepaper over het privacybeleid voor Chrome.
+
+      Als deze optie uitgeschakeld is en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er geen metadata over de scan naar Google verzonden en wordt het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled, overschreven. Chrome Cleanup vraagt de gebruiker of deze de ongewenste software wil opschonen.  De resultaten van de opschoonbewerking worden niet aan Google gemeld en de gebruiker beschikt ook niet over de optie om dit te doen.
+
+      Als deze optie ingeschakeld is en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of deze de ongewenste software wil opschonen.  De resultaten van de opschoonbewerking worden gemeld aan Google en de gebruiker beschikt niet over de optie om dit te voorkomen.
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="172374442286684480">Alle sites toestaan lokale gegevens in te stellen</translation>
 <translation id="1734716591049455502">Opties voor externe toegang configureren</translation>
 <translation id="1736269219679256369">Doorgaan vanaf de SSL-waarschuwingspagina toestaan</translation>
+<translation id="1745780278307622857">Identificeren of <ph name="PRODUCT_NAME" /> downloads kan toestaan zonder Safe Browsing-controles wanneer de download afkomstig is van een vertrouwde bron.
+
+      Als false is ingesteld, worden bestanden die afkomstig zijn van een vertrouwde bron, niet verzonden voor een analyse door Safe Browsing.
+
+      Wanneer deze optie niet is ingesteld (of is ingesteld op true), worden gedownloade bestanden verzonden voor een analyse door Safe Browsing, zelfs wanneer ze afkomstig zijn van een vertrouwde bron.
+
+      Houd er rekening mee dat deze beperkingen gelden voor zowel downloads die via de webpaginacontent als voor downloads die via de contextmenuoptie 'Link downloaden' geactiveerd zijn. Deze beperkingen gelden niet voor het opslaan/downloaden van de huidige pagina die wordt weergegeven of voor de afdrukoptie 'Opslaan als pdf'.
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="1749815929501097806">De Servicevoorwaarden instellen die de gebruiker moet accepteren voordat een apparaat-lokale accountsessie kan worden gestart.
 
       Als dit beleid is ingesteld, worden de Servicevoorwaarden gedownload door <ph name="PRODUCT_OS_NAME" /> en worden deze aan de gebruiker getoond wanneer een apparaat-lokale accountsessie wordt gestart. De gebruiker mag alleen deelnemen aan de sessie nadat hij/zij de Servicevoorwaarden accepteert.
@@ -286,6 +327,7 @@
 <translation id="1750315445671978749">Alle downloads blokkeren</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op 'True', hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op 'False' of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
 <translation id="1797233582739332495">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten vereist is</translation>
+<translation id="1798559516913615713">Levensduur GPO in cachegeheugen</translation>
 <translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
 <translation id="1810261428246410396">Het gebruik van instant-tethering toestaan</translation>
@@ -293,6 +335,13 @@
 
       Het beleid moet worden opgegeven als tekenreeks waarmee de URL en hash worden aangeduid in json-indeling.</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
+<translation id="1831495419375964631">Dit beleid is een URL die met dezelfde indeling naar een XML-bestand verwijst als het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer. Hiermee worden regels vanuit een XML-bestand geladen, zonder dat deze regels worden gedeeld met Internet Explorer.
+
+      Wanneer dit beleid niet is ingesteld of niet is ingesteld op een geldige URL, gebruikt <ph name="PRODUCT_NAME" /> dit beleid niet als een bron van regels die overschakeling naar een andere browser veroorzaken.
+
+      Als dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het <ph name="SITELIST_POLICY_NAME" />-beleid.
+
+      Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het <ph name="IEEM_SITELIST_POLICY" />-beleid van Internet Explorer</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
 <translation id="1844620919405873871">Hiermee configureer je het beleid ten aanzien van snel ontgrendelen.</translation>
 <translation id="1847960418907100918">Specificeert de parameters die worden gebruikt voor het uitvoeren van een instantzoekopdracht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
@@ -345,6 +394,12 @@
       Als dit beleid is ingesteld op 'False', wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.
 
       Als dit beleid niet is ingesteld, wordt de rapportage van statistieken en diagnostische gegevens op niet-beheerde apparaten uitgeschakeld en op beheerde apparaten ingeschakeld.</translation>
+<translation id="1907431809333268751">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
+      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
+      Als deze instelling uitgeschakeld of niet ingesteld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="1920046221095339924">Beheerde sessie op apparaat toestaan</translation>
 <translation id="1929709556673267855">Hiermee worden configuraties geleverd voor zakelijke printers die aan apparaten zijn gekoppeld.
 
@@ -418,6 +473,9 @@
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
 <translation id="2104418465060359056">Gegevens over extensies en plug-ins rapporteren</translation>
+<translation id="2107601598727098402">
+        Dit beleid is beëindigd in M72. Gebruik in plaats daarvan CloudManagementEnrollmentToken.
+        </translation>
 <translation id="2111016292707172233">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de contentweergave van <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, is 'Tikken om te zoeken' beschikbaar voor de gebruiker en kan de gebruiker de functie in- of uitschakelen.
@@ -462,10 +520,6 @@
 <translation id="214901426630414675">Afdrukken in duplexmodus beperken</translation>
 <translation id="2149330464730004005">Afdrukken in kleur inschakelen</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
-<translation id="2163878108829382394">
-        Als dit beleid is ingesteld op 'true', is inschrijving voor cloudbeheer verplicht en wordt het Chrome-startproces geblokkeerd als de inschrijving mislukt.
-
-        Als het beleid niet is ingesteld of is ingesteld op 'false', is inschrijving voor cloudbeheer optioneel en wordt het Chrome-startproces niet geblokkeerd als de inschrijving mislukt.</translation>
 <translation id="2166472654199325139">Sites niet filteren op content voor volwassenen</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
@@ -615,6 +669,20 @@
       Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken via <ph name="PRODUCT_NAME" />. Afdrukken is uitgeschakeld in het menu 'Gereedschap', extensies, JavaScript-applicaties, enzovoort. Het is nog steeds mogelijk af te drukken via plug-ins die <ph name="PRODUCT_NAME" /> omzeilen tijdens het afdrukken. Bij Flash-applicaties bevindt de afdrukoptie zich in het contextmenu, wat niet onder dit beleid valt.</translation>
 <translation id="2518231489509538392">Het afspelen van audio toestaan</translation>
 <translation id="2521581787935130926">De snelkoppeling voor apps weergeven op de bladwijzerbalk</translation>
+<translation id="2529659024053332711">Hiermee kun je het gedrag bij opstarten opgeven.
+
+          Als je 'De pagina 'Nieuw tabblad' openen' kiest, wordt altijd de pagina 'Nieuw tabblad' geopend wanneer je <ph name="PRODUCT_NAME" /> start.
+
+          Als je 'De laatste sessie herstellen' kiest, worden de URL's heropend die open waren toen <ph name="PRODUCT_NAME" /> voor het laatst werd gesloten en wordt de browsersessie hervat.
+          Als je deze optie kiest, worden bepaalde instellingen uitgeschakeld die afhankelijk zijn van sessies of waarmee bij het afsluiten acties worden uitgevoerd (zoals browsergegevens wissen bij afsluiten of sessiecookies).
+
+          Als je 'Een lijst met URL's openen' kiest, wordt de lijst met URL's geopend die ook worden geopend wanneer een gebruiker <ph name="PRODUCT_NAME" /> start.
+
+          Als je deze instelling inschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
+
+          Als deze instelling wordt uitgeschakeld, heeft dit hetzelfde effect als wanneer de instelling niet wordt ingesteld. De gebruiker kan de instelling nog steeds aanpassen in <ph name="PRODUCT_NAME" />.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2536525645274582300">De gebruiker beslist of Locatieservices van Google moeten worden ingeschakeld</translation>
@@ -781,6 +849,7 @@
           |created_time_millis| is de UTC-tijdstempel voor het maken van de overschrijving en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past. Deze variabele wordt gebruikt om te bepalen of deze overschrijving nog steeds moet worden toegepast. Als de momenteel actieve tijdslimietfunctie (time_usage_limit of time_window_limit) is gestart nadat de overschrijving is gemaakt, onderneemt deze geen actie. Daarnaast is het zo dat de overschrijving niet wordt toegepast als deze is gemaakt vóór de laatste wijziging van de actieve time_window_limit of time_usage_window.
 
           Er kunnen meerdere overschrijvingen worden verzonden. De nieuwste geldige invoer is de invoer die wordt toegepast.</translation>
+<translation id="2905984450136807296">Levensduur van verificatiegegevens in cachegeheugen</translation>
 <translation id="2906874737073861391">Lijst met app-pakketextensies</translation>
 <translation id="2907992746861405243">Hiermee wordt beheerd welke printers uit <ph name="BULK_PRINTERS_POLICY" /> beschikbaar zijn voor gebruikers.
 
@@ -813,6 +882,7 @@
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3021562480854470924">Aantal mijlpalen dat rollback kan terugzetten</translation>
+<translation id="3023572080620427845">URL van een XML-bestand dat URL's bevat voor laden in een alternatieve browser.</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3034580675120919256">Hiermee kun je instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
 
@@ -866,6 +936,12 @@
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'True' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
 
       Servers kunnen het beste worden gemigreerd naar ECDHE-coderingssuites. Indien deze niet beschikbaar zijn, moet je ervoor zorgen dat er een coderingssuite is ingeschakeld die gebruikmaakt van RSA-sleuteluitwisseling.</translation>
+<translation id="3117706142826400449">Als dit beleid uitgeschakeld is, scant Chrome Cleanup het systeem niet op ongewenste software en kan de tool niets opschonen. Het is in dit geval ook niet meer mogelijk Chrome Cleanup handmatig te starten via chrome://settings/cleanup.
+
+      Als het beleid ingeschakeld is, of niet ingesteld is, scant Chrome Cleanup het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze software moet worden verwijderd. Het is in dit geval mogelijk Chrome Cleanup te starten via chrome://settings.
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
+<translation id="3165808775394012744">Deze beleidsregels zijn hier opgenomen zodat je ze makkelijk kunt verwijderen.</translation>
 <translation id="316778957754360075">Deze instelling wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29. De aanbevolen manier om verzamelingen van extensies/apps die door de organisatie worden gehost in te stellen, is het opnemen van de site die de CRX-pakketten in ExtensionInstallSources host en het plaatsen van rechtstreekse downloadlinks naar de pakketten op een webpagina. Je kunt voor die webpagina een startprogramma maken met het beleid ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Template voor hostnaam van apparaat in netwerk</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
@@ -1568,6 +1644,19 @@
 <translation id="5058573563327660283">De strategie selecteren die wordt gebruikt om schijfruimte vrij te maken tijdens het automatisch opschonen (verouderd)</translation>
 <translation id="5067143124345820993">Aanmelden bij witte lijst van gebruikers</translation>
 <translation id="5068140065960598044">Het cloudbeleid van <ph name="PRODUCT_NAME" /> overschrijft het apparaatbeleid.</translation>
+<translation id="5076274878326940940">Hiermee wordt het gebruik van een standaard zoekprovider ingeschakeld.
+
+          Als je deze instelling inschakelt, wordt een standaardzoekopdracht uitgevoerd wanneer de gebruiker in de omnibox tekst invoert die geen URL is.
+
+          Je kunt de standaard zoekprovider opgeven door de rest van het standaardzoekbeleid in te stellen. Als dit wordt leeggelaten, kan de gebruiker zelf de standaardprovider kiezen.
+
+          Als je deze instelling uitschakelt, wordt er geen zoekopdracht uitgevoerd wanneer de gebruiker tekst in de omnibox opgeeft die geen URL is.
+
+          Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling in <ph name="PRODUCT_NAME" /> niet aanpassen of negeren.
+
+          Als dit beleid niet wordt ingesteld, wordt de standaard zoekprovider ingeschakeld en kan de gebruiker de lijst met zoekproviders zelf instellen.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
 <translation id="5090209345759901501">Instelling voor Flash-content uitbreiden naar alle content</translation>
 <translation id="5093540029655764852">Bepaalt de frequentie (in dagen) waarmee een client het wachtwoord van het computeraccount wijzigt. Het wachtwoord wordt willekeurig gegenereerd door de client en is niet zichtbaar voor de gebruiker.
@@ -1581,6 +1670,15 @@
       Wachtwoorden kunnen ouder zijn dan de ingestelde periode als de client langere tijd offline is.</translation>
 <translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
 <translation id="5108031557082757679">Zakelijke apparaatprinters uitgeschakeld</translation>
+<translation id="5113732180192599620">Dit beleid bepaalt de lijst met websites die nooit overschakeling naar een andere browser veroorzaken.
+
+Onthoud dat er ook elementen aan deze lijst kunnen worden toegevoegd via het <ph name="USE_IE_SITELIST_POLICY_NAME" />- en <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />-beleid.
+
+Wanneer dit beleid niet is ingesteld, kunnen er geen websites worden toegevoegd aan de lijst.
+
+Wanneer dit beleid is ingesteld, wordt elk item behandeld als een regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica is echter andersom: regels die overeenkomen, openen geen alternatieve browser.
+
+Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richtingen worden toegepast. Dat betekent dat wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, deze optie ook beheert of <ph name="IE_PRODUCT_NAME" /> URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1617,6 +1715,15 @@
       Als dit beleid is ingesteld op 'False', zijn levenscyclussen voor tabbladen uitgeschakeld en blijven alle tabbladen gewoon actief.
 
       Als dit beleid is ingesteld op 'True' of niet is opgegeven, zijn levenscyclussen voor tabbladen ingeschakeld.</translation>
+<translation id="5207823059027350538">Hiermee configureer je de standaard-URL van de pagina 'Nieuw tabblad' en voorkom je dat gebruikers deze wijzigen.
+
+          De pagina 'Nieuw tabblad' is de pagina die wordt geopend wanneer nieuwe tabbladen worden gemaakt (waaronder tabbladen die worden geopend in nieuwe vensters).
+
+          Dit beleid bepaalt niet welke pagina's worden geopend wanneer de browser wordt gestart. Deze pagina's worden beheerd door het <ph name="RESTORE_ON_STARTUP_POLICY_NAME" />-beleid. Dit beleid is echter wel van invloed op de homepage als hiervoor is ingesteld dat de pagina 'Nieuw tabblad' moet worden geopend, evenals voor de startpagina als deze is ingesteld op de pagina 'Nieuw tabblad'.
+
+          Als het beleid niet is ingesteld of leeg is gelaten, wordt de standaardpagina 'Nieuw tabblad' gebruikt.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="5208240613060747912">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1737,6 +1844,17 @@
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
 <translation id="5469143988693423708">Gebruiker mag Crostini uitvoeren</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
+<translation id="5472668698895343595">Met dit beleid wordt de lijst met websites bepaald die in een alternatieve browser worden geopend.
+
+      Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het <ph name="USE_IE_SITELIST_POLICY_NAME" />- en <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />-beleid.
+
+      Wanneer dit beleid niet is ingesteld, worden er geen websites toegevoegd aan de lijst.
+
+      Wanneer dit beleid is ingesteld, wordt elk item behandeld als regel waarmee iets in een alternatieve browser wordt geopend. <ph name="PRODUCT_NAME" /> gebruikt deze regels bij de keuze of een URL in een alternatieve browser moet worden geopend.
+
+      Wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, schakelt Internet Explorer terug naar <ph name="PRODUCT_NAME" /> wanneer de regels niet overeenkomen.
+
+      Als regels elkaar tegenspreken, gebruikt <ph name="PRODUCT_NAME" /> de meest specifieke regel.</translation>
 <translation id="5475361623548884387">Afdrukken inschakelen</translation>
 <translation id="547601067149622666">Geen advertenties toestaan op sites met opdringerige advertenties</translation>
 <translation id="5499375345075963939">Dit beleid is alleen actief in de commerciële modus.
@@ -1815,6 +1933,13 @@
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
+<translation id="5699487516670033016">Hiermee wordt de levensduur (in uren) van de verificatiegegevens in het cachegeheugen opgegeven. Het cachegeheugen wordt gebruikt zodat je sneller kunt inloggen. Het cachegeheugen bevat algemene gegevens (werkgroepnaam, enzovoort) over aangesloten realms, oftewel realms die door de machine realm worden vertrouwd. Er worden geen gebruikersspecifieke gegevens en geen gegevens voor niet-aangesloten realms in het cachegeheugen opgeslagen. Als het apparaat opnieuw wordt opgestart, wordt het cachegeheugen gewist.
+
+      Als het beleid niet is ingesteld, kunnen de verificatiegegevens in het cachegeheugen gedurende maximaal 73 uur opnieuw worden gebruikt.
+
+      Als het beleid is ingesteld op 0, is de opslag van verificatiegegevens in het cachegeheugen uitgeschakeld. Dit kan ervoor zorgen dat gekoppelde gebruikers aanzienlijk minder snel kunnen inloggen, aangezien er realmspecifieke gegevens moeten worden opgehaald voor elke inlogbewerking.
+
+      Houd er rekening mee dat er zelfs voor kortstondige gebruikers realmgegevens in het cachegeheugen worden opgeslagen. Als voorkomen moet worden dat de realm van kortstondige gebruikers wordt bijgehouden, moet het cachegeheugen uitgeschakeld worden.</translation>
 <translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
 <translation id="5701714006401683963">Als dit beleid is ingesteld op 'false', vertoont de beheerde gastsessie het gedrag dat is gedocumenteerd op https://support.google.com/chrome/a/answer/3017014 (de standaard 'openbare sessie').
 
@@ -1867,6 +1992,7 @@
       Als het beleid is uitgeschakeld, worden downloads onmiddellijk gestart en wordt de gebruiker niet gevraagd waar het bestand moet worden opgeslagen.
       Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
       </translation>
+<translation id="5832274826894536455">Beëindigde beleidsregels</translation>
 <translation id="5835124959204887277">Specificeert URL's en domeinen waarvoor geen prompt wordt weergegeven wanneer bevestigingscertificaten van beveiligingssleutels wordt aangevraagd. Er wordt bovendien een signaal verzonden naar de beveiligingssleutel dat aangeeft dat afzonderlijke bevestiging mag worden gebruikt. Zonder dit signaal krijgen gebruikers in Chrome 65+ een prompt te zien wanneer sites bevestiging van beveiligingssleutels aanvragen.
 
       URL's (zoals https://example.com/some/path) komen alleen overeen als U2F appID's. Domeinen (zoals example.com) komen alleen overeen als webauthn RP ID's. Dus om zowel de U2F- als webauthn-API voor een bepaalde site te omvatten, moeten zowel de appID-URL als het appID-domein worden vermeld.</translation>
@@ -2106,6 +2232,11 @@
       Als het beleid is ingesteld op 'false', worden de gebruikers niet gemeld.</translation>
 <translation id="6394350458541421998">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_OS_NAME" /> versie 29. Gebruik het beleid PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
+<translation id="6406448383934634215">Als 'Een lijst met URL's openen' voor het opstarten is geselecteerd, kun je hier de lijst met URL's specificeren die worden geopend. Als je dit niet selecteert, worden er geen URL's geopend na het starten.
+
+          Dit beleid functioneert alleen als het beleid RestoreOnStartup is ingesteld op RestoreOnStartupIsURLs.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="6426205278746959912">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:
 
           Als je ervoor kiest nooit een proxyserver te gebruiken, wordt aan de Android-apps gemeld dat er geen proxy is geconfigureerd.
@@ -2121,7 +2252,26 @@
 <translation id="645425387487868471">Gedwongen inloggen voor <ph name="PRODUCT_NAME" /> inschakelen</translation>
 <translation id="6464074037294098618">Automatisch aanvullen voor adressen inschakelen</translation>
 <translation id="6473623140202114570">Configureer de lijst met domeinen waar Safe Browsing geen waarschuwingen activeert.</translation>
+<translation id="6488627892044759800">Hiermee configureer je het type standaardhomepage in <ph name="PRODUCT_NAME" /> en voorkom je dat gebruikers de voorkeuren voor de homepage wijzigen. De homepage kan worden ingesteld op een URL of op de pagina 'Nieuw tabblad'.
+
+          Als je deze instelling inschakelt, wordt altijd de pagina 'Nieuw tabblad' gebruikt voor de homepage en wordt de URL voor de homepage genegeerd.
+
+          Als je deze instelling uitschakelt, wordt de pagina 'Nieuw tabblad' nooit weergegeven als homepage van de gebruiker, tenzij de URL is ingesteld op 'chrome://newtab'.
+
+          Als je deze instelling in- of uitschakelt, kunnen gebruikers het type homepage niet aanpassen in <ph name="PRODUCT_NAME" />.
+
+Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'Nieuw tabblad' als homepage te gebruiken of een eigen pagina als homepage te gebruiken.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
+<translation id="6495328383950074966">Configureer de lijst met domeinen die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
+      Safe Browsing controleert niet op gevaarlijke bronnen (zoals phishing, malware of ongewenste software) als de URL's van de bronnen overeenkomen met deze domeinen.
+      De downloadbeveiligingsservice van Safe Browsing controleert geen downloads die op deze domeinen worden gehost.
+      De wachtwoordbeveiligingsservice van Safe Browsing controleert niet of wachtwoorden opnieuw worden gebruikt als de pagina-URL overeenkomt met deze domeinen.
+
+      Als deze instelling ingeschakeld is, worden deze domeinen door Safe Browsing vertrouwd.
+      Als deze instelling uitgeschakeld of niet ingesteld is, wordt de standaard Safe Browsing-beveiliging toegepast op alle bronnen.
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="6520802717075138474">Zoekmachines importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="6525955212636890608">Als je deze instelling inschakelt, wordt alle Flash-content uitgevoerd die is ingesloten op websites waarvoor in de instellingen voor content is ingesteld dat Flash is toegestaan (door de gebruiker of op basis van bedrijfsbeleid). Dit geldt ook voor content die afkomstig is uit andere bronnen of minder belangrijke content.
 
@@ -2235,6 +2385,13 @@
 
       Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
+<translation id="6837480141980366278">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid is ingesteld op true, wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
+
+      Als dit beleid is ingesteld op false, wordt de ingebouwde DNS-client nooit gebruikt.
+
+      Als dit beleid niet wordt ingesteld, wordt de ingebouwde DNS-client standaard ingeschakeld op Mac OS, Android (wanneer Privé-DNS en VPN niet zijn ingeschakeld) en Chrome OS en kunnen de gebruikers bepalen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
 <translation id="6838056959556423778">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
 
       Met dit beleid kun je bepalen welke regels je wilt gebruiken om de standaardprinter in <ph name="PRODUCT_NAME" /> te selecteren. Je kunt dit instellen wanneer de afdrukfunctie voor het eerst in een profiel wordt gebruikt.
@@ -2266,6 +2423,7 @@
       Printers die zijn gekoppeld aan <ph name="CLOUD_PRINT_NAME" /> worden als printers van het type <ph name="PRINTER_TYPE_CLOUD" /> beschouwd. De overige printers worden geclassificeerd als <ph name="PRINTER_TYPE_LOCAL" />.
       Wanneer een veld wordt overgeslagen, betekent dit dat alle waarden overeenkomen. Als er bijvoorbeeld geen verbinding wordt opgegeven, worden voor het afdrukvoorbeeld alle typen printers gedetecteerd, zowel lokale als cloudprinters.
       Reguliere-expressiepatronen moeten de JavaScript RegExp-syntaxis volgen en namen komen alleen overeen als ook het hoofdlettergebruik klopt (hoofdlettergevoelig).</translation>
+<translation id="6843296367238757293">Dit beleid is beëindigd. Het gebruik ervan wordt afgeraden. Ga naar https://support.google.com/chrome/a/answer/7643500 voor meer informatie</translation>
 <translation id="684856667300805181">Dit beleid is in <ph name="PRODUCT_NAME" /> 68 verwijderd en vervangen door <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Dit beleid is beëindigd en uit M66 verwijderd, omdat het alleen werd gebruikt voor interne testen en een beveiligingsrisico vormt.
 
@@ -2444,6 +2602,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden genoemd in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig aanpassen.</translation>
+<translation id="7229876938563670511">Hiermee stel je de standaard-URL voor de homepage in <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze kunnen wijzigen.
+
+          De homepage is de pagina die wordt geopend met de startknop. Het beleid RestoreOnStartup bepaalt welke pagina's worden geopend wanneer de browser wordt opgestart.
+
+          Het type homepage kan worden ingesteld op een URL die je hier opgeeft of op de pagina 'Nieuw tabblad'. Als je de pagina 'Nieuw tabblad' selecteert, wordt dit beleid niet toegepast.
+
+          Als je deze instelling inschakelt, kunnen gebruikers hun homepage-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze wel gewoon de pagina 'Nieuw tabblad' als homepage kiezen.
+
+          Als dit beleid niet wordt ingesteld, kunnen gebruikers zelf hun homepage kiezen als HomepageIsNewTabPage ook niet ingesteld is.
+
+          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="7229975860249300121">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke Google-accounts kunnen worden ingesteld als primair browseraccount in <ph name="PRODUCT_NAME" /> (oftewel het account dat wordt gekozen wanneer de gebruiker zich aanmeldt voor synchronisatie).
 
       Er wordt een fout weergegeven als een gebruiker probeert een primair browseraccount in te stellen met een gebruikersnaam die niet met dit patroon overeenkomt.
@@ -2780,6 +2949,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="793473937901685727">Certificaatbeschikbaarheid instellen voor ARC-apps</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
+<translation id="7952002811557367112">Dit beleid voorkomt dat de gebruiker webpagina's van de zwarte lijst met URL's laadt. De zwarte lijst biedt een lijst met URL-patronen waarin wordt aangegeven welke URL's op de zwarte lijst komen te staan.
+
+      Een URL-patroon moet worden ingedeeld volgens https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Uitzonderingen kunnen worden gedefinieerd in het beleid voor de witte lijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
+
+      Het wordt niet aangeraden interne URL's met 'chrome://*' te blokkeren, aangezien dit kan leiden tot onverwachte fouten.
+
+      Houd er rekening mee dat met dit beleid niet wordt voorkomen dat de pagina dynamisch via JavaScript wordt geüpdatet. Als je bijvoorbeeld 'example.com/abc' blokkeert, kunnen gebruikers mogelijk nog wel 'example.com' bezoeken en op een link klikken om 'example.com/abc' te bezoeken, zolang de pagina maar niet wordt vernieuwd.
+
+      Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van de browser geplaatst.</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="7961779417826583251">Handhaving van Certificaattransparantie voor een lijst met certificeringsinstanties uitschakelen</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
@@ -2951,6 +3131,12 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8367209241899435947">Chrome Cleanup inschakelen op Windows</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
 <translation id="8371178326720637170">Hiermee kunnen beheerde extensies de Enterprise Hardware Platform-API gebruiken</translation>
+<translation id="8377433219608936819">
+      Als het beleid is ingesteld op true, krijgt het cloudbeleid voorrang bij een conflict met het apparaatbeleid.
+      Als het beleid is ingesteld op false of niet is geconfigureerd, krijgt het apparaatbeleid voorrang bij een conflict met het cloudbeleid.
+      Voor meer informatie over beleidsprioriteit ga je naar: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
@@ -3108,6 +3294,12 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
           Als je deze instelling inschakelt, wordt de CNAME-lookup overgeslagen en wordt de servernaam gebruikt zoals deze is opgegeven.
 
           Als je deze instelling uitschakelt of niet instelt, wordt de canonieke naam van de server bepaald aan de hand van de CNAME-lookup.</translation>
+<translation id="8765776988041674792">Stel de URL voor wachtwoordwijzigingen in (alleen HTTP en HTTPS). De wachtwoordbeveiligingsservice leidt gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in de browser hebben gezien.
+      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt op de pagina voor wachtwoordwijzigingen, moet je ervoor zorgen dat je pagina voor wachtwoordwijzigingen de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms volgt.
+
+      Als deze instelling ingeschakeld is, leidt de wachtwoordbeveiligingsservice gebruikers naar deze URL om hun wachtwoord te wijzigen nadat ze een waarschuwing in hun browser hebben gezien.
+      Als deze instelling uitgeschakeld of niet ingesteld is, leidt de wachtwoordbeveiligingsservice gebruikers naar https://myaccounts.google.com om hun wachtwoord te wijzigen.
+      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="8782750230688364867">Hiermee wordt het percentage gespecificeerd waarmee de inactieve vertraging wordt geschaald als het apparaat zich in presentatiemodus bevindt.
 
           Als dit beleid is ingesteld, specificeert het het percentage waarmee de inactieve vertraging wordt geschaald als het apparaat zich in presentatiemodus bevindt. Als de inactieve vertraging wordt geschaald, worden het dimmen van het scherm, scherm uitschakelen en vertragingen van schermvergrendeling aangepast om dezelfde afstanden tot de inactieve vertraging te behouden als oorspronkelijk is geconfigureerd.

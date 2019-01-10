@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 dag geleden}other{# dagen geleden}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuut geleden}other{# minuten geleden}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
+<translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1243314992276662751">Uploaden</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Spraak</translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag resterend}other{# dagen resterend}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' opzoeken</translation>
 <translation id="364720409959344976">Map voor uploaden selecteren</translation>
 <translation id="3660179305079774227">Pijl-omhoog</translation>

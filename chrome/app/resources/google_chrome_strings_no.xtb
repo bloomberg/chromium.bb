@@ -200,6 +200,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>
 <translation id="686561893457936865">Bruk Chrome overalt</translation>
 <translation id="6885412569789873916">Chrome Beta-apper</translation>
+<translation id="6943584222992551122">Denne personens nettlesingsdata slettes fra denne enheten. For å gjenopprette dataene, logg på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="6964107240822114422">{0,plural, =0{En Chrome-oppdatering er tilgjengelig}=1{En Chrome-oppdatering er tilgjengelig}other{En Chrome-oppdatering har vært tilgjengelig i # dager}}</translation>
 <translation id="6967962315388095737">Regel for å tillate innkommende mDNS-trafikk i Google Chrome Beta.</translation>
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>

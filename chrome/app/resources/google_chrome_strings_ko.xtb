@@ -208,6 +208,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="686561893457936865">어디에서나 Chrome 사용</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>
+<translation id="6943584222992551122">선택한 사용자의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복원하려면 <ph name="USER_EMAIL" />(으)로 Chrome에 로그인하세요.</translation>
 <translation id="6964107240822114422">{0,plural, =0{Chrome 업데이트 출시}=1{Chrome 업데이트 출시}other{#일 이상 Chrome 업데이트가 이루어지지 않았음}}</translation>
 <translation id="6967962315388095737">Chrome 베타에서 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>

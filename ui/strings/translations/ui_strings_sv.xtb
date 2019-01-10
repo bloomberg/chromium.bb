@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minut sedan}other{# minuter sedan}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="1181037720776840403">Ta bort</translation>
 <translation id="1243314992276662751">Ladda upp</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Tal</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Sök efter ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Välj en mapp för uppladdning</translation>
 <translation id="3660179305079774227">Uppil</translation>

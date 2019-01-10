@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Uždaryti visus skirtukus</translation>
 <translation id="1254117744268754948">Pasirinkti aplanką</translation>
 <translation id="1265739287306757398">Sužinoti, kaip tai padaryti</translation>
-<translation id="127138278192656016">Sinchronizavimo ir visų paslaugų naudojimas</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1323735185997015385">Ištrinti</translation>
 <translation id="132683371494960526">Dukart palieskite, kad pakeistumėte viršaplankį.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Kopijuoti vaizdą</translation>
 <translation id="1612730193129642006">Rodyti skirtuko tinklelį</translation>
 <translation id="1644574205037202324">Istorija</translation>
+<translation id="1650222530560417226">Palieskite mygtuką „Pradėi registravimą“, kad rinktumėte būsimus „JavaScript“ pulto žurnalus ir klaidas iš visų skirtukų. Žurnalai bus renkami (ir saugomi tik atmintyje), kol šis puslapis bus uždarytas arba kol paliesite „Stabdyti registravimą“.</translation>
 <translation id="1657011748321897393">Bendrinant įvyko klaida, nes nesate prisijungę prie tinklo.</translation>
 <translation id="165877110639533037">Nėra atidarytų skirtukų</translation>
 <translation id="168715261339224929">Jei norite gauti žymes visuose įrenginiuose, įjunkite sinchronizavimą.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968">Pasirinkta: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dukart palieskite, kad įdiegtumėte.</translation>
 <translation id="1746815479209538200">Norėdami naršyti žiniatinklyje, pridėkite naują skirtuką.</translation>
-<translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1752547299766512813">Išs. slaptažod.</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
 <translation id="1809939268435598390">Ištrinti aplanką</translation>
 <translation id="1813414402673211292">Išvalyti naršymo duomenis</translation>
 <translation id="1820259098641718022">Pridėta prie skaitymo sąrašo</translation>
 <translation id="1821253160463689938">Naudojami slapukai, siekiant įsiminti jūsų nuostatas, net jei nesilankote tuose puslapiuose</translation>
+<translation id="1828824471510190776">Siūlyti slaptažodį...</translation>
 <translation id="1876721852596493031">Siųsti naud. duom.</translation>
 <translation id="1886928167269928266">Laiko pradžia</translation>
 <translation id="1911619930368729126">Įkelti į „Google“ diską</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
+<translation id="3771149149411027381">Ieškoti nukopijuoto teksto</translation>
 <translation id="3779810277399252432">Nėra interneto ryšio.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Ieškoti</translation>
 <translation id="4121993058175073134">Jei n. siųsti tinklo eksp. duom., sukonf. el. pšt. pask. nust. progr.</translation>
 <translation id="4124987746317609294">Laikotarpis</translation>
+<translation id="4155190233692914060">Apsilankyti nukopijuotos nuorodos adresu</translation>
 <translation id="4172051516777682613">Visada rodyti</translation>
 <translation id="418156467088430727">Žiūrėti neprisij. naudoj. versiją naujame skirtuke</translation>
 <translation id="4237682350741091554">Tvarkykite „Chrome“ sinchronizavimo ir suasmeninimo funkcijas skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4854345657858711387">Slaptažodžio nustatymas</translation>
 <translation id="4860895144060829044">Skambinti</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
-<translation id="4882831918239250449">Naršymo istorijos naudojimo paieškai, skelbimams ir kitoms funkcijoms suasmeninti valdymas</translation>
 <translation id="4895709476292058519">Keisti paskyras</translation>
 <translation id="4904877109095351937">Pažymėti kaip skaitytus</translation>
 <translation id="4930268273022498155">Ištrinti esamus duomenis. Juos galite gauti perjungę atgal į <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Apgailestaujame, bendrinant elementą kilo problema.</translation>
 <translation id="4979397965658815378">Prisijunkite naudodami „Google“ paskyrą, kad gautumėte žymes, slaptažodžius, istoriją ir kitus nustatymus visuose įrenginiuose</translation>
-<translation id="5004416275253351869">„Google“ veiklos valdikliai</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
 <translation id="5010803260590204777">Norėdami naršyti žiniatinklį privačiai, atidarykite inkognito skirtuką.</translation>
 <translation id="5011684439661633295">Sveiki, <ph name="FULL_ACCOUNT_NAME" />!</translation>
@@ -257,7 +257,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5186185447130319458">Privatu</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5197255632782567636">Internetas</translation>
-<translation id="5215116848420601511">„Google Pay“ naudojami mokėjimo metodai ir adresai</translation>
 <translation id="5228579091201413441">Įgalinti sinchronizavimą</translation>
 <translation id="5244474230056479698">Sinchronizavimas su <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Rodyti</translation>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Μάθετε περισσότερα σχετικά με την πιο πρόσφατη ενημέρωση της εφαρμογής <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Απενεργοποίηση</translation>
+<translation id="1999763610967697511">Μεταφορά και απόθεση</translation>
 <translation id="2012624427112548395">Ctrl+Πλήκτρο αναζήτησης+H</translation>
 <translation id="2016340657076538683">Πληκτρολογήστε ένα μήνυμα</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Υπάρχει διαθέσιμη ενημέρωση</translation>
 <translation id="2413728805700750528">Το <ph name="DISPLAY_NAME" /> είναι μια διαχειριζόμενη περίοδος σύνδεσης την οποία διαχειρίζεται ο τομέας <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Σε σύνδεση στο δίκτυο <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Αριστερό κλικ</translation>
 <translation id="2429753432712299108">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2484513351006226581">Πατήστε <ph name="KEYBOARD_SHORTCUT" />, για να αλλάξετε διάταξη πληκτρολογίου.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Δεν υπάρχουν διαθέσιμα δίκτυα κινητής τηλεφωνίας</translation>
 <translation id="3255483164551725916">Τι μπορείς να κάνεις;</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
+<translation id="3308453408813785101">Ο χρήστης <ph name="USER_EMAIL_ADDRESS" /> μπορεί να συνδεθεί αργότερα.</translation>
 <translation id="332587331255250389">Αντικαταστήστε την μπαταρία</translation>
 <translation id="3351879221545518001">Αυτήν τη στιγμή πραγματοποιείτε μετάδοση της οθόνης.</translation>
 <translation id="3364721542077212959">Εργαλεία γραφίδας</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Αποσύνδεση</translation>
 <translation id="4849058404725798627">Επισήμανση αντικειμένου με εστίαση στο πληκτρολόγιο</translation>
+<translation id="485592688953820832">Καμία ενέργεια (παύση)</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
 <translation id="4890187583552566966">Ο Βοηθός Google είναι απενεργοποιημένος από τον διαχειριστή σας.</translation>
 <translation id="4895488851634969361">Η μπαταρία είναι πλήρης.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Ενεργές, όλες οι εφαρμογές</translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
 <translation id="813913629614996137">Εκκίνηση…</translation>
+<translation id="8142441511840089262">Διπλό κλικ</translation>
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
+<translation id="8167567890448493835">Χρησιμοποιείτε <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
 <translation id="8192202700944119416">Οι ειδοποιήσεις είναι κρυφές.</translation>
+<translation id="8203795194971602413">Δεξί κλικ</translation>
 <translation id="8236042855478648955">Ώρα για διάλειμμα</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8297006494302853456">Αδύναμο</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Δεν υπάρχει σύνδεση</translation>
 <translation id="8877788021141246043">Ορισμός υπενθύμισης</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
-<translation id="8898978413391960553">00:00 δευτ.</translation>
 <translation id="8921624153894383499">Ο Βοηθός Google δεν είναι διαθέσιμος σε αυτήν τη γλώσσα.</translation>
 <translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="8940956008527784070">Χαμηλή στάθμη μπαταρίας (<ph name="PERCENTAGE" />%)</translation>

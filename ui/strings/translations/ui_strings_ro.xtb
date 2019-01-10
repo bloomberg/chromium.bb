@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Acum o zi}few{Acum # zile}other{Acum # de zile}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Acum 1 minut}few{Acum # minute}other{Acum # de minute}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}few{# min.}other{# min.}}</translation>
+<translation id="1181037720776840403">Elimină</translation>
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Voce</translation>
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{O zi rămasă}few{# zile rămase}other{# de zile rămase}}</translation>
+<translation id="3608915363409716668">peste <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Caută „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Selectați un dosar de încărcat</translation>
 <translation id="3660179305079774227">Săgeată în sus</translation>

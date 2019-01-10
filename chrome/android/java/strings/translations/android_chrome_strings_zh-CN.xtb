@@ -39,6 +39,7 @@
 <translation id="1259100630977430756">在您关闭所有私密标签页后，您在其中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入私密模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
+<translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="127138278192656016">使用同步功能和所有服务</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -128,7 +129,6 @@
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
 <translation id="1952172573699511566">网站将尽可能以您的首选语言显示文字。</translation>
-<translation id="195283394249132567">个性化的 Google 服务</translation>
 <translation id="1960290143419248813">此版本的 Android 不再支持 Chrome 更新</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -152,6 +152,7 @@
 <translation id="2091887806945687916">声音</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2100273922101894616">自动登录</translation>
+<translation id="2107397443965016585">在允许网站播放受保护内容前先询问（推荐）</translation>
 <translation id="2111511281910874386">转至相关网页</translation>
 <translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2122601567107267586">无法打开此应用</translation>
@@ -255,7 +256,7 @@
 <translation id="2910701580606108292">在允许网站播放受保护内容前先询问</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 存储数据</translation>
-<translation id="2943166482989655199">将系统信息和使用情况数据发送给 Google，帮助改进 Chrome 并提高其安全性</translation>
+<translation id="2941880727166628951">发送至我的设备</translation>
 <translation id="2956410042958133412">该帐号由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2962095958535813455">已切换到隐身标签页</translation>
@@ -289,6 +290,7 @@
 <translation id="3236059992281584593">还剩 1 分钟</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
+<translation id="3259723213051400722">请重试。</translation>
 <translation id="3259831549858767975">缩小网页上的所有内容</translation>
 <translation id="3269093882174072735">加载图片</translation>
 <translation id="3269956123044984603">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
@@ -313,7 +315,6 @@
 <translation id="3443221991560634068">重新加载当前网页</translation>
 <translation id="3445014427084483498">刚刚</translation>
 <translation id="3452612588551937789">在任意设备上登录 Google 帐号后，您即可获取自己的书签、历史记录、密码及其他设置。</translation>
-<translation id="3485359633434254965">{FILES,plural, =1{已下载 %1$d 个文件}other{已下载 %1$d 个文件}}</translation>
 <translation id="3492207499832628349">打开新的无痕式标签页</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -330,6 +331,7 @@
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
 <translation id="360207483134687714">帮助我们改进 Chrome 中的虚拟现实体验</translation>
+<translation id="3604604794717279723">我接受</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3630011985153972676">在“设置”中允许 Chrome 在连接到 Wi-Fi 网络时为您下载文章。</translation>
 <translation id="3632295766818638029">显示密码</translation>
@@ -394,7 +396,6 @@
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
-<translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 个书签}other{%1$d 个书签}}</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4159800535322890630">禁止网站使用您的传感器</translation>
 <translation id="4165986682804962316">网站设置</translation>
@@ -432,6 +433,7 @@
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4453340223357552416">已在 <ph name="PRODUCT_NAME" /> 中下载 <ph name="FILE_NAME" /></translation>
+<translation id="445467742685312942">允许网站播放受保护内容。</translation>
 <translation id="4468959413250150279">将某个特定网站静音。</translation>
 <translation id="4472118726404937099">要在您的所有设备上保持同步并进行个性化设置，请登录您的帐号并开启同步功能</translation>
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
@@ -503,7 +505,6 @@
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共享您的屏幕</translation>
 <translation id="4961107849584082341">将此页面翻译成任何语言</translation>
-<translation id="4961334780091921942">您所有设备上的密码、历史记录等信息</translation>
 <translation id="4961700429721424617">您正要退出由 <ph name="MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4988210275050210843">正在下载文件（<ph name="MEGABYTES" /> MB）。</translation>
@@ -536,7 +537,6 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5224771365102442243">包含视频</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
-<translation id="5264003212305142034">您随时可以自定义<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。Google 可能会根据您访问的网站上的内容、您在浏览器中的活动和互动行为，为您提供个性化的 Chrome 体验和其他 Google 服务体验（例如翻译、搜索和广告）。</translation>
 <translation id="526421993248218238">无法加载此页面</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
@@ -550,12 +550,12 @@
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
-<translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE" />”</translation>
 <translation id="5363230136052241468">点按“首页”按钮即可加载新标签页</translation>
 <translation id="5372829067651257087">已复制网址。</translation>
 <translation id="5391532827096253100">您与此网站之间建立的连接不安全。网站信息</translation>
 <translation id="5400569084694353794">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="5403644198645076998">只允许访问某些网站</translation>
+<translation id="5411915800973845744">*新*快速预览图片</translation>
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
 <translation id="5424588387303617268">可用存储空间：<ph name="GIGABYTES" /> GB</translation>
@@ -644,7 +644,6 @@
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
-<translation id="5990142338020175451">畅享更加个性化的 Google 服务，例如更贴合个人需求的网页建议</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
@@ -665,6 +664,7 @@
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6171019622954353983">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。\n\n若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">已设为不可供当前的搜索引擎使用</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="618993374665929060">已全屏打开“更多类似内容”列表</translation>
@@ -694,6 +694,7 @@
 <translation id="6343192674172527289">未找到任何下载内容</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
+<translation id="6369229450655021117">您可从这里搜索网上内容、与好友分享内容以及查看已打开的网页</translation>
 <translation id="6378173571450987352">详细信息：按已使用的数据流量排序</translation>
 <translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>
@@ -872,6 +873,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
+<translation id="7670842975141217779">Chrome 中的\nGoogle 助理</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
@@ -992,6 +994,7 @@
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
+<translation id="8604763363205185560">帮助改进 Chrome 并提高其安全性</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8616006591992756292">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
@@ -1021,7 +1024,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>
 <translation id="8901170036886848654">未找到任何书签</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d 个打开的标签页，点按即可切换标签页}other{%1$d 个打开的标签页，点按即可切换标签页}}</translation>
 <translation id="8905378131945614900">未能成功安装 VR 模块</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐号</translation>

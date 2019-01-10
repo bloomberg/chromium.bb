@@ -21,7 +21,6 @@
 <translation id="122699739164161391">بستن همه برگه‌ها</translation>
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1265739287306757398">با نحوه انجام کار آشنا شوید</translation>
-<translation id="127138278192656016">استفاده از همگام‌سازی و همه سرویس‌ها</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">کپی تصویر</translation>
 <translation id="1612730193129642006">نمایش شبکه برگه</translation>
 <translation id="1644574205037202324">سابقه</translation>
+<translation id="1650222530560417226">برای جمع‌آوری گزارش‌ها و خطاهای آتی کنسول جاوا اسکریپت در همه برگه‌ها، روی دکمه «شروع گزارش‌گیری» ضربه بزنید. گزارش‌ها تا زمان بسته شدن این صفحه یا ضربه زدن روی «توقف گزارش‌گیری» جمع‌آوری می‌شود (و فقط در حافظه ذخیره می‌شود).</translation>
 <translation id="1657011748321897393">اشتراک‌گذاری انجام نشد چون به شبکه وصل نیستید.</translation>
 <translation id="165877110639533037">برگه‌ای باز نیست</translation>
 <translation id="168715261339224929">برای دریافت نشانک‌ها در همه دستگاه‌هایتان، همگام‌سازی را روشن کنید.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> نشانک انتخاب شده است</translation>
 <translation id="1740468249224277719">برای نصب دو ضربه سریع بزنید.</translation>
 <translation id="1746815479209538200">برای مرور وب، برگه جدیدی اضافه کنید.</translation>
-<translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1752547299766512813">ذخیره گذرواژه‌ها</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
 <translation id="1809939268435598390">حذف پوشه</translation>
 <translation id="1813414402673211292">پاک کردن داده‌های مرور</translation>
 <translation id="1820259098641718022">به فهرست خواندن اضافه شد</translation>
 <translation id="1821253160463689938">از کوکی‌ها برای به خاطر سپردن تنظیمات برگزیده‌تان استفاده می‌کند، حتی اگر از آن صفحه‌ها بازدید نکنید</translation>
+<translation id="1828824471510190776">پیشنهاد گذرواژه…</translation>
 <translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1886928167269928266">از ابتدا</translation>
 <translation id="1911619930368729126">‏بارگذاری در Google Drive</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
+<translation id="3771149149411027381">جستجوی نوشتار کپی‌شده</translation>
 <translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="3789841737615482174">نصب</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">جستجو</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
 <translation id="4124987746317609294">محدوده زمانی</translation>
+<translation id="4155190233692914060">بازدید از پیوند کپی‌شده</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
 <translation id="418156467088430727">مشاهده نسخه آفلاین در برگه جدید</translation>
 <translation id="4237682350741091554">‏«همگام‌سازی Chrome» و شخصی‌سازی را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> مدیریت کنید</translation>
@@ -238,13 +240,11 @@
 <translation id="4854345657858711387">تنظیم گذرنویسه</translation>
 <translation id="4860895144060829044">تماس</translation>
 <translation id="4881695831933465202">باز کردن</translation>
-<translation id="4882831918239250449">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
 <translation id="4895709476292058519">تغییر حساب‌ها</translation>
 <translation id="4904877109095351937">علامت‌گذاری به‌عنوان خوانده‌شده</translation>
 <translation id="4930268273022498155">حذف داده‌های موجود. می‌توانید با جابه‌جایی به <ph name="USER_EMAIL1" /> آن را بازیابی کنید.</translation>
 <translation id="4941089862236492464">متأسفیم! مشكلی در اشتراک‌گذاری مورد شما وجود داشت.</translation>
 <translation id="4979397965658815378">‏برای دریافت نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید</translation>
-<translation id="5004416275253351869">‏کنترل‌های فعالیت Google</translation>
 <translation id="5005498671520578047">کپی گذرواژه</translation>
 <translation id="5010803260590204777">برای مرور وب به صورت خصوصی برگه ناشناس باز کنید.</translation>
 <translation id="5011684439661633295">سلام، <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -257,7 +257,6 @@
 <translation id="5186185447130319458">خصوصی</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="5197255632782567636">اینترنت</translation>
-<translation id="5215116848420601511">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5244474230056479698">درحال همگام‌سازی در <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">نمایش</translation>

@@ -201,6 +201,7 @@
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>
+<translation id="6943584222992551122">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“<ph name="USER_EMAIL" />”的身份登录 Chrome。</translation>
 <translation id="6964107240822114422">{0,plural, =0{有一项可用的 Chrome 更新}=1{有一项可用的 Chrome 更新}other{有一项可用的 Chrome 更新（已发布 # 天）}}</translation>
 <translation id="6967962315388095737">Google Chrome 测试版的入站规则，允许 mDNS 流量。</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>

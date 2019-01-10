@@ -21,7 +21,6 @@
 <translation id="122699739164161391">सर्व टॅब बंद करा</translation>
 <translation id="1254117744268754948">फोल्डर निवडा</translation>
 <translation id="1265739287306757398">कसे ते जाणून घ्या</translation>
-<translation id="127138278192656016">सिंक आणि सर्व सेवा वापरा</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1323735185997015385">हटवा</translation>
 <translation id="132683371494960526">मुख्य फोल्डर बदलण्यासाठी दोनदा टॅप करा.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">इमेज कॉपी करा</translation>
 <translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
 <translation id="1644574205037202324">इतिहास</translation>
+<translation id="1650222530560417226">सर्व टॅबवरून भविष्यातील JavaScript कंसोल लॉग आणि एरर गोळा करण्यासाठी "लॉगिंग सुरू करा" बटणावर टॅप करा. हे पेज बंद केले जाईपर्यंत किंवा "लॉगिंग बंद करा" वर टॅप केले जाईपर्यंत लॉग गोळा केले जातील (आणि फक्त मेमरीमध्ये स्टोअर केले जातील).</translation>
 <translation id="1657011748321897393">सामायिकरण अयशस्वी झाले कारण तुम्ही नेटवर्कशी कनेक्ट केलेले नाही.</translation>
 <translation id="165877110639533037">कोणतेही टॅब उघडे नाहीत</translation>
 <translation id="168715261339224929">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, सिंक चालू करा.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> निवडले</translation>
 <translation id="1740468249224277719">इंस्टॉल करण्यासाठी दोनदा टॅप करा.</translation>
 <translation id="1746815479209538200">वेब ब्राउझ करण्यासाठी नवीन टॅब जोडा.</translation>
-<translation id="17513872634828108">खुले टॅब</translation>
 <translation id="1752547299766512813">पासवर्ड सेव्ह करा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
 <translation id="1809939268435598390">फोल्डर हटवा</translation>
 <translation id="1813414402673211292">ब्राउझिंग डेटा साफ करा</translation>
 <translation id="1820259098641718022">वाचन सूचीमध्ये जोडले</translation>
 <translation id="1821253160463689938">तुम्ही त्या पेजना भेट दिली नसली तरीही, तुमची प्राधान्ये लक्षात ठेवण्यासाठी कुकीचा वापर करते</translation>
+<translation id="1828824471510190776">पासवर्ड सुचवा...</translation>
 <translation id="1876721852596493031">वापरलेला डेटा पाठवा</translation>
 <translation id="1886928167269928266">सुरूवातीपासून</translation>
 <translation id="1911619930368729126">Google ड्राइव्हवर अपलोड करा</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
+<translation id="3771149149411027381">कॉपी केलेला मजकूर शोधा</translation>
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
@@ -194,8 +195,9 @@
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="411254640334432676">डाउनलोड अयशस्वी.</translation>
 <translation id="4112644173421521737">शोध</translation>
-<translation id="4121993058175073134">निव्वळ-एक्सपोर्ट डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये तुमचे ईमेल खाते कॉन्फिगर करा.</translation>
+<translation id="4121993058175073134">निव्वळ-एक्सपोर्ट डेटा पाठविण्यासाठी, कृपया सेटिंग्ज ॲप मध्ये तुमचे ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ वर्गवारी</translation>
+<translation id="4155190233692914060">कॉपी केलेल्या लिंकला भेट द्या</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
 <translation id="418156467088430727">नवीन टॅबमध्‍ये ऑफलाइन आवृत्ती पहा</translation>
 <translation id="4237682350741091554">Chrome सिंक आणि पर्सनलायझेशन <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मधून व्यवस्थापित करा.</translation>
@@ -239,13 +241,11 @@
 <translation id="4854345657858711387">पासकोड सेट करा</translation>
 <translation id="4860895144060829044">कॉल करा</translation>
 <translation id="4881695831933465202">उघडा</translation>
-<translation id="4882831918239250449">तुम्ही ब्राउझ करत असलेला इतिहास पर्सनलाइझ शोध, जाहिराती आणि बरेच काही करण्यासाठी कसा वापरला जातो ते नियंत्रित करा</translation>
 <translation id="4895709476292058519">खाती बदला</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
 <translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून तुम्ही तो पुनर्प्राप्त करू शकता.</translation>
 <translation id="4941089862236492464">क्षमस्व, तुमचा आयटम शेअर करताना समस्या आली.</translation>
 <translation id="4979397965658815378">आपल्या सर्व डिव्हाइसेसवर तुमचे बुकमार्क, पासवर्ड, इतिहास आणि अन्य सेटिंग्ज प्राप्त करण्यासाठी आपल्या Google खात्यासह साइन इन करा</translation>
-<translation id="5004416275253351869">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
 <translation id="5010803260590204777">वेब खाजगीपणे ब्राउझ करण्‍यासाठी गुप्त टॅब उघडा.</translation>
 <translation id="5011684439661633295">हाय, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -258,7 +258,6 @@
 <translation id="5186185447130319458">खाजगी</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="5197255632782567636">इंटरनेट</translation>
-<translation id="5215116848420601511">Google Pay वापरून पेमेंट पद्धती आणि पत्ते</translation>
 <translation id="5228579091201413441">संकालन सक्षम करा</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> वर संकालित करीत आहे</translation>
 <translation id="5300589172476337783">दर्शवा</translation>

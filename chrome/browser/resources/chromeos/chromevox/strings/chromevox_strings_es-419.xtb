@@ -54,6 +54,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1346059596910821859">Propina</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="135978014023467274">¡Actualizaste ChromeVox a la versión 63!</translation>
+<translation id="1360699455582016846">Haz clic en el elemento que aparece debajo de la clave de enrutamiento <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Siguiente fila de la tabla</translation>
 <translation id="1377925789329510816">Este es el último encabezado. Presiona Buscar + H para volver al primer encabezado o Buscar + mayúscula + H para ir al segundo encabezado de esta página.</translation>
 <translation id="1383876407941801731">Buscar</translation>
@@ -112,6 +113,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1905379170753160525">Mostrar lista de encabezados</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678">Secuencia de <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Control de semana del año</translation>
 <translation id="1964135212174907577">Objeto siguiente</translation>
 <translation id="1969092762068865084">Julio</translation>
@@ -267,6 +269,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="316542773973815724">Navegación</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espacio}other{# espacios}}</translation>
 <translation id="320961988183078793">Se ingresó <ph name="TYPE" />.</translation>
+<translation id="3218691001991391708">Pegar <ph name="TEXT" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, pestaña</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Vínculo visitado</translation>
@@ -344,12 +347,14 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3468959318854349468">Sin título</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> sld</translation>
 <translation id="3486232535569802404"><ph name="V1" /> a <ph name="V2" /></translation>
+<translation id="3490765818161916458">Lista cuadrícula</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{corchete de cierre}other{# corchetes de cierre}}</translation>
 <translation id="3493915602752813531">No hay ningún anclaje posterior.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{signo de intercalación}other{# signos de intercalación}}</translation>
 <translation id="352577523970648069">Un campo de texto editable</translation>
+<translation id="3549141990712742152">Cortar <ph name="TEXT" /></translation>
 <translation id="3549680091535286226">Presiona con 2 dedos para silenciar la voz temporalmente</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casilla de verificación no marcada</translation>
 <translation id="3589661172894441357">Glosario</translation>
@@ -381,6 +386,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3856075812838139784">Solo lectura</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menú</translation>
+<translation id="3907138069015388678">ListCdric</translation>
 <translation id="3909320334364316587">Encabezado anterior de nivel 6</translation>
 <translation id="3914173277599553213">Permisos requeridos</translation>
 <translation id="3914732343065571127">Referencia de comandos de ChromeVox</translation>
@@ -674,6 +680,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6129953537138746214">Google Space</translation>
 <translation id="6132506484792346370">Un cuadro de lista o uno combinado</translation>
 <translation id="6142308968191113180">Encabezado 4</translation>
+<translation id="6158882249329863701">Fila <ph name="TABLECELLROWINDEX" />, columna <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">medidor</translation>
 <translation id="6169420925157477918">Imagen con descripción larga</translation>
 <translation id="6186305613600865047">Ir al final de la página</translation>
@@ -689,6 +696,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6307969636681130414">Presionado</translation>
 <translation id="6322856989298155004">Sonidos</translation>
 <translation id="6324551002951139333">Error gramatical detectado</translation>
+<translation id="6325241889020214828">Copiar <ph name="TEXT" /></translation>
 <translation id="6348657800373377022">Cuadro combinado</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{viñeta}other{ # viñetas}}</translation>
 <translation id="6355910664415701303">No hay ningún elemento de la lista anterior.</translation>
@@ -960,6 +968,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943175951035496220">No hay ninguna celda a la derecha.</translation>
+<translation id="8946628535652548639">f<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Borrar</translation>
 <translation id="900114243503212879">archivo</translation>

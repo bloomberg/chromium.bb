@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="1993072747612765854">최신 <ph name="SYSTEM_APP_NAME" /> 업데이트에 관해 자세히 알아보세요.</translation>
 <translation id="1995660704900986789">끄기</translation>
+<translation id="1999763610967697511">드래그 앤 드롭</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">메시지 입력</translation>
 <translation id="2050339315714019657">세로 방향</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">업데이트 가능</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 관리 세션입니다.</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" />에 연결됨</translation>
+<translation id="2427507373259914951">왼쪽 클릭</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2484513351006226581">키보드 레이아웃을 전환하려면 <ph name="KEYBOARD_SHORTCUT" />을(를) 누르세요.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3255483164551725916">무엇을 할 수 있어?</translation>
 <translation id="3294437725009624529">게스트</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />님이 나중에 로그인할 수 있습니다.</translation>
 <translation id="332587331255250389">배터리를 교체해 주세요</translation>
 <translation id="3351879221545518001">현재 화면을 전송하고 있습니다.</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4849058404725798627">키보드 포커스로 개체 강조표시</translation>
+<translation id="485592688953820832">작업 없음(일시중지)</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="4890187583552566966">관리자가 Google 어시스턴트를 사용 중지했습니다.</translation>
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">모든 앱에서 사용 중</translation>
 <translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
 <translation id="813913629614996137">초기화 중...</translation>
+<translation id="8142441511840089262">더블클릭</translation>
 <translation id="8142699993796781067">사설 네트워크</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> 사용 중</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="8192202700944119416">알림이 숨겨져 있음</translation>
+<translation id="8203795194971602413">오른쪽 클릭</translation>
 <translation id="8236042855478648955">휴식 시간</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8297006494302853456">약함</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="8877788021141246043">알림을 설정해 줘</translation>
 <translation id="8878886163241303700">화면 확대</translation>
-<translation id="8898978413391960553">00:00초</translation>
 <translation id="8921624153894383499">Google 어시스턴트가 이 언어를 지원하지 않음</translation>
 <translation id="8938800817013097409">USB-C 기기(우측 후면 포트)</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE" />%)</translation>

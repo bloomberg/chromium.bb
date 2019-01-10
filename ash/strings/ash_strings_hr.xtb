@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Saznajte više o najnovijem ažuriranju za <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Isključi</translation>
+<translation id="1999763610967697511">Povlačenje i ispuštanje</translation>
 <translation id="2012624427112548395">Ctrl + Search + H</translation>
 <translation id="2016340657076538683">Unesite poruku</translation>
 <translation id="2050339315714019657">Portret</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> predstavlja upravljanu sesiju kojom upravlja <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Povezano s mrežom <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Lijevi klik</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Obavijesti</translation>
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" /> da biste promijenili raspored tipkovnice.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Mobilne mreže nisu dostupne</translation>
 <translation id="3255483164551725916">Što možeš učiniti?</translation>
 <translation id="3294437725009624529">Gost</translation>
+<translation id="3308453408813785101">Korisnik <ph name="USER_EMAIL_ADDRESS" /> može se prijaviti i kasnije.</translation>
 <translation id="332587331255250389">Zamijenite bateriju</translation>
 <translation id="3351879221545518001">Trenutačno emitirate zaslon.</translation>
 <translation id="3364721542077212959">Alati pisaljke</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4849058404725798627">Istakni objekt fokusom na tipkovnici</translation>
+<translation id="485592688953820832">Nema radnje (pauza)</translation>
 <translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
 <translation id="4890187583552566966">Vaš je administrator onemogućio Google asistent.</translation>
 <translation id="4895488851634969361">Baterija je puna.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Uključeno, sve aplikacije</translation>
 <translation id="8132793192354020517">Povezano s <ph name="NAME" /></translation>
 <translation id="813913629614996137">Pokretanje...</translation>
+<translation id="8142441511840089262">Dvostruki klik</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
+<translation id="8167567890448493835">Upotrebljava se <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="8192202700944119416">Obavijesti su skrivene.</translation>
+<translation id="8203795194971602413">Desni klik</translation>
 <translation id="8236042855478648955">Vrijeme je za pauzu</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Slab</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Niste povezani</translation>
 <translation id="8877788021141246043">Postavi podsjetnik</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>
-<translation id="8898978413391960553">00:00</translation>
 <translation id="8921624153894383499">Google asistent ne govori taj jezik.</translation>
 <translation id="8938800817013097409">USB-C uređaj (desni priključak sa stražnje strane)</translation>
 <translation id="8940956008527784070">Baterija je skoro prazna (<ph name="PERCENTAGE" />%)</translation>

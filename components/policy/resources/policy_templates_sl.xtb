@@ -24,6 +24,16 @@
       Če je ta pravilnik onemogočen ali ni nastavljen, se piškotki, ki jih nastavi IdP, prenesejo v uporabnikov profil samo pri prvi prijavi uporabnika v napravi.
 
       Ta pravilnik vpliva na uporabnike, katerih domena se ujema samo z domeno za včlanitev naprave. Pri vseh drugih uporabnikih se piškotki, ki jih nastavi IdP, prenesejo v uporabnikov profil samo pri prvi prijavi uporabnika v napravi.</translation>
+<translation id="1030120600562044329">Omogoča anonimno sporočanje podatkov o uporabi in zrušitvah brskalnika <ph name="PRODUCT_NAME" /> Googlu in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Če je ta nastavitev omogočena, se bodo podatki o uporabi in zrušitvah
+      anonimno pošiljali Googlu.  Če je onemogočena, se ti podatki ne bodo
+      pošiljali Googlu.  Uporabniki v obeh primerih nastavitve ne morejo spremeniti ali preglasiti.
+      Če ta pravilnik ni nastavljen, bo veljala nastavitev, ki jo je uporabnik
+      izbral ob namestitvi oziroma prvem zagonu.
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.
+      (Za OS Chrome glejte pravilnik DeviceMetricsReportingEnabled.)</translation>
 <translation id="1035385378988781231">Ta pravilnik nadzira, ali bo funkcija omrežnih naprav za skupno rabo datotek za brskalnik <ph name="PRODUCT_NAME" /> uporabljala protokol NTLM za preverjanje pristnosti.
 
       Če je ta pravilnik omogočen, bo protokol NTLM po potrebi uporabljen za preverjanje pristnosti datotečnih sredstev SMB v skupni rabi.
@@ -70,6 +80,11 @@
       Več informacij o varnih kontekstih je na voljo na
       https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="1107764601871839136">Določa življenjsko dobo predpomnjenja (v urah) predmetov pravilnika skupine (GPO). Namesto vnovičnega prenosa GPO-jev pri vsakem prenosu pravilnika, lahko sistem znova uporabi predpomnjene GPO-je, če se njihova različica ne spremeni. Ta pravilnik določa najdaljši dovoljen čas, v katerem se sme uporabiti predpomnjene GPO-je, preden so znova preneseni. Ob vnovičnem zagonu in odjavi se predpomnilnik izbriše.
+
+      Če pravilnik ni nastavljen, je mogoče predpomnjene uporabnike znova uporabiti v obdobju do 25 ur.
+
+      Če je pravilnik nastavljen na 0, je predpomnjenje GPO izklopljeno. Upoštevajte, da se s tem poveča obremenjenost strežnika, saj so GPO-ji znova preneseni ob vsakem prenosu pravilnika, tudi če se niso spremenili.</translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
 <translation id="1118093128235245168">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogoči dostop do povezane naprave USB</translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
@@ -167,6 +182,19 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="142346659686073702">Omogočanje uporabe Crostinija nepovezanim uporabnikom</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
+<translation id="1431272318313028342">Omogoča funkcijo Varnega brskanja brskalnika <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
+
+      Če omogočite to nastavitev, je Varno brskanje vedno aktivno.
+
+      Če onemogočite to nastavitev, je Varno brskanje vedno neaktivno.
+
+      Če omogočite ali onemogočite to nastavitev, uporabniki ne morejo spremeniti ali preglasiti nastavitve »Omogoči zaščito pred lažnim predstavljanjem in zlonamerno programsko opremo« v brskalniku <ph name="PRODUCT_NAME" />.
+
+      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik spremenil nastavitev.
+
+      Na https://developers.google.com/safe-browsing je na voljo več informacij o Varnem brskanju.
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
 <translation id="1438739959477268107">Privzeta nastavitev ustvarjanja ključev</translation>
 <translation id="1454846751303307294">Omogoča nastavitev seznama vzorcev URL-jev, s katerimi so določena spletna mesta, ki jim ni dovoljeno izvajanje JavaScripta.
@@ -274,9 +302,25 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Nastavitev omejitve prenosa semen različic</translation>
+<translation id="1717817358640580294">Če pravilnik ni nastavljen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda poslalo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika nato pozvalo, ali želi počistiti neželeno programsko opremo. Uporabnik se lahko odloči za pošiljanje rezultatov čiščenja Googlu in tako pripomore k odkrivanju neželene programske opreme v prihodnosti. Ti rezultati vsebujejo metapodatke o datotekah, samodejno nameščene razširitve in registrske ključe, kot je opisano v beli knjigi o zasebnosti za Chrome.
+
+      Če je pravilnik onemogočen in Chromovo čiščenje odkrije neželeno programsko opremo, Googlu ne bo poslalo metapodatkov o pregledu, pri čemer bo preglašen morebiten pravilnik, nastavljen z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika pozvalo, ali želi počistiti neželeno programsko opremo.  Rezultati čiščenja ne bodo poslani Googlu in tudi uporabnik ne bo imel možnosti tega storiti.
+
+      Če je pravilnik omogočen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda sporočilo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika pozvalo, ali želi počistiti neželeno programsko opremo.  Rezultati čiščenja bodo poslani Googlu in uporabnik tega ne bo mogel preprečiti.
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="172374442286684480">Vsem spletnim mestom je omogočeno nastavljanje lokalnih podatkov</translation>
 <translation id="1734716591049455502">Nastavitev možnosti za oddaljen dostop</translation>
 <translation id="1736269219679256369">Dovoli nadaljevanje s strani z opozorilom SSL</translation>
+<translation id="1745780278307622857">Ugotavljanje, ali sme brskalnik <ph name="PRODUCT_NAME" /> dovoliti prenos brez preverjanja z Varnim brskanjem, če je datoteka iz zaupanja vrednega vira.
+
+      Če je pravilnik nastavljen na »False«, prenesene datoteke ne bodo poslane v analizo Varnemu brskanju, če so iz zaupanja vrednega vira.
+
+      Če pravilnik ni nastavljen (ali je nastavljen na »True«), so prenesene datoteke poslane v analizo Varnemu brskanju, tudi če so iz zaupanja vrednega vira.
+
+      Upoštevajte, da te omejitve veljajo za prenose, sprožene prek vsebine spletnih strani in z možnostjo kontekstnega menija »povezava za prenos …«. Te omejitve ne veljajo za možnost shrani/prenesi na trenutno prikazani strani in ne veljajo za možnost shranjevanja kot datoteko PDF pri možnostih tiskanja.
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="1749815929501097806">Določa pogoje storitve, ki jih mora uporabnik sprejeti, preden začne sejo lokalnega računa v napravi.
 
       Če je pravilnik nastavljen, <ph name="PRODUCT_OS_NAME" /> prenese pogoje storitve in jih predstavi uporabniku, ko ta začne sejo lokalnega računa v napravi. Uporabnik lahko začne sejo, samo če sprejme pogoje storitve.
@@ -287,6 +331,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1750315445671978749">Blokiraj vse prenose</translation>
 <translation id="1781356041596378058">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik omogočite, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
 <translation id="1797233582739332495">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je potreben vnovičen zagon</translation>
+<translation id="1798559516913615713">Življenjska doba predpomnjenja za GPO</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
 <translation id="1810261428246410396">Dovoli uporabo takojšnje povezave z internetom prek mobilnega telefona</translation>
@@ -294,6 +339,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Pravilnik mora biti določen kot niz, ki izraža URL in razpršilno vrednost v obliki JSON.</translation>
 <translation id="1827523283178827583">Uporabi fiksne strežnike proxy</translation>
+<translation id="1831495419375964631">Ta pravilnik je URL, ki kaže na datoteko XML v isti obliki, kakršne je pravilnik <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer. Pravila nalaga iz datoteke XML, ne da bi ta pravila delil z Internet Explorerjem.
+
+      Če ta pravilnik ni nastavljen ali ni nastavljen na veljaven URL, ga <ph name="PRODUCT_NAME" /> ne uporablja kot vir pravil za preklop med brskalniki.
+
+      Če je ta pravilnik nastavljen na veljaven URL, <ph name="PRODUCT_NAME" /> prenese seznam spletnih mest s tega URL-ja in uporabi pravila, kot bi bila konfigurirana s pravilnikom <ph name="SITELIST_POLICY_NAME" />.
+
+      Več informacij o pravilniku <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer je na voljo tukaj: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">Osveži oceno za uporabniški pravilnik</translation>
 <translation id="1844620919405873871">Konfigurira pravilnike, povezane s hitrim odklepanjem.</translation>
 <translation id="1847960418907100918">Določa parametre, uporabljene pri takojšnjem iskanju z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
@@ -346,6 +398,12 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je onemogočen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno.
 
       Če ni nastavljen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno v neupravljanih napravah in omogočeno v upravljanih.</translation>
+<translation id="1907431809333268751">Konfiguriranje seznama URL-jev za prijavo za poslovna okolja (samo sheme HTTP in HTTPS). Na teh URL-jih bo zajet prstni odtis gesla in uporabljen za odkrivanje vnovične uporabe enakega gesla.
+      Če želite, da bo <ph name="PRODUCT_NAME" />pravilno zajel prstne odtise gesel, poskrbite, da so strani za prijavo skladne s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Če je ta nastavitev omogočena, bo storitev za zaščito gesel na teh URL-jih zajela prstni odtis gesla in ga uporabila za odkrivanje vnovične uporabe enakega gesla.
+      Če je ta nastavitev onemogočena ali ni nastavljena, bo storitev za zaščito gesel prstni odtis gesla zajela samo na naslovu fingerprint on https://accounts.google.com.
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="1920046221095339924">Omogočanje upravljane seje v napravi</translation>
 <translation id="1929709556673267855">Posreduje konfiguracije za tiskalnike v podjetjih, vezane na naprave.
 
@@ -419,6 +477,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="209586405398070749">Stabilna različica</translation>
 <translation id="2098658257603918882">Omogoči poročanje o uporabi in podatkih, povezanih z zrušitvami</translation>
 <translation id="2104418465060359056">Sporočanje podatkov o razširitvah in vtičnikih</translation>
+<translation id="2107601598727098402">
+        Ta pravilnik zastara v različici M72. Uporabite pravilnik CloudManagementEnrollmentToken.
+        </translation>
 <translation id="2111016292707172233">Omogoči razpoložljivost funkcije »Iskanje z dotikom« v pogledu vsebine brskalnika <ph name="PRODUCT_NAME" />.
 
       Če omogočite to nastavitev, je funkcija »Iskanje z dotikom« na voljo uporabniku, ki lahko to funkcijo vkopi ali izklopi.
@@ -461,10 +522,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="214901426630414675">Omejitev obojestranskega tiskanja</translation>
 <translation id="2149330464730004005">Omogočanje barvnega tiskanja</translation>
 <translation id="2156132677421487971">Konfiguriranje pravilnikov za napravo <ph name="PRODUCT_NAME" /> – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
-<translation id="2163878108829382394">
-        Če je ta pravilnik nastavljen na »True«, je včlanitev v upravljanje v oblaku obvezna in blokira postopek zagona Chroma, če je neuspešna.
-
-        Če pravilnik ni nastavljen ali je nastavljen na »False«, je včlanitev v upravljanje v oblaku izbirna in ne blokira postopka zagona Chroma, če je neuspešna.</translation>
 <translation id="2166472654199325139">Ne filtriraj spletnih mest za izločitev vsebine za odrasle</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
@@ -615,6 +672,20 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo tiskati. Tiskanje je onemogočeno v meniju ključa, razširitvah, aplikacijah JavaScript itn. Tiskanje je še vedno mogoče prek vtičnikov, ki pri tiskanju zaobidejo <ph name="PRODUCT_NAME" />. Nekatere aplikacije Flash imajo na primer možnost tiskanja v priročnem meniju, česar ta pravilnik ne obsega.</translation>
 <translation id="2518231489509538392">Omogočanje predvajanje zvoka</translation>
 <translation id="2521581787935130926">Prikaz bližnjice za aplikacije v vrstici z zaznamki</translation>
+<translation id="2529659024053332711">Omogoča, da določite način delovanja ob zagonu.
+
+          Če izberete »Odpri nov zavihek s povezavami«, se bo ob vsakem zagonu brskalnika <ph name="PRODUCT_NAME" /> odprl nov zavihek s povezavami.
+
+          Če izberete »Obnovi zadnjo sejo« se bodo znova odprli URL-ji, ki so bili odprti ob zadnjem zaprtju brskalnika <ph name="PRODUCT_NAME" />, seja brskanja pa bo obnovljena, kakršno ste zapustili.
+          Če izberete to možnost, onemogočite nekatere nastavitve, ki so odvisne od sej ali ki izvedejo dejanja ob zapiranju (na primer brisanje podatkov brskanja ob zaprtju ali sejni piškotki).
+
+          Če izberete »Odpri seznam URL-jev«, bo odprt seznam »URL-jev za odpiranje ob zagonu«, ko uporabnik zažene brskalnik <ph name="PRODUCT_NAME" />.
+
+          Če omogočite to nastavitev, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
+
+          Če onemogočite to nastavitev, je enako, kot če je ne konfigurirate. Uporabnik jo v brskalniku <ph name="PRODUCT_NAME" /> še vedno lahko spremeni.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2536525645274582300">Uporabnik se odloči, ali bodo omogočene Googlove lokacijske storitve</translation>
@@ -781,6 +852,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je trenutno aktivna funkcija za omejitev časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.
 
           Morda je poslanih več preglasitev. Uporabi se najnovejši veljavni vnos.</translation>
+<translation id="2905984450136807296">Življenjska doba predpomnjenja podatkov za preverjanje pristnosti</translation>
 <translation id="2906874737073861391">Seznam razširitev AppPack</translation>
 <translation id="2907992746861405243">Nadzira, kateri tiskalniki iz pravilnika <ph name="BULK_PRINTERS_POLICY" /> so na voljo uporabnikom.
 
@@ -813,6 +885,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
 <translation id="3016255526521614822">Uvrščanje aplikacij za zapiske, ki so omogočene na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />, na seznam dovoljenih</translation>
 <translation id="3021562480854470924">Število mejnikov, za katere je dovoljena povrnitev</translation>
+<translation id="3023572080620427845">URL datoteke XML, ki vsebuje URL-je, ki naj se naložijo v nadomestnem brskalniku.</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
 <translation id="3034580675120919256">Omogoča nastavitev, ali lahko spletna mesta izvajajo JavaScript. Izvajanje JavaScripta je lahko dovoljeno ali zavrnjeno za vsa spletna mesta.
 
@@ -866,6 +939,12 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če pravilnik ni nastavljen ali je onemogočen, šifrirne zbirke DHE v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi omogočanja šifrirnih zbirk DHE in ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.
 
       Priporočamo, da začnete v strežnikih uporabljati šifrirne zbirke ECDHE. Če te niso na voljo, poskrbite, da bo omogočena šifrirna zbirka, ki uporablja izmenjavo ključev RSA.</translation>
+<translation id="3117706142826400449">Če je pravilnik onemogočen, Chromovemu čiščenju prepreči pregledovanje, ali je v sistemu neželena programska oprema, in čiščenje. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings/cleanup je onemogočena.
+
+      Če je pravilnik omogočen ali ni nastavljen, Chromovo čiščenje redno pregleduje, ali je v sistemu neželena programska oprema, in če jo najde, uporabnik prejme poziv, ali jo želi odstraniti. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings je omogočena.
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
+<translation id="3165808775394012744">Ti pravilniki so vključeni tukaj, da jih je mogoče laže odstraniti.</translation>
 <translation id="316778957754360075">Ta nastavitev se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29. Za nastavitev zbirk razširitev/aplikacij, ki gostujejo v organizaciji, se priporoča, da se spletno mesto, na katerem gostujejo paketi CRX, vključi na seznam ExtensionInstallSources in da se na spletno mesto dodajo povezave za neposreden prenos paketov. Zaganjalnik za to stran se lahko ustvari s pravilnikom ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Predloga za ime gostitelja omrežja naprave</translation>
 <translation id="3185009703220253572">od različice <ph name="SINCE_VERSION" /></translation>
@@ -1570,6 +1649,19 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5058573563327660283">Izbere strategijo za sproščanje prostora na disku med samodejnim čiščenjem (zastarelo)</translation>
 <translation id="5067143124345820993">Seznam odobrenih uporabnikov za prijavo</translation>
 <translation id="5068140065960598044">Pravilnik oblaka za <ph name="PRODUCT_NAME" /> preglasi pravilnik računalnika.</translation>
+<translation id="5076274878326940940">Omogoča uporabo privzetega ponudnika iskanja.
+
+          Če omogočite to nastavitev, se izvede privzeto iskanje, če uporabnik v naslovni vrstici vnese besedilo, ki ni URL.
+
+          Privzetega ponudnika iskanja, ki naj se uporablja, lahko določite tako, da nastavite preostale pravilnike za privzeto iskanje. Če pustite prazne, lahko uporabnik sam izbere privzetega ponudnika.
+
+          Če onemogočite to nastavitev, se ne izvede nobeno iskanje, le uporabnik v naslovni vrstici vnese besedilo, ki ni URL.
+
+          Če to nastavite omogočite ali onemogočite, uporabniki te nastavitve v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
+
+          Če ta pravilnik ni nastavljen, je omogočen privzeti ponudnik iskanja, uporabnik pa bo lahko nastavil seznam ponudnikov iskanja.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="5090209345759901501">Razširitev nastavitve za vsebino Flash na vso vsebino</translation>
 <translation id="5093540029655764852">Določa, kako pogosto (v dnevih) odjemalec spremeni geslo računa v napravi. Geslo naključno generira odjemalec in ni vidno uporabniku.
@@ -1583,6 +1675,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je odjemalec dalj časa brez povezave, so lahko zgodi, da so gesla starejša od navedenega števila dni.</translation>
 <translation id="5105313908130842249">Časovni zamik zaklepa zaslona, če se napaja iz akumulatorja</translation>
 <translation id="5108031557082757679">Onemogočeni tiskalniki za naprave v podjetjih</translation>
+<translation id="5113732180192599620">Ta pravilnik nadzira seznam spletnih mest, ki ne bodo nikoli povzročila preklopa brskalnika.
+
+      Upoštevajte, da je mogoče elemente tudi dodati na ta seznam s pravilnikoma <ph name="USE_IE_SITELIST_POLICY_NAME" /> in <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Če ta pravilnik ni nastavljen, nobeno spletno mesto ni dodano na seznam.
+
+      Če je ta pravilnik nastavljen, se vsak element obravnava kot pravilo, podobno pravilniku <ph name="URL_LIST_POLICY_NAME" />, vendar z obratno logiko: pravila, ki se ujemajo, ne odprejo nadomestnega brskalnika.
+
+      Drugače kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" /> pravila veljajo v obeh smereh. Če je nameščen in omogočen dodatek za Internet Explorer, ta prav tako nadzira, ali naj <ph name="IE_PRODUCT_NAME" /> odpre te URL-je v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1619,6 +1720,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik onemogočen, so življenjski cikli zavihkov onemogočeni in vsi zavihki se bodo še naprej normalno izvajali.
 
       Če je pravilnik omogočen ali ni opredeljen, so življenjski cikli zavihkov omogočeni.</translation>
+<translation id="5207823059027350538">Konfigurira privzeti URL novega zavihka s povezavami in uporabnikom prepreči, da ga bi spremenili.
+
+          Novi zavihek s povezavami je stran, ki se odpre, ko so ustvarjeni novi zavihki (vključno s stranjo, odprto v novih oknih).
+
+          Ta pravilnik ne odloča o tem, katere strani se odprejo ob zagonu. Te nadzirajo pravilniki <ph name="RESTORE_ON_STARTUP_POLICY_NAME" />. Ta pravilnik pa vpliva na domačo stran, če je nastavljena tako, da se odpre nov zavihek s povezavami, in na začetno stran, če je nastavljena tako, da se odpre nov zavihek s povezavami.
+
+          Če pravilnik ni nastavljen ali pustite praznega, se uporabi privzeti nov zavihek s povezavami.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1739,6 +1849,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
 <translation id="5469143988693423708">Uporabniku je omogočeno izvajanje Crostinija</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
+<translation id="5472668698895343595">Ta pravilnik nadzira seznam spletnih mest, ki naj se odprejo v nadomestnem brskalniku.
+
+      Upoštevajte, da je mogoče elemente tudi dodati na ta seznam s pravilnikoma <ph name="USE_IE_SITELIST_POLICY_NAME" /> in <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Če ta pravnik ni nastavljen, nobeno spletno mesto ni dodano na seznam.
+
+      Če je ta pravilnik nastavljen, se vsak element obravnava kot pravilo za nekaj, kar naj se odpre v nadomestnem brskalniku. <ph name="PRODUCT_NAME" /> uporablja ta pravila pri izbiranju, ali naj se URL odpre v nadomestnem brskalniku.
+
+      Če je nameščen in omogočen dodatek za Internet Explorer, Internet Explorer preklopi nazaj na <ph name="PRODUCT_NAME" />, če se pravila ne ujemajo.
+
+      Če si pravila nasprotujejo, <ph name="PRODUCT_NAME" /> uporablja najbolj podrobno pravilo.</translation>
 <translation id="5475361623548884387">Omogoči tiskanje</translation>
 <translation id="547601067149622666">Ne dovoli oglasov na spletnih mestih z vsiljivimi oglasi</translation>
 <translation id="5499375345075963939">Ta pravilnik je aktiven samo v maloprodajnem načinu.
@@ -1817,6 +1938,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki v svoji napravi uporabljajo vse podprte oblike zunanjega pomnilnika.</translation>
 <translation id="5697306356229823047">Poročanje o uporabnikih naprave</translation>
+<translation id="5699487516670033016">Določa življenjsko dobo predpomnjenja (v urah) podatkov za preverjanje pristnosti. Predpomnilnik se uporablja za pospešitev prijave. Vsebuje splošne podatke (ime delovne skupine ipd.) o povezanih sferah, torej sferah, ki jim zaupa računalniška sfera. Podatki o določenih uporabnikih in podatki o nepovezanih sferah se ne predpomnijo. Z vnovičnim zagonom naprave se predpomnilnik izbriše.
+
+      Če pravilnik ni nastavljen, je mogoče podatke za preverjanje pristnosti znova uporabiti v obdobju do 73 ur.
+
+      Če je pravilnik nastavljen na 0, je predpomnjenje podatkov za preverjanje pristnosti izklopljeno. S tem se lahko bistveno upočasni prijava povezanih uporabnikov, saj je treba ob vsaki prijavi prenesti podatke za posamezno sfero.
+
+      Upoštevajte, da so podatki o sferi predpomnjeni tudi za kratkotrajne uporabnike. Predpomnilnik je treba izklopiti, če je treba preprečiti sledenje kratkotrajnim uporabnikom.</translation>
 <translation id="570062449808736508">Če je ta pravilnik nastavljen na niz, ki ni prazen, spletni pogled prebere omejitve za URL-je ponudnika vsebine z danim imenom overitelja.</translation>
 <translation id="5701714006401683963">Če je ta pravilnik onemogočen, bo upravljana seja gosta delovala, kot je opisano na https://support.google.com/chrome/a/answer/3017014 – standardna »javna seja«.
 
@@ -1868,6 +1996,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik onemogočen, se bodo prenosi začeli takoj, uporabnik pa ne bo pozvan, da določi, kje naj bo datoteka shranjena.
       Če pravilnik ni konfiguriran, bo uporabnik to nastavitev lahko spremenil.
       </translation>
+<translation id="5832274826894536455">Zastareli pravilniki</translation>
 <translation id="5835124959204887277">Določa URL-je in domene, za katere ne bo prikazan poziv, ko so iz varnostnih ključev zahtevana potrditvena potrdila. Poleg tega bo varnostnemu ključu poslan signal, da je posamezno potrditev mogoče uporabiti. Brez tega bo v Chromu 65 in novejših različicah uporabnikom prikazan poziv, ko spletna mesta zahtevajo potrditev varnostnih ključev.
 
       URL-ji (npr. https://example.com/neka/pot) se bodo ujemali samo kot appID-ji U2F. Domene (npr. example.com) se ujemajo samo kot ID-ji za webauthn RP. Če želite, da so za določeno mesto obravnavani tako API-ji za U2F kot za webauthn, je torej treba navesti URL za appID in domeno.</translation>
@@ -2121,6 +2250,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik nastavljen nastavljen na »False«, se o uporabnikih ne poroča.</translation>
 <translation id="6394350458541421998">Ta pravilnik se ne uporablja od uveljavitve različice <ph name="PRODUCT_OS_NAME" /> 29. Namesto njega uporabite pravilnik PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Odjava uporabnika</translation>
+<translation id="6406448383934634215">Če je za dejanje, ki se izvede ob zagonu, izbrano »Odpri seznam URL-jev«, lahko s tem določite seznam URL-jev, ki se odprejo. Če pravilnik ni nastavljen, se ob zagonu ne bo odprl noben URL.
+
+          Ta pravilnik deluje samo, če je pravilnik »RestoreOnStartup« nastavljen na »RestoreOnStartupIsURLs«.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="6426205278746959912">Aplikacij za Android ni mogoče prisiliti, da bi uporabljale strežnik proxy. Aplikacije za Android imajo na voljo podnabor nastavitev strežnika proxy, ki jih lahko prostovoljno upoštevajo:
 
           Če izberete, da se strežnik proxy ne uporablja, so aplikacije za Android obveščene, da strežnik proxy ni konfiguriran.
@@ -2136,7 +2270,26 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="645425387487868471">Omogoči vsiljeno prijavo za izdelek <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Omogočanje samodejnega izpolnjevanja za naslove</translation>
 <translation id="6473623140202114570">Konfigurirajte seznam domen, v katerih funkcija varnega brskanja ne bo sprožila opozoril.</translation>
+<translation id="6488627892044759800">Konfigurira vrsto privzete domače strani v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje nastavitve domače strani. Domačo stran lahko nastavite na URL, ki ga določite, ali na nov zavihek s povezavami.
+
+          Če to nastavitev omogočite, bo za domačo stran vedno uporabljen nov zavihek s povezavami, URL domače strani pa se prezre.
+
+          Če jo onemogočite, uporabnikova domača stran nikoli ne bo nov zavihek s povezavami, razen če je njen URL nastavljen URL na »chrome://newtab«.
+
+          Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti vrste domače strani v brskalniku <ph name="PRODUCT_NAME" />.
+
+          Če tega pravilnika ne nastavite, bo lahko uporabnik izbral, ali bo nov zavihek s povezavami njegova domača stran.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="6491139795995924304">Omogočanje Bluetootha v napravi</translation>
+<translation id="6495328383950074966">Konfiguriranje seznama domen, ki jim bo Varno brskanje zaupalo. To pomeni:
+      Varno brskanje ne bo preverjalo, ali gre za nevarne vire (npr. lažno predstavljanje, zlonamerna programska oprema ali neželena programska oprema), če se URL-ji ujemajo s temi domenami.
+      Storitev zaščite prenosov Varnega brskanja ne bo preverjalo prenosov, ki gostujejo v teh domenah.
+      Storitev zaščite gesel Varnega brskanja ne bo preverjalo, ali prihaja do vnovične uporabe gesel, če se URL strani ujema s temi domenami.
+
+      Če je ta nastavitev omogočena, bo Varno brskanje zaupalo tem domenam.
+      Če je ta nastavitev onemogočena ali ni nastavljena, se privzeta zaščita Varnega brskanja uporablja za vse vire.
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="6520802717075138474">Uvoz iskalnikov privzetega brskalnika ob prvem zagonu</translation>
 <translation id="6525955212636890608">Če omogočite to nastavitev, se bo izvajala vsa vsebina Flash, vdelana na spletnih mestih, za katere je bilo v nastavitvah vsebine nastavljeno, da se na njih sme izvajati vsebina Flash – ne glede na to, ali je to storil uporabnik ali je bilo to izvedeno s pravilnikom podjetja –, vključno z vsebino drugega izvora ali majhno vsebino.
 
@@ -2250,6 +2403,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ta pravilnik ni nastavljen ali vrednost po zamenjavi ni veljavno ime gostitelja, v zahtevi DHCP ne bo nastavljeno ime gostitelja. </translation>
 <translation id="6835883744948188639">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je priporočen vnovičen zagon</translation>
+<translation id="6837480141980366278">Določa, ali je v brskalniku <ph name="PRODUCT_NAME" /> uporabljen vgrajeni odjemalec DNS.
+
+      Če je ta pravilnik nastavljen na »true«, bo uporabljen vgrajeni odjemalec DNS, če je na voljo.
+
+      Če je ta pravilnik nastavljen na »false«, vgrajeni odjemalec DNS ne bo uporabljen.
+
+      Če ta pravilnik ni nastavljen, bo vgrajeni odjemalec DNS privzeto omogočen v sistemih macOS, Android (če nista omogočena zasebni strežnik DNS in VPN) in OS Chrome, uporabniki pa bodo lahko spreminjali, ali naj se uporablja vgrajeni odjemalec DNS, tako da bodo uredili stran chrome://flags ali določili zastavico v ukazni vrstici.</translation>
 <translation id="6838056959556423778">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
 
       Ta pravilnik določa pravila za izbiro privzetega tiskalnika v brskalniku <ph name="PRODUCT_NAME" />, do česar pride, ko je funkcija tiskanja prvič uporabljena s profilom.
@@ -2281,6 +2441,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Tiskalniki, povezani v storitev <ph name="CLOUD_PRINT_NAME" />, se obravnavajo kot »<ph name="PRINTER_TYPE_CLOUD" />«, drugi tiskalniki pa so razvrščeni kot »<ph name="PRINTER_TYPE_LOCAL" />«.
       Če izpustite polje, se ujemajo vse vrednosti. Če na primer ne določite povezave, predogled tiskanja začne odkrivanje vseh vrst tiskalnikov – lokalnih in v oblaku.
       Vzorci regularnega izraza morajo upoštevati sintakso JavaScript RegExp in pri ujemanjih se razlikuje med malimi in velikimi črkami.</translation>
+<translation id="6843296367238757293">Ta pravilnik je zastarel. Njegovo uporabo odsvetujemo. Preberite več na https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ta pravilnik je bil odstranjen v izdelku <ph name="PRODUCT_NAME" /> in ga je zamenjal pravilnik <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta pravilnik je zastarel in smo ga v M66 odstranili, ker se je uporabljal samo za interno preskušanje in predstavlja varnostno tveganje.
 
@@ -2466,6 +2627,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Samodejno predvajanje je dovoljeno samo za domene, ki so izrecno navedene v pravilniku <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Če želite samodejno predvajanje omogočiti za vsa spletna mesta, razmislite o tem, da bi na ta seznam dodali http://* in https://*.
 
           Če ta pravilnik ni nastavljen, bo lahko uporabnik to nastavitev spremenil ročno.</translation>
+<translation id="7229876938563670511">Konfigurira privzeti URL domače strani za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
+
+          Domača stran je stran, ki se odpre ob kliku na gumb »Domača stran«.  Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
+
+          Vrsta začetne strani je lahko določena z URL-jem, ki ga navedete tukaj, ali nastavljena na nov zavihek s povezavami. Če izberete nov zavihek s povezavami, ta pravilnik nima vpliva.
+
+          Če omogočite to nastavitev, uporabniki ne bodo mogli spremeniti URL-ja domače strani za brskalnik <ph name="PRODUCT_NAME" />, lahko pa kot domačo stran še vedno izberejo nov zavihek s povezavami.
+
+          Če tega pravilnika ne nastavite, bo lahko uporabnik sam izbral domačo stran, če ni nastavljen tudi pravilnik HomepageIsNewTabPage.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="7229975860249300121">Vsebuje regularni izraz, ki se uporablja za ugotavljanje, katere Google Račune je mogoče nastaviti kot primarne račune brskalnika v brskalniku <ph name="PRODUCT_NAME" /> (tj. račun, ki je izbran med potekom omogočanja sinhronizacije).
 
       Če uporabnik poskusi nastaviti primarni račun brskalnika z uporabniškim imenom, ki se ne ujema s tem vzorcem, se prikaže ustrezna napaka.
@@ -2805,6 +2977,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
+<translation id="7952002811557367112">Ta pravilnik uporabniku preprečuje nalaganje spletnih strani URL-jev s seznama blokiranih. Seznam blokiranih posreduje seznam vzorcev URL-jev, ki določajo, kateri URL-ji bodo uvrščeni na seznam blokiranih.
+
+      Vzorec URL-ja mora biti oblikovan glede na to: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Izjeme je mogoče opredeliti s pravilnikom o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
+
+      Upoštevajte, da ni priporočljivo blokirati notranjih URL-jev »chrome://*«, saj lahko to privede do nepričakovanih napak.
+
+      Upoštevajte, da ta pravilnik stranem ne preprečuje dinamičnega posodabljanja prek JavaScripta. Če na primer blokirate »example.com/abc«, bodo uporabniki morda še vedno lahko obiskali »example.com« in s klikom povezave obiskali »example.com/abc«, dokler se stran ne osveži.
+
+      Če ta pravilnik ni nastavljen, ne bo noben URL uvrščen na seznam blokiranih v brskalniku.</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="7961779417826583251">Onemogoči uveljavljanje preglednosti potrdila za seznam starejših overiteljev potrdil</translation>
 <translation id="7974114691960514888">Ta pravilnik ni več podprt.
@@ -2984,6 +3167,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8367209241899435947">Omogočeno Chromovo čiščenje v sistemu Windows</translation>
 <translation id="8369602308428138533">Časovni zamik izklopa zaslona, če se napaja iz električnega omrežja</translation>
 <translation id="8371178326720637170">Omogoča upravljane razširitve za uporabo API-ja za okolja za strojno opremo za podjetja</translation>
+<translation id="8377433219608936819">
+      Če je pravilnik nastavljen na »true«, ima v primeru spora s pravilnikom računalnika prednost pravilnik oblaka.
+      Če je pravilnik nastavljen na »False« ali ni nastavljen, ima v primeru spora s pravilnikom oblaka prednost pravilnik računalnika.
+      Če želite več podrobnosti o prednostih pravilnikov, obiščite: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="8382184662529825177">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo</translation>
 <translation id="838870586332499308">Omogoči podatkovno gostovanje</translation>
 <translation id="8390049129576938611">V brskalniku <ph name="PRODUCT_NAME" /> onemogoči notranji pregledovalnik PDF-jev. Namesto tega datoteke PDF obravnava kot prenose in uporabniku omogoča njihovo odpiranje s privzeto aplikacijo.
@@ -3156,6 +3345,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
           Če to nastavitev omogočite, bo iskanje CNAME preskočeno in uporabljeno bo vneseno ime strežnika.
 
           Če to nastavitev onemogočite ali jo ne nastavite, bo kanonično ime strežnika določeno z iskanjem CNAME.</translation>
+<translation id="8765776988041674792">Konfiguriranje URL-ja za spreminjanje gesla (samo sheme HTTP in HTTPS). Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo geslo.
+      Če želite, da <ph name="PRODUCT_NAME" /> pravilno zajame prstni odtis novega gesla na tej strani za spreminjanje gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Če je ta nastavitev omogočena, storitev za zaščito gesel po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo geslo.
+      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com, da spremenijo geslo.
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="8782750230688364867">Določa odstotek prilagoditve časovnega zamika zatemnitve zaslona, ko je naprava v načinu predstavitve.
 
           Če je pravilnik nastavljen, določa odstotek prilagoditve časovnega zamika zatemnitve zaslona, ko je naprava v načinu predstavitve. Ko je časovni zamik zatemnitve zaslona prilagojen, se časovni zamiki za izklop zaslona, zaklepanje zaslona in nedejavnost prilagodijo, da se ohranijo prvotno konfigurirane oddaljenosti od časovnega zamika zatemnitve zaslona.

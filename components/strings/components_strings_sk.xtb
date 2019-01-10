@@ -37,6 +37,7 @@
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="1175364870820465910">&amp;Tlačiť...</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1197088940767939838">Oranžová</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1201895884277373915">Viac z týchto stránok</translation>
 <translation id="1206967143813997005">Chybný úvodný podpis</translation>
@@ -101,6 +102,7 @@
 <translation id="153384715582417236">To je zatiaľ všetko</translation>
 <translation id="154408704832528245">Zvoliť adresu doručenia</translation>
 <translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
+<translation id="1555130319947370107">Modrá</translation>
 <translation id="1559528461873125649">Neexistuje žiadny takýto súbor ani priečinok</translation>
 <translation id="1559572115229829303">&lt;p&gt;Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho zariadenia sú nesprávne.&lt;/p&gt;
 
@@ -109,6 +111,7 @@
 <translation id="1583429793053364125">Pri zobrazovaní tejto webovej stránky sa vyskytla chyba.</translation>
 <translation id="1592005682883173041">Prístup k miestnym údajom</translation>
 <translation id="1594030484168838125">Zvoliť</translation>
+<translation id="161042844686301425">Azúrová</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
@@ -174,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Skontrolovať proxy server a bránu firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 návrh}few{# návrhy}many{# návrhu}other{# návrhov}}</translation>
+<translation id="2068663545051464999">Identifikátor nahranej správy o zlyhaní <ph name="CRASH_ID" /> (Miestny kontext: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="20817612488360358">Používanie systémových nastavení servera proxy je nastavené, avšak je určená aj explicitná konfigurácia servera proxy.</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -272,6 +276,7 @@
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2712173769900027643">Požiadať o povolenie</translation>
+<translation id="2713444072780614174">Biela</translation>
 <translation id="2720342946869265578">Nablízku</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>
 <translation id="2728127805433021124">Certifikát servera je podpísaný pomocou slabého podpisového algoritmu.</translation>
@@ -390,6 +395,8 @@
 <translation id="3479539252931486093">Neočakávali ste to? <ph name="BEGIN_LINK" />Dajte nám vedieť<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3484560055331845446">Môžete stratiť prístup do účtu Google. Chrome odporúča, aby ste si ihneď zmenili heslo. Zobrazí sa výzva na prihlásenie.</translation>
+<translation id="3495081129428749620">Nájsť na stránke
+    <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Aspoň 1 položka v synchronizovaných zariadeniach}=1{1 položka (a ďalšie v synchronizovaných zariadeniach)}few{# položky (a ďalšie v synchronizovaných zariadeniach)}many{# položky (a ďalšie v synchronizovaných zariadeniach)}other{# položiek (a ďalšie v synchronizovaných zariadeniach)}}</translation>
@@ -562,6 +569,7 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Reštartujte Chromium</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
+<translation id="4738601419177586157">Návrh vyhľadávania <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Spravovať heslá…</translation>
 <translation id="4744603770635761495">Spustiteľná cesta</translation>
 <translation id="4750917950439032686">Vaše informácie (napríklad heslá a čísla kreditných kariet) zostanú po odoslaní na tento web súkromné.</translation>
@@ -582,6 +590,7 @@
 <translation id="4854362297993841467">Tento spôsob doručenia nie je k dispozícii. Skúste inú adresu.</translation>
 <translation id="4858792381671956233">Požiadali ste rodičov o povolenie návštevy tohto webu.</translation>
 <translation id="4876305945144899064">Žiadne používateľské meno</translation>
+<translation id="4877422487531841831">Vyhľadávanie <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatické (predvolené)</translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
@@ -608,6 +617,7 @@
 <translation id="5029568752722684782">Vymazať kópiu</translation>
 <translation id="503069730517007720">Vyžaduje sa koreňový certifikát softvéru <ph name="SOFTWARE_NAME" />, ale nie je nainštalovaný. Váš správca IT by si mal prezrieť pokyny na konfiguráciu softvéru <ph name="SOFTWARE_NAME" /> a tento problém vyriešiť. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
+<translation id="5034369478845443529">Miestny kontext <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5045550434625856497">Nesprávne heslo</translation>
@@ -732,6 +742,7 @@
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5887400589839399685">Karta bola uložená</translation>
 <translation id="5893752035575986141">Kreditné karty sú akceptované.</translation>
+<translation id="5901630391730855834">Žltá</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronizované)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používa sa 1}few{Používajú sa #}many{Používa sa #}other{Používa sa #}}</translation>
 <translation id="5921639886840618607">Chcete uložiť kartu do účtu Google?</translation>
@@ -750,6 +761,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strana 1}few{Strana #}many{Strana #}other{Strana #}}</translation>
+<translation id="6017514345406065928">Zelená</translation>
 <translation id="6017850046339264347">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by mohli nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďujúce údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronizované)</translation>
 <translation id="6027201098523975773">Zadajte meno</translation>
@@ -968,6 +980,7 @@
 <translation id="7564049878696755256">Môžete stratiť prístup do účtu <ph name="ORG_NAME" /> alebo vám niekto môže ukradnúť identitu. Chrome odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="7567204685887185387">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, bol zrejme vydaný falošný bezpečnostný certifikát. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="7569952961197462199">Chcete kreditnú kartu odstrániť z prehliadača Chrome?</translation>
+<translation id="7569983096843329377">Čierna</translation>
 <translation id="7578104083680115302">Zaplaťte rýchlejšie na stránkach a v aplikáciách v rôznych službách pomocou kariet, ktoré ste si uložili na Googli.</translation>
 <translation id="7592362899630581445">Certifikát servera porušuje obmedzenia názvov.</translation>
 <translation id="7598391785903975535">Menej ako <ph name="UPPER_ESTIMATE" /></translation>
@@ -1016,6 +1029,7 @@
 <translation id="7815407501681723534">Nájdené výsledky (počet: <ph name="NUMBER_OF_RESULTS" />) pre dopyt „<ph name="SEARCH_STRING" />“: <ph name="SEARCH_RESULTS" /></translation>
 <translation id="7818867226424560206">Správa pravidiel</translation>
 <translation id="782886543891417279">Sieť Wi‑Fi (<ph name="WIFI_NAME" />), ktorú používate, môže vyžadovať, aby ste navštívili jej prihlasovaciu stránku</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{Žiadne}=1{1 aplikácia (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikácie (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}few{# aplikácie (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}many{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# aplikácií (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Chcete odísť z tohto webu?</translation>
@@ -1027,6 +1041,7 @@
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Platí do <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Certifikát servera ešte nie je platný.</translation>
+<translation id="7942349550061667556">Červená</translation>
 <translation id="7947285636476623132">Skontrolujte rok vypršania platnosti a skúste to znova</translation>
 <translation id="7951415247503192394">(32-bitová verzia)</translation>
 <translation id="7956713633345437162">Záložky v mobile</translation>
@@ -1155,7 +1170,6 @@
 <translation id="8870413625673593573">Naposledy zatvorené</translation>
 <translation id="8874824191258364635">Zadajte platné číslo karty</translation>
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
-<translation id="8892964541482452187">Tlačidlo na prepnutie karty, stlačením klávesa Enter prepnite na túto kartu</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8931333241327730545">Chcete túto kartu uložiť do svojho účtu Google?</translation>
 <translation id="8932102934695377596">Vaše hodiny idú pozadu</translation>
@@ -1186,6 +1200,7 @@
 <translation id="9049981332609050619">Pokúšate sa otvoriť doménu <ph name="DOMAIN" />, ale server predložil neplatný certifikát.</translation>
 <translation id="9050666287014529139">Prístupová fráza</translation>
 <translation id="9065203028668620118">Upraviť</translation>
+<translation id="9065745800631924235">Vyhľadávanie <ph name="TEXT" /> z histórie</translation>
 <translation id="9069693763241529744">Blokované rozšírením</translation>
 <translation id="9076283476770535406">Môže zahŕňať obsah pre dospelých</translation>
 <translation id="9078964945751709336">Treba zadať ďalšie informácie</translation>

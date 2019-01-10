@@ -24,6 +24,13 @@
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át a felhasználó profiljába.
 
       Ez a házirend csak azokat a felhasználókat érinti, akiknek a domainje egyezik az eszköz regisztrációs domainjével. Minden más felhasználó esetében az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át az adott felhasználó profiljába.</translation>
+<translation id="1030120600562044329">A <ph name="PRODUCT_NAME" /> használati és összeomlásokkal kapcsolatos adatainak a Google részére történő névtelen jelentésének engedélyezése, és a beállítás módosíthatóságának letiltása.
+
+      Ha ez a beállítás aktiválva van, a böngésző névtelenül elküldi a használati és az összeomlásokkal kapcsolatos adatokat a Google-nak.  Ha le van tiltva, a Google nem kapja meg ezeket az adatokat.  A felhasználók egyik esetben sem módosíthatják ezt a beállítást.
+      Ha a házirend nincs beállítva, akkor a felhasználó által a telepítéskor vagy az első futtatáskor megadott beállítás lesz érvényben.
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.
+      (A Chrome OS-szel kapcsolatban lásd: DeviceMetricsReportingEnabled.)</translation>
 <translation id="1035385378988781231">Ez a házirend azt szabályozza, hogy a <ph name="PRODUCT_NAME" /> hálózati fáljmegosztások funkciója NTLM-et használ-e a hitelesítéshez.
 
       Ha a házirend beállítása igaz, a böngésző NTLM-hitelesítést fog használni az SMB-megosztások eléréséhez, ha szükséges.
@@ -70,6 +77,11 @@
       További információ a biztonságos környezetekről:
       https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="1107764601871839136">A csoportházirend-objektum (Group Policy Object, GPO) gyorsítótárának élettartamát adja meg (órában). Ahelyett, hogy minden házirendlehíváskor újra letöltené a GPO-kat, a rendszer újra felhasználhatja a gyorsítótárba helyezett GPO-kat, amíg a verziószámuk nem változik. Ez a házirend azt határozza meg, hogy a gyorsítótárba helyezett GPO-kat legfeljebb mennyi ideig lehet ismét felhasználni, mielőtt újra le kellene tölteni őket. Az újraindítás és a kijelentkezés törli a gyorsítótárat.
+
+      Ha a házirend nincs beállítva, a gyorsítótárba helyezett GPO-k legfeljebb 25 órán át használhatók fel újra.
+
+      Ha a házirendet 0 értékre állítja, kikapcsolja a GPO-k gyorsítótárazását. Ez növelheti a szerver terhelését, mivel a GPO-kat a rendszer minden házirendlehíváskor újra letölti – még akkor is, ha nem változtak.</translation>
 <translation id="1117535567637097036">Az ezen a házirenden keresztül megadott protokollkezelők az androidos „intent” elemek kezelésekor használaton kívül maradnak.</translation>
 <translation id="1118093128235245168">Engedélyezi azt, hogy a webhelyek hozzáférést kérjenek a felhasználótól a csatlakoztatott USB-eszközök használatára</translation>
 <translation id="1128903365609589950">Konfigurálja azt a könyvtárat, amelyet a <ph name="PRODUCT_NAME" /> a gyorsítótárazott fájlok lemezen történő tárolására fog használni.
@@ -167,6 +179,19 @@
 <translation id="142346659686073702">Crostini használatának engedélyezése nem társult felhasználók számára</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
+<translation id="1431272318313028342">Aktiválja a <ph name="PRODUCT_NAME" /> Biztonságos Böngészés funkcióját, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha engedélyezi ezt a beállítást, a Biztonságos Böngészés mindig aktív lesz.
+
+      Ha letiltja ezt a beállítást, a Biztonságos Böngészés sosem lesz aktív.
+
+      Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják, és nem is írhatják felül a <ph name="PRODUCT_NAME" />„Adathalászat és rosszindulatú programok elleni védelem bekapcsolása” beállítását.
+
+      Ha nem állítja be ezt a házirendet, akkor engedélyezve lesz ugyan, de a felhasználók módosíthatják.
+
+      További információ a Biztonságos Böngészésről: https://developers.google.com/safe-browsing.
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
 <translation id="1438739959477268107">Kulcslétrehozás alapértelmezett beállítása</translation>
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultJavaScriptSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
@@ -271,9 +296,25 @@
 <translation id="1675002386741412210">Támogatott a következőkön:</translation>
 <translation id="1689963000958717134">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását a(z) <ph name="PRODUCT_OS_NAME" />-eszköz minden felhasználójára. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Korlátozást állít be a Variations seed lekérésére</translation>
+<translation id="1717817358640580294">Ha nincs beállítva, a Chrome-tisztogatás – amennyiben nem kívánt szoftvert észlel – jelentheti a vizsgálattal kapcsolatos metaadatokat a Google-nak a SafeBrowsingExtendedReportingEnabled házirend által meghatározottak szerint. A Chrome-tisztogatás ezután megkérdezi a felhasználót, hogy szeretné-e megtisztítani az eszközt a nem kívánt szoftvertől. A felhasználó a tisztogatás eredményét megoszthatja a Google-lal, hogy segítsen a nemkívánatos szoftverek jövőbeli észlelésére vonatkozó fejlesztésekben. Az eredmény fájlok metaadatait, az automatikusan telepített bővítményeket és a bejegyzéskulcsokat tartalmazza a Chrome adatvédelmi tanulmányában ismertetett módon.
+
+      Ha le van tiltva, és a Chrome-tisztogatás nem kívánt szoftvert észlel, a vizsgálat metaadatait nem jelenti a Google-nak – felülírva ezzel a SafeBrowsingExtendedReportingEnabled beállítást. A Chrome-tisztogatás megkérdezi a felhasználót, hogy szeretné-e megtisztítani az eszközt a nem kívánt szoftvertől.  A Google nem kapja meg a tisztogatás eredményeit, és a felhasználó sem tudja megosztani őket.
+
+      Ha aktiválva van, a Chrome-tisztogatás – amennyiben nem kívánt szoftvert észlel – jelentheti a vizsgálattal kapcsolatos metaadatokat a Google-nak a SafeBrowsingExtendedReportingEnabled házirend által meghatározottak szerint. A Chrome-tisztogatás megkérdezi a felhasználót, hogy szeretné-e megtisztítani az eszközt a nem kívánt szoftvertől.  A Google megkapja a tisztogatás eredményeit, és a felhasználó nem tudja megakadályozni ezt.
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="172374442286684480">Helyi adatok beállításának engedélyezése minden webhely számára</translation>
 <translation id="1734716591049455502">Távoli elérési beállítások konfigurálása</translation>
 <translation id="1736269219679256369">Továbblépés engedélyezése az SSL-problémára figyelmeztető oldalról</translation>
+<translation id="1745780278307622857">Annak ellenőrzése, hogy a <ph name="PRODUCT_NAME" /> letölthet-e fájlokat megbízható forrásból anélkül, hogy a Biztonságos Böngészés ellenőrzést végezne.
+
+      Ha értéke Hamis, akkor amennyiben megbízható forrásból származnak, a letöltött fájlokat nem elemzi a Biztonságos Böngészés funkció.
+
+      Ha nincs beállítva, vagy ha értéke Hamis, akkor a letöltött fájlokat mindenképpen elemzi a Biztonságos Böngészés – még akkor is, ha megbízható forrásból származnak.
+
+      Ezek a korlátozások a weboldalakon megtalálható tartalmakon keresztül kiváltott, valamint a helyi menü „link mentése” lehetőségével indított letöltésekre érvényesek. Nem érvényesek az éppen megjelenített oldal mentésére vagy letöltésére, illetve a nyomtatási lehetőségek között megtalálható, PDF-ként történő mentésre.
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="1749815929501097806">Meghatározza azokat az Általános Szerződési Feltételeket, amelyeket a felhasználónak el kell fogadnia, mielőtt egy eszközszinten helyi fiókkal munkamenetbe kezdene.
 
       Ha a házirend be van állítva, a(z) <ph name="PRODUCT_OS_NAME" /> letölti az Általános Szerződési Feltételeket, és megjeleníti azokat a felhasználónak, valahányszor az eszközszinten helyi fiókkal munkamenetbe kezd. A felhasználót a rendszer csak akkor engedi belépni a munkamenetbe, ha elfogadta az Általános Szerződési Feltételeket.
@@ -284,6 +325,7 @@
 <translation id="1750315445671978749">Az összes letöltés letiltása</translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
+<translation id="1798559516913615713">GPO-gyorsítótár élettartamra</translation>
 <translation id="1803646570632580723">Az indítóban megjeleníteni kívánt rögzített alkalmazások listája</translation>
 <translation id="1808715480127969042">Cookie-k letiltása ezeken a webhelyeken</translation>
 <translation id="1810261428246410396">Az azonnali internetmegosztás használatának engedélyezése</translation>
@@ -291,6 +333,13 @@
 
       A házirendet olyan karakterláncként kell megadni, amely kifejezi az URL-t és a JSON-formátumban lévő hash-értéket.</translation>
 <translation id="1827523283178827583">Használjon fix proxyszervereket</translation>
+<translation id="1831495419375964631">Ez a házirend egy URL, amely egy olyan formátumban lévő XML-fájlra mutat, mint az Internet Explorer által használt <ph name="IEEM_SITELIST_POLICY" /> házirend formátuma. A rendszer szabályokat tölt be ebből az XML-fájlból, de ezeket nem osztja meg az Internet Explorerrel.
+
+      Ha a házirend nincs beállítva, vagy ha érvénytelen URL van beállítva, a <ph name="PRODUCT_NAME" /> nem használja a böngészőváltási szabályok forrásaként.
+
+      Ha érvényes URL van beállítva, a <ph name="PRODUCT_NAME" /> letölti a webhelyek listáját az adott URL-címről, és úgy alkalmazza a szabályokat, mintha a(z) <ph name="SITELIST_POLICY_NAME" /> házirendjében állították volna be őket.
+
+      További információ az Internet Explorer <ph name="IEEM_SITELIST_POLICY" /> házirendjéről: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">Frissítési arány felhasználói irányelvekhez</translation>
 <translation id="1844620919405873871">Beállítja a gyorsfeloldással kapcsolatos házirendeket.</translation>
 <translation id="1847960418907100918">Megadja a POST segítségével történő azonnali kereséskor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában a {searchTerms}, valódi keresési kifejezések kerülnek a helyére.
@@ -337,6 +386,12 @@
       Ha az értéke hamis, akkor a rendszer letiltja a használati statisztikák és diagnosztikai adatok jelentését.
 
       Ha nincs beállítva, akkor a rendszer letiltja a használati és diagnosztikai adatok jelentését a nem felügyelt eszközökön, míg engedélyezi a felügyelt eszközökön.</translation>
+<translation id="1907431809333268751">A vállalati bejelentkezési URL-címek listájának konfigurálása (csak HTTP és HTTPS protokollokkal). A böngésző rögzíti a jelszó ujjlenyomatát ezeken az URL-címeken, és felhasználja a jelszó-újrafelhasználás észleléséhez.
+      Annak érdekében, hogy a <ph name="PRODUCT_NAME" /> megfelelően tudja rögzíteni a jelszavak ujjlenyomatait, gondoskodjon arról, hogy a bejelentkezési oldal megfeleljen a https://www.chromium.org/developers/design-documents/create-amazing-password-forms oldalon leírt irányelveknek.
+
+      Ha a beállítás aktiválva van, a jelszóvédelmi szolgáltatás rögzíti az ezeken az URL-eken megadott jelszavak ujjlenyomatait a jelszó-újrafelhasználás észlelése céljából.
+      Ha a beállítás le van tiltva, vagy ha nincs beállítva, akkor a jelszóvédelmi szolgáltatás csak a https://accounts.google.com webhelyen rögzíti a jelszavak ujjlenyomatait.
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="1920046221095339924">Kezelt munkamenet engedélyezése az eszközön</translation>
 <translation id="1929709556673267855">Eszközökhöz kötött vállalati nyomtatókhoz biztosít beállításokat.
 
@@ -410,6 +465,9 @@
 <translation id="209586405398070749">Stabil csatorna</translation>
 <translation id="2098658257603918882">Használati és összeomlással kapcsolatos adatok jelentésének engedélyezése</translation>
 <translation id="2104418465060359056">Bővítmények és beépülő modulok adatainak jelentése</translation>
+<translation id="2107601598727098402">
+        Ez a házirend megszűnt az M72-es kiadásban. Használja helyette a CloudManagementEnrollmentToken házirendet.
+        </translation>
 <translation id="2111016292707172233">Lehetővé teszi a Keresés koppintással funkció használatát a <ph name="PRODUCT_NAME" /> tartalomnézetében.
 
       Ha aktiválja ezt a beállítást, akkor a felhasználó használhatja a Keresés koppintással funkciót, és saját maga döntheti el, hogy be- vagy kikapcsolja-e azt.
@@ -452,10 +510,6 @@
 <translation id="214901426630414675">Nyomtatás kétoldalas módjának korlátozása</translation>
 <translation id="2149330464730004005">Színes nyomtatás engedélyezése</translation>
 <translation id="2156132677421487971">Beállítja a(z) <ph name="PRODUCT_NAME" /> termékre vonatkozó házirendeket. Ez a funkció lehetővé teszi a felhasználók számára, hogy a böngészőből továbbítsák a lapok, a webhelyek vagy az asztal tartalmát a távoli kijelzők és hangrendszerek felé.</translation>
-<translation id="2163878108829382394">
-        Ha a házirend értéke igaz, a felhőkezelési regisztráció kötelező, és ha nem teljesül, megakadályozza a Chrome indítási folyamatát.
-
-        Ha a házirend beállítatlanul marad, vagy értéke hamis, a felhőkezelési regisztráció nem kötelező, és ha nem teljesül, nem akadályozza meg a Chrome indítási folyamatát.</translation>
 <translation id="2166472654199325139">Felnőtteknek szóló tartalmakkal rendelkező webhelyek szűrésének kikapcsolása</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
@@ -595,6 +649,20 @@
       Ha a beállítás le van tiltva, akkor a felhasználók nem tudnak nyomtatni a(z) <ph name="PRODUCT_NAME" /> programból. A nyomtatás a csavarkulcs menü, bővítmények, JavaScript alkalmazások stb. alatt kapcsolható ki. Továbbra is lehetséges olyan bővítményekből nyomtatni, melyek a(z) <ph name="PRODUCT_NAME" /> megkerülésével nyomtatnak. Például bizonyos Flash-alkalmazások helyi menüjében megtalálható a nyomtatás menüpont, amelyre ezen irányelv hatálya nem terjed ki.</translation>
 <translation id="2518231489509538392">Hanglejátszás engedélyezése</translation>
 <translation id="2521581787935130926">Az alkalmazások parancsikonjának megjelenítése a könyvjelzősávon</translation>
+<translation id="2529659024053332711">Lehetővé teszi az indításkori viselkedés megadását.
+
+          Az „Új lap oldal megnyitása” lehetőség kiválasztása esetén mindig az Új lap oldal jelenik meg a <ph name="PRODUCT_NAME" /> elindításakor.
+
+          Az „Utolsó munkamenet visszaállítása” lehetőség kiválasztása esetén a <ph name="PRODUCT_NAME" /> legutóbbi bezárásakor nyitva lévő lapokat nyitja meg újra a böngésző, amely ott folytatja a munkamenetet, ahol abbahagyta.
+          Ha ezt a lehetőséget választja, kikapcsol néhány olyan beállítást, amely a munkamenetekre támaszkodik, illetve amely valamilyen műveletet hajt végre a kilépéskor (ide tartoznak például a csak munkamenetre szóló cookie-k és a böngészési adatok kilépéskor történő törlése).
+
+          A „Nyisson meg egy URL-listát” lehetőség kiválasztása esetén az „Indításkor megnyitandó URL-ek” listán szereplő URL-ek nyílnak meg, amikor a felhasználó elindítja a <ph name="PRODUCT_NAME" /> böngészőt.
+
+          Ha engedélyezi ezt a beállítást, a felhasználók nem tudják módosítani vagy felülbírálni a <ph name="PRODUCT_NAME" /> beállításai között.
+
+          A beállítás letiltása ugyanazt eredményezi, mint ha egyáltalán nem konfigurálná. A felhasználó módosítani tudja a <ph name="PRODUCT_NAME" /> beállításai között.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez. illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="2529880111512635313">Állítsa be a kényszerített telepítésű alkalmazások és bővítmények listáját</translation>
 <translation id="253135976343875019">Tétlenségi figyelmeztetés késleltetése hálózati áramról való működés során</translation>
 <translation id="2536525645274582300">A felhasználó döntése arról, hogy engedélyezi-e a Google-helyszolgáltatásokat</translation>
@@ -756,6 +824,7 @@
           A |created_time_millis| a felülírás létrehozásának UTC időbélyege, amelyet a böngésző karakterláncként küld el, mivel az időbélyeg nem fejezhető ki egész számmal. Annak meghatározására használható, hogy továbbra is érvényesíteni kell-e a felülírást. Ha a jelenleg aktív időkorlát-funkció (használati időre vagy időtartományra vonatkozó korlát) a felülírás létrehozása után kezdődött el, a rendszer nem végez műveletet. Akkor sem kerül alkalmazásra, ha a felülírást az aktív time_window_limit vagy a time_usage_window utolsó módosítása előtt hozták létre.
 
           Több felülírást is el lehet küldeni, melyek közül a legújabb érvényes bejegyzést alkalmazza a rendszer.</translation>
+<translation id="2905984450136807296">Hitelesítési adatok élettartamra szóló gyorsítótára</translation>
 <translation id="2906874737073861391">AppPack bővítmények listája</translation>
 <translation id="2907992746861405243">Azt vezérli, hogy a <ph name="BULK_PRINTERS_POLICY" /> házirend mely nyomtatói állnak a felhasználók rendelkezésére.
 
@@ -788,6 +857,7 @@
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
 <translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
 <translation id="3021562480854470924">A visszaállításnál engedélyezett mérföldkövek száma</translation>
+<translation id="3023572080620427845">Másik böngészőben betöltendő URL-t tartalmazó XML-fájl URL-címe.</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3038323923255997294">A háttéralkalmazások továbbfuttatása a(z) <ph name="PRODUCT_NAME" /> alkalmazás bezárása esetén</translation>
@@ -839,6 +909,12 @@
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll DHE rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva engedélyezve lesznek a DHE rejtjelezési csomagjai, és megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.
 
       Javasoljuk a szerverek áttelepítését ECDHE rejtjelezési csomagokra. Ha ezek nem állnak rendelkezésre, gondoskodjon róla, hogy engedélyezve legyen egy RSA kulcscserélést használó rejtjelezési csomag.</translation>
+<translation id="3117706142826400449">Ha le van tiltva, a Chrome-tisztogatás nem tudja megkeresni a nemkívánatos szoftvereket, és nem tudja megtisztítani a rendszert. A Chrome-tisztogatás chrome://settings/cleanup címről történő manuális elindítása le van tiltva.
+
+      Ha aktiválva van, vagy ha nincs beállítva, a Chrome-tisztogatás rendszeresen ellenőrizi a rendszert nem kívánt szoftvereket keresve, és ha talál ilyet, megkérdezi a felhasználót, hogy el szeretné-e távolítani. A Chrome-tisztogatás chrome://settings címről történő manuális elindítása engedélyezve van.
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
+<translation id="3165808775394012744">Ezek a házirendek azért kerültek ide, hogy egyszerűen el lehessen őket távolítani.</translation>
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
 <translation id="3171369832001535378">Eszköz hálózatának gazdagépnévsablonja</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
@@ -1518,6 +1594,19 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5058573563327660283">Az automatikus megtisztítás során a lemezterület felszabadításához használt stratégia kiválasztása (elavult)</translation>
 <translation id="5067143124345820993">A bejelentkezett felhasználó engedélyezőlistája</translation>
 <translation id="5068140065960598044">A(z) <ph name="PRODUCT_NAME" /> felhővel kapcsolatos házirendje felülírja a számítógép házirendjét.</translation>
+<translation id="5076274878326940940">Lehetővé teszi alapértelmezett keresőmotor használatát.
+
+          Ha aktiválja ezt a beállítást, a böngésző az alapértelmezett szolgáltatóval hajt végre keresést, amikor a felhasználó URL helyett más szöveget gépel be a cím- és keresősávba.
+
+          A többi alapértelmezett keresési házirend beállításával adhatja meg az alapértelmezettként használni kívánt keresőszolgáltatót. Ha ezeket nem adja meg, a felhasználó kiválaszthatja az alapértelmezett szolgáltatót.
+
+          Ha letiltja ezt a beállítást, a böngésző nem hajt végre keresést, ha a felhasználó nem URL-címet ír be a cím- és keresősávba.
+
+          Ha aktiválja vagy letiltja ezt a beállítást, a felhasználók nem bírálhatják felül a <ph name="PRODUCT_NAME" /> beállításai között.
+
+          Ha nem állítja be ezt a házirendet, az alapértelmezett keresőszolgáltató engedélyezve lesz, a felhasználó pedig beállíthatja a keresőmotorok listáját.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
 <translation id="5090209345759901501">A Flash-tartalmak beállításainak kiterjesztése az összes tartalomra</translation>
 <translation id="5093540029655764852">Megadja az ütemezést (napokban), amely szerint a kliens módosítja gépi fiókjelszavát. A jelszót véletlenszerűen generálja a kliens, és nem látható a felhasználó számára.
@@ -1531,6 +1620,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Fontos megjegyezni, hogy a jelszavak régebbiek lehetnek a megadott napok számánál, ha a kliens annál hosszabb időn át offline állapotban volt.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
+<translation id="5113732180192599620">Ez a házirend szabályozza azon webhelyek listáját, amelyek nem vezetnek böngészőváltáshoz.
+
+      A listához a következő házirendeken keresztül adhat hozzá újabb elemeket: <ph name="USE_IE_SITELIST_POLICY_NAME" /> és <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Ha a házirend nincs beállítva, nem kerül webhely a listára.
+
+      Ha a házirend be van állítva, minden elemet szabályként kezel a rendszer, a(z) <ph name="URL_LIST_POLICY_NAME" /> házirendhez hasonlóan. A mögötte álló logika azonban a fordítottja: az egyező szabályok nem nyitnak meg másik böngészőt.
+
+      A(z) <ph name="URL_LIST_POLICY_NAME" /> házirendtől eltérően a szabályok mindkét irányban érvényesek. Ez azt jelenti, hogy amikor az Internet Explorer-bővítmény jelen van és engedélyezett, a házirend azt is vezérli, hogy az <ph name="IE_PRODUCT_NAME" /> a <ph name="PRODUCT_NAME" /> böngészőben nyissa-e meg ezeket az URL-eket.</translation>
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="5141670636904227950">A bejelentkezési képernyőn engedélyezett alapértelmezett nagyítótípus beállítása</translation>
 <translation id="5142301680741828703">Mindig a <ph name="PRODUCT_FRAME_NAME" /> segítségével jelenítse meg a következő URL-mintákat</translation>
@@ -1557,6 +1655,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke hamis, akkor le van tiltva a lapéletciklus funkció, és az összes lap a szokásos módon fut tovább.
 
       Ha a házirend értéke igaz, vagy nincs megadva, akkor engedélyezve van a lapéletciklus funkció.</translation>
+<translation id="5207823059027350538">Beállítja az Új lap oldal alapértelmezett URL-jét, és megakadályozza, hogy a felhasználók módosítsák.
+
+          Az Új lap oldal az az oldal, amely új lapok megnyitásakor jelenik meg (beleértve az új ablakban megnyitott lapokat is).
+
+          Ez a házirend nem határozza meg, hogy milyen oldalak nyíljanak meg a böngésző elindításakor. Ezt a viselkedést a következő házirend szabályozza: <ph name="RESTORE_ON_STARTUP_POLICY_NAME" />. A jelen házirend csak akkor van hatással a kezdőlapra, illetve a kezdőoldalra, ha ezek esetében az Új lap oldal beállítás van megadva.
+
+          Ha a házirend nincs beállítva, vagy ha üres, a rendszer az alapértelmezett Új lap oldalt használja.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="5213038356678567351">Webhelyek, amelyek nem vezetnek böngészőváltáshoz.</translation>
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
@@ -1668,6 +1775,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="546726650689747237">Képernyő elsötétítésének késleltetése hálózati áramról való működés során</translation>
 <translation id="5469143988693423708">A felhasználó számára engedélyezett a Crostini futtatása</translation>
 <translation id="5469825884154817306">Képek letiltása ezeken az webhelyeken</translation>
+<translation id="5472668698895343595">Ez a házirend a más böngészőben megnyitni kívánt webhelyek listáját szabályozza.
+
+      A listához a következő házirendeken keresztül adhat hozzá újabb elemeket: <ph name="USE_IE_SITELIST_POLICY_NAME" /> és <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Ha a házirend nincs beállítva, nem kerül webhely a listára.
+
+      Ha a házirend be van állítva, minden elemet olyan szabályként kezel a rendszer, amely meghatározza, hogy valami másik böngészőben nyíljon meg. A <ph name="PRODUCT_NAME" /> ezeket a szabályokat használja, amikor eldönti, hogy az URL-t másik böngészőben kell-e megnyitni.
+
+      Ha az Internet Explorer bővítmény telepítve és aktiválva van, az Internet Explorer a <ph name="PRODUCT_NAME" /> böngészőre vált vissza, amennyiben az URL nem felel meg a szabályoknak.
+
+      Ha a szabályok ellentmondanak egymásnak, a <ph name="PRODUCT_NAME" /> a legpontosabban körülírt szabályt használja.</translation>
 <translation id="5475361623548884387">Nyomtatás engedélyezése</translation>
 <translation id="547601067149622666">Hirdetések tiltása a tolakodó hirdetéseket tartalmazó webhelyeken</translation>
 <translation id="5499375345075963939">Ez a házirend csak kiállító módban aktív.
@@ -1746,6 +1864,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha ez a beállítás ki van kapcsolva, vagy ha nincs konfigurálva, akkor a felhasználók bármilyen típusú támogatott külső tárhelyet használhatnak az eszközükkel.</translation>
 <translation id="5697306356229823047">Eszközfelhasználók jelentése</translation>
+<translation id="5699487516670033016">A hitelesítési adatok gyorsítótárának élettartamát adja meg (órában). Ez a gyorsítótár a bejelentkezés folyamatának felgyorsítására szolgál. A kapcsolódó tartományokkal – például a gépi tartomány által megbízhatónak tekintett tartományokkal – kapcsolatos általános adatokat tartalmaz (például a munkacsoport nevét). A rendszer nem helyez gyorsítótárba sem a felhasználóhoz köthető adatokat, sem a nem kapcsolódó tartományokhoz köthető adatokat. Az eszköz újraindítása törli a gyorsítótárat.
+
+      Ha a házirend nincs beállítva, a rendszer 73 óráig felhasználhatja a gyorsítótárban lévő hitelesítési adatokat.
+
+      Ha a házirend értéke nulla, a hitelesítési adatok gyorsítótárazása ki van kapcsolva. Ez jelentősen lelassíthatja a kapcsolódó felhasználók bejelentkezési folyamatát, mert a tartományspecifikus adatokat minden bejelentkezéskor le kell hívni.
+
+      A tartományadatok gyorsítótárba helyezése az ideiglenes felhasználók esetében is megtörténik. Ha az ideiglenes felhasználók tartományának nyomon követését meg kell akadályozni, ki kell kapcsolni az esetükben a gyorsítótárat.</translation>
 <translation id="570062449808736508">Ha a házirend értéke nem üres karakterlánc, akkor a WebView beolvassa a tartalomszolgáltatótól kapott URL-korlátozásokat és az adott hatóság nevét.</translation>
 <translation id="5701714006401683963">Ha a házirend értéke hamis, a felügyelt vendég-munkafolyamat a https://support.google.com/chrome/a/answer/3017014 oldalon található általános „nyilvános munkamenet” leírásnak megfelelően működik.
 
@@ -1791,6 +1916,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha le van tiltva a házirend, a letöltések azonnal megkezdődnek, és a rendszer nem kérdezi meg a felhasználótól, hogy hová szeretné menteni a fájlokat.
       Ha nincs beállítva a házirend, a felhasználó módosítani tudja a beállítást.
       </translation>
+<translation id="5832274826894536455">Megszüntetett házirendek</translation>
 <translation id="5835124959204887277">Meghatározza azokat az URL-eket és domaineket, amelyeknél nem jelenik meg értesítés a hitelesítési tanúsítványok biztonsági hardverkulcsoktól való kérésekor. Továbbá jelet küld a biztonsági hardverkulcsnak annak a jelzésére, hogy egyedi hitelesítésre kerülhet sor. Enélkül a Chrome 65-ös és újabb verzióinak felhasználói értesítést kapnak, amikor a webhelyek biztonsági hardverkulcs általi hitelesítést kérnek.
 
       Az URL-ek (például https://example.com/some/path) csak U2F-alkalmazásazonosítóként felelnek meg. A domainek (például example.com) csak webes hitelesítésű RP-azonosítóként felelnek meg. Ezért az adott webhely U2F és webes hitelesítésű API-jainak lefedése érdekében az alkalmazásazonosító URL-jének és domainjének is szerepelnie kell a listában.</translation>
@@ -2039,6 +2165,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha az irányelv beállítása hamis, akkor a felhasználókról nem készül jelentés.</translation>
 <translation id="6394350458541421998">Ez a házirend többé nincs jelen a <ph name="PRODUCT_OS_NAME" /> 29-es verziójától kezdve. Kérjük, használja helyette a PresentationScreenDimDelayScale házirendet.</translation>
 <translation id="6401669939808766804">Felhasználó kijelentkeztetése</translation>
+<translation id="6406448383934634215">Ha az "URL-lista megnyitása" a kiválasztott indítási művelet, ez lehetővé teszi, hogy meghatározza a megnyitott URL-ek listáját. Ha nincs beállítva, nem nyílik meg URL a böngésző elindításakor.
+
+          Ez a házirend csak akkor működik, ha a „RestoreOnStartup” házirend beállítása „RestoreOnStartupIsURLs”.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="6426205278746959912">Az Android-alkalmazások nem kényszeríthetők proxy használatára. A proxybeállítások bizonyos része hozzáférhető az Android-alkalmazások számára is, amelyeket azután saját belátásuk szerint vesznek figyelembe:
 
           Ha úgy dönt, hogy soha nem használ proxyszervert, az Android-alkalmazások azt a tájékoztatást kapják, hogy nincs beállítva proxy.
@@ -2054,7 +2185,26 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="645425387487868471">A kényszerített bejelentkezés engedélyezése a <ph name="PRODUCT_NAME" /> használatához</translation>
 <translation id="6464074037294098618">Automatikus kitöltés engedélyezése címekhez</translation>
 <translation id="6473623140202114570">Azon domainek listájának beállítása, amelyeken nem aktivál figyelmeztetéseket a Biztonságos Böngészés.</translation>
+<translation id="6488627892044759800">Konfigurálja a <ph name="PRODUCT_NAME" /> alapértelmezett kezdőlapjának típusát, és megakadályozza, hogy a felhasználók módosíthassák az ezzel kapcsolatos beállításokat. A kezdőlap lehet az Ön által megadott URL vagy az Új lap oldal.
+
+          Ha aktiválja ezt a beállítást, a böngésző mindig az Új lap oldalt használja kezdőlapként, és figyelmen kívül hagyja a kezdőlapi URL-t.
+
+          Ha letiltja ezt a beállítást, akkor a felhasználó kezdőlapja kizárólag akkor lesz az Új lap oldal, ha kifejezetten beállítja a „chrome://newtab” URL-címet.
+
+          Ha aktiválja vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják a <ph name="PRODUCT_NAME" /> kezdőlapjának típusát.
+
+          Ha nem állítja be ezt a házirendet, a felhasználók dönthetik el, hogy az Új lap oldal legyen-e a kezdőlap.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="6491139795995924304">Bluetooth engedélyezése az eszközön</translation>
+<translation id="6495328383950074966">Azon domainek listájának beállítása, amelyekben a Biztonságos Böngészés funkció megbízik. Ez a következőket jelenti:
+      A Biztonságos Böngészés nem ellenőrzi a veszélyes forrásokat (például adathalász, rosszindulatú vagy nem kívánt szoftvert keresve), ha az URL-címük egyezik e domainek valamelyikével.
+      A Biztonságos Böngészés letöltésvédelmi szolgáltatása nem ellenőrzi az ezekről a domainekről letölthető fájlokat.
+      A Biztonságos Böngészés jelszóvédelmi szolgáltatása nem ellenőrzi a jelszó újrafelhasználását, ha az adott URL-cím egyezik e domainek valamelyikével.
+
+      Ha ez a beállítás aktiválva van, a Biztonságos Böngészés funkció megbízik ezekben a domainekben.
+      Ha le van tiltva, vagy ha nincs beállítva, akkor alapértelmezés szerint a Biztonságos Böngészés védelme az összes forrásra érvényes lesz.
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="6520802717075138474">Keresőmotorok importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="6525955212636890608">Ha engedélyezi ezt a beállítást, minden beágyazott Flash-tartalom futtatásra kerül (beleértve az egyéb eredetű vagy kisebb tartalmakat is) azokon a webhelyeken, ahol a tartalombeállításokban akár a felhasználó, akár a vállalati házirend engedélyezte a Flash-tartalmakat.
 
@@ -2168,6 +2318,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend nincs beállítva, vagy ha a helyettesítés érvénytelen gazdagépnevet eredményez, nem kerül sor a DHCP-kérés gazdagépnevének beállítására. </translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
+<translation id="6837480141980366278">Azt szabályozza, hogy a <ph name="PRODUCT_NAME" /> a beépített DNS-ügyfelet használja-e.
+
+Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített DNS-ügyfelet használja, ha rendelkezésre áll ilyen.
+
+      Ha az irányelv hamis értékre van beállítva, a rendszer soha nem használja a beépített DNS-ügyfelet.
+
+      Ha az irányelv nincs beállítva, a beépített DNS-ügyfél alapértelmezés szerint engedélyezve lesz MacOS, Android (ha sem a privát DNS, sem a VPN nincs aktiválva) és Chrome OS rendszereken, és a felhasználók a chrome://flags szerkesztésével vagy egy parancssori jelző megadásával módosíthatják, hogy a beépített DNS-ügyfél legyen-e használatban.</translation>
 <translation id="6838056959556423778">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatókiválasztási szabályait.
 
       Ez a házirend határozza meg az alapértelmezett nyomtató kiválasztására vonatkozó szabályokat a nyomtatás funkció adott profillal történő első használatakor a böngészőben (<ph name="PRODUCT_NAME" />).
@@ -2199,6 +2356,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatáshoz tartozó nyomtatók besorolása a böngészőben <ph name="PRINTER_TYPE_CLOUD" />, míg az összes többié <ph name="PRINTER_TYPE_LOCAL" />.
       Egy adott mező üresen hagyása azt jelenti, hogy az összes érték egyezésnek számít. Ha például nincs megadva a csatlakoztathatóság, akkor a nyomtatási előnézet az összes nyomtatófajta (helyi és felhőben lévő) felfedezését megkezdi.
       A reguláris kifejezések mintái a JavaScript RegExp szintaxist követik, és megkülönböztetik a kis- és nagybetűket.</translation>
+<translation id="6843296367238757293">Ez a házirend megszűnt. Nem javasoljuk a használatát. További információ: https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ez a házirend el lett távolítva a <ph name="PRODUCT_NAME" /> 68-os verziójában, és a következő lépett a helyébe: <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ez a házirend elavult, és eltávolítottuk az M66 verzióban, mert csak belső tesztelésre használtuk, és biztonsági kockázatot jelent.
 
@@ -2371,6 +2529,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Az automatikus lejátszás csak a(z) <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> házirendben kifejezetten feltüntetett domainek számára engedélyezett. Ha minden webhely számára szeretné engedélyezni az automatikus lejátszást, fontolja meg a http://* és a https://* felvételét erre a listára.
 
           Ha nem állítja be a házirendet, a felhasználó manuálisan tudja módosítani ezt a beállítást.</translation>
+<translation id="7229876938563670511">Beállítja a kezdőlap alapértelmezett címét a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák.
+
+          A kezdőlapot a Főoldal gomb megnyomásával lehet megnyitni. Az indításkor megnyíló oldalakat a RestoreOnStartup házirendek szabályozzák.
+
+          A kezdőlap lehet egy itt megadott konkrét URL vagy az Új lap oldal. Ha az Új lap oldalt választja, akkor ez a házirend nem lép érvénybe.
+
+          Ha megadja ezt a beállítást, a felhasználók nem tudják megváltoztatni a kezdőlap URL-jét a <ph name="PRODUCT_NAME" /> böngészőben, ám változatlanul választhatják az Új lap oldalt kezdőlapként.
+
+          Ha nem állítja be sem ezt, sem a HomepageIsNewTabPage házirendet, akkor a felhasználó választhatja ki a kezdőlapot.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="7229975860249300121">Tartalmaz egy reguláris kifejezést, amely annak a megállapítására szolgál, hogy mely Google-fiókok állíthatók be a böngésző elsődleges fiókjaként a <ph name="PRODUCT_NAME" /> böngészőben (tehát például ez az a fiók, amely kiválasztásra kerül a szinkronizálás bekapcsolási folyamatában).
 
       Ha egy felhasználó olyan felhasználónévvel próbál elsődleges böngészőfiókot megadni, amelyik nem egyezik ezzel a mintával, megjelenik egy erre figyelmeztető hibaüzenet.
@@ -2703,6 +2872,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="793473937901685727">Tanúsítvány rendelkezésre állásának beállítása az ARC-alkalmazások számára</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
+<translation id="7952002811557367112">Ez a házirend megakadályozza, hogy a felhasználó a tiltólistán szereplő URL-t töltsön be. A tiltólistán lévő URL-eket a böngésző letiltja.
+
+      Az URL-eket a következő oldalon leírtak szerint kell formázni: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Kivételeket az URL-ek engedélyezőlistájára vonatkozó házirendben lehet megadni. Ebben a házirendekben legfeljebb ezer bejegyzés szerepelhet. A további bejegyzéseket a böngésző figyelmen kívül hagyja.
+
+      A belső használatú „chrome://*” URL-séma letiltása nem javasolt, ez ugyanis váratlan hibákhoz vezethet.
+
+      Felhívjuk figyelmét, hogy ez a házirend nem akadályozza meg az oldal dinamikus módon történő frissítését JavaScripten keresztül. Ha például letiltja az „example.com/abc” oldalt, a felhasználók az „example.com” oldalt felkeresve, majd egy linkre kattintva továbbra is meglátogathatják az „example.com/abc” oldalt, amennyiben az oldal nem frissül.
+
+      Ha a házirend nincs beállítva, egyik URL sem kerül tiltólistára a böngészőben.</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7961779417826583251">A tanúsítványok átláthatósága keretrendszer betartatásának kikapcsolása a régi tanúsítványkibocsátók adott listájánál</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
@@ -2877,6 +3057,12 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8367209241899435947">A Chrome-tisztogatás engedélyezése Windows rendszeren</translation>
 <translation id="8369602308428138533">Képernyő kikapcsolásának késleltetése hálózati áramról való működés során</translation>
 <translation id="8371178326720637170">Vállalati hardverplatform API felügyelt bővítmények általi használatának engedélyezése</translation>
+<translation id="8377433219608936819">
+      Ha a házirend beállítása igaz, ütközés esetén a felhőbeli házirend előnyt élvez az eszközön érvényes házirenddel szemben.
+      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az eszközön érvényes házirend élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
+      A házirendek prioritásáról a következő súgócikkből tudhat meg többet: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="8382184662529825177">Távoli hitelesítés engedélyezése az eszközön lévő tartalmak védelme érdekében</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
 <translation id="8390049129576938611">Kikapcsolja a belső PDF-olvasót a(z) <ph name="PRODUCT_NAME" /> termékben. Ehelyett letöltésként kezeli, és engedélyezi a felhasználó számára PDF-fájlok megnyitását az alapértelmezett alkalmazással.
@@ -3042,6 +3228,12 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8758831693895931466">Kötelező felhőkezelési regisztráció engedélyezése</translation>
 <translation id="8759829385824155666">Engedélyezett Kerberos-titkosítástípusok</translation>
 <translation id="8764119899999036911">Meghatározza, hogy a generált Kerberos SPN a kanonikus DNS-néven vagy az eredetileg beírt néven alapul-e. Ha engedélyezi ezt a beállítást, a CNAME keresés kimarad, és a rendszer a szerver beírt nevét fogja használni. Ha letiltja vagy konfigurálatlanul hagyja ezt a beállítást, a rendszer a szerver kanonikus nevét CNAME kereséssel fogja meghatározni.</translation>
+<translation id="8765776988041674792">A jelszómódosítási URL beállítása (csak HTTP vagy HTTPS protokoll esetén). A jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
+      A <ph name="PRODUCT_NAME" /> akkor tudja megfelelően rögzíteni az új jelszavak ujjlenyomatát ezen a jelszómódosító oldalon, ha Ön gondoskodik arról, hogy a jelszómódosító oldala megfeleljen a https://www.chromium.org/developers/design-documents/create-amazing-password-forms oldalon található irányelveknek.
+
+      A beállítás engedélyezése esetén a jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
+      Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás a https://myaccounts.google.com webhelyre küldi a felhasználókat jelszómódosítás céljából.
+      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="8782750230688364867">Megadja azt a százalékot, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, amikor az eszköz prezentációs módban van.
 
           Ha a házirend be van állítva, megadja azt a százalékos értéket, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az eszköz prezentációs módban van. Az elsötétedési késleltetés skálázása esetén a képernyő-kikapcsolási, képernyő-zárolási és tétlenségi késleltetések is módosulnak, hogy ugyanannyi idő teljen el köztük a képernyő-elsötétítési késleltetéstől számítva, mint ami eredetileg be lett állítva.

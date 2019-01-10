@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="1995660704900986789">Выключить</translation>
+<translation id="1999763610967697511">Перетаскивание</translation>
 <translation id="2012624427112548395">CTRL + ПОИСК + H</translation>
 <translation id="2016340657076538683">Введите сообщение</translation>
 <translation id="2050339315714019657">Книжная</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Доступно обновление</translation>
 <translation id="2413728805700750528">Управляемый сеанс "<ph name="DISPLAY_NAME" />" выполняется в домене <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Подключено к сети "<ph name="NETWORK_NAME" />"</translation>
+<translation id="2427507373259914951">Нажатие на левую кнопку мыши</translation>
 <translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2484513351006226581">Чтобы переключить раскладку клавиатуры, нажмите клавиши <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3255483164551725916">Что ты умеешь?</translation>
 <translation id="3294437725009624529">Гость</translation>
+<translation id="3308453408813785101">Пользователь <ph name="USER_EMAIL_ADDRESS" /> сможет войти в аккаунт позже.</translation>
 <translation id="332587331255250389">Замените батарею в стилусе.</translation>
 <translation id="3351879221545518001">Вы транслируете изображение своего экрана.</translation>
 <translation id="3364721542077212959">Инструменты стилуса</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="4849058404725798627">Выделять элементы, выбранные с помощью клавиатуры</translation>
+<translation id="485592688953820832">Отсутствие действий (пауза)</translation>
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
 <translation id="4890187583552566966">Администратор отключил Google Ассистента</translation>
 <translation id="4895488851634969361">Батарея полностью заряжена.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Уведомления включены для всех приложений</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
 <translation id="813913629614996137">Инициализация...</translation>
+<translation id="8142441511840089262">Двойное нажатие кнопкой мыши</translation>
 <translation id="8142699993796781067">Частные сети</translation>
+<translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
+<translation id="8203795194971602413">Нажатие правой кнопкой мыши</translation>
 <translation id="8236042855478648955">Пора сделать перерыв</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8297006494302853456">Слабый</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Не подключено</translation>
 <translation id="8877788021141246043">Создать напоминание</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
-<translation id="8898978413391960553">00:00 сек.</translation>
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
 <translation id="8940956008527784070">Низкий заряд батареи (<ph name="PERCENTAGE" />%)</translation>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
 <translation id="1993072747612765854">מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">כיבוי</translation>
+<translation id="1999763610967697511">גרירה ושחרור</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">כאן מקלידים את ההודעה</translation>
 <translation id="2050339315714019657">לאורך</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">יש עדכון זמין</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> הוא סשן מנוהל שמנוהל על-ידי <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">יש חיבור אל <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">לחיצה שמאלית</translation>
 <translation id="2429753432712299108">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. לפני שתאשר, ודא שמפתח הסיסמה הבא מוצג במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2484513351006226581">צריך להקיש על <ph name="KEYBOARD_SHORTCUT" /> כדי להחליף פריסת מקלדת.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
 <translation id="3255483164551725916">מה אפשר לעשות?</translation>
 <translation id="3294437725009624529">אורח</translation>
+<translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
 <translation id="332587331255250389">יש להחליף את הסוללה</translation>
 <translation id="3351879221545518001">מתבצעת עכשיו העברה של מסך.</translation>
 <translation id="3364721542077212959">כלי סטיילוס</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
+<translation id="485592688953820832">ללא פעולה (השהיה)</translation>
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
 <translation id="4890187583552566966">‏Google Assistant הושבת על-ידי מנהל המערכת.</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
@@ -274,7 +278,7 @@
 <translation id="5744083938413354016">הקשה וגרירה</translation>
 <translation id="5750765938512549687">‏Bluetooth כבוי</translation>
 <translation id="5777841717266010279">להפסיק את שיתוף המסך?</translation>
-<translation id="57838592816432529">השתק</translation>
+<translation id="57838592816432529">השתקה</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5837036133683224804">הפסקת <ph name="ROUTE_TITLE" /> במכשיר <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">כבוי</translation>
@@ -421,9 +425,12 @@
 <translation id="8113423164597455979">מופעל, כל האפליקציות</translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME" /></translation>
 <translation id="813913629614996137">מאתחל...</translation>
+<translation id="8142441511840089262">לחיצה כפולה</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>
+<translation id="8167567890448493835">המיקום הנוכחי הוא<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8192202700944119416">ההודעות מוסתרות.</translation>
+<translation id="8203795194971602413">לחיצה ימנית</translation>
 <translation id="8236042855478648955">הגיע הזמן לקחת הפסקה</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8297006494302853456">חלש</translation>
@@ -468,7 +475,6 @@
 <translation id="8874184842967597500">לא מחובר</translation>
 <translation id="8877788021141246043">הגדרת תזכורת</translation>
 <translation id="8878886163241303700">מסך מתרחב</translation>
-<translation id="8898978413391960553">00:00 שנ'</translation>
 <translation id="8921624153894383499">‏Google Assistant לא מדבר בשפה הזאת.</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>

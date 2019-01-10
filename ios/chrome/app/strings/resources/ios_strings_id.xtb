@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Tutup Semua Tab</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
-<translation id="127138278192656016">Gunakan sinkronisasi dan semua layanan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Salin Gambar</translation>
 <translation id="1612730193129642006">Tampilkan Grid Tab</translation>
 <translation id="1644574205037202324">Histori</translation>
+<translation id="1650222530560417226">Tap tombol "Mulai Logging" untuk mengumpulkan log dan error konsol JavaScript mendatang dari semua tab. Log akan dikumpulkan (dan disimpan hanya dalam memori) hingga halaman ini ditutup atau "Hentikan Logging" di-tap.</translation>
 <translation id="1657011748321897393">Gagal berbagi karena tidak terhubung ke jaringan.</translation>
 <translation id="165877110639533037">Tidak Ada Tab yang Terbuka</translation>
 <translation id="168715261339224929">Agar bookmark tersedia di semua perangkat Anda, aktifkan sinkronisasi.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dipilih</translation>
 <translation id="1740468249224277719">Ketuk dua kali untuk memasang.</translation>
 <translation id="1746815479209538200">Untuk browsing web, tambahkan tab baru.</translation>
-<translation id="17513872634828108">Buka tab</translation>
 <translation id="1752547299766512813">Simpan Sandi</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
 <translation id="1809939268435598390">Hapus Folder</translation>
 <translation id="1813414402673211292">Hapus Data Browsing</translation>
 <translation id="1820259098641718022">Ditambahkan ke Daftar Baca</translation>
 <translation id="1821253160463689938">Menggunakan cookie untuk mengingat preferensi, meski Anda tidak membuka halaman tersebut</translation>
+<translation id="1828824471510190776">Sarankan Sandi...</translation>
 <translation id="1876721852596493031">Krm Data Penggunaan</translation>
 <translation id="1886928167269928266">Awal Waktu</translation>
 <translation id="1911619930368729126">Upload ke Google Drive</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Dibookmark ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Tab Penyamaran</translation>
+<translation id="3771149149411027381">Telusuri Teks yang Disalin</translation>
 <translation id="3779810277399252432">Tidak ada sambungan internet.</translation>
 <translation id="3783017676699494206">Simpan Gambar</translation>
 <translation id="3789841737615482174">Instal</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Telusuri</translation>
 <translation id="4121993058175073134">Konfigurasi akun email Anda di aplikasi Setelan untuk mengirim data net-ekspor.</translation>
 <translation id="4124987746317609294">Rentang Waktu</translation>
+<translation id="4155190233692914060">Kunjungi Link yang Disalin</translation>
 <translation id="4172051516777682613">Selalu tampilkan</translation>
 <translation id="418156467088430727">Tampilkan Versi Offline di Tab Baru</translation>
 <translation id="4237682350741091554">Kelola personalisasi dan Sinkronisasi Chrome di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="4854345657858711387">Setel Kode Sandi</translation>
 <translation id="4860895144060829044">Telepon</translation>
 <translation id="4881695831933465202">Buka</translation>
-<translation id="4882831918239250449">Kontrol cara histori browsing digunakan untuk mempersonalisasi Penelusuran, iklan, dan lainnya</translation>
 <translation id="4895709476292058519">Ubah Akun</translation>
 <translation id="4904877109095351937">Tandai Sudah Dibaca</translation>
 <translation id="4930268273022498155">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih lagi ke <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terjadi masalah saat berbagi item Anda.</translation>
 <translation id="4979397965658815378">Masuk dengan Akun Google untuk mendapatkan bookmark, sandi, histori, dan setelan lainnya di semua perangkat Anda.</translation>
-<translation id="5004416275253351869">Kontrol aktivitas Google</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
 <translation id="5010803260590204777">Buka tab penyamaran untuk menjelajahi web secara pribadi.</translation>
 <translation id="5011684439661633295">Yth., <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -257,7 +257,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5186185447130319458">Pribadi</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5215116848420601511">Metode pembayaran dan alamat yang menggunakan Google Pay</translation>
 <translation id="5228579091201413441">Aktifkan sinkronisasi</translation>
 <translation id="5244474230056479698">Menyinkronkan dengan <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Tampilkan</translation>

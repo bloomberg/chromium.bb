@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Изключване</translation>
+<translation id="1999763610967697511">Хващане и преместване с мишката</translation>
 <translation id="2012624427112548395">Ctrl + клавиш „Търсене“ + H</translation>
 <translation id="2016340657076538683">Въведете съобщение</translation>
 <translation id="2050339315714019657">Вертикално</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Налице е актуализация</translation>
 <translation id="2413728805700750528">„<ph name="DISPLAY_NAME" />“ е сесия, управлявана от <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Установена е връзка (<ph name="NETWORK_NAME" />)</translation>
+<translation id="2427507373259914951">Кликване с левия бутон</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3255483164551725916">„What can you do?“ („Какво можеш да правиш?“)</translation>
 <translation id="3294437725009624529">Гост</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> пак може да влезе в профила си по-късно.</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
 <translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
+<translation id="485592688953820832">Без действие (пауза)</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Включено за всички приложения</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
+<translation id="8142441511840089262">Двукратно кликване</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
+<translation id="8167567890448493835">Използвате <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8192202700944119416">Известията са скрити.</translation>
+<translation id="8203795194971602413">Кликване с десния бутон</translation>
 <translation id="8236042855478648955">Време е за почивка</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8297006494302853456">Слаб</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Няма връзка</translation>
 <translation id="8877788021141246043">„Set a reminder“ („Задай напомняне“)</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
-<translation id="8898978413391960553">00:00 сек</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE" />%)</translation>

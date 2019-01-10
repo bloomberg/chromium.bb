@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ಇತ್ತೀಚಿನ <ph name="SYSTEM_APP_NAME" /> ಅಪ್‌ಡೇಟ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="1995660704900986789">ಪವರ್ ಆಫ್</translation>
+<translation id="1999763610967697511">ಎಳೆಯಿರಿ ಮತ್ತು ಬಿಡಿ</translation>
 <translation id="2012624427112548395">Ctrl+ಹುಡುಕಾಟ+H</translation>
 <translation id="2016340657076538683">ಸಂದೇಶವನ್ನು ಟೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="2050339315714019657">ಪೋಟ್ರೇಟ್</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">ಅಪ್‌ಡೇಟ್‌‌ ಲಭ್ಯವಿದೆ</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ಎಂಬುದು <ph name="DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಒಂದು ನಿರ್ವಹಿಸಿದ ಸೆಶನ್ ಆಗಿದೆ</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
+<translation id="2427507373259914951">ಎಡ-ಕ್ಲಿಕ್</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2484513351006226581">ಕೀಬೋರ್ಡ್ ಲೇಔಟ್ ಬದಲಾಯಿಸಲು <ph name="KEYBOARD_SHORTCUT" /> ಒತ್ತಿರಿ.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="3255483164551725916">ನೀವೇನು ಮಾಡಬಲ್ಲಿರಿ?</translation>
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />, ಆನಂತರ ಕೂಡಾ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="332587331255250389">ಬ್ಯಾಟರಿಯನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="3351879221545518001">ನೀವು ಪ್ರಸ್ತುತ ಪರದೆಯನ್ನು ಬಿತ್ತರಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="3364721542077212959">ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳು</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
+<translation id="485592688953820832">ಯಾವುದೇ ಕ್ರಮ ಕೈಗೊಳ್ಳಬೇಡಿ (ವಿರಾಮಗೊಳಿಸಿ)</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="4890187583552566966">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು Google ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
@@ -420,9 +424,12 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8113423164597455979">ಆನ್, ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="813913629614996137">ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="8142441511840089262">ಡಬಲ್‌ ಕ್ಲಿಕ್</translation>
 <translation id="8142699993796781067">ಖಾಸಗಿ ನೆಟ್‌ವರ್ಕ್‌</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8190698733819146287">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ...</translation>
 <translation id="8192202700944119416">ಅಧಿಸೂಚನೆಗಳು ಮರೆಯಾಗಿವೆ.</translation>
+<translation id="8203795194971602413">ಬಲ-ಕ್ಲಿಕ್</translation>
 <translation id="8236042855478648955">ವಿರಾಮದ ಸಮಯ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8297006494302853456">ದುರ್ಬಲ</translation>
@@ -467,7 +474,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8874184842967597500">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
 <translation id="8877788021141246043">ಜ್ಞಾಪನೆಯನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="8878886163241303700">ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="8898978413391960553">00:00ಸೆ</translation>
 <translation id="8921624153894383499">Google ಸಹಾಯಕವು ಈ ಭಾಷೆಯನ್ನು ಮಾತನಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="8938800817013097409">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿನ ಬಲ ಪೋರ್ಟ್‌)</translation>
 <translation id="8940956008527784070">ಬ್ಯಾಟರಿ ಕಡಿಮೆ (<ph name="PERCENTAGE" />%)</translation>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
+<translation id="1999763610967697511">Drag-and-drop</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2016340657076538683">Nachricht eingeben</translation>
 <translation id="2050339315714019657">Hochformat</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Update verfügbar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
 <translation id="2416346634399901812">Verbunden mit <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Linksklick</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2484513351006226581">Drücken Sie <ph name="KEYBOARD_SHORTCUT" />, um das Tastaturlayout zu ändern.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3255483164551725916">Was kannst du alles tun?</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kann sich später weiterhin anmelden.</translation>
 <translation id="332587331255250389">Bitte tauschen Sie die Batterien aus</translation>
 <translation id="3351879221545518001">Sie streamen gerade den Bildschirm.</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
+<translation id="485592688953820832">Keine Aktion (Pause)</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Umschalttaste</translation>
 <translation id="4890187583552566966">Google Assistant wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">Für alle Apps aktiviert</translation>
 <translation id="8132793192354020517">Verbunden mit <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisierung…</translation>
+<translation id="8142441511840089262">Doppelklick</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
+<translation id="8167567890448493835">"<ph name="LOCALE_NAME" />" wird verwendet</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8192202700944119416">Benachrichtigungen sind ausgeblendet.</translation>
+<translation id="8203795194971602413">Rechtsklick</translation>
 <translation id="8236042855478648955">Zeit für eine Pause</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8297006494302853456">Schwach</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Nicht verbunden</translation>
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE" /> %)</translation>

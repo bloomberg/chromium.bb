@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 天前}other{# 天前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
+<translation id="1181037720776840403">删除</translation>
 <translation id="1243314992276662751">上传</translation>
 <translation id="1269641567813814718">Win 键</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">语音</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{还剩 1 天}other{还剩 # 天}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">选择要上传的文件夹</translation>
 <translation id="3660179305079774227">向上箭头</translation>

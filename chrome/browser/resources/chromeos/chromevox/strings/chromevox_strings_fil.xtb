@@ -54,6 +54,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="135978014023467274">Na-update ka sa ChromeVox 63!</translation>
+<translation id="1360699455582016846">I-click ang item sa ilalim ng routing key na <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Susunod na row ng talahanayan</translation>
 <translation id="1377925789329510816">Ito ang huling heading. Pindutin ang Search+H upang pumunta sa unang heading, o ang Search+Shift+H upang pumunta sa pangalawang heading sa page na ito.</translation>
 <translation id="1383876407941801731">Hanapin</translation>
@@ -112,6 +113,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1905379170753160525">Ipakita ang listahan ng mga heading</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> chord</translation>
 <translation id="1954623340234317532">Kontrol sa linggo ng taon</translation>
 <translation id="1964135212174907577">Susunod na Bagay</translation>
 <translation id="1969092762068865084">Hulyo</translation>
@@ -267,6 +269,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="316542773973815724">Nabigasyon</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espasyo}one{# espasyo}other{# na espasyo}}</translation>
 <translation id="320961988183078793">naglagay ng <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">i-paste ang <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Nabisita nang link</translation>
@@ -344,12 +347,14 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3468959318854349468">Walang pamagat</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> hanggang <ph name="V2" /></translation>
+<translation id="3490765818161916458">Grid ng listahan</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{kanang bracket}one{# kanang bracket}other{# na kanang bracket}}</translation>
 <translation id="3493915602752813531">Walang susunod na anchor.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{tandang pananong}one{# tandang pananong}other{# na tandang pananong}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}one{# caret}other{# na caret}}</translation>
 <translation id="352577523970648069">Isang nae-edit na text field</translation>
+<translation id="3549141990712742152">i-cut ang <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Mag-tap gamit ang 2 daliri para pansamantalang ihinto ang pagsasalita</translation>
 <translation id="3568702578574425662">Hindi nilagyan ng check ang <ph name="NAME" />, checkbox</translation>
 <translation id="3589661172894441357">Glosaryo</translation>
@@ -381,6 +386,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3856075812838139784">Read only</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">Nakaraang heading sa antas 6</translation>
 <translation id="3914173277599553213">Kinakailangan</translation>
 <translation id="3914732343065571127">Command Reference para sa ChromeVox</translation>
@@ -674,6 +680,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6129953537138746214">Puwang</translation>
 <translation id="6132506484792346370">Isang listbox o combo box</translation>
 <translation id="6142308968191113180">Heading 4</translation>
+<translation id="6158882249329863701">row <ph name="TABLECELLROWINDEX" /> column <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">metro</translation>
 <translation id="6169420925157477918">Larawang may mahabang paglalarawan</translation>
 <translation id="6186305613600865047">Pumunta sa ibaba ng page</translation>
@@ -689,6 +696,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6307969636681130414">Pinindot</translation>
 <translation id="6322856989298155004">Mga Tunog</translation>
 <translation id="6324551002951139333">Nakakita ng pagkakamali sa grammar</translation>
+<translation id="6325241889020214828">kopyahin ang <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Combo box</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bullet}one{# bullet}other{# na bullet}}</translation>
 <translation id="6355910664415701303">Walang nakaraang item sa listahan.</translation>
@@ -960,6 +968,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Mga Modifier Key</translation>
 <translation id="8943175951035496220">Walang cell sa kanan.</translation>
+<translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Kalimutan</translation>
 <translation id="900114243503212879">file</translation>

@@ -24,6 +24,13 @@
       Jeśli zasada jest wyłączona lub nieskonfigurowana, pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.
 
       Ta zasada dotyczy tylko tych użytkowników, których domena odpowiada domenie rejestracji urządzenia. W przypadku wszystkich pozostałych użytkowników pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika tylko podczas jego pierwszego logowania na urządzeniu.</translation>
+<translation id="1030120600562044329">Umożliwia anonimowe przekazywanie do Google danych o używaniu i awariach <ph name="PRODUCT_NAME" /> oraz blokuje użytkownikom możliwość zmiany tego ustawienia.
+
+      Jeśli to ustawienie jest włączone, do Google przekazywane są anonimowe dane o używaniu i awariach.  Po wyłączeniu tego ustawienia dane nie są przekazywane do Google.  W obu przypadkach użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.
+      Jeśli ta zasada pozostanie nieskonfigurowana, ustawienie będzie zależne od wyboru dokonanego przez użytkownika przy instalacji lub pierwszym uruchomieniu.
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.
+      (W przypadku Chrome OS zapoznaj się z zasadą DeviceMetricsReportingEnabled).</translation>
 <translation id="1035385378988781231">Ta zasada określa, czy funkcja Sieciowe udziały plików w <ph name="PRODUCT_NAME" /> będzie używać NTLM do uwierzytelniania.
 
       Gdy ta zasada ma ustawienie Prawda, połączenia z udziałami SMB będą w razie potrzeby uwierzytelniane przy użyciu NTLM.
@@ -69,6 +76,11 @@
       Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="1107764601871839136">Służy do określenia czasu przechowywania (w godzinach) obiektów zasad grupy w pamięci podręcznej. Zamiast ponownego pobierania obiektów zasad grupy przy każdym odczycie zasad system może korzystać z obiektów przechowywanych w pamięci podręcznej, dopóki ich wersja się nie zmieni. Ta zasada określa maksymalny czas, przez jaki można używać obiektów zasad grupy przechowywanych w pamięci podręcznej, zanim nastąpi ich ponowne pobranie. Ponowne uruchomienie i wylogowanie powoduje wyczyszczenie pamięci podręcznej.
+
+      Jeśli ta zasada pozostanie nieskonfigurowana, obiektów zasad grupy przechowywanych w pamięci podręcznej można używać przez maksymalnie 25 godzin.
+
+      Wybranie dla tej zasady wartości 0 spowoduje wyłączenie przechowywania obiektów zasad grupy w pamięci podręcznej. Pamiętaj, że zwiększa to obciążenie serwera, ponieważ obiekty zasad grupy są pobierane przy każdym odczycie zasad nawet wtedy, gdy nie uległy zmianie.</translation>
 <translation id="1117535567637097036">Moduły obsługi protokołów ustawiane przez tę zasadę nie są używane podczas obsługi intencji Androida.</translation>
 <translation id="1118093128235245168">Zezwól, by strony prosiły użytkownika o przyznanie dostępu do podłączonych urządzeń USB</translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
@@ -166,6 +178,19 @@
 <translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
+<translation id="1431272318313028342">Służy do włączania funkcji Bezpieczne przeglądanie w <ph name="PRODUCT_NAME" /> i blokuje użytkownikom możliwość zmiany tego ustawienia.
+
+      Jeśli włączysz to ustawienie, Bezpieczne przeglądanie będzie zawsze aktywne.
+
+      Jeśli wyłączysz to ustawienie, Bezpieczne przeglądanie nie będzie nigdy aktywne.
+
+      Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić ani zastąpić ustawienia „Włącz ochronę przed wyłudzaniem informacji i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
+
+      Jeśli ta zasada pozostanie nieskonfigurowana, ustawienie będzie włączone, ale użytkownik nie będzie mógł go zmienić.
+
+      Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na stronie https://developers.google.com/safe-browsing
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="1438739959477268107">Domyślne ustawienie generowania kluczy</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
@@ -271,9 +296,25 @@
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
 <translation id="1689963000958717134">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ustaw ograniczenie pobierania odmian</translation>
+<translation id="1717817358640580294">Gdy ta zasada jest nieskonfigurowana, po wykryciu niechcianego oprogramowania Czyszczenie Chrome może przekazać do Google metadane o skanowaniu zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy chce usunąć niechciane oprogramowanie. Użytkownik może zgodzić się na udostępnienie Google wyników czyszczenia, by pomóc w wykrywaniu niechcianego oprogramowania. Wyniki te zawierają metadane plików, informacje o rozszerzeniach zainstalowanych automatycznie i klucze rejestru – zgodnie z opisem w Dokumencie na temat ochrony prywatności w Google Chrome.
+
+      Jeśli ta zasada jest wyłączona, po wykryciu niechcianego oprogramowania Czyszczenie Chrome nie przekaże do Google metadanych skanowania, ignorując ustawienie zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy chce usunąć niechciane oprogramowanie.  Wyniki czyszczenia nie będą przekazywane do Google, a użytkownik nie będzie pytany, czy chce to zrobić.
+
+      Gdy ta zasada jest włączona, po wykryciu niechcianego oprogramowania Czyszczenie Chrome może przekazać do Google metadane skanowania zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy chce usunąć niechciane oprogramowanie.  Wyniki czyszczenia będą przekazywane do Google, a użytkownik nie będzie pytany, czy się na to zgadza.
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="172374442286684480">Zezwalaj wszystkim witrynom na tworzenie danych lokalnych</translation>
 <translation id="1734716591049455502">Skonfiguruj opcje dostępu zdalnego</translation>
 <translation id="1736269219679256369">Zezwól na kontynuowanie ze strony ostrzeżenia dotyczącego protokołu SSL</translation>
+<translation id="1745780278307622857">Określ, czy <ph name="PRODUCT_NAME" /> może zezwalać na pobieranie plików bez sprawdzenia przez funkcję Bezpieczne przeglądanie, czy pochodzą one z zaufanego źródła.
+
+      Po wybraniu wartości Fałsz pobrane pliki nie zostaną przesłane do przeanalizowania przez Bezpieczne przeglądanie, jeśli pochodzą z zaufanego źródła.
+
+      Jeśli ta zasada jest nieskonfigurowana (lub ma wartość Prawda), pobrane pliki zostaną przesłane do przeanalizowania przez Bezpieczne przeglądanie nawet wtedy, gdy pochodzą z zaufanego źródła.
+
+      Pamiętaj, że te ograniczenia mają zastosowanie do plików pobieranych zarówno po kliknięciu linku na stronie internetowej, jak i po kliknięciu opcji „Pobierz link” w menu kontekstowym. Ograniczenia te nie obowiązują w przypadku zapisywania/pobierania wyświetlanej aktualnie strony ani zapisywania jej jako pliku PDF w oknie opcji drukowania.
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="1749815929501097806">Określa Warunki korzystania z usługi, które użytkownik musi zaakceptować przed rozpoczęciem sesji używania lokalnego konta na urządzeniu.
 
       Jeśli ta zasada jest ustawiona, <ph name="PRODUCT_OS_NAME" /> będzie pobierać Warunki korzystania z usługi i wyświetlać je użytkownikowi przy każdym rozpoczęciu sesji. Użytkownik będzie mógł kontynuować tylko po ich zaakceptowaniu.
@@ -284,6 +325,7 @@
 <translation id="1750315445671978749">Blokuj pobieranie wszystkich plików</translation>
 <translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji programisty Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji programisty. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji programisty, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
+<translation id="1798559516913615713">Czas przechowywania obiektów zasad grupy w pamięci podręcznej</translation>
 <translation id="1803646570632580723">Lista przypiętych aplikacji pokazywanych w programie uruchamiającym</translation>
 <translation id="1808715480127969042">Blokuj pliki cookie w tych witrynach</translation>
 <translation id="1810261428246410396">Zezwalaj na używanie funkcji Instant Tethering.</translation>
@@ -291,6 +333,13 @@
 
       Zasadę należy określić jako ciąg złożony z adresu URL oraz hasha w formacie JSON.</translation>
 <translation id="1827523283178827583">Używaj stałych serwerów proxy</translation>
+<translation id="1831495419375964631">Ta zasada jest adresem URL, który wskazuje plik XML w formacie zgodnym z zasadą <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze. Powoduje wczytanie reguł z pliku XML bez udostępniania ich Internet Explorerowi.
+
+      Jeśli ta zasada jest nieskonfigurowana lub podany w niej adres URL jest nieprawidłowy, <ph name="PRODUCT_NAME" /> nie używa jej jako źródła reguł sterujących przełączaniem przeglądarek.
+
+      Jeśli w tej zasadzie podany jest prawidłowy adres URL, <ph name="PRODUCT_NAME" /> pobiera z niego listę stron i stosuje reguły, jak gdyby zostały one skonfigurowane za pomocą zasady <ph name="SITELIST_POLICY_NAME" />.
+
+      Więcej informacji o zasadzie <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">Częstotliwość odświeżania zasad użytkownika</translation>
 <translation id="1844620919405873871">Konfiguruje zasady szybkiego odblokowania.</translation>
 <translation id="1847960418907100918">Określa parametry używane przy wyszukiwaniu dynamicznym z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
@@ -336,6 +385,12 @@
 
       Jeśli jej nie włączysz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.
       Jeśli jej nie skonfigurujesz, przesyłanie statystyk użytkowania i danych diagnostycznych będzie wyłączone na urządzeniach niezarządzanych, ale włączone na zarządzanych.</translation>
+<translation id="1907431809333268751">Służy do konfigurowania listy adresów URL (tylko schematy HTTP i HTTPS) stron logowania aplikacji firmowych. Na tych stronach będzie rejestrowany odcisk cyfrowy hasła służący do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
+      Jeśli <ph name="PRODUCT_NAME" /> ma prawidłowo rejestrować odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
+
+      Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
+      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com.
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="1920046221095339924">Zezwalaj na sesję zarządzaną na urządzeniu</translation>
 <translation id="1929709556673267855">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
 
@@ -410,6 +465,9 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2104418465060359056">Zgłaszaj informacje o rozszerzeniach i wtyczkach</translation>
+<translation id="2107601598727098402">
+        Ta zasada jest nieużywana od wersji M72. Użyj w zamian zasady CloudManagementEnrollmentToken.
+        </translation>
 <translation id="2111016292707172233">Pozwala korzystać z funkcji „Kliknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
       Jeśli włączysz to ustawienie, funkcja „Kliknij, by wyszukać” będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
@@ -453,10 +511,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="214901426630414675">Ogranicz tryb drukowania dwustronnego</translation>
 <translation id="2149330464730004005">Włącz drukowanie w kolorze</translation>
 <translation id="2156132677421487971">Pozwala skonfigurować zasady dotyczące <ph name="PRODUCT_NAME" /> – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
-<translation id="2163878108829382394">
-        Jeśli ta zasada ma wartość prawda, rejestracja w zarządzaniu przez chmurę jest obowiązkowa. Jeśli zakończy się niepowodzeniem, proces uruchamiania Chrome zostanie zablokowany.
-
-        Jeśli ta zasada ma wartość fałsz lub jest nieskonfigurowana, rejestracja w zarządzaniu przez chmurę jest opcjonalna i w razie niepowodzenia nie zablokuje procesu uruchamiania Chrome.</translation>
 <translation id="2166472654199325139">Nie filtruj witryn pod kątem treści dla dorosłych</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
@@ -596,6 +650,20 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       W przypadku wyłączenia tej opcji użytkownicy nie mogą drukować z <ph name="PRODUCT_NAME" />. Drukowanie jest wyłączone w menu klucza, aplikacjach JavaScript itd. Nadal można drukować z poziomu wtyczek pomijających <ph name="PRODUCT_NAME" /> podczas drukowania. Na przykład menu niektórych aplikacji Flash zawiera opcję drukowania, która nie jest objęta tą zasadą.</translation>
 <translation id="2518231489509538392">Zezwalaj na odtwarzanie dźwięku</translation>
 <translation id="2521581787935130926">Pokaż skróty aplikacji na pasku zakładek</translation>
+<translation id="2529659024053332711">Umożliwia określenie działania przeglądarki po uruchomieniu.
+
+          Jeśli wybierzesz ustawienie „Otwórz stronę nowej karty”, po każdym uruchomieniu <ph name="PRODUCT_NAME" /> będzie otwierana strona Nowa karta.
+
+          Jeśli wybierzesz ustawienie „Przywróć ostatnią sesję”, ponownie wyświetlą się strony, które były otwarte w momencie ostatniego zamknięcia <ph name="PRODUCT_NAME" />, a sesja przeglądania zostanie przywrócona do stanu, w jakim została przerwana.
+          Wybranie tej opcji powoduje wyłączenie niektórych ustawień, które są zależne od sesji lub wykonują działania przy zamykaniu (np. czyszczenie danych przeglądania przy zamykaniu lub plików cookie tworzonych w obrębie sesji).
+
+          Jeśli wybierzesz ustawienie „Otwórz adresy URL z listy”, po włączeniu <ph name="PRODUCT_NAME" /> przez użytkownika wyświetlą się strony przeznaczone do otwarcia po uruchomieniu.
+
+          Gdy włączysz to ustawienie, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
+
+          Wyłączenie tego ustawienia jest równoznaczne z jego nieskonfigurowaniem. Użytkownik będzie więc mógł je zmieniać w <ph name="PRODUCT_NAME" />.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2536525645274582300">Użytkownik decyduje, czy włączyć usługi lokalizacyjne Google</translation>
@@ -757,6 +825,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           |created_time_millis| to sygnatura czasowa UTC utworzenia pozycji |overrides| – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą. Jest używana do ustalenia, czy ta pozycja nadal obowiązuje. Jeśli aktywny obecnie limit (na podstawie czasu użytkowania lub przedziału czasu) rozpoczął się już po utworzeniu tej pozycji, nie będzie ona stosowana. Nie będzie też używana, jeśli została utworzona przed ostatnią zmianą aktywnego limitu time_window_limit lub time_usage_window.
 
           Można wysłać wiele unieważnień – zastosowane zostanie najnowsze poprawne.</translation>
+<translation id="2905984450136807296">Czas przechowywania danych uwierzytelniania w pamięci podręcznej</translation>
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
 <translation id="2907992746861405243">Steruje tym, które drukarki określone w zasadzie <ph name="BULK_PRINTERS_POLICY" /> są dostępne dla użytkowników.
 
@@ -789,6 +858,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2987227569419001736">Kontrolowanie użycia interfejsu API Web Bluetooth</translation>
 <translation id="3016255526521614822">Aplikacje do robienia notatek dodane do białej listy, które są dozwolone na ekranie blokady w: <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Liczba kamieni milowych, dla której dozwolone jest cofnięcie wersji oprogramowania</translation>
+<translation id="3023572080620427845">URL pliku XML, który zawiera adresy URL do wczytania w alternatywnej przeglądarce.</translation>
 <translation id="3030000825273123558">Włącz raportowanie danych</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME" /></translation>
@@ -837,6 +907,12 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, mechanizmy szyfrowania DHE w TLS będą wyłączone. Można ją włączyć, by mechanizmy szyfrowania pozostały aktywne oraz w celu zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.
 
       Zalecamy wdrożenie na serwerach mechanizmów szyfrowania ECDHE. Jeśli nie ma takiej możliwości, upewnij się, że włączony jest mechanizm szyfrowania obsługujący wymianę kluczy RSA.</translation>
+<translation id="3117706142826400449">Kiedy ta zasada jest wyłączona, Czyszczenie Chrome nie może skanować systemu w poszukiwaniu niechcianego oprogramowania ani wykonywać czyszczenia. Ręczne uruchamianie Czyszczenia Chrome pod adresem chrome://settings/cleanup jest wyłączone.
+
+      Jeśli ta zasada jest włączona lub nieskonfigurowana, Czyszczenie Chrome okresowo skanuje system w poszukiwaniu niechcianego oprogramowania. Jeśli je znajdzie, zapyta użytkownika, czy chce je usunąć. Ręczne uruchamianie Czyszczenia Chrome pod adresem chrome://settings/cleanup jest włączone.
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
+<translation id="3165808775394012744">Te zasady umieszczono tu, by ułatwić ich usunięcie.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Szablon sieciowej nazwy hosta urządzenia</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
@@ -1526,6 +1602,19 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5058573563327660283">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
+<translation id="5076274878326940940">Umożliwia korzystanie z usług domyślnego dostawcy wyszukiwania.
+
+          Po włączeniu tego ustawienia domyślne wyszukiwanie odbywa się, gdy użytkownik wpisze w omniboksie tekst niebędący adresem URL.
+
+          Domyślnego dostawcę wyszukiwania możesz wskazać, konfigurując pozostałe zasady domyślnego wyszukiwania. Jeśli będą one nieskonfigurowane, domyślnego dostawcę będzie mógł wybrać użytkownik.
+
+          Po wyłączeniu tego ustawienia wpisanie przez użytkownika w omniboksie tekstu niebędącego adresem URL nie spowoduje wyszukiwania.
+
+          Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli go zmieniać ani zastępować w <ph name="PRODUCT_NAME" />.
+
+          Jeśli ta zasada pozostanie nieskonfigurowana, domyślny dostawca wyszukiwania będzie włączony, a użytkownik będzie mógł konfigurować listę dostawców wyszukiwania.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
 <translation id="5090209345759901501">Rozszerz ustawienie treści Flash na całą zawartość</translation>
 <translation id="5093540029655764852">Określa częstotliwość (w dniach), z którą klient zmienia hasło do swojego konta komputera. Hasło jest generowane losowo przez klienta i niewidoczne dla użytkownika.
@@ -1539,6 +1628,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Pamiętaj, że hasła mogą być starsze niż ustawiona liczba dni, gdy klient przez długi czas pozostawał w trybie offline.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
+<translation id="5113732180192599620">Ta zasada określa listę stron, które nigdy nie będą powodować zmiany przeglądarki.
+
+      Uwaga: elementy można dodawać do tej listy również za pomocą zasad <ph name="USE_IE_SITELIST_POLICY_NAME" /> i <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana, do listy nie są dodawane żadne strony.
+
+      Gdy zasada jest skonfigurowana, każda pozycja jest traktowana jako reguła, podobnie jak w przypadku zasady <ph name="URL_LIST_POLICY_NAME" />, ale działanie jest odwrotne – strony pasujące do reguł nie otwierają się w alternatywnej przeglądarce.
+
+      W przeciwieństwie do zasady <ph name="URL_LIST_POLICY_NAME" /> reguły są stosowane w obu kierunkach, czyli gdy dodatek do Internet Explorera jest zainstalowany i włączony, ta zasada określa też, czy <ph name="IE_PRODUCT_NAME" /> ma otwierać te adresy URL w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
 <translation id="5142301680741828703">Zawsze renderuj strony we wtyczce <ph name="PRODUCT_FRAME_NAME" /> według następujących wzorców adresów URL</translation>
@@ -1565,6 +1663,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli zasada ma ustawienie fałsz, to cykle życia kart są wyłączone i wszystkie karty będą cały czas działać normalnie.
 
       Jeśli zasada ma ustawienie prawda lub jest nieskonfigurowana, to cykle życia kart są włączone.</translation>
+<translation id="5207823059027350538">Służy do konfigurowania adresu URL domyślnej strony Nowa karta i blokowania użytkownikom możliwości jego zmiany.
+
+          Strona Nowa karta jest otwierana przy tworzeniu nowych kart (w tym otwieranych w nowych oknach).
+
+          Ta zasada nie określa, które strony mają być otwierane przy uruchamianiu. Regulują to zasady <ph name="RESTORE_ON_STARTUP_POLICY_NAME" />. Ta zasada ma jednak wpływ na strony główną i startową, jeśli mają one otwierać stronę Nowa karta.
+
+          Jeśli ta zasada jest nieskonfigurowana lub pozostaje pusta, używana jest domyślna strona Nowa karta.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5213038356678567351">Witryny, które nigdy nie będą powodować zmiany przeglądarki.</translation>
 <translation id="5219844027738217407">W przypadku aplikacji na Androida ta zasada wpływa tylko na mikrofon. Gdy jest ona włączona, mikrofon jest wyłączony dla wszystkich aplikacji na Androida bez żadnych wyjątków.</translation>
@@ -1675,6 +1782,17 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
 <translation id="5469143988693423708">Użytkownik może uruchamiać Crostini</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
+<translation id="5472668698895343595">Ta zasada kontroluje tworzenie listy stron otwieranych w alternatywnej przeglądarce.
+
+      Pamiętaj, że pozycje do tej listy można też dodawać, korzystając z zasad <ph name="USE_IE_SITELIST_POLICY_NAME" /> i <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Jeśli ta zasada jest nieskonfigurowana, żadne strony nie będą dodawane do listy.
+
+      Po skonfigurowaniu tej zasady każda pozycja jest traktowana jako reguła określająca możliwość otwarcia danej strony w alternatywnej przeglądarce. <ph name="PRODUCT_NAME" /> korzysta z tych reguł do ustalania, czy dany adres URL należy otworzyć w alternatywnej przeglądarce.
+
+      Gdy dodatek do Internet Explorera jest zainstalowany i włączony, Internet Explorer będzie otwierać strony niepasujące do reguł w <ph name="PRODUCT_NAME" />.
+
+      Jeśli reguły są sprzeczne, <ph name="PRODUCT_NAME" /> użyje najbardziej szczegółowej reguły.</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="547601067149622666">Blokuj reklamy na stronach zawierających uciążliwe reklamy</translation>
 <translation id="5499375345075963939">Ta zasada jest aktywna tylko w trybie sklepu.
@@ -1753,6 +1871,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       W przypadku wyłączenia lub nieskonfigurowania tego ustawienia użytkownicy będą mogli korzystać na urządzeniu ze wszystkich obsługiwanych typów pamięci zewnętrznych.</translation>
 <translation id="5697306356229823047">Raportuj użytkowników urządzenia</translation>
+<translation id="5699487516670033016">Służy do określenia czasu przechowywania (w godzinach) danych uwierzytelniania w pamięci podręcznej. Użycie pamięci podręcznej przyspiesza logowanie. Zawiera ona ogólne dane (nazwę grupy roboczej itp.) o powiązanych obszarach, np. o obszarach, które obszar komputera uznaje za zaufane. W pamięci podręcznej nie są przechowywane dane o użytkownikach ani o niepowiązanych obszarach. Ponowne uruchomienie urządzenia powoduje wyczyszczenie pamięci podręcznej.
+
+      Jeśli ta zasada jest nieskonfigurowana, przechowywane w pamięci podręcznej dane o uwierzytelnianiu mogą być używane przez maksymalnie 73 godziny.
+
+      Jeśli dla tej zasady wybrana jest wartość 0, przechowywanie danych uwierzytelniania w pamięci podręcznej jest wyłączone. Może to znacznie spowolnić logowanie powiązanych użytkowników, ponieważ dane o obszarach muszą być pobierane przy każdym logowaniu.
+
+      Pamiętaj, że dane o obszarach są przechowywane w pamięci podręcznej nawet w przypadku użytkowników tymczasowych. Jeśli śledzenie obszaru użytkowników tymczasowych ma być zablokowane, należy wyłączyć pamięć podręczną.</translation>
 <translation id="570062449808736508">Gdy dla tej zasady zostanie ustawiony ciąg niepusty, komponent WebView będzie odczytywać ograniczenia URL przekazywane przez dostawcę treści o określonej nazwie urzędowej.</translation>
 <translation id="5701714006401683963">Jeśli ta zasada ma wartość fałsz, zarządzana sesja gościa będzie działać tak, jak opisano na https://support.google.com/chrome/a/answer/3017014, czyli jako standardowa „sesja publiczna”.
 
@@ -1798,6 +1923,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli zasada jest wyłączona, pobieranie zaczyna się od razu bez pytania o miejsce zapisania pliku.
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
       </translation>
+<translation id="5832274826894536455">Wycofane zasady</translation>
 <translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
@@ -1945,7 +2071,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6097601282776163274">Włącz zbieranie zanonimizowanych danych z URL-em jako kluczem</translation>
 <translation id="6099853574908182288">Domyślny tryb drukowania kolorów</translation>
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
-<translation id="6114416803310251055">przestarzała</translation>
+<translation id="6114416803310251055">wycofana</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="614662973812186053">Ta zasada kontroluje też zbieranie danych o użytkowaniu i danych diagnostycznych Androida.</translation>
@@ -2045,6 +2171,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli ta zasada ma wartość Fałsz, użytkownicy nie są zgłaszani.</translation>
 <translation id="6394350458541421998">Ta zasada została wycofana w <ph name="PRODUCT_OS_NAME" /> w wersji 29. Zamiast niej użyj zasady PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Wyloguj użytkownika</translation>
+<translation id="6406448383934634215">Umożliwia określenie listy otwieranych adresów URL, jeśli jako działanie po uruchomieniu wybrano opcję „Otwórz adresy URL z listy”. Jeśli ta zasada jest nieskonfigurowana, po uruchomieniu przeglądarki nie otworzą się żadne adresy URL.
+
+          Ta zasada działa tylko wtedy, gdy dla zasady „RestoreOnStartup” wybrane jest ustawienie „RestoreOnStartupIsURLs”.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="6426205278746959912">Nie można wymusić używania serwera proxy przez aplikacje na Androida. Mają one dostęp do niektórych jego ustawień i mogą uwzględniać je dobrowolnie:
 
           Jeśli wybierzesz ustawienie, by nigdy nie używać serwera proxy, aplikacje na Androida uzyskają informację o braku skonfigurowanego serwera proxy.
@@ -2060,7 +2191,26 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="645425387487868471">Włącz wymuszone logowanie w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Włącz Autouzupełnianie adresów</translation>
 <translation id="6473623140202114570">Skonfiguruj listę domen, w których Bezpieczne przeglądanie nie wywołuje ostrzeżeń.</translation>
+<translation id="6488627892044759800">Służy do konfigurowania typu domyślnej strony głównej w <ph name="PRODUCT_NAME" /> i blokowania użytkownikom możliwości zmiany tych ustawień. Strona główna może być albo stroną o wpisanym przez Ciebie adresie URL, albo stroną Nowa karta.
+
+          Jeśli włączysz to ustawienie, stroną główną będzie zawsze strona Nowa karta, a URL strony głównej będzie ignorowany.
+
+          Jeśli wyłączysz to ustawienie, stroną główną użytkownika nie będzie nigdy strona Nowa karta, chyba że wybierzesz dla strony głównej adres „chrome://newtab”.
+
+          Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić typu strony głównej w <ph name="PRODUCT_NAME" />.
+
+          Jeśli ta zasada pozostanie nieskonfigurowana, użytkownicy będą mogli samodzielnie wybrać, czy stroną główną ma być strona Nowa karta.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="6491139795995924304">Włącz Bluetooth na urządzeniu</translation>
+<translation id="6495328383950074966">Służy do konfigurowania listy domen uznawanych za zaufane przez funkcję Bezpieczne przeglądanie. Oznacza to, że:
+      Bezpieczne przeglądanie nie będzie sprawdzać, czy dane zasoby są niebezpieczne (np. phishing oraz złośliwe lub niechciane oprogramowanie) na stronach, których adresy URL należą do tych domen.
+      Udostępniana przez Bezpieczne przeglądanie usługa ochrony pobierania nie będzie sprawdzać pobieranych plików pochodzących z tych domen.
+      Udostępniana przez Bezpieczne przeglądanie usługa ochrony haseł nie będzie sprawdzać, czy hasło jest używane na innych stronach, jeśli adresy URL będą pasować do tych domen.
+
+      Po włączeniu tego ustawienia Bezpieczne przeglądanie będzie uznawać te domeny za zaufane.
+      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, do wszystkich zasobów jest stosowany domyślny poziom ochrony funkcji Bezpieczne przeglądanie.
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="6525955212636890608">Jeśli włączysz to ustawienie, będzie ono miało wpływ na te strony, dla których w ustawieniach treści dozwolone są treści Flash (przez użytkownika albo przez zasady przedsiębiorstwa). Uruchamiane będą wszystkie umieszczone na tych stronach treści Flash, w tym zarówno pochodzące z innych źródeł, jak i drobne.
 
@@ -2174,6 +2324,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli zasada jest nieskonfigurowana lub ciąg powstały po podstawieniu wartości za zmienne nie jest prawidłową nazwą hosta, żądanie DHCP nie będzie zawierać nazwy hosta. </translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
+<translation id="6837480141980366278">Określa, czy <ph name="PRODUCT_NAME" /> używa wbudowanego klienta DNS.
+
+      Jeśli dla tej opcji wybrane jest ustawienie Prawda, wbudowany klient DNS będzie używany, o ile jest dostępny.
+
+      Jeśli dla tej zasady wybrane jest ustawienie Fałsz, wbudowany klient DNS nigdy nie będzie używany.
+
+      Jeśli ta zasada jest nieskonfigurowana, wbudowany klient DNS będzie domyślnie włączony w MacOS, Androidzie (jeśli nie włączono ani prywatnego serwera DNS, ani sieci VPN) i Chrome OS. Poza tym użytkownicy będą mogli włączać i wyłączać wbudowanego klienta DNS na stronie chrome://flags lub za pomocą flagi wiersza poleceń.</translation>
 <translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
 
       Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Ma to miejsce podczas pierwszego użycia funkcji drukowania w danym profilu.
@@ -2205,6 +2362,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Typ <ph name="PRINTER_TYPE_CLOUD" /> to drukarki połączone z <ph name="CLOUD_PRINT_NAME" />, pozostałe to typ <ph name="PRINTER_TYPE_LOCAL" />.
       Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości, np. jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
       Wyrażenia regularne muszą mieć składnię JavaScript RegExp. Rozróżniana jest wielkość liter.</translation>
+<translation id="6843296367238757293">Ta zasada jest wycofana. Nie zalecamy jej używania. Więcej informacji: https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ta zasada została usunięta w <ph name="PRODUCT_NAME" /> 68 i zastąpiona zasadą <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta zasada została wycofana i usunięta w M66, ponieważ była używana tylko do testów wewnętrznych i obniżała bezpieczeństwo.
 
@@ -2366,6 +2524,17 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Automatyczne odtwarzanie jest dozwolone tylko w domenach bezpośrednio wskazanych w zasadzie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jeśli chcesz zezwolić na automatyczne odtwarzanie we wszystkich witrynach, dodaj do tej listy http://* i https://*.
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
+<translation id="7229876938563670511">Służy do konfigurowania adresu URL domyślnej strony głównej w <ph name="PRODUCT_NAME" /> i blokuje użytkownikom możliwość jego zmiany.
+
+          Strona główna otwiera się po kliknięciu przycisku strony głównej. Listę stron otwieranych po uruchomieniu określają zasady RestoreOnStartup.
+
+          Typ strony głównej możesz określić, wpisując tu URL lub wybierając stronę Nowa karta. Jeśli wybierzesz stronę Nowa karta, ta zasada nie będzie działać.
+
+          Gdy to ustawienie jest włączone, użytkownicy nie mogą zmienić adresu URL strony głównej w <ph name="PRODUCT_NAME" />. Mogą jednak nadal wybrać stronę Nowa karta na stronę główną.
+
+          Gdy ta zasada jest nieskonfigurowana, użytkownicy mogą samodzielnie wybrać stronę główną, jeśli zasada HomepageIsNewTabPage także jest nieskonfigurowana.
+
+          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="7229975860249300121">Zawiera wyrażenie regularne określające, które konta Google można ustawić jako konta podstawowe przeglądarki w <ph name="PRODUCT_NAME" /> (czyli konta, które można wybrać podczas włączania synchronizacji).
 
       Gdy użytkownik spróbuje ustawić konto podstawowe przeglądarki o nazwie, która nie pasuje do tego wzorca, wyświetli się odpowiedni komunikat o błędzie.
@@ -2698,6 +2867,17 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="793473937901685727">Ustaw dostępność certyfikatu dla aplikacji ARC</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="7941975817681987555">Nie przewiduj działań w sieci dla żadnego połączenia sieciowego</translation>
+<translation id="7952002811557367112">Ta zasada uniemożliwia użytkownikom otwieranie stron internetowych, których adresy URL znajdują się na czarnej liście. Czarna lista zawiera wykaz wzorców adresów URL określających, które adresy URL będą blokowane.
+
+      Wzorzec adresu URL musi być sformatowany zgodnie z wytycznymi podanymi na stronie https://www.chromium.org/administrators/url-blacklist-filter-format
+
+      Wyjątki można definiować za pomocą białej listy adresów URL. Listy w tych zasadach mogą zawierać maksymalnie 1000 pozycji. Dalsze pozycje będą ignorowane.
+
+      Pamiętaj, że nie zalecamy blokowania wewnętrznych adresów URL „chrome://*” – mogłoby to powodować nieoczekiwane błędy.
+
+      Pamiętaj też, że ta zasada nie blokuje dynamicznego aktualizowania strony za pomocą JavaScriptu. Jeśli np. zablokujesz stronę „example.com/abc”, użytkownicy nadal będą mogli odwiedzić witrynę „example.com” i kliknąć link do strony „example.com/abc”. Będą więc widzieć zawartość tej strony, dopóki jej nie odświeżą.
+
+      Jeśli ta zasada pozostanie nieskonfigurowana, przeglądarka nie będzie blokować żadnego adresu URL.</translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7961779417826583251">Wyłącz egzekwowanie protokołu Certificate Transparency dla starych urzędów certyfikacji z listy</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
@@ -2872,6 +3052,12 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8367209241899435947">Włącz Czyszczenie Chrome w Windows</translation>
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
 <translation id="8371178326720637170">Umożliwia zarządzanym rozszerzeniom używanie Enterprise Hardware Platform API</translation>
+<translation id="8377433219608936819">
+      Po wybraniu dla tej zasady wartości Prawda zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi komputera, gdy z nimi kolidują.
+      Jeśli ta zasada ma wartość Fałsz lub jest nieskonfigurowana, zasady dotyczące komputera mają pierwszeństwo przed zasadami dotyczącymi chmury, gdy z nimi kolidują
+      Więcej informacji o priorytetach zasad znajdziesz na stronie https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8390049129576938611">Wyłącza wewnętrzną przeglądarkę plików PDF w <ph name="PRODUCT_NAME" />. Pliki PDF będą traktowane jako pobrane i użytkownik będzie mógł je otwierać w aplikacji domyślnej.
@@ -3038,6 +3224,12 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8758831693895931466">Włącz obowiązkową rejestrację w zarządzaniu przez chmurę</translation>
 <translation id="8759829385824155666">Dozwolone typy szyfrowania Kerberos</translation>
 <translation id="8764119899999036911">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos jest tworzona na podstawie kanonicznej nazwy DNS, czy też wpisanej, oryginalnej nazwy. Włączenie tego ustawienia powoduje pominięcie wyszukiwania rekordu CNAME i użycie wprowadzonej nazwy serwera. Jeśli wyłączysz ustawienie lub nie skonfigurujesz go, nazwa kanoniczna serwera będzie określana za pomocą wyszukiwania rekordu CNAME.</translation>
+<translation id="8765776988041674792">Służy do konfigurowania adresu URL (tylko schematy HTTP i HTTPS) strony umożliwiającej zmianę hasła. Po wyświetleniu ostrzeżenia w przeglądarce usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło.
+      Jeśli <ph name="PRODUCT_NAME" /> ma prawidłowo rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, strona powinna być zgodna z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
+
+      Jeśli to ustawienie jest włączone, po wyświetleniu ostrzeżenia w przeglądarce usługa ochrony haseł kieruje użytkowników na stronę pod tym adresem URL, by zmienili hasło.
+      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł kieruje użytkowników na stronę https://myaccounts.google.com, by zmienili hasło.
+      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="8782750230688364867">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy urządzenie działa w trybie prezentacji.
 
           Ustawienie tej zasady pozwala określić wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy urządzenie działa w trybie prezentacji. Skalowanie opóźnienia przyciemnienia powoduje, że opóźnienia wyłączenia i zablokowania ekranu oraz opóźnienie bezczynności są tak dostosowywane, by zachować pierwotnie ustawione odstępy od opóźnienia przyciemnienia ekranu.

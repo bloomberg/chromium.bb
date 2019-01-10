@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
+<translation id="1999763610967697511">Vedä ja pudota</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
 <translation id="2016340657076538683">Kirjoita viesti</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Päivitys saatavilla</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> on hallinnoitu istunto, jota hallinnoi <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Yhdistetty: <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Ykköspainikkeen klikkaus</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="2484513351006226581">Paina <ph name="KEYBOARD_SHORTCUT" /> vaihtaaksesi näppäimistöasettelua.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3255483164551725916">Mitä osaat tehdä?</translation>
 <translation id="3294437725009624529">Vieras</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> voi silti kirjautua sisään myöhemmin.</translation>
 <translation id="332587331255250389">Vaihda paristo.</translation>
 <translation id="3351879221545518001">Suoratoistat tällä hetkellä näyttöä.</translation>
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
+<translation id="485592688953820832">Ei toimenpiteitä (keskeytä)</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4890187583552566966">Järjestelmänvalvoja on poistanut Google Assistantin käytöstä.</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
@@ -422,9 +426,12 @@
 <translation id="8113423164597455979">Käytössä kaikissa sovelluksissa</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
 <translation id="813913629614996137">Käynnistetään…</translation>
+<translation id="8142441511840089262">Kaksoisklikkaus</translation>
 <translation id="8142699993796781067">Yksityinen verkko</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> käytössä</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
 <translation id="8192202700944119416">Ilmoitukset on piilotettu.</translation>
+<translation id="8203795194971602413">Klikkaus kakkospainikkeella</translation>
 <translation id="8236042855478648955">Tauon paikka</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8297006494302853456">Heikko</translation>
@@ -469,7 +476,6 @@
 <translation id="8874184842967597500">Ei yhdistetty</translation>
 <translation id="8877788021141246043">Aseta muistutus</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
-<translation id="8898978413391960553">00.00 s</translation>
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>

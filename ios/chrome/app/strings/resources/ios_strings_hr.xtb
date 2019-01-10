@@ -21,7 +21,6 @@
 <translation id="122699739164161391">Zatvori sve kartice</translation>
 <translation id="1254117744268754948">Odabir mape</translation>
 <translation id="1265739287306757398">Saznajte kako</translation>
-<translation id="127138278192656016">Upotreba sinkronizacije i svih usluga</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promijenili nadređenu mapu.</translation>
@@ -46,6 +45,7 @@
 <translation id="1605658421715042784">Kopiraj sliku</translation>
 <translation id="1612730193129642006">Prikaz rešetke kartice</translation>
 <translation id="1644574205037202324">Povijest</translation>
+<translation id="1650222530560417226">Dodirnite gumb "Pokreni bilježenje" za prikupljanje budućih zapisnika konzole JavaScript i pogrešaka sa svih kartica. Zapisnici će se prikupljati (i pohranjivati samo u memoriju) dok se ne zatvori ova stranica ili dodirne "Prekini bilježenje".</translation>
 <translation id="1657011748321897393">Dijeljenje nije uspjelo jer niste povezani s mrežom.</translation>
 <translation id="165877110639533037">Nema otvorenih kartica</translation>
 <translation id="168715261339224929">Da bi se vaše oznake prikazale na svim vašim uređajima, uključite sinkronizaciju.</translation>
@@ -54,13 +54,13 @@
 <translation id="1700629756560807968">Broj odabranih oznaka: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dodirnite dvaput da biste instalirali.</translation>
 <translation id="1746815479209538200">Da biste pregledavali web, dodajte novu karticu.</translation>
-<translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1752547299766512813">Spremi zaporke</translation>
 <translation id="1753905327828125965">Najposjećenije</translation>
 <translation id="1809939268435598390">Izbriši mapu</translation>
 <translation id="1813414402673211292">Brisanje podataka o pregledavanju</translation>
 <translation id="1820259098641718022">Dodano na popis za čitanje</translation>
 <translation id="1821253160463689938">Upotrebljava kolačiće za pamćenje vaših postavki, čak i ako ne posjetite te stranice</translation>
+<translation id="1828824471510190776">Predloži zaporku...</translation>
 <translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1886928167269928266">Od početka</translation>
 <translation id="1911619930368729126">Prenesi na Google disk</translation>
@@ -172,6 +172,7 @@
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
+<translation id="3771149149411027381">Pretraži kopirani tekst</translation>
 <translation id="3779810277399252432">Nema internetske veze.</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
 <translation id="3789841737615482174">Instaliraj</translation>
@@ -196,6 +197,7 @@
 <translation id="4112644173421521737">Pretraži</translation>
 <translation id="4121993058175073134">Za slanje neto izvezenih datoteka konfigurirajte svoj račun e-pošte u aplikaciji Postavke.</translation>
 <translation id="4124987746317609294">Vremenski raspon</translation>
+<translation id="4155190233692914060">Otvori kopiranu vezu</translation>
 <translation id="4172051516777682613">Uvijek prikaži</translation>
 <translation id="418156467088430727">Prikaži offline verziju na novoj kartici</translation>
 <translation id="4237682350741091554">Sinkronizacijom Chromea i prilagodbom možete upravljati na stranici <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" /></translation>
@@ -238,13 +240,11 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4854345657858711387">Postavite šifru zaporke</translation>
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4881695831933465202">Otvori</translation>
-<translation id="4882831918239250449">Odredite na koji će se način vaša povijest pregledavanja upotrebljavati za prilagodbu Pretraživanja, oglasa i drugog</translation>
 <translation id="4895709476292058519">Promijenite račun</translation>
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
 <translation id="4979397965658815378">Prijavite se Google računom da biste pristupali svojim oznakama, zaporkama, povijesti i ostalim postavkama na svim svojim uređajima</translation>
-<translation id="5004416275253351869">Kontrole aktivnosti na Googleu</translation>
 <translation id="5005498671520578047">Kopiranje zaporke</translation>
 <translation id="5010803260590204777">Otvorite anonimnu karticu da biste pregledavali web u privatnosti.</translation>
 <translation id="5011684439661633295">Pozdrav, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -257,7 +257,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5186185447130319458">Privatno</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5215116848420601511">Načini plaćanja i adrese s Google Paya</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
 <translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Prikaži</translation>

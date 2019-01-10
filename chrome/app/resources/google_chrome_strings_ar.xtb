@@ -204,6 +204,7 @@
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="686561893457936865">‏إمكانية استخدام Chrome في كل مكان</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>
+<translation id="6943584222992551122">‏سيتم حذف بيانات تصفُّح هذا المستخدم من هذا الجهاز. لاسترداد البيانات، يُرجى تسجيل الدخول إلى Chrome بصفتك <ph name="USER_EMAIL" />.</translation>
 <translation id="6964107240822114422">{0,plural, =0{‏يتوفر تحديث لـ Chrome}=1{‏يتوفر تحديث واحد لـ Chrome}two{‏يتوفر تحديث لـ Chrome منذ يومين (#)}few{‏يتوفر تحديث لـ Chrome منذ # أيام}many{‏يتوفر تحديث لـ Chrome منذ # يومًا}other{‏يتوفر تحديث لـ Chrome منذ # يوم}}</translation>
 <translation id="6967962315388095737">‏قاعدة الوارد إلى الإصدار التجريبي من Google Chrome للسماح بحركة مرور mDNS.</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>

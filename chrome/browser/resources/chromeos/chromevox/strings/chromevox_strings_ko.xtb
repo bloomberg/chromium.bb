@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">팁</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="135978014023467274">ChromeVox 63으로 업데이트되었습니다.</translation>
+<translation id="1360699455582016846">라우팅 키 <ph name="ROUTING_KEY_NUMBER" /> 아래에서 항목을 클릭합니다.</translation>
 <translation id="136718599399906424">다음 행</translation>
 <translation id="1377925789329510816">마지막 제목입니다. Search+H를 눌러 이 페이지의 첫 번째 제목으로 이동하거나 Search+Shift+H를 눌러 두 번째 제목으로 이동하세요.</translation>
 <translation id="1383876407941801731">검색</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">제목 목록 표시</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" />코드</translation>
 <translation id="1954623340234317532">해당 연도의 주 컨트롤</translation>
 <translation id="1964135212174907577">다음 객체</translation>
 <translation id="1969092762068865084">7월</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">탐색</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{공백}other{공백 #개}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> 입력함</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> 붙여넣기</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, 탭</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">방문한 링크입니다.</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">제목 없음</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" />에서 <ph name="V2" />까지</translation>
+<translation id="3490765818161916458">목록 그리드</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{오른쪽 꺾음 괄호}other{오른쪽 꺾음 괄호 #개}}</translation>
 <translation id="3493915602752813531">다음 앵커가 없습니다.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{물음표}other{물음표 #개}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{탈자 기호}other{탈자 기호 #개}}</translation>
 <translation id="352577523970648069">수정할 수 있는 텍스트 입력란</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> 잘라내기</translation>
 <translation id="3549680091535286226">일시적으로 음성을 중지하려면 두 손가락으로 탭하세요.</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, 체크박스 선택 안 됨</translation>
 <translation id="3589661172894441357">용어설명</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">읽기 전용</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">메뉴</translation>
+<translation id="3907138069015388678">목록 그리드</translation>
 <translation id="3909320334364316587">이전 수준 6 제목</translation>
 <translation id="3914173277599553213">필수</translation>
 <translation id="3914732343065571127">ChromeVox 명령어 참조</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">공백</translation>
 <translation id="6132506484792346370">목록 상자 또는 콤보 상자</translation>
 <translation id="6142308968191113180">제목 4</translation>
+<translation id="6158882249329863701"><ph name="TABLECELLROWINDEX" />행 <ph name="TABLECELLCOLUMNINDEX" />열</translation>
 <translation id="6164829606128959761">미터</translation>
 <translation id="6169420925157477918">자세한 설명이 있는 이미지</translation>
 <translation id="6186305613600865047">페이지 끝으로 이동</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">누름</translation>
 <translation id="6322856989298155004">사운드</translation>
 <translation id="6324551002951139333">문법 오류 발견됨</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> 복사</translation>
 <translation id="6348657800373377022">콤보 상자</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{글머리 기호}other{글머리 기호 #개}}</translation>
 <translation id="6355910664415701303">이전 목록 항목이 없습니다.</translation>
@@ -960,6 +968,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">특수키</translation>
 <translation id="8943175951035496220">오른쪽에 셀이 없습니다.</translation>
+<translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" />행 <ph name="TABLECELLCOLUMNINDEX" />열</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">저장 안함</translation>
 <translation id="900114243503212879">file</translation>

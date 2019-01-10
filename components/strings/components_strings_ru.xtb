@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">неизвестное имя</translation>
 <translation id="1050038467049342496">Закройте другие приложения.</translation>
 <translation id="1055184225775184556">&amp;Отменить добавление</translation>
+<translation id="1058479211578257048">Сохранение карт…</translation>
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1066396345355680611">Вы можете потерять доступ к защищенному контенту на <ph name="SITE" /> и других сайтах.</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
@@ -36,6 +37,7 @@
 <translation id="1173894706177603556">Переименовать</translation>
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1197088940767939838">Оранжевый</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1201895884277373915">Другие записи по этому сайту</translation>
 <translation id="1206967143813997005">Начальная подпись недействительна</translation>
@@ -100,6 +102,7 @@
 <translation id="153384715582417236">Пока это всё</translation>
 <translation id="154408704832528245">Выбрать адрес доставки</translation>
 <translation id="1549470594296187301">Для использования этой функции необходимо включить JavaScript.</translation>
+<translation id="1555130319947370107">Синий</translation>
 <translation id="1559528461873125649">Данный файл или каталог не существует</translation>
 <translation id="1559572115229829303">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
@@ -108,6 +111,7 @@
 <translation id="1583429793053364125">При загрузке этой страницы возникли неполадки.</translation>
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
 <translation id="1594030484168838125">Выбрать</translation>
+<translation id="161042844686301425">Голубой</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1639239467298939599">Загрузка</translation>
@@ -173,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 вариант}one{# вариант}few{# варианта}many{# вариантов}other{# варианта}}</translation>
+<translation id="2068663545051464999">Идентификатор загруженного отчета о сбоях: <ph name="CRASH_ID" />. Локальный идентификатор сбоя: <ph name="CRASH_LOCAL_ID" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="20817612488360358">Включены системные настройки прокси-сервера, но при этом его конфигурация задана явным образом.</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
@@ -271,6 +276,7 @@
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2712173769900027643">Попросить разрешения</translation>
+<translation id="2713444072780614174">Белый</translation>
 <translation id="2720342946869265578">Мое окружение</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
@@ -391,6 +397,8 @@
 <translation id="3479539252931486093">Этот сайт не должен быть заблокирован? <ph name="BEGIN_LINK" />Сообщите нам об этом<ph name="END_LINK" />.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3484560055331845446">Вы можете потерять доступ к аккаунту Google. Рекомендуем немедленно сменить пароль. После этого потребуется снова войти в аккаунт.</translation>
+<translation id="3495081129428749620">Найти на странице
+    "<ph name="PAGE_TITLE" />"</translation>
 <translation id="3498215018399854026">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="3528171143076753409">Сертификат сервера не является доверенным.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Как минимум 1 запись на синхронизируемых устройствах}=1{1 запись (не считая данных на синхронизируемых устройствах)}one{# запись (не считая данных на синхронизируемых устройствах)}few{# записи (не считая данных на синхронизируемых устройствах)}many{# записей (не считая данных на синхронизируемых устройствах)}other{# записей (не считая данных на синхронизируемых устройствах)}}</translation>
@@ -564,6 +572,7 @@
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4736825316280949806">Перезапустите Chromium.</translation>
 <translation id="473775607612524610">Обновить</translation>
+<translation id="4738601419177586157">Подсказка при поиске "<ph name="TEXT" />"</translation>
 <translation id="4742407542027196863">Управление паролями</translation>
 <translation id="4744603770635761495">Путь к исполняемому файлу</translation>
 <translation id="4750917950439032686">Информация, которую вы сообщаете этому сайту (например, пароли и номера банковских карт), защищена.</translation>
@@ -584,6 +593,7 @@
 <translation id="4854362297993841467">Этот способ доставки недоступен. Выберите другой.</translation>
 <translation id="4858792381671956233">Запрос на просмотр сайта отправлен вашим родителям</translation>
 <translation id="4876305945144899064">Имя пользователя не указано</translation>
+<translation id="4877422487531841831">Поиск по запросу "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Автоматически (по умолчанию)</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4881695831933465202">Открыть</translation>
@@ -602,6 +612,7 @@
 <translation id="4989163558385430922">Показать все</translation>
 <translation id="4989809363548539747">Плагин не поддерживается</translation>
 <translation id="5002932099480077015">Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
+<translation id="5014174725590676422">Показан экран первого запуска Google Ассистента в Chrome</translation>
 <translation id="5015510746216210676">Имя компьютера:</translation>
 <translation id="5018422839182700155">Не удалось открыть страницу</translation>
 <translation id="5019198164206649151">Данные в хранилище повреждены</translation>
@@ -609,6 +620,7 @@
 <translation id="5029568752722684782">Удалить данные</translation>
 <translation id="503069730517007720">Необходимый корневой сертификат для программы "<ph name="SOFTWARE_NAME" />" не установлен. Чтобы устранить проблему, попросите системного администратора ознакомиться с инструкциями по настройке программы "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
+<translation id="5034369478845443529">Локальный идентификатор сбоя: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
 <translation id="5045550434625856497">Неправильный пароль</translation>
@@ -713,6 +725,7 @@
 <translation id="5720705177508910913">Текущий пользователь</translation>
 <translation id="5730040223043577876">Chrome рекомендует сбросить пароль, если вы использовали его на других сайтах.</translation>
 <translation id="5732392974455271431">Для разблокировки обратитесь к родителям.</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Сохраните карту в аккаунте Google}one{Сохраните карты в аккаунте Google}few{Сохраните карты в аккаунте Google}many{Сохраните карты в аккаунте Google}other{Сохраните карты в аккаунте Google}}</translation>
 <translation id="5763042198335101085">Укажите действительный адрес электронной почты.</translation>
 <translation id="5765072501007116331">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
 <translation id="5770114862687765385">Файл поврежден. Чтобы восстановить сеанс, нажмите кнопку "Сбросить".</translation>
@@ -732,6 +745,7 @@
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5887400589839399685">Карта сохранена</translation>
 <translation id="5893752035575986141">Принимаются кредитные карты.</translation>
+<translation id="5901630391730855834">Желтый</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5921639886840618607">Сохранить карту в аккаунте Google?</translation>
@@ -750,6 +764,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Год</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}few{Страница #}many{Страница #}other{Страница #}}</translation>
+<translation id="6017514345406065928">Зеленый</translation>
 <translation id="6017850046339264347">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить вредоносные приложения, маскирующиеся под безопасные программы или собирающие данные, по которым вас можно отследить. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (данные синхронизируются)</translation>
 <translation id="6027201098523975773">Введите имя.</translation>
@@ -969,6 +984,7 @@
 <translation id="7564049878696755256">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="7567204685887185387">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности мог быть выдан обманным путем. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="7569952961197462199">Удалить кредитную карту из Chrome?</translation>
+<translation id="7569983096843329377">Черный</translation>
 <translation id="7578104083680115302">Быстро оплачивайте покупки на сайтах и в приложениях с помощью карт, сохраненных в Google Payments. Настройка будет действовать на всех ваших устройствах.</translation>
 <translation id="7592362899630581445">Сертификат сервера не соответствует ограничениям в отношении имен.</translation>
 <translation id="7598391785903975535">Менее <ph name="UPPER_ESTIMATE" /></translation>
@@ -1017,6 +1033,7 @@
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />)</translation>
 <translation id="7818867226424560206">Управление правилами</translation>
 <translation id="782886543891417279">Возможно, вам нужно перейти на страницу входа сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{Нет}=1{1 приложение (<ph name="EXAMPLE_APP_1" />)}=2{2 приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# приложение (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}few{# приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}many{# приложений (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{# приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Закрыть сайт?</translation>
@@ -1028,6 +1045,7 @@
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Сертификат сервера еще не действителен.</translation>
+<translation id="7942349550061667556">Красный</translation>
 <translation id="7947285636476623132">Проверьте год в сроке действия карты и повторите попытку</translation>
 <translation id="7951415247503192394">(32 бит)</translation>
 <translation id="7956713633345437162">Закладки на мобильном</translation>
@@ -1155,7 +1173,6 @@
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
-<translation id="8892964541482452187">Кнопка переключения между вкладками. Нажмите Ввод, чтобы переключиться на эту вкладку.</translation>
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>
 <translation id="8932102934695377596">Часы отстают</translation>
@@ -1186,12 +1203,14 @@
 <translation id="9049981332609050619">Вы попытались открыть <ph name="DOMAIN" />, однако представленный сервером сертификат недействителен.</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9065203028668620118">Изменить</translation>
+<translation id="9065745800631924235">Поисковый запрос "<ph name="TEXT" />" из истории</translation>
 <translation id="9069693763241529744">Заблокировано расширением</translation>
 <translation id="9076283476770535406">Может содержать контент для взрослых</translation>
 <translation id="9078964945751709336">Информации недостаточно</translation>
 <translation id="9080712759204168376">Информация о заказе</translation>
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="9106062320799175032">Добавьте платежный адрес</translation>
+<translation id="9110718169272311511">Google Ассистент находится в нижней части экрана Chrome</translation>
 <translation id="9114524666733003316">Подтверждение карты...</translation>
 <translation id="9128870381267983090">Подключитесь к сети</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>

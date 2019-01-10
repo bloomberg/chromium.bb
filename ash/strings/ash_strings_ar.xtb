@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
+<translation id="1999763610967697511">السحب والإفلات</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">كتابة رسالة</translation>
 <translation id="2050339315714019657">رأسي</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> هي جلسة مُدارة بواسطة <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">تم الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">الاشعارات</translation>
 <translation id="2484513351006226581">انقر على <ph name="KEYBOARD_SHORTCUT" /> لتبديل تنسيق لوحة المفاتيح.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">ليست هناك شبكة جوّال متاحة</translation>
 <translation id="3255483164551725916">ما الإجراء المطلوب؟</translation>
 <translation id="3294437725009624529">ضيف</translation>
+<translation id="3308453408813785101">سيظل بإمكان <ph name="USER_EMAIL_ADDRESS" /> تسجيل الدخول لاحقًا.</translation>
 <translation id="332587331255250389">يُرجى استبدال البطارية</translation>
 <translation id="3351879221545518001">أنت حاليًا تبث محتوى الشاشة.</translation>
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
+<translation id="485592688953820832">عدم اتخاذ أي إجراء (إيقاف مؤقَّت)</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
 <translation id="4890187583552566966">‏تم إيقاف مساعد Google من قِبل المشرف.</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">الإشعارات مُفعَّلة، جميع التطبيقات</translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
+<translation id="8142441511840089262">النقر مرّتين</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
+<translation id="8167567890448493835">استخدام <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
 <translation id="8192202700944119416">يتم إخفاء الإشعارات.</translation>
+<translation id="8203795194971602413">النقر بالزر الأيمن</translation>
 <translation id="8236042855478648955">حان وقت الراحة</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8297006494302853456">ضعيفة</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">غير متصل</translation>
 <translation id="8877788021141246043">ضبط تذكير</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
-<translation id="8898978413391960553">00:00 ثانية</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>

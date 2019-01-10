@@ -37,6 +37,7 @@
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="1181037720776840403">删除</translation>
+<translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一页</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
 <translation id="1206967143813997005">初始签名不正确</translation>
@@ -101,6 +102,7 @@
 <translation id="153384715582417236">暂无新内容</translation>
 <translation id="154408704832528245">选择速递地址</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
+<translation id="1555130319947370107">蓝色</translation>
 <translation id="1559528461873125649">不存在此类文件或目录</translation>
 <translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
 
@@ -109,6 +111,7 @@
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
 <translation id="1594030484168838125">选择</translation>
+<translation id="161042844686301425">青色</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1639239467298939599">正在加载</translation>
@@ -174,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
+<translation id="2068663545051464999">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地上下文：<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
@@ -272,6 +276,7 @@
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2712173769900027643">请求批准</translation>
+<translation id="2713444072780614174">白色</translation>
 <translation id="2720342946869265578">附近</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
@@ -391,6 +396,7 @@
 <translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3484560055331845446">您可能会无法再访问自己的 Google 帐号。Chrome 建议您立即更改密码。系统会要求您登录。</translation>
+<translation id="3495081129428749620">在网页“<ph name="PAGE_TITLE" />”中查找</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
@@ -563,6 +569,7 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4736825316280949806">重新启动 Chromium</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4738601419177586157"><ph name="TEXT" />搜索建议</translation>
 <translation id="4742407542027196863">管理密码…</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4750917950439032686">您发送给这个网站的信息（例如密码或信用卡号）不会外泄。</translation>
@@ -583,6 +590,7 @@
 <translation id="4854362297993841467">该递送方式不可用。请另选一种方式。</translation>
 <translation id="4858792381671956233">您已向父母发送请求，询问他们是否允许您访问此网站</translation>
 <translation id="4876305945144899064">无用户名</translation>
+<translation id="4877422487531841831">搜索<ph name="TEXT" /></translation>
 <translation id="4879491255372875719">自动（默认）</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="4881695831933465202">打开</translation>
@@ -609,6 +617,7 @@
 <translation id="5029568752722684782">清除副本</translation>
 <translation id="503069730517007720">必须为“<ph name="SOFTWARE_NAME" />”安装根证书，但您尚未安装该证书。您的 IT 管理员应仔细查看“<ph name="SOFTWARE_NAME" />”的配置说明，以解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
+<translation id="5034369478845443529">本地上下文：<ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5045550434625856497">密码不正确</translation>
@@ -733,6 +742,7 @@
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5887400589839399685">已保存卡片</translation>
 <translation id="5893752035575986141">接受信用卡。</translation>
+<translation id="5901630391730855834">黄色</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
 <translation id="5921639886840618607">将银行卡信息保存到 Google 帐号中？</translation>
@@ -751,6 +761,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{第 1 页}other{第 # 页}}</translation>
+<translation id="6017514345406065928">绿色</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会安装欺骗性应用来冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" />（已同步）</translation>
 <translation id="6027201098523975773">请输入名称</translation>
@@ -969,6 +980,7 @@
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
+<translation id="7569983096843329377">黑色</translation>
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="7598391785903975535">少于 <ph name="UPPER_ESTIMATE" /></translation>
@@ -1017,6 +1029,7 @@
 <translation id="7815407501681723534">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" /></translation>
 <translation id="7818867226424560206">政策管理</translation>
 <translation id="782886543891417279">您要使用的 Wi-Fi 网络（<ph name="WIFI_NAME" />）可能需要您访问其登录页面。</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{无}=1{1 个应用（<ph name="EXAMPLE_APP_1" />）}=2{2 个应用（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />）}other{# 个应用（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />）}}</translation>
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">离开此网站？</translation>
@@ -1028,6 +1041,7 @@
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">到期时间：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">服务器的证书尚未生效。</translation>
+<translation id="7942349550061667556">红色</translation>
 <translation id="7947285636476623132">请检查您的信用卡到期年份，然后重试</translation>
 <translation id="7951415247503192394">（32 位）</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
@@ -1156,7 +1170,6 @@
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8874824191258364635">请输入有效的信用卡号</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
-<translation id="8892964541482452187">标签页切换按钮，按 Enter 键可切换到此标签页</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8931333241327730545">要将此卡的信息保存到您的 Google 帐号吗？</translation>
 <translation id="8932102934695377596">您的时钟慢了</translation>
@@ -1187,6 +1200,7 @@
 <translation id="9049981332609050619">您试图访问 <ph name="DOMAIN" />，但服务器提供的证书无效。</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9065203028668620118">编辑</translation>
+<translation id="9065745800631924235">在历史记录中搜索<ph name="TEXT" /></translation>
 <translation id="9069693763241529744">已被某款扩展程序阻止</translation>
 <translation id="9076283476770535406">此网站可能包含成人内容</translation>
 <translation id="9078964945751709336">必须提供更多信息</translation>

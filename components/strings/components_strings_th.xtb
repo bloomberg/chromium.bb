@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">ไม่ทราบชื่อ</translation>
 <translation id="1050038467049342496">ปิดแอปอื่นๆ</translation>
 <translation id="1055184225775184556">&amp;เลิกทำการเพิ่ม</translation>
+<translation id="1058479211578257048">กำลังบันทึกบัตร...</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1066396345355680611">คุณอาจสูญเสียสิทธิ์เข้าถึงเนื้อหาที่มีการคุ้มครองจาก <ph name="SITE" /> และไซต์อื่นๆ บางแห่ง</translation>
 <translation id="106701514854093668">บุ๊กมาร์กบนเดสก์ท็อป</translation>
@@ -36,6 +37,7 @@
 <translation id="1173894706177603556">เปลี่ยนชื่อ</translation>
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="1181037720776840403">ลบ</translation>
+<translation id="1197088940767939838">สีส้ม</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1201895884277373915">เพิ่มเติมจากไซต์นี้</translation>
 <translation id="1206967143813997005">ลายเซ็นเริ่มต้นไม่ถูกต้อง</translation>
@@ -100,6 +102,7 @@
 <translation id="153384715582417236">เสร็จเรียบร้อย</translation>
 <translation id="154408704832528245">เลือกที่อยู่สำหรับนำส่งสินค้า</translation>
 <translation id="1549470594296187301">ต้องเปิดใช้ JavaScript เพื่อใช้ฟีเจอร์นี้</translation>
+<translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="1559528461873125649">ไม่มีไฟล์หรือไดเรกทอรีดังกล่าว</translation>
 <translation id="1559572115229829303">&lt;p&gt;ไม่สามารถสร้างการเชื่อมต่อส่วนตัวไปที่ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> เนื่องจากวันที่และเวลา (<ph name="DATE_AND_TIME" />) ในอุปกรณ์ไม่ถูกต้อง&lt;/p&gt;
 
@@ -108,6 +111,7 @@
 <translation id="1583429793053364125">มีสิ่งผิดปกติเกิดขึ้นในขณะที่แสดงหน้าเว็บนี้</translation>
 <translation id="1592005682883173041">การเข้าถึงข้อมูลในเครื่อง</translation>
 <translation id="1594030484168838125">เลือก</translation>
+<translation id="161042844686301425">สีฟ้า</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
@@ -173,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ตรวจสอบพร็อกซีและไฟร์วอลล์<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">รหัสไปรษณีย์</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 คำแนะนำ}other{# คำแนะนำ}}</translation>
+<translation id="2068663545051464999">อัปโหลดรหัสรายงานข้อขัดข้อง <ph name="CRASH_ID" /> แล้ว (บริบทเฉพาะรายการ: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="20817612488360358">มีการกำหนดให้ใช้การตั้งค่าพร็อกซีระบบ แต่ก็มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจนไว้ด้วยเช่นกัน</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
@@ -271,6 +276,7 @@
 <translation id="2705137772291741111">อ่านสำเนาที่บันทึกไว้ (แคช) ของเว็บไซต์นี้ไม่ได้</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2712173769900027643">ขออนุญาต</translation>
+<translation id="2713444072780614174">สีขาว</translation>
 <translation id="2720342946869265578">ใกล้เคียง</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
@@ -392,6 +398,7 @@
 <translation id="3479539252931486093">หากเหตุการณ์นี้ผิดปกติ <ph name="BEGIN_LINK" />โปรดแจ้งให้เราทราบ<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3484560055331845446">คุณอาจสูญเสียสิทธิ์เข้าถึงบัญชี Google ของคุณ Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านทันที ระบบจะขอให้คุณลงชื่อเข้าใช้</translation>
+<translation id="3495081129428749620">ค้นหาในหน้าเว็บ <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">เราไม่สามารถติดต่อผู้ปกครองของคุณได้ในขณะนี้ โปรดลองอีกครั้ง</translation>
 <translation id="3528171143076753409">ใบรับรองของเซิร์ฟเวอร์ไม่น่าเชื่อถือ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{อย่างน้อย 1 รายการบนอุปกรณ์ที่ซิงค์}=1{1 รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}other{# รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}}</translation>
@@ -565,6 +572,7 @@
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
 <translation id="4736825316280949806">รีสตาร์ท Chromium</translation>
 <translation id="473775607612524610">อัปเดต</translation>
+<translation id="4738601419177586157">การแนะนำการค้นหา <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">จัดการรหัสผ่าน…</translation>
 <translation id="4744603770635761495">เส้นทางปฏิบัติการ</translation>
 <translation id="4750917950439032686">ข้อมูลของคุณ (ตัวอย่างเช่น รหัสผ่านหรือหมายเลขบัตรเครดิต) จะเป็นส่วนตัวเมื่อส่งมายังเว็บไซต์นี้</translation>
@@ -585,6 +593,7 @@
 <translation id="4854362297993841467">วิธีการนำส่งสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
 <translation id="4858792381671956233">คุณถามผู้ปกครองแล้วว่าสามารถเข้าชมเว็บไซต์นี้ได้ไหม</translation>
 <translation id="4876305945144899064">ไม่มีชื่อผู้ใช้</translation>
+<translation id="4877422487531841831">การค้นหา <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">อัตโนมัติ (ค่าเริ่มต้น)</translation>
 <translation id="4880827082731008257">ค้นประวัติการเข้าชม</translation>
 <translation id="4881695831933465202">เปิด</translation>
@@ -603,6 +612,7 @@
 <translation id="4989163558385430922">ดูทั้งหมด</translation>
 <translation id="4989809363548539747">ไม่รองรับปลั๊กอินนี้</translation>
 <translation id="5002932099480077015">หากเปิดใช้ Chrome จะเก็บสำเนาการ์ดของคุณในอุปกรณ์นี้เพื่อให้การกรอกฟอร์มทำได้เร็วขึ้น</translation>
+<translation id="5014174725590676422">กำลังแสดงหน้าจอเรียกใช้ Google Assistant ครั้งแรกใน Chrome</translation>
 <translation id="5015510746216210676">ชื่อเครื่อง:</translation>
 <translation id="5018422839182700155">ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5019198164206649151">ไม่สามารถจัดเก็บเนื่องจากระบบแบ็คเอนด์อยู่ในสถานะไม่ดี</translation>
@@ -610,6 +620,7 @@
 <translation id="5029568752722684782">ล้างสำเนา</translation>
 <translation id="503069730517007720">ไม่ได้ติดตั้งใบรับรองรากที่จำเป็นของ "<ph name="SOFTWARE_NAME" />" ผู้ดูแลระบบ IT ควรดูวิธีการกำหนดค่าของ "<ph name="SOFTWARE_NAME" />" เพื่อแก้ไขปัญหานี้ <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">เกี่ยวกับ Google แปลภาษา</translation>
+<translation id="5034369478845443529">บริบทเฉพาะรายการ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
@@ -714,6 +725,7 @@
 <translation id="5720705177508910913">ผู้ใช้ปัจจุบัน</translation>
 <translation id="5730040223043577876">Chrome ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
 <translation id="5732392974455271431">ผู้ปกครองสามารถเลิกบล็อกเว็บไซต์ให้คุณ</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{บันทึกบัตรลงในบัญชี Google ของคุณ}other{บันทึกบัตรลงในบัญชี Google ของคุณ}}</translation>
 <translation id="5763042198335101085">ป้อนที่อยู่อีเมลที่ถูกต้อง</translation>
 <translation id="5765072501007116331">หากต้องการดูวิธีการนำส่งสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="5770114862687765385">ดูเหมือนไฟล์จะเสียหาย คลิกปุ่ม "รีเซ็ต" เพื่อรีเซ็ตเซสชัน</translation>
@@ -733,6 +745,7 @@
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5887400589839399685">บันทึกการ์ดแล้ว</translation>
 <translation id="5893752035575986141">รับบัตรเครดิต</translation>
+<translation id="5901630391730855834">สีเหลือง</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ซิงค์แล้ว)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ใช้งานอยู่ 1 รายการ}other{ใช้งานอยู่ # รายการ}}</translation>
 <translation id="5921639886840618607">บันทึกบัตรลงในบัญชี Google ไหม</translation>
@@ -751,6 +764,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">ปี</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
+<translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6017850046339264347">ผู้โจมตี <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> สามารถติดตั้งแอปที่หลอกลวงซึ่งปลอมเป็นเนื้อหาอย่างอื่นหรือรวบรวมข้อมูลที่อาจนำไปใช้ติดตามคุณ <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" /> <ph name="TYPE_2" /> <ph name="TYPE_3" /> (ซิงค์แล้ว)</translation>
 <translation id="6027201098523975773">ป้อนชื่อ</translation>
@@ -970,6 +984,7 @@
 <translation id="7564049878696755256">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="7567204685887185387">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการออกใบรับรองความปลอดภัยปลอม โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="7569952961197462199">นำบัตรเครดิตออกจาก Chrome ไหม</translation>
+<translation id="7569983096843329377">สีดำ</translation>
 <translation id="7578104083680115302">ชำระเงินบนเว็บไซต์และแอปในอุปกรณ์ต่างๆ ได้อย่างรวดเร็วด้วยบัตรที่คุณได้บันทึกไว้กับ Google</translation>
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
 <translation id="7598391785903975535">ไม่ถึง <ph name="UPPER_ESTIMATE" /></translation>
@@ -1018,6 +1033,7 @@
 <translation id="7815407501681723534">พบ<ph name="SEARCH_RESULTS" /> <ph name="NUMBER_OF_RESULTS" /> รายการสำหรับ "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">การจัดการนโยบาย</translation>
 <translation id="782886543891417279">Wi-Fi ที่คุณใช้ (<ph name="WIFI_NAME" />) อาจต้องการให้คุณไปที่หน้าการเข้าสู่ระบบ</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{ไม่มี}=1{1 แอป (<ph name="EXAMPLE_APP_1" />)}=2{2 แอป (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# แอป (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">ออกจากเว็บไซต์ไหม</translation>
@@ -1029,6 +1045,7 @@
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">หมดอายุ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">ใบรับรองของเซิร์ฟเวอร์ยังไม่ถูกต้อง</translation>
+<translation id="7942349550061667556">สีแดง</translation>
 <translation id="7947285636476623132">ตรวจสอบปีหมดอายุแล้วลองอีกครั้ง</translation>
 <translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
@@ -1157,7 +1174,6 @@
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8874824191258364635">ป้อนหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
-<translation id="8892964541482452187">ปุ่มเปลี่ยนแท็บ โปรดกด Enter เพื่อเปลี่ยนไปยังแท็บนี้</translation>
 <translation id="8903921497873541725">ขยาย</translation>
 <translation id="8931333241327730545">คุณต้องการบันทึกบัตรนี้ในบัญชี Google ไหม</translation>
 <translation id="8932102934695377596">นาฬิกาช้าเกินไป</translation>
@@ -1188,12 +1204,14 @@
 <translation id="9049981332609050619">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ถูกต้อง</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
+<translation id="9065745800631924235">การค้นหา <ph name="TEXT" /> จากประวัติ</translation>
 <translation id="9069693763241529744">ถูกบล็อกโดยส่วนขยาย</translation>
 <translation id="9076283476770535406">เว็บไซต์นี้อาจมีเนื้อหาสำหรับผู้ใหญ่</translation>
 <translation id="9078964945751709336">ต้องระบุข้อมูลเพิ่มเติม</translation>
 <translation id="9080712759204168376">สรุปการสั่งซื้อ</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="9106062320799175032">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
+<translation id="9110718169272311511">Google Assistant ใน Chrome พร้อมใช้งานที่บริเวณด้านล่างของหน้าจอ</translation>
 <translation id="9114524666733003316">กำลังยืนยันบัตร…</translation>
 <translation id="9128870381267983090">เชื่อมต่อกับเครือข่าย</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>

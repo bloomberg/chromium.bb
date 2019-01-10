@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Więcej informacji o najnowszej aktualizacji <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Wyłącz</translation>
+<translation id="1999763610967697511">Przeciąganie i upuszczanie</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Wpisz wiadomość</translation>
 <translation id="2050339315714019657">Pionowo</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> jest sesją zarządzaną, którą zarządza <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Połączono z siecią <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Kliknięcie lewym przyciskiem</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
 <translation id="3255483164551725916">Co potrafisz?</translation>
 <translation id="3294437725009624529">Gość</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> nadal może się później zalogować.</translation>
 <translation id="332587331255250389">Wymień baterię</translation>
 <translation id="3351879221545518001">Obecnie przesyłasz ekran.</translation>
 <translation id="3364721542077212959">Narzędzia rysika</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
+<translation id="485592688953820832">Brak działania (wstrzymaj)</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">Włączono w przypadku wszystkich aplikacji</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>
+<translation id="8142441511840089262">Dwukrotne kliknięcie</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>
+<translation id="8167567890448493835">W użyciu jest: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8192202700944119416">Powiadomienia są ukryte.</translation>
+<translation id="8203795194971602413">Kliknięcie prawym przyciskiem</translation>
 <translation id="8236042855478648955">Czas na przerwę</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>

@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
+<translation id="1181037720776840403">Видалити</translation>
 <translation id="1243314992276662751">Завантажити</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Speech</translation>
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Залишився 1 день}one{Залишився # день}few{Залишилося # дні}many{Залишилося # днів}other{Залишилося # дня}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Виберіть папку для завантаження</translation>
 <translation id="3660179305079774227">Курсор угору</translation>

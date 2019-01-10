@@ -37,6 +37,7 @@
 <translation id="1173894706177603556">Rename</translation>
 <translation id="1175364870820465910">&amp;Print...</translation>
 <translation id="1181037720776840403">Remove</translation>
+<translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1201895884277373915">More from this site</translation>
 <translation id="1206967143813997005">Bad initial signature</translation>
@@ -101,6 +102,7 @@
 <translation id="153384715582417236">That’s all for now</translation>
 <translation id="154408704832528245">Choose delivery address</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
+<translation id="1555130319947370107">Blue</translation>
 <translation id="1559528461873125649">No such file or directory</translation>
 <translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
 
@@ -109,6 +111,7 @@
 <translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1594030484168838125">Choose</translation>
+<translation id="161042844686301425">Cyan</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="1639239467298939599">Loading</translation>
@@ -174,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
+<translation id="2068663545051464999">Uploaded Crash Report ID <ph name="CRASH_ID" /> (Local Context: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
@@ -272,6 +276,7 @@
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="2712173769900027643">Ask permission</translation>
+<translation id="2713444072780614174">White</translation>
 <translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
@@ -396,7 +401,6 @@
 <translation id="3495081129428749620">Find in page
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
-<translation id="3505277389583235524">Tab switch button, press enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
@@ -617,6 +621,7 @@
 <translation id="5029568752722684782">Clear copy</translation>
 <translation id="503069730517007720">A root certificate for '<ph name="SOFTWARE_NAME" />' is required but isn’t installed. Your IT administrator should look at configuration instructions for '<ph name="SOFTWARE_NAME" />' to fix this problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">About Google Translate</translation>
+<translation id="5034369478845443529">Local Context <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
@@ -741,6 +746,7 @@
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5887400589839399685">Card saved</translation>
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
+<translation id="5901630391730855834">Yellow</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in use}other{# in use}}</translation>
 <translation id="5921639886840618607">Save card to Google account?</translation>
@@ -759,6 +765,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Year</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
+<translation id="6017514345406065928">Green</translation>
 <translation id="6017850046339264347">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> could install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synced)</translation>
 <translation id="6027201098523975773">Enter a name</translation>
@@ -978,6 +985,7 @@ Additional details:
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
+<translation id="7569983096843329377">Black</translation>
 <translation id="7578104083680115302">Pay quickly on sites and apps across devices using cards that you have saved with Google.</translation>
 <translation id="7592362899630581445">Server's certificate violates name constraints.</translation>
 <translation id="7598391785903975535">Less than <ph name="UPPER_ESTIMATE" /></translation>
@@ -1038,6 +1046,7 @@ Additional details:
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Expires on <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Server's certificate is not yet valid.</translation>
+<translation id="7942349550061667556">Red</translation>
 <translation id="7947285636476623132">Check your expiry year and try again</translation>
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
@@ -1134,7 +1143,6 @@ Additional details:
 <translation id="858637041960032120">Add phone no.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="860043288473659153">Cardholder name</translation>
-<translation id="8604621652298273827"><ph name="TAB_SWITCH_SUFFIX" />, currently open, press tab then enter to switch to the open tab</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
@@ -1166,7 +1174,6 @@ Additional details:
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8874824191258364635">Enter a valid card number</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
-<translation id="8892964541482452187">Tab switch button, press enter to switch to this tab</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>

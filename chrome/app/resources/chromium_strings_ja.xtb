@@ -78,6 +78,7 @@
 <translation id="352783484088404971">Chromium から削除...</translation>
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
+<translation id="3639635944603682591">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
 <translation id="3762167353400286894">Chromium OS はこの言語で表示されています</translation>

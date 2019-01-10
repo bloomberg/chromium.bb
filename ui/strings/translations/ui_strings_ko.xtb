@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1일 전}other{#일 전}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1분 전}other{#분 전}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1분}other{#분}}</translation>
+<translation id="1181037720776840403">삭제</translation>
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">음성</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> 이상</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' 찾기</translation>
 <translation id="364720409959344976">업로드할 폴더 선택</translation>
 <translation id="3660179305079774227">위쪽 화살표</translation>

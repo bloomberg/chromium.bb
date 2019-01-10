@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ስለቅርብ ጊዜው የ<ph name="SYSTEM_APP_NAME" /> ዝማኔ የበለጠ ይረዱ</translation>
 <translation id="1995660704900986789">ኃይል አጥፋ</translation>
+<translation id="1999763610967697511">ይጎትቱና ጣል ያድርጉ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">መልዕክት ይተይቡ</translation>
 <translation id="2050339315714019657">በቁመት</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">ዝማኔ ይገኛል</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> በ<ph name="DOMAIN" /> የሚተዳደር ክፍለ-ጊዜ ነው</translation>
 <translation id="2416346634399901812">ከ<ph name="NETWORK_NAME" /> ጋር ተገናኝቷል</translation>
+<translation id="2427507373259914951">የግራ ጠቅታ</translation>
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2484513351006226581">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር <ph name="KEYBOARD_SHORTCUT" />ን ይጫኑ</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">ምንም የተንቀሳቃሽ ስልክ አውታረ መረብ የለም</translation>
 <translation id="3255483164551725916">ምን ማድረግ ይችላሉ?</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> አሁንም በኋላ በመለያ መግባት ይችላሉ።</translation>
 <translation id="332587331255250389">እባክዎ ባትሪውን ይተኩት</translation>
 <translation id="3351879221545518001">አሁን ላይ ማያ ገጽን cast እያደረጉ ነው።</translation>
 <translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="4849058404725798627">ነገርየውን ከቁልፍ ሰሌዳ ትኩረት ጋር አድምቅ</translation>
+<translation id="485592688953820832">ምንም እርምጃ የለም (ባለበት አቁም)</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="4890187583552566966">Google ረዳቱ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">በርቷል፣ ሁሉም መተግበሪያዎች</translation>
 <translation id="8132793192354020517">ከ<ph name="NAME" /> ጋር ተገናኝቷል</translation>
 <translation id="813913629614996137">በማስጀመር ላይ…</translation>
+<translation id="8142441511840089262">ድርብ ጠቅታ</translation>
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" />ን በመጠቀም ላይ</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8192202700944119416">ማሳወቂያዎች ተደብቀዋል</translation>
+<translation id="8203795194971602413">የቀኝ ጠቅታ</translation>
 <translation id="8236042855478648955">የዕረፍት ጊዜ</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8297006494302853456">ደካማ</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">አልተገናኘም</translation>
 <translation id="8877788021141246043">አስታዋሽ አዘጋጅ</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
-<translation id="8898978413391960553">00:00 ሴ</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>
 <translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>

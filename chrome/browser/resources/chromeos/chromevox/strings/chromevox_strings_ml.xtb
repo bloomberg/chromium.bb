@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">നുറുങ്ങ്</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="135978014023467274">നിങ്ങൾ ChromeVox 63-ലേക്ക് അപ്‌ഡേറ്റ് ചെയ്‌തിരിക്കുന്നു!</translation>
+<translation id="1360699455582016846"><ph name="ROUTING_KEY_NUMBER" /> റൂട്ടിംഗ് കീയ്ക്ക് ചുവടെയുള്ള ഇനം ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
 <translation id="1377925789329510816">ഇത് അവസാനത്തെ തലക്കെട്ടാണ്. ഈ പേജിലെ ആദ്യ തലക്കെട്ട് റാപ്പ് ചെയ്യാൻ തിരയൽ+H അമർത്തുക അല്ലെങ്കിൽ രണ്ടാമത്തെ തലക്കെട്ടിലേക്ക് പോകാൻ തിരയൽ+Shift+H അമർത്തുക.</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">ശീർഷകങ്ങളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> കോർഡ്</translation>
 <translation id="1954623340234317532">വാർഷിക നിയന്ത്രണത്തിലെ ആഴ്‌ച</translation>
 <translation id="1964135212174907577">അടുത്ത ഒബ്‌ജക്റ്റ്</translation>
 <translation id="1969092762068865084">ജൂലൈ</translation>
@@ -266,6 +268,7 @@
 <translation id="316542773973815724">നാവിഗേഷൻ</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{സ്‌പെയ്‌സ്}other{# സ്‌പെയ്‌സുകൾ}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> നൽകി</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> ഒട്ടിക്കുക.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ടാബ്</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">സന്ദർശിച്ച ലിങ്ക്</translation>
@@ -343,12 +346,14 @@
 <translation id="3468959318854349468">പേരില്ല</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> മുതൽ <ph name="V2" /> വരെ</translation>
+<translation id="3490765818161916458">ലിസ്‌റ്റ് ഗ്രിഡ്</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{വലത് ബ്രാക്കറ്റ്}other{# വലത് ബ്രാക്കറ്റുകൾ}}</translation>
 <translation id="3493915602752813531">അടുത്ത ആങ്കർ ഒന്നുമില്ല.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ചോദ്യചിഹ്നം}other{# ചോദ്യചിഹ്നങ്ങൾ}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{കാരറ്റ്}other{# കാരറ്റുകൾ}}</translation>
 <translation id="352577523970648069">എഡിറ്റുചെയ്യാവുന്ന ഒരു ടെക്‌സ്‌റ്റ് ഫീൽഡ്</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> മുറിക്കുക.</translation>
 <translation id="3549680091535286226">സംസാരിക്കുന്നത് താൽക്കാലികമായി നിർത്താൻ രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ചെക്ക്‌ബോക്സ് ചെക്ക് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="3589661172894441357">പദസഞ്ചയം</translation>
@@ -380,6 +385,7 @@
 <translation id="3856075812838139784">വായനമാത്രം</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">മെനു</translation>
+<translation id="3907138069015388678">ലിസ്‌റ്റ് ഗ്രിഡ്</translation>
 <translation id="3909320334364316587">മുൻ നില 6 ശീർഷകം</translation>
 <translation id="3914173277599553213">ആവശ്യമായത്</translation>
 <translation id="3914732343065571127">ChromeVox കമാൻഡ് റഫറൻസ്</translation>
@@ -673,6 +679,7 @@
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
 <translation id="6132506484792346370">ഒരു ലിസ്‌റ്റ് ബോക്‌സ്‌ അല്ലെങ്കിൽ കോംബോ ബോക്‌സ്</translation>
 <translation id="6142308968191113180">ശീർഷകം 4</translation>
+<translation id="6158882249329863701">വരി <ph name="TABLECELLROWINDEX" /> കോളം <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">മീറ്റർ</translation>
 <translation id="6169420925157477918">ദൈർഘ്യമേറിയ വിവരണമുള്ള ചിത്രം</translation>
 <translation id="6186305613600865047">പേജിന്റെ താഴേയ്‌ക്ക് പോകുക</translation>
@@ -688,6 +695,7 @@
 <translation id="6307969636681130414">അമർത്തിയത്</translation>
 <translation id="6322856989298155004">ശബ്‌ദം</translation>
 <translation id="6324551002951139333">വ്യാകരണത്തെറ്റ് കണ്ടെത്തി</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> പകർത്തുക.</translation>
 <translation id="6348657800373377022">കോമ്പോ ബോക്സ്</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ബുള്ളറ്റ്}other{# ബുള്ളറ്റുകൾ}}</translation>
 <translation id="6355910664415701303">മുൻ ലിസ്റ്റ് ഇനം ഒന്നുമില്ല.</translation>
@@ -959,6 +967,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">മോഡിഫയർ കീകൾ</translation>
 <translation id="8943175951035496220">വലതുഭാഗത്ത് കോളമൊന്നുമില്ല.</translation>
+<translation id="8946628535652548639">വരി<ph name="TABLECELLROWINDEX" />കോളം<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">മറന്നു</translation>
 <translation id="900114243503212879">file</translation>

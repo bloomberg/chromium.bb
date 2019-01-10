@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 દિવસ પહેલા}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 મિનિટ પહેલાં}one{# મિનિટ પહેલાં}other{# મિનિટ પહેલાં}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 મિ}one{# મિ}other{# મિ}}</translation>
+<translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="1243314992276662751">અપલોડ કરો</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">ભાષા</translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 દિવસ બાકી}one{# દિવસ બાકી}other{# દિવસ બાકી}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” શોધો</translation>
 <translation id="364720409959344976">અપલોડ કરવા માટે ફોલ્ડર પસંદ કરો</translation>
 <translation id="3660179305079774227">ઉપર એરો</translation>

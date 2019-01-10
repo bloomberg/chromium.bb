@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{לפני יום אחד}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{לפני דקה אחת}two{לפני # דקות}many{לפני # דקות}other{לפני # דקות}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{דקה}two{# דק}many{# דק}other{# דק}}</translation>
+<translation id="1181037720776840403">הסר</translation>
 <translation id="1243314992276662751">העלה</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">דיבור</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">חפש “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">בחירת תיקיה להעלאה</translation>
 <translation id="3660179305079774227">חץ למעלה</translation>
@@ -145,7 +147,7 @@
 <translation id="7130207228079676353">סבירות גבוהה</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{נותרה דק‘ אחת}two{נותרו # דק‘}many{נותרו # דק‘}other{נותרו # דק‘}}</translation>
-<translation id="7319740667687257810">מפעיל האפליקציות, תצוגה חלקית</translation>
+<translation id="7319740667687257810">מרכז האפליקציות, תצוגה חלקית</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{לפני דק‘ אחת}two{לפני # דק‘}many{לפני # דק‘}other{לפני # דק‘}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{נותרה דקה אחת}two{נותרו # דקות}many{נותרו # דקות}other{נותרו # דקות}}</translation>

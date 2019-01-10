@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">نصيحة</translation>
 <translation id="1346748346194534595">يمين</translation>
 <translation id="135978014023467274">‏تمّ التحديث إلى ChromeVox 63!</translation>
+<translation id="1360699455582016846">النقر على العنصر أسفل مفتاح التوجيه <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">صف الجدول التالي</translation>
 <translation id="1377925789329510816">‏هذا هو العنوان الأخير. اضغط على "Search+H" للانتقال إلى العنوان الأول، أو "Search+Shift+H" للانتقال إلى العنوان الثاني في هذه الصفحة.</translation>
 <translation id="1383876407941801731">البحث</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">عرض قائمة العناوين</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678">الوَتر <ph name="DOT" /></translation>
 <translation id="1954623340234317532">التحكم في أسبوع من العام</translation>
 <translation id="1964135212174907577">الكائن التالي</translation>
 <translation id="1969092762068865084">تموز (يوليو)</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">تنقل</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{مسافة واحدة}zero{# spaces}two{مسافتان (#)}few{# مسافات}many{# مسافة}other{# من المسافات}}</translation>
 <translation id="320961988183078793">تم إدخال <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">لصق <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">علامة تبويب <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">الرابط الذي تم الانتقال إليه</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">بلا عنوان</translation>
 <translation id="3473644018603298796">تم تحديد <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> إلى <ph name="V2" /></translation>
+<translation id="3490765818161916458">شبكة القوائم</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{قوس متوسط أيمن واحد}zero{# right brackets}two{قوسان متوسطان أيمنان (#)}few{# أقواس متوسطة يمنى}many{# قوسًا متوسطًا أيمنًا}other{# من الأقواس المتوسطة اليمنى}}</translation>
 <translation id="3493915602752813531">ليس هناك إرساء تالٍ.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{علامة استفهام واحدة}zero{# question marks}two{علامتا استفهام (#)}few{# علامات استفهام}many{# علامة استفهام}other{# من علامات الاستفهام}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{علامة إقحام واحدة}zero{# carets}two{علامتا إقحام (#)}few{# علامات إقحام}many{# علامة إقحام}other{# من علامات الإقحام}}</translation>
 <translation id="352577523970648069">حقل نص قابل للتعديل</translation>
+<translation id="3549141990712742152">قص <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">النقر بإصبعين لإيقاف الكلام مؤقتًا</translation>
 <translation id="3568702578574425662">لم يتم تحديد مربع الاختيار <ph name="NAME" /></translation>
 <translation id="3589661172894441357">مسرد مصطلحات</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">للقراءة فقط</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">قائمة</translation>
+<translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">عنوان المستوى السادس السابق</translation>
 <translation id="3914173277599553213">مطلوبة</translation>
 <translation id="3914732343065571127">‏مرجع أوامر ChromeVox</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">مسافة</translation>
 <translation id="6132506484792346370">مربع القائمة أو مربع التحرير والسرد</translation>
 <translation id="6142308968191113180">العنوان الرابع</translation>
+<translation id="6158882249329863701">الصف <ph name="TABLECELLROWINDEX" /> العمود <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">متر</translation>
 <translation id="6169420925157477918">الصورة بها وصف مطول</translation>
 <translation id="6186305613600865047">انتقال إلى أسفل الصفحة</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">مضغوط</translation>
 <translation id="6322856989298155004">الأصوات</translation>
 <translation id="6324551002951139333">تم اكتشاف خطأ نحوي</translation>
+<translation id="6325241889020214828">نسخ <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">مربع تحرير وسرد</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{تعداد نقطي واحد}zero{# تعداد نقطي}two{تعدادن نقطيان (#)}few{# تعدادات نقطية}many{# تعدادًا نقطيًا}other{# تعداد نقطي}}</translation>
 <translation id="6355910664415701303">ليس هناك عنصر قائمة سابق.</translation>
@@ -960,6 +968,7 @@
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">مفاتيح التعديل</translation>
 <translation id="8943175951035496220">ليست هناك خلية في اليمين.</translation>
+<translation id="8946628535652548639">ص<ph name="TABLECELLROWINDEX" />ع<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="900114243503212879">file</translation>

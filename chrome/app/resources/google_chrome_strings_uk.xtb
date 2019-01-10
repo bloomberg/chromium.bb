@@ -200,6 +200,7 @@
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
+<translation id="6943584222992551122">Дані веб-перегляду користувача буде видалено з цього пристрою. Щоб відновити їх, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="6964107240822114422">{0,plural, =0{Доступне оновлення Chrome}=1{Доступне оновлення Chrome}one{Оновлення Chrome доступне вже # день}few{Оновлення Chrome доступне вже # дні}many{Оновлення Chrome доступне вже # днів}other{Оновлення Chrome доступне вже # дня}}</translation>
 <translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>

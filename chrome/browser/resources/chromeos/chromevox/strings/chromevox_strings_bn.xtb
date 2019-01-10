@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">টিপ</translation>
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="135978014023467274">আপনার ChormeVox, ChromeVox 63 তে আপগ্রেড করা হয়েছে!</translation>
+<translation id="1360699455582016846"><ph name="ROUTING_KEY_NUMBER" /> নম্বর রাউটিং কী-এর আইটেমে ক্লিক করুন</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
 <translation id="1377925789329510816">এটিই সর্বশেষ শিরোনাম। প্রথম শিরোনামে ফিরে যেতে সার্চ+H টিপুন, অথবা এই পৃষ্ঠার দ্বিতীয় শিরোনামে যেতে সার্চ+Shift+H টিপুন।</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">শিরোনাম তালিকা দেখান</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> কিয়ের সেট</translation>
 <translation id="1954623340234317532">বর্ষ নিয়ন্ত্রণের জন্য সপ্তাহ</translation>
 <translation id="1964135212174907577">পরবর্তী বস্তু</translation>
 <translation id="1969092762068865084">জুলাই</translation>
@@ -206,7 +208,7 @@
 <translation id="2800780099804980316">কোনো পূর্ববর্তী স্তর ১ শিরোনাম নেই৷</translation>
 <translation id="280499067616661124">ChromeVox পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="2808001342598757276">স্ক্রীনে আলো বাড়ান</translation>
-<translation id="2811019999044652585">স্ক্রীনের অন্যান্য অংশে যেমন টুল দণ্ড বা সিস্টেম ট্রেতে যাওয়ার জন্য কন্ট্রোল + ফরোয়ার্ড টিপুন। Chromebook এ ফরোয়ার্ড কী সংখ্যা ২ কী এর ঠিক উপরে।</translation>
+<translation id="2811019999044652585">স্ক্রিনের অন্যান্য অংশে যেমন টুল দণ্ড বা সিস্টেম ট্রেতে যাওয়ার জন্য কন্ট্রোল + ফরোয়ার্ড টিপুন। Chromebook-এ ফরোয়ার্ড কী 'সংখ্যা কী ২'-এর ঠিক উপরে।</translation>
 <translation id="2811204574343810641">সারি</translation>
 <translation id="2816654101880605877">কোনো পরবর্তী স্লাইডার নেই৷</translation>
 <translation id="2841013758207633010">সময়</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">নেভিগেশন</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ব্যবধান}one{#টি ব্যবধান}other{#টি ব্যবধান}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> প্রবেশ করা হয়েছে</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> পেস্ট করুন।</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ট্যাব</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">ঘুরে দেখা লিঙ্ক</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">কোনও শীর্ষক নেই</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
 <translation id="3486232535569802404"><ph name="V1" /> থেকে <ph name="V2" /></translation>
+<translation id="3490765818161916458">সূচির গ্রিড</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ডান বন্ধনী}one{#টি বাঁ বন্ধনী}other{#টি বাঁ বন্ধনী}}</translation>
 <translation id="3493915602752813531">কোনো পরবর্তী অ্যাঙ্কর নেই৷</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{প্রশ্নবোধক চিহ্ন}one{#টি প্রশ্নবোধক চিহ্ন}other{#টি প্রশ্নবোধক চিহ্ন}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ক্যারেট}one{# ক্যারেট}other{# ক্যারেট}}</translation>
 <translation id="352577523970648069">একটি সম্পাদনাযোগ্য পাঠ্য ফিল্ড</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> কাট করুন।</translation>
 <translation id="3549680091535286226">আপাতত স্পিচ বন্ধ করার জন্য ২টি আঙ্গুল দিয়ে ট্যাপ করুন</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, চেকবাক্স চেকযুক্ত করা হয়নি</translation>
 <translation id="3589661172894441357">শব্দকোষ</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">কেবল পঠনযোগ্য</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">মেনু</translation>
+<translation id="3907138069015388678">সূচির গ্রিড</translation>
 <translation id="3909320334364316587">পূর্ববর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="3914173277599553213">প্রয়োজন</translation>
 <translation id="3914732343065571127">ChromeVox কম্যান্ড রেফারেন্স</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6132506484792346370">একটি তালিকা বাক্স বা কম্বো বাক্স</translation>
 <translation id="6142308968191113180">শিরোলেখ ৪</translation>
+<translation id="6158882249329863701">সারি <ph name="TABLECELLROWINDEX" /> কলাম <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">মিটার</translation>
 <translation id="6169420925157477918">দীর্ঘ বিবরণ সহ ছবি</translation>
 <translation id="6186305613600865047">পৃষ্ঠাটির একেবারে নিচে চলে যান</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
 <translation id="6322856989298155004">সাউন্ডগুলি</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি শনাক্ত হয়েছে</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> কপি করুন।</translation>
 <translation id="6348657800373377022">কম্বো বাক্স</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{টি বুলেট চিহ্ন}one{#টি বুলেট চিহ্ন}other{#টি বুলেট চিহ্ন}}</translation>
 <translation id="6355910664415701303">কোনো পূর্ববর্তী তালিকা আইটেম নেই৷</translation>
@@ -758,12 +766,12 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">পূর্ববর্তী তালিকা</translation>
 <translation id="7041173719775863268">নির্বাচন সমাপ্ত করুন</translation>
-<translation id="7048792632163898198">পরবর্তী কয়েকটি শর্টকাট ChromeVox কমান্ড নয়, কিন্তু Chrome থেকে সর্বাধিক সুবিধা পাওয়ার জন্য এটি খুব কার্যকরী।
-বোতাম এবং লিঙ্কগুলির মতো কাজের আইটেমগুলির মাধ্যমে এগিয়ে যাওয়ার জন্য Tab কী প্রেস করুন। পিছন দিকে নেভিগেট করতে Shift+Tab প্রেস করুন।
-Chrome ব্রাউজারে ঠিকানা বক্সে এন্টার করতে, যা omnibox নামেও পরিচিত, Control + L প্রেস করুন।
+<translation id="7048792632163898198">পরবর্তী কয়েকটি শর্টকাট ChromeVox কমান্ড নয়, কিন্তু তারপরেও Chrome থেকে সর্বাধিক সুবিধা আদায় করার জন্য খুব প্রয়োজনীয়
+বোতাম এবং লিঙ্কগুলির মতো কাজের আইটেমগুলির মাধ্যমে এগোনোর জন্য Tab কী প্রেস করুন। পিছন দিকে নেভিগেট করতে Shift+Tab প্রেস করুন।
+Chrome ব্রাউজারে অ্যাড্রেস বক্সে ঢুকতে, যা omnibox নামেও পরিচিত, Control + L প্রেস করুন।
 নিজে থেকেই একটি নতুন ট্যাব খুলে সেটিতে যাওয়ার জন্য Control+T প্রেস করুন। আপনার কার্সারটি omnibox-এ থাকবে।
 একটি ট্যাব বন্ধ করতে, Control+W প্রেস করুন।
-খোলা থাকা একটি ট্যাব থেকে অন্য একটি ট্যাবে যাওয়ার জন্য Control+Tab ব্যবহার করুন।
+খোলা ট্যাবগুলির একটি থেকে অন্যটিতে যাওয়ার জন্য Control+Tab ব্যবহার করুন।
 Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রেস করুন।</translation>
 <translation id="7086377898680121060">উজ্জ্বলতা বাড়ান</translation>
 <translation id="7088743565397416204">ফোকাস করা কোনও আইটেম অ্যাক্টিভেট করতে ডবল ট্যাপ করুন</translation>
@@ -818,7 +826,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7425395583360211003">ফিরে যান</translation>
 <translation id="7434509671034404296">ডেভেলপার</translation>
 <translation id="743783356331413498">উদাহরণ</translation>
-<translation id="7439060726180460871">সংকলন</translation>
+<translation id="7439060726180460871">ডিরেক্টরি</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">ট্যাব</translation>
 <translation id="7492049978501397201">প্রবেশ করানো ডায়লগ</translation>
@@ -960,6 +968,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">সংশোধক কী</translation>
 <translation id="8943175951035496220">ডানদিকে কোনো কক্ষ নেই৷</translation>
+<translation id="8946628535652548639">সারি<ph name="TABLECELLROWINDEX" />কলাম<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="900114243503212879">ফাইল...</translation>

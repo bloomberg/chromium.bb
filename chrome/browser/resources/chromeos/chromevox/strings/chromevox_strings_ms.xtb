@@ -54,6 +54,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="135978014023467274">Anda telah dikemas kini kepada ChromeVox 63!</translation>
+<translation id="1360699455582016846">Klik item di bawah kekunci penghalaan <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Baris jadual seterusnya</translation>
 <translation id="1377925789329510816">Ini ialah tajuk terakhir. Tekan Carian+H untuk pergi ke tajuk pertama atau Carian+Shift+H untuk pergi ke tajuk kedua pada halaman ini.</translation>
 <translation id="1383876407941801731">Carian</translation>
@@ -112,6 +113,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="1905379170753160525">Paparkan senarai tajuk</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678">kord <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Kawalan minggu untuk tahun</translation>
 <translation id="1964135212174907577">Objek Seterusnya</translation>
 <translation id="1969092762068865084">Julai</translation>
@@ -267,6 +269,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="316542773973815724">Navigasi</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ruang}other{# ruang}}</translation>
 <translation id="320961988183078793">memasukkan <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">tampal <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">Tab, <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Pautan yang dilawati</translation>
@@ -344,12 +347,14 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3468959318854349468">Tiada tajuk</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> hingga <ph name="V2" /></translation>
+<translation id="3490765818161916458">Grid senarai</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{tanda kurung kanan}other{# tanda kurung kanan}}</translation>
 <translation id="3493915602752813531">Tiada penambat seterusnya.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{tanda soal}other{# tanda soal}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{karet}other{# karet}}</translation>
 <translation id="352577523970648069">Medan teks boleh edit</translation>
+<translation id="3549141990712742152">potong <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Ketik dengan 2 jari untuk menghentikan pertuturan buat sementara waktu</translation>
 <translation id="3568702578574425662">Kotak pilihan, <ph name="NAME" /> tidak ditandai</translation>
 <translation id="3589661172894441357">Glosari</translation>
@@ -381,6 +386,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3856075812838139784">Baca sahaja</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">Tajuk tahap 6 sebelumnya</translation>
 <translation id="3914173277599553213">Diperlukan</translation>
 <translation id="3914732343065571127">Rujukan Perintah ChromeVox</translation>
@@ -674,6 +680,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="6129953537138746214">Ruang</translation>
 <translation id="6132506484792346370">Kotak senarai atau kotak kombo</translation>
 <translation id="6142308968191113180">Tajuk 4</translation>
+<translation id="6158882249329863701">baris <ph name="TABLECELLROWINDEX" /> lajur <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">meter</translation>
 <translation id="6169420925157477918">Imej dengan huraian panjang</translation>
 <translation id="6186305613600865047">Langkau ke bahagian bawah halaman</translation>
@@ -689,6 +696,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="6307969636681130414">Ditekan</translation>
 <translation id="6322856989298155004">Bunyi</translation>
 <translation id="6324551002951139333">Kesilapan tatabahasa dikesan</translation>
+<translation id="6325241889020214828">salin <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Kotak kombo</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{peluru}other{# peluru}}</translation>
 <translation id="6355910664415701303">Tiada item senarai terdahulu.</translation>
@@ -960,6 +968,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Kunci Pengubah Suai</translation>
 <translation id="8943175951035496220">Tiada sel di kanan.</translation>
+<translation id="8946628535652548639">b<ph name="TABLECELLROWINDEX" />l<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Lupa</translation>
 <translation id="900114243503212879">fail</translation>
