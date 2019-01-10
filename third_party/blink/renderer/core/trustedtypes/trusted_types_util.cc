@@ -70,6 +70,60 @@ String GetStringFromTrustedTypeWithoutCheck(
   return g_empty_string;
 }
 
+String GetStringFromSpecificTrustedType(
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+        string_or_trusted_type,
+    SpecificTrustedType specific_trusted_type,
+    const Document* doc,
+    ExceptionState& exception_state) {
+  switch (specific_trusted_type) {
+    case SpecificTrustedType::kTrustedHTML: {
+      StringOrTrustedHTML string_or_trusted_html =
+          string_or_trusted_type.IsTrustedHTML()
+              ? StringOrTrustedHTML::FromTrustedHTML(
+                    string_or_trusted_type.GetAsTrustedHTML())
+              : StringOrTrustedHTML::FromString(
+                    GetStringFromTrustedTypeWithoutCheck(
+                        string_or_trusted_type));
+      return GetStringFromTrustedHTML(string_or_trusted_html, doc,
+                                      exception_state);
+    }
+    case SpecificTrustedType::kTrustedScript: {
+      StringOrTrustedScript string_or_trusted_script =
+          string_or_trusted_type.IsTrustedScript()
+              ? StringOrTrustedScript::FromTrustedScript(
+                    string_or_trusted_type.GetAsTrustedScript())
+              : StringOrTrustedScript::FromString(
+                    GetStringFromTrustedTypeWithoutCheck(
+                        string_or_trusted_type));
+      return GetStringFromTrustedScript(string_or_trusted_script, doc,
+                                        exception_state);
+    }
+    case SpecificTrustedType::kTrustedScriptURL: {
+      StringOrTrustedScriptURL string_or_trusted_script_url =
+          string_or_trusted_type.IsTrustedScriptURL()
+              ? StringOrTrustedScriptURL::FromTrustedScriptURL(
+                    string_or_trusted_type.GetAsTrustedScriptURL())
+              : StringOrTrustedScriptURL::FromString(
+                    GetStringFromTrustedTypeWithoutCheck(
+                        string_or_trusted_type));
+      return GetStringFromTrustedScriptURL(string_or_trusted_script_url, doc,
+                                           exception_state);
+    }
+    case SpecificTrustedType::kTrustedURL: {
+      USVStringOrTrustedURL string_or_trusted_url =
+          string_or_trusted_type.IsTrustedURL()
+              ? USVStringOrTrustedURL::FromTrustedURL(
+                    string_or_trusted_type.GetAsTrustedURL())
+              : USVStringOrTrustedURL::FromUSVString(
+                    GetStringFromTrustedTypeWithoutCheck(
+                        string_or_trusted_type));
+      return GetStringFromTrustedURL(string_or_trusted_url, doc,
+                                     exception_state);
+    }
+  }
+}
+
 String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
                                 const Document* doc,
                                 ExceptionState& exception_state) {

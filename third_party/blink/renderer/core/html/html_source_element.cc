@@ -72,10 +72,11 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 
 HTMLSourceElement::~HTMLSourceElement() = default;
 
-const HashSet<AtomicString>& HTMLSourceElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLSourceElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {

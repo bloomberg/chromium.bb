@@ -66,9 +66,10 @@ HTMLLinkElement* HTMLLinkElement::Create(Document& document,
 
 HTMLLinkElement::~HTMLLinkElement() = default;
 
-const HashSet<AtomicString>& HTMLLinkElement::GetCheckedAttributeNames() const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
-  return attribute_set;
+const AttrNameToTrustedType& HTMLLinkElement::GetCheckedAttributeTypes() const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"href", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLLinkElement::ParseAttribute(

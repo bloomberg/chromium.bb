@@ -39,9 +39,10 @@ inline HTMLBaseElement::HTMLBaseElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLBaseElement)
 
-const HashSet<AtomicString>& HTMLBaseElement::GetCheckedAttributeNames() const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
-  return attribute_set;
+const AttrNameToTrustedType& HTMLBaseElement::GetCheckedAttributeTypes() const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"href", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLBaseElement::ParseAttribute(

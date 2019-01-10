@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   ~HTMLLinkElement() override;
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   KURL Href() const;
   const AtomicString& Rel() const;

@@ -18,6 +18,13 @@ class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
 class USVStringOrTrustedURL;
 
+enum class SpecificTrustedType {
+  kTrustedHTML,
+  kTrustedScript,
+  kTrustedScriptURL,
+  kTrustedURL,
+};
+
 String CORE_EXPORT GetStringFromTrustedType(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
     const Document*,
@@ -25,6 +32,12 @@ String CORE_EXPORT GetStringFromTrustedType(
 
 String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&);
+
+String CORE_EXPORT GetStringFromSpecificTrustedType(
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+    SpecificTrustedType,
+    const Document*,
+    ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
                                             const Document*,

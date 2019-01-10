@@ -55,10 +55,11 @@ HTMLScriptElement* HTMLScriptElement::Create(Document& document,
   return MakeGarbageCollected<HTMLScriptElement>(document, flags);
 }
 
-const HashSet<AtomicString>& HTMLScriptElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src", "text"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {

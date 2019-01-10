@@ -39,10 +39,11 @@ inline HTMLFrameElement::HTMLFrameElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)
 
-const HashSet<AtomicString>& HTMLFrameElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLFrameElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {

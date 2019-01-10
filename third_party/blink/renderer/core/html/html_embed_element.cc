@@ -55,10 +55,11 @@ HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
   return element;
 }
 
-const HashSet<AtomicString>& HTMLEmbedElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLEmbedElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 static inline LayoutEmbeddedContent* FindPartLayoutObject(const Node* n) {
