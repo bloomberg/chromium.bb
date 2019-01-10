@@ -2718,6 +2718,7 @@
 
     'fuchsia_gtests': {
       'base_unittests': {},
+      'castrunner_integration_tests': {},
       'castrunner_unittests': {},
       'content_unittests': {
         'args': [
@@ -2755,6 +2756,7 @@
         ],
       },
       'webrunner_browsertests': {},
+      'webrunner_smoketests': {},
       'webrunner_unittests': {},
     },
 
