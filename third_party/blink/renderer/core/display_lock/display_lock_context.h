@@ -144,6 +144,7 @@ class CORE_EXPORT DisplayLockContext final
     kUpdating,
     kCommitting,
     kUnlocked,
+    kPendingAcquire,
   };
 
   // Initiate a commit.
@@ -194,6 +195,8 @@ class CORE_EXPORT DisplayLockContext final
   enum ResolverState { kResolve, kReject, kDetach };
   void FinishUpdateResolver(ResolverState);
   void FinishCommitResolver(ResolverState);
+  void FinishAcquireResolver(ResolverState);
+  void FinishResolver(Member<ScriptPromiseResolver>*, ResolverState);
 
   // Returns true if the element supports display locking. Note that this can
   // only be called if the style is clean. It checks the layout object if it
@@ -204,6 +207,7 @@ class CORE_EXPORT DisplayLockContext final
 
   Member<ScriptPromiseResolver> commit_resolver_;
   Member<ScriptPromiseResolver> update_resolver_;
+  Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
 
   State state_ = kUnlocked;
