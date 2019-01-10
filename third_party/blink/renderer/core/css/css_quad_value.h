@@ -39,6 +39,11 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
     return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
                                               serialization_type);
   }
+  static CSSQuadValue* Create(CSSValue* value,
+                              TypeForSerialization serialization_type) {
+    return MakeGarbageCollected<CSSQuadValue>(value, value, value, value,
+                                              serialization_type);
+  }
 
   CSSQuadValue(CSSValue* top,
                CSSValue* right,
