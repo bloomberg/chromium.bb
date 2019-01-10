@@ -1489,6 +1489,17 @@ void Element::setAttribute(
     if (!exception_state.HadException())
       setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
     return;
+  } else if (name_lowercase.StartsWith("on")) {
+    // TODO(jakubvrana): This requires TrustedScript in all attributes starting
+    // with "on", including e.g. "one". We use this pattern elsewhere (e.g. in
+    // IsEventHandlerAttribute) but it's not ideal. Consider using the event
+    // attribute of the resulting AttributeTriggers.
+    String attr_value = GetStringFromSpecificTrustedType(
+        string_or_TT, SpecificTrustedType::kTrustedScript, &GetDocument(),
+        exception_state);
+    if (!exception_state.HadException())
+      setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
+    return;
   }
   AtomicString value_string =
       AtomicString(GetStringFromTrustedTypeWithoutCheck(string_or_TT));
