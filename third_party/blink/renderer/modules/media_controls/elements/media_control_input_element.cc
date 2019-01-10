@@ -75,6 +75,8 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   if (MediaControlsImpl::IsModern()) {
     overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
+    // Having the container selectable caused aria output to be duplicated.
+    overflow_menu_container_->setTabIndex(-1);
     UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
     element->ParserAppendChild(overflow_menu_container_);
   } else {

@@ -11,21 +11,30 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaEnterFullscreenButton) {
+    : MediaControlInputElement(media_controls, kMediaIgnore) {
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button"));
+  setAttribute(html_names::kRoleAttr, "button");
   SetIsFullscreen(MediaElement().IsFullscreen());
   SetIsWanted(false);
 }
 
 void MediaControlFullscreenButtonElement::SetIsFullscreen(bool is_fullscreen) {
-  SetDisplayType(is_fullscreen ? kMediaExitFullscreenButton
-                               : kMediaEnterFullscreenButton);
+  if (is_fullscreen) {
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(
+                     WebLocalizedString::kAXMediaExitFullscreenButton)));
+  } else {
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(
+                     WebLocalizedString::kAXMediaEnterFullscreenButton)));
+  }
   SetClass("fullscreen", is_fullscreen);
 }
 

@@ -66,7 +66,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaControlsPanel:
       return AXMediaControlsContainer::Create(layout_object, ax_object_cache);
 
-    case kMediaEnterFullscreenButton:
     case kMediaMuteButton:
     case kMediaPlayButton:
     case kMediaSliderThumb:
@@ -75,7 +74,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaPauseButton:
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
-    case kMediaExitFullscreenButton:
     case kMediaCastOffButton:
     case kMediaCastOnButton:
     case kMediaOverlayCastOffButton:
@@ -128,10 +126,6 @@ String AccessibilityMediaControl::TextAlternative(
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
-    case kMediaEnterFullscreenButton:
-      return QueryString(WebLocalizedString::kAXMediaEnterFullscreenButton);
-    case kMediaExitFullscreenButton:
-      return QueryString(WebLocalizedString::kAXMediaExitFullscreenButton);
     case kMediaMuteButton:
       return QueryString(WebLocalizedString::kAXMediaMuteButton);
     case kMediaPlayButton:
@@ -197,8 +191,6 @@ String AccessibilityMediaControl::Description(
     // The following descriptions are repeats of their respective titles. When
     // read by accessibility, we get the same thing said twice, with no value
     // added. So instead, we just return an empty string.
-    case kMediaEnterFullscreenButton:
-    case kMediaExitFullscreenButton:
     case kMediaDisplayCutoutFullscreenButton:
     case kMediaMuteButton:
     case kMediaUnMuteButton:
@@ -244,8 +236,6 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
 
 ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
-    case kMediaEnterFullscreenButton:
-    case kMediaExitFullscreenButton:
     case kMediaMuteButton:
     case kMediaPlayButton:
     case kMediaUnMuteButton:
