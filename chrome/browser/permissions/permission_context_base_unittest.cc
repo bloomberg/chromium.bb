@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -47,8 +48,6 @@ const char* const kPermissionsKillSwitchFieldStudy =
 const char* const kPermissionsKillSwitchBlockedValue =
     PermissionContextBase::kPermissionsKillSwitchBlockedValue;
 const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
-const char* const kPromptGroupName = kPermissionsKillSwitchTestGroup;
-const char kPromptTrialName[] = "PermissionPromptsUX";
 
 class TestPermissionContext : public PermissionContextBase {
  public:
@@ -391,27 +390,16 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     SetUpUrl(url);
     base::HistogramTester histograms;
 
-    // Set up the custom parameter and custom value.
-    base::FieldTrialList field_trials(nullptr);
-    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-        kPromptTrialName, kPromptGroupName);
     std::map<std::string, std::string> params;
     params[PermissionDecisionAutoBlocker::kPromptDismissCountKey] = "5";
-    ASSERT_TRUE(variations::AssociateVariationParams(kPromptTrialName,
-                                                     kPromptGroupName, params));
-
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        features::kBlockPromptsIfDismissedOften.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
-
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kBlockPromptsIfDismissedOften, params);
 
-    EXPECT_EQ(base::FeatureList::GetFieldTrial(
-                  features::kBlockPromptsIfDismissedOften),
-              trial);
+    std::map<std::string, std::string> actual_params;
+    EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
+        features::kBlockPromptsIfDismissedOften, &actual_params));
+    EXPECT_EQ(params, actual_params);
 
     {
       std::map<std::string, std::string> actual_params;

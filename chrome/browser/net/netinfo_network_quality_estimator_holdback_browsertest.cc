@@ -101,27 +101,12 @@ class NetInfoNetworkQualityEstimatorHoldbackBrowserTest
   }
 
   void ConfigureHoldbackExperiment() {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    const std::string kTrialName = "TrialFoo";
-    const std::string kGroupName = "GroupFoo";  // Value not used
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
     std::map<std::string, std::string> params;
-
     if (GetParam()) {
       params["web_effective_connection_type_override"] = "2G";
     }
-    ASSERT_TRUE(
-        base::FieldTrialParamAssociator::GetInstance()
-            ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        features::kNetworkQualityEstimatorWebHoldback.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kNetworkQualityEstimatorWebHoldback, params);
   }
 
   // Simulates a network quality change.

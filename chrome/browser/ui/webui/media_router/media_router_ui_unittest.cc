@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
@@ -134,12 +133,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   MediaRouterUITest()
       : presentation_request_({0, 0},
                               {GURL("https://google.com/presentation")},
-                              url::Origin::Create(GURL("http://google.com"))) {
-    // enable and disable features
-    scoped_feature_list_.InitFromCommandLine(
-        "EnableCastLocalMedia" /* enabled features */,
-        std::string() /* disabled features */);
-  }
+                              url::Origin::Create(GURL("http://google.com"))) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -229,7 +223,6 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<MockMediaRouterWebUIMessageHandler> message_handler_;
   MockMediaRouterFileDialog* mock_file_dialog_ = nullptr;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MediaRouterUIIncognitoTest : public MediaRouterUITest {
