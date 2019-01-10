@@ -373,7 +373,6 @@ jumbo_source_set("base") {
   }
 
   if (is_win) {
-    deps += [ "//media/base/win" ]
     public_deps += [ "//media/base/win:d3d11" ]
   }
 

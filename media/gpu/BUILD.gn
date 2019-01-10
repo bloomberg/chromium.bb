@@ -279,7 +279,7 @@ component("gpu") {
       "//build/config/compiler:no_size_t_to_int_warning",
       "//third_party/khronos:khronos_headers",
     ]
-    public_deps += [ "//media/base/win" ]
+    public_deps += [ "//media/base/win:media_foundation_util" ]
     deps += [
       "//third_party/angle:includes",
       "//ui/display",
