@@ -1,4 +1,4 @@
-# Web Tests (formly known as "Layout Tests" "LayoutTests")
+# Web Tests (formerly known as "Layout Tests" or "LayoutTests")
 
 Web tests are used by Blink to test many components, including but not
 limited to layout and rendering. In general, web tests involve loading pages
@@ -492,8 +492,7 @@ If there are current expectation files for `web_tests/foo/bar/test.html`,
 the above command will overwrite the current baselines at their original
 locations with the actual results. The current baseline means the `-expected.*`
 file used to compare the actual result when the test is run locally, i.e. the
-first file found in the [baseline search path]
-(https://cs.chromium.org/search/?q=port/base.py+baseline_search_path).
+first file found in the [baseline search path](https://cs.chromium.org/search/?q=port/base.py+baseline_search_path).
 
 If there are no current baselines, the above command will create new baselines
 in the platform-independent directory, e.g.
