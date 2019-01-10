@@ -240,6 +240,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if a close match is found.
   bool ToSkYUVColorSpace(SkYUVColorSpace* out) const;
 
+  void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
   bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;

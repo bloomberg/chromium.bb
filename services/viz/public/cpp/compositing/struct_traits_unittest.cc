@@ -1200,8 +1200,8 @@ TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
 TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   const gfx::Rect result_rect(42, 43, 7, 8);
   SkBitmap bitmap;
-  const sk_sp<SkColorSpace> adobe_rgb = SkColorSpace::MakeRGB(
-      SkColorSpace::kSRGB_RenderTargetGamma, SkColorSpace::kAdobeRGB_Gamut);
+  const sk_sp<SkColorSpace> adobe_rgb =
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kAdobeRGB);
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(7, 8, adobe_rgb));
   bitmap.eraseARGB(123, 213, 77, 33);
   std::unique_ptr<CopyOutputResult> input =

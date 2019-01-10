@@ -597,12 +597,12 @@ void CanvasAsyncBlobCreator::Trace(blink::Visitor* visitor) {
 
 sk_sp<SkColorSpace> CanvasAsyncBlobCreator::BlobColorSpaceToSkColorSpace(
     String blob_color_space) {
-  SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
+  skcms_Matrix3x3 gamut = SkNamedGamut::kSRGB;
   if (blob_color_space == kDisplayP3ImageColorSpaceName)
-    gamut = SkColorSpace::kDCIP3_D65_Gamut;
+    gamut = SkNamedGamut::kDCIP3;
   else if (blob_color_space == kRec2020ImageColorSpaceName)
-    gamut = SkColorSpace::kRec2020_Gamut;
-  return SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma, gamut);
+    gamut = SkNamedGamut::kRec2020;
+  return SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, gamut);
 }
 
 bool CanvasAsyncBlobCreator::EncodeImageForConvertToBlobTest() {

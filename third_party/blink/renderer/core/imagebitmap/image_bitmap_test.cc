@@ -614,8 +614,8 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   // internal SkImage back storage.
   ASSERT_EQ(sk_image_internal, sk_image_internal_8888);
 
-  sk_sp<SkColorSpace> p3_color_space = SkColorSpace::MakeRGB(
-      SkColorSpace::kLinear_RenderTargetGamma, SkColorSpace::kDCIP3_D65_Gamut);
+  sk_sp<SkColorSpace> p3_color_space =
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3);
   SkImageInfo info_f16 = SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType,
                                            kPremul_SkAlphaType, p3_color_space);
   sk_sp<SkSurface> surface_f16(SkSurface::MakeRaster(info_f16));

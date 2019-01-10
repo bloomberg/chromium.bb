@@ -1031,8 +1031,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   // Make a 10x7 red ImageBitmap in P3 color space.
   SkImageInfo info = SkImageInfo::Make(
       10, 7, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3));
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
@@ -1138,8 +1137,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
   uint8_t pixel[8] = {};
   SkImageInfo info = SkImageInfo::Make(
       1, 1, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3));
   ASSERT_TRUE(new_image_bitmap->BitmapImage()
                   ->PaintImageForCurrentFrame()
                   .GetSkImage()

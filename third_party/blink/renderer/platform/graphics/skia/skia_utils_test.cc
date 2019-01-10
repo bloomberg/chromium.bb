@@ -14,21 +14,23 @@ class SkiaUtilsTest : public testing::Test {};
 TEST_F(SkiaUtilsTest, SkColorSpaceToGfxColorSpace) {
   std::vector<sk_sp<SkColorSpace>> skia_color_spaces;
 
-  SkColorSpace::RenderTargetGamma gammas[] = {
-      SkColorSpace::kLinear_RenderTargetGamma,
-      SkColorSpace::kSRGB_RenderTargetGamma};
+  skcms_TransferFunction transferFns[] = {
+      SkNamedTransferFn::kLinear,
+      SkNamedTransferFn::kSRGB,
+  };
 
-  SkColorSpace::Gamut gamuts[] = {
-      SkColorSpace::kSRGB_Gamut, SkColorSpace::kAdobeRGB_Gamut,
-      SkColorSpace::kDCIP3_D65_Gamut, SkColorSpace::kRec2020_Gamut,
+  skcms_Matrix3x3 gamuts[] = {
+      SkNamedGamut::kSRGB,
+      SkNamedGamut::kAdobeRGB,
+      SkNamedGamut::kDCIP3,
+      SkNamedGamut::kRec2020,
   };
 
   skia_color_spaces.push_back((SkColorSpace::MakeSRGB())->makeColorSpin());
 
-  for (unsigned gamma_itr = 0; gamma_itr < 2; gamma_itr++) {
-    for (unsigned gamut_itr = 0; gamut_itr < 4; gamut_itr++) {
-      skia_color_spaces.push_back(
-          SkColorSpace::MakeRGB(gammas[gamma_itr], gamuts[gamut_itr]));
+  for (skcms_TransferFunction transferFn : transferFns) {
+    for (skcms_Matrix3x3 gamut : gamuts) {
+      skia_color_spaces.push_back(SkColorSpace::MakeRGB(transferFn, gamut));
     }
   }
 
