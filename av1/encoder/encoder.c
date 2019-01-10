@@ -3714,10 +3714,13 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 }
 
 static void init_motion_estimation(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
   const int y_stride = cpi->scaled_source.y_stride;
-  const int y_stride_src = (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode)
-                               ? y_stride
-                               : cpi->lookahead->buf->img.y_stride;
+  const int y_stride_src =
+      ((cpi->oxcf.width != cm->width || cpi->oxcf.height != cm->height) ||
+       av1_superres_scaled(cm))
+          ? y_stride
+          : cpi->lookahead->buf->img.y_stride;
   // Update if ss_cfg is uninitialized or the current frame has a new stride
   const int should_update = !cpi->ss_cfg[SS_CFG_SRC].stride ||
                             !cpi->ss_cfg[SS_CFG_LOOKAHEAD].stride ||
@@ -3920,8 +3923,27 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   return new_denom;
 }
 
-#define ENERGY_BY_Q2_THRESH 0.01
-#define ENERGY_BY_AC_THRESH 0.2
+#define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME_SOLO 0.012
+#define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME 0.01
+#define SUPERRES_ENERGY_BY_Q2_THRESH_ARFFRAME 0.01
+#define SUPERRES_ENERGY_BY_AC_THRESH 0.2
+
+static double get_energy_by_q2_thresh(const GF_GROUP *gf_group,
+                                      const RATE_CONTROL *rc) {
+  // TODO(now): Return keyframe thresh * factor based on frame type / pyramid
+  // level.
+  if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+    return SUPERRES_ENERGY_BY_Q2_THRESH_ARFFRAME;
+  } else if (gf_group->update_type[gf_group->index] == KF_UPDATE) {
+    if (rc->frames_to_key <= 1)
+      return SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME_SOLO;
+    else
+      return SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME;
+  } else {
+    assert(0);
+  }
+  return 0;
+}
 
 static uint8_t get_superres_denom_from_qindex_energy(int qindex, double *energy,
                                                      double threshq,
@@ -3937,16 +3959,34 @@ static uint8_t get_superres_denom_from_qindex_energy(int qindex, double *energy,
   return 3 * SCALE_NUMERATOR - k;
 }
 
-static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex) {
+static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
+                                             int sr_kf, int sr_arf) {
+  // Use superres for Key-frames and Alt-ref frames only.
+  const GF_GROUP *gf_group = &cpi->gf_group;
+  if (gf_group->update_type[gf_group->index] != KF_UPDATE &&
+      gf_group->update_type[gf_group->index] != ARF_UPDATE) {
+    return SCALE_NUMERATOR;
+  }
+  if (gf_group->update_type[gf_group->index] == KF_UPDATE && !sr_kf) {
+    return SCALE_NUMERATOR;
+  }
+  if (gf_group->update_type[gf_group->index] == ARF_UPDATE && !sr_arf) {
+    return SCALE_NUMERATOR;
+  }
+
   double energy[16];
   analyze_hor_freq(cpi, energy);
+
+  const double energy_by_q2_thresh =
+      get_energy_by_q2_thresh(gf_group, &cpi->rc);
   /*
   printf("\nenergy = [");
   for (int k = 1; k < 16; ++k) printf("%f, ", energy[k]);
   printf("]\n");
   */
-  return get_superres_denom_from_qindex_energy(
-      qindex, energy, ENERGY_BY_Q2_THRESH, ENERGY_BY_AC_THRESH);
+  const int denom = get_superres_denom_from_qindex_energy(
+      qindex, energy, energy_by_q2_thresh, SUPERRES_ENERGY_BY_AC_THRESH);
+  return denom;
 }
 
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
@@ -3977,6 +4017,8 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (cpi->common.allow_screen_content_tools) break;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
         av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
+
+      // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;
       const int q = av1_rc_pick_q_and_bounds(
           cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
@@ -3987,18 +4029,15 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (q <= qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
-        new_denom = get_superres_denom_for_qindex(cpi, q);
+        new_denom = get_superres_denom_for_qindex(cpi, q, 1, 1);
       }
       break;
     }
     case SUPERRES_AUTO: {
-      // Don't use when screen content tools are used.
+      // Do not use superres when screen content tools are used.
       if (cpi->common.allow_screen_content_tools) break;
-      // Don't use for inter frames.
-      if (!frame_is_intra_only(&cpi->common)) break;
-      // Don't use for keyframes that can be used as references, except when
-      // using AOM_Q mode.
-      if (cpi->rc.frames_to_key != 1 && cpi->oxcf.rc_mode != AOM_Q) break;
+      if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
+        av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
 
       // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;
@@ -4009,7 +4048,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (q <= qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
-        new_denom = get_superres_denom_for_qindex(cpi, q);
+        new_denom = get_superres_denom_for_qindex(cpi, q, 1, 1);
       }
       break;
     }
@@ -4089,7 +4128,7 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
 static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   size_params_type rsz = { oxcf->width, oxcf->height, SCALE_NUMERATOR };
-  int resize_denom;
+  int resize_denom = SCALE_NUMERATOR;
   if (oxcf->pass == 1) return rsz;
   if (cpi->resize_pending_width && cpi->resize_pending_height) {
     rsz.resize_width = cpi->resize_pending_width;

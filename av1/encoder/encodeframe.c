@@ -1593,6 +1593,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
+  assert(bsize < BLOCK_SIZES_ALL);
   const int hbs = mi_size_wide[bsize] / 2;
   const int is_partition_root = bsize >= BLOCK_8X8;
   const int ctx = is_partition_root

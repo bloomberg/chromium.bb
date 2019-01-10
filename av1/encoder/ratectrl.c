@@ -44,6 +44,10 @@
 #define MIN_BPB_FACTOR 0.005
 #define MAX_BPB_FACTOR 50
 
+#define SUPERRES_QADJ_PER_DENOM_KEYFRAME_SOLO 0
+#define SUPERRES_QADJ_PER_DENOM_KEYFRAME 2
+#define SUPERRES_QADJ_PER_DENOM_ARFFRAME 2
+
 #define FRAME_OVERHEAD_BITS 200
 #define ASSIGN_MINQ_TABLE(bit_depth, name)                   \
   do {                                                       \
@@ -816,11 +820,19 @@ static int get_active_cq_level(const RATE_CONTROL *rc,
   if (oxcf->rc_mode == AOM_CQ || oxcf->rc_mode == AOM_Q) {
     // printf("Superres %d %d %d = %d\n", superres_denom, intra_only,
     //        rc->frames_to_key, !(intra_only && rc->frames_to_key <= 1));
-    if (oxcf->superres_mode == SUPERRES_QTHRESH &&
-        superres_denom != SCALE_NUMERATOR &&
-        !(intra_only && rc->frames_to_key <= 1)) {
-      active_cq_level =
-          AOMMAX(active_cq_level - ((superres_denom - SCALE_NUMERATOR) * 4), 0);
+    if ((oxcf->superres_mode == SUPERRES_QTHRESH ||
+         oxcf->superres_mode == SUPERRES_AUTO) &&
+        superres_denom != SCALE_NUMERATOR) {
+      int mult = SUPERRES_QADJ_PER_DENOM_KEYFRAME_SOLO;
+      if (intra_only && rc->frames_to_key <= 1) {
+        mult = 0;
+      } else if (intra_only) {
+        mult = SUPERRES_QADJ_PER_DENOM_KEYFRAME;
+      } else {
+        mult = SUPERRES_QADJ_PER_DENOM_ARFFRAME;
+      }
+      active_cq_level = AOMMAX(
+          active_cq_level - ((superres_denom - SCALE_NUMERATOR) * mult), 0);
     }
   }
   if (oxcf->rc_mode == AOM_CQ && rc->total_target_bits > 0) {
@@ -1109,7 +1121,8 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
         cm->superres_scale_denominator != SCALE_NUMERATOR) {
       active_best_quality =
           AOMMAX(active_best_quality -
-                     ((cm->superres_scale_denominator - SCALE_NUMERATOR) * 4),
+                     ((cm->superres_scale_denominator - SCALE_NUMERATOR) *
+                      SUPERRES_QADJ_PER_DENOM_KEYFRAME),
                  0);
     }
   }
@@ -1256,6 +1269,17 @@ int av1_estimate_q_constant_quality_two_pass(const AV1_COMP *cpi, int width,
 
         active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
         *arf_q = active_best_quality;
+        // Tweak active_best_quality for AOM_Q mode when superres is on, as this
+        // will be used directly as 'q' later.
+        if ((oxcf->superres_mode == SUPERRES_QTHRESH ||
+             oxcf->superres_mode == SUPERRES_AUTO) &&
+            cm->superres_scale_denominator != SCALE_NUMERATOR) {
+          active_best_quality =
+              AOMMAX(active_best_quality -
+                         ((cm->superres_scale_denominator - SCALE_NUMERATOR) *
+                          SUPERRES_QADJ_PER_DENOM_ARFFRAME),
+                     0);
+        }
       } else {
         assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
         assert(is_intrl_arf_boost);
