@@ -46,10 +46,8 @@ class MultiDeviceSetupInitializer
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
         OobeCompletionTracker* oobe_completion_tracker,
-        std::unique_ptr<AndroidSmsAppHelperDelegate>
-            android_sms_app_helper_delegate,
-        std::unique_ptr<AndroidSmsPairingStateTracker>
-            android_sms_pairing_state_tracker,
+        AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+        AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
         const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
@@ -84,10 +82,8 @@ class MultiDeviceSetupInitializer
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
       OobeCompletionTracker* oobe_completion_tracker,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate,
-      std::unique_ptr<AndroidSmsPairingStateTracker>
-          android_sms_pairing_state_tracker,
+      AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+      AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
       const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
@@ -127,9 +123,8 @@ class MultiDeviceSetupInitializer
   device_sync::DeviceSyncClient* device_sync_client_;
   AuthTokenValidator* auth_token_validator_;
   OobeCompletionTracker* oobe_completion_tracker_;
-  std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
-  std::unique_ptr<AndroidSmsPairingStateTracker>
-      android_sms_pairing_state_tracker_;
+  AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate_;
+  AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker_;
   const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider_;
 
   std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_impl_;

@@ -13,11 +13,9 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -29,13 +27,6 @@ namespace {
 
 const char kDefaultToPersistCookieName[] = "default_to_persist";
 const char kDefaultToPersistCookieValue[] = "true";
-
-network::mojom::CookieManager* GetCookieManager(Profile* profile) {
-  content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile, chromeos::android_sms::GetAndroidMessagesURL());
-  return partition->GetCookieManagerForBrowserProcess();
-}
 
 void OnAppUninstallResult(const GURL& app_url, bool succeeded) {
   UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult", succeeded);
@@ -52,37 +43,37 @@ namespace chromeos {
 
 namespace android_sms {
 
-AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::PwaFetcherDelegate() =
-    default;
+AndroidSmsAppHelperDelegateImpl::PwaDelegate::PwaDelegate() = default;
 
-AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::~PwaFetcherDelegate() =
-    default;
+AndroidSmsAppHelperDelegateImpl::PwaDelegate::~PwaDelegate() = default;
 
 const extensions::Extension*
-AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::GetPwaForUrl(
-    Profile* profile,
-    GURL gurl) {
+AndroidSmsAppHelperDelegateImpl::PwaDelegate::GetPwaForUrl(Profile* profile,
+                                                           GURL gurl) {
   return extensions::util::GetInstalledPwaForUrl(profile, gurl);
 }
 
-AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
-    Profile* profile)
-    : pending_app_manager_(
-          &web_app::WebAppProvider::Get(profile)->pending_app_manager()),
-      profile_(profile),
-      host_content_settings_map_(
-          HostContentSettingsMapFactory::GetForProfile(profile)),
-      cookie_manager_(GetCookieManager(profile)),
-      pwa_fetcher_delegate_(std::make_unique<PwaFetcherDelegate>()),
-      weak_ptr_factory_(this) {}
+content::WebContents* AndroidSmsAppHelperDelegateImpl::PwaDelegate::OpenApp(
+    const AppLaunchParams& params) {
+  // Note: OpenApplications() is not namespaced and is defined in
+  // application_launch.h.
+  return OpenApplication(params);
+}
+
+network::mojom::CookieManager*
+AndroidSmsAppHelperDelegateImpl::PwaDelegate::GetCookieManager(
+    Profile* profile) {
+  return GetCookieManagerForAndroidMessagesURL(profile);
+}
 
 AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
+    Profile* profile,
     web_app::PendingAppManager* pending_app_manager,
-    HostContentSettingsMap* host_content_settings_map,
-    network::mojom::CookieManager* cookie_manager)
-    : pending_app_manager_(pending_app_manager),
+    HostContentSettingsMap* host_content_settings_map)
+    : profile_(profile),
+      pending_app_manager_(pending_app_manager),
       host_content_settings_map_(host_content_settings_map),
-      cookie_manager_(cookie_manager),
+      pwa_delegate_(std::make_unique<PwaDelegate>()),
       weak_ptr_factory_(this) {}
 
 AndroidSmsAppHelperDelegateImpl::~AndroidSmsAppHelperDelegateImpl() = default;
@@ -95,7 +86,7 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsApp(
   const GURL old_messages_url =
       chromeos::android_sms::GetAndroidMessagesURLOld();
   const extensions::Extension* old_android_sms_pwa =
-      pwa_fetcher_delegate_->GetPwaForUrl(profile_, old_messages_url);
+      pwa_delegate_->GetPwaForUrl(profile_, old_messages_url);
   if (old_android_sms_pwa) {
     PA_LOG(INFO) << "Messages PWA exists for old URL (" << old_messages_url
                  << "); uninstalling before continuing.";
@@ -112,7 +103,7 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsApp(
 void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsAppWithNoOldApp(
     bool launch_on_install) {
   PA_LOG(INFO) << "Setting DefaultToPersist Cookie";
-  cookie_manager_->SetCanonicalCookie(
+  pwa_delegate_->GetCookieManager(profile_)->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           chromeos::android_sms::GetAndroidMessagesURL(),
           kDefaultToPersistCookieName, kDefaultToPersistCookieValue,
@@ -155,9 +146,8 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsApp() {
 }
 
 void AndroidSmsAppHelperDelegateImpl::SetUpAndLaunchAndroidSmsApp() {
-  const extensions::Extension* android_sms_pwa =
-      pwa_fetcher_delegate_->GetPwaForUrl(profile_,
-                                          android_sms::GetAndroidMessagesURL());
+  const extensions::Extension* android_sms_pwa = pwa_delegate_->GetPwaForUrl(
+      profile_, android_sms::GetAndroidMessagesURL());
   if (!android_sms_pwa) {
     PA_LOG(VERBOSE) << "No Messages app found. Installing it.";
     SetUpAndroidSmsApp(true /* launch_on_install */);
@@ -168,17 +158,14 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndLaunchAndroidSmsApp() {
 }
 
 void AndroidSmsAppHelperDelegateImpl::LaunchAndroidSmsApp() {
-  const extensions::Extension* android_sms_pwa =
-      pwa_fetcher_delegate_->GetPwaForUrl(profile_,
-                                          android_sms::GetAndroidMessagesURL());
+  const extensions::Extension* android_sms_pwa = pwa_delegate_->GetPwaForUrl(
+      profile_, android_sms::GetAndroidMessagesURL());
   DCHECK(android_sms_pwa);
 
   PA_LOG(VERBOSE) << "Messages app Launching...";
-  AppLaunchParams params(
+  pwa_delegate_->OpenApp(AppLaunchParams(
       profile_, android_sms_pwa, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL);
-  // OpenApplications() is defined in application_launch.h.
-  OpenApplication(params);
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
@@ -215,12 +202,13 @@ void AndroidSmsAppHelperDelegateImpl::TearDownAndroidSmsAppAtUrl(GURL pwa_url) {
       network::mojom::CookieDeletionFilter::New());
   filter->url = pwa_url;
   filter->cookie_name = kDefaultToPersistCookieName;
-  cookie_manager_->DeleteCookies(std::move(filter), base::DoNothing());
+  pwa_delegate_->GetCookieManager(profile_)->DeleteCookies(std::move(filter),
+                                                           base::DoNothing());
 }
 
-void AndroidSmsAppHelperDelegateImpl::SetPwaFetcherDelegateForTesting(
-    std::unique_ptr<PwaFetcherDelegate> test_pwa_fetcher_delegate) {
-  pwa_fetcher_delegate_ = std::move(test_pwa_fetcher_delegate);
+void AndroidSmsAppHelperDelegateImpl::SetPwaDelegateForTesting(
+    std::unique_ptr<PwaDelegate> test_pwa_delegate) {
+  pwa_delegate_ = std::move(test_pwa_delegate);
 }
 
 }  // namespace android_sms

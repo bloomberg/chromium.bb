@@ -145,6 +145,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
@@ -1187,6 +1188,9 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
   }
 
   if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {
+    chromeos::android_sms::AndroidSmsService* android_sms_service =
+        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
+            this);
     return std::make_unique<
         chromeos::multidevice_setup::MultiDeviceSetupService>(
         std::move(request), GetPrefs(),
@@ -1195,10 +1199,12 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
             this),
         chromeos::multidevice_setup::OobeCompletionTrackerFactory::
             GetForProfile(this),
-        std::make_unique<
-            chromeos::android_sms::AndroidSmsAppHelperDelegateImpl>(this),
-        std::make_unique<
-            chromeos::android_sms::AndroidSmsPairingStateTrackerImpl>(this),
+        android_sms_service
+            ? android_sms_service->android_sms_app_helper_delegate()
+            : nullptr,
+        android_sms_service
+            ? android_sms_service->android_sms_pairing_state_tracker()
+            : nullptr,
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
   }
 

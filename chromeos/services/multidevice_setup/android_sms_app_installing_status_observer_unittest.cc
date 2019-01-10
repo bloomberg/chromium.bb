@@ -33,16 +33,14 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
       default;
 
   void SetUp() override {
-    auto fake_android_sms_app_helper_delegate =
-        std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_app_helper_delegate_ =
-        fake_android_sms_app_helper_delegate.get();
+        std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_host_status_provider_ = std::make_unique<FakeHostStatusProvider>();
     fake_feature_state_manager_ = std::make_unique<FakeFeatureStateManager>();
     android_sms_app_installing_status_observer_ =
         AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
             fake_host_status_provider_.get(), fake_feature_state_manager_.get(),
-            std::move(fake_android_sms_app_helper_delegate));
+            fake_android_sms_app_helper_delegate_.get());
 
     SetMessagesFeatureState(mojom::FeatureState::kEnabledByUser);
     SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
@@ -57,7 +55,7 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
   }
 
   FakeAndroidSmsAppHelperDelegate* fake_app_helper_delegate() {
-    return fake_android_sms_app_helper_delegate_;
+    return fake_android_sms_app_helper_delegate_.get();
   }
 
   multidevice::RemoteDeviceRef GetFakePhone() {
@@ -75,7 +73,8 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
  private:
   std::unique_ptr<FakeHostStatusProvider> fake_host_status_provider_;
   std::unique_ptr<FakeFeatureStateManager> fake_feature_state_manager_;
-  FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
+  std::unique_ptr<FakeAndroidSmsAppHelperDelegate>
+      fake_android_sms_app_helper_delegate_;
 
   std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
       android_sms_app_installing_status_observer_;

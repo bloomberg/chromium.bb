@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "extensions/common/extension.h"
@@ -16,6 +17,10 @@
 #include "url/gurl.h"
 
 class Profile;
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace web_app {
 enum class InstallResultCode;
@@ -29,32 +34,28 @@ namespace android_sms {
 class AndroidSmsAppHelperDelegateImpl
     : public multidevice_setup::AndroidSmsAppHelperDelegate {
  public:
-  explicit AndroidSmsAppHelperDelegateImpl(Profile* profile);
+  AndroidSmsAppHelperDelegateImpl(
+      Profile* profile,
+      web_app::PendingAppManager* pending_app_manager,
+      HostContentSettingsMap* host_content_settings_map);
   ~AndroidSmsAppHelperDelegateImpl() override;
 
  private:
   friend class AndroidSmsAppHelperDelegateImplTest;
 
-  // Fetches the Extension* associated with the PWA for |gurl|. This class is
-  // a thin wrapper around extensions::util::GetInstalledPwaForUrl() which is
-  // stubbed out for tests.
-  class PwaFetcherDelegate {
+  // Thin wrapper around static PWA functions which is stubbed out for tests.
+  // Specifically, this class wraps extensions::util::GetInstalledPwaForUrl()
+  // and OpenApplication().
+  class PwaDelegate {
    public:
-    PwaFetcherDelegate();
-    virtual ~PwaFetcherDelegate();
+    PwaDelegate();
+    virtual ~PwaDelegate();
 
     virtual const extensions::Extension* GetPwaForUrl(Profile* profile,
                                                       GURL gurl);
+    virtual content::WebContents* OpenApp(const AppLaunchParams& params);
+    virtual network::mojom::CookieManager* GetCookieManager(Profile* profile);
   };
-
-  // Note: This constructor should only be used in testing. Right now, objects
-  // built using this constructor will segfault on profile_ if
-  // LaunchAndroidSmsApp is called. We'll need to fix this once tests for that
-  // function are added. See https://crbug.com/876972.
-  AndroidSmsAppHelperDelegateImpl(
-      web_app::PendingAppManager* pending_app_manager,
-      HostContentSettingsMap* host_content_settings_map,
-      network::mojom::CookieManager* cookie_manager);
 
   // AndroidSmsAppHelperDelegate:
   void SetUpAndroidSmsApp() override;
@@ -71,15 +72,15 @@ class AndroidSmsAppHelperDelegateImpl
                                              bool set_cookie_success);
   void TearDownAndroidSmsAppAtUrl(GURL pwa_url);
 
-  void SetPwaFetcherDelegateForTesting(
-      std::unique_ptr<PwaFetcherDelegate> test_pwa_fetcher_delegate);
+  void SetPwaDelegateForTesting(std::unique_ptr<PwaDelegate> test_pwa_delegate);
 
   static const char kMessagesWebAppUrl[];
-  web_app::PendingAppManager* pending_app_manager_;
+
   Profile* profile_;
+  web_app::PendingAppManager* pending_app_manager_;
   HostContentSettingsMap* host_content_settings_map_;
-  network::mojom::CookieManager* cookie_manager_;
-  std::unique_ptr<PwaFetcherDelegate> pwa_fetcher_delegate_;
+
+  std::unique_ptr<PwaDelegate> pwa_delegate_;
   base::WeakPtrFactory<AndroidSmsAppHelperDelegateImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImpl);

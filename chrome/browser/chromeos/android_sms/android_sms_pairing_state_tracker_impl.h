@@ -10,13 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
-namespace net {
-class CanonicalCookie;
-}  // namespace net
+class Profile;
 
 namespace chromeos {
 
@@ -27,8 +21,7 @@ class AndroidSmsPairingStateTrackerImpl
     : public multidevice_setup::AndroidSmsPairingStateTracker,
       public network::mojom::CookieChangeListener {
  public:
-  explicit AndroidSmsPairingStateTrackerImpl(
-      content::BrowserContext* browser_context);
+  explicit AndroidSmsPairingStateTrackerImpl(Profile* profile);
   ~AndroidSmsPairingStateTrackerImpl() override;
 
   // AndroidSmsPairingStateTracker:
@@ -41,9 +34,11 @@ class AndroidSmsPairingStateTrackerImpl
 
   void FetchMessagesPairingState();
   void OnCookiesRetrieved(const std::vector<net::CanonicalCookie>& cookies);
-  network::mojom::CookieManager* GetCookieManager();
 
-  content::BrowserContext* browser_context_;
+  void AddCookieChangeListener();
+
+  Profile* profile_;
+
   mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
   bool was_paired_on_last_update_ = false;
   base::WeakPtrFactory<AndroidSmsPairingStateTrackerImpl> weak_ptr_factory_;

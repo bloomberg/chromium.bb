@@ -27,8 +27,7 @@ class TestMultideviceHandler : public MultideviceHandler {
   TestMultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-          android_sms_app_helper)
+      multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
       : MultideviceHandler(prefs,
                            multidevice_setup_client,
                            std::move(android_sms_app_helper)) {}
@@ -116,16 +115,14 @@ class MultideviceHandlerTest : public testing::Test {
 
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
-    auto fake_android_sms_app_helper_delegate =
-        std::make_unique<multidevice_setup::FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_app_helper_delegate_ =
-        fake_android_sms_app_helper_delegate.get();
+        std::make_unique<multidevice_setup::FakeAndroidSmsAppHelperDelegate>();
 
     prefs_.reset(new TestingPrefServiceSimple());
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
-        std::move(fake_android_sms_app_helper_delegate));
+        fake_android_sms_app_helper_delegate_.get());
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascript();
@@ -269,7 +266,7 @@ class MultideviceHandlerTest : public testing::Test {
 
   multidevice_setup::FakeAndroidSmsAppHelperDelegate*
   fake_android_sms_app_helper_delegate() {
-    return fake_android_sms_app_helper_delegate_;
+    return fake_android_sms_app_helper_delegate_.get();
   }
 
   const multidevice::RemoteDeviceRef test_device_;
@@ -292,7 +289,7 @@ class MultideviceHandlerTest : public testing::Test {
       host_status_with_device_;
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
       feature_states_map_;
-  multidevice_setup::FakeAndroidSmsAppHelperDelegate*
+  std::unique_ptr<multidevice_setup::FakeAndroidSmsAppHelperDelegate>
       fake_android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);

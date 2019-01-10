@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "content/public/browser/browser_context.h"
@@ -25,18 +26,15 @@ namespace chromeos {
 namespace android_sms {
 
 AndroidSmsPairingStateTrackerImpl::AndroidSmsPairingStateTrackerImpl(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
+    Profile* profile)
+    : profile_(profile),
       cookie_listener_binding_(this),
       weak_ptr_factory_(this) {
-  // Trigger the first fetch of the sms cookie and start listening for changes.
-  FetchMessagesPairingState();
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
-
-  GetCookieManager()->AddCookieChangeListener(
-      chromeos::android_sms::GetAndroidMessagesURL(),
-      kMessagesPairStateCookieName, std::move(listener_ptr));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AndroidSmsPairingStateTrackerImpl::AddCookieChangeListener,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 AndroidSmsPairingStateTrackerImpl::~AndroidSmsPairingStateTrackerImpl() =
@@ -47,7 +45,7 @@ bool AndroidSmsPairingStateTrackerImpl::IsAndroidSmsPairingComplete() {
 }
 
 void AndroidSmsPairingStateTrackerImpl::FetchMessagesPairingState() {
-  GetCookieManager()->GetCookieList(
+  GetCookieManagerForAndroidMessagesURL(profile_)->GetCookieList(
       chromeos::android_sms::GetAndroidMessagesURL(), net::CookieOptions(),
       base::BindOnce(&AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved,
                      base::Unretained(this)));
@@ -84,12 +82,15 @@ void AndroidSmsPairingStateTrackerImpl::OnCookieChange(
   FetchMessagesPairingState();
 }
 
-network::mojom::CookieManager*
-AndroidSmsPairingStateTrackerImpl::GetCookieManager() {
-  content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          browser_context_, chromeos::android_sms::GetAndroidMessagesURL());
-  return partition->GetCookieManagerForBrowserProcess();
+void AndroidSmsPairingStateTrackerImpl::AddCookieChangeListener() {
+  // Trigger the first fetch of the sms cookie and start listening for changes.
+  FetchMessagesPairingState();
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
+
+  GetCookieManagerForAndroidMessagesURL(profile_)->AddCookieChangeListener(
+      chromeos::android_sms::GetAndroidMessagesURL(),
+      kMessagesPairStateCookieName, std::move(listener_ptr));
 }
 
 }  // namespace android_sms

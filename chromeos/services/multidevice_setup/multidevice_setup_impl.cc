@@ -78,15 +78,13 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
     const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, auth_token_validator,
-      oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
-      std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
+      oobe_completion_tracker, android_sms_app_helper_delegate,
+      android_sms_pairing_state_tracker, gcm_device_info_provider));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
@@ -94,10 +92,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
     const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
     : eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
@@ -127,7 +123,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               pref_service,
               host_status_provider_.get(),
               device_sync_client,
-              std::move(android_sms_pairing_state_tracker))),
+              android_sms_pairing_state_tracker)),
       host_device_timestamp_manager_(
           HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
               host_status_provider_.get(),
@@ -144,10 +140,12 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
           device_sync_client,
           gcm_device_info_provider)),
       android_sms_app_installing_host_observer_(
-          AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
-              host_status_provider_.get(),
-              feature_state_manager_.get(),
-              std::move(android_sms_app_helper_delegate))),
+          android_sms_app_helper_delegate
+              ? AndroidSmsAppInstallingStatusObserver::Factory::Get()
+                    ->BuildInstance(host_status_provider_.get(),
+                                    feature_state_manager_.get(),
+                                    android_sms_app_helper_delegate)
+              : nullptr),
       auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
   feature_state_manager_->AddObserver(this);

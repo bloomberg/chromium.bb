@@ -47,10 +47,8 @@ class FakeMultiDeviceSetupInitializerFactory
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
       OobeCompletionTracker* oobe_completion_tracker,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate,
-      std::unique_ptr<AndroidSmsPairingStateTracker>
-          android_sms_pairing_state_tracker,
+      AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+      AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
       const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
       override {
     EXPECT_TRUE(fake_multidevice_setup_);

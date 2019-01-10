@@ -36,8 +36,7 @@ class MultideviceHandler
   MultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-          android_sms_app_helper);
+      multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper);
   ~MultideviceHandler() override;
 
  protected:
@@ -104,8 +103,7 @@ class MultideviceHandler
   GetFeatureStatesMap();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
-  std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-      android_sms_app_helper_;
+  multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper_;
 
   ScopedObserver<multidevice_setup::MultiDeviceSetupClient,
                  multidevice_setup::MultiDeviceSetupClient::Observer>

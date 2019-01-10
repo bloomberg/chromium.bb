@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -42,8 +44,10 @@ AndroidSmsServiceFactory::AndroidSmsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "AndroidSmsService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
                 GetInstance());
+  DependsOn(web_app::WebAppProviderFactory::GetInstance());
 }
 
 AndroidSmsServiceFactory::~AndroidSmsServiceFactory() = default;
@@ -60,7 +64,11 @@ KeyedService* AndroidSmsServiceFactory::BuildServiceInstanceFor(
   if (ProfileHelper::Get()->GetUserByProfile(profile) == nullptr)
     return nullptr;
 
-  return new AndroidSmsService(context);
+  return new AndroidSmsService(
+      profile, HostContentSettingsMapFactory::GetForProfile(profile),
+      chromeos::multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
+          profile),
+      web_app::WebAppProviderFactory::GetForProfile(profile));
 }
 
 bool AndroidSmsServiceFactory::ServiceIsCreatedWithBrowserContext() const {

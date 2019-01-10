@@ -3,24 +3,36 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/android_sms/android_sms_service.h"
+
 #include "base/time/default_clock.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
+#include "chrome/browser/chromeos/android_sms/connection_manager.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/storage_partition.h"
-
-using chromeos::multidevice_setup::MultiDeviceSetupClient;
-using chromeos::multidevice_setup::MultiDeviceSetupClientFactory;
 
 namespace chromeos {
 
 namespace android_sms {
 
-AndroidSmsService::AndroidSmsService(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+AndroidSmsService::AndroidSmsService(
+    Profile* profile,
+    HostContentSettingsMap* host_content_settings_map,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    web_app::WebAppProvider* web_app_provider)
+    : profile_(profile),
+      multidevice_setup_client_(multidevice_setup_client),
+      android_sms_app_helper_delegate_(
+          std::make_unique<AndroidSmsAppHelperDelegateImpl>(
+              profile_,
+              &web_app_provider->pending_app_manager(),
+              host_content_settings_map)),
+      android_sms_pairing_state_tracker_(
+          std::make_unique<AndroidSmsPairingStateTrackerImpl>(profile_)) {
   session_manager::SessionManager::Get()->AddObserver(this);
 }
 
@@ -28,6 +40,8 @@ AndroidSmsService::~AndroidSmsService() = default;
 
 void AndroidSmsService::Shutdown() {
   connection_manager_.reset();
+  android_sms_app_helper_delegate_.reset();
+  android_sms_pairing_state_tracker_.reset();
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
@@ -40,22 +54,12 @@ void AndroidSmsService::OnSessionStateChanged() {
   if (session_manager::SessionManager::Get()->IsUserSessionBlocked())
     return;
 
-  content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          browser_context_, GetAndroidMessagesURL());
-  content::ServiceWorkerContext* service_worker_context =
-      storage_partition->GetServiceWorkerContext();
-
-  MultiDeviceSetupClient* multidevice_setup_client =
-      MultiDeviceSetupClientFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_));
-  DCHECK(multidevice_setup_client);
-
   connection_manager_ = std::make_unique<ConnectionManager>(
-      service_worker_context,
+      GetStoragePartitionForAndroidMessagesURL(profile_)
+          ->GetServiceWorkerContext(),
       std::make_unique<ConnectionEstablisherImpl>(
           base::DefaultClock::GetInstance()),
-      multidevice_setup_client);
+      multidevice_setup_client_);
 }
 
 }  // namespace android_sms
