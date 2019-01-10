@@ -308,25 +308,18 @@ static NSString* gUserAgentProduct = nil;
 }
 
 - (void)webState:(web::WebState*)webState
-    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
-  if (details.is_in_page) {
-    // Do not call webViewDidCommitNavigation: for fragment navigations.
-    return;
-  }
-
-  if ([_navigationDelegate
-          respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
-    [_navigationDelegate webViewDidCommitNavigation:self];
-  }
-}
-
-- (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   [self updateNavigationAvailability];
   [self updateCurrentURLs];
 
   // TODO(crbug.com/898357): Remove this once crbug.com/898357 is fixed.
   [self updateVisibleSSLStatus];
+
+  if (navigation->HasCommitted() &&
+      [_navigationDelegate
+          respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
+    [_navigationDelegate webViewDidCommitNavigation:self];
+  }
 
   NSError* error = navigation->GetError();
   SEL selector = @selector(webView:didFailNavigationWithError:);
