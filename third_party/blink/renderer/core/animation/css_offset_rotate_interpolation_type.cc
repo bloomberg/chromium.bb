@@ -174,7 +174,7 @@ void CSSOffsetRotateInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
   state.Style()->SetOffsetRotate(StyleOffsetRotation(
-      ToInterpolableNumber(interpolable_value).Value(),
+      clampTo<float>(ToInterpolableNumber(interpolable_value).Value()),
       ToCSSOffsetRotationNonInterpolableValue(*non_interpolable_value)
           .RotationType()));
 }
