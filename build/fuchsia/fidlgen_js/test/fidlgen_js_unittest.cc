@@ -5,7 +5,7 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/internal/pending_response.h>
 #include <lib/fidl/cpp/internal/weak_stub_controller.h>
-#include <lib/zx/log.h>
+#include <lib/zx/debuglog.h>
 #include <zircon/syscalls/log.h>
 
 #include "base/bind.h"
@@ -293,10 +293,10 @@ class TestolaImpl : public fidljstest::Testola {
 
   void PassHandles(zx::job job, PassHandlesCallback callback) override {
     EXPECT_EQ(GetKoidForHandle(job), GetKoidForHandle(*zx::job::default_job()));
-    zx::log log;
-    EXPECT_EQ(zx::log::create(ZX_LOG_FLAG_READABLE, &log), ZX_OK);
-    unowned_log_handle_ = log.get();
-    callback(std::move(log));
+    zx::process process;
+    ASSERT_EQ(zx::process::self()->duplicate(ZX_RIGHT_SAME_RIGHTS, &process),
+              ZX_OK);
+    callback(std::move(process));
   }
 
   void ReceiveUnions(fidljstest::StructOfMultipleUnions somu) override {
@@ -495,8 +495,6 @@ class TestolaImpl : public fidljstest::Testola {
   const std::string& various_msg() const { return various_msg_; }
   const std::vector<uint32_t>& various_stuff() const { return various_stuff_; }
 
-  zx_handle_t unowned_log_handle() const { return unowned_log_handle_; }
-
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
 
   bool did_receive_union() const { return did_receive_union_; }
@@ -525,7 +523,6 @@ class TestolaImpl : public fidljstest::Testola {
   std::vector<uint32_t> various_stuff_;
   fidljstest::BasicStruct basic_struct_;
   std::vector<base::OnceClosure> response_callbacks_;
-  zx_handle_t unowned_log_handle_;
   bool did_receive_union_ = false;
   bool did_get_vectors_of_string_ = false;
   std::unique_ptr<AnotherInterfaceImpl> another_interface_impl_;
@@ -871,7 +868,7 @@ TEST_F(FidlGenJsTest, HandlePassing) {
     var proxy = new TestolaProxy();
     proxy.$bind(testHandle);
     proxy.PassHandles(testJobHandle).then(h => {
-      this.debuglogHandle = h;
+      this.processHandle = h;
     }).catch((e) => log('FAILED: ' + e));
   )";
   helper.runner().Run(source, "test.js");
@@ -879,17 +876,19 @@ TEST_F(FidlGenJsTest, HandlePassing) {
   // Run the message loop to send the request and receive a response.
   base::RunLoop().RunUntilIdle();
 
-  zx_handle_t debug_handle_back_from_js =
-      helper.Get<uint32_t>("debuglogHandle");
-  EXPECT_EQ(debug_handle_back_from_js, testola_impl.unowned_log_handle());
+  zx_handle_t process_handle_back_from_js =
+      helper.Get<uint32_t>("processHandle");
+  EXPECT_EQ(GetKoidForHandle(process_handle_back_from_js),
+            GetKoidForHandle(*zx::process::self()));
 
   // Make sure we received the valid handle back correctly, and close it. Not
-  // stored into a zx::log in case it isn't valid, and to check the return value
-  // from closing it.
-  EXPECT_EQ(zx_handle_close(debug_handle_back_from_js), ZX_OK);
+  // stored into a zx::process in case it isn't valid, and to check the return
+  // value from closing it.
+  EXPECT_EQ(zx_handle_close(process_handle_back_from_js), ZX_OK);
 
-  // Ensure we didn't pass away our default job.
+  // Ensure we didn't pass away our default job, or process self.
   EXPECT_NE(GetKoidForHandle(*zx::job::default_job()), ZX_KOID_INVALID);
+  EXPECT_NE(GetKoidForHandle(*zx::process::self()), ZX_KOID_INVALID);
 }
 
 TEST_F(FidlGenJsTest, UnionSend) {
