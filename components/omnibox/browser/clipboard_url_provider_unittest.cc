@@ -90,7 +90,8 @@ TEST_F(ClipboardURLProviderTest, HasMultipleMatches) {
 
 TEST_F(ClipboardURLProviderTest, MatchesText) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kCopiedTextBehavior);
+  base::Feature textFeature = omnibox::kEnableClipboardProviderTextSuggestions;
+  feature_list.InitAndEnableFeature(textFeature);
   auto template_url_service = std::make_unique<TemplateURLService>(
       /*initializers=*/nullptr, /*count=*/0);
   client_->set_template_url_service(std::move(template_url_service));

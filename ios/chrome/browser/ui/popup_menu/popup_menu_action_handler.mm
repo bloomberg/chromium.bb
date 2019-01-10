@@ -9,7 +9,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -18,6 +17,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -132,7 +132,7 @@ using base::UserMetricsAction;
     case PopupMenuActionPasteAndGo: {
       RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
       NSString* query;
-      if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+      if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
         ClipboardRecentContent* clipboardRecentContent =
             ClipboardRecentContent::GetInstance();
         if (base::Optional<GURL> optional_url =
@@ -157,7 +157,7 @@ using base::UserMetricsAction;
       [self.dispatcher showQRScanner];
       break;
     case PopupMenuActionSearchCopiedImage: {
-      DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
+      DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
       RecordAction(UserMetricsAction("MobileMenuSearchCopiedImage"));
       ClipboardRecentContent* clipboardRecentContent =
           ClipboardRecentContent::GetInstance();

@@ -81,7 +81,7 @@ const CGFloat kClearButtonSize = 28.0f;
 
   // Add Paste and Go option to the editing menu
   UIMenuController* menu = [UIMenuController sharedMenuController];
-  if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
     UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
                action:@selector(visitCopiedLink:)];
@@ -243,19 +243,19 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIMenuItem
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // Remove with flag kCopiedTextBehavior
+  // Remove with flag kCopiedContentBehavior
   if (action == @selector(pasteAndGo:)) {
-    DCHECK(!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
+    DCHECK(!base::FeatureList::IsEnabled(kCopiedContentBehavior));
     return UIPasteboard.generalPasteboard.string.length > 0;
   }
   ClipboardRecentContent* clipboardRecentContent =
       ClipboardRecentContent::GetInstance();
   if (action == @selector(visitCopiedLink:)) {
-    DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
+    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
     return clipboardRecentContent->GetRecentURLFromClipboard().has_value();
   }
   if (action == @selector(searchCopiedText:)) {
-    DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
+    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
     return !clipboardRecentContent->GetRecentURLFromClipboard().has_value() &&
            clipboardRecentContent->GetRecentTextFromClipboard().has_value();
   }
@@ -274,7 +274,7 @@ const CGFloat kClearButtonSize = 28.0f;
 // so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
   NSString* query;
-  if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
     if (base::Optional<GURL> optional_url =

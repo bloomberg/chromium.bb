@@ -158,6 +158,16 @@ const base::Feature kEnableClipboardProvider {
 #endif
 };
 
+// Feature to enable clipboard provider to suggest copied text.
+const base::Feature kEnableClipboardProviderTextSuggestions{
+    "OmniboxEnableClipboardProviderTextSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to enable clipboard provider to suggest searching for copied images.
+const base::Feature kEnableClipboardProviderImageSuggestions{
+    "OmniboxEnableClipboardProviderImageSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for
 // example, loading per-user models into memory.  Having a per-user model
@@ -223,10 +233,6 @@ const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
 // available on iOS.
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature to differentiate between a copied url and copied text
-const base::Feature kCopiedTextBehavior{"CopiedTextBehavior",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox
 

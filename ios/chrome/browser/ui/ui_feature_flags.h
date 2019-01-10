@@ -18,10 +18,10 @@ extern const base::Feature kBrowserContainerContainsNTP;
 // popup instead of ZeroSuggest.
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 
-// Feature to allow user to search for a copied image.
-extern const base::Feature kSearchCopiedImage;
-
 // Feature to take snapshots using |-drawViewHierarchy:|.
 extern const base::Feature kSnapshotDrawView;
+
+// Feature to rework handling of copied content (url/string/image) in the ui.
+extern const base::Feature kCopiedContentBehavior;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
