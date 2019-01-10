@@ -298,6 +298,14 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--shard-timeout=300'
+          ],
+        },
+        {
           'isolate': 'media_perftests',
           'num_shards': 1,
           'telemetry': False,
