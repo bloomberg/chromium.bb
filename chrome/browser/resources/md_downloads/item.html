@@ -142,6 +142,11 @@
         color: var(--google-red-700);
       }
 
+      :host-context([dark]) #file-icon-wrapper iron-icon[icon='cr:warning'],
+      :host-context([dark]) .dangerous #description {
+        color: var(--google-red-refresh-300);
+      }
+
       #name,
       #file-link,
       #url {
