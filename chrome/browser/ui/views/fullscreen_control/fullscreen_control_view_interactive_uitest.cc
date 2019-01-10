@@ -177,13 +177,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   ASSERT_FALSE(IsPopupCreated());
 }
 
-#if defined(OS_MACOSX)
-// Entering fullscreen is flaky on Mac: http://crbug.com/824517
-#define MAYBE_MouseExitFullscreen DISABLED_MouseExitFullscreen
-#else
-#define MAYBE_MouseExitFullscreen MouseExitFullscreen
-#endif
-IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_MouseExitFullscreen) {
+// These four tests which cover the mouse/touch fullscreen UI are covering
+// behavior that doesn't exist on Mac - Mac has its own native fullscreen exit
+// UI. See IsExitUiEnabled() in FullscreenControlHost.
+#if !defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MouseExitFullscreen) {
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
@@ -211,16 +210,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_MouseExitFullscreen) {
   ASSERT_FALSE(browser_view->IsFullscreen());
 }
 
-#if defined(OS_MACOSX)
-// Entering fullscreen is flaky on Mac: http://crbug.com/824517
-#define MAYBE_MouseExitFullscreen_TimeoutAndRetrigger \
-  DISABLED_MouseExitFullscreen_TimeoutAndRetrigger
-#else
-#define MAYBE_MouseExitFullscreen_TimeoutAndRetrigger \
-  MouseExitFullscreen_TimeoutAndRetrigger
-#endif
 IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
-                       MAYBE_MouseExitFullscreen_TimeoutAndRetrigger) {
+                       MouseExitFullscreen_TimeoutAndRetrigger) {
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
@@ -273,13 +264,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   ASSERT_TRUE(browser_view->IsFullscreen());
 }
 
-#if defined(OS_MACOSX)
-// Entering fullscreen is flaky on Mac: http://crbug.com/824517
-#define MAYBE_TouchPopupInteraction DISABLED_TouchPopupInteraction
-#else
-#define MAYBE_TouchPopupInteraction TouchPopupInteraction
-#endif
-IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_TouchPopupInteraction) {
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, TouchPopupInteraction) {
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
@@ -358,16 +343,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_TouchPopupInteraction) {
   ASSERT_FALSE(browser_view->IsFullscreen());
 }
 
-#if defined(OS_MACOSX)
-// Entering fullscreen is flaky on Mac: http://crbug.com/824517
-#define MAYBE_MouseAndTouchInteraction_NoInterference \
-  DISABLED_MouseAndTouchInteraction_NoInterference
-#else
-#define MAYBE_MouseAndTouchInteraction_NoInterference \
-  MouseAndTouchInteraction_NoInterference
-#endif
 IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
-                       MAYBE_MouseAndTouchInteraction_NoInterference) {
+                       MouseAndTouchInteraction_NoInterference) {
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
@@ -440,15 +417,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   RunLoopUntilVisibilityChanges();
   ASSERT_FALSE(host->IsVisible());
 }
-
-#if defined(OS_MACOSX)
-// Entering fullscreen is flaky on Mac: http://crbug.com/824517
-#define MAYBE_KeyboardPopupInteraction DISABLED_KeyboardPopupInteraction
-#else
-#define MAYBE_KeyboardPopupInteraction KeyboardPopupInteraction
 #endif
-IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
-                       MAYBE_KeyboardPopupInteraction) {
+
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, KeyboardPopupInteraction) {
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
