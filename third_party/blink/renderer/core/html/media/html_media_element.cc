@@ -410,10 +410,11 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   return result;
 }
 
-const HashSet<AtomicString>& HTMLMediaElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLMediaElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 bool HTMLMediaElement::IsHLSURL(const KURL& url) {

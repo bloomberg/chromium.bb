@@ -95,7 +95,7 @@ class CORE_EXPORT HTMLMediaElement
 
  public:
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
 

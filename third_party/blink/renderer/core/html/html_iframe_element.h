@@ -52,7 +52,7 @@ class CORE_EXPORT HTMLIFrameElement final
   DOMFeaturePolicy* featurePolicy();
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */) const override;

@@ -39,7 +39,7 @@ class HTMLBaseElement final : public HTMLElement {
   explicit HTMLBaseElement(Document&);
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   KURL href() const;
   void href(USVStringOrTrustedURL&) const;

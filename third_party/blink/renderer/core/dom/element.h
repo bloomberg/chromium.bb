@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
@@ -150,6 +151,8 @@ struct FocusParams {
 
 typedef HeapVector<TraceWrapperMember<Attr>> AttrNodeList;
 
+typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
+
 class CORE_EXPORT Element : public ContainerNode {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -220,7 +223,7 @@ class CORE_EXPORT Element : public ContainerNode {
       ExceptionState&);
 
   // Returns attributes that should be checked against Trusted Types
-  virtual const HashSet<AtomicString>& GetCheckedAttributeNames() const;
+  virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
 
   // Trusted Type HTML variant
   void setAttribute(const QualifiedName&,

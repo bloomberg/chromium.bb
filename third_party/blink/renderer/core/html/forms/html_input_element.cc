@@ -143,10 +143,11 @@ void HTMLInputElement::Trace(blink::Visitor* visitor) {
   TextControlElement::Trace(visitor);
 }
 
-const HashSet<AtomicString>& HTMLInputElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLInputElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 bool HTMLInputElement::HasPendingActivity() const {

@@ -200,10 +200,11 @@ void HTMLAnchorElement::SetActive(bool down) {
   ContainerNode::SetActive(down);
 }
 
-const HashSet<AtomicString>& HTMLAnchorElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLAnchorElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"href", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLAnchorElement::AttributeChanged(

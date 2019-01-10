@@ -1480,9 +1480,12 @@ void Element::setAttribute(
     ExceptionState& exception_state) {
   // TODO(vogelheim): Check whether this applies to non-HTML documents, too.
   AtomicString name_lowercase = LowercaseIfNecessary(name);
-  if (GetCheckedAttributeNames().Contains(name_lowercase)) {
-    String attr_value =
-        GetStringFromTrustedType(string_or_TT, &GetDocument(), exception_state);
+  const AttrNameToTrustedType* attribute_types = &GetCheckedAttributeTypes();
+  AttrNameToTrustedType::const_iterator it =
+      attribute_types->find(name_lowercase);
+  if (it != attribute_types->end()) {
+    String attr_value = GetStringFromSpecificTrustedType(
+        string_or_TT, it->value, &GetDocument(), exception_state);
     if (!exception_state.HadException())
       setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
     return;
@@ -1492,9 +1495,9 @@ void Element::setAttribute(
   setAttribute(name_lowercase, value_string, exception_state);
 }
 
-const HashSet<AtomicString>& Element::GetCheckedAttributeNames() const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({}));
-  return attribute_set;
+const AttrNameToTrustedType& Element::GetCheckedAttributeTypes() const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map, ({}));
+  return attribute_map;
 }
 
 void Element::setAttribute(const QualifiedName& name,

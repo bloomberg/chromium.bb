@@ -60,7 +60,7 @@ class CORE_EXPORT HTMLImageElement final
   class ViewportChangeListener;
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   static HTMLImageElement* Create(Document&);
   static HTMLImageElement* Create(Document&, const CreateElementFlags);

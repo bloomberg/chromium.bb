@@ -134,10 +134,11 @@ void HTMLImageElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-const HashSet<AtomicString>& HTMLImageElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLImageElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLImageElement::NotifyViewportChanged() {

@@ -59,11 +59,12 @@ void HTMLIFrameElement::Trace(blink::Visitor* visitor) {
 
 HTMLIFrameElement::~HTMLIFrameElement() = default;
 
-const HashSet<AtomicString>& HTMLIFrameElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLIFrameElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set,
-                      ({"src", "srcdoc"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL},
+                        {"srcdoc", SpecificTrustedType::kTrustedHTML}}));
+  return attribute_map;
 }
 
 void HTMLIFrameElement::SetCollapsed(bool collapse) {

@@ -69,11 +69,12 @@ void HTMLObjectElement::Trace(blink::Visitor* visitor) {
   HTMLPlugInElement::Trace(visitor);
 }
 
-const HashSet<AtomicString>& HTMLObjectElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLObjectElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set,
-                      ({"data", "codebase"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"data", SpecificTrustedType::kTrustedScriptURL},
+                        {"codebase", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 LayoutEmbeddedContent* HTMLObjectElement::ExistingLayoutEmbeddedContent()
