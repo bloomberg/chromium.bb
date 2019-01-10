@@ -76,8 +76,8 @@ SkColor FrameCaptionButton::GetButtonColor(ColorMode color_mode,
     return color_utils::GetThemedAssetColor(background_color);
 
   DCHECK_EQ(color_mode, ColorMode::kDefault);
-  return color_utils::IsDark(background_color) ? gfx::kGoogleGrey200
-                                               : gfx::kGoogleGrey700;
+  return color_utils::PickContrastingColor(
+      gfx::kGoogleGrey200, gfx::kGoogleGrey700, background_color);
 }
 
 // static
@@ -279,10 +279,17 @@ gfx::Insets FrameCaptionButton::GetInkdropInsets(
 }
 
 void FrameCaptionButton::UpdateInkDropBaseColor() {
+  using color_utils::GetColorWithMaxContrast;
+  // A typical implementation would simply do
+  // GetColorWithMaxContrast(background_color_).  However, this could look odd
+  // if we use a light button glyph and dark ink drop or vice versa.  So
+  // instead, use the lightest/darkest color in the same direction as the button
+  // glyph color.
+  // TODO(pkasting): It would likely be better to make the button glyph always
+  // be an alpha-blended version of GetColorWithMaxContrast(background_color_).
+  const SkColor button_color = GetButtonColor(color_mode_, background_color_);
   set_ink_drop_base_color(
-      color_utils::IsDark(GetButtonColor(color_mode_, background_color_))
-          ? SK_ColorBLACK
-          : SK_ColorWHITE);
+      GetColorWithMaxContrast(GetColorWithMaxContrast(button_color)));
 }
 
 }  // namespace views
