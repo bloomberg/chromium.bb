@@ -1938,6 +1938,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
         },
       },
@@ -1949,7 +1950,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
@@ -1972,7 +1973,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 32 Vk Release (Pixel 2)': {
@@ -1985,7 +1986,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 32 Vk Release (Pixel XL)': {
@@ -1998,7 +1999,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 32 dEQP Vk Release (Nexus 5X)': {
@@ -2047,7 +2048,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 64 Vk Release (Pixel 2)': {
@@ -2060,7 +2061,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 64 Vk Release (Pixel XL)': {
@@ -2073,7 +2074,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 64 dEQP Vk Release (Nexus 5X)': {
@@ -2123,7 +2124,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2138,7 +2139,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2152,7 +2152,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
         },
       },
@@ -2167,7 +2167,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2182,7 +2182,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2197,7 +2197,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2324,7 +2324,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2339,7 +2339,7 @@
           # This bot doesn't run any browser-based tests
           # (tab_capture_end2end_tests) either.
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Linux FYI Ozone (Intel)': {
@@ -2387,7 +2387,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2644,8 +2644,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_optional_gtests',
-          # This optional tryserver additionally runs angle_perftests.
-          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
         },
       },
@@ -2690,6 +2689,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
         },
       },
@@ -2701,8 +2701,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
-          # This optional tryserver additionally runs angle_perftests.
-          'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
@@ -2743,6 +2742,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
@@ -2757,7 +2757,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
@@ -2769,6 +2769,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
@@ -2780,7 +2781,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,

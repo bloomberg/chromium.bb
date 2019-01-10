@@ -3037,28 +3037,18 @@
       },
     },
 
-    'gpu_angle_fyi_and_optional_win_specific_isolated_scripts': {
-      # TODO(jmadill): Run on Linux bots when possible.
-      'passthrough_command_buffer_perftests': {
+    # The angle perf tests should eventually be run on every platform
+    # ANGLE supports. Currently they run on Windows, Linux and Android.
+    'gpu_angle_perftests': {
+      'angle_perftests': {
         'args': [
           '-v',
-          '--use-cmd-decoder=passthrough',
-          '--use-angle=gl-null',
-          '--fast-run',
+          # Tell the tests to exit after one frame for faster iteration.
+          '--one-frame-only',
         ],
-        'isolate_name': 'command_buffer_perftests',
-        'should_retry_with_patch': False,
-      },
-      # TODO(jmadill): Run on Linux bots when possible.
-      'validating_command_buffer_perftests': {
-        'args': [
-          '-v',
-          '--use-cmd-decoder=validating',
-          '--use-stub',
-          '--fast-run',
+        'android_args': [
+          '--shard-timeout=500',
         ],
-        'isolate_name': 'command_buffer_perftests',
-        'should_retry_with_patch': False,
       },
     },
 
@@ -3085,6 +3075,34 @@
           # http://crbug.com/669196
         '--test-launcher-retry-limit=0'
         ],
+        'should_retry_with_patch': False,
+      },
+    },
+
+    # The command buffer perf tests are only run on Windows.
+    # They are mostly driver and platform independent.
+    'gpu_command_buffer_perftests_passthrough': {
+      'passthrough_command_buffer_perftests': {
+        'args': [
+          '-v',
+          '--use-cmd-decoder=passthrough',
+          '--use-angle=gl-null',
+          '--fast-run',
+        ],
+        'isolate_name': 'command_buffer_perftests',
+        'should_retry_with_patch': False,
+      },
+    },
+
+    'gpu_command_buffer_perftests_validating': {
+      'validating_command_buffer_perftests': {
+        'args': [
+          '-v',
+          '--use-cmd-decoder=validating',
+          '--use-stub',
+          '--fast-run',
+        ],
+        'isolate_name': 'command_buffer_perftests',
         'should_retry_with_patch': False,
       },
     },
@@ -3173,21 +3191,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-    },
-
-    # These run everywhere ANGLE does; currently, Win and Linux NVIDIA
-    # bots and Android, but not macOS yet.
-    'gpu_fyi_and_optional_isolated_scripts': {
-      'angle_perftests': {
-        'args': [
-          '-v',
-          # Tell the tests to exit after one frame for faster iteration.
-          '--one-frame-only',
-        ],
-        'android_args': [
-          '--shard-timeout=500',
-        ],
       },
     },
 
@@ -4558,6 +4561,12 @@
       'gpu_angle_deqp_gles3_gl_tests',
     ],
 
+    'gpu_angle_fyi_win_optional_isolated_scripts': [
+      'gpu_angle_perftests',
+      'gpu_command_buffer_perftests_passthrough',
+      'gpu_command_buffer_perftests_validating',
+    ],
+
     'gpu_angle_gtests': [
       'gpu_angle_end2end_tests',
       'gpu_angle_unittests',
@@ -4598,11 +4607,6 @@
       'gpu_angle_unittests',
       'gpu_common_gtests',
       'gpu_desktop_specific_gtests',
-    ],
-
-    'gpu_fyi_and_optional_win_isolated_scripts': [
-      'gpu_angle_fyi_and_optional_win_specific_isolated_scripts',
-      'gpu_fyi_and_optional_isolated_scripts',
     ],
 
     'gpu_fyi_android_and_mac_gtests': [
