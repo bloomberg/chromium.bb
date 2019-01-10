@@ -280,6 +280,38 @@ void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
   intrinsic_size_along_main_axis_.erase(child);
 }
 
+bool LayoutFlexibleBox::HitTestChildren(
+    HitTestResult& result,
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction hit_test_action) {
+  if (hit_test_action != kHitTestForeground)
+    return false;
+
+  LayoutPoint scrolled_offset(HasOverflowClip()
+                                  ? accumulated_offset - ScrolledContentOffset()
+                                  : accumulated_offset);
+
+  for (LayoutBox* child = LastChildBox(); child;
+       child = child->PreviousSiblingBox()) {
+    if (child->HasSelfPaintingLayer())
+      continue;
+
+    LayoutPoint child_point =
+        FlipForWritingModeForChild(child, scrolled_offset);
+
+    bool child_hit =
+        child->HitTestAllPhases(result, location_in_container, child_point);
+    if (child_hit) {
+      UpdateHitTestResult(
+          result, FlipForWritingMode(ToLayoutPoint(
+                      location_in_container.Point() - accumulated_offset)));
+      return true;
+    }
+  }
+  return false;
+}
+
 void LayoutFlexibleBox::StyleDidChange(StyleDifference diff,
                                        const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
