@@ -87,6 +87,11 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
       web_state_ ? web_state_->GetWebViewProxy() : nil;
 }
 
+void FullscreenWebStateObserver::WasShown(web::WebState* web_state) {
+  // Show the toolbars when a WebState is shown.
+  model_->ResetForNavigation();
+}
+
 void FullscreenWebStateObserver::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {

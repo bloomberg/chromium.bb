@@ -30,6 +30,7 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
 
  private:
   // WebStateObserver:
+  void WasShown(web::WebState* web_state) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
   void DidStartLoading(web::WebState* web_state) override;
