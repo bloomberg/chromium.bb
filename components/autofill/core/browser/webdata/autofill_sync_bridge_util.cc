@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 
 #include "base/base64.h"
+#include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -175,29 +176,22 @@ PaymentsCustomerData CustomerDataFromSpecifics(
   return PaymentsCustomerData{/*customer_id=*/customer_data.id()};
 }
 
-// Returns the specified |id| encoded in base 64.
+}  // namespace
+
 std::string GetBase64EncodedId(const std::string& id) {
   std::string encoded_id;
   base::Base64Encode(id, &encoded_id);
   return encoded_id;
 }
 
-}  // namespace
-
-std::string GetSpecificsIdForMetadataId(const std::string& metadata_id) {
-  return GetBase64EncodedId(metadata_id);
-}
-
-std::string GetStorageKeyForWalletMetadataSpecificsId(
+std::string GetStorageKeyForWalletMetadataTypeAndSpecificsId(
+    sync_pb::WalletMetadataSpecifics::Type type,
     const std::string& specifics_id) {
-  // We use the (base64-encoded) |specifics_id| directly as the storage key,
-  // this function only hides this definition from all its call sites.
-  return specifics_id;
-}
-
-std::string GetStorageKeyForMetadataId(const std::string& metadata_id) {
-  return GetStorageKeyForWalletMetadataSpecificsId(
-      GetSpecificsIdForMetadataId(metadata_id));
+  base::Pickle pickle;
+  pickle.WriteInt(static_cast<int>(type));
+  // We use the (base64-encoded) |specifics_id| here.
+  pickle.WriteString(specifics_id);
+  return std::string(static_cast<const char*>(pickle.data()), pickle.size());
 }
 
 void SetAutofillWalletSpecificsFromServerProfile(
