@@ -524,6 +524,8 @@ PDFViewer.prototype = {
       // TODO(dstockwell): handle save failure
       const result = await this.inkController_.save(true);
       await this.pluginController_.load(result.fileName, result.dataToSave);
+      // Ensure the plugin gets the initial viewport.
+      this.viewport_.setZoom(this.viewport_.zoom);
     }
   },
 
