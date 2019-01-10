@@ -50,9 +50,8 @@ class MockPreXmppAuth : public buzz::PreXmppAuth {
                std::string(const std::vector<std::string>&, bool));
   MOCK_METHOD1(CreateSaslMechanism,
                buzz::SaslMechanism*(const std::string&));
-  MOCK_METHOD5(StartPreXmppAuth,
+  MOCK_METHOD4(StartPreXmppAuth,
                void(const buzz::Jid&,
-                    const rtc::SocketAddress&,
                     const std::string&,
                     const std::string&,
                     const std::string&));
@@ -127,7 +126,7 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
 }
 
 TEST_F(XmppConnectionTest, PreAuthFailure) {
-  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _,_));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _,_));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthDone()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthorized()).WillOnce(Return(false));
   EXPECT_CALL(*mock_pre_xmpp_auth_, HadError()).WillOnce(Return(true));
@@ -148,7 +147,7 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
 }
 
 TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
-  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _,_));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _,_));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthDone()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthorized()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pre_xmpp_auth_, GetAuthMechanism()).WillOnce(Return(""));

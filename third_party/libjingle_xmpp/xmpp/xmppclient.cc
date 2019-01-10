@@ -192,7 +192,7 @@ int XmppClient::ProcessStart() {
   if (d_->pre_auth_) {
     d_->pre_auth_->SignalAuthDone.connect(this, &XmppClient::OnAuthDone);
     d_->pre_auth_->StartPreXmppAuth(
-        d_->engine_->GetUser(), d_->server_, d_->pass_,
+        d_->engine_->GetUser(), d_->pass_,
         d_->auth_mechanism_, d_->auth_token_);
     d_->pass_.clear(); // done with this;
     return STATE_PRE_XMPP_LOGIN;

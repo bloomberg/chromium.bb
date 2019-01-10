@@ -28,7 +28,6 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
   // all the methods out as we don't actually do any authentication at
   // this point.
   void StartPreXmppAuth(const buzz::Jid& jid,
-                        const rtc::SocketAddress& server,
                         const std::string& pass,
                         const std::string& auth_mechanism,
                         const std::string& auth_token) override;
