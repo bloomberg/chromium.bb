@@ -11,7 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_bridge.h"
 #include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -148,10 +148,6 @@ class DiagnosticsdBridgeTest : public testing::Test {
     DBusThreadManager::Shutdown();
   }
 
-  base::TestMockTimeTaskRunner* task_runner() {
-    return test_mock_time_task_runner_.get();
-  }
-
   DiagnosticsdBridge* diagnosticsd_bridge() {
     return diagnosticsd_bridge_.get();
   }
@@ -184,11 +180,10 @@ class DiagnosticsdBridgeTest : public testing::Test {
     mojo_diagnosticsd_service_factory_.CloseBinding();
   }
 
- private:
-  scoped_refptr<base::TestMockTimeTaskRunner> test_mock_time_task_runner_ =
-      new base::TestMockTimeTaskRunner(
-          base::TestMockTimeTaskRunner::Type::kBoundToThread);
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
+ private:
   FakeMojoDiagnosticsdServiceFactory mojo_diagnosticsd_service_factory_;
 
   MockMojoDiagnosticsdService mojo_diagnosticsd_service_;
@@ -221,13 +216,13 @@ TEST_F(DiagnosticsdBridgeTest, SuccessfulBootstrap) {
   // GetService Mojo call on the DiagnosticsdServiceFactory interface.
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(true);
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(base::nullopt);
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
 
   // Resolve the pending GetService Mojo call. Verify the bridge exposes the
   // obtained DiagnosticsdService Mojo interface pointer.
   RespondToMojoFactoryGetServiceCall();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 
   // Verify that no extra D-Bus or Mojo calls are made.
@@ -243,7 +238,7 @@ TEST_F(DiagnosticsdBridgeTest, DBusServiceNotBringingUpError) {
                    ->wait_for_service_to_be_available_in_flight_call_count());
 
   // Verify that no extra WaitForServiceToBeAvailable calls are made.
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing());
   EXPECT_EQ(1, diagnosticsd_dbus_client()
                    ->wait_for_service_to_be_available_in_flight_call_count());
@@ -264,7 +259,7 @@ TEST_F(DiagnosticsdBridgeTest, DBusBootstrapMojoConnectionError) {
                      ->bootstrap_mojo_connection_in_flight_call_count());
     diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(false);
     diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(base::nullopt);
-    task_runner()->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
     // Verify that no new BootstrapMojoConnection call is made immediately after
     // the previous one failed.
@@ -272,7 +267,7 @@ TEST_F(DiagnosticsdBridgeTest, DBusBootstrapMojoConnectionError) {
                      ->bootstrap_mojo_connection_in_flight_call_count());
 
     // Fast forward the clock till the next attempt should occur.
-    task_runner()->FastForwardBy(
+    scoped_task_environment_.FastForwardBy(
         DiagnosticsdBridge::connection_attempt_interval_for_testing());
   }
 
@@ -288,7 +283,7 @@ TEST_F(DiagnosticsdBridgeTest, DBusBootstrapMojoConnectionError) {
 TEST_F(DiagnosticsdBridgeTest, ImmediateMojoDisconnectionError) {
   diagnosticsd_dbus_client()->SetWaitForServiceToBeAvailableResult(true);
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   for (int attempt_number = 0;
        attempt_number <
@@ -299,11 +294,11 @@ TEST_F(DiagnosticsdBridgeTest, ImmediateMojoDisconnectionError) {
     // responding to the call. Verify that no new call happens immediately.
     EXPECT_TRUE(is_mojo_factory_get_service_call_in_flight());
     AbortMojoConnection();
-    task_runner()->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     EXPECT_FALSE(is_mojo_factory_get_service_call_in_flight());
 
     // Fast forward the clock till the next attempt should occur.
-    task_runner()->FastForwardBy(
+    scoped_task_environment_.FastForwardBy(
         DiagnosticsdBridge::connection_attempt_interval_for_testing());
   }
 
@@ -317,27 +312,27 @@ TEST_F(DiagnosticsdBridgeTest, Reestablishing) {
   // Let the bootstrapping succeed on the first attempt.
   diagnosticsd_dbus_client()->SetWaitForServiceToBeAvailableResult(true);
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 
   // Abort the Mojo binding. Verify that no new connection attempt happens
   // immediately.
   AbortMojoConnection();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
   EXPECT_FALSE(is_mojo_factory_get_service_call_in_flight());
 
   // Fast forward the clock till the next connection attempt.
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing());
 
   // Let the bootstrapping succeed again.
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 }
 
@@ -348,28 +343,28 @@ TEST_F(DiagnosticsdBridgeTest, RetryCounterReset) {
 
   // Fail the first few connection attempts, leaving only one attempt left.
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(false);
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing() *
       (DiagnosticsdBridge::max_connection_attempt_count_for_testing() - 2));
 
   // Let the bootstrapping succeed on the new attempt (the last allowed one in
   // this serie).
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing());
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 
   // Abort the Mojo binding.
   AbortMojoConnection();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 
   // Fail again a few attempts as before.
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(false);
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing() *
       (DiagnosticsdBridge::max_connection_attempt_count_for_testing() - 1));
 
@@ -377,11 +372,11 @@ TEST_F(DiagnosticsdBridgeTest, RetryCounterReset) {
   // the retry attempts made before the previous successful bootstrap were
   // ignored.
   diagnosticsd_dbus_client()->SetBootstrapMojoConnectionResult(true);
-  task_runner()->FastForwardBy(
+  scoped_task_environment_.FastForwardBy(
       DiagnosticsdBridge::connection_attempt_interval_for_testing());
   ASSERT_TRUE(is_mojo_factory_get_service_call_in_flight());
   RespondToMojoFactoryGetServiceCall();
-  task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(diagnosticsd_bridge()->diagnosticsd_service_mojo_proxy());
 }
 

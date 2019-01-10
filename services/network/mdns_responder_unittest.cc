@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -73,7 +73,7 @@ std::string CreateNegativeResponse(
 class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
  public:
   MockFailingMdnsSocketFactory(
-      scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(std::move(task_runner)) {}
 
   ~MockFailingMdnsSocketFactory() override = default;
@@ -112,7 +112,7 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace
@@ -270,11 +270,8 @@ class SimpleNameGenerator : public MdnsResponderManager::NameGenerator {
 class MdnsResponderTest : public testing::Test {
  public:
   MdnsResponderTest()
-      : test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
-        task_runner_override_scoped_cleanup_(
-            base::ThreadTaskRunnerHandle::OverrideForTesting(
-                test_task_runner_)),
-        failing_socket_factory_(test_task_runner_) {
+      : failing_socket_factory_(
+            scoped_task_environment_.GetMainThreadTaskRunner()) {
     Reset();
   }
 
@@ -290,7 +287,7 @@ class MdnsResponderTest : public testing::Test {
     host_manager_->SetNameGeneratorForTesting(
         std::make_unique<SimpleNameGenerator>());
     host_manager_->SetTickClockForTesting(
-        test_task_runner_->GetMockTickClock());
+        scoped_task_environment_.GetMockTickClock());
     CreateMdnsResponders();
   }
 
@@ -352,18 +349,18 @@ class MdnsResponderTest : public testing::Test {
   }
 
   void RunUntilNoTasksRemain() {
-    test_task_runner_->FastForwardUntilNoTasksRemain();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
   void RunFor(base::TimeDelta duration) {
-    test_task_runner_->FastForwardBy(duration);
+    scoped_task_environment_.FastForwardBy(duration);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   mojom::MdnsResponderPtr client_[2];
   std::unique_ptr<MdnsResponderManager> host_manager_;
   // Overrides the current thread task runner, so we can simulate the passage
   // of time and avoid any actual sleeps.
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
-  base::ScopedClosureRunner task_runner_override_scoped_cleanup_;
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;
   NiceMock<MockFailingMdnsSocketFactory> failing_socket_factory_;
   std::string last_name_created_;

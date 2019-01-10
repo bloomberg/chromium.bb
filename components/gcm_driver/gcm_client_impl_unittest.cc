@@ -21,7 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/gcm_driver/features.h"
@@ -413,11 +413,15 @@ class GCMClientImplTest : public testing::Test,
   network::TestURLLoaderFactory* url_loader_factory() {
     return &test_url_loader_factory_;
   }
-  base::TestMockTimeTaskRunner* task_runner() {
-    return task_runner_.get();
+
+  void FastForwardBy(const base::TimeDelta& duration) {
+    scoped_task_environment_.FastForwardBy(duration);
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+
   // Must be declared first so that it is destroyed last. Injected to
   // GCM client.
   base::ScopedTempDir temp_directory_;
@@ -437,8 +441,6 @@ class GCMClientImplTest : public testing::Test,
 
   net::TestURLFetcherFactory url_fetcher_factory_;
 
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-
   // Injected to GCM client.
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -450,10 +452,8 @@ class GCMClientImplTest : public testing::Test,
 GCMClientImplTest::GCMClientImplTest()
     : last_event_(NONE),
       last_result_(GCMClient::UNKNOWN_ERROR),
-      task_runner_(new base::TestMockTimeTaskRunner(
-          base::TestMockTimeTaskRunner::Type::kBoundToThread)),
-      url_request_context_getter_(
-          new net::TestURLRequestContextGetter(task_runner_)),
+      url_request_context_getter_(new net::TestURLRequestContextGetter(
+          scoped_task_environment_.GetMainThreadTaskRunner())),
       field_trial_list_(nullptr) {}
 
 GCMClientImplTest::~GCMClientImplTest() {}
@@ -516,7 +516,7 @@ void GCMClientImplTest::InitializeInvalidationFieldTrial() {
 }
 
 void GCMClientImplTest::PumpLoopUntilIdle() {
-  task_runner_->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 bool GCMClientImplTest::CreateUniqueTempDir() {
@@ -624,7 +624,8 @@ void GCMClientImplTest::InitializeGCMClient() {
   chrome_build_info.version = kChromeVersion;
   chrome_build_info.product_category_for_subtypes = kProductCategoryForSubtypes;
   gcm_client_->Initialize(
-      chrome_build_info, gcm_store_path(), task_runner_, base::DoNothing(),
+      chrome_build_info, gcm_store_path(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), base::DoNothing(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),
       network::TestNetworkConnectionTracker::GetInstance(),
@@ -819,7 +820,7 @@ TEST_F(GCMClientImplTest, DestroyStoreWhenNotNeeded) {
   EXPECT_TRUE(device_checkin_info().secret);
 
   // Fast forward the clock to trigger the store destroying logic.
-  task_runner()->FastForwardBy(base::TimeDelta::FromMilliseconds(300000));
+  FastForwardBy(base::TimeDelta::FromMilliseconds(300000));
   PumpLoopUntilIdle();
 
   EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());

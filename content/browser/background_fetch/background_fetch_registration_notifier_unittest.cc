@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/background_fetch/background_fetch_types.h"
@@ -117,9 +119,7 @@ class TestRegistrationObserver
 class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
  public:
   BackgroundFetchRegistrationNotifierTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        handle_(task_runner_),
-        notifier_(std::make_unique<BackgroundFetchRegistrationNotifier>()) {}
+      : notifier_(std::make_unique<BackgroundFetchRegistrationNotifier>()) {}
 
   ~BackgroundFetchRegistrationNotifierTest() override = default;
 
@@ -127,12 +127,12 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
   // until the task runner managing the Mojo connection has finished.
   void Notify(blink::mojom::BackgroundFetchRegistrationPtr registration) {
     notifier_->Notify(*registration);
-    task_runner_->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void NotifyRecordsUnavailable(const std::string& unique_id) {
     notifier_->NotifyRecordsUnavailable(unique_id);
-    task_runner_->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void NotifyRequestCompleted(const std::string& unique_id,
@@ -140,17 +140,16 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
                               blink::mojom::FetchAPIResponsePtr response) {
     notifier_->NotifyRequestCompleted(unique_id, std::move(request),
                                       std::move(response));
-    task_runner_->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void AddObservedUrl(const std::string& unique_id, const GURL& url) {
     notifier_->AddObservedUrl(unique_id, url);
-    task_runner_->RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
  protected:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle handle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<BackgroundFetchRegistrationNotifier> notifier_;
 

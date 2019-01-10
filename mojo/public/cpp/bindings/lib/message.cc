@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/unserialized_message_context.h"
@@ -25,11 +25,13 @@ namespace mojo {
 
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<internal::MessageDispatchContext>>::
-    Leaky g_tls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<
+    base::SequenceLocalStorageSlot<internal::MessageDispatchContext*>>::Leaky
+    g_sls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ThreadLocalPointer<SyncMessageResponseContext>>::Leaky
-    g_tls_sync_response_context = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<
+    base::SequenceLocalStorageSlot<SyncMessageResponseContext*>>::Leaky
+    g_sls_sync_response_context = LAZY_INSTANCE_INITIALIZER;
 
 void DoNotifyBadMessage(Message message, const std::string& error) {
   message.NotifyBadMessage(error);
@@ -481,17 +483,17 @@ bool PassThroughFilter::Accept(Message* message) {
 
 SyncMessageResponseContext::SyncMessageResponseContext()
     : outer_context_(current()) {
-  g_tls_sync_response_context.Get().Set(this);
+  g_sls_sync_response_context.Get().Set(this);
 }
 
 SyncMessageResponseContext::~SyncMessageResponseContext() {
   DCHECK_EQ(current(), this);
-  g_tls_sync_response_context.Get().Set(outer_context_);
+  g_sls_sync_response_context.Get().Set(outer_context_);
 }
 
 // static
 SyncMessageResponseContext* SyncMessageResponseContext::current() {
-  return g_tls_sync_response_context.Get().Get();
+  return g_sls_sync_response_context.Get().Get();
 }
 
 void SyncMessageResponseContext::ReportBadMessage(const std::string& error) {
@@ -523,17 +525,17 @@ MessageHeaderV2::MessageHeaderV2() = default;
 
 MessageDispatchContext::MessageDispatchContext(Message* message)
     : outer_context_(current()), message_(message) {
-  g_tls_message_dispatch_context.Get().Set(this);
+  g_sls_message_dispatch_context.Get().Set(this);
 }
 
 MessageDispatchContext::~MessageDispatchContext() {
   DCHECK_EQ(current(), this);
-  g_tls_message_dispatch_context.Get().Set(outer_context_);
+  g_sls_message_dispatch_context.Get().Set(outer_context_);
 }
 
 // static
 MessageDispatchContext* MessageDispatchContext::current() {
-  return g_tls_message_dispatch_context.Get().Get();
+  return g_sls_message_dispatch_context.Get().Get();
 }
 
 ReportBadMessageCallback MessageDispatchContext::GetBadMessageCallback() {

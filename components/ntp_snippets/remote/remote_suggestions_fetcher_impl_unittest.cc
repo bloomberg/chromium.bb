@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -177,8 +177,6 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
             {{"send_top_languages", "true"},
              {"send_user_class", "true"},
              {"append_request_priority_as_query_parameter", "true"}}),
-        mock_task_runner_(new base::TestMockTimeTaskRunner(
-            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
                         {ntp_snippets::kArticleSuggestionsFeature.name}) {
@@ -186,7 +184,8 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     user_classifier_ = std::make_unique<UserClassifier>(
         utils_.pref_service(), base::DefaultClock::GetInstance());
     // Increase initial time such that ticks are non-zero.
-    mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
+    scoped_task_environment_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1234));
     ResetFetcher();
   }
 
@@ -205,7 +204,7 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
         base::BindRepeating(&ParseJsonDelayed), GetFetchEndpoint(), api_key,
         user_classifier_.get());
 
-    fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
+    fetcher_->SetClockForTesting(scoped_task_environment_.GetMockClock());
   }
 
   void SignIn() { identity_test_env_.MakePrimaryAccountAvailable(kTestEmail); }
@@ -219,7 +218,7 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   RemoteSuggestionsFetcherImpl& fetcher() { return *fetcher_; }
   MockSnippetsAvailableCallback& mock_callback() { return mock_callback_; }
   void FastForwardUntilNoTasksRemain() {
-    mock_task_runner_->FastForwardUntilNoTasksRemain();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
@@ -258,8 +257,9 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   std::map<std::string, std::string> default_variation_params_;
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   identity::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

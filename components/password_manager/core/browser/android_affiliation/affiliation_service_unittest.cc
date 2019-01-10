@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -49,9 +50,7 @@ AffiliatedFacets GetTestEquivalenceClassAlpha() {
 class AffiliationServiceTest : public testing::Test {
  public:
   AffiliationServiceTest()
-      : main_task_runner_(new base::TestSimpleTaskRunner),
-        main_task_runner_handle_(main_task_runner_),
-        background_task_runner_(new base::TestMockTimeTaskRunner),
+      : background_task_runner_(new base::TestMockTimeTaskRunner()),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -63,10 +62,6 @@ class AffiliationServiceTest : public testing::Test {
   AffiliationService* service() { return service_.get(); }
   MockAffiliationConsumer* mock_consumer() { return &mock_consumer_; }
 
-  base::TestSimpleTaskRunner* main_task_runner() {
-    return main_task_runner_.get();
-  }
-
   base::TestMockTimeTaskRunner* background_task_runner() {
     return background_task_runner_.get();
   }
@@ -74,6 +69,8 @@ class AffiliationServiceTest : public testing::Test {
   ScopedFakeAffiliationAPI* fake_affiliation_api() {
     return &fake_affiliation_api_;
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   // testing::Test:
@@ -101,8 +98,6 @@ class AffiliationServiceTest : public testing::Test {
     background_task_runner_->RunUntilIdle();
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
-  base::ThreadTaskRunnerHandle main_task_runner_handle_;
   scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -134,7 +129,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
       testing::Contains(testing::Field(
           &Facet::uri, FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1))));
 
-  main_task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 
   // The second request should be (and can be) served from cache.
@@ -146,7 +141,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
   ASSERT_FALSE(fake_affiliation_api()->HasPendingRequest());
 
   mock_consumer()->ExpectSuccessWithResult(equivalence_class_alpha);
-  main_task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 
   // The third request is also restricted to the cache, but cannot be served
@@ -159,7 +154,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
   ASSERT_FALSE(fake_affiliation_api()->HasPendingRequest());
 
   mock_consumer()->ExpectFailure();
-  main_task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 
@@ -174,7 +169,7 @@ TEST_F(AffiliationServiceTest, ShutdownWhileTasksArePosted) {
   background_task_runner()->RunUntilIdle();
 
   mock_consumer()->ExpectFailure();
-  main_task_runner()->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 

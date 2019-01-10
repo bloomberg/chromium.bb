@@ -115,7 +115,7 @@ Status FetchResultToStatus(FetchResult result) {
 
 int GetMinuteOfTheDay(bool local_time,
                       bool reduced_resolution,
-                      base::Clock* clock) {
+                      const base::Clock* clock) {
   base::Time now(clock->Now());
   base::Time::Exploded now_exploded{};
   local_time ? now.LocalExplode(&now_exploded) : now.UTCExplode(&now_exploded);

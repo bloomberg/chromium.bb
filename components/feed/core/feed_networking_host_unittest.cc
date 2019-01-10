@@ -10,8 +10,8 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/variations/variations_params_manager.h"
 #include "net/http/http_response_headers.h"
@@ -58,9 +58,7 @@ class MockResponseDoneCallback {
 
 class FeedNetworkingHostTest : public testing::Test {
  protected:
-  FeedNetworkingHostTest()
-      : mock_task_runner_(new base::TestMockTimeTaskRunner(
-            base::TestMockTimeTaskRunner::Type::kBoundToThread)) {
+  FeedNetworkingHostTest() {
     identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   }
@@ -73,7 +71,8 @@ class FeedNetworkingHostTest : public testing::Test {
             &test_factory_);
     net_service_ = std::make_unique<FeedNetworkingHost>(
         identity_test_env_.identity_manager(), "dummy_api_key",
-        shared_url_loader_factory_, mock_task_runner()->GetMockTickClock());
+        shared_url_loader_factory_,
+        scoped_task_environment_.GetMockTickClock());
   }
 
   FeedNetworkingHost* service() { return net_service_.get(); }
@@ -81,8 +80,6 @@ class FeedNetworkingHostTest : public testing::Test {
   identity::IdentityTestEnvironment* identity_env() {
     return &identity_test_env_;
   }
-
-  void RunUntilEmpty() { mock_task_runner_->FastForwardUntilNoTasksRemain(); }
 
   void Respond(const GURL& url,
                const std::string& response_string,
@@ -98,7 +95,7 @@ class FeedNetworkingHostTest : public testing::Test {
 
     test_factory_.AddResponse(url, head, response_string, status);
 
-    RunUntilEmpty();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   void SendRequestAndRespond(const std::string& url_string,
@@ -137,12 +134,11 @@ class FeedNetworkingHostTest : public testing::Test {
   }
 
   network::TestURLLoaderFactory* test_factory() { return &test_factory_; }
-  base::TestMockTimeTaskRunner* mock_task_runner() {
-    return mock_task_runner_.get();
-  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<FeedNetworkingHost> net_service_;
   network::TestURLLoaderFactory test_factory_;
@@ -175,7 +171,7 @@ TEST_F(FeedNetworkingHostTest, ShouldSendSuccessfullyMultipleInflight) {
                         &done_callback2);
   SendRequestAndRespond("http://foobar.com/other", "POST", "", "", net::HTTP_OK,
                         network::URLLoaderCompletionStatus(), &done_callback3);
-  RunUntilEmpty();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_TRUE(done_callback1.has_run);
   EXPECT_TRUE(done_callback2.has_run);
@@ -195,7 +191,7 @@ TEST_F(FeedNetworkingHostTest, ShouldSendSuccessfullyDifferentRequestMethods) {
                           net::HTTP_OK, network::URLLoaderCompletionStatus(),
                           &done_callback);
 
-    RunUntilEmpty();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_TRUE(done_callback.has_run);
     EXPECT_EQ(done_callback.code, 200);
   }
@@ -294,7 +290,7 @@ TEST_F(FeedNetworkingHostTest, CancellationIsSafe) {
   service()->Send(GURL("http://foobar.com/feed2"), "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback2)));
-  RunUntilEmpty();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
   service()->CancelRequests();
 }
 
@@ -349,7 +345,7 @@ TEST_F(FeedNetworkingHostTest, TestDurationHistogram) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  mock_task_runner()->FastForwardBy(duration);
+  scoped_task_environment_.FastForwardBy(duration);
   Respond(url, "", net::HTTP_OK, network::URLLoaderCompletionStatus());
 
   EXPECT_TRUE(done_callback.has_run);
@@ -366,10 +362,10 @@ TEST_F(FeedNetworkingHostTest, TestDefaultTimeout) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(29));
+  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
   EXPECT_FALSE(done_callback.has_run);
 
-  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(29));
+  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
   EXPECT_TRUE(done_callback.has_run);
   histogram_tester.ExpectTimeBucketCount(
       "ContentSuggestions.Feed.Network.Duration", TimeDelta::FromSeconds(30),
@@ -388,10 +384,10 @@ TEST_F(FeedNetworkingHostTest, TestParamTimeout) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(1));
+  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_FALSE(done_callback.has_run);
 
-  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(1));
+  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_TRUE(done_callback.has_run);
 }
 
