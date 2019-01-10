@@ -63,6 +63,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
@@ -2485,6 +2486,9 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
         @Override
         public AwDrawFnImpl.DrawFnAccess getDrawFnAccess() {
+            if (BuildInfo.isAtLeastQ()) {
+                return mFactory.getWebViewDelegate();
+            }
             return null;
         }
     }
