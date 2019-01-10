@@ -83,14 +83,8 @@ void VRBrowserRendererThreadWin::
     // Draw WebXR instead of UI.
     overlay_->SetOverlayAndWebXRVisibility(false, true);
   } else if (!currently_showing_ui && show_ui) {
-    // Draw UI instead of WebXr.
-    //
-    // TODO(https://crbug.com/912765): This is supposed to use (true, false),
-    // but setting WebXRVisibility to false doesn't currently work right. The
-    // content is frozen on the desktop tab while the prompt is showing in the
-    // headset. After dismissing the prompt, the headset view also stops
-    // updating, switching to SteamVR's default fallback for unresponsive apps.
-    overlay_->SetOverlayAndWebXRVisibility(true, true);
+    // Draw UI instead of WebXR.
+    overlay_->SetOverlayAndWebXRVisibility(true, false);
     overlay_->RequestNextOverlayPose(base::BindOnce(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
