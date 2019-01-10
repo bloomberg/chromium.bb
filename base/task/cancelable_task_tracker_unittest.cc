@@ -26,12 +26,7 @@ namespace {
 
 class CancelableTaskTrackerTest : public testing::Test {
  protected:
-  ~CancelableTaskTrackerTest() override { RunCurrentLoopUntilIdle(); }
-
-  void RunCurrentLoopUntilIdle() {
-    RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  ~CancelableTaskTrackerTest() override { RunLoop().RunUntilIdle(); }
 
   CancelableTaskTracker task_tracker_;
 
@@ -98,7 +93,7 @@ TEST_F(CancelableTaskTrackerTest, NoCancel) {
 
   worker_thread.Stop();
 
-  RunCurrentLoopUntilIdle();
+  RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(is_canceled.Run());
 }
@@ -229,7 +224,7 @@ TEST_F(CancelableTaskTrackerTest, CancelAll) {
 
   test_task_runner->RunUntilIdle();
 
-  RunCurrentLoopUntilIdle();
+  RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(is_canceled.Run());
 }
@@ -263,14 +258,33 @@ TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
 
   test_task_runner->RunUntilIdle();
 
-  RunCurrentLoopUntilIdle();
+  RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(is_canceled.Run());
 }
 
 // Post a task and cancel it. HasTrackedTasks() should return false as soon as
-// TryCancelAll() is called.
-TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
+// TryCancel() returns, otherwise we may have leaked per-task state.
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksCancelById) {
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner(
+      new TestSimpleTaskRunner());
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  CancelableTaskTracker::TaskId task_id = task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE));
+  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
+
+  task_tracker_.TryCancel(task_id);
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  test_task_runner->RunUntilIdle();
+  RunLoop().RunUntilIdle();
+}
+
+// Post a task and then cancel all tasks. HasTrackedTasks() should return false
+// as soon as TryCancelAll() is called.
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostCancelAll) {
   scoped_refptr<TestSimpleTaskRunner> test_task_runner(
       new TestSimpleTaskRunner());
 
@@ -284,12 +298,12 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
   test_task_runner->RunUntilIdle();
-  RunCurrentLoopUntilIdle();
+  RunLoop().RunUntilIdle();
 }
 
 // Post a task with a reply and cancel it. HasTrackedTasks() should return false
 // as soon as TryCancelAll() is called.
-TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReplyCancelAll) {
   scoped_refptr<TestSimpleTaskRunner> test_task_runner(
       new TestSimpleTaskRunner());
 
@@ -306,12 +320,12 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
   test_task_runner->RunUntilIdle();
-  RunCurrentLoopUntilIdle();
+  RunLoop().RunUntilIdle();
 }
 
 // Create a new tracked task ID. HasTrackedTasks() should return false as soon
 // as TryCancelAll() is called.
-TEST_F(CancelableTaskTrackerTest, HasTrackedTasksIsCancelled) {
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksIsCancelledCancelAll) {
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
   CancelableTaskTracker::IsCanceledCallback is_canceled;
