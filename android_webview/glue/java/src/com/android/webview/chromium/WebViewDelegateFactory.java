@@ -15,6 +15,8 @@ import android.os.Trace;
 import android.util.SparseArray;
 import android.view.View;
 
+import org.chromium.android_webview.AwDrawFnImpl;
+
 import java.lang.reflect.Method;
 
 /**
@@ -38,7 +40,7 @@ class WebViewDelegateFactory {
      * Copy of {@link android.webkit.WebViewDelegate android.webkit.WebViewDelegate}'s interface.
      * See {@link WebViewDelegateFactory} for the reasons why this copy is needed.
      */
-    interface WebViewDelegate {
+    interface WebViewDelegate extends AwDrawFnImpl.DrawFnAccess {
         /** @see android.webkit.WebViewDelegate.OnTraceEnabledChangeListener */
         interface OnTraceEnabledChangeListener {
             void onTraceEnabledChange(boolean enabled);
@@ -212,6 +214,11 @@ class WebViewDelegateFactory {
         @Override
         public String getDataDirectorySuffix() {
             return GlueApiHelperForP.getDataDirectorySuffix(mDelegate);
+        }
+
+        @Override
+        public void drawWebViewFunctor(Canvas canvas, int functor) {
+            throw new RuntimeException();
         }
     }
 
@@ -406,6 +413,11 @@ class WebViewDelegateFactory {
         @Override
         public String getDataDirectorySuffix() {
             return null;
+        }
+
+        @Override
+        public void drawWebViewFunctor(Canvas canvas, int functor) {
+            throw new RuntimeException();
         }
     }
 }
