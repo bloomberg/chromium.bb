@@ -815,10 +815,13 @@ void InspectorOverlayAgent::DrawViewSize() {
 void InspectorOverlayAgent::DrawScreenshotBorder() {
   if (!screenshot_mode_)
     return;
-  VisualViewport& visual_viewport =
+  const VisualViewport& visual_viewport =
       frame_impl_->GetFrame()->GetPage()->GetVisualViewport();
   IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
   IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
+  float scale = 1.f / WindowToViewportScale();
+  p1.Scale(scale, scale);
+  p2.Scale(scale, scale);
   std::unique_ptr<protocol::DictionaryValue> data =
       protocol::DictionaryValue::create();
   data->setInteger("x1", p1.X());
@@ -1127,10 +1130,13 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
     IntPoint p1 = screenshot_anchor_;
     IntPoint p2 = screenshot_position_;
     if (LocalFrame* frame = frame_impl_->GetFrame()) {
-      scale = frame->GetPage()->PageScaleFactor();
+      scale = frame->GetPage()->PageScaleFactor() / WindowToViewportScale();
       p1 = frame->View()->ConvertFromRootFrame(p1);
       p2 = frame->View()->ConvertFromRootFrame(p2);
     }
+    float dp_to_dip = 1.f / WindowToViewportScale();
+    p1.Scale(dp_to_dip, dp_to_dip);
+    p2.Scale(dp_to_dip, dp_to_dip);
     int min_x = std::min(p1.X(), p2.X());
     int max_x = std::max(p1.X(), p2.X());
     int min_y = std::min(p1.Y(), p2.Y());
