@@ -44,7 +44,7 @@ cca.views.Dialog = function() {
   Object.seal(this);
 
   this.positiveButton_.addEventListener('click', () => this.leave(true));
-  this.negativeButton_.addEventListener('click', () => this.leave(false));
+  this.negativeButton_.addEventListener('click', () => this.leave());
 };
 
 cca.views.Dialog.prototype = {

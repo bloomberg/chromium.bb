@@ -41,8 +41,8 @@ cca.views.View = function(selector, dismissByEsc, dismissByBkgndClick) {
   this.dismissByEsc_ = dismissByEsc;
 
   if (dismissByBkgndClick) {
-    this.rootElement_.addEventListener('click',
-        (event) => event.target == this.rootElement_ && this.leave());
+    this.rootElement_.addEventListener('click', (event) =>
+        event.target == this.rootElement_ && this.leave({bkgnd: true}));
   }
 };
 
