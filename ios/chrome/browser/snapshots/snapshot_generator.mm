@@ -104,7 +104,7 @@
 }
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
-  DCHECK(self.webState);
+  DCHECK(self.webState->ContentIsHTML());
   if (![self canTakeSnapshot]) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
@@ -129,7 +129,7 @@
   self.webState->TakeSnapshot(
       snapshotFrame, base::BindOnce(^(const gfx::Image& image) {
         UIImage* snapshot = [weakSelf snapshotWithOverlays:overlays
-                                                     image:image
+                                                 baseImage:image
                                                      frame:snapshotFrame];
         [weakSelf updateSnapshotCacheWithImage:snapshot];
         if (completion)
@@ -140,20 +140,17 @@
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay {
   if (![self canTakeSnapshot])
     return nil;
-  CGRect frame = [self snapshotFrame];
   NSArray<SnapshotOverlay*>* overlays =
       shouldAddOverlay ? [self.delegate snapshotGenerator:self
                               snapshotOverlaysForWebState:self.webState]
                        : nil;
-
-  [self.delegate snapshotGenerator:self
-      willUpdateSnapshotForWebState:self.webState];
   UIView* view = [self.delegate snapshotGenerator:self
                               baseViewForWebState:self.webState];
-  UIImage* snapshot = [self generateSnapshotForView:view
-                                           withRect:frame
-                                           overlays:overlays];
-  return snapshot;
+  [self.delegate snapshotGenerator:self
+      willUpdateSnapshotForWebState:self.webState];
+  return [self snapshotWithOverlays:overlays
+                           baseView:view
+                              frame:[self snapshotFrame]];
 }
 
 - (void)removeSnapshot {
@@ -188,21 +185,19 @@
   return frame;
 }
 
-// Takes a snapshot for the supplied view. Returns an autoreleased image cropped
-// and scaled appropriately. The image can also contain overlays (if |overlays|
-// is not nil and not empty).
-- (UIImage*)generateSnapshotForView:(UIView*)view
-                           withRect:(CGRect)rect
-                           overlays:(NSArray<SnapshotOverlay*>*)overlays {
+// Returns an image of the |view| overlaid with |overlays| with the given
+// |frame|.
+- (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+                        baseView:(UIView*)view
+                           frame:(CGRect)frame {
   DCHECK(view);
-  DCHECK(!CGRectIsEmpty(rect));
+  DCHECK(!CGRectIsEmpty(frame));
   const CGFloat kScale =
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
-  UIGraphicsBeginImageContextWithOptions(rect.size, YES, kScale);
+  UIGraphicsBeginImageContextWithOptions(frame.size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
+  CGContextTranslateCTM(context, -frame.origin.x, -frame.origin.y);
   BOOL snapshotSuccess = YES;
-  CGContextSaveGState(context);
-  CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
   if (base::FeatureList::IsEnabled(kSnapshotDrawView)) {
     snapshotSuccess =
         [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
@@ -213,7 +208,6 @@
   UIImage* image = nil;
   if (snapshotSuccess)
     image = UIGraphicsGetImageFromCurrentImageContext();
-  CGContextRestoreGState(context);
   UIGraphicsEndImageContext();
   return image;
 }
@@ -221,7 +215,7 @@
 // Returns an image of the |image| overlaid with |overlays| with the given
 // |frame|.
 - (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                           image:(const gfx::Image&)image
+                       baseImage:(const gfx::Image&)image
                            frame:(CGRect)frame {
   DCHECK(!CGRectIsEmpty(frame));
   if (image.IsEmpty())
@@ -232,13 +226,11 @@
       std::max<CGFloat>(1.0, [self.snapshotCache snapshotScaleForDevice]);
   UIGraphicsBeginImageContextWithOptions(frame.size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
-  CGContextSaveGState(context);
   [image.ToUIImage() drawAtPoint:CGPointZero];
   [self drawOverlays:overlays context:context];
-  UIImage* snapshotWithOverlays = UIGraphicsGetImageFromCurrentImageContext();
-  CGContextRestoreGState(context);
+  UIImage* snapshot = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
-  return snapshotWithOverlays;
+  return snapshot;
 }
 
 // Updates the snapshot cache with |snapshot|.
