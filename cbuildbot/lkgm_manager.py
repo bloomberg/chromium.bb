@@ -549,8 +549,8 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
   has_chump_cls = False
   handler = git.Manifest(lkgm_path)
   reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
-  author_re = re.compile(r'\s*Author:.*<(\S+)@\S+>\s*')
-  committer_re = re.compile(r'\s*Commit:.*<(\S+)@\S+>\s*')
+  author_re = re.compile(r'^Author:.*<(\S+)@\S+>\s*')
+  committer_re = re.compile(r'^Commit:.*<(\S+)@\S+>\s*')
   for rel_src_path, checkout in handler.checkouts_by_path.iteritems():
     project = checkout['name']
 
