@@ -11,15 +11,16 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 // This class listens to various signin events and updates the signin-related
 // fields of ProfileAttributes.
-class SigninProfileAttributesUpdater : public KeyedService,
-                                       public SigninErrorController::Observer,
-                                       public SigninManagerBase::Observer {
+class SigninProfileAttributesUpdater
+    : public KeyedService,
+      public SigninErrorController::Observer,
+      public identity::IdentityManager::Observer {
  public:
-  SigninProfileAttributesUpdater(SigninManagerBase* signin_manager,
+  SigninProfileAttributesUpdater(identity::IdentityManager* identity_manager,
                                  SigninErrorController* signin_error_controller,
                                  const base::FilePath& profile_path);
 
@@ -35,17 +36,18 @@ class SigninProfileAttributesUpdater : public KeyedService,
   // SigninErrorController::Observer:
   void OnErrorChanged() override;
 
-  // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const AccountInfo& account_info) override;
+  // IdentityManager::Observer:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
+  identity::IdentityManager* identity_manager_;
   SigninErrorController* signin_error_controller_;
-  SigninManagerBase* signin_manager_;
   const base::FilePath profile_path_;
+  ScopedObserver<identity::IdentityManager, SigninProfileAttributesUpdater>
+      identity_manager_observer_;
   ScopedObserver<SigninErrorController, SigninProfileAttributesUpdater>
       signin_error_controller_observer_;
-  ScopedObserver<SigninManagerBase, SigninProfileAttributesUpdater>
-      signin_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninProfileAttributesUpdater);
 };
