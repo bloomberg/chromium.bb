@@ -9,38 +9,48 @@
 
 namespace blink {
 
-// static
-unsigned DownloadStats::ToUmaValue(const DownloadFlags& flags) {
+unsigned DownloadStats::MainFrameDownloadFlags::ToUmaValue() const {
   unsigned value = 0;
-  if (flags.has_sandbox)
-    value |= kSandboxBit;
-  if (flags.is_cross_origin)
-    value |= kCrossOriginBit;
-  if (flags.is_ad_frame)
-    value |= kAdBit;
-  if (flags.has_gesture)
-    value |= kGestureBit;
+  if (has_sandbox)
+    value |= kMainFrameSandboxBit;
+  if (has_gesture)
+    value |= kMainFrameGestureBit;
   return value;
 }
 
-// static
-void DownloadStats::RecordMainFrameHasGesture(bool has_gesture,
-                                              ukm::SourceId source_id,
-                                              ukm::UkmRecorder* ukm_recorder) {
-  UMA_HISTOGRAM_BOOLEAN("Download.MainFrame.HasGesture", has_gesture);
+unsigned DownloadStats::SubframeDownloadFlags::ToUmaValue() const {
+  unsigned value = 0;
+  if (has_sandbox)
+    value |= kSubframeSandboxBit;
+  if (is_cross_origin)
+    value |= kSubframeCrossOriginBit;
+  if (is_ad_frame)
+    value |= kSubframeAdBit;
+  if (has_gesture)
+    value |= kSubframeGestureBit;
+  return value;
+}
+
+void DownloadStats::RecordMainFrameDownloadFlags(
+    const MainFrameDownloadFlags& flags,
+    ukm::SourceId source_id,
+    ukm::UkmRecorder* ukm_recorder) {
+  UMA_HISTOGRAM_ENUMERATION("Download.MainFrame.SandboxGesture",
+                            flags.ToUmaValue(), kCountSandboxGesture);
 
   ukm::builders::MainFrameDownload(source_id)
-      .SetHasGesture(has_gesture)
+      .SetHasSandbox(flags.has_sandbox)
+      .SetHasGesture(flags.has_gesture)
       .Record(ukm_recorder);
 }
 
 // static
 void DownloadStats::RecordSubframeDownloadFlags(
-    const DownloadFlags& flags,
+    const SubframeDownloadFlags& flags,
     ukm::SourceId source_id,
     ukm::UkmRecorder* ukm_recorder) {
   UMA_HISTOGRAM_ENUMERATION("Download.Subframe.SandboxOriginAdGesture",
-                            ToUmaValue(flags), kCountSandboxOriginAdGesture);
+                            flags.ToUmaValue(), kCountSandboxOriginAdGesture);
 
   ukm::builders::SubframeDownload(source_id)
       .SetHasSandbox(flags.has_sandbox)

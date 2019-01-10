@@ -1857,6 +1857,12 @@ be describing additional metrics about the same event.
       A boolean denoting whether the download involves a transient user gesture.
     </summary>
   </metric>
+  <metric name="HasSandbox">
+    <summary>
+      A boolean denoting whether the download occurs in a sandboxed browsing
+      context.
+    </summary>
+  </metric>
 </event>
 
 <event name="Media.Autoplay.Attempt">
@@ -4569,7 +4575,8 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="HasSandbox">
     <summary>
-      A boolean denoting whether the download occurs in a sandboxed subframe.
+      A boolean denoting whether the download occurs in a sandboxed browsing
+      context.
     </summary>
   </metric>
   <metric name="IsAdFrame">
