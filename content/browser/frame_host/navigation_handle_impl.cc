@@ -578,7 +578,7 @@ void NavigationHandleImpl::InitAppCacheHandle(
 }
 
 void NavigationHandleImpl::WillStartRequest(
-    const ThrottleChecksFinishedCallback& callback) {
+    ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillStartRequest");
   // WillStartRequest should only be called once.
@@ -589,7 +589,7 @@ void NavigationHandleImpl::WillStartRequest(
   }
 
   state_ = WILL_SEND_REQUEST;
-  complete_callback_ = callback;
+  complete_callback_ = std::move(callback);
 
   if (IsSelfReferentialURL()) {
     state_ = CANCELING;
@@ -624,7 +624,7 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
     bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
-    const ThrottleChecksFinishedCallback& callback) {
+    ThrottleChecksFinishedCallback callback) {
   // |new_url| is not expected to be a "renderer debug" url. It should be
   // blocked in NavigationRequest::OnRequestRedirected or in
   // ResourceLoader::OnReceivedRedirect. If it is not the case,
@@ -652,7 +652,7 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
     resource_request_body_ = nullptr;
 
   state_ = WILL_REDIRECT_REQUEST;
-  complete_callback_ = callback;
+  complete_callback_ = std::move(callback);
 }
 
 void NavigationHandleImpl::WillRedirectRequest(
@@ -663,13 +663,13 @@ void NavigationHandleImpl::WillRedirectRequest(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     RenderProcessHost* post_redirect_process,
-    const ThrottleChecksFinishedCallback& callback) {
+    ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "WillRedirectRequest", "url",
                                new_url.possibly_invalid_spec());
   UpdateStateFollowingRedirect(new_url, new_method, new_referrer_url,
                                new_is_external_protocol, response_headers,
-                               connection_info, callback);
+                               connection_info, std::move(callback));
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
@@ -694,14 +694,14 @@ void NavigationHandleImpl::WillRedirectRequest(
 void NavigationHandleImpl::WillFailRequest(
     RenderFrameHostImpl* render_frame_host,
     base::Optional<net::SSLInfo> ssl_info,
-    const ThrottleChecksFinishedCallback& callback) {
+    ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillFailRequest");
   if (ssl_info.has_value())
     ssl_info_ = ssl_info.value();
 
   render_frame_host_ = render_frame_host;
-  complete_callback_ = callback;
+  complete_callback_ = std::move(callback);
   state_ = WILL_FAIL_REQUEST;
 
   // Notify each throttle of the request.
@@ -729,7 +729,7 @@ void NavigationHandleImpl::WillProcessResponse(
     bool is_stream,
     bool is_signed_exchange_inner_response,
     bool was_cached,
-    const ThrottleChecksFinishedCallback& callback) {
+    ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
 
@@ -746,7 +746,7 @@ void NavigationHandleImpl::WillProcessResponse(
   state_ = WILL_PROCESS_RESPONSE;
   ssl_info_ = ssl_info;
   socket_address_ = socket_address;
-  complete_callback_ = callback;
+  complete_callback_ = std::move(callback);
 
   // Notify each throttle of the response.
   NavigationThrottle::ThrottleCheckResult result = CheckWillProcessResponse();
@@ -1227,13 +1227,11 @@ void NavigationHandleImpl::RunCompleteCallback(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
 
-  ThrottleChecksFinishedCallback callback = complete_callback_;
+  ThrottleChecksFinishedCallback callback = std::move(complete_callback_);
   complete_callback_.Reset();
 
-  if (!complete_callback_for_testing_.is_null()) {
-    complete_callback_for_testing_.Run(result);
-    complete_callback_for_testing_.Reset();
-  }
+  if (!complete_callback_for_testing_.is_null())
+    std::move(complete_callback_for_testing_).Run(result);
 
   if (!callback.is_null())
     std::move(callback).Run(result);
