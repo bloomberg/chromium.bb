@@ -167,6 +167,11 @@ void FCMInvalidationListener::DoRegistrationUpdate() {
       object_id_invalidation_map));
 }
 
+void FCMInvalidationListener::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) const {
+  callback.Run(*CollectDebugData());
+}
+
 void FCMInvalidationListener::StopForTest() {
   Stop();
 }
@@ -229,6 +234,22 @@ void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
     InvalidatorState invalidator_state) {
   subscription_channel_state_ = invalidator_state;
   EmitStateChange();
+}
+
+std::unique_ptr<base::DictionaryValue>
+FCMInvalidationListener::CollectDebugData() const {
+  std::unique_ptr<base::DictionaryValue> return_value(
+      new base::DictionaryValue());
+  // For each topic record if the subscription was successful.
+  TopicSet active_topics =
+      per_user_topic_registration_manager_->GetRegisteredIds();
+  for (const Topic& topic : registered_topics_) {
+    std::string status = "Registered";
+    if (active_topics.count(topic) == 0)
+      status = "Unregistered";
+    return_value->SetString(topic, status);
+  }
+  return return_value;
 }
 
 }  // namespace syncer
