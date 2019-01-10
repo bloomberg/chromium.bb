@@ -387,6 +387,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context,
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
+  context_->Bind(this);
 }
 
 ResourceFetcher::~ResourceFetcher() {
@@ -1436,15 +1437,15 @@ void ResourceFetcher::ReloadImagesIfNotDeferred() {
 }
 
 FetchContext& ResourceFetcher::Context() const {
-  return context_
-             ? *context_.Get()
-             : FetchContext::NullInstance(Thread::Current()->GetTaskRunner());
+  return *context_;
 }
 
 void ResourceFetcher::ClearContext() {
   scheduler_->Shutdown();
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
+  context_->Unbind();
   context_ = Context().Detach();
+  context_->Bind(this);
   console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
 
   // Make sure the only requests still going are keepalive requests.

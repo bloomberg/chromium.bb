@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
@@ -72,9 +73,17 @@ FetchContext::FetchContext(
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
 
+void FetchContext::Bind(ResourceFetcher* fetcher) {
+  DCHECK(fetcher);
+  DCHECK(!fetcher_);
+  DCHECK_EQ(&fetcher->Context(), this);
+  fetcher_ = fetcher;
+}
+
 void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
   visitor->Trace(fetch_client_settings_object_);
+  visitor->Trace(fetcher_);
 }
 
 void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
