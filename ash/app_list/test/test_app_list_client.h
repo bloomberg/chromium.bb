@@ -51,16 +51,10 @@ class TestAppListClient : public mojom::AppListClient {
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override {}
   void OnPageBreakItemDeleted(const std::string& id) override {}
-  void StartVoiceInteractionSession() override;
-  void ToggleVoiceInteractionSession() override;
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override {}
 
-  size_t voice_session_count() const { return voice_session_count_; }
-
  private:
-  size_t voice_session_count_ = 0u;
-
   mojo::Binding<mojom::AppListClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppListClient);

@@ -18,12 +18,4 @@ mojom::AppListClientPtr TestAppListClient::CreateInterfacePtrAndBind() {
   return ptr;
 }
 
-void TestAppListClient::StartVoiceInteractionSession() {
-  ++voice_session_count_;
-}
-
-void TestAppListClient::ToggleVoiceInteractionSession() {
-  ++voice_session_count_;
-}
-
 }  // namespace ash

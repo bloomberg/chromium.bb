@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/first_run/first_run.h"
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -138,24 +139,7 @@ class DialogLauncher : public content::NotificationObserver {
       }
     }
 
-    // If voice interaction value prop needs to be shown, the tutorial will be
-    // shown after the voice interaction OOBE flow.
-    if (account_supported && arc::IsArcPlayStoreEnabledForProfile(profile_) &&
-        !profile_->GetPrefs()->GetBoolean(
-            arc::prefs::kArcVoiceInteractionValuePropAccepted)) {
-      auto* service =
-          arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-              profile_);
-      if (service) {
-        service->StartVoiceInteractionOobe();
-      } else {
-        // Try launching the tutorial in case the voice interaction framework
-        // service is unavailable. See https://crbug.com/809756.
-        TryLaunchFirstRunDialog(profile_);
-      }
-    } else {
       TryLaunchFirstRunDialog(profile_);
-    }
 
     delete this;
   }

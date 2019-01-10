@@ -129,12 +129,6 @@ class LoginDisplayHost {
   // Starts ARC kiosk splash screen.
   virtual void StartArcKiosk(const AccountId& account_id) = 0;
 
-  // Start voice interaction OOBE.
-  virtual void StartVoiceInteractionOobe() = 0;
-
-  // Returns whether current host is for voice interaction OOBE.
-  virtual bool IsVoiceInteractionOobe() = 0;
-
   // Show the gaia dialog. |can_close| determines if the user is allowed to
   // close the dialog. If available, |account| is preloaded in the gaia dialog.
   virtual void ShowGaiaDialog(

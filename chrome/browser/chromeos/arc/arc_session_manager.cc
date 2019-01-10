@@ -684,7 +684,7 @@ bool ArcSessionManager::RequestEnableImpl() {
   // the initial request.
   // |prefs::kArcProvisioningInitiatedFromOobe| is reset when provisioning is
   // done or ARC is opted out.
-  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive())
+  if (IsArcOobeOptInActive())
     prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
 
   // If it is marked that sign in has been successfully done or if Play Store is
@@ -828,7 +828,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     return;
   }
 
-  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive()) {
+  if (IsArcOobeOptInActive()) {
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
         std::make_unique<ArcTermsOfServiceOobeNegotiator>();

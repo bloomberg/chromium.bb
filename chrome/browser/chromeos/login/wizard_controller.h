@@ -177,8 +177,6 @@ class WizardController : public BaseScreenDelegate,
   void ShowHIDDetectionScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
-  void ShowVoiceInteractionValuePropScreen();
-  void ShowWaitForContainerReadyScreen();
   void ShowSupervisionTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
@@ -223,8 +221,6 @@ class WizardController : public BaseScreenDelegate,
   void OnRecommendAppsSkipped();
   void OnRecommendAppsSelected();
   void OnAppDownloadingFinished();
-  void OnVoiceInteractionValuePropSkipped();
-  void OnVoiceInteractionValuePropAccepted();
   void OnAutoEnrollmentCheckCompleted();
   void OnDemoSetupFinished();
   void OnDemoSetupCanceled();
@@ -322,9 +318,6 @@ class WizardController : public BaseScreenDelegate,
   // Returns true if callback has been installed.
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
-
-  // Returns true if voice interaction value prop should be shown.
-  bool ShouldShowVoiceInteractionValueProp() const;
 
   // Start voice interaction setup wizard in container
   void StartVoiceInteractionSetupWizard();

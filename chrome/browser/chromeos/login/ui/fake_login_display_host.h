@@ -45,8 +45,6 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
                       bool is_auto_launch) override;
   void StartDemoAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;
-  void StartVoiceInteractionOobe() override;
-  bool IsVoiceInteractionOobe() override;
   void CompleteLogin(const chromeos::UserContext& user_context) override;
   void OnGaiaScreenReady() override;
   void SetDisplayEmail(const std::string& email) override;
@@ -72,8 +70,6 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
 
  private:
   class FakeBaseScreen;
-
-  bool is_voice_interaction_oobe_ = false;
 
   // SessionManager is required by the constructor of WizardController.
   std::unique_ptr<session_manager::SessionManager> session_manager_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -63,15 +65,13 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
     arc_session_manager_->RequestArcDataRemoval();
   }
 
-  // If the OOBE or Assistant Wizard screen is shown, don't kill the
-  // mini-container. We'll do it if and when the user declines the TOS. We need
-  // to check |is_play_store_enabled| to handle the case where |kArcEnabled| is
-  // managed but some of the preferences still need to be set by the user.
+  // If the OOBE is shown, don't kill the mini-container. We'll do it if and
+  // when the user declines the TOS. We need to check |is_play_store_enabled| to
+  // handle the case where |kArcEnabled| is managed but some of the preferences
+  // still need to be set by the user.
   // TODO(cmtm): This feature isn't covered by unittests. Add a unittest for it.
-  if (!(IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive()) ||
-      is_play_store_enabled) {
+  if (!IsArcOobeOptInActive() || is_play_store_enabled)
     UpdateArcSessionManager();
-  }
   if (is_play_store_enabled)
     return;
 

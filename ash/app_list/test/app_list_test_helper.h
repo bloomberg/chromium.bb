@@ -57,9 +57,6 @@ class AppListTestHelper {
   // Fails in tests if either one doesn't match |visible|,.
   void CheckVisibility(bool visible);
 
-  // Check the accumulated voice session count.
-  void CheckVoiceSessionCount(size_t count);
-
   // Check the current app list view state.
   void CheckState(app_list::AppListViewState state);
 

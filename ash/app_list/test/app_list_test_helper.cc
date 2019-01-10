@@ -74,10 +74,6 @@ void AppListTestHelper::CheckVisibility(bool visible) {
   EXPECT_EQ(visible, app_list_controller_->GetTargetVisibility());
 }
 
-void AppListTestHelper::CheckVoiceSessionCount(size_t count) {
-  EXPECT_EQ(count, app_list_client_->voice_session_count());
-}
-
 void AppListTestHelper::CheckState(app_list::AppListViewState state) {
   EXPECT_EQ(state, app_list_controller_->GetAppListViewState());
 }

@@ -36,6 +36,7 @@
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -170,6 +171,7 @@ class ChromeArcUtilTest : public testing::Test {
 
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
+    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -209,6 +211,7 @@ class ChromeArcUtilTest : public testing::Test {
 
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
+  base::test::ScopedFeatureList feature_list_;
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   base::ScopedTempDir data_dir_;
@@ -505,21 +508,7 @@ TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
   EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
 }
 
-TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Flag) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv({
-      "", "--arc-availability=officially-supported",
-  });
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmailGaiaId(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
-            IsAssistantAllowedForProfile(profile()));
-}
-
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
   ScopedLogIn login2(
       GetFakeUserManager(),
       AccountId::FromUserEmailGaiaId("user2@gmail.com", "0123456789"));
@@ -532,9 +521,6 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
 }
 
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
@@ -544,10 +530,8 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
 }
 
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Locale) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
-  base::test::ScopedRestoreICUDefaultLocale scoped_locale("he");
+  profile()->GetTestingPrefService()->SetString(
+      language::prefs::kApplicationLocale, "he");
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
@@ -556,38 +540,7 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Locale) {
             IsAssistantAllowedForProfile(profile()));
 }
 
-TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Managed) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmailGaiaId(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  ASSERT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
-            IsAssistantAllowedForProfile(profile()));
-
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, std::make_unique<base::Value>(false));
-
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY,
-            IsAssistantAllowedForProfile(profile()));
-
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, std::make_unique<base::Value>(true));
-
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
-            IsAssistantAllowedForProfile(profile()));
-
-  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
-
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
-            IsAssistantAllowedForProfile(profile()));
-}
-
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_DemoMode) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(),
@@ -601,9 +554,6 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_DemoMode) {
 }
 
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_PublicSession) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported",
-       "--enable-voice-interaction"});
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -1078,56 +1028,6 @@ TEST_F(ArcOobeOpaOptInActiveInTest, OobeOptInActive) {
   login_display_host()->StartWizard(
       chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_FALSE(IsArcOobeOptInActive());
-}
-
-TEST_F(ArcOobeOpaOptInActiveInTest, NewUserAndAssistantWizard) {
-  CreateLoginDisplayHost();
-  GetFakeUserManager()->set_current_user_new(true);
-  login_display_host()->StartVoiceInteractionOobe();
-  login_display_host()->StartWizard(
-      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
-  EXPECT_FALSE(IsArcOobeOptInActive());
-  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
-}
-
-// Emulate the following case.
-// Create a new profile on the device.
-// ARC OOBE ToS is expected to be shown, and the user "SKIP" it.
-// Then, the user tries to use Assistant. In such a case, ARC OOBE ToS wizard
-// is used unlike other scenarios to enable ARC during a session, which use
-// ArcSupport.
-// Because, IsArcOobeOptInActive() checks the UI state, this test checks if it
-// works expected for Assistant cases.
-TEST_F(ArcOobeOpaOptInActiveInTest, NoOobeOptInForPlayStoreNotAvailable) {
-  // No OOBE OptIn when Play Store is not available.
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv(
-      {"", "--arc-availability=installed",
-       "--arc-start-mode=always-start-with-no-play-store"});
-  CreateLoginDisplayHost();
-  GetFakeUserManager()->set_current_user_new(true);
-  EXPECT_FALSE(IsArcOobeOptInActive());
-}
-
-TEST_F(ArcOobeOpaOptInActiveInTest, OptInWizardForAssistantActive) {
-  // OPA OptIn is active when wizard is started and  ARC ToS screen is currently
-  // showing.
-  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
-  CreateLoginDisplayHost();
-  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
-  GetFakeUserManager()->set_current_user_new(true);
-  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
-  login_display_host()->StartVoiceInteractionOobe();
-  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
-  login_display_host()->StartWizard(
-      chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
-  EXPECT_FALSE(IsArcOptInWizardForAssistantActive());
-  login_display_host()->StartWizard(
-      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
-  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
-  // Assistant wizard can be started for any user session.
-  GetFakeUserManager()->set_current_user_new(false);
-  EXPECT_TRUE(IsArcOptInWizardForAssistantActive());
 }
 
 using DemoSetupFlowArcOptInTest = ArcOobeTest;

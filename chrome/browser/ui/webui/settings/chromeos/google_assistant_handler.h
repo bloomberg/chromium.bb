@@ -23,14 +23,8 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler {
   void OnJavascriptDisallowed() override;
 
  private:
-  // WebUI call to enable the Google Assistant.
-  void HandleSetGoogleAssistantEnabled(const base::ListValue* args);
-  // WebUI call to enable context for the Google Assistant.
-  void HandleSetGoogleAssistantContextEnabled(const base::ListValue* args);
   // WebUI call to launch into the Google Assistant app settings.
   void HandleShowGoogleAssistantSettings(const base::ListValue* args);
-  // WebUI call to launch assistant runtime flow.
-  void HandleTurnOnGoogleAssistant(const base::ListValue* args);
 
   Profile* const profile_;
 

@@ -50,11 +50,6 @@ constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
 constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
 constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 
-bool IsAssistantEnabled() {
-  return chromeos::switches::IsVoiceInteractionEnabled() ||
-         chromeos::switches::IsAssistantEnabled();
-}
-
 bool IsTabletMode() {
   return Shell::Get()
       ->tablet_mode_controller()
@@ -86,7 +81,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   // session has already started. This could happen when an external monitor
   // is plugged in.
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
-      IsAssistantEnabled()) {
+      chromeos::switches::IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -159,12 +154,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         event->SetHandled();
         Shell::Get()->shell_state()->SetRootWindowForNewWindows(
             GetWidget()->GetNativeWindow()->GetRootWindow());
-        if (chromeos::switches::IsAssistantEnabled()) {
-          Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-              AssistantEntryPoint::kLongPressLauncher);
-        } else {
-          Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
-        }
+        Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+            AssistantEntryPoint::kLongPressLauncher);
       } else {
         Button::OnGestureEvent(event);
       }
@@ -363,29 +354,13 @@ void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
   // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_ && IsAssistantEnabled()) {
+      !assistant_overlay_ && chromeos::switches::IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
 
 void AppListButton::StartVoiceInteractionAnimation() {
-  // We only show the voice interaction icon and related animation when the
-  // shelf is at the bottom position and voice interaction is not running and
-  // voice interaction setup flow has completed.
-  ShelfAlignment alignment = shelf_->alignment();
-  mojom::VoiceInteractionState state =
-      Shell::Get()
-          ->voice_interaction_controller()
-          ->voice_interaction_state()
-          .value_or(mojom::VoiceInteractionState::STOPPED);
-  bool show_icon =
-      (alignment == SHELF_ALIGNMENT_BOTTOM ||
-       alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
-      state == mojom::VoiceInteractionState::STOPPED &&
-      Shell::Get()->voice_interaction_controller()->setup_completed().value_or(
-          false) &&
-      chromeos::switches::IsVoiceInteractionEnabled();
-  assistant_overlay_->StartAnimation(show_icon);
+  assistant_overlay_->StartAnimation(false);
 }
 
 bool AppListButton::UseVoiceInteractionStyle() {

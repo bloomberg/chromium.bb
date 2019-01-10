@@ -82,8 +82,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnStartArcKiosk() override;
   void OnBrowserCreated() override;
-  void StartVoiceInteractionOobe() override;
-  bool IsVoiceInteractionOobe() override;
   void ShowGaiaDialog(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) override;

@@ -236,15 +236,6 @@ void LoginDisplayHostMojo::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::StartVoiceInteractionOobe() {
-  NOTIMPLEMENTED();
-}
-
-bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void LoginDisplayHostMojo::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {

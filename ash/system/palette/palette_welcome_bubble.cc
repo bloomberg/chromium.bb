@@ -4,6 +4,8 @@
 
 #include "ash/system/palette/palette_welcome_bubble.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -57,7 +59,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
   void Init() override {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label = new views::Label(l10n_util::GetStringUTF16(
-        chromeos::switches::IsVoiceInteractionEnabled()
+        chromeos::switches::IsAssistantEnabled()
             ? IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_WITH_ASSISTANT_DESCRIPTION
             : IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

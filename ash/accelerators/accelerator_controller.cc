@@ -717,13 +717,9 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       break;
   }
 
-  if (!chromeos::switches::IsAssistantEnabled()) {
-    Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
-  } else {
-    Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
-        /*entry_point=*/AssistantEntryPoint::kHotkey,
-        /*exit_point=*/AssistantExitPoint::kHotkey);
-  }
+  Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
+      /*entry_point=*/AssistantEntryPoint::kHotkey,
+      /*exit_point=*/AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {

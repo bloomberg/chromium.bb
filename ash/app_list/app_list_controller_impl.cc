@@ -848,16 +848,6 @@ void AppListControllerImpl::OnTargetVisibilityChanged(bool visible) {
     client_->OnAppListTargetVisibilityChanged(visible);
 }
 
-void AppListControllerImpl::StartVoiceInteractionSession() {
-  if (client_)
-    client_->StartVoiceInteractionSession();
-}
-
-void AppListControllerImpl::ToggleVoiceInteractionSession() {
-  if (client_)
-    client_->ToggleVoiceInteractionSession();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private used only:
 

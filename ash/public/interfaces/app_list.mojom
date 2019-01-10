@@ -361,13 +361,6 @@ interface AppListClient {
   // Invoked when a "page break" item with |id| is deleted.
   OnPageBreakItemDeleted(string id);
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Interfaces on voice interaction:
-  // Starts a voice interaction session.
-  StartVoiceInteractionSession();
-  // Starts or stops voice interaction session based on current state.
-  ToggleVoiceInteractionSession();
-
   // Acquires a NavigableContentsFactory (indirectly) from the Content Service
   // to allow the app list to display embedded web contents. Currently used only
   // for answer card search results.
