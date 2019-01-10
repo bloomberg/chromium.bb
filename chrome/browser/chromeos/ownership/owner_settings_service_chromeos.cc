@@ -664,10 +664,13 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kHeartbeatFrequency
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
+    //   kReportDeviceBoardStatus
     //   kReportDeviceBootMode
     //   kReportDeviceHardwareStatus
     //   kReportDeviceLocation
     //   kReportDeviceNetworkInterfaces
+    //   kReportDevicePowerStatus
+    //   kReportDeviceStorageStatus
     //   kReportDeviceSessionStatus
     //   kReportDeviceVersionInfo
     //   kReportDeviceUsers

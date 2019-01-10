@@ -519,6 +519,27 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.report_session_status()),
           nullptr);
     }
+    if (container.has_report_power_status()) {
+      policies->Set(
+          key::kReportDevicePowerStatus, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_power_status()),
+          nullptr);
+    }
+    if (container.has_report_storage_status()) {
+      policies->Set(
+          key::kReportDeviceStorageStatus, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_storage_status()),
+          nullptr);
+    }
+    if (container.has_report_board_status()) {
+      policies->Set(
+          key::kReportDeviceBoardStatus, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_board_status()),
+          nullptr);
+    }
     if (container.has_device_status_frequency()) {
       policies->Set(key::kReportUploadFrequency, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,

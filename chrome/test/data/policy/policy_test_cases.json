@@ -3513,6 +3513,15 @@
   "ReportDeviceSessionStatus": {
   },
 
+  "ReportDevicePowerStatus": {
+  },
+
+  "ReportDeviceStorageStatus": {
+  },
+
+  "ReportDeviceBoardStatus": {
+  },
+
   "ReportUploadFrequency": {
   },
 

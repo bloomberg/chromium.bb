@@ -15179,6 +15179,9 @@ Called by update_net_error_codes.py.-->
   <int value="509" label="DeviceAuthDataCacheLifetime"/>
   <int value="510" label="CloudManagementEnrollmentToken"/>
   <int value="511" label="BrowserSwitcherExternalSitelistUrl"/>
+  <int value="512" label="ReportDevicePowerStatus"/>
+  <int value="513" label="ReportDeviceStorageStatus"/>
+  <int value="514" label="ReportDeviceBoardStatus"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
