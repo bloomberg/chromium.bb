@@ -51,7 +51,6 @@ class CORE_EXPORT CSSFontFace final
  public:
   CSSFontFace(FontFace* font_face, Vector<UnicodeRange>& ranges)
       : ranges_(base::AdoptRef(new UnicodeRangeSet(ranges))),
-        segmented_font_face_(nullptr),
         font_face_(font_face) {
     DCHECK(font_face_);
   }
@@ -60,8 +59,8 @@ class CORE_EXPORT CSSFontFace final
 
   scoped_refptr<UnicodeRangeSet> Ranges() { return ranges_; }
 
-  void SetSegmentedFontFace(CSSSegmentedFontFace*);
-  void ClearSegmentedFontFace() { segmented_font_face_ = nullptr; }
+  void AddSegmentedFontFace(CSSSegmentedFontFace*);
+  void RemoveSegmentedFontFace(CSSSegmentedFontFace*);
 
   bool IsValid() const { return !sources_.IsEmpty(); }
   size_t ApproximateBlankCharacterCount() const;
@@ -91,7 +90,7 @@ class CORE_EXPORT CSSFontFace final
   void SetLoadStatus(FontFace::LoadStatusType);
 
   scoped_refptr<UnicodeRangeSet> ranges_;
-  Member<CSSSegmentedFontFace> segmented_font_face_;
+  HeapHashSet<Member<CSSSegmentedFontFace>> segmented_font_faces_;
   HeapDeque<Member<CSSFontFaceSource>> sources_;
   Member<FontFace> font_face_;
   DISALLOW_COPY_AND_ASSIGN(CSSFontFace);
