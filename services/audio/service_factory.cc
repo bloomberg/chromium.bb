@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager.h"
@@ -25,7 +26,7 @@ base::Optional<base::TimeDelta> GetExperimentalQuitTimeout() {
   std::string timeout_str(
       base::GetFieldTrialParamValue("AudioService", "teardown_timeout_s"));
   int timeout_s = 0;
-  if (!base::StringToInt(timeout_str, &timeout_s) || timeout_s < 0)
+  if (!base::StringToInt(timeout_str, &timeout_s))
     return base::nullopt;  // Ill-formed value provided, fall back to default.
   return base::TimeDelta::FromSeconds(timeout_s);
 }
@@ -37,19 +38,19 @@ base::Optional<base::TimeDelta> GetCommandLineQuitTimeout() {
   std::string timeout_str(
       cmd_line->GetSwitchValueASCII(switches::kAudioServiceQuitTimeoutMs));
   int timeout_ms = 0;
-  if (!base::StringToInt(timeout_str, &timeout_ms) || timeout_ms < 0)
+  if (!base::StringToInt(timeout_str, &timeout_ms))
     return base::nullopt;  // Ill-formed value provided, fall back to default.
   return base::TimeDelta::FromMilliseconds(timeout_ms);
 }
 
-base::TimeDelta GetQuitTimeout() {
+base::Optional<base::TimeDelta> GetQuitTimeout() {
   if (auto timeout = GetCommandLineQuitTimeout())
-    return *timeout;
+    return *timeout >= base::TimeDelta() ? timeout : base::nullopt;
 
   if (auto timeout = GetExperimentalQuitTimeout())
-    return *timeout;
+    return *timeout >= base::TimeDelta() ? timeout : base::nullopt;
 
-  return base::TimeDelta();
+  return base::nullopt;
 }
 
 }  // namespace
@@ -59,7 +60,7 @@ std::unique_ptr<Service> CreateEmbeddedService(
     service_manager::mojom::ServiceRequest request) {
   return std::make_unique<Service>(
       std::make_unique<InProcessAudioManagerAccessor>(audio_manager),
-      base::TimeDelta() /* do not quit if all clients disconnected */,
+      base::nullopt /* do not quit if all clients disconnected */,
       false /* enable_device_notifications */,
       std::make_unique<service_manager::BinderRegistry>(), std::move(request));
 }

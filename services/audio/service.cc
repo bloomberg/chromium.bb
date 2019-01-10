@@ -34,7 +34,7 @@ crash_reporter::CrashKeyString<64> g_service_state_for_crashing(
 }  // namespace
 
 Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
-                 base::TimeDelta quit_timeout,
+                 base::Optional<base::TimeDelta> quit_timeout,
                  bool enable_remote_client_support,
                  std::unique_ptr<service_manager::BinderRegistry> registry,
                  service_manager::mojom::ServiceRequest request)
@@ -66,8 +66,6 @@ Service::~Service() {
 
   metrics_.reset();
   g_service_state_for_crashing.Set("destructing - killed metrics");
-
-  g_service_state_for_crashing.Set("destructing - killed ref_factory");
 
   // Stop all streams cleanly before shutting down the audio manager.
   stream_factory_.reset();
