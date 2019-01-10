@@ -86,9 +86,7 @@ struct FocusCandidate {
 CORE_EXPORT bool HasRemoteFrame(const Node*);
 CORE_EXPORT bool IsOffscreen(const Node*);
 CORE_EXPORT bool IsOffscreenAfterFrameScroll(const Node*, WebFocusType);
-bool ScrollInDirection(LocalFrame*, WebFocusType);
 bool ScrollInDirection(Node* container, WebFocusType);
-bool IsNavigableContainer(const Node*, WebFocusType);
 CORE_EXPORT bool IsScrollableNode(const Node* node);
 CORE_EXPORT bool IsScrollableAreaOrDocument(const Node*);
 CORE_EXPORT Node* ScrollableAreaOrDocumentOf(Node*);

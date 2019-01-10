@@ -168,7 +168,8 @@ bool IsOffscreen(const Node* node) {
   if (rect.IsEmpty())
     return true;
 
-  if (!frame_viewport.Intersects(rect))
+  // A document always intersects with its frame's viewport.
+  if (node != node->GetDocument() && !frame_viewport.Intersects(rect))
     return true;
 
   // Now we know that the node is visible in the its own frame's viewport (it is
@@ -241,83 +242,55 @@ bool HasRemoteFrame(const Node* node) {
          ToHTMLFrameOwnerElement(node)->ContentFrame()->IsRemoteFrame();
 }
 
-bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
-  DCHECK(frame);
-
-  if (frame && CanScrollInDirection(frame->GetDocument(), direction)) {
-    int dx = 0;
-    int dy = 0;
-    int pixels_per_line_step =
-        ScrollableArea::PixelsPerLineStep(frame->View()->GetChromeClient());
-    switch (direction) {
-      case kWebFocusTypeLeft:
-        dx = -pixels_per_line_step;
-        break;
-      case kWebFocusTypeRight:
-        dx = pixels_per_line_step;
-        break;
-      case kWebFocusTypeUp:
-        dy = -pixels_per_line_step;
-        break;
-      case kWebFocusTypeDown:
-        dy = pixels_per_line_step;
-        break;
-      default:
-        NOTREACHED();
-        return false;
-    }
-
-    frame->View()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
-                                                 kUserScroll);
-    return true;
-  }
-  return false;
-}
-
 bool ScrollInDirection(Node* container, WebFocusType direction) {
   DCHECK(container);
-  if (auto* document = DynamicTo<Document>(container))
-    return ScrollInDirection(document->GetFrame(), direction);
 
   if (!container->GetLayoutBox())
     return false;
 
-  if (CanScrollInDirection(container, direction)) {
-    int dx = 0;
-    int dy = 0;
-    // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
-    LocalFrameView* frame_view = container->GetDocument().View();
-    int pixels_per_line_step = ScrollableArea::PixelsPerLineStep(
-        frame_view ? frame_view->GetChromeClient() : nullptr);
-    switch (direction) {
-      case kWebFocusTypeLeft:
-        dx = -pixels_per_line_step;
-        break;
-      case kWebFocusTypeRight:
-        DCHECK_GT(container->GetLayoutBox()->ScrollWidth(),
-                  (container->GetLayoutBox()->ScrollLeft() +
-                   container->GetLayoutBox()->ClientWidth()));
-        dx = pixels_per_line_step;
-        break;
-      case kWebFocusTypeUp:
-        dy = -pixels_per_line_step;
-        break;
-      case kWebFocusTypeDown:
-        DCHECK(container->GetLayoutBox()->ScrollHeight() -
-               (container->GetLayoutBox()->ScrollTop() +
-                container->GetLayoutBox()->ClientHeight()));
-        dy = pixels_per_line_step;
-        break;
-      default:
-        NOTREACHED();
-        return false;
-    }
+  if (!container->GetLayoutBox()->GetScrollableArea())
+    return false;
 
-    container->GetLayoutBox()->ScrollByRecursively(ScrollOffset(dx, dy));
-    return true;
+  if (!CanScrollInDirection(container, direction))
+    return false;
+
+  int dx = 0;
+  int dy = 0;
+  int pixels_per_line_step = ScrollableArea::PixelsPerLineStep(
+      container->GetDocument().GetFrame()->View()->GetChromeClient());
+  switch (direction) {
+    case kWebFocusTypeLeft:
+      dx = -pixels_per_line_step;
+      break;
+    case kWebFocusTypeRight:
+      DCHECK_GT(container->GetLayoutBox()->ScrollWidth(),
+                container->GetLayoutBox()->ScrollLeft() +
+                    container->GetLayoutBox()->ClientWidth());
+      dx = pixels_per_line_step;
+      break;
+    case kWebFocusTypeUp:
+      dy = -pixels_per_line_step;
+      break;
+    case kWebFocusTypeDown:
+      DCHECK_GT(container->GetLayoutBox()->ScrollHeight(),
+                container->GetLayoutBox()->ScrollTop() +
+                    container->GetLayoutBox()->ClientHeight());
+      dy = pixels_per_line_step;
+      break;
+    default:
+      NOTREACHED();
+      return false;
   }
 
-  return false;
+  // TODO(crbug.com/914775): Use UserScroll() instead. UserScroll() does a
+  // smooth, animated scroll which might make it easier for users to understand
+  // spatnav's moves. Another advantage of using ScrollableArea::UserScroll() is
+  // that it returns a ScrollResult so we don't need to call
+  // CanScrollInDirection(). Regular arrow-key scrolling (without
+  // --enable-spatial-navigation) already uses smooth scrolling by default.
+  container->GetLayoutBox()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
+                                                           kUserScroll);
+  return true;
 }
 
 static void DeflateIfOverlapped(LayoutRect& a, LayoutRect& b) {
@@ -372,16 +345,6 @@ bool IsScrollableAreaOrDocument(const Node* node) {
          (node->IsFrameOwnerElement() &&
           ToHTMLFrameOwnerElement(node)->ContentFrame()) ||
          IsScrollableNode(node);
-}
-
-bool IsNavigableContainer(const Node* node, WebFocusType direction) {
-  if (!node)
-    return false;
-
-  return node->IsDocumentNode() ||
-         (node->IsFrameOwnerElement() &&
-          ToHTMLFrameOwnerElement(node)->ContentFrame()) ||
-         CanScrollInDirection(node, direction);
 }
 
 bool CanScrollInDirection(const Node* container, WebFocusType direction) {

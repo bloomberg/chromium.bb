@@ -152,6 +152,10 @@ void WebRuntimeFeatures::EnableScrollTopLeftInterop(bool enable) {
   RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableKeyboardFocusableScrollers(bool enable) {
+  RuntimeEnabledFeatures::SetKeyboardFocusableScrollersEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableDatabase(bool enable) {
   RuntimeEnabledFeatures::SetDatabaseEnabled(enable);
 }
