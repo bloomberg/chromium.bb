@@ -8,6 +8,9 @@
 #include "base/bind.h"
 
 namespace base {
+
+class Location;
+
 namespace internal {
 
 template <typename F, typename Signature>
@@ -30,6 +33,12 @@ decltype(auto) BindLambdaForTesting(F&& f) {
   return BindRepeating(&internal::BindLambdaHelper<F, Signature>::Run,
                        std::forward<F>(f));
 }
+
+// Returns a closure that fails on destruction if it hasn't been run.
+OnceClosure MakeExpectedRunClosure(const Location& location);
+
+// Returns a closure that fails the test if run.
+OnceClosure MakeExpectedNotRunClosure(const Location& location);
 
 }  // namespace base
 
