@@ -13,8 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
@@ -31,35 +29,24 @@ namespace {
 // InputDispatcher is used to listen for a mouse/keyboard event. Only one
 // instance may be alive at a time. The callback is run when the appropriate
 // event is received.
-class InputDispatcher : public base::RefCounted<InputDispatcher> {
+class InputDispatcher {
  public:
-  // Constructs a dispatcher that will invoke |callback| when |message_type| is
-  // received. The returned instance does not hold a ref on itself to keep it
-  // alive while waiting for messages. The caller is responsible for adding one
-  // ref before returning to the message loop. The instance will release this
-  // reference when the message is received.
-  static scoped_refptr<InputDispatcher> CreateForMessage(
-      WPARAM message_type,
-      base::OnceClosure callback);
+  // Constructs an InputDispatcher that will invoke |callback| when
+  // |message_type| is received. This must be invoked on thread, after the input
+  // is sent but before it is processed.
+  static void CreateForMessage(WPARAM message_type, base::OnceClosure callback);
 
   // Constructs a dispatcher that will invoke |callback| when a mouse move
   // message has been received. Upon receipt, an error message is logged if the
   // destination of the move is not |screen_point|. |callback| is run regardless
   // after a sufficiently long delay. This generally happens when another
   // process has a window over the test's window, or if |screen_point| is not
-  // over a window owned by the test. The returned instance does not hold a ref
-  // on itself to keep it alive while waiting for messages. The caller is
-  // responsible for adding one ref before returning to the message loop. The
-  // instance will release this reference when the message is received.
-  static scoped_refptr<InputDispatcher> CreateForMouseMove(
-      const gfx::Point& screen_point,
-      base::OnceClosure callback);
+  // over a window owned by the test. This must be invoked on thread, after the
+  // input is sent but before it is processed.
+  static void CreateForMouseMove(const gfx::Point& screen_point,
+                                 base::OnceClosure callback);
 
  private:
-  template <typename T, typename... Args>
-  friend scoped_refptr<T> base::MakeRefCounted(Args&&... args);
-  friend class base::RefCounted<InputDispatcher>;
-
   InputDispatcher(WPARAM message_waiting_for,
                   const gfx::Point& screen_point,
                   base::OnceClosure callback);
@@ -67,9 +54,6 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
 
   // Installs the dispatcher as the current hook.
   void InstallHook();
-
-  // Uninstalls the hook set in InstallHook.
-  void UninstallHook();
 
   // Callback from hook when a mouse message is received.
   static LRESULT CALLBACK MouseHook(int n_code, WPARAM w_param, LPARAM l_param);
@@ -103,7 +87,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   // The callback to run when the desired message is received.
   base::OnceClosure callback_;
 
-  // The message on which the instance is waiting -- unsed for WM_KEYUP
+  // The message on which the instance is waiting -- unused for WM_KEYUP
   // messages.
   const WPARAM message_waiting_for_;
 
@@ -122,20 +106,19 @@ InputDispatcher* InputDispatcher::current_dispatcher_ = nullptr;
 HHOOK InputDispatcher::next_hook_ = nullptr;
 
 // static
-scoped_refptr<InputDispatcher> InputDispatcher::CreateForMessage(
-    WPARAM message_type,
-    base::OnceClosure callback) {
+void InputDispatcher::CreateForMessage(WPARAM message_type,
+                                       base::OnceClosure callback) {
   DCHECK_NE(message_type, static_cast<WPARAM>(WM_MOUSEMOVE));
-  return base::MakeRefCounted<InputDispatcher>(message_type, gfx::Point(0, 0),
-                                               std::move(callback));
+
+  // Owns self.
+  new InputDispatcher(message_type, gfx::Point(0, 0), std::move(callback));
 }
 
 // static
-scoped_refptr<InputDispatcher> InputDispatcher::CreateForMouseMove(
-    const gfx::Point& screen_point,
-    base::OnceClosure callback) {
-  return base::MakeRefCounted<InputDispatcher>(WM_MOUSEMOVE, screen_point,
-                                               std::move(callback));
+void InputDispatcher::CreateForMouseMove(const gfx::Point& screen_point,
+                                         base::OnceClosure callback) {
+  // Owns self.
+  new InputDispatcher(WM_MOUSEMOVE, screen_point, std::move(callback));
 }
 
 InputDispatcher::InputDispatcher(WPARAM message_waiting_for,
@@ -150,7 +133,10 @@ InputDispatcher::InputDispatcher(WPARAM message_waiting_for,
 
 InputDispatcher::~InputDispatcher() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  UninstallHook();
+  DCHECK_EQ(current_dispatcher_, this);
+  current_dispatcher_ = nullptr;
+  UnhookWindowsHookEx(next_hook_);
+  next_hook_ = nullptr;
 }
 
 void InputDispatcher::InstallHook() {
@@ -181,16 +167,6 @@ void InputDispatcher::InstallHook() {
   next_hook_ =
       SetWindowsHookEx(hook_type, hook_function, nullptr, GetCurrentThreadId());
   DCHECK(next_hook_);
-}
-
-void InputDispatcher::UninstallHook() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (current_dispatcher_ == this) {
-    current_dispatcher_ = nullptr;
-    UnhookWindowsHookEx(next_hook_);
-    next_hook_ = nullptr;
-    weak_factory_.InvalidateWeakPtrs();
-  }
 }
 
 // static
@@ -254,12 +230,12 @@ void InputDispatcher::DispatchedMessage(
 
 void InputDispatcher::MatchingMessageFound() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  UninstallHook();
+
   // The hook proc is invoked before the message is process. Post a task to run
   // the callback so that handling of this event completes first.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 std::move(callback_));
-  Release();
+  delete this;
 }
 
 void InputDispatcher::OnTimeout() {
@@ -377,10 +353,6 @@ bool SendKeyPressImpl(HWND window,
   if (window && ::GetForegroundWindow() != target_window)
     return false;
 
-  scoped_refptr<InputDispatcher> dispatcher;
-  if (task)
-    dispatcher = InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
-
   // If a pop-up menu is open, it won't receive events sent using SendInput.
   // Check for a pop-up menu using its window class (#32768) and if one
   // exists, send the key event directly there.
@@ -391,8 +363,8 @@ bool SendKeyPressImpl(HWND window,
     ::SendMessage(popup_menu, WM_KEYDOWN, w_param, l_param);
     ::SendMessage(popup_menu, WM_KEYUP, w_param, l_param);
 
-    if (dispatcher)
-      dispatcher->AddRef();
+    if (task)
+      InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
     return true;
   }
 
@@ -411,9 +383,8 @@ bool SendKeyPressImpl(HWND window,
     return false;
   }
 
-  if (dispatcher)
-    dispatcher->AddRef();
-
+  if (task)
+    InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
   return true;
 }
 
@@ -457,18 +428,11 @@ bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task) {
       static_cast<LONG>(std::max(1.0, std::ceil(screen_y * (65535.0 / max_y))));
   input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
 
-  scoped_refptr<InputDispatcher> dispatcher;
-  if (task) {
-    dispatcher = InputDispatcher::CreateForMouseMove({screen_x, screen_y},
-                                                     std::move(task));
-  }
-
   if (!::SendInput(1, &input, sizeof(input)))
     return false;
 
-  if (dispatcher)
-    dispatcher->AddRef();
-
+  if (task)
+    InputDispatcher::CreateForMouseMove({screen_x, screen_y}, std::move(task));
   return true;
 }
 
@@ -504,10 +468,6 @@ bool SendMouseEventsImpl(MouseButton type,
       return false;
   }
 
-  scoped_refptr<InputDispatcher> dispatcher;
-  if (task)
-    dispatcher = InputDispatcher::CreateForMessage(last_event, std::move(task));
-
   std::vector<INPUT> input;
   if (button_state & DOWN) {
     AppendAcceleratorInputs(accelerator_state & kControl,
@@ -531,9 +491,8 @@ bool SendMouseEventsImpl(MouseButton type,
     return false;
   }
 
-  if (dispatcher)
-    dispatcher->AddRef();
-
+  if (task)
+    InputDispatcher::CreateForMessage(last_event, std::move(task));
   return true;
 }
 
