@@ -35,7 +35,7 @@ void EventTiming::WillDispatchEvent(const Event& event) {
   // we cannot assume that the conditions should still hold true in
   // DidDispatchEvent. These conditions have to be re-tested before an entry is
   // dispatched.
-  if ((performance_->ShouldBufferEventTiming() &&
+  if ((performance_->ShouldBufferEntries() &&
        !performance_->IsEventTimingBufferFull()) ||
       performance_->HasObserverFor(PerformanceEntry::kEvent) ||
       !performance_->FirstInputDetected()) {

@@ -106,6 +106,7 @@
     "dragstart",
     "drop",
     "durationchange",
+    "elementtimingbufferfull",
     "emptied",
     "encrypted",
     "end",

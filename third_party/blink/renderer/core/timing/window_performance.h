@@ -69,7 +69,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void UpdateLongTaskInstrumentation() override;
 
-  bool ShouldBufferEventTiming();
+  bool ShouldBufferEntries();
 
   bool FirstInputDetected() const { return !!first_input_timing_; }
 

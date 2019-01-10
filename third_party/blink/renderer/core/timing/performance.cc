@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
@@ -173,12 +174,14 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t kDefaultResourceTimingBufferSize = 250;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
+constexpr size_t kDefaultElementTimingBufferSize = 150;
 
 Performance::Performance(
     TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : resource_timing_buffer_size_limit_(kDefaultResourceTimingBufferSize),
       event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
+      element_timing_buffer_max_size_(kDefaultElementTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
       observer_filter_options_(PerformanceEntry::kInvalid),
@@ -224,6 +227,7 @@ PerformanceEntryVector Performance::getEntries() {
 
   entries.AppendVector(resource_timing_buffer_);
   entries.AppendVector(event_timing_buffer_);
+  entries.AppendVector(element_timing_buffer_);
   if (first_input_timing_)
     entries.push_back(first_input_timing_);
   if (!navigation_timing_)
@@ -258,6 +262,12 @@ PerformanceEntryVector Performance::getEntriesByType(
     case PerformanceEntry::kResource:
       for (const auto& resource : resource_timing_buffer_)
         entries.push_back(resource);
+      break;
+    case PerformanceEntry::kElement:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kElementTimingExplicitlyRequested);
+      for (const auto& element : element_timing_buffer_)
+        entries.push_back(element);
       break;
     case PerformanceEntry::kEvent:
       UseCounter::Count(GetExecutionContext(),
@@ -300,9 +310,8 @@ PerformanceEntryVector Performance::getEntriesByType(
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
-    // TODO(npm): decide which element timing and layout jank entries are
-    // accessible via the performance buffer.
-    case PerformanceEntry::kElement:
+    // TODO(npm): decide which layout jank entries are accessible via the
+    // performance buffer.
     case PerformanceEntry::kLayoutJank:
       break;
     case PerformanceEntry::kInvalid:
@@ -329,6 +338,17 @@ PerformanceEntryVector Performance::getEntriesByName(
       if (resource->name() == name)
         entries.push_back(resource);
     }
+  }
+
+  if (entry_type.IsNull() || type == PerformanceEntry::kElement) {
+    for (const auto& element : element_timing_buffer_) {
+      if (element->name() == name)
+        entries.push_back(element);
+    }
+  }
+  if (type == PerformanceEntry::kElement) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kElementTimingExplicitlyRequested);
   }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kEvent) {
@@ -557,6 +577,10 @@ void Performance::NotifyNavigationTimingToObservers() {
     NotifyObserversOfEntry(*navigation_timing_);
 }
 
+bool Performance::IsElementTimingBufferFull() const {
+  return element_timing_buffer_.size() >= element_timing_buffer_max_size_;
+}
+
 bool Performance::IsEventTimingBufferFull() const {
   return event_timing_buffer_.size() >= event_timing_buffer_max_size_;
 }
@@ -590,6 +614,13 @@ void Performance::FireResourceTimingBufferFull(TimerBase*) {
   resource_timing_buffer_full_event_pending_ = false;
 }
 
+void Performance::AddElementTimingBuffer(PerformanceElementTiming& entry) {
+  element_timing_buffer_.push_back(&entry);
+
+  if (IsElementTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
+}
+
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   event_timing_buffer_.push_back(&entry);
 
@@ -597,12 +628,28 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
     DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
+unsigned Performance::ElementTimingBufferSize() const {
+  return element_timing_buffer_.size();
+}
+
 unsigned Performance::EventTimingBufferSize() const {
   return event_timing_buffer_.size();
 }
 
+void Performance::clearElementTimings() {
+  element_timing_buffer_.clear();
+}
+
 void Performance::clearEventTimings() {
   event_timing_buffer_.clear();
+}
+
+// TODO(crbug.com/72556): remove Element Timing buffering when shipping the
+// 'buffered' flag.
+void Performance::setElementTimingBufferMaxSize(unsigned size) {
+  element_timing_buffer_max_size_ = size;
+  if (IsElementTimingBufferFull())
+    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
 }
 
 // TODO(yoav): EventTiming should follow a simpler buffering model.
@@ -966,6 +1013,7 @@ void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
 void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_timing_buffer_);
   visitor->Trace(resource_timing_secondary_buffer_);
+  visitor->Trace(element_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);

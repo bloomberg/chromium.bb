@@ -133,7 +133,8 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*document->domWindow());
     if (performance &&
-        performance->HasObserverFor(PerformanceEntry::kElement)) {
+        (performance->HasObserverFor(PerformanceEntry::kElement) ||
+         performance->ShouldBufferEntries())) {
       for (const auto& element_timing : element_timings_) {
         performance->AddElementTiming(element_timing.name, element_timing.rect,
                                       timestamp);
