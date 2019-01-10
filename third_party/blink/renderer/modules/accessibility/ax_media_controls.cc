@@ -80,7 +80,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:
     case kMediaOverflowList:
-    case kMediaDownloadButton:
     case kMediaScrubbingMessage:
     case kMediaEnterPictureInPictureButton:
     case kMediaExitPictureInPictureButton:
@@ -144,8 +143,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaCastOnButton:
     case kMediaOverlayCastOnButton:
       return QueryString(WebLocalizedString::kAXMediaCastOnButton);
-    case kMediaDownloadButton:
-      return QueryString(WebLocalizedString::kAXMediaDownloadButton);
     case kMediaOverflowButton:
       return QueryString(WebLocalizedString::kAXMediaOverflowButton);
     case kMediaSliderThumb:
@@ -209,7 +206,6 @@ String AccessibilityMediaControl::Description(
     case kMediaTrackSelectionCheckmark:
     case kMediaControlsPanel:
     case kMediaOverflowList:
-    case kMediaDownloadButton:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
@@ -243,7 +239,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaOverlayCastOffButton:
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:
-    case kMediaDownloadButton:
     case kMediaCastOnButton:
     case kMediaCastOffButton:
     case kMediaEnterPictureInPictureButton:
