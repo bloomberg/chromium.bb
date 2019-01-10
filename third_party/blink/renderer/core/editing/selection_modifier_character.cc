@@ -39,6 +39,9 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 
@@ -148,6 +151,13 @@ struct TraversalLeft {
       return box.Root().GetLogicalStartNonPseudoBox();
     return box.Root().GetLogicalEndNonPseudoBox();
   }
+
+  static NGCaretNavigator::VisualCaretMovementResult ForwardPositionOf(
+      const NGCaretNavigator& caret_navigator,
+      const NGCaretNavigator::Position& caret_position) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.LeftPositionOf(caret_position);
+  }
 };
 
 // The traversal strategy for |RightPositionOf()|.
@@ -253,6 +263,13 @@ struct TraversalRight {
     if (line_direction == TextDirection::kLtr)
       return box.Root().GetLogicalEndNonPseudoBox();
     return box.Root().GetLogicalStartNonPseudoBox();
+  }
+
+  static NGCaretNavigator::VisualCaretMovementResult ForwardPositionOf(
+      const NGCaretNavigator& caret_navigator,
+      const NGCaretNavigator::Position& caret_position) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.RightPositionOf(caret_position);
   }
 };
 
@@ -478,17 +495,111 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 }
 
 template <typename Strategy, typename Traversal>
+PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
+    const PositionWithAffinityTemplate<Strategy> start_position_with_affinity) {
+  const PositionTemplate<Strategy> start_position =
+      start_position_with_affinity.GetPosition();
+  const Position start_position_in_dom = ToPositionInDOMTree(start_position);
+  if (start_position_in_dom.IsNull())
+    return PositionWithAffinityTemplate<Strategy>();
+
+  LayoutBlockFlow* const context =
+      NGOffsetMapping::GetInlineFormattingContextOf(start_position_in_dom);
+  if (!context) {
+    // We reach here if, e.g., the position is in an empty block.
+    // TODO(xiaochengh): Investigate if we reach here for other reaseons.
+#if DCHECK_IS_ON()
+    const Node* node = start_position.ComputeContainerNode();
+    DCHECK(node) << start_position;
+    const LayoutObject* object = node->GetLayoutObject();
+    DCHECK(object) << start_position;
+    DCHECK(object->IsLayoutBlockFlow()) << start_position;
+    DCHECK(!HasRenderedNonAnonymousDescendantsWithHeight(object))
+        << start_position;
+#endif
+    const TextDirection block_direction =
+        DirectionOfEnclosingBlockOf(start_position);
+    // TODO(xiaochengh): Should return the visual line start/end of the position
+    // below.
+    return PositionWithAffinityTemplate<Strategy>(
+        Traversal::ForwardVisuallyDistinctCandidateOf(block_direction,
+                                                      start_position));
+  }
+
+  // TODO(xiaochengh): The double pointer pattern below is confusing and
+  // cumbersome, but necessary for now. Make it easier.
+  std::unique_ptr<NGOffsetMapping> mapping_storage;
+  const NGOffsetMapping* mapping =
+      NGInlineNode::GetOffsetMapping(context, &mapping_storage);
+  DCHECK(mapping);
+
+  const base::Optional<unsigned> start_offset =
+      mapping->GetTextContentOffset(start_position_in_dom);
+  DCHECK(start_offset.has_value());
+
+  // Legacy canonicalization sets downstream affinity when |start_offset| is
+  // at block end. Fix it to upstream in that case.
+  const TextAffinity start_affinity =
+      start_offset.value() < mapping->GetText().length()
+          ? start_position_with_affinity.Affinity()
+          : TextAffinity::kUpstream;
+
+  DCHECK(mapping->GetCaretNavigator());
+  const NGCaretNavigator& caret_navigator = *mapping->GetCaretNavigator();
+
+  const NGCaretNavigator::Position start_caret_position{start_offset.value(),
+                                                        start_affinity};
+  NGCaretNavigator::VisualCaretMovementResult result_caret_position =
+      Traversal::ForwardPositionOf(caret_navigator, start_caret_position);
+  if (result_caret_position.IsWithinContext()) {
+    DCHECK(result_caret_position.position.has_value());
+    const unsigned result_offset = result_caret_position.position->offset;
+    const TextAffinity result_affinity =
+        result_caret_position.position->affinity;
+    const Position result_position =
+        result_affinity == TextAffinity::kDownstream
+            ? mapping->GetLastPosition(result_offset)
+            : mapping->GetFirstPosition(result_offset);
+    const PositionWithAffinity result(result_position, result_affinity);
+    return FromPositionInDOMTree<Strategy>(result);
+  }
+
+  // We reach here if we need to move out of the current block.
+  if (result_caret_position.IsBeforeContext()) {
+    // TODO(xiaochengh): Move to the visual end of the previous block.
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  DCHECK(result_caret_position.IsAfterContext());
+  // TODO(xiaochengh): Move to the visual beginning of the next block.
+  return PositionWithAffinityTemplate<Strategy>();
+}
+
+template <typename Strategy, typename Traversal>
 VisiblePositionTemplate<Strategy> TraverseAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  const PositionTemplate<Strategy> pos =
-      TraverseInternalAlgorithm<Strategy, Traversal>(visible_position);
-  // TODO(yosin) Why can't we move left from the last position in a tree?
-  if (pos.AtStartOfTree() || pos.AtEndOfTree())
-    return VisiblePositionTemplate<Strategy>();
 
-  const VisiblePositionTemplate<Strategy> result = CreateVisiblePosition(pos);
-  DCHECK_NE(result.DeepEquivalent(), visible_position.DeepEquivalent());
+  VisiblePositionTemplate<Strategy> result;
+  if (!RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+    const PositionTemplate<Strategy> pos =
+        TraverseInternalAlgorithm<Strategy, Traversal>(visible_position);
+    // TODO(yosin) Why can't we move left from the last position in a tree?
+    if (pos.AtStartOfTree() || pos.AtEndOfTree())
+      return VisiblePositionTemplate<Strategy>();
+    result = CreateVisiblePosition(pos);
+    DCHECK_NE(result.DeepEquivalent(), visible_position.DeepEquivalent());
+  } else {
+    const PositionWithAffinityTemplate<Strategy> pos =
+        TraverseWithBidiCaretAffinity<Strategy, Traversal>(
+            visible_position.ToPositionWithAffinity());
+    if (pos.IsNull())
+      return VisiblePositionTemplate<Strategy>();
+    result = CreateVisiblePosition(pos);
+    DCHECK_NE(result.ToPositionWithAffinity(),
+              visible_position.ToPositionWithAffinity())
+        << visible_position;
+  }
 
   return Traversal::HonorEditingBoundary(
       DirectionOfEnclosingBlockOf(result.DeepEquivalent()), result,

@@ -13,14 +13,17 @@ namespace blink {
 
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
+ public:
+  bool IsBidiEnabled() const { return is_bidi_enabled_; }
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_direction_);
+  }
+
  private:
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_
                ? (const NGInlineItemsData&)*this
                : *first_line_items_;
-  }
-  TextDirection BaseDirection() const {
-    return static_cast<TextDirection>(base_direction_);
   }
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = static_cast<unsigned>(direction);

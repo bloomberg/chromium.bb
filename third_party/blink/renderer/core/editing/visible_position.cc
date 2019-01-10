@@ -36,6 +36,10 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -95,13 +99,40 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
     const PositionWithAffinityTemplate<Strategy> upstream_position(
         deep_position, TextAffinity::kUpstream);
 
-    // Check if the upstream and downstream positions are visually the same.
-    // If so, canonicalize affinity to downstream.
-    // TODO(xiaochengh): Check upstream and downstream difference in a more
-    // direct way, instead of checking caret bounds.
-    const IntRect downstream_rect = AbsoluteCaretBoundsOf(downstream_position);
-    const IntRect upstream_rect = AbsoluteCaretBoundsOf(upstream_position);
-    if (downstream_rect != upstream_rect)
+    if (!InSameLine(downstream_position, upstream_position))
+      return VisiblePositionTemplate<Strategy>(upstream_position);
+
+    if (!NGOffsetMapping::AcceptsPosition(ToPositionInDOMTree(deep_position))) {
+      // editing/selection/mixed-editability-10.html reaches here.
+      // We can't check bidi in such case. Use downstream as the default.
+      // TODO(xiaochengh): Investigate why we reach here and how to work around.
+      return VisiblePositionTemplate<Strategy>(downstream_position);
+    }
+
+    // Check if the position is at bidi boundary.
+    const LayoutObject* layout_object =
+        deep_position.AnchorNode()->GetLayoutObject();
+    DCHECK(layout_object) << position_with_affinity;
+    if (!layout_object->IsInline())
+      return VisiblePositionTemplate<Strategy>(downstream_position);
+    LayoutBlockFlow* const context =
+        NGOffsetMapping::GetInlineFormattingContextOf(*layout_object);
+    DCHECK(context);
+
+    // TODO(xiaochengh): The double pointer pattern below is confusing and
+    // cumbersome, but necessary for now. Make it easier.
+    std::unique_ptr<NGOffsetMapping> mapping_storage;
+    const NGOffsetMapping* mapping =
+        NGInlineNode::GetOffsetMapping(context, &mapping_storage);
+    DCHECK(mapping);
+
+    const base::Optional<unsigned> offset =
+        mapping->GetTextContentOffset(ToPositionInDOMTree(deep_position));
+    DCHECK(offset.has_value());
+
+    DCHECK(mapping->GetCaretNavigator());
+    const NGCaretNavigator& caret_navigator = *mapping->GetCaretNavigator();
+    if (caret_navigator.OffsetIsBidiBoundary(offset.value()))
       return VisiblePositionTemplate<Strategy>(upstream_position);
     return VisiblePositionTemplate<Strategy>(downstream_position);
   }
