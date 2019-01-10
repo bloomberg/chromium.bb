@@ -38,7 +38,7 @@ source_set("unit_tests") {
     ":tpm",
     "//base/test:test_support",
     "//chromeos:chromeos_constants",
-    "//chromeos/cryptohome",
+    "//chromeos/cryptohome:test_support",
     "//chromeos/dbus",
     "//chromeos/dbus:cryptohome_proto",
     "//components/policy/proto",

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -22,7 +22,7 @@ namespace cryptohome {
 
 // This class manages calls to Cryptohome service's home directory methods:
 // Mount, CheckKey, Add/UpdateKey.
-class CHROMEOS_EXPORT HomedirMethods {
+class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
  public:
   // Callbacks that are called back on the UI thread when the results of the
   // respective method calls are ready.

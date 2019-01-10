@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -18,25 +18,26 @@ namespace cryptohome {
 
 // Returns a MountError code from the MountEx |reply| returning
 // MOUNT_ERROR_NONE if the reply is well-formed and there is no error.
-CHROMEOS_EXPORT MountError
-MountExReplyToMountError(const base::Optional<BaseReply>& reply);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+MountError MountExReplyToMountError(const base::Optional<BaseReply>& reply);
 
 // Returns a MountError code from |reply|, returning MOUNT_ERROR_NONE
 // if the reply is well-formed and there is no error.
-CHROMEOS_EXPORT MountError
-BaseReplyToMountError(const base::Optional<BaseReply>& reply);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply);
 
 // Returns a MountError code from the GetKeyDataEx |reply| returning
 // MOUNT_ERROR_NONE if the reply is well-formed and there is no error.
-CHROMEOS_EXPORT MountError
-GetKeyDataReplyToMountError(const base::Optional<BaseReply>& reply);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+MountError GetKeyDataReplyToMountError(const base::Optional<BaseReply>& reply);
 
-CHROMEOS_EXPORT std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
     const base::Optional<BaseReply>& reply);
 
 // Extracts the account's disk usage size from |reply|.
 // If |reply| is malformed, returns -1.
-CHROMEOS_EXPORT
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
 int64_t AccountDiskUsageReplyToUsageSize(
     const base::Optional<BaseReply>& reply);
 
@@ -44,23 +45,25 @@ int64_t AccountDiskUsageReplyToUsageSize(
 // This method assumes |reply| is well-formed. To check if a reply
 // is well-formed, callers can check if BaseReplyToMountError returns
 // MOUNT_ERROR_NONE.
-CHROMEOS_EXPORT const std::string& MountExReplyToMountHash(
-    const BaseReply& reply);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+const std::string& MountExReplyToMountHash(const BaseReply& reply);
 
 // Creates an AuthorizationRequest from the given secret and label.
-CHROMEOS_EXPORT AuthorizationRequest
-CreateAuthorizationRequest(const std::string& label, const std::string& secret);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+AuthorizationRequest CreateAuthorizationRequest(const std::string& label,
+                                                const std::string& secret);
 
 // Converts the given KeyDefinition to a Key.
-CHROMEOS_EXPORT void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key);
 
 // Converts CryptohomeErrorCode to MountError.
-CHROMEOS_EXPORT MountError
-CryptohomeErrorToMountError(CryptohomeErrorCode code);
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
+MountError CryptohomeErrorToMountError(CryptohomeErrorCode code);
 
 // Converts the given KeyAuthorizationData to AuthorizationData pointed to by
 // |authorization_data|.
-CHROMEOS_EXPORT
+COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
 void KeyAuthorizationDataToAuthorizationData(
     const KeyAuthorizationData& authorization_data_proto,
     KeyDefinition::AuthorizationData* authorization_data);
