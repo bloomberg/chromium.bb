@@ -12,6 +12,9 @@
 
 namespace usage_stats {
 
+using base::android::JavaParamRef;
+using base::android::JavaRef;
+
 class UsageStatsDatabase;
 
 /* Native counterpart of UsageStatsBridge.java. Holds non-owning pointers to
@@ -24,56 +27,55 @@ class UsageStatsBridge {
       std::unique_ptr<UsageStatsDatabase> usage_stats_database);
   ~UsageStatsBridge();
 
-  void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
+  void Destroy(JNIEnv* j_env, const JavaRef<jobject>& j_this);
 
   void GetAllEvents(JNIEnv* j_env,
-                    const base::android::JavaRef<jobject>& j_this,
-                    const base::android::JavaRef<jobject>& j_callback);
+                    const JavaRef<jobject>& j_this,
+                    const JavaRef<jobject>& j_callback);
 
   void QueryEventsInRange(JNIEnv* j_env,
-                          const base::android::JavaRef<jobject>& j_this,
+                          const JavaRef<jobject>& j_this,
                           const jlong j_start,
                           const jlong j_end,
-                          const base::android::JavaRef<jobject>& j_callback);
+                          const JavaRef<jobject>& j_callback);
 
   void AddEvents(JNIEnv* j_env,
-                 const base::android::JavaRef<jobject>& j_this,
-                 const base::android::JavaRef<jobjectArray>& j_events,
-                 const base::android::JavaRef<jobject>& j_callback);
+                 const JavaRef<jobject>& j_this,
+                 const JavaRef<jobjectArray>& j_events,
+                 const JavaRef<jobject>& j_callback);
 
   void DeleteAllEvents(JNIEnv* j_env,
-                       const base::android::JavaRef<jobject>& j_this,
-                       const base::android::JavaRef<jobject>& j_callback);
+                       const JavaRef<jobject>& j_this,
+                       const JavaRef<jobject>& j_callback);
 
   void DeleteEventsInRange(JNIEnv* j_env,
-                           const base::android::JavaRef<jobject>& j_this,
+                           const JavaRef<jobject>& j_this,
                            const jlong j_start,
                            const jlong j_end,
-                           const base::android::JavaRef<jobject>& j_callback);
+                           const JavaRef<jobject>& j_callback);
 
-  void DeleteEventsWithMatchingDomains(
-      JNIEnv* j_env,
-      const base::android::JavaRef<jobject>& j_this,
-      const base::android::JavaRef<jobjectArray>& j_domains,
-      const base::android::JavaRef<jobject>& j_callback);
+  void DeleteEventsWithMatchingDomains(JNIEnv* j_env,
+                                       const JavaRef<jobject>& j_this,
+                                       const JavaRef<jobjectArray>& j_domains,
+                                       const JavaRef<jobject>& j_callback);
 
   void GetAllSuspensions(JNIEnv* j_env,
-                         const base::android::JavaRef<jobject>& j_this,
-                         const base::android::JavaRef<jobject>& j_callback);
+                         const JavaRef<jobject>& j_this,
+                         const JavaRef<jobject>& j_callback);
 
   void SetSuspensions(JNIEnv* j_env,
-                      const base::android::JavaRef<jobject>& j_this,
-                      const base::android::JavaRef<jobjectArray>& j_domains,
-                      const base::android::JavaRef<jobject>& j_callback);
+                      const JavaRef<jobject>& j_this,
+                      const JavaRef<jobjectArray>& j_domains,
+                      const JavaRef<jobject>& j_callback);
 
   void GetAllTokenMappings(JNIEnv* j_env,
-                           const base::android::JavaRef<jobject>& j_this,
-                           const base::android::JavaRef<jobject>& j_callback);
+                           const JavaRef<jobject>& j_this,
+                           const JavaRef<jobject>& j_callback);
 
   void SetTokenMappings(JNIEnv* j_env,
-                        const base::android::JavaRef<jobject>& j_this,
-                        const base::android::JavaRef<jobject>& j_mappings,
-                        const base::android::JavaRef<jobject>& j_callback);
+                        const JavaRef<jobject>& j_this,
+                        const JavaRef<jobject>& j_mappings,
+                        const JavaRef<jobject>& j_callback);
 
  private:
   std::unique_ptr<UsageStatsDatabase> usage_stats_database_;
