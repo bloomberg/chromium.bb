@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/stl_util.h"
+#include "base/strings/char_traits.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
@@ -230,16 +231,18 @@ class ErrorContext {
       return String();
 
     StringBuilder result;
-    constexpr const char* separator = ": ";
+    constexpr const char* const separator = ": ";
+    constexpr wtf_size_t separator_length =
+        base::CharTraits<char>::length(separator);
 
-    wtf_size_t length = (messages_.size() - 1) * strlen(separator);
+    wtf_size_t length = (messages_.size() - 1) * separator_length;
     for (wtf_size_t i = 0; i < messages_.size(); ++i)
       length += strlen(messages_[i]);
     result.ReserveCapacity(length);
 
     for (wtf_size_t i = 0; i < messages_.size(); ++i) {
       if (i)
-        result.Append(separator, strlen(separator));
+        result.Append(separator, separator_length);
       result.Append(messages_[i],
                     static_cast<wtf_size_t>(strlen(messages_[i])));
     }
