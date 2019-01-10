@@ -1369,6 +1369,7 @@ component("ash") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/dbus",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus/services:services",
     "//chromeos/services/assistant/public:feature_flags",
@@ -1555,6 +1556,7 @@ static_library("ash_shell_lib_with_content") {
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
+    "//chromeos/dbus",
     "//components/discardable_memory/public/interfaces",
     "//components/services/font:lib",
     "//components/services/font/public/interfaces",
@@ -1927,11 +1929,11 @@ test("ash_unittests") {
     "//base/test:test_support",
     "//chromeos",
     "//chromeos:test_support",
-    "//chromeos:test_support_without_gmock",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/dbus:power_manager_proto",
+    "//chromeos/dbus:test_support",
     "//chromeos/services/assistant:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
@@ -2201,10 +2203,10 @@ static_library("test_support") {
     "//base/test:test_support",
     "//cc:test_support",
     "//chromeos",
-    "//chromeos:test_support_without_gmock",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
+    "//chromeos/dbus:test_support",
     "//components/account_id",
     "//components/prefs:test_support",
     "//components/user_manager:user_manager",

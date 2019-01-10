@@ -36,7 +36,7 @@ source_set("unit_tests") {
     ":audio",
     "//base/test:test_support",
     "//chromeos:chromeos_constants",
-    "//chromeos/dbus",
+    "//chromeos/dbus:test_support",
     "//components/prefs:test_support",
     "//media/base:video_facing",
     "//testing/gtest",

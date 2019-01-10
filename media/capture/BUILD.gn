@@ -268,7 +268,7 @@ jumbo_component("capture_lib") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos:chromeos",
+      "//chromeos/dbus",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]
@@ -281,6 +281,7 @@ jumbo_component("capture_lib") {
     ]
   }
 }
+
 source_set("test_support") {
   testonly = true
 
@@ -392,7 +393,7 @@ test("capture_unittests") {
     ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos:chromeos",
+      "//chromeos/dbus:test_support",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//mojo/core/embedder",
       "//third_party/libsync",
