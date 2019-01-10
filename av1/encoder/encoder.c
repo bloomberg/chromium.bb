@@ -4349,7 +4349,8 @@ size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
   return rsz;
 }
 
-static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
+static void setup_frame_size_from_params(AV1_COMP *cpi,
+                                         const size_params_type *rsz) {
   int encode_width = rsz->resize_width;
   int encode_height = rsz->resize_height;
 
@@ -4363,7 +4364,9 @@ static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
 }
 
 static void setup_frame_size(AV1_COMP *cpi) {
-  size_params_type rsz = av1_calculate_next_size_params(cpi);
+  // Reset superres params from previous frame.
+  cpi->common.superres_scale_denominator = SCALE_NUMERATOR;
+  const size_params_type rsz = av1_calculate_next_size_params(cpi);
   setup_frame_size_from_params(cpi, &rsz);
 }
 
