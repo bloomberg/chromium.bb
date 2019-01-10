@@ -1307,13 +1307,17 @@ public class CustomTabsConnection {
         if (!prefs.getNetworkPredictionEnabled()) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
         }
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES)) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED;
         }
         ConnectivityManager cm =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        if (cm.isActiveNetworkMetered() && !shouldSpeculateLoadOnCellularForSession(session)) {
+        if (cm.isActiveNetworkMetered() && !shouldSpeculateLoadOnCellularForSession(session)
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES)) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED;
         }
         return SPECULATION_STATUS_ON_START_ALLOWED;
