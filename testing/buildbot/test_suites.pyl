@@ -3354,18 +3354,16 @@
       },
     },
 
-    # Temporarily disabled because it is not used anywhere.
-    # TODO(jmadill): Re-enable after upgrade. http://crbug.com/887241
-    # 'gpu_noop_sleep_telemetry_test': {
-    #   # The former GPU-specific generator script contained logic to
-    #   # detect whether the so-called "experimental" GPU bots, which test
-    #   # newer driver versions, were identical to the "stable" versions
-    #   # of the bots, and if so to mirror their configurations. We prefer
-    #   # to keep this new script simpler and to just configure this by
-    #   # hand in waterfalls.pyl.
-    #   'noop_sleep': {
-    #   }
-    # },
+    'gpu_noop_sleep_telemetry_test': {
+      # The former GPU-specific generator script contained logic to
+      # detect whether the so-called "experimental" GPU bots, which test
+      # newer driver versions, were identical to the "stable" versions
+      # of the bots, and if so to mirror their configurations. We prefer
+      # to keep this new script simpler and to just configure this by
+      # hand in waterfalls.pyl.
+      'noop_sleep': {
+      }
+    },
 
     'gpu_telemetry_tests': {
       'context_lost': {},
