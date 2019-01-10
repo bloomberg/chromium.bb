@@ -325,38 +325,6 @@ chrome.test.getConfig(config => chrome.test.runTests([
     });
   },
 
-  // http://crbug.com/824174
-  function getResponseBodyInvalidChar() {
-    let requestId;
-
-    function onEvent(debuggeeId, message, params) {
-      if (message === 'Network.responseReceived' &&
-          params.response.url.endsWith('invalid_char.html')) {
-        requestId = params.requestId;
-      } else if (message === 'Network.loadingFinished' &&
-                 params.requestId === requestId) {
-        chrome.debugger.sendCommand(
-            debuggeeId, 'Network.getResponseBody',
-            {requestId: params.requestId}, function(responseBody) {
-              chrome.debugger.onEvent.removeListener(onEvent);
-              chrome.debugger.detach(debuggeeId);
-              chrome.test.succeed();
-            });
-      }
-    }
-
-    chrome.tabs.create({url: 'inspected.html'}, function(tab) {
-      const debuggee = {tabId: tab.id};
-      chrome.debugger.attach(debuggee, protocolVersion, function() {
-        chrome.debugger.onEvent.addListener(onEvent);
-        chrome.debugger.sendCommand(debuggee, 'Network.enable');
-        chrome.debugger.sendCommand(
-            debuggee, 'Runtime.evaluate',
-            {expression: `fetch('/invalid_char.html');`});
-      });
-    });
-  },
-
   function offlineErrorPage() {
     const url = 'http://127.0.0.1//extensions/api_test/debugger/inspected.html';
     chrome.tabs.create({url: url}, function(tab) {
