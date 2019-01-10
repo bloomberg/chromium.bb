@@ -501,7 +501,6 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
-
   EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
@@ -516,6 +515,28 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
       base::ASCIIToUTF16("https://permanent-text.com/"));
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
   omnibox_textfield()->OnBlur();
+  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
+            omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+}
+
+TEST_F(OmniboxViewViewsTest, RevertOnEscape) {
+  location_bar_model()->set_url(GURL("https://permanent-text.com/"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
+            omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
+  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
+  EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+
+  // Expect that on Escape, the text is reverted to the permanent URL.
+  ui::KeyEvent escape(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, 0);
+  omnibox_textfield()->OnKeyEvent(&escape);
+
   EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
             omnibox_view()->text());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
