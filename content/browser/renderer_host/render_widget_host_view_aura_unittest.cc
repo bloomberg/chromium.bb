@@ -6452,6 +6452,23 @@ TEST_F(InputMethodStateAuraTest, GetTextRange) {
   }
 }
 
+TEST_F(InputMethodStateAuraTest, GetCompositionTextRange) {
+  // Initially, there should be no range.
+  gfx::Range range_from_client;
+  EXPECT_FALSE(
+      text_input_client()->GetCompositionTextRange(&range_from_client));
+
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    gfx::Range expected_range(1, 2 + index);
+    views_[index]->ImeCompositionRangeChanged(expected_range, {});
+
+    EXPECT_TRUE(
+        text_input_client()->GetCompositionTextRange(&range_from_client));
+    EXPECT_EQ(expected_range, range_from_client);
+  }
+}
+
 // This test is for selection range.
 TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
   base::string16 text;
