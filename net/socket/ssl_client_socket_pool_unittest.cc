@@ -147,9 +147,11 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         NULL /* channel_id_service */, transport_security_state_.get(),
         &ct_verifier_, &ct_policy_enforcer_,
         std::string() /* ssl_session_cache_shard */, &socket_factory_,
-        transport_pool ? &transport_socket_pool_ : NULL,
-        socks_pool ? &socks_socket_pool_ : NULL,
-        http_proxy_pool ? &http_proxy_socket_pool_ : NULL, NULL, NULL));
+        transport_pool ? &transport_socket_pool_ : nullptr,
+        socks_pool ? &socks_socket_pool_ : nullptr,
+        http_proxy_pool ? &http_proxy_socket_pool_ : nullptr,
+        nullptr /* ssl_config_service */,
+        nullptr /* network_quality_estimator */, nullptr /* net_log */));
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {
@@ -997,7 +999,7 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
                            &ct_policy_enforcer_,
                            std::string() /* ssl_session_cache_shard */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL);
+                           NULL, NULL, NULL, NULL, NULL);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -1067,7 +1069,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
                            &ct_policy_enforcer_,
                            std::string() /* ssl_session_cache_shard */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL);
+                           NULL, NULL, NULL, NULL, NULL);
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
@@ -1129,7 +1131,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
                            &ct_policy_enforcer_,
                            std::string() /* ssl_session_cache_shard */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL);
+                           NULL, NULL, NULL, NULL, NULL);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;

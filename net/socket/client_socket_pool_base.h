@@ -256,8 +256,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
 
-    virtual base::TimeDelta ConnectionTimeout() const = 0;
-
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobFactory);
   };
@@ -384,10 +382,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
-
-  base::TimeDelta ConnectionTimeout() const {
-    return connect_job_factory_->ConnectionTimeout();
-  }
 
   static bool connect_backup_jobs_enabled();
   static bool set_connect_backup_jobs_enabled(bool enabled);
@@ -818,8 +812,6 @@ class ClientSocketPoolBase {
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
 
-    virtual base::TimeDelta ConnectionTimeout() const = 0;
-
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobFactory);
   };
@@ -971,10 +963,6 @@ class ClientSocketPoolBase {
     return helper_.GetInfoAsValue(name, type);
   }
 
-  base::TimeDelta ConnectionTimeout() const {
-    return helper_.ConnectionTimeout();
-  }
-
   void EnableConnectBackupJobs() { helper_.EnableConnectBackupJobs(); }
 
   bool CloseOneIdleSocket() { return helper_.CloseOneIdleSocket(); }
@@ -1006,10 +994,6 @@ class ClientSocketPoolBase {
       const Request& casted_request = static_cast<const Request&>(request);
       return connect_job_factory_->NewConnectJob(
           group_name, casted_request, delegate);
-    }
-
-    base::TimeDelta ConnectionTimeout() const override {
-      return connect_job_factory_->ConnectionTimeout();
     }
 
     const std::unique_ptr<ConnectJobFactory> connect_job_factory_;

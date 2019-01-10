@@ -18,6 +18,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -69,7 +70,6 @@ class SOCKSConnectJob : public ConnectJob {
                   const SocketTag& socket_tag,
                   ClientSocketPool::RespectLimits respect_limits,
                   const scoped_refptr<SOCKSSocketParams>& params,
-                  const base::TimeDelta& timeout_duration,
                   TransportClientSocketPool* transport_pool,
                   HostResolver* host_resolver,
                   Delegate* delegate,
@@ -78,6 +78,9 @@ class SOCKSConnectJob : public ConnectJob {
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+
+  // Returns the connection timeout used by SOCKSConnectJobs.
+  static base::TimeDelta ConnectionTimeout();
 
  private:
   enum State {
@@ -174,8 +177,6 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
       const std::string& type,
       bool include_nested_pools) const override;
 
-  base::TimeDelta ConnectionTimeout() const override;
-
   // LowerLayeredPool implementation.
   bool IsStalled() const override;
 
@@ -205,8 +206,6 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const override;
-
-    base::TimeDelta ConnectionTimeout() const override;
 
    private:
     TransportClientSocketPool* const transport_pool_;

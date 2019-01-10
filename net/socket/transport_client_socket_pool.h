@@ -75,10 +75,6 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
     RACE_IPV6_SOLO,
   };
 
-  // TransportConnectJobs will time out after this many seconds.  Note this is
-  // the total time, including both host resolution and TCP connect() times.
-  static const int kTimeoutInSeconds;
-
   // In cases where both IPv6 and IPv4 addresses were returned from DNS,
   // TransportConnectJobs will start a second connection attempt to just the
   // IPv4 addresses after this many milliseconds. (This is "Happy Eyeballs".)
@@ -90,7 +86,6 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
       const SocketTag& socket_tag,
       ClientSocketPool::RespectLimits respect_limits,
       const scoped_refptr<TransportSocketParams>& params,
-      base::TimeDelta timeout_duration,
       ClientSocketFactory* client_socket_factory,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       HostResolver* host_resolver,
@@ -111,6 +106,9 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   static void HistogramDuration(
       const LoadTimingInfo::ConnectTiming& connect_timing,
       RaceResult race_result);
+
+  // Returns the connection timeout used by TransportConnectJobs.
+  static base::TimeDelta ConnectionTimeout();
 
  private:
   enum State {
@@ -220,7 +218,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override;
-  base::TimeDelta ConnectionTimeout() const override;
 
   // LowerLayeredPool implementation.
   bool IsStalled() const override;
@@ -262,8 +259,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const override;
-
-    base::TimeDelta ConnectionTimeout() const override;
 
    private:
     ClientSocketFactory* const client_socket_factory_;

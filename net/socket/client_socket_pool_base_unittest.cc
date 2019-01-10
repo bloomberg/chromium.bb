@@ -492,10 +492,6 @@ class TestConnectJobFactory
                            delegate, client_socket_factory_, net_log_));
   }
 
-  base::TimeDelta ConnectionTimeout() const override {
-    return timeout_duration_;
-  }
-
  private:
   TestConnectJob::JobType job_type_;
   std::list<TestConnectJob::JobType>* job_types_;
@@ -601,10 +597,6 @@ class TestClientSocketPool : public ClientSocketPool {
       const std::string& type,
       bool include_nested_pools) const override {
     return base_.GetInfoAsValue(name, type);
-  }
-
-  base::TimeDelta ConnectionTimeout() const override {
-    return base_.ConnectionTimeout();
   }
 
   const TestClientSocketPoolBase* base() const { return &base_; }

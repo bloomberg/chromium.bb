@@ -191,7 +191,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override;
-  base::TimeDelta ConnectionTimeout() const override;
 
   // HigherLayeredPool implementation.
   bool IsStalled() const override;

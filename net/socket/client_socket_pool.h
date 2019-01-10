@@ -198,9 +198,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   ClientSocketPool();
   ~ClientSocketPool() override;
 
-  // Return the connection timeout for this pool.
-  virtual base::TimeDelta ConnectionTimeout() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);
 };
