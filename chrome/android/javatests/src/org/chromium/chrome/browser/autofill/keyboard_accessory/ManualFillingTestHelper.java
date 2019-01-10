@@ -50,7 +50,6 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -141,8 +140,7 @@ public class ManualFillingTestHelper {
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput)
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput) {
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
         final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
 

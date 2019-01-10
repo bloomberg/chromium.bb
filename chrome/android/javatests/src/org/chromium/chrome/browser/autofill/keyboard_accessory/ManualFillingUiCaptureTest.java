@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -70,7 +69,6 @@ public class ManualFillingUiCaptureTest {
     @MediumTest
     @DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessory", "LTR", "UiCatalogue"})
-    @DisabledTest // Test is flaky. (see https://crbug.com/913178)
     public void testCaptureKeyboardAccessoryWithPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -194,8 +192,7 @@ public class ManualFillingUiCaptureTest {
     }
 
     private void waitForUnrelatedChromeUi() throws InterruptedException {
-        whenDisplayed(withId(R.id.home_button));
-        Thread.sleep(scaleTimeout(30)); // Reduces flakiness due to delayed events.
+        Thread.sleep(scaleTimeout(50)); // Reduces flakiness due to delayed events.
     }
 
     private void waitForActionsInAccessory() throws InterruptedException {
