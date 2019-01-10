@@ -430,9 +430,6 @@ class CapturePreconnectsSocketPool : public ParentPool {
     ADD_FAILURE();
     return LOAD_STATE_IDLE;
   }
-  base::TimeDelta ConnectionTimeout() const override {
-    return base::TimeDelta();
-  }
 
  private:
   int last_num_streams_;
@@ -484,10 +481,11 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           std::string(),  // ssl_session_cache_shard
                           nullptr,        // deterministic_socket_factory
                           nullptr,        // transport_socket_pool
-                          nullptr,
-                          nullptr,
-                          nullptr,   // ssl_config_service
-                          nullptr),  // net_log
+                          nullptr,        // socks_pool
+                          nullptr,        // http_proxy_pool
+                          nullptr,        // ssl_config_service
+                          nullptr,        // network_quality_estimator
+                          nullptr),       // net_log
       last_num_streams_(-1) {}
 
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;

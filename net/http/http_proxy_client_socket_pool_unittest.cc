@@ -81,9 +81,10 @@ class HttpProxyClientSocketPoolTest
                          std::string() /* ssl_session_cache_shard */,
                          &socket_factory_,
                          &transport_socket_pool_,
-                         NULL,
-                         NULL,
+                         NULL /* socks_pool */,
+                         NULL /* http_proxy_pool */,
                          session_deps_.ssl_config_service.get(),
+                         NULL /* network_quality_estimator */,
                          NetLogWithSource().net_log()),
         field_trial_list_(nullptr),
         pool_(
@@ -96,7 +97,11 @@ class HttpProxyClientSocketPoolTest
     session_ = CreateNetworkSession();
   }
 
-  virtual ~HttpProxyClientSocketPoolTest() = default;
+  virtual ~HttpProxyClientSocketPoolTest() {
+    // Reset global field trial parameters to defaults values.
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+    HttpProxyConnectJob::UpdateFieldTrialParametersForTesting();
+  }
 
   // Initializes the field trial paramters for the field trial that determines
   // connection timeout based on the network quality.
@@ -125,11 +130,8 @@ class HttpProxyClientSocketPoolTest
         base::AssociateFieldTrialParams(trial_name, group_name, params));
     EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(trial_name, group_name));
 
-    // Reset |pool_| so that the field trial parameters are read by the
-    // |pool_|.
-    pool_ = std::make_unique<HttpProxyClientSocketPool>(
-        kMaxSockets, kMaxSocketsPerGroup, &transport_socket_pool_,
-        &ssl_socket_pool_, &estimator_, NetLogWithSource().net_log());
+    // Force static global that reads the field trials to update.
+    HttpProxyConnectJob::UpdateFieldTrialParametersForTesting();
   }
 
   void AddAuthToCache() {
@@ -231,7 +233,15 @@ class HttpProxyClientSocketPoolTest
   }
   SSLClientSocketPool* ssl_socket_pool() { return &ssl_socket_pool_; }
 
- private:
+  base::TimeDelta GetProxyConnectionTimeout() {
+    // Doesn't actually matter whether or not this is for a tunnel - the
+    // connection timeout is the same, though it probably shouldn't be the same,
+    // since tunnels need an extra round trip.
+    return HttpProxyConnectJob::ConnectionTimeout(
+        *CreateParams(true /* tunnel */), &estimator_);
+  }
+
+ protected:
   MockTaggingClientSocketFactory socket_factory_;
   SpdySessionDependencies session_deps_;
 
@@ -248,7 +258,6 @@ class HttpProxyClientSocketPoolTest
 
   base::FieldTrialList field_trial_list_;
 
- protected:
   SpdyTestUtil spdy_util_;
   std::unique_ptr<SSLSocketDataProvider> ssl_data_;
   std::unique_ptr<SequencedSocketData> data_;
@@ -763,15 +772,15 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolMinTimeout) {
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(1);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
 
-  EXPECT_LE(base::TimeDelta(), pool_->ConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   // Test against a large value.
-  EXPECT_GE(base::TimeDelta::FromMinutes(10), pool_->ConnectionTimeout());
+  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetProxyConnectionTimeout());
 
 #if (defined(OS_ANDROID) || defined(OS_IOS))
-  EXPECT_EQ(base::TimeDelta::FromSeconds(8), pool_->ConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(8), GetProxyConnectionTimeout());
 #else
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30), pool_->ConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetProxyConnectionTimeout());
 #endif
 }
 
@@ -780,15 +789,15 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolMaxTimeout) {
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(100);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
 
-  EXPECT_LE(base::TimeDelta(), pool_->ConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   // Test against a large value.
-  EXPECT_GE(base::TimeDelta::FromMinutes(10), pool_->ConnectionTimeout());
+  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetProxyConnectionTimeout());
 
 #if (defined(OS_ANDROID) || defined(OS_IOS))
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30), pool_->ConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetProxyConnectionTimeout());
 #else
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), pool_->ConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetProxyConnectionTimeout());
 #endif
 }
 
@@ -802,22 +811,22 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolTimeoutWithExperiment) {
 
   InitAdaptiveTimeoutFieldTrialWithParams(false, kMultiplier, kMultiplier,
                                           kMinTimeout, kMaxTimeout);
-  EXPECT_LE(base::TimeDelta(), pool_->ConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(4);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
   base::TimeDelta expected_connection_timeout = kMultiplier * rtt_estimate;
-  EXPECT_EQ(expected_connection_timeout, pool_->ConnectionTimeout());
+  EXPECT_EQ(expected_connection_timeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(25);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMaxTimeout, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMinTimeout, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
 }
 
 // Tests the connection timeout values when the field trial parameters are
@@ -831,26 +840,26 @@ TEST_P(HttpProxyClientSocketPoolTest,
 
   InitAdaptiveTimeoutFieldTrialWithParams(false, kMultiplier, kMultiplier,
                                           kMinTimeout, kMaxTimeout);
-  EXPECT_LE(base::TimeDelta(), pool_->ConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(2);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMultiplier * rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(7);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMultiplier * rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(35);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMaxTimeout, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMinTimeout, pool_->ConnectionTimeout());
+  EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolTimeoutWithConnectionProperty) {
@@ -869,11 +878,11 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolTimeoutWithConnectionProperty) {
   estimator()->SetStartTimeNullHttpRtt(kRttEstimate);
   // By default, connection timeout should return the timeout for secure
   // proxies.
-  EXPECT_EQ(kSecureMultiplier * kRttEstimate, job_factory.ConnectionTimeout());
-  EXPECT_EQ(kSecureMultiplier * kRttEstimate,
-            job_factory.ConnectionTimeoutWithConnectionProperty(true));
-  EXPECT_EQ(kNonSecureMultiplier * kRttEstimate,
-            job_factory.ConnectionTimeoutWithConnectionProperty(false));
+  if (GetParam() != HTTP) {
+    EXPECT_EQ(kSecureMultiplier * kRttEstimate, GetProxyConnectionTimeout());
+  } else {
+    EXPECT_EQ(kNonSecureMultiplier * kRttEstimate, GetProxyConnectionTimeout());
+  }
 }
 
 // Tests the connection timeout values when the field trial parameters are not
@@ -882,30 +891,30 @@ TEST_P(HttpProxyClientSocketPoolTest,
        ProxyPoolTimeoutWithExperimentDefaultParams) {
   InitAdaptiveTimeoutFieldTrialWithParams(true, 0, 0, base::TimeDelta(),
                                           base::TimeDelta());
-  EXPECT_LE(base::TimeDelta(), pool_->ConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   // Timeout should be |http_rtt_multiplier| times the HTTP RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(10);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
-  EXPECT_LE(rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(10);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
-  EXPECT_LE(rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
 
   // Set RTT to a very large value.
   rtt_estimate = base::TimeDelta::FromMinutes(60);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_GT(rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_GT(rtt_estimate, GetProxyConnectionTimeout());
 
   // Set RTT to a very small value.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   estimator()->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_LT(rtt_estimate, pool_->ConnectionTimeout());
+  EXPECT_LT(rtt_estimate, GetProxyConnectionTimeout());
 }
 
 // It would be nice to also test the timeouts in HttpProxyClientSocketPool.

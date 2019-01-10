@@ -46,6 +46,14 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
   return true;
 }
 
+// TODO(eroman): The use of this constant needs to be re-evaluated. The time
+// needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
+// the address list may contain many alternatives, and most of those may
+// timeout. Even worse, the per-connect timeout threshold varies greatly
+// between systems (anywhere from 20 seconds to 190 seconds).
+// See comment #12 at http://crbug.com/23364 for specifics.
+const int kTransportConnectJobTimeoutInSeconds = 240;  // 4 minutes.
+
 }  // namespace
 
 TransportSocketParams::TransportSocketParams(
@@ -60,14 +68,6 @@ TransportSocketParams::TransportSocketParams(
 
 TransportSocketParams::~TransportSocketParams() = default;
 
-// TODO(eroman): The use of this constant needs to be re-evaluated. The time
-// needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
-// the address list may contain many alternatives, and most of those may
-// timeout. Even worse, the per-connect timeout threshold varies greatly
-// between systems (anywhere from 20 seconds to 190 seconds).
-// See comment #12 at http://crbug.com/23364 for specifics.
-const int TransportConnectJob::kTimeoutInSeconds = 240;  // 4 minutes.
-
 // TODO(willchan): Base this off RTT instead of statically setting it. Note we
 // choose a timeout that is different from the backup connect job timer so they
 // don't synchronize.
@@ -79,7 +79,6 @@ TransportConnectJob::TransportConnectJob(
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<TransportSocketParams>& params,
-    base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     HostResolver* host_resolver,
@@ -87,7 +86,7 @@ TransportConnectJob::TransportConnectJob(
     NetLog* net_log)
     : ConnectJob(
           group_name,
-          timeout_duration,
+          ConnectionTimeout(),
           priority,
           socket_tag,
           respect_limits,
@@ -204,6 +203,11 @@ void TransportConnectJob::HistogramDuration(
       NOTREACHED();
       break;
   }
+}
+
+// static
+base::TimeDelta TransportConnectJob::ConnectionTimeout() {
+  return base::TimeDelta::FromSeconds(kTransportConnectJobTimeoutInSeconds);
 }
 
 void TransportConnectJob::OnIOComplete(int result) {
@@ -453,15 +457,8 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     ConnectJob::Delegate* delegate) const {
   return std::unique_ptr<ConnectJob>(new TransportConnectJob(
       group_name, request.priority(), request.socket_tag(),
-      request.respect_limits(), request.params(), ConnectionTimeout(),
-      client_socket_factory_, socket_performance_watcher_factory_,
-      host_resolver_, delegate, net_log_));
-}
-
-base::TimeDelta
-    TransportClientSocketPool::TransportConnectJobFactory::ConnectionTimeout()
-    const {
-  return base::TimeDelta::FromSeconds(TransportConnectJob::kTimeoutInSeconds);
+      request.respect_limits(), request.params(), client_socket_factory_,
+      socket_performance_watcher_factory_, host_resolver_, delegate, net_log_));
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -586,10 +583,6 @@ TransportClientSocketPool::GetInfoAsValue(const std::string& name,
                                           const std::string& type,
                                           bool include_nested_pools) const {
   return base_.GetInfoAsValue(name, type);
-}
-
-base::TimeDelta TransportClientSocketPool::ConnectionTimeout() const {
-  return base_.ConnectionTimeout();
 }
 
 bool TransportClientSocketPool::IsStalled() const {

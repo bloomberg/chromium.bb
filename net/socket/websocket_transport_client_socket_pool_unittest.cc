@@ -809,7 +809,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
       &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
-  const base::TimeDelta connect_job_timeout = pool.ConnectionTimeout();
+  const base::TimeDelta connect_job_timeout =
+      TransportConnectJob::ConnectionTimeout();
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_FAILING_CLIENT_SOCKET);

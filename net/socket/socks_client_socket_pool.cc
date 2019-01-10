@@ -22,6 +22,10 @@
 
 namespace net {
 
+// SOCKSConnectJobs will time out after this many seconds.  Note this is in
+// addition to the timeout for the transport socket.
+static const int kSOCKSConnectJobTimeoutInSeconds = 30;
+
 class NetLog;
 
 SOCKSSocketParams::SOCKSSocketParams(
@@ -36,24 +40,19 @@ SOCKSSocketParams::SOCKSSocketParams(
 
 SOCKSSocketParams::~SOCKSSocketParams() = default;
 
-// SOCKSConnectJobs will time out after this many seconds.  Note this is on
-// top of the timeout for the transport socket.
-static const int kSOCKSConnectJobTimeoutInSeconds = 30;
-
 SOCKSConnectJob::SOCKSConnectJob(
     const std::string& group_name,
     RequestPriority priority,
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
-    const base::TimeDelta& timeout_duration,
     TransportClientSocketPool* transport_pool,
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
     : ConnectJob(
           group_name,
-          timeout_duration,
+          ConnectionTimeout(),
           priority,
           socket_tag,
           respect_limits,
@@ -82,6 +81,11 @@ LoadState SOCKSConnectJob::GetLoadState() const {
       NOTREACHED();
       return LOAD_STATE_IDLE;
   }
+}
+
+base::TimeDelta SOCKSConnectJob::ConnectionTimeout() {
+  return TransportConnectJob::ConnectionTimeout() +
+         base::TimeDelta::FromSeconds(kSOCKSConnectJobTimeoutInSeconds);
 }
 
 void SOCKSConnectJob::OnIOComplete(int result) {
@@ -187,16 +191,10 @@ SOCKSClientSocketPool::SOCKSConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return std::unique_ptr<ConnectJob>(new SOCKSConnectJob(
+  return std::make_unique<SOCKSConnectJob>(
       group_name, request.priority(), request.socket_tag(),
-      request.respect_limits(), request.params(), ConnectionTimeout(),
-      transport_pool_, host_resolver_, delegate, net_log_));
-}
-
-base::TimeDelta
-SOCKSClientSocketPool::SOCKSConnectJobFactory::ConnectionTimeout() const {
-  return transport_pool_->ConnectionTimeout() +
-      base::TimeDelta::FromSeconds(kSOCKSConnectJobTimeoutInSeconds);
+      request.respect_limits(), request.params(), transport_pool_,
+      host_resolver_, delegate, net_log_);
 }
 
 SOCKSClientSocketPool::SOCKSClientSocketPool(
@@ -304,10 +302,6 @@ std::unique_ptr<base::DictionaryValue> SOCKSClientSocketPool::GetInfoAsValue(
     dict->Set("nested_pools", std::move(list));
   }
   return dict;
-}
-
-base::TimeDelta SOCKSClientSocketPool::ConnectionTimeout() const {
-  return base_.ConnectionTimeout();
 }
 
 bool SOCKSClientSocketPool::IsStalled() const {

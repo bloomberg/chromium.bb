@@ -99,17 +99,17 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                              const SocketTag& socket_tag,
                              ClientSocketPool::RespectLimits respect_limits,
                              const scoped_refptr<SSLSocketParams>& params,
-                             const base::TimeDelta& timeout_duration,
                              TransportClientSocketPool* transport_pool,
                              SOCKSClientSocketPool* socks_pool,
                              HttpProxyClientSocketPool* http_proxy_pool,
                              ClientSocketFactory* client_socket_factory,
                              const SSLClientSocketContext& context,
+                             NetworkQualityEstimator* network_quality_estimator,
                              Delegate* delegate,
                              NetLog* net_log)
     : ConnectJob(
           group_name,
-          timeout_duration,
+          ConnectionTimeout(*params, network_quality_estimator),
           priority,
           socket_tag,
           respect_limits,
@@ -168,6 +168,28 @@ void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
     handle->set_is_ssl_error(true);
 
   handle->set_connection_attempts(connection_attempts_);
+}
+
+base::TimeDelta SSLConnectJob::ConnectionTimeout(
+    const SSLSocketParams& params,
+    const NetworkQualityEstimator* network_quality_estimator) {
+  SSLSocketParams::ConnectionType connection_type = params.GetConnectionType();
+
+  base::TimeDelta nested_job_timeout;
+  switch (connection_type) {
+    case SSLSocketParams::DIRECT:
+      nested_job_timeout = TransportConnectJob::ConnectionTimeout();
+      break;
+    case SSLSocketParams::SOCKS_PROXY:
+      nested_job_timeout = SOCKSConnectJob::ConnectionTimeout();
+      break;
+    case SSLSocketParams::HTTP_PROXY:
+      nested_job_timeout = HttpProxyConnectJob::ConnectionTimeout(
+          *params.GetHttpProxyConnectionParams(), network_quality_estimator);
+      break;
+  }
+  return nested_job_timeout +
+         base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds);
 }
 
 void SSLConnectJob::OnIOComplete(int result) {
@@ -437,30 +459,15 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
     HttpProxyClientSocketPool* http_proxy_pool,
     ClientSocketFactory* client_socket_factory,
     const SSLClientSocketContext& context,
+    NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
       client_socket_factory_(client_socket_factory),
       context_(context),
-      net_log_(net_log) {
-  base::TimeDelta max_transport_timeout = base::TimeDelta();
-  base::TimeDelta pool_timeout;
-  if (transport_pool_)
-    max_transport_timeout = transport_pool_->ConnectionTimeout();
-  if (socks_pool_) {
-    pool_timeout = socks_pool_->ConnectionTimeout();
-    if (pool_timeout > max_transport_timeout)
-      max_transport_timeout = pool_timeout;
-  }
-  if (http_proxy_pool_) {
-    pool_timeout = http_proxy_pool_->ConnectionTimeout();
-    if (pool_timeout > max_transport_timeout)
-      max_transport_timeout = pool_timeout;
-  }
-  timeout_ = max_transport_timeout +
-      base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds);
-}
+      network_quality_estimator_(network_quality_estimator),
+      net_log_(net_log) {}
 
 SSLClientSocketPool::SSLConnectJobFactory::~SSLConnectJobFactory() = default;
 
@@ -478,6 +485,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     SOCKSClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
     SSLConfigService* ssl_config_service,
+    NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       socks_pool_(socks_pool),
@@ -498,6 +506,7 @@ SSLClientSocketPool::SSLClientSocketPool(
                                        cert_transparency_verifier,
                                        ct_policy_enforcer,
                                        ssl_session_cache_shard),
+                network_quality_estimator,
                 net_log)),
       ssl_config_service_(ssl_config_service) {
   if (ssl_config_service_)
@@ -522,14 +531,9 @@ SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
     ConnectJob::Delegate* delegate) const {
   return std::unique_ptr<ConnectJob>(new SSLConnectJob(
       group_name, request.priority(), request.socket_tag(),
-      request.respect_limits(), request.params(), ConnectionTimeout(),
-      transport_pool_, socks_pool_, http_proxy_pool_, client_socket_factory_,
-      context_, delegate, net_log_));
-}
-
-base::TimeDelta SSLClientSocketPool::SSLConnectJobFactory::ConnectionTimeout()
-    const {
-  return timeout_;
+      request.respect_limits(), request.params(), transport_pool_, socks_pool_,
+      http_proxy_pool_, client_socket_factory_, context_,
+      network_quality_estimator_, delegate, net_log_));
 }
 
 int SSLClientSocketPool::RequestSocket(const std::string& group_name,
@@ -633,10 +637,6 @@ std::unique_ptr<base::DictionaryValue> SSLClientSocketPool::GetInfoAsValue(
     dict->Set("nested_pools", std::move(list));
   }
   return dict;
-}
-
-base::TimeDelta SSLClientSocketPool::ConnectionTimeout() const {
-  return base_.ConnectionTimeout();
 }
 
 bool SSLClientSocketPool::IsStalled() const {

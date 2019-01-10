@@ -376,9 +376,10 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   std::unique_ptr<WebSocketTransportConnectJob> connect_job(
       new WebSocketTransportConnectJob(
           group_name, priority, respect_limits, casted_params,
-          ConnectionTimeout(), std::move(callback), client_socket_factory_,
-          host_resolver_, handle, &connect_job_delegate_,
-          websocket_endpoint_lock_manager_, pool_net_log_, request_net_log));
+          TransportConnectJob::ConnectionTimeout(), std::move(callback),
+          client_socket_factory_, host_resolver_, handle,
+          &connect_job_delegate_, websocket_endpoint_lock_manager_,
+          pool_net_log_, request_net_log));
 
   int result = connect_job->Connect();
 
@@ -513,13 +514,6 @@ WebSocketTransportClientSocketPool::GetInfoAsValue(
   dict->SetInteger("max_sockets_per_group", max_sockets_);
   dict->SetInteger("pool_generation_number", 0);
   return dict;
-}
-
-base::TimeDelta WebSocketTransportClientSocketPool::ConnectionTimeout() const {
-  // TODO(ricea): For now, we implement a global timeout for compatibility with
-  // TransportConnectJob. Since WebSocketTransportConnectJob controls the
-  // address selection process more tightly, it could do something smarter here.
-  return base::TimeDelta::FromSeconds(TransportConnectJob::kTimeoutInSeconds);
 }
 
 bool WebSocketTransportClientSocketPool::IsStalled() const {

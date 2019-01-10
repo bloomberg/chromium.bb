@@ -667,9 +667,6 @@ class CaptureGroupNameSocketPool : public ParentPool {
                          const ClientSocketHandle* handle) const override {
     return LOAD_STATE_IDLE;
   }
-  base::TimeDelta ConnectionTimeout() const override {
-    return base::TimeDelta();
-  }
 
  private:
   std::string last_group_name_;
@@ -714,8 +711,8 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
                           NULL,
                           NULL,
                           NULL,
-                          NULL) {
-}
+                          NULL,
+                          NULL) {}
 
 //-----------------------------------------------------------------------------
 
