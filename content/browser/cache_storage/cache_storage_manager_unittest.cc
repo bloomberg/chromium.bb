@@ -519,7 +519,7 @@ class CacheStorageManagerTest : public testing::Test {
         std::move(blob), blink::mojom::ServiceWorkerResponseError::kUnknown,
         base::Time(), std::string() /* cache_storage_cache_name */,
         std::vector<std::string>() /* cors_exposed_header_names */,
-        false /* is_in_cache_storage */, nullptr /* side_data_blob */);
+        nullptr /* side_data_blob */);
 
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();

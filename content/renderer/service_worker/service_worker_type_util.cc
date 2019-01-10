@@ -105,7 +105,6 @@ blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
       web_response.GetError(), web_response.ResponseTime(),
       web_response.CacheStorageCacheName().Utf8(),
       GetHeaderList(web_response.CorsExposedHeaderNames()),
-      !web_response.CacheStorageCacheName().IsNull(),
       std::move(side_data_blob));
 }
 

@@ -1494,7 +1494,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(response1->status_code, response2->status_code);
   EXPECT_EQ(response1->status_text, response2->status_text);
   EXPECT_EQ(response1->response_time, response2->response_time);
-  EXPECT_TRUE(response2->is_in_cache_storage);
   EXPECT_EQ("cache_name", *response2->cache_storage_cache_name);
   EXPECT_EQ(network::mojom::FetchResponseSource::kCacheStorage,
             response2->response_source);

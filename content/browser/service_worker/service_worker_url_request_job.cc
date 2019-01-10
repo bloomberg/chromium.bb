@@ -645,7 +645,9 @@ void ServiceWorkerURLRequestJob::SetResponse(
   load_timing_info_.receive_headers_end =
       load_timing_info_.receive_headers_start;
 
-  response_is_in_cache_storage_ = response->is_in_cache_storage;
+  response_is_in_cache_storage_ =
+      response->response_source ==
+      network::mojom::FetchResponseSource::kCacheStorage;
   if (response->cache_storage_cache_name) {
     response_cache_storage_cache_name_ =
         std::move(*(response->cache_storage_cache_name));
