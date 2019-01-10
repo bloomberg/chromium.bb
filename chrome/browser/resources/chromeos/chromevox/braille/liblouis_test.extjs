@@ -44,14 +44,18 @@ function assertEqualsUint8Array(expected, actual) {
   assertEqualsJSON(expected, as_array);
 }
 
-function LIBLOUIS_TEST_F(testName, testFunc) {
+function LIBLOUIS_TEST_F(testName, testFunc, opt_preamble) {
   var wrappedTestFunc = function() {
-var liblouis = new cvox.LibLouis(
+    var liblouis = new cvox.LibLouis(
         chrome.extension.getURL('braille/liblouis_wrapper.js'),
         '',
-    testFunc.bind(this));
+        testFunc.bind(this));
   };
-  TEST_F('ChromeVoxLibLouisTest', testName, wrappedTestFunc);
+  TEST_F('ChromeVoxLibLouisTest', testName, wrappedTestFunc, opt_preamble);
+}
+
+function LIBLOUIS_TEST_F_WITH_PREAMBLE(preamble, testName, testFunc) {
+  LIBLOUIS_TEST_F(testName, testFunc, preamble);
 }
 
 LIBLOUIS_TEST_F('testTranslateComputerBraille', function(liblouis) {
@@ -65,16 +69,13 @@ LIBLOUIS_TEST_F('testTranslateComputerBraille', function(liblouis) {
   });
 });
 
-if (this.GEN_BLOCK) {
-  GEN_BLOCK(function() {/*!
+LIBLOUIS_TEST_F_WITH_PREAMBLE(`
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_checkAllTables DISABLED_checkAllTables
 #else
 #define MAYBE_checkAllTables checkAllTables
 #endif
-  */});
-}
-LIBLOUIS_TEST_F('MAYBE_checkAllTables', function(liblouis) {
+`, 'MAYBE_checkAllTables', function(liblouis) {
   cvox.BrailleTable.getAll(this.newCallback(function(tables) {
     var i = 0;
     var checkNextTable = function() {

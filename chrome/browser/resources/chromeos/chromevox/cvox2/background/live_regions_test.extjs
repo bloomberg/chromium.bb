@@ -330,16 +330,13 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
   });
 });
 
-if (this.GEN_BLOCK) {
-  GEN_BLOCK(function() {/*!
+TEST_F_WITH_PREAMBLE(`
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_LiveStatusOff DISABLED_LiveStatusOff
 #else
 #define MAYBE_LiveStatusOff LiveStatusOff
 #endif
-  */});
-}
-TEST_F('ChromeVoxLiveRegionsTest', 'MAYBE_LiveStatusOff', function() {
+`, 'ChromeVoxLiveRegionsTest', 'MAYBE_LiveStatusOff', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div><input aria-live="off" type="text"></input></div>
