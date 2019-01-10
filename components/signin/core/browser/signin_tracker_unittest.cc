@@ -7,16 +7,9 @@
 #include "base/compiler_specific.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/signin_switches.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,45 +42,16 @@ class MockObserver : public SigninTracker::Observer {
 
 class SigninTrackerTest : public testing::Test {
  public:
-  SigninTrackerTest()
-      : signin_client_(&pref_service_),
-        fake_oauth2_token_service_(&pref_service_),
-        fake_gaia_cookie_manager_service_(&fake_oauth2_token_service_,
-                                          &signin_client_,
-                                          &test_url_loader_factory_),
-#if defined(OS_CHROMEOS)
-        fake_signin_manager_(&signin_client_,
-                             &fake_oauth2_token_service_,
-                             &account_tracker_) {
-#else
-        fake_signin_manager_(&signin_client_,
-                             &fake_oauth2_token_service_,
-                             &account_tracker_,
-                             &fake_gaia_cookie_manager_service_) {
-#endif
-
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterPrefs(pref_service_.registry());
-
-    account_tracker_.Initialize(&pref_service_, base::FilePath());
-
+  SigninTrackerTest() {
     tracker_ = std::make_unique<SigninTracker>(
-        &fake_oauth2_token_service_, &fake_signin_manager_,
-        &fake_gaia_cookie_manager_service_, &observer_);
+        identity_test_env_.identity_manager(), &observer_);
   }
 
   ~SigninTrackerTest() override { tracker_.reset(); }
 
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<SigninTracker> tracker_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService fake_oauth2_token_service_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeGaiaCookieManagerService fake_gaia_cookie_manager_service_;
-  FakeSigninManagerForTesting fake_signin_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
   MockObserver observer_;
 };
 
@@ -100,7 +64,8 @@ TEST_F(SigninTrackerTest, SignInFails) {
   EXPECT_CALL(observer_, SigninSuccess()).Times(0);
   EXPECT_CALL(observer_, SigninFailed(error));
 
-  fake_signin_manager_.FailSignin(error);
+  // Mimic calling IdentityManager::GoogleSigninFailed().
+  tracker_->OnPrimaryAccountSigninFailed(error);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -108,11 +73,8 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   EXPECT_CALL(observer_, SigninSuccess());
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
-  std::string gaia_id = "gaia_id";
   std::string email = "user@gmail.com";
-  std::string account_id = account_tracker_.SeedAccountInfo(gaia_id, email);
-  fake_signin_manager_.SetAuthenticatedAccountInfo(gaia_id, email);
-  fake_oauth2_token_service_.UpdateCredentials(account_id, "refresh_token");
+  identity_test_env_.MakePrimaryAccountAvailable(email);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -120,10 +82,8 @@ TEST_F(SigninTrackerTest, SignInSucceedsWithExistingAccount) {
   EXPECT_CALL(observer_, SigninSuccess());
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
-  std::string gaia_id = "gaia_id";
   std::string email = "user@gmail.com";
-  std::string account_id = account_tracker_.SeedAccountInfo(gaia_id, email);
-  fake_oauth2_token_service_.UpdateCredentials(account_id, "refresh_token");
-  fake_signin_manager_.SignIn(gaia_id, email, std::string());
+  AccountInfo account_info = identity_test_env_.MakeAccountAvailable(email);
+  identity_test_env_.SetPrimaryAccount(account_info.email);
 }
 #endif
