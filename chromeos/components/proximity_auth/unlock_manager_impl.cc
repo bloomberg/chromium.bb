@@ -346,10 +346,6 @@ void UnlockManagerImpl::AttemptToStartRemoteDeviceLifecycle() {
 void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   if (is_attempting_auth_) {
     PA_LOG(VERBOSE) << "Already attempting auth.";
-    RecordAuthResultFailure(
-        screenlock_type_,
-        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-            kAlreadyAttemptingAuth);
     return;
   }
 
@@ -359,7 +355,7 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   is_attempting_auth_ = true;
 
   if (!life_cycle_ || !GetMessenger()) {
-    PA_LOG(ERROR) << "No life_cycle active when auth is attempted";
+    PA_LOG(ERROR) << "No life_cycle active when auth was attempted";
     FinalizeAuthAttempt(
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kNoPendingOrActiveHost);

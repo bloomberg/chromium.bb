@@ -365,10 +365,6 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
-    RecordAuthResultFailure(
-        auth_attempt_type,
-        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-            kAlreadyAttemptingAuth);
     return;
   }
 
