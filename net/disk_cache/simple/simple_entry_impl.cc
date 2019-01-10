@@ -56,6 +56,21 @@ enum SimpleEntryWriteResult {
   SIMPLE_ENTRY_WRITE_RESULT_MAX = 6,
 };
 
+OpenEntryIndexEnum ComputeIndexState(SimpleBackendImpl* backend,
+                                     uint64_t entry_hash) {
+  if (!backend->index()->initialized())
+    return INDEX_NOEXIST;
+  if (backend->index()->Has(entry_hash))
+    return INDEX_HIT;
+  return INDEX_MISS;
+}
+
+void RecordOpenEntryIndexState(net::CacheType cache_type,
+                               OpenEntryIndexEnum state) {
+  SIMPLE_CACHE_UMA(ENUMERATION, "OpenEntryIndexState", cache_type, state,
+                   INDEX_MAX);
+}
+
 void RecordReadResult(net::CacheType cache_type, SimpleReadResult result) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "ReadResult", cache_type, result, READ_RESULT_MAX);
@@ -196,34 +211,19 @@ net::Error SimpleEntryImpl::OpenEntry(Entry** out_entry,
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_CALL);
 
-  bool have_index = backend_->index()->initialized();
-  // This enumeration is used in histograms, add entries only at end.
-  enum OpenEntryIndexEnum {
-    INDEX_NOEXIST = 0,
-    INDEX_MISS = 1,
-    INDEX_HIT = 2,
-    INDEX_MAX = 3,
-  };
-  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
-  if (have_index) {
-    if (backend_->index()->Has(entry_hash_))
-      open_entry_index_enum = INDEX_HIT;
-    else
-      open_entry_index_enum = INDEX_MISS;
-  }
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "OpenEntryIndexState", cache_type_,
-                   open_entry_index_enum, INDEX_MAX);
+  OpenEntryIndexEnum index_state =
+      ComputeIndexState(backend_.get(), entry_hash_);
+  RecordOpenEntryIndexState(cache_type_, index_state);
 
   // If entry is not known to the index, initiate fast failover to the network.
-  if (open_entry_index_enum == INDEX_MISS) {
+  if (index_state == INDEX_MISS) {
     net_log_.AddEventWithNetErrorCode(
         net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END, net::ERR_FAILED);
     return net::ERR_FAILED;
   }
 
   pending_operations_.push(SimpleEntryOperation::OpenOperation(
-      this, have_index, std::move(callback), out_entry));
+      this, index_state, std::move(callback), out_entry));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -235,7 +235,10 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_CALL);
 
-  bool have_index = backend_->index()->initialized();
+  // Don't really care if we're in index or not for this, so avoid extra lookup.
+  OpenEntryIndexEnum index_state =
+      backend_->index()->initialized() ? INDEX_HIT : INDEX_NOEXIST;
+
   net::Error ret_value = net::ERR_FAILED;
   if (use_optimistic_operations_ &&
       state_ == STATE_UNINITIALIZED && pending_operations_.size() == 0) {
@@ -244,7 +247,7 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
 
     ReturnEntryToCaller(out_entry);
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
-        this, have_index, CompletionOnceCallback(),
+        this, index_state, CompletionOnceCallback(),
         static_cast<Entry**>(NULL)));
     ret_value = net::OK;
 
@@ -257,7 +260,7 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
     }
   } else {
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
-        this, have_index, std::move(callback), out_entry));
+        this, index_state, std::move(callback), out_entry));
     ret_value = net::ERR_IO_PENDING;
   }
 
