@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<title>Test that worklet animation with invalid effect cannot be played</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-animationworklet/">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="common.js"></script>
+
 <style>
 #target {
   width: 100px;
@@ -7,11 +13,12 @@
 </style>
 
 <div id="target"></div>
-<script src='../../resources/testharness.js'></script>
-<script src='../../resources/testharnessreport.js'></script>
 
 <script>
+'use strict';
+
 test(function() {
+  registerPassthroughAnimator();
   let playFunc = function() {
     let effect = new KeyframeEffect(
         document.getElementById('target'),
@@ -20,7 +27,7 @@ test(function() {
         ],
         { duration: 1000 }
     );
-    let animation = new WorkletAnimation('test', effect);
+    let animation = new WorkletAnimation('passthrough', effect);
     animation.play();
   }
   assert_throws('InvalidStateError', playFunc);
