@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -79,6 +80,16 @@ base::Time UseDateFromProtoValue(int64_t use_date_proto_value) {
 
 int64_t UseDateToProtoValue(base::Time use_date) {
   return use_date.ToDeltaSinceWindowsEpoch().InMicroseconds();
+}
+
+std::string GetAddressStorageKey(const std::string& specifics_id) {
+  return GetStorageKeyForWalletMetadataTypeAndSpecificsId(
+      WalletMetadataSpecifics::ADDRESS, specifics_id);
+}
+
+std::string GetCardStorageKey(const std::string& specifics_id) {
+  return GetStorageKeyForWalletMetadataTypeAndSpecificsId(
+      WalletMetadataSpecifics::CARD, specifics_id);
 }
 
 WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddressWithUseStats(
@@ -313,7 +324,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForAddress) {
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
-            kAddr1SpecificsId);
+            GetAddressStorageKey(kAddr1SpecificsId));
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForCard) {
@@ -321,7 +332,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForCard) {
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
-            kCard1SpecificsId);
+            GetCardStorageKey(kCard1SpecificsId));
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
@@ -348,7 +359,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        GetData_ShouldNotReturnNonexistentData) {
   ResetBridge();
-  EXPECT_THAT(GetLocalData({kAddr1SpecificsId}), IsEmpty());
+  EXPECT_THAT(GetLocalData({GetAddressStorageKey(kAddr1SpecificsId)}),
+              IsEmpty());
 }
 
 TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
@@ -358,7 +370,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnSelectedData) {
                                  CreateServerCreditCard(kCard2ServerId)});
   ResetBridge();
 
-  EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
+  EXPECT_THAT(GetLocalData({GetAddressStorageKey(kAddr1SpecificsId),
+                            GetCardStorageKey(kCard1SpecificsId)}),
               UnorderedElementsAre(
                   EqualsSpecifics(CreateWalletMetadataSpecificsForAddress(
                       kAddr1SpecificsId)),
@@ -393,7 +406,8 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetData_ShouldReturnCompleteData) {
   card_specifics.set_use_date(3);
   card_specifics.set_card_billing_address_id(kAddr1SpecificsId);
 
-  EXPECT_THAT(GetLocalData({kAddr1SpecificsId, kCard1SpecificsId}),
+  EXPECT_THAT(GetLocalData({GetAddressStorageKey(kAddr1SpecificsId),
+                            GetCardStorageKey(kCard1SpecificsId)}),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics),
                                    EqualsSpecifics(card_specifics)));
 }

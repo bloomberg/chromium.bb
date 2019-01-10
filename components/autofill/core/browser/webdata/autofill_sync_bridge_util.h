@@ -18,17 +18,14 @@ class AutofillTable;
 class CreditCard;
 struct PaymentsCustomerData;
 
-// Returns the wallet metadata specifics id for the specified |metadata_id|.
-std::string GetSpecificsIdForMetadataId(const std::string& metadata_id);
+// Returns the specified |id| encoded in base 64.
+std::string GetBase64EncodedId(const std::string& id);
 
 // Returns the storage key to be used for wallet metadata for the specified
-// wallet metadata |specifics_id|.
-std::string GetStorageKeyForWalletMetadataSpecificsId(
+// wallet metadata |type| and |specifics_id|.
+std::string GetStorageKeyForWalletMetadataTypeAndSpecificsId(
+    sync_pb::WalletMetadataSpecifics::Type type,
     const std::string& specifics_id);
-
-// Returns the wallet metadata specifics storage key for the specified
-// |metadata_id|.
-std::string GetStorageKeyForMetadataId(const std::string& metadata_id);
 
 // Sets the fields of the |wallet_specifics| based on the the specified
 // |address|. If |enforce_utf8|, ids are encoded into UTF-8.
