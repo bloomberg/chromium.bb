@@ -10,6 +10,36 @@
 #include <type_traits>
 #include <utility>
 
+// A bag of Traits (structs / enums / etc...) can be an elegant alternative to
+// the builder pattern for configuring things. This file contains helpers for
+// dealing with traits.
+//
+// E.g.
+//   struct EnableFeatureX {};
+//   struct EnableFeatureY {};
+//   enum Color { RED, BLUE };
+//
+//   struct ValidTraits {
+//      ValidTraits(TraitA);
+//      ValidTraits(Color);
+//   };
+//   ...
+//   DoSomethingAwesome();                 // Use defaults
+//   DoSomethingAwesome(EnableFeatureX{},  // Turn feature X on
+//                      Color::RED);       // And make it red.
+//   DoSomethingAwesome(EnableFeatureY{},  // Compile time error.
+//                      Color::RED);
+//
+// DoSomethingAwesome might be defined as:
+//
+//   template <class... ArgTypes,
+//             class CheckArgumentsAreValid = std::enable_if_t<
+//                 trait_helpers::AreValidTraits<ValidTraits,
+//                                               ArgTypes...>::value>>
+//   constexpr void DoSomethingAwesome(ArgTypes... args)
+//      : enable_feature_x(trait_helpers::HasTrait<EnableFeatureX>(args...)),
+//        color(trait_helpers::GetEnum<Color, EnumTraitA::BLUE>(args...)) {}
+
 namespace base {
 namespace trait_helpers {
 
