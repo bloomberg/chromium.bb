@@ -98,7 +98,7 @@ class MockSignedExchangeCertFetcherFactory
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(
-        version, base::as_bytes(base::make_span(cert_str_)), devtools_proxy);
+        base::as_bytes(base::make_span(cert_str_)), devtools_proxy);
     EXPECT_TRUE(cert_chain);
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(

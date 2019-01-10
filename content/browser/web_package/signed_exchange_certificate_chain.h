@@ -28,7 +28,6 @@ class SignedExchangeDevToolsProxy;
 class CONTENT_EXPORT SignedExchangeCertificateChain {
  public:
   static std::unique_ptr<SignedExchangeCertificateChain> Parse(
-      SignedExchangeVersion version,
       base::span<const uint8_t> cert_response_body,
       SignedExchangeDevToolsProxy* devtools_proxy);
 
