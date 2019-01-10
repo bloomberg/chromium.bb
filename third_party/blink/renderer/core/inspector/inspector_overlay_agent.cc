@@ -1248,9 +1248,9 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
   std::unique_ptr<InspectorHighlightConfig> highlight_config =
       std::make_unique<InspectorHighlightConfig>();
   highlight_config->show_info = config->getShowInfo(false);
+  highlight_config->show_styles = config->getShowStyles(false);
   highlight_config->show_rulers = config->getShowRulers(false);
   highlight_config->show_extension_lines = config->getShowExtensionLines(false);
-  highlight_config->display_as_material = config->getDisplayAsMaterial(false);
   highlight_config->content =
       InspectorDOMAgent::ParseColor(config->getContentColor(nullptr));
   highlight_config->padding =

@@ -186,8 +186,7 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 insetSimpleRound{
   "paths": [
@@ -375,8 +374,7 @@ insetSimpleRound{
     "className": ".float.insetSimpleRound",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 insetComplexRound{
   "paths": [
@@ -588,8 +586,7 @@ insetComplexRound{
     "className": ".float.insetComplexRound",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 ellipse{
   "paths": [
@@ -777,8 +774,7 @@ ellipse{
     "className": ".float.ellipse",
     "nodeWidth": "128",
     "nodeHeight": "80"
-  },
-  "displayAsMaterial": false
+  }
 }
 contentBox{
   "paths": [
@@ -990,8 +986,7 @@ contentBox{
     "className": ".float.contentBox",
     "nodeWidth": "176",
     "nodeHeight": "160"
-  },
-  "displayAsMaterial": false
+  }
 }
 polygon{
   "paths": [
@@ -1096,8 +1091,7 @@ polygon{
     "className": ".float.polygon",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 raster{
   "paths": [
@@ -1535,7 +1529,6 @@ raster{
     "className": ".float.raster",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 

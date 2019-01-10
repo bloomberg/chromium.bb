@@ -89,7 +89,6 @@ paddedGrid{
     "nodeWidth": "1130",
     "nodeHeight": "175"
   },
-  "displayAsMaterial": false,
   "gridInfo": [
     {
       "rows": {
@@ -204,7 +203,6 @@ nestedGrid{
     "nodeWidth": "1000",
     "nodeHeight": "100"
   },
-  "displayAsMaterial": false,
   "gridInfo": [
     {
       "rows": {

@@ -87,8 +87,7 @@ inspectedElement{
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250"
-  },
-  "displayAsMaterial": false
+  }
 }
 
 First text node{
@@ -177,8 +176,7 @@ First text node{
     "nodeWidth": "Width within 3px from 28? true",
     "nodeHeight": "Height within 3px from 25? true",
     "tagName": "#text"
-  },
-  "displayAsMaterial": false
+  }
 }
 
 Second text node{
@@ -267,7 +265,6 @@ Second text node{
     "nodeWidth": "Width within 3px from 30? true",
     "nodeHeight": "Height within 3px from 24? true",
     "tagName": "#text"
-  },
-  "displayAsMaterial": false
+  }
 }
 

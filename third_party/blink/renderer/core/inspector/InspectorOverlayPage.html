@@ -140,21 +140,6 @@ body.platform-linux {
     z-index: 10;
 }
 
-#tag-name {
-    /* Keep this in sync with view-source.css (.html-tag) */
-    color: rgb(136, 18, 128);
-}
-
-#node-id {
-    /* Keep this in sync with view-source.css (.html-attribute-value) */
-    color: rgb(26, 26, 166);
-}
-
-#class-name {
-    /* Keep this in sync with view-source.css (.html-attribute-name) */
-    color: rgb(153, 69, 0);
-}
-
 /* Material */
 .hidden {
     display: none !important;
@@ -168,30 +153,82 @@ body.platform-linux {
 }
 
 .tooltip-content {
-    background-color: #333740;
+    background-color: white;
     font-size: 11px;
     line-height: 14px;
     padding: 5px 8px;
     border-radius: 3px;
-    color: white;
+    color: #333740;
     box-sizing: border-box;
     max-width: calc(100% - 4px);
-    border: 1px solid hsla(0, 0%, 100%, 0.3);
     z-index: 1;
     background-clip: padding-box;
     will-change: transform;
     text-rendering: optimizeLegibility;
     pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
 }
 
 .element-info {
     display: flex;
+    flex-direction: column;
+    line-height: 16px;
+}
+
+.element-info-header {
+    display: flex;
     align-content: stretch;
+}
+
+.element-info-body {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #999;
+    padding-top: 2px;
+    margin-top: 2px;
+}
+
+.element-info-row {
+    display: flex;
+}
+
+.element-info-row > * {
+    flex: none;
+}
+
+.element-info-name {
+    color: rgb(200, 0, 0);
+}
+
+.element-info-gap {
+    flex: auto;
+}
+
+.element-info-value {
+    display: flex;
+    text-align: right;
+    color: rgb(48, 57, 66);
+    margin-left: 10px;
+    align-items: baseline;
+}
+
+.color-swatch {
+    display: flex;
+    margin-right: 2px;
+    width: 10px;
+    height: 10px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAGUlEQVQYV2M4gwH+YwCGIasIUwhT25BVBADtzYNYrHvv4gAAAABJRU5ErkJggg==);
+    line-height: 10px;
+}
+
+.color-swatch-inner {
+    flex: auto;
+    border: 1px solid rgba(128, 128, 128, 0.6);
 }
 
 .material-tooltip-arrow {
     border: solid;
-    border-color: #333740 transparent;
+    border-color: white transparent;
     border-width: 0 8px 8px 8px;
     z-index: 2;
     margin-top: 1px;
@@ -209,15 +246,9 @@ body.platform-linux {
 }
 
 .dimensions {
-    border-left: 1px solid hsl(0, 0%, 50%);
-    padding-left: 7px;
-    margin-left: 7px;
-    float: right;
-    flex: 0 0 auto;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    color: hsl(0, 0%, 85%);
+    color: hsl(0, 0%, 45%);
+    text-align: right;
+    margin-left: 10px;
 }
 
 .material-node-width {
@@ -229,15 +260,13 @@ body.platform-linux {
 }
 
 .material-tag-name {
-    color: hsl(304, 77%, 70%);
+    /* Keep this in sync with inspectorSyntaxHighlight.css (--dom-tag-name-color) */
+    color: rgb(136, 18, 128);
 }
 
-.material-node-id {
-    color: hsl(27, 100%, 70%);
-}
-
-.material-class-name {
-    color: hsl(202,92%,77%);
+.material-class-name, .material-node-id {
+    /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-attribute-value) */
+    color: rgb(26, 26, 166);
 }
 
 </style>
@@ -439,7 +468,6 @@ function reset(resetData)
 
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
-    document.getElementById("element-title").style.visibility = "hidden";
     document.getElementById("tooltip-container").removeChildren();
 
     document.body.classList.remove("dimmed");
@@ -447,99 +475,70 @@ function reset(resetData)
     window._gridPainted = false;
 }
 
-function _drawElementTitle(context, elementInfo, bounds)
-{
-    document.getElementById("tag-name").textContent = elementInfo.tagName;
-    document.getElementById("node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
-    document.getElementById("class-name").textContent = (elementInfo.className || "").trimEnd(50);
-    document.getElementById("node-width").textContent = elementInfo.nodeWidth;
-    document.getElementById("node-height").textContent = elementInfo.nodeHeight;
-    var elementTitle = document.getElementById("element-title");
-
-    var titleWidth = elementTitle.offsetWidth + 6;
-    var titleHeight = elementTitle.offsetHeight + 4;
-
-    var anchorTop = bounds.minY;
-    var anchorBottom = bounds.maxY;
-    var anchorLeft = bounds.minX;
-
-    const arrowHeight = 7;
-    var renderArrowUp = false;
-    var renderArrowDown = false;
-
-    var boxX = Math.max(2, anchorLeft);
-    if (boxX + titleWidth > canvasWidth)
-        boxX = canvasWidth - titleWidth - 2;
-
-    var boxY;
-    if (anchorTop > canvasHeight) {
-        boxY = canvasHeight - titleHeight - arrowHeight;
-        renderArrowDown = true;
-    } else if (anchorBottom < 0) {
-        boxY = arrowHeight;
-        renderArrowUp = true;
-    } else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
-        boxY = anchorBottom + arrowHeight - 4;
-        renderArrowUp = true;
-    } else if (anchorTop - titleHeight - arrowHeight > 0) {
-        boxY = anchorTop - titleHeight - arrowHeight + 3;
-        renderArrowDown = true;
-    } else
-        boxY = arrowHeight;
-
-    context.save();
-    context.translate(0.5, 0.5);
-    context.beginPath();
-    context.moveTo(boxX, boxY);
-    if (renderArrowUp) {
-        context.lineTo(boxX + 2 * arrowHeight, boxY);
-        context.lineTo(boxX + 3 * arrowHeight, boxY - arrowHeight);
-        context.lineTo(boxX + 4 * arrowHeight, boxY);
-    }
-    context.lineTo(boxX + titleWidth, boxY);
-    context.lineTo(boxX + titleWidth, boxY + titleHeight);
-    if (renderArrowDown) {
-        context.lineTo(boxX + 4 * arrowHeight, boxY + titleHeight);
-        context.lineTo(boxX + 3 * arrowHeight, boxY + titleHeight + arrowHeight);
-        context.lineTo(boxX + 2 * arrowHeight, boxY + titleHeight);
-    }
-    context.lineTo(boxX, boxY + titleHeight);
-    context.closePath();
-    context.fillStyle = "rgb(255, 255, 194)";
-    context.fill();
-    context.strokeStyle = "rgb(128, 128, 128)";
-    context.stroke();
-
-    context.restore();
-
-    elementTitle.style.visibility = "visible";
-    elementTitle.style.top = (boxY + 3) + "px";
-    elementTitle.style.left = (boxX + 3) + "px";
-}
-
 function _createElementDescription(elementInfo)
 {
-    var elementInfoElement = createElement("div", "element-info");
-    var descriptionElement = elementInfoElement.createChild("div", "element-description monospace");
-    var tagNameElement = descriptionElement.createChild("b").createChild("span", "material-tag-name");
+    const elementInfoElement = createElement("div", "element-info");
+    const elementInfoHeaderElement = elementInfoElement.createChild("div", "element-info-header");
+    const descriptionElement = elementInfoHeaderElement.createChild("div", "element-description monospace");
+    const tagNameElement = descriptionElement.createChild("b").createChild("span", "material-tag-name");
     tagNameElement.textContent = elementInfo.tagName;
-    var nodeIdElement = descriptionElement.createChild("span", "material-node-id");
+    const nodeIdElement = descriptionElement.createChild("span", "material-node-id");
     nodeIdElement.textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
     nodeIdElement.classList.toggle("hidden", !elementInfo.idValue);
 
-    var classNameElement = descriptionElement.createChild("span", "material-class-name");
-    classNameElement.textContent = (elementInfo.className || "").trim(50);
+    const classNameElement = descriptionElement.createChild("span", "material-class-name");
+    classNameElement.textContent = (elementInfo.className || "").trimEnd(50);
     classNameElement.classList.toggle("hidden", !elementInfo.className);
-    var dimensionsElement = elementInfoElement.createChild("div", "dimensions");
+    const dimensionsElement = elementInfoHeaderElement.createChild("div", "dimensions");
     dimensionsElement.createChild("span", "material-node-width").textContent = Math.round(elementInfo.nodeWidth * 100) / 100;
     dimensionsElement.createTextChild("\u00d7");
     dimensionsElement.createChild("span", "material-node-height").textContent = Math.round(elementInfo.nodeHeight * 100) / 100;
+
+    elementInfo.style = elementInfo.style || {};
+    const filteredStyles = {};
+    for (const style in elementInfo.style) {
+        const value = elementInfo.style[style];
+        if (style === "margin" && value === "0px")
+            continue;
+        if (style === "padding" && value === "0px")
+            continue;
+        if (value === "normal" || value === "rgba(0, 0, 0, 0)")
+            continue;
+        filteredStyles[style] = value;
+    }
+
+    if (Object.keys(filteredStyles).length) {
+        const elementInfoBodyElement = elementInfoElement.createChild("div", "element-info-body");
+        for (const style in filteredStyles) {
+            let value = filteredStyles[style];
+            if (style === "margin" && value === "0px")
+                continue;
+            if (style === "padding" && value === "0px")
+                continue;
+            if (value === "normal" || value === "rgba(0, 0, 0, 0)")
+                continue;
+            const rowElement = elementInfoBodyElement.createChild("div", "element-info-row");
+            const nameElement = rowElement.createChild("div", "element-info-name");
+            nameElement.textContent = style;
+            rowElement.createChild("div", "element-info-gap").textContent = ":";
+            const valueElement = rowElement.createChild("div", "element-info-value");
+            if (style === "color" || style === "background-color") {
+                const swatch = valueElement.createChild("div", "color-swatch");
+                const inner = swatch.createChild("div", "color-swatch-inner");
+                inner.style.backgroundColor = value;
+            }
+            if (style === "font-family" && value.length > 20)
+                value = value.trimEnd(20);
+            valueElement.createTextChild(value);
+        }
+    }
+
     return elementInfoElement;
 }
 
-function _drawMaterialElementTitle(elementInfo, bounds)
+function _drawElementTitle(elementInfo, bounds)
 {
-    var tooltipContainer = document.getElementById("tooltip-container");
+    const tooltipContainer = document.getElementById("tooltip-container");
     tooltipContainer.removeChildren();
     _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(elementInfo), true);
 }
@@ -804,10 +803,8 @@ function drawHighlight(highlight, context)
         if (highlight.showExtensionLines)
             _drawRulers(context, bounds, rulerAtRight, rulerAtBottom);
 
-        if (highlight.elementInfo && highlight.displayAsMaterial)
-           _drawMaterialElementTitle(highlight.elementInfo, bounds);
-        else if (highlight.elementInfo)
-           _drawElementTitle(context, highlight.elementInfo, bounds);
+        if (highlight.elementInfo)
+           _drawElementTitle(highlight.elementInfo, bounds);
     }
     if (highlight.gridInfo) {
         for (var grid of highlight.gridInfo)
@@ -932,13 +929,35 @@ String.prototype.trimEnd = function(maxLength)
  * @param {number} max
  * @return {number}
  */
- Number.constrain = function(num, min, max) {
+Number.constrain = function(num, min, max) {
     if (num < min)
         num = min;
     else if (num > max)
         num = max;
     return num;
 };
+
+function test() {
+    reset({
+        viewportSize: {width: 800, height: 600},
+        deviceScaleFactor: 1,
+        pageScaleFactor: 1,
+        pageZoomFactor: 1,
+        scrollX: 0,
+        scrollY: 0
+    });
+    drawHighlight(
+        {
+            paths: [{path: []}],
+            elementInfo: {
+                tagName:"a",
+                className:"class",
+                nodeWidth: 800,
+                nodeHeight: 600,
+                style: {"color": "red", "background-color": "rgba(10, 10, 10, 0.1)"}
+            }
+        });
+}
 
 window.addEventListener("DOMContentLoaded", onLoaded);
 document.addEventListener("keydown", onDocumentKeyDown);
@@ -947,10 +966,6 @@ document.addEventListener("keydown", onDocumentKeyDown);
 <body class="fill">
 </body>
 <canvas id="canvas" class="fill"></canvas>
-<div id="element-title">
-  <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
-  <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
-</div>
 <div id="tooltip-container"></div>
 <div class="controls-line">
     <div class="message-box"><div id="paused-in-debugger"></div></div>
