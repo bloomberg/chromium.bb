@@ -81,8 +81,8 @@ cca.views.TimerSettings.prototype = {
  */
 cca.views.MasterSettings = function() {
   cca.views.BaseSettings.call(this, '#settings', {
-    'settings-gridtype': () => cca.nav.open('gridsettings'),
-    'settings-timerdur': () => cca.nav.open('timersettings'),
+    'settings-gridtype': () => this.openSubSettings('gridsettings'),
+    'settings-timerdur': () => this.openSubSettings('timersettings'),
     'settings-feedback': () => this.openFeedback(),
     'settings-help': () => this.openHelp_(),
   });
@@ -96,6 +96,16 @@ cca.views.MasterSettings = function() {
 
 cca.views.MasterSettings.prototype = {
   __proto__: cca.views.BaseSettings.prototype,
+};
+
+/**
+ * Opens sub-settings.
+ * @param {string} id Settings identifier.
+ * @private
+ */
+cca.views.MasterSettings.prototype.openSubSettings = function(id) {
+  // Dismiss master-settings if sub-settings was dimissed by background click.
+  cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave());
 };
 
 /**
