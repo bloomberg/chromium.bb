@@ -486,8 +486,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
 // Returns |YES| if |url| should be loaded in a native view.
 - (BOOL)shouldLoadURLInNativeView:(const GURL&)url;
-// Loads the request into the |webView|.
-- (WKNavigation*)loadRequest:(NSMutableURLRequest*)request;
 // Loads POST request with body in |_wkWebView| by constructing an HTML page
 // that executes the request through JavaScript and replaces document with the
 // result.
@@ -4129,13 +4127,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
 }
 
-- (WKNavigation*)loadRequest:(NSMutableURLRequest*)request {
-  WKNavigation* navigation = [_webView loadRequest:request];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
-  return navigation;
-}
-
 - (WKNavigation*)loadPOSTRequest:(NSMutableURLRequest*)request {
   if (!_POSTRequestLoader) {
     _POSTRequestLoader = [[CRWJSPOSTRequestLoader alloc] init];
@@ -5796,7 +5787,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
                          hasUserGesture:YES
                   placeholderNavigation:IsPlaceholderUrl(navigationURL)];
     navigationContext->SetIsRendererInitiated(false);
-    WKNavigation* navigation = [self loadRequest:request];
+
+    WKNavigation* navigation = nil;
+    GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    if (navigationURL.SchemeIsFile() &&
+        web::GetWebClient()->IsAppSpecificURL(virtualURL)) {
+      // file:// URL navigations are allowed for app-specific URLs, which
+      // already have elevated privileges.
+      NSURL* navigationNSURL = net::NSURLWithGURL(navigationURL);
+      navigation = [_webView loadFileURL:navigationNSURL
+                 allowingReadAccessToURL:navigationNSURL];
+    } else {
+      navigation = [_webView loadRequest:request];
+    }
+    [_navigationStates setState:web::WKNavigationState::REQUESTED
+                  forNavigation:navigation];
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];

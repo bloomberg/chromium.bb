@@ -5,7 +5,10 @@
 #include <memory>
 #include <string>
 
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
 #include "base/ios/ios_util.h"
+#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -176,6 +179,36 @@ ACTION_P5(VerifyNewPageFinishedContext,
   (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
   ASSERT_TRUE(web_state->IsLoading());
   EXPECT_EQ(mime_type, actual_mime_type);
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
+  EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| (|arg1|) for file:// URL
+// navigation passed to |DidFinishNavigation|. Asserts that |NavigationContext|
+// the same as |context|.
+ACTION_P4(VerifyPdfFileUrlFinishedContext, web_state, url, context, nav_id) {
+  ASSERT_EQ(*context, arg1);
+  EXPECT_EQ(web_state, arg0);
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  ASSERT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_TRUE(web_state->IsLoading());
+  ASSERT_FALSE(web_state->ContentIsHTML());
+  ASSERT_EQ("application/pdf", web_state->GetContentsMimeType());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_TRUE(!item->GetTimestamp().is_null());
@@ -2326,6 +2359,52 @@ TEST_P(WebStateObserverTest, RestoreSessionOnline) {
   EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_TRUE(navigation_manager()->CanGoForward());
   ASSERT_FALSE(navigation_manager()->CanGoBack());
+}
+
+// Tests successful navigation to a PDF file:// URL.
+TEST_P(WebStateObserverTest, PdfFileUrlNavigation) {
+  // Construct a valid file:// URL.
+  base::FilePath path;
+  base::PathService::Get(base::DIR_MODULE, &path);
+  path = path.Append(
+      FILE_PATH_LITERAL("ios/testing/data/http_server_files/testpage.pdf"));
+
+  GURL url(url::SchemeHostPort(url::kFileScheme, std::string(), 0).Serialize());
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path.value());
+  url = url.ReplaceComponents(replacements);
+  ASSERT_TRUE(url.is_valid());
+  ASSERT_FALSE(url.is_empty());
+
+  // Perform file:// URL navigation.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(
+          VerifyPdfFileUrlFinishedContext(web_state(), url, &context, &nav_id));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("testpage.pdf"));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PageTransition::PAGE_TRANSITION_TYPED;
+  params.virtual_url =
+      GURL(url::SchemeHostPort(kTestAppSpecificScheme, "foo", 0).Serialize());
+  ASSERT_TRUE(LoadWithParams(params));
 }
 
 INSTANTIATE_TEST_CASE_P(
