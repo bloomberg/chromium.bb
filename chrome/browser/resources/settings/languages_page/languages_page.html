@@ -118,20 +118,17 @@
     <settings-animated-pages id="pages" section="languages"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <div class$="settings-box first [[getLanguageListTwoLine_()]]"
-            actionable on-click="toggleExpandButton_">
-          <div class="start">
-            <div>$i18n{languagesListTitle}</div>
+        <cr-expand-button
+            alt="$i18n{languagesExpandA11yLabel}"
+            class$="settings-box first [[getLanguageListTwoLine_()]]"
+            expanded="{{languagesOpened_}}">
+          <div>$i18n{languagesListTitle}</div>
 <if expr="chromeos or is_win">
-            <div class="secondary">
-              [[getProspectiveUILanguageName_(languages.prospectiveUILanguage)]]
-            </div>
-</if>
+          <div class="secondary">
+            [[getProspectiveUILanguageName_(languages.prospectiveUILanguage)]]
           </div>
-          <cr-expand-button expanded="{{languagesOpened_}}"
-              alt="$i18n{languagesExpandA11yLabel}">
-          </cr-expand-button>
-        </div>
+</if>
+        </cr-expand-button>
         <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
           <span class="settings-box first"
               hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
@@ -188,19 +185,16 @@
           </settings-toggle-button>
         </iron-collapse>
 <if expr="chromeos">
-        <div id="manageInputMethodsSubpageTrigger"
-            class="settings-box two-line" actionable
-            on-click="toggleExpandButton_">
-          <div class="start">
-            <div>$i18n{inputMethodsListTitle}</div>
-            <div class="secondary">
-              [[getInputMethodName_(languages.inputMethods.currentId)]]
-            </div>
+        <cr-expand-button
+            alt="$i18n{inputMethodsExpandA11yLabel}"
+            class="settings-box two-line"
+            expanded="{{inputMethodsOpened_}}"
+            id="manageInputMethodsSubpageTrigger">
+          <div>$i18n{inputMethodsListTitle}</div>
+          <div class="secondary">
+            [[getInputMethodName_(languages.inputMethods.currentId)]]
           </div>
-          <cr-expand-button expanded="{{inputMethodsOpened_}}"
-              alt="$i18n{inputMethodsExpandA11yLabel}">
-          </cr-expand-button>
-        </div>
+        </cr-expand-button>
         <iron-collapse id="inputMethodsCollapse"
             opened="[[inputMethodsOpened_]]">
           <div class="list-frame vertical-list">

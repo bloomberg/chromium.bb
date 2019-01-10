@@ -115,13 +115,13 @@
         </settings-dropdown-menu>
       </div>
     </template>
-    <div class="settings-box continuation" actionable
-         hidden="[[!hasVoices]]">
-      <div class="start">$i18n{textToSpeechMoreLanguages}</div>
-      <cr-expand-button expanded="{{languagesOpened}}"
-          alt="$i18n{textToSpeechMoreLanguages}">
-      </cr-expand-button>
-    </div>
+    <cr-expand-button
+        alt="$i18n{textToSpeechMoreLanguages}"
+        class="settings-box continuation"
+        expanded="{{languagesOpened}}"
+        hidden="[[!hasVoices]]">
+      $i18n{textToSpeechMoreLanguages}
+    </cr-expand-button>
     <iron-collapse id="moreLanguages" opened="[[languagesOpened]]">
       <template is="dom-repeat" items="[[languagesToVoices]]"
           as="lang" sort="alphabeticalSort_" filter="isSecondaryLanguage_">

@@ -53,10 +53,6 @@
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
-      .settings-box:first-of-type {
-        border-top: none;
-      }
-
       #networkState[connected] {
         color: var(--google-green-500);
       }
@@ -252,18 +248,16 @@
 
       <template is="dom-if" if="[[showAdvanced_(networkProperties)]]">
         <!-- Advanced toggle. -->
-        <div class="settings-box" actionable on-click="toggleAdvancedExpanded_">
-          <div class="flex settings-box-text">
-            $i18n{networkSectionAdvanced}
-          </div>
-          <cr-expand-button expanded="{{advancedExpanded_}}"
-              alt="$i18n{networkSectionAdvancedA11yLabel}">
-          </cr-expand-button>
-        </div>
+        <cr-expand-button
+            alt="$i18n{networkSectionAdvancedA11yLabel}"
+            class="settings-box"
+            expanded="{{advancedExpanded_}}">
+          $i18n{networkSectionAdvanced}
+        </cr-expand-button>
 
         <!-- Advanced section -->
         <iron-collapse opened="[[advancedExpanded_]]">
-          <div class="settings-box single-column stretch indented"
+          <div class="settings-box single-column stretch indented first"
               hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
             <!-- Advanced properties -->
             <network-property-list
@@ -284,21 +278,23 @@
       <template is="dom-if" if="[[hasNetworkSection_(networkProperties,
           globalPolicy, managedNetworkAvailable)]]">
         <!-- Network toggle -->
-        <div class="settings-box" actionable on-click="toggleNetworkExpanded_">
-          <div class="start settings-box-text">
-            $i18n{networkSectionNetwork}
+        <cr-expand-button
+            alt="$i18n{networkSectionNetworkExpandA11yLabel}"
+            class="settings-box"
+            expanded="{{networkExpanded_}}">
+          <div class="settings-row">
+            <div class="start">
+              $i18n{networkSectionNetwork}
+            </div>
+            <template is="dom-if"
+                if="[[showScanningSpinner_(networkProperties)]]">
+              <paper-spinner-lite active></paper-spinner-lite>
+            </template>
           </div>
-          <template is="dom-if"
-            if="[[showScanningSpinner_(networkProperties)]]">
-            <paper-spinner-lite active></paper-spinner-lite>
-          </template>
-          <cr-expand-button expanded="{{networkExpanded_}}"
-              alt="$i18n{networkSectionNetworkExpandA11yLabel}">
-          </cr-expand-button>
-        </div>
+        </cr-expand-button>
 
         <iron-collapse opened="[[networkExpanded_]]">
-          <div class="settings-box single-column stretch indented">
+          <div class="settings-box single-column stretch indented first">
             <!-- Choose Mobile Network (Cellular only). -->
             <template is="dom-if"
                 if="[[showCellularChooseNetwork_(networkProperties)]]">
@@ -333,12 +329,12 @@
       <template is="dom-if" if="[[hasProxySection_(networkProperties,
           globalPolicy, managedNetworkAvailable)]]">
         <!-- Proxy toggle -->
-        <div class="settings-box" actionable on-click="toggleProxyExpanded_">
-          <div class="start settings-box-text">$i18n{networkSectionProxy}</div>
-          <cr-expand-button expanded="{{proxyExpanded_}}"
-              alt="$i18n{networkSectionProxyExpandA11yLabel}">
-          </cr-expand-button>
-        </div>
+        <cr-expand-button
+            alt="$i18n{networkSectionProxyExpandA11yLabel}"
+            class="settings-box"
+            expanded="{{proxyExpanded_}}">
+          $i18n{networkSectionProxy}
+        </cr-expand-button>
 
         <iron-collapse opened="[[proxyExpanded_]]">
           <network-proxy-section prefs="{{prefs}}"

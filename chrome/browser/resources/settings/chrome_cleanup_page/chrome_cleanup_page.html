@@ -74,13 +74,14 @@
           disabled$="[[!cleanupEnabled_]]">
       </settings-checkbox>
     </div>
-    <div id="show-items-button" class="settings-box" actionable
-        on-click="toggleExpandButton_" hidden="[[!showItemsToRemove_]]">
-      <div class="start">[[showItemsLinkLabel_]]</div>
-      <cr-expand-button expanded="{{itemsToRemoveSectionExpanded_}}"
-          alt="[[showItemsLinkLabel_]]">
-      </cr-expand-button>
-    </div>
+    <cr-expand-button
+        alt="[[showItemsLinkLabel_]]"
+        class="settings-box"
+        expanded="{{itemsToRemoveSectionExpanded_}}"
+        hidden="[[!showItemsToRemove_]]"
+        id="show-items-button">
+      [[showItemsLinkLabel_]]
+    </cr-expand-button>
     <iron-collapse id="iron-collapse-items"
         opened="[[itemsToRemoveSectionExpanded_]]">
       <items-to-remove-list

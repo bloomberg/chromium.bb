@@ -413,18 +413,6 @@ Polymer({
     settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
   },
 
-  /**
-   * Event triggered when the 'Add connections' div is clicked.
-   * @param {!Event} event
-   * @private
-   */
-  onExpandAddConnectionsTap_: function(event) {
-    if (event.target.id == 'expandAddConnections') {
-      return;
-    }
-    this.addConnectionExpanded_ = !this.addConnectionExpanded_;
-  },
-
   /** @private */
   onAddWiFiTap_: function() {
     this.showConfig_(true /* configAndConnect */, CrOnc.Type.WI_FI);
