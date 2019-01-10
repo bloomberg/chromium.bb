@@ -254,6 +254,12 @@
       },
     },
   },
+  'castrunner_integration_tests': {
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
+    ],
+  },
   'checkbins': {
     'remove_from': [
       'linux-dbg',
@@ -1662,6 +1668,18 @@
         },
       },
     },
+  },
+  'webrunner_browsertests': {
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
+    ],
+  },
+  'webrunner_smoketests': {
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
+    ],
   },
   'webui_polymer2_browser_tests': {
     'remove_from': [

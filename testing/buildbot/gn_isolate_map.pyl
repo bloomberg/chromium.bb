@@ -411,6 +411,10 @@
     "label": "//media/capture:capture_unittests",
     "type": "windowed_test_launcher",
   },
+  "castrunner_integration_tests": {
+    "label": "//webrunner:castrunner_integration_tests",
+    "type": "console_test_launcher",
+  },
   "castrunner_unittests": {
     "label": "//webrunner:castrunner_unittests",
     "type": "console_test_launcher",
@@ -2738,6 +2742,10 @@
   },
   "webrunner_browsertests": {
     "label": "//webrunner:webrunner_browsertests",
+    "type": "console_test_launcher",
+  },
+  "webrunner_smoketests": {
+    "label": "//webrunner:webrunner_smoketests",
     "type": "console_test_launcher",
   },
   "webrunner_unittests": {
