@@ -91,11 +91,15 @@ void FrameOverlay::Update() {
     layer_->SetDrawsContent(true);
     parent_layer->AddChild(layer_.get());
 
-    // This is required for contents of overlay to stay in sync with the page
-    // while scrolling.
-    cc::Layer* cc_layer = layer_->CcLayer();
-    cc_layer->AddMainThreadScrollingReasons(
-        MainThreadScrollingReason::kFrameOverlay);
+    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      // This is required for contents of overlay to stay in sync with the page
+      // while scrolling. When BlinkGenPropertyTrees is enabled, scrolling is
+      // prevented by using the root scroll node in the root property tree
+      // state.
+      cc::Layer* cc_layer = layer_->CcLayer();
+      cc_layer->AddMainThreadScrollingReasons(
+          MainThreadScrollingReason::kFrameOverlay);
+    }
 
     layer_->SetLayerState(PropertyTreeState::Root(), IntPoint());
   }

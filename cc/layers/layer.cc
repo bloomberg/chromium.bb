@@ -1008,6 +1008,12 @@ void Layer::AddMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons);
+
+  // When layer lists are used, the main thread scrolling reasons should be set
+  // on property tree nodes directly.
+  // TODO(pdr): Uncomment this check when https://crbug.com/919969 is fixed.
+  // DCHECK(!layer_tree_host() || !layer_tree_host()->IsUsingLayerLists());
+
   // Layer should only see non-transient scrolling reasons. Transient scrolling
   // reasons are computed per hit test.
   DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
