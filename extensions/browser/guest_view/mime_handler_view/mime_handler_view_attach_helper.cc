@@ -183,6 +183,8 @@ void MimeHandlerViewAttachHelper::FrameNavigationHelper::
   // The renderer (parent of the plugin frame) tries to load a MimeHandlerView
   // and therefore this navigation should be treated as renderer initiated.
   params.is_renderer_initiated = true;
+  params.initiator_origin =
+      url::Origin::Create(parent_site_instance_->GetSiteURL());
   web_contents()->GetController().LoadURLWithParams(params);
 }
 

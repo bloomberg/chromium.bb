@@ -112,6 +112,8 @@ class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
         url, referrer, disposition, ui::PAGE_TRANSITION_LINK,
         is_renderer_initiated, from_context_menu);
 
+    open_url_params.initiator_origin =
+        url::Origin::Create(active_contents->GetLastCommittedURL());
     open_url_params.source_render_process_id =
         active_contents->GetMainFrame()->GetProcess()->GetID();
     open_url_params.source_render_frame_id =

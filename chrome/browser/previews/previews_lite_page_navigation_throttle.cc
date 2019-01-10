@@ -84,6 +84,7 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   content::OpenURLParams url_params(
       url, handle->GetReferrer(), WindowOpenDisposition::CURRENT_TAB,
       handle->GetPageTransition(), handle->IsRendererInitiated());
+  url_params.initiator_origin = handle->GetInitiatorOrigin();
   // crbug.com/916892: When a client redirect occurs on a site before the page
   // has finished loading, it is not considered a new NavigationEntry and so
   // clicking "Back" on the redirected page returns to the previous loaded page.

@@ -238,6 +238,7 @@ TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
     content::NavigationController* controller = &contents->GetController();
     content::NavigationController::LoadURLParams load_params(
         GURL(test.end_url));
+    load_params.initiator_origin = url::Origin::Create(GURL(test.start_url));
     load_params.is_renderer_initiated = true;
     load_params.transition_type = ui::PAGE_TRANSITION_LINK;
 
