@@ -131,8 +131,7 @@ class BackgroundFetchDelegateImpl
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BackgroundFetchBrowserTest,
-                           FetchesRunToCompletionAndUpdateTitle_Fetched);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundFetchBrowserTest, ClickEventIsDispatched);
 
   struct JobDetails {
     // If a job is part of the |job_details_map_|, it will have one of these
@@ -146,6 +145,9 @@ class BackgroundFetchDelegateImpl
       kCancelled,
       // All requests were processed (either succeeded or failed).
       kDownloadsComplete,
+      // The appropriate completion event (success, fail, abort) has been
+      // dispatched.
+      kJobComplete,
     };
 
     JobDetails(JobDetails&&);

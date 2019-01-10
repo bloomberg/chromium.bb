@@ -714,9 +714,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,
                        "New Fetched Title!", base::CompareCase::SENSITIVE));
-
-  // Make sure the delegate cleans up after the fetch is complete.
-  EXPECT_TRUE(delegate_->job_details_map_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
@@ -738,6 +735,27 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
       "RunFetchTillCompletionWithUpload()", "backgroundfetchsuccess"));
 
   EXPECT_EQ(request_body_, "upload!");
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "RunFetchTillCompletion()", "backgroundfetchsuccess"));
+  EXPECT_EQ(offline_content_provider_observer_->latest_item().state,
+            offline_items_collection::OfflineItemState::COMPLETE);
+
+  base::RunLoop().RunUntilIdle();  // Give updates a chance to propagate.
+
+  ASSERT_EQ(delegate_->job_details_map_.size(), 1u);
+  auto& job_details = delegate_->job_details_map_.begin()->second;
+  EXPECT_EQ(job_details.job_state,
+            BackgroundFetchDelegateImpl::JobDetails::State::kJobComplete);
+
+  // Simulate notification click.
+  delegate_->OpenItem(offline_items_collection::LaunchLocation::NOTIFICATION,
+                      job_details.offline_item.id);
+
+  // Job Details should be deleted at this point.
+  EXPECT_TRUE(delegate_->job_details_map_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchCanBePausedAndResumed) {
