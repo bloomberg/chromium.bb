@@ -9,6 +9,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
@@ -112,7 +113,7 @@ class AccountsMutatorImplTest : public testing::Test {
     return &token_service_observer_;
   }
 
-  AccountsMutatorImpl* accounts_mutator() { return &accounts_mutator_; }
+  AccountsMutator* accounts_mutator() { return &accounts_mutator_; }
 
  private:
   base::MessageLoop message_loop_;
@@ -163,7 +164,8 @@ TEST_F(AccountsMutatorImplTest, RemoveAccount_ExistingAccount) {
           },
           base::Unretained(&run_loop2), account_id));
 
-  accounts_mutator()->RemoveAccount(account_id);
+  accounts_mutator()->RemoveAccount(
+      account_id, signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop2.Run();
 
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id));
@@ -213,7 +215,8 @@ TEST_F(AccountsMutatorImplTest, RemoveAllAccounts) {
   // Now remove everything and check that there are no lingering accounts, nor
   // refresh tokens associated to |kTestGaiaId| and |kTestGaiaId2| afterwards.
   base::RunLoop run_loop3;
-  accounts_mutator()->RemoveAllAccounts();
+  accounts_mutator()->RemoveAllAccounts(
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop3.RunUntilIdle();
 
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(kTestGaiaId));

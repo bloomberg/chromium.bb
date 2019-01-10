@@ -23,13 +23,11 @@ class AccountsMutator {
   // server-side if needed.
   virtual void RemoveAccount(
       const std::string& account_id,
-      signin_metrics::SourceForRefreshTokenOperation source =
-          signin_metrics::SourceForRefreshTokenOperation::kUnknown) = 0;
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
 
   // Removes all accounts.
   virtual void RemoveAllAccounts(
-      signin_metrics::SourceForRefreshTokenOperation source =
-          signin_metrics::SourceForRefreshTokenOperation::kUnknown) = 0;
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
