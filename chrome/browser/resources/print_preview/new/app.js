@@ -723,6 +723,10 @@ Polymer({
 
   /** @private */
   onActiveUserChanged_: function() {
+    if (!this.activeUser_) {
+      return;
+    }
+
     assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
     this.cloudPrintState_ = print_preview.CloudPrintState.SIGNED_IN;
   },

@@ -28,6 +28,10 @@ Polymer({
     activeUser: {
       type: String,
       notify: true,
+      // The initialization below is needed only in Polymer 1, to allow
+      // observers to fire.
+      // TODO (rbpotter): Remove when migration to Polymer 2 is complete.
+      value: '',
     },
 
     /** @type {?cloudprint.CloudPrintInterface} */
