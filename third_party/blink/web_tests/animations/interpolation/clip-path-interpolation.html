@@ -125,6 +125,16 @@ assertInterpolation({
   {at: 0.75, is: 'circle(40% at 80% calc(-30px + 100%))'},
 ]);
 
+// Regression test for crbug.com/920122.
+assertInterpolation({
+  property: 'clip-path',
+  from: 'inset(20px)',
+  to: 'inset(40%)',
+}, [
+  {at: 3.40282e+38, is: 'inset(calc(3.40282e+38% + -3.40282e+38px))'},
+]);
+
+
 assertNoInterpolation({
   property: 'clip-path',
   from: 'url("/clip-source")',
