@@ -868,17 +868,46 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
   }
 }
 
-// Clear associated fragments for all LayoutObjects. They are associated when
-// NGPaintFragment is constructed.
 void NGInlineNode::ClearAssociatedFragments(
-    const NGInlineBreakToken* break_token) {
-  if (!IsPrepareLayoutFinished())
+    const NGPhysicalFragment& fragment,
+    const NGBlockBreakToken* block_break_token) {
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(fragment.GetLayoutObject());
+  if (!block_flow->ChildrenInline())
     return;
+  NGInlineNode node = NGInlineNode(block_flow);
+#if DCHECK_IS_ON()
+  // We assume this function is called for the LayoutObject of an NGInlineNode.
+  NGLayoutInputNode first_child = NGBlockNode(block_flow).FirstChild();
+  DCHECK(first_child && first_child.IsInline());
+  DCHECK(first_child == node);
+#endif
+
+  DCHECK(node.IsPrepareLayoutFinished());
+  const Vector<NGInlineItem>& items = node.MaybeDirtyData().items;
+
+  unsigned start_index;
+  if (!block_break_token) {
+    start_index = 0;
+  } else {
+    // TODO(kojii): Not fully supported, need more logic when the block is
+    // fragmented, because one inline LayoutObject may span across
+    // fragmentainers.
+    // TODO(kojii): Not sure if using |block_break_token->InputNode()| is
+    // correct for multicol. Should verify and somehow get NGInlineNode from it.
+    // Also change |InlineBreakTokenFor| to receive NGInlineNode instead of
+    // NGLayoutInputNode once this is done.
+    const NGInlineBreakToken* inline_break_token =
+        block_break_token->InlineBreakTokenFor(block_break_token->InputNode());
+    // TODO(kojii): This needs to investigate in what case this happens. It's
+    // probably wrong to create NGPaintFragment when there's no inline break
+    // token.
+    if (!inline_break_token)
+      return;
+    start_index = inline_break_token->ItemIndex();
+  }
 
   LayoutObject* last_object = nullptr;
-  const Vector<NGInlineItem>& items = Data().items;
-  for (unsigned i = break_token ? break_token->ItemIndex() : 0;
-       i < items.size(); i++) {
+  for (unsigned i = start_index; i < items.size(); i++) {
     const NGInlineItem& item = items[i];
     if (item.Type() == NGInlineItem::kOutOfFlowPositioned ||
         item.Type() == NGInlineItem::kListMarker)
@@ -895,15 +924,10 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
     NGInlineChildLayoutContext* context) {
-  bool needs_clear_fragments = IsPrepareLayoutFinished();
   PrepareLayoutIfNeeded();
 
   const NGInlineBreakToken* inline_break_token =
       ToNGInlineBreakToken(break_token);
-  if (needs_clear_fragments && !constraint_space.IsIntermediateLayout()) {
-    ClearAssociatedFragments(inline_break_token);
-  }
-
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
                                     context);
   return algorithm.Layout();

@@ -14,12 +14,14 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
@@ -286,15 +288,21 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset,
+    const NGBlockBreakToken* block_break_token,
     scoped_refptr<NGPaintFragment> previous_instance) {
   DCHECK(fragment);
 
   bool populate_children = fragment->IsContainer();
+  bool has_previous_instance = previous_instance.get();
   scoped_refptr<NGPaintFragment> paint_fragment =
       CreateOrReuse(std::move(fragment), offset, nullptr,
                     std::move(previous_instance), &populate_children);
 
   if (populate_children) {
+    if (has_previous_instance) {
+      NGInlineNode::ClearAssociatedFragments(paint_fragment->PhysicalFragment(),
+                                             block_break_token);
+    }
     HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
     paint_fragment->PopulateDescendants(NGPhysicalOffset(), &last_fragment_map);
   }
@@ -359,7 +367,7 @@ NGPaintFragment* NGPaintFragment::Last() {
 
 scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
     scoped_refptr<NGPaintFragment>* fragment,
-    const NGBreakToken* break_token) {
+    const NGBlockBreakToken* break_token) {
   DCHECK(fragment);
 
   if (!break_token)
@@ -490,13 +498,19 @@ void NGPaintFragment::AssociateWithLayoutObject(
 
   auto add_result = last_fragment_map->insert(layout_object, this);
   if (add_result.is_new_entry) {
-    DCHECK(!layout_object->FirstInlineFragment());
-    layout_object->SetFirstInlineFragment(this);
-  } else {
-    DCHECK(add_result.stored_value->value);
-    add_result.stored_value->value->next_for_same_layout_object_ = this;
-    add_result.stored_value->value = this;
+    NGPaintFragment* first_fragment = layout_object->FirstInlineFragment();
+    if (!first_fragment) {
+      layout_object->SetFirstInlineFragment(this);
+      return;
+    }
+    // This |layout_object| was fragmented across multiple blocks.
+    NGPaintFragment* last_fragment = first_fragment->LastForSameLayoutObject();
+    last_fragment->next_for_same_layout_object_ = this;
+    return;
   }
+  DCHECK(add_result.stored_value->value);
+  add_result.stored_value->value->next_for_same_layout_object_ = this;
+  add_result.stored_value->value = this;
 }
 
 NGPaintFragment* NGPaintFragment::GetForInlineContainer(

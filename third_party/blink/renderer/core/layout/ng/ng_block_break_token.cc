@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -45,6 +46,31 @@ NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node,
 
 NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node), num_children_(0) {}
+
+const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
+    const NGLayoutInputNode& node) const {
+  DCHECK(node.GetLayoutBox());
+  return InlineBreakTokenFor(*node.GetLayoutBox());
+}
+
+const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
+    const LayoutBox& layout_object) const {
+  DCHECK(&layout_object);
+  for (const NGBreakToken* child : ChildBreakTokens()) {
+    switch (child->Type()) {
+      case kBlockBreakToken:
+        // Currently there are no cases where NGInlineBreakToken is stored in
+        // non-direct child descendants.
+        DCHECK(!ToNGBlockBreakToken(child)->InlineBreakTokenFor(layout_object));
+        break;
+      case kInlineBreakToken:
+        if (child->InputNode().GetLayoutBox() == &layout_object)
+          return ToNGInlineBreakToken(child);
+        break;
+    }
+  }
+  return nullptr;
+}
 
 #ifndef NDEBUG
 

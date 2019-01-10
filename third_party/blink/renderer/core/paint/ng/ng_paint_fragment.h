@@ -16,6 +16,7 @@
 namespace blink {
 
 class LayoutInline;
+class NGBlockBreakToken;
 struct LayoutSelectionStatus;
 struct PaintInfo;
 enum class NGOutlineType;
@@ -47,6 +48,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static scoped_refptr<NGPaintFragment> Create(
       scoped_refptr<const NGPhysicalFragment>,
       NGPhysicalOffset offset,
+      const NGBlockBreakToken* break_token,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
@@ -63,7 +65,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   NGPaintFragment* Last();
   NGPaintFragment* Last(const NGBreakToken&);
   static scoped_refptr<NGPaintFragment>* Find(scoped_refptr<NGPaintFragment>*,
-                                              const NGBreakToken*);
+                                              const NGBlockBreakToken*);
 
   template <typename Traverse>
   class List {

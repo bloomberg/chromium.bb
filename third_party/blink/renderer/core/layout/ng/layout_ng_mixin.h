@@ -75,11 +75,11 @@ class LayoutNGMixin : public Base {
   scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting() final;
 
   NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
-  void SetPaintFragment(const NGBreakToken*,
+  void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>,
                         NGPhysicalOffset) final;
   void UpdatePaintFragmentFromCachedLayoutResult(
-      const NGBreakToken*,
+      const NGBlockBreakToken*,
       scoped_refptr<const NGPhysicalFragment>,
       NGPhysicalOffset) final;
 
@@ -97,9 +97,6 @@ class LayoutNGMixin : public Base {
 
  private:
   void AddScrollingOverflowFromChildren();
-  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment> fragment,
-                        NGPhysicalOffset offset,
-                        scoped_refptr<NGPaintFragment>* current);
 
  protected:
   void AddOutlineRects(Vector<LayoutRect>&,

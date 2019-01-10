@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
@@ -390,37 +391,31 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
 
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset,
-    scoped_refptr<NGPaintFragment>* current) {
-  DCHECK(current);
-  *current = fragment ? NGPaintFragment::Create(std::move(fragment), offset,
-                                                std::move(*current))
-                      : nullptr;
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::SetPaintFragment(
-    const NGBreakToken* break_token,
+    const NGBlockBreakToken* break_token,
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset) {
-  // TODO(kojii): There are cases where the first call has break_token.
-  // Investigate why and handle appropriately.
-  // DCHECK(!break_token || paint_fragment_);
+  DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
+
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
-  SetPaintFragment(std::move(fragment), offset, current);
+  DCHECK(current);
+  if (fragment) {
+    *current = NGPaintFragment::Create(std::move(fragment), offset, break_token,
+                                       std::move(*current));
+  } else {
+    *current = nullptr;
+  }
 }
 
 template <typename Base>
 void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
-    const NGBreakToken* break_token,
+    const NGBlockBreakToken* break_token,
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset fragment_offset) {
   DCHECK(fragment);
-  // TODO(kojii): There are cases where the first call has break_token.
-  // Investigate why and handle appropriately.
-  // DCHECK(!break_token || paint_fragment_);
+  DCHECK(fragment->GetLayoutObject() == this);
+  DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
+
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
