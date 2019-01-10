@@ -37,8 +37,17 @@
 
 namespace {
 
-const base::FilePath::CharType kIconChecksumFileExt[] =
+constexpr base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
+
+constexpr base::FilePath::CharType kChromeProxyExecutable[] =
+    FILE_PATH_LITERAL("chrome_proxy.exe");
+
+base::FilePath GetChromeProxyPath() {
+  base::FilePath chrome_dir;
+  CHECK(base::PathService::Get(base::DIR_EXE, &chrome_dir));
+  return chrome_dir.Append(kChromeProxyExecutable);
+}
 
 // Calculates checksum of an icon family using MD5.
 // The checksum is derived from all of the icons in the family.
@@ -185,14 +194,10 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
     return false;
   }
 
-  base::FilePath chrome_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return false;
-  }
+  base::FilePath chrome_proxy_path = GetChromeProxyPath();
 
   // Working directory.
-  base::FilePath working_dir(chrome_exe.DirName());
+  base::FilePath working_dir(chrome_proxy_path.DirName());
 
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   cmd_line = shell_integration::CommandLineArgsForLauncher(
@@ -243,7 +248,9 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
       }
     }
     base::win::ShortcutProperties shortcut_properties;
-    shortcut_properties.set_target(chrome_exe);
+    // Target a proxy executable instead of Chrome directly to ensure start menu
+    // pinning uses the correct icon. See https://crbug.com/732357 for details.
+    shortcut_properties.set_target(chrome_proxy_path);
     shortcut_properties.set_working_dir(working_dir);
     shortcut_properties.set_arguments(wide_switches);
     shortcut_properties.set_description(description);
@@ -338,12 +345,7 @@ void CreateIconAndSetRelaunchDetails(
                                                     shortcut_info.extension_id,
                                                     shortcut_info.profile_path);
 
-  base::FilePath chrome_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-  command_line.SetProgram(chrome_exe);
+  command_line.SetProgram(GetChromeProxyPath());
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
                                        shortcut_info.title, hwnd);
 
