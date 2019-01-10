@@ -188,6 +188,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
   if (!self.inputAccessoryView) {
     self.inputAccessoryView = [[FormInputAccessoryView alloc] init];
+    self.inputAccessoryView.accessibilityViewIsModal = YES;
     if (IsIPadIdiom()) {
       [self.inputAccessoryView
           setUpWithLeadingView:self.formSuggestionView
