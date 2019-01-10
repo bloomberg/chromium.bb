@@ -17,7 +17,14 @@ public interface TaskRunner {
      *
      * @param task The task to be run immediately.
      */
-    public void postTask(Runnable task);
+    void postTask(Runnable task);
+
+    /**
+     * Cleans up native side of TaskRunner. This must be called if the TaskRunner will have a
+     * shorter lifetime than the process it is created in. Thread-safe and safe to be called
+     * multiple times.
+     */
+    void destroy();
 
     /**
      * Instructs the TaskRunner to initialize the native TaskRunner and migrate any tasks over to

@@ -29,10 +29,9 @@ TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner)
 
 TaskRunnerAndroid::~TaskRunnerAndroid() = default;
 
-void TaskRunnerAndroid::Finalize(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& caller) {
-  // This will happen on the Java finalizer thread.
+void TaskRunnerAndroid::Destroy(JNIEnv* env,
+                                const base::android::JavaRef<jobject>& caller) {
+  // This could happen on any thread.
   delete this;
 }
 
