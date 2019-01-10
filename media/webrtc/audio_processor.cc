@@ -244,6 +244,8 @@ void AudioProcessor::InitializeAPM() {
         settings_.automatic_gain_control ==
         AutomaticGainControlType::kHybridExperimental;
     ap_config.Set<webrtc::ExperimentalAgc>(experimental_agc);
+  } else {
+    ap_config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(false));
   }
 
   // Noise suppression setup part 1.
@@ -263,12 +265,6 @@ void AudioProcessor::InitializeAPM() {
 
   // AGC setup part 2.
   if (settings_.automatic_gain_control != AutomaticGainControlType::kDisabled) {
-    int err = audio_processing_->gain_control()->set_mode(
-        webrtc::GainControl::kAdaptiveAnalog);
-    err |= audio_processing_->gain_control()->Enable(true);
-    DCHECK_EQ(err, 0);
-  }
-  if (settings_.automatic_gain_control == AutomaticGainControlType::kDefault) {
     int err = audio_processing_->gain_control()->set_mode(
         webrtc::GainControl::kAdaptiveAnalog);
     err |= audio_processing_->gain_control()->Enable(true);
