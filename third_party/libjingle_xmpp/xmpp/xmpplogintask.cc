@@ -13,32 +13,15 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengineimpl.h"
 
-using rtc::ConstantLabel;
-
 namespace buzz {
 
-#if !defined(NDEBUG)
-const ConstantLabel XmppLoginTask::LOGINTASK_STATES[] = {
-  KLABEL(LOGINSTATE_INIT),
-  KLABEL(LOGINSTATE_STREAMSTART_SENT),
-  KLABEL(LOGINSTATE_STARTED_XMPP),
-  KLABEL(LOGINSTATE_TLS_INIT),
-  KLABEL(LOGINSTATE_AUTH_INIT),
-  KLABEL(LOGINSTATE_BIND_INIT),
-  KLABEL(LOGINSTATE_TLS_REQUESTED),
-  KLABEL(LOGINSTATE_SASL_RUNNING),
-  KLABEL(LOGINSTATE_BIND_REQUESTED),
-  KLABEL(LOGINSTATE_SESSION_REQUESTED),
-  KLABEL(LOGINSTATE_DONE),
-  LASTLABEL
-};
-#endif
 XmppLoginTask::XmppLoginTask(XmppEngineImpl * pctx) :
   pctx_(pctx),
   authNeeded_(true),
@@ -83,8 +66,7 @@ XmppLoginTask::Advance() {
     const XmlElement * element = NULL;
 
 #if !defined(NDEBUG)
-    RTC_LOG(LS_VERBOSE) << "XmppLoginTask::Advance - "
-      << rtc::ErrorName(state_, LOGINTASK_STATES);
+    DVLOG(1) << "XmppLoginTask::Advance - " << ErrorName(state_);
 #endif
 
     switch (state_) {
@@ -375,4 +357,27 @@ XmppLoginTask::FlushQueuedStanzas() {
   pvecQueuedStanzas_->clear();
 }
 
+#if !defined(NDEBUG)
+#define KLABEL(x) \
+  case x:         \
+    return #x
+
+const char* XmppLoginTask::ErrorName(int err) {
+  switch (err) {
+    KLABEL(LOGINSTATE_INIT);
+    KLABEL(LOGINSTATE_STREAMSTART_SENT);
+    KLABEL(LOGINSTATE_STARTED_XMPP);
+    KLABEL(LOGINSTATE_TLS_INIT);
+    KLABEL(LOGINSTATE_AUTH_INIT);
+    KLABEL(LOGINSTATE_BIND_INIT);
+    KLABEL(LOGINSTATE_TLS_REQUESTED);
+    KLABEL(LOGINSTATE_SASL_RUNNING);
+    KLABEL(LOGINSTATE_BIND_REQUESTED);
+    KLABEL(LOGINSTATE_SESSION_REQUESTED);
+    KLABEL(LOGINSTATE_DONE);
+    default:
+      return nullptr;
+  }
+}
+#endif
 }

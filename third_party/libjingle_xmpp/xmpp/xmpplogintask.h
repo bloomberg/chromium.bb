@@ -17,7 +17,6 @@
 
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace buzz {
 
@@ -63,6 +62,10 @@ private:
   bool Failure(XmppEngine::Error reason);
   void FlushQueuedStanzas();
 
+#if !defined(NDEBUG)
+  const char* ErrorName(int err);
+#endif
+
   XmppEngineImpl * pctx_;
   bool authNeeded_;
   bool allowNonGoogleLogin_;
@@ -76,10 +79,6 @@ private:
   std::unique_ptr<std::vector<XmlElement *> > pvecQueuedStanzas_;
 
   std::unique_ptr<SaslMechanism> sasl_mech_;
-
-#if !defined(NDEBUG)
-  static const rtc::ConstantLabel LOGINTASK_STATES[];
-#endif
 };
 
 }

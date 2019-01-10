@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,6 @@
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace rtc {
 
@@ -132,8 +132,8 @@ class TaskTest : public sigslot::has_slots<> {
       stuck_[i].timed_out_ = false;
       stuck_[i].xlat_ = stuck_[i].task_->unique_id();
       stuck_[i].task_->set_timeout_seconds(i + 1);
-      RTC_LOG(LS_INFO) << "Task " << stuck_[i].xlat_ << " created with timeout "
-                       << stuck_[i].task_->timeout_seconds();
+      DVLOG(1) << "Task " << stuck_[i].xlat_ << " created with timeout "
+               << stuck_[i].task_->timeout_seconds();
     }
 
     for (int i = 0; i < HAPPY_TASK_COUNT; ++i) {
@@ -175,7 +175,7 @@ class TaskTest : public sigslot::has_slots<> {
     ASSERT_EQ(HAPPY_TASK_COUNT, happy_index);
 
     // run the unblocked tasks
-    RTC_LOG(LS_INFO) << "Running tasks";
+    DVLOG(1) << "Running tasks";
     task_runner_.RunTasks();
 
     std::cout << "Start time is " << GetCurrentTime() << std::endl;
@@ -189,7 +189,7 @@ class TaskTest : public sigslot::has_slots<> {
           happy_[j].task_->Wake();
         }
       }
-      RTC_LOG(LS_INFO) << "Polling tasks";
+      DVLOG(1) << "Polling tasks";
       task_runner_.PollTasks();
     }
 
@@ -201,7 +201,7 @@ class TaskTest : public sigslot::has_slots<> {
   }
 
   void OnTimeoutStuck(const int id) {
-    RTC_LOG(LS_INFO) << "Timed out task " << id;
+    DVLOG(1) << "Timed out task " << id;
 
     int i;
     for (i = 0; i < STUCK_TASK_COUNT; ++i) {
