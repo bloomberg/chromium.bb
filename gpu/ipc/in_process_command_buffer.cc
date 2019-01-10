@@ -308,6 +308,17 @@ bool InProcessCommandBuffer::MakeCurrent() {
   return true;
 }
 
+base::Optional<gles2::ProgramCache::ScopedCacheUse>
+InProcessCommandBuffer::CreateCacheUse() {
+  base::Optional<gles2::ProgramCache::ScopedCacheUse> cache_use;
+  if (context_group_->has_program_cache()) {
+    cache_use.emplace(context_group_->get_program_cache(),
+                      base::BindRepeating(&DecoderClient::CacheShader,
+                                          base::Unretained(this)));
+  }
+  return cache_use;
+}
+
 gpu::ContextResult InProcessCommandBuffer::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
@@ -689,6 +700,9 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
   if (shared_image_factory_)
     shared_image_factory_->DestroyAllSharedImages(have_context);
+  base::Optional<gles2::ProgramCache::ScopedCacheUse> cache_use;
+  if (have_context)
+    cache_use = CreateCacheUse();
 
   // Prepare to destroy the surface while the context is still current, because
   // some surface destructors make GL calls.
@@ -817,6 +831,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(
 
   if (!MakeCurrent())
     return;
+  auto cache_use = CreateCacheUse();
 
   MailboxManager* mailbox_manager = context_group_->mailbox_manager();
   if (mailbox_manager->UsesSync()) {
@@ -825,9 +840,9 @@ void InProcessCommandBuffer::FlushOnGpuThread(
   }
 
   {
-    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+    base::Optional<raster::GrShaderCache::ScopedCacheUse> gr_cache_use;
     if (gr_shader_cache_)
-      cache_use.emplace(gr_shader_cache_, kInProcessCommandBufferClientId);
+      gr_cache_use.emplace(gr_shader_cache_, kInProcessCommandBufferClientId);
     command_buffer_->Flush(put_offset, decoder_.get());
   }
   // Update state before signaling the flush event.
@@ -856,6 +871,7 @@ void InProcessCommandBuffer::PerformDelayedWorkOnGpuThread() {
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
   if (MakeCurrent()) {
+    auto cache_use = CreateCacheUse();
     decoder_->PerformIdleWork();
     decoder_->ProcessPendingQueries(false);
     if (decoder_->HasMoreIdleWork() || decoder_->HasPendingQueries()) {

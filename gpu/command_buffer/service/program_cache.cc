@@ -16,6 +16,16 @@
 namespace gpu {
 namespace gles2 {
 
+ProgramCache::ScopedCacheUse::ScopedCacheUse(ProgramCache* cache,
+                                             CacheProgramCallback callback)
+    : cache_(cache) {
+  cache_->cache_program_callback_ = callback;
+}
+
+ProgramCache::ScopedCacheUse::~ScopedCacheUse() {
+  cache_->cache_program_callback_.Reset();
+}
+
 ProgramCache::ProgramCache(size_t max_cache_size_bytes)
     : max_size_bytes_(max_cache_size_bytes) {}
 ProgramCache::~ProgramCache() = default;
@@ -182,14 +192,6 @@ void ProgramCache::HandleMemoryPressure(
         "GPU.ProgramCache.MemoryReleasedOnPressure",
         static_cast<base::HistogramBase::Sample>(bytes_freed) / 1024);
   }
-}
-
-void ProgramCache::SetCacheProgramCallback(CacheProgramCallback callback) {
-  cache_program_callback_ = callback;
-}  // namespace gles2
-
-void ProgramCache::ResetCacheProgramCallback() {
-  cache_program_callback_.Reset();
 }
 
 }  // namespace gles2
