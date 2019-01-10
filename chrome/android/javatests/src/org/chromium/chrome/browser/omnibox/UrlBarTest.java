@@ -988,11 +988,13 @@ public class UrlBarTest {
     /**
      * Test to verify the omnibox can take focus during startup before native libraries have
      * loaded.
+     * Test is flaky: https://crbug.com/920641
      */
     @Test
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
+    @DisabledTest
     public void testFocusingOnStartup() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
