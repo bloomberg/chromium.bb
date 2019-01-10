@@ -387,10 +387,16 @@ bool PermissionsData::CanCaptureVisiblePage(
     has_active_tab = tab_permissions &&
                      tab_permissions->HasAPIPermission(APIPermission::kTab);
 
-    const URLPattern all_urls(URLPattern::SCHEME_ALL,
-                              URLPattern::kAllUrlsPattern);
-    has_all_urls =
-        active_permissions_unsafe_->explicit_hosts().ContainsPattern(all_urls);
+    // Check if any of the host permissions match all urls. We don't use
+    // URLPatternSet::ContainsPattern() here because a) the schemes may be
+    // different and b) this is more efficient.
+    for (const auto& pattern : active_permissions_unsafe_->explicit_hosts()) {
+      if (pattern.match_all_urls()) {
+        has_all_urls = true;
+        break;
+      }
+    }
+
     has_page_capture = active_permissions_unsafe_->HasAPIPermission(
         APIPermission::kPageCapture);
   }

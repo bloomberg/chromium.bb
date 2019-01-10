@@ -703,8 +703,10 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
         ExtensionBuilder("all urls extension")
             .AddPermission("<all_urls>")
             .Build();
-    URLPattern all_urls_pattern(Extension::kValidHostPermissionSchemes,
-                                "<all_urls>");
+    URLPattern all_urls_pattern(
+        Extension::kValidHostPermissionSchemes &
+            ~(URLPattern::SCHEME_CHROMEUI | URLPattern::SCHEME_FILE),
+        "<all_urls>");
     PermissionsUpdater updater(profile());
     updater.InitializePermissions(extension.get());
 
@@ -720,11 +722,8 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
 
     std::unique_ptr<const PermissionSet> revokable_permissions =
         updater.GetRevokablePermissions(extension.get());
-    // TODO(https://crbug.com/859600): <all_urls> will report containing
-    // chrome://favicon/, even though it shouldn't since the scheme doesn't
-    // match.
-    // EXPECT_FALSE(revokable_permissions->explicit_hosts().ContainsPattern(
-    //     chrome_favicon_pattern));
+    EXPECT_FALSE(revokable_permissions->explicit_hosts().ContainsPattern(
+        chrome_favicon_pattern));
     EXPECT_TRUE(revokable_permissions->explicit_hosts().ContainsPattern(
         all_urls_pattern));
 
