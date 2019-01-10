@@ -1415,7 +1415,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _voiceSearchController->SetDispatcher(nil);
   [_paymentRequestManager setActiveWebState:nullptr];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  DCHECK(_ntpCoordinatorsForWebStates.empty());
 }
 
 #pragma mark - NSObject
