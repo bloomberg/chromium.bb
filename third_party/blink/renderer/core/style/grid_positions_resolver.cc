@@ -140,7 +140,6 @@ GridPositionSide GridPositionsResolver::FinalPositionSide(
 }
 
 static void InitialAndFinalPositionsFromStyle(
-    const ComputedStyle& grid_container_style,
     const LayoutBox& grid_item,
     GridTrackSizingDirection direction,
     GridPosition& initial_position,
@@ -329,12 +328,11 @@ static GridSpan ResolveGridPositionAgainstOppositePosition(
 }
 
 size_t GridPositionsResolver::SpanSizeForAutoPlacedItem(
-    const ComputedStyle& grid_container_style,
     const LayoutBox& grid_item,
     GridTrackSizingDirection direction) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_container_style, grid_item, direction,
-                                    initial_position, final_position);
+  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
+                                    final_position);
 
   // This method will only be used when both positions need to be resolved
   // against the opposite one.
@@ -441,8 +439,8 @@ GridSpan GridPositionsResolver::ResolveGridPositionsFromStyle(
     GridTrackSizingDirection direction,
     size_t auto_repeat_tracks_count) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_container_style, grid_item, direction,
-                                    initial_position, final_position);
+  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
+                                    final_position);
 
   GridPositionSide initial_side = InitialPositionSide(direction);
   GridPositionSide final_side = FinalPositionSide(direction);
