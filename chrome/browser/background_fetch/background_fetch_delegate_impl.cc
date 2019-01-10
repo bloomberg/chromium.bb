@@ -154,6 +154,10 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     case State::kStartedButPaused:
       offline_item.state = OfflineItemState::PAUSED;
       break;
+    case State::kJobComplete:
+      // There shouldn't be any updates at this point.
+      NOTREACHED();
+      break;
     default:
       offline_item.state = OfflineItemState::IN_PROGRESS;
   }
@@ -345,7 +349,15 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
 
 void BackgroundFetchDelegateImpl::MarkJobComplete(
     const std::string& job_unique_id) {
-  job_details_map_.erase(job_unique_id);
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  DCHECK(job_details_iter != job_details_map_.end());
+
+  JobDetails& job_details = job_details_iter->second;
+  job_details.job_state = JobDetails::State::kJobComplete;
+
+  // Clear the |job_details| internals that are no longer needed.
+  job_details.current_fetch_guids.clear();
+  job_details.fetch_description.reset();
 }
 
 void BackgroundFetchDelegateImpl::UpdateUI(
@@ -557,8 +569,17 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 void BackgroundFetchDelegateImpl::OpenItem(
     offline_items_collection::LaunchLocation location,
     const offline_items_collection::ContentId& id) {
-  if (auto client = GetClient(id.id))
-    client->OnUIActivated(id.id);
+  auto job_details_iter = job_details_map_.find(id.id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+  if (job_details.client)
+    job_details.client->OnUIActivated(id.id);
+
+  // No point in keeping the job details around anymore.
+  if (job_details.job_state == JobDetails::State::kJobComplete)
+    job_details_map_.erase(job_details_iter);
 }
 
 void BackgroundFetchDelegateImpl::RemoveItem(
