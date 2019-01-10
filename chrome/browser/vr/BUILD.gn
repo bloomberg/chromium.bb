@@ -15,8 +15,8 @@ if (is_android) {
 
 assert(enable_vr)
 
-buildflag_header("vr_build_features") {
-  header = "vr_features.h"
+buildflag_header("vr_buildflags") {
+  header = "vr_buildflags.h"
   flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
 }
 
@@ -405,7 +405,7 @@ component("vr_base") {
   defines = [ "VR_BASE_IMPLEMENTATION" ]
 
   public_deps = [
-    ":vr_build_features",
+    ":vr_buildflags",
     ":vr_gl_bindings",
     "//components/omnibox/browser",
     "//components/strings:components_strings_grit",
