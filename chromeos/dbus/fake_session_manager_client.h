@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -22,8 +21,7 @@ namespace chromeos {
 
 // A fake implementation of session_manager. Accepts policy blobs to be set and
 // returns them unmodified.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
-    : public SessionManagerClient {
+class FakeSessionManagerClient : public SessionManagerClient {
  public:
   enum class PolicyStorageType {
     kOnDisk,    // Store policy in regular files on disk. Usually used for

@@ -122,7 +122,6 @@ static_library("usb") {
   if (is_chromeos) {
     deps += [
       "//chromeos",
-      "//chromeos/dbus",
       "//dbus",
     ]
   }

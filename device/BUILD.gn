@@ -213,6 +213,7 @@ test("device_unittests") {
     deps += [
       "//chromeos",
       "//chromeos:test_support",
+      "//chromeos:test_support_without_gmock",
     ]
   }
 
