@@ -30,6 +30,7 @@
 #include "components/variations/platform_field_trials.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
+#include "components/variations/service/buildflags.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service_client.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -502,14 +503,14 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
       command_line->GetSwitchValueASCII(kDisableFeatures));
 
   bool used_testing_config = false;
-#if defined(FIELDTRIAL_TESTING_ENABLED)
+#if BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(::switches::kForceFieldTrials) &&
       !command_line->HasSwitch(switches::kVariationsServerURL)) {
     AssociateDefaultFieldTrialConfig(feature_list.get(), GetPlatform());
     used_testing_config = true;
   }
-#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
+#endif  // BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)
   bool used_seed = false;
   if (!used_testing_config) {
     used_seed = CreateTrialsFromSeed(std::move(low_entropy_provider),
