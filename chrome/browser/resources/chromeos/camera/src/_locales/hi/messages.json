@@ -79,8 +79,56 @@
     "message": "गैलरी की इमेज",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "सेटिंग",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "ग्रिड प्रकार",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "टाइमर का कुल समय",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "फ़ीडबैक भेजें",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "सहायता",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 गुणा 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 गुणा 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "स्वर्ण अनुपात",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "तीन सेकंड",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 सेकंड",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
-    "message": "फ़ोटो खींचें",
+    "message": "फ़ोटो लें",
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
@@ -96,7 +144,7 @@
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
-    "message": "अगले कैमरा का इस्तेमाल करें",
+    "message": "अगले कैमरे का इस्तेमाल करें",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {

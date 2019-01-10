@@ -79,8 +79,56 @@
     "message": "Слике у галерији",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Подешавања",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Тип мреже",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Трајање тајмера",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Пошаљи повратне информације",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Помоћ",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3×3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 са 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4×4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 са 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Златни пресек",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 секунде",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 секунди",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
-    "message": "Сними слику",
+    "message": "Сликај",
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {

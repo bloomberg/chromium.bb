@@ -16,7 +16,7 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Imeshindwa kutuma $file$.",
+    "message": "Imeshindwa kutuma $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -78,6 +78,54 @@
   "galleryImages": {
     "message": "Picha za matunzio",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Mipangilio",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Aina ya gridi",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Urefu wa kipima muda",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Tuma maoni",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Usaidizi",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 kwa 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 kwa 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Uwiano mkuu",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "Sekunde 3",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "Sekunde 10",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "Piga picha",

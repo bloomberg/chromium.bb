@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ota kuvia ja kuvaa videoita kameralla.",
+    "message": "Ota kuvia ja videoita kamerallasi.",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -12,7 +12,7 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Kamera ei ole nyt käytettävissä.\nTarkista, onko kamera liitetty oikein.",
+    "message": "Kamerasi ei ole tällä hetkellä käytettävissä.\nTarkista, onko kamera liitetty oikein.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
@@ -78,6 +78,54 @@
   "galleryImages": {
     "message": "Gallerian kuvat",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Asetukset",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Ruudukkotyyppi",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Ajastimen kesto",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Lähetä palautetta",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Ohje",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3x3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3x3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4x4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4x4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Kultainen leikkaus",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 sekuntia",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 sekuntia",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "Ota valokuva",

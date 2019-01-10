@@ -79,6 +79,54 @@
     "message": "圖片庫圖片",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "設定",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "格線類型",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "計時器倒數時間",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "提供意見",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "說明",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 乘 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 乘 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "黃金比例",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 秒",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 秒",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "拍照",
     "description": "Label for the shutter button to take photo."

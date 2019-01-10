@@ -12,11 +12,11 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "तुमचा कॅमेरा सध्या उपलब्ध नाही.\nकॅमेरा योग्यरित्‍या कनेक्ट केला असल्याचे तपासा.",
+    "message": "तुमचा कॅमेरा सध्या उपलब्ध नाही.\nकृपया कॅमेरा योग्यरीत्‍या कनेक्ट केला असल्याचे तपासा.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ निर्यात करता आली नाही.",
+    "message": "$file$ एक्सपोर्ट करता आली नाही",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -42,11 +42,11 @@
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "रेकॉर्डिंग थांबले",
+    "message": "रेकॉर्डिंग थांबले आहे",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
-    "message": "$camera$ अ‍ॅक्टिव्ह करा",
+    "message": "$camera$ अ‍ॅक्टिव्ह आहे",
     "description": "Status message for spoken feedback when switching over to another camera.",
     "placeholders": {
       "camera": {
@@ -76,8 +76,56 @@
     "description": "Label for the back button."
   },
   "galleryImages": {
-    "message": "गॅलरी इमेज",
+    "message": "गॅलरीमधील इमेज",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "सेटिंग्ज",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "ग्रिडचा प्रकार",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "टायमरचा कालावधी",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "फीडबॅक पाठवा",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "मदत",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "३ x ३",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "३ बाय ३",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "४ x ४",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "४ बाय ४",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "गोल्डन रेशो",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "तीन सेकंद",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "१० सेकंद",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "फोटो काढा",

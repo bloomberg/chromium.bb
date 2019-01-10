@@ -79,6 +79,54 @@
     "message": "Galerii kujutised",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Seaded",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Ruudustiku tüüp",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Taimeri kestus",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Tagasiside saatmine",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Abi",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "kolm korda kolm",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "neli korda neli",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Kuldlõige",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 sekundit",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 sekundit",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Jäädvusta foto",
     "description": "Label for the shutter button to take photo."

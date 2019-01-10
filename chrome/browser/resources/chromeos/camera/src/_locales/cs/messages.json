@@ -12,7 +12,7 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Fotoaparát momentálně není dostupný.\nZkontrolujte, zda je fotoaparát správně zapojen.",
+    "message": "Fotoaparát momentálně není dostupný.\nZkontrolujte, zda je fotoaparát správně připojen.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
@@ -78,6 +78,54 @@
   "galleryImages": {
     "message": "Obrázky v galerii",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Nastavení",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Typ mřížky",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Trvání časovače",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Odeslat zpětnou vazbu",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Nápověda",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 × 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 krát 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 × 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 krát 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Zlatý řez",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 sekundy",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 sekund",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "Vyfotit",

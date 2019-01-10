@@ -42,7 +42,7 @@
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "녹음 또는 녹화가 중지되었습니다.",
+    "message": "녹화가 중지되었습니다.",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
@@ -79,8 +79,56 @@
     "message": "갤러리 이미지",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "설정",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "그리드 유형",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "타이머 시간",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "의견 보내기",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "도움말",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3x3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3x3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4x4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4x4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "황금 비율",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3초",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10초",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
-    "message": "사진 찍기",
+    "message": "사진 촬영",
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
@@ -152,7 +200,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동됩니다. 파일 앱에서 이러한 사진 및 동영상에 액세스할 수 있습니다.\n\n저장용량 사용 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
+    "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동되며, 파일 앱에서 액세스할 수 있습니다.\n\n저장용량 사용 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

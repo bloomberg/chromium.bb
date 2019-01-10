@@ -79,6 +79,54 @@
     "message": "Bilder i galleriet",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Inställningar",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Typ av rutnät",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Timerns längd",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Skicka feedback",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Hjälp",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 × 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "Tre gånger tre",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 × 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "Fyra gånger fyra",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Gyllene snittet",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "Tre sekunder",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "Tio sekunder",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Ta foto",
     "description": "Label for the shutter button to take photo."
