@@ -1318,13 +1318,19 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   CHECK(profile());
   CHECK_EQ(!!browser(), GetRequiresStartupBrowser());
 
-  CHECK(local_volume_->Mount(profile()));
+  if (DoesTestStartWithNoVolumesMounted()) {
+    VolumeManager::Get(profile())->RemoveDownloadsDirectoryForTesting();
+  } else {
+    CHECK(local_volume_->Mount(profile()));
+  }
 
   if (!IsGuestModeTest()) {
     // Start the embedded test server to serve the mocked CWS widget container.
     CHECK(embedded_test_server()->Start());
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
-    test_util::WaitUntilDriveMountPointIsAdded(profile());
+    if (!DoesTestStartWithNoVolumesMounted()) {
+      test_util::WaitUntilDriveMountPointIsAdded(profile());
+    }
 
     // Init crostini.  Set prefs to enable crostini, set VM and container
     // running for testing, and register CustomMountPointCallback.
@@ -1350,7 +1356,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
                                 base::Unretained(this)));
 
     android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
-    android_files_volume_->Mount(profile());
+    if (!DoesTestStartWithNoVolumesMounted()) {
+      android_files_volume_->Mount(profile());
+    }
   }
 
   display_service_ =
@@ -1398,6 +1406,10 @@ bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
 }
 
 bool FileManagerBrowserTestBase::GetIsOffline() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetStartWithNoVolumesMounted() const {
   return false;
 }
 
@@ -1676,13 +1688,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "unmountAllVolumes") {
-    local_volume_->Unmount(profile());
-    android_files_volume_->Unmount(profile());
-    drive_volume_->Unmount();
-    return;
-  }
-
   if (name == "setDriveEnabled") {
     bool enabled;
     ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
@@ -1829,7 +1834,7 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
   if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
-    if (!IsIncognitoModeTest() &&
+    if (!IsIncognitoModeTest() && !DoesTestStartWithNoVolumesMounted() &&
         profile->GetPath().BaseName().value() == "user") {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -1840,8 +1845,15 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveTestVolume>();
   }
-  return drive_volumes_[profile->GetOriginalProfile()]
-      ->CreateDriveIntegrationService(profile);
+  if (DoesTestStartWithNoVolumesMounted()) {
+    profile->GetPrefs()->SetBoolean(drive::prefs::kDriveFsPinnedMigrated, true);
+  }
+  auto* integration_service = drive_volumes_[profile->GetOriginalProfile()]
+                                  ->CreateDriveIntegrationService(profile);
+  if (DoesTestStartWithNoVolumesMounted()) {
+    integration_service->SetEnabled(false);
+  }
+  return integration_service;
 }
 
 base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
