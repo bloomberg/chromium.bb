@@ -175,12 +175,14 @@ def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
     raise Exception("Tracking branch is not set, but I just set it!")
 
 def HandleAutorename(cfg):
-  # Since we don't know how to handle autorename, just stop.  Once it's handled,
-  # just comment out this line (don't commit it!) and re-run the merge.
-  # TODO(liberato): consider a magic commit, else this line will get checked in
-  # the next time we add-and-commit.
-  raise UserInstructions(
-          "Please commit autorename file changes and comment this line out.")
+  # We assume that there is a script written by generate_gn.py that adds /
+  # removes files needed for autorenames.  Run it.
+  log("Updating git for any autorename changes")
+  cfg.chdir_to_ffmpeg_home();
+  if call(["chmod", "+x", cfg.autorename_git_file()]):
+    raise Exception("Unable to chmod %s" % cfg.autorename_git_file())
+  if call([cfg.autorename_git_file()]):
+    raise Exception("Unable to run %s" % cfg.autorename_git_file())
 
 def IsCommitOnThisBranch(robo_configuration, commit_title):
   """Detect if we've already committed the |commit_title| locally."""

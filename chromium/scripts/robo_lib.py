@@ -55,6 +55,14 @@ class RoboConfiguration:
     if self.sushi_branch_name():
       log("On sushi branch: %s" % self.sushi_branch_name())
 
+    # Filename that we'll ask generate_gn.py to write git commands to.
+    self._autorename_git_file = os.path.join(
+                                  self.ffmpeg_home(),
+                                  "chromium",
+                                  "scripts",
+                                  ".git_commands.sh")
+
+
   def chrome_src(self):
     """Return /path/to/chromium/src"""
     return self._chrome_src
@@ -164,3 +172,6 @@ class RoboConfiguration:
     if name and not name.startswith(self.sushi_branch_prefix()):
       name = None
     self._sushi_branch_name = name
+
+  def autorename_git_file(self):
+    return self._autorename_git_file
