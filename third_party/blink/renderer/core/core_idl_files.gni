@@ -164,6 +164,7 @@ core_idl_files =
                     "events/picture_in_picture_control_event.idl",
                     "events/pointer_event.idl",
                     "events/pop_state_event.idl",
+                    "events/portal_activate_event.idl",
                     "events/progress_event.idl",
                     "events/promise_rejection_event.idl",
                     "events/resource_progress_event.idl",

@@ -168,6 +168,7 @@
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/events/after_print_event.h"
 #include "third_party/blink/renderer/core/events/before_print_event.h"
+#include "third_party/blink/renderer/core/events/portal_activate_event.h"
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 #include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
@@ -2518,6 +2519,11 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
       }
       break;
   }
+}
+
+void WebLocalFrameImpl::OnPortalActivated() {
+  PortalActivateEvent* event = PortalActivateEvent::Create();
+  GetFrame()->DomWindow()->DispatchEvent(*event);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

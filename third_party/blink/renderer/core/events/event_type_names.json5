@@ -216,6 +216,7 @@
     "pointerrawmove",
     "pointerup",
     "popstate",
+    "portalactivate",
     "progress",
     "processorerror",
     "push",

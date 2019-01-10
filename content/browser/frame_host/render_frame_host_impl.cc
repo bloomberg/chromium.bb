@@ -1063,6 +1063,10 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
+void RenderFrameHostImpl::OnPortalActivated() {
+  frame_->OnPortalActivated();
+}
+
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
   return site_instance_.get();
 }

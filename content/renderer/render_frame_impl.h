@@ -546,6 +546,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BlockRequests() override;
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
+  void OnPortalActivated() override;
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(
       const gfx::Rect& rect,

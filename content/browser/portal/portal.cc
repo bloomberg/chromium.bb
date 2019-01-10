@@ -121,6 +121,7 @@ void Portal::Activate(
       // TODO(lfg): The old WebContents is currently discarded, but should be
       // kept and passed to the new page.
       portal_contents_impl_->set_portal(nullptr);
+      portal_contents_impl_->GetMainFrame()->OnPortalActivated();
       std::move(callback).Run(blink::mojom::PortalActivationStatus::kSuccess);
     } else {
       DCHECK_EQ(portal_contents_impl_, contents.get());

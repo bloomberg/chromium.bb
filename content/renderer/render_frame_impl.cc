@@ -2575,6 +2575,10 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
       routing_id_, callback_id, response));
 }
 
+void RenderFrameImpl::OnPortalActivated() {
+  frame_->OnPortalActivated();
+}
+
 #if defined(OS_ANDROID)
 void RenderFrameImpl::ExtractSmartClipData(
     const gfx::Rect& rect,
