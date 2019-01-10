@@ -662,7 +662,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, AnnotationsFeatureEnabled) {
+// TODO(https://crbug.com/920684): Test is flaky.
+IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, DISABLED_AnnotationsFeatureEnabled) {
   RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
 }
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
