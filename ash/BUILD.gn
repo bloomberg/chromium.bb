@@ -1369,9 +1369,6 @@ component("ash") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/components/multidevice/logging",
-
-    # TODO(stevenjb): Remove cryptohome dependency. htps://crbug.com/918922.
-    "//chromeos/cryptohome",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus/services:services",
     "//chromeos/services/assistant/public:feature_flags",
@@ -2208,9 +2205,6 @@ static_library("test_support") {
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
-
-    # TODO(stevenjb): Remove cryptohome dependency. htps://crbug.com/918922.
-    "//chromeos/cryptohome",
     "//components/account_id",
     "//components/prefs:test_support",
     "//components/user_manager:user_manager",

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -15,7 +16,8 @@
 
 namespace cryptohome {
 
-class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
+class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) MockHomedirMethods
+    : public HomedirMethods {
  public:
   MockHomedirMethods();
   ~MockHomedirMethods() override;

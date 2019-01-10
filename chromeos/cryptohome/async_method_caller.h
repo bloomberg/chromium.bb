@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -23,7 +23,7 @@ class Identification;
 // within the same code is confusing.
 
 // This class manages calls to Cryptohome service's 'async' methods.
-class CHROMEOS_EXPORT AsyncMethodCaller {
+class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
  public:
   // A callback type which is called back on the UI thread when the results of
   // method calls are ready.

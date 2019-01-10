@@ -41,11 +41,6 @@ component("chromeos") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
-    "//chromeos/cryptohome",
-    "//chromeos/dbus:authpolicy_proto",
-    "//chromeos/dbus:vm_applications_apps_proto",
-    "//chromeos/login/auth",
-    "//chromeos/login/login_state",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
@@ -203,12 +198,11 @@ source_set("test_support_source_set") {
   testonly = true
   public_deps = [
     ":chromeos",
-    "//chromeos/dbus:cryptohome_proto",
-    "//chromeos/dbus:test_support",
   ]
   deps = [
     "//chromeos/attestation:test_support",
     "//chromeos/cryptohome:test_support",
+    "//chromeos/dbus:test_support",
     "//chromeos/disks:test_support",
     "//chromeos/login/auth:test_support",
     "//chromeos/login/login_state:test_support",
@@ -258,7 +252,6 @@ test("chromeos_unittests") {
     "//base/test:test_support",
     "//chromeos/attestation:unit_tests",
     "//chromeos/audio:unit_tests",
-    "//chromeos/cryptohome",
     "//chromeos/cryptohome:unit_tests",
     "//chromeos/dbus:authpolicy_proto",
     "//chromeos/dbus:cryptohome_proto",
