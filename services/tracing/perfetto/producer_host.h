@@ -77,6 +77,11 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // is finished.
   void NotifyFlushComplete(uint64_t flush_request_id) override;
 
+  // Called by the ProducerClient to associate a TraceWriter with a target
+  // buffer, which is required to support scraping of the SMB by the service.
+  void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
+  void UnregisterTraceWriter(uint32_t writer_id) override;
+
  protected:
   void OnConnectionError();
 

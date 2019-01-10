@@ -321,11 +321,11 @@ std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
 
 void ProducerClient::RegisterTraceWriter(uint32_t writer_id,
                                          uint32_t target_buffer) {
-  // TODO(eseckler): implement.
+  producer_host_->RegisterTraceWriter(writer_id, target_buffer);
 }
 
 void ProducerClient::UnregisterTraceWriter(uint32_t writer_id) {
-  // TODO(eseckler): implement.
+  producer_host_->UnregisterTraceWriter(writer_id);
 }
 
 }  // namespace tracing
