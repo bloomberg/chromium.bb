@@ -23,13 +23,11 @@ class AccountsMutatorImpl : public AccountsMutator {
   // server-side if needed.
   void RemoveAccount(
       const std::string& account_id,
-      signin_metrics::SourceForRefreshTokenOperation source =
-          signin_metrics::SourceForRefreshTokenOperation::kUnknown) override;
+      signin_metrics::SourceForRefreshTokenOperation source) override;
 
   // Removes all accounts.
   void RemoveAllAccounts(
-      signin_metrics::SourceForRefreshTokenOperation source =
-          signin_metrics::SourceForRefreshTokenOperation::kUnknown) override;
+      signin_metrics::SourceForRefreshTokenOperation source) override;
 
  private:
   ProfileOAuth2TokenService* token_service_;
