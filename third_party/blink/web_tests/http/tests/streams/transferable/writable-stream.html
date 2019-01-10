@@ -3,6 +3,8 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
+<script src="../resources/test-utils.js"></script>
+<script src="../resources/recording-streams.js"></script>
 <script>
 'use strict';
 
@@ -57,4 +59,78 @@ promise_test(t => {
   return promise;
 }, 'window.postMessage should be able to transfer a {readable, writable} pair');
 
+function transfer(stream) {
+  return new Promise(resolve => {
+    addEventListener('message', evt => resolve(evt.data), { once: true });
+    postMessage(stream, '*', [stream]);
+  });
+}
+
+promise_test(async () => {
+  const orig = new WritableStream(
+    {}, new ByteLengthQueuingStrategy({ highWaterMark: 65536 }));
+  const transferred = await transfer(orig);
+  const writer = transferred.getWriter();
+  assert_equals(writer.desiredSize, 1, 'desiredSize should be 1');
+}, 'desiredSize for a newly-transferred stream should be 1');
+
+promise_test(async () => {
+  const orig = new WritableStream({
+    write() {
+      return new Promise(() => {});
+    }
+  });
+  const transferred = await transfer(orig);
+  const writer = transferred.getWriter();
+  await writer.write('a');
+  assert_equals(writer.desiredSize, 1, 'desiredSize should be 1');
+}, 'effective queue size of a transferred writable should be 2');
+
+promise_test(async () => {
+  let resolveWrite;
+  const orig = new WritableStream({
+    write() {
+      return new Promise(resolve => {
+        resolveWrite = resolve;
+      });
+    }
+  });
+  const transferred = await transfer(orig);
+  const writer = transferred.getWriter();
+  await writer.write('a');
+  let writeDone = false;
+  writer.write('b').then(() => {
+    writeDone = true;
+  });
+  await flushAsyncEvents();
+  assert_false(writeDone, 'second write should not have resolved yet');
+  resolveWrite();
+  await delay(0);
+  assert_true(writeDone, 'second write should have resolved');
+}, 'second write should wait for first underlying write to complete');
+
+promise_test(async t => {
+  const orig = recordingWritableStream();
+  const transferred = await transfer(orig);
+  transferred.abort('p');
+  await delay(0);
+  assert_array_equals(orig.events, ['abort', 'p'],
+                      'abort() should have been called');
+}, 'abort() should work');
+
+promise_test(async t => {
+  const orig = recordingWritableStream();
+  const transferred = await transfer(orig);
+  const writer = transferred.getWriter();
+  // A WritableStream object cannot be cloned.
+  await promise_rejects(t, 'DataCloneError', writer.write(new WritableStream()),
+                        'the write should reject');
+  await promise_rejects(t, 'DataCloneError', writer.closed,
+                        'the stream should be errored');
+  await delay(0);
+  assert_equals(orig.events.length, 2, 'abort should have been called');
+  assert_equals(orig.events[0], 'abort', 'first event should be abort');
+  assert_equals(orig.events[1].name, 'DataCloneError',
+                'reason should be a DataCloneError');
+}, 'writing a unclonable object should error the stream');
 </script>

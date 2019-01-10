@@ -215,7 +215,8 @@ void WritableStream::Serialize(ScriptState* script_state,
   v8::TryCatch block(script_state->GetIsolate());
   v8::Local<v8::Value> port_v8_value = ToV8(port, script_state);
   DCHECK(!port_v8_value.IsEmpty());
-  v8::Local<v8::Value> args[] = {ToV8(this, script_state), port_v8_value};
+  v8::Local<v8::Value> args[] = {GetInternalStream(script_state).V8Value(),
+                                 port_v8_value};
   V8ScriptRunner::CallExtra(script_state, "WritableStreamSerialize", args);
   if (block.HasCaught()) {
     exception_state.RethrowV8Exception(block.Exception());
