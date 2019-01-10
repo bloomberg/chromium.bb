@@ -146,7 +146,8 @@ void HTMLInputElement::Trace(blink::Visitor* visitor) {
 const AttrNameToTrustedType& HTMLInputElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+                      ({{"formaction", SpecificTrustedType::kTrustedURL},
+                        {"src", SpecificTrustedType::kTrustedURL}}));
   return attribute_map;
 }
 

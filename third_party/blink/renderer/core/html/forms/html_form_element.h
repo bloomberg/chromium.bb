@@ -50,6 +50,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   ~HTMLFormElement() override;
   void Trace(blink::Visitor*) override;
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   HTMLFormControlsCollection* elements();
   void GetNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
 
@@ -57,7 +59,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   HTMLElement* item(unsigned index);
 
   String action() const;
-  void setAction(const AtomicString&);
+  void action(USVStringOrTrustedURL&) const;
+  void setAction(const USVStringOrTrustedURL&, ExceptionState&);
 
   String enctype() const { return attributes_.EncodingType(); }
   void setEnctype(const AtomicString&);

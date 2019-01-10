@@ -48,8 +48,8 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   ~HTMLFormControlElement() override;
   void Trace(blink::Visitor*) override;
 
-  String formAction() const;
-  void setFormAction(const AtomicString&);
+  void formAction(USVStringOrTrustedURL&) const;
+  void setFormAction(const USVStringOrTrustedURL&, ExceptionState&);
   String formEnctype() const;
   void setFormEnctype(const AtomicString&);
   String formMethod() const;
