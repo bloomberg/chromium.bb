@@ -144,7 +144,7 @@ LikelyFormFilling SendFillInformationToRenderer(
       new_parsing_enabled || !observed_form.IsPossibleChangePasswordForm();
 
   // Wait for the username before filling passwords in case the
-  // fill-on-account-select-http feature is active and the main frame is
+  // FillOnAccountSelectHttp feature is active and the main frame is
   // insecure.
   const bool enable_foas_on_http =
       base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
