@@ -115,12 +115,6 @@ builder.
   Path regular expressions:
     * [`//ios/.+`](https://cs.chromium.org/chromium/src/ios/)
 
-* [linux-blink-gen-property-trees](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-gen-property-trees) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-gen-property-trees)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-gen-property-trees))
-
-  Path regular expressions:
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
-
 * [linux-blink-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-rel))
 
   Path regular expressions:

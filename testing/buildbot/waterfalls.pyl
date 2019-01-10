@@ -1473,11 +1473,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-blink-gen-property-trees': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'linux-blink-heap-incremental-marking': {
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
