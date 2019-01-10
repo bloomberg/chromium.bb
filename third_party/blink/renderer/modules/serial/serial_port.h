@@ -16,8 +16,10 @@ class UnguessableToken;
 
 namespace blink {
 
+class ReadableStream;
 class ScriptState;
 class SerialOptions;
+class WritableStream;
 
 class SerialPort final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,8 +28,8 @@ class SerialPort final : public ScriptWrappable {
   explicit SerialPort(mojom::blink::SerialPortInfoPtr info);
   ~SerialPort() override;
 
-  ScriptValue in(ScriptState*);
-  ScriptValue out(ScriptState*);
+  ReadableStream* in();
+  WritableStream* out();
 
   ScriptPromise open(ScriptState*, const SerialOptions* options);
   ScriptPromise close(ScriptState*);
