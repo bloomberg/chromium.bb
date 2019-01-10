@@ -2,10 +2,16 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Run a single fuzz target built with code coverage instrumentation."""
+"""Run a single fuzz target built with code coverage instrumentation.
+
+This script assumes that corresponding corpus was downloaded via gclient sync
+and saved to: src/testing/libfuzzer/fuzzer_corpus/{fuzzer_name}/.
+"""
 
 import argparse
+import glob
 import json
+import logging
 import os
 import shutil
 import signal
@@ -14,94 +20,53 @@ import sys
 import time
 import zipfile
 
-_CORPUS_BACKUP_URL_FORMAT = (
-    'gs://clusterfuzz-libfuzzer-backup/corpus/libfuzzer/{fuzzer}/latest.zip')
-_CORPUS_BACKUP_FILENAME = os.path.basename(_CORPUS_BACKUP_URL_FORMAT)
-_CORPUS_CURRENT_URL_FORMAT = 'gs://clusterfuzz-corpus/libfuzzer/{fuzzer}'
-_CORPUS_DIR_FORMAT = '{fuzzer}_corpus'
+_THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
+# Path to the fuzzer corpus directory that is used for bots.
+_CORPUS_FOR_BOTS_DIR = os.path.join(_THIS_DIR, os.path.pardir, os.path.pardir,
+                                    'testing', 'libfuzzer',
+                                    'fuzzer_corpus_for_bots')
+
+# Dummy corpus in case real corpus doesn't exist.
 _DUMMY_INPUT_CONTENTS = 'dummy input just to have at least one corpus unit'
 _DUMMY_INPUT_FILENAME = 'dummy_corpus_input'
 
+# Used for running fuzzer targets in code coverage config.
 _DUMMY_CORPUS_DIRECTORY = 'dummy_corpus_dir_which_should_be_empty'
-
-# Fuzzers are single process, but may use shared libraries, that is why we still
-# need to use merge pool specifier to have profraw files for every library used.
-_LLVM_PROFILE_FILENAME_FORMAT = '{fuzzer}.%1m.profraw'
 
 _LIBFUZZER_FLAGS = ['-merge=1', '-timeout=60', '-rss_limit_mb=8192']
 
 _SLEEP_DURATION_SECONDS = 8
 
 
-def _Log(message):
-  # TODO: use appropriate logging approach when running on the bots.
-  sys.stdout.write(message)
-  sys.stdout.write('\n')
-
-
-def _DownloadAndUnpackBackupCorpus(fuzzer, corpus_dir):
-  local_backup_path = _DownloadBackupCorpus(fuzzer, corpus_dir)
-  if not local_backup_path:
-    return False
-
-  zipfile.ZipFile(local_backup_path).extractall(path=corpus_dir)
-  os.remove(local_backup_path)
-
-  return True
-
-
-def _DownloadBackupCorpus(fuzzer, corpus_dir):
-  _Log('Downloading corpus backup for %s.' % fuzzer)
-  local_backup_path = os.path.join(corpus_dir, _CORPUS_BACKUP_FILENAME)
-  cmd = [
-      'gsutil', 'cp',
-      _CORPUS_BACKUP_URL_FORMAT.format(fuzzer=fuzzer), local_backup_path
-  ]
-
-  try:
-    subprocess.check_call(cmd)
-  except subprocess.CalledProcessError as e:
-    _Log('Corpus backup for %s does not exist.' % fuzzer)
-    return None
-
-  _Log('Successfully downloaded corpus backup for %s.' % fuzzer)
-  return local_backup_path
-
-
-def _DownloadCurrentCorpus(fuzzer, corpus_dir):
-  _Log('Downloading current corpus for %s.' % fuzzer)
-  cmd = [
-      'gsutil', '-m', '-q', 'cp', '-r',
-      _CORPUS_CURRENT_URL_FORMAT.format(fuzzer=fuzzer), corpus_dir
-  ]
-
-  try:
-    subprocess.check_call(cmd)
-  except subprocess.CalledProcessError as e:
-    _Log('Failed to download current corpus for %s.' % fuzzer)
-    return False
-
-  _Log('Successfully downloaded current corpus for %s.' % fuzzer)
-  return True
-
-
 def _PrepareCorpus(fuzzer_name, output_dir):
-  # Create a directory for the corpus.
-  corpus_dir = os.path.join(output_dir,
-                            _CORPUS_DIR_FORMAT.format(fuzzer=fuzzer_name))
+  """Prepares the corpus to run fuzzer target.
+
+  If a corpus for bots is available, use it directly, otherwise, creates a
+  dummy corpus.
+
+  Args:
+    fuzzer_name (str): Name of the fuzzer to create corpus for.
+    output_dir (str): An output directory to store artifacts.
+
+  Returns:
+    A path to the directory of the prepared corpus.
+  """
+  corpus_dir = os.path.join(output_dir, fuzzer_name + '_corpus')
   _RecreateDir(corpus_dir)
 
-  # Try to download corpus backup first.
-  if _DownloadAndUnpackBackupCorpus(fuzzer_name, corpus_dir):
+  corpus_for_bots = glob.glob(
+      os.path.join(os.path.abspath(_CORPUS_FOR_BOTS_DIR), fuzzer_name, '*.zip'))
+  if len(corpus_for_bots) >= 2:
+    raise RuntimeError(
+        'Expected only one, but multiple versions of corpus exit')
+
+  if len(corpus_for_bots) == 1:
+    zipfile.ZipFile(corpus_for_bots[0]).extractall(path=corpus_dir)
     return corpus_dir
 
-  # Try to download current working corpus from ClusterFuzz.
-  if _DownloadCurrentCorpus(fuzzer_name, corpus_dir):
-    return corpus_dir
-
-  # Write a dummy input to the corpus to have at least one fuzzer execution.
-  _Log('All corpus download attempts failed, create a dummy corpus input.')
+  logging.info('Corpus for %s does not exist, create a dummy corpus input',
+               fuzzer_name)
   dummy_input_path = os.path.join(corpus_dir, _DUMMY_INPUT_FILENAME)
   with open(dummy_input_path, 'wb') as fh:
     fh.write(_DUMMY_INPUT_CONTENTS)
@@ -159,10 +124,10 @@ def _ParseCommandArguments():
 
   args = arg_parser.parse_args()
 
-  assert os.path.exists(
+  assert os.path.isfile(
       args.fuzzer), ("Fuzzer '%s' does not exist." % args.fuzzer)
 
-  assert os.path.exists(
+  assert os.path.isdir(
       args.output_dir), ("Output dir '%s' does not exist." % args.output_dir)
 
   assert args.timeout > 0, 'Invalid timeout value: %d.' % args.timeout
@@ -188,15 +153,13 @@ def _RunFuzzTarget(fuzzer, fuzzer_name, output_dir, corpus_dir, timeout):
   try:
     _RunWithTimeout(cmd, timeout)
   except Exception as e:
-    _Log('Failed to run {fuzzer}: {error}.'.format(
-        fuzzer=fuzzer_name, error=str(e)))
+    logging.info('Failed to run %s: %s', fuzzer_name, e)
 
   shutil.rmtree(dummy_corpus_dir)
-  shutil.rmtree(corpus_dir)
 
 
 def _RunWithTimeout(cmd, timeout):
-  _Log('Run fuzz target using the following command: %s.' % str(cmd))
+  logging.info('Run fuzz target using the following command: %s', str(cmd))
 
   # TODO: we may need to use |creationflags=subprocess.CREATE_NEW_PROCESS_GROUP|
   # on Windows or send |signal.CTRL_C_EVENT| signal if the process times out.
@@ -209,7 +172,7 @@ def _RunWithTimeout(cmd, timeout):
 
   if runner.poll() is None:
     try:
-      _Log('Fuzz target timed out, interrupting it.')
+      logging.info('Fuzz target timed out, interrupting it.')
       # libFuzzer may spawn some child processes, that is why we have to call
       # os.killpg, which would send the signal to our Python process as well, so
       # we just catch and ignore it in this try block.
@@ -221,16 +184,21 @@ def _RunWithTimeout(cmd, timeout):
 
     output, error = runner.communicate()
 
-  _Log('Finished running the fuzz target.')
+  logging.info('Finished running the fuzz target.')
 
 
 def Main():
+  log_format = '[%(asctime)s %(levelname)s] %(message)s'
+  logging.basicConfig(level=logging.INFO, format=log_format)
+
   args = _ParseCommandArguments()
   fuzzer_name = os.path.splitext(os.path.basename(args.fuzzer))[0]
   corpus_dir = _PrepareCorpus(fuzzer_name, args.output_dir)
   start_time = time.time()
   _RunFuzzTarget(args.fuzzer, fuzzer_name, args.output_dir, corpus_dir,
                  args.timeout)
+  shutil.rmtree(corpus_dir)
+
   if args.isolated_script_test_output:
     # TODO(crbug.com/913827): Actually comply with the isolated script contract
     # on src/testing/scripts/common.
@@ -240,13 +208,13 @@ def Main():
               'expected': 'PASS',
               'actual': 'PASS',
           },
-          "interrupted": False,
-          "path_delimiter": ".",
-          "version": 3,
-          "seconds_since_epoch": start_time,
-          "num_failures_by_type": {
-              "FAIL": 0,
-              "PASS": 1
+          'interrupted': False,
+          'path_delimiter': '.',
+          'version': 3,
+          'seconds_since_epoch': start_time,
+          'num_failures_by_type': {
+              'FAIL': 0,
+              'PASS': 1
           },
       }, f)
 
