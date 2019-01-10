@@ -79,6 +79,54 @@
     "message": "Galleribilleder",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Indstillinger",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Gittertype",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Varighed for timer",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Giv feedback",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Hjælp",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3x3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 gange 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4x4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 gange 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Det gyldne snit",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 sekunder",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 sekunder",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Tag billede",
     "description": "Label for the shutter button to take photo."

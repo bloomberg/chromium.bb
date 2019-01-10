@@ -79,6 +79,54 @@
     "message": "Зображення в галереї",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Налаштування",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Тип сітки",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Тривалість таймера",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Надіслати відгук",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Довідка",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 на 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 на 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Золотий перетин",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 секунди",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 секунд",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Сфотографувати",
     "description": "Label for the shutter button to take photo."
@@ -96,7 +144,7 @@
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
-    "message": "Перейти на наступну камеру",
+    "message": "Перемкнутися на наступну камеру",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
@@ -104,7 +152,7 @@
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "Перейти в режим фотографування",
+    "message": "Перейти в режим фотозйомки",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {
@@ -116,7 +164,7 @@
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Таблиця",
+    "message": "Сітка",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
@@ -152,7 +200,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "Фото й відео з камери буде перенесено в папку \"Завантаження\". Ви зможете відкривати їх у Файлах.\n\nДодатки з дозволами для пам’яті також матимуть до них доступ.",
+    "message": "Фото й відео з камери перенесуться в папку \"Завантаження\", і ви зможете відкрити їх у Файлах.\n\nТакож до них матимуть доступ додатки, яким дозволено використовувати пам’ять пристрою.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

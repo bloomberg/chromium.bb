@@ -34,7 +34,7 @@
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Nem sikerült elindítani a felvételt.",
+    "message": "Nem sikerült elindítani a rögzítést.",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
@@ -42,7 +42,7 @@
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "A felvétel leállt",
+    "message": "A rögzítés leállt",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
@@ -79,8 +79,56 @@
     "message": "Galériaképek",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Beállítások",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Rács típusa",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Időzítés hossza",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Visszajelzés küldése",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Súgó",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 × 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "Háromszor hármas",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 × 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "Négyszer négyes",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Aranymetszés",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 másodperc",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 másodperc",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
-    "message": "Fotó készítése",
+    "message": "Fotókészítés",
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
@@ -88,11 +136,11 @@
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "Felvétel megkezdése",
+    "message": "Rögzítés megkezdése",
     "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "Felvétel leállítása",
+    "message": "Rögzítés leállítása",
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
@@ -100,7 +148,7 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "Váltás videófelvételre",
+    "message": "Váltás videórögzítésre",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {

@@ -79,6 +79,54 @@
     "message": "Galeri resimleri",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Ayarlar",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Kılavuz türü",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Zamanlayıcı süresi",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Geri bildirim gönder",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Yardım",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3'e 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4'e 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Altın oran",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 saniye",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 saniye",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Fotoğraf çek",
     "description": "Label for the shutter button to take photo."
@@ -116,7 +164,7 @@
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Izgara",
+    "message": "Kılavuz",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {

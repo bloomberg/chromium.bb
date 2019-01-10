@@ -79,6 +79,54 @@
     "message": "صور المعرض",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "إعدادات",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "نوع الشبكة",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "مدة المؤقِّت",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "إرسال تعليقات",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "مساعدة",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "وضع 3 × 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "وضع 3 في 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "وضع 4 × 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "وضع 4 في 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "وضع النسبة الذهبية",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 ثوانٍ",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "۱۰ ثوانٍ",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "التقاط صورة",
     "description": "Label for the shutter button to take photo."

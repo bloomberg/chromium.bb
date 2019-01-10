@@ -79,6 +79,54 @@
     "message": "Εικόνες gallery",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Ρυθμίσεις",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Τύπος πλέγματος",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Διάρκεια χρονομέτρου",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Αποστολή σχολίων",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Βοήθεια",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Ιδανικός λόγος διαστάσεων",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 δευτερόλεπτα",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 δευτερόλεπτα",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Λήψη φωτογραφίας",
     "description": "Label for the shutter button to take photo."

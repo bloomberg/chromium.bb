@@ -79,6 +79,54 @@
     "message": "గ్యాలరీ చిత్రాలు",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "సెట్టింగ్‌లు",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "గ్రిడ్ రకం",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "టైమర్ వ్యవధి",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "అభిప్రాయాన్ని పంపు",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "సహాయం",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "గోల్డెన్ రేషియో‌",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 సెకన్లు",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 సెకన్లు",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "ఫోటోను తీయి",
     "description": "Label for the shutter button to take photo."

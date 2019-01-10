@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "摄像头",
+    "message": "相机",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用摄像头拍照和录制视频。",
+    "message": "使用相机拍照和录制视频。",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -12,7 +12,7 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "您的摄像头目前不可用。\n请检查此摄像头是否连接正确。",
+    "message": "您的相机目前不可用。\n请检查此相机是否连接正确。",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
@@ -79,6 +79,54 @@
     "message": "图库图片",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "设置",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "网格类型",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "定时器时长",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "发送反馈",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "帮助",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "黄金比例",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 秒",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 秒",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "拍照",
     "description": "Label for the shutter button to take photo."
@@ -96,7 +144,7 @@
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
-    "message": "切换到下一个摄像头",
+    "message": "切换到下一个相机",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
@@ -152,7 +200,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "使用此摄像头拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。\n\n具有存储权限的应用将有权访问您的照片和视频。",
+    "message": "使用此相机拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。\n\n具有存储权限的应用将有权访问您的照片和视频。",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

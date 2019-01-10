@@ -76,8 +76,56 @@
     "description": "Label for the back button."
   },
   "galleryImages": {
-    "message": "છબીઓની ગૅલેરી",
+    "message": "ગૅલેરી છબીઓ",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "સેટિંગ",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "ગ્રિડનો પ્રકાર",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "ટાઇમરનો અવધિ",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "પ્રતિસાદ મોકલો",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "સહાય",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 બાય 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 બાય 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "ગોલ્ડન રેશિયો",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 સેકન્ડ",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 સેકન્ડ",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "ફોટો લો",

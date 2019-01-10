@@ -42,7 +42,7 @@
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "記録を停止しました",
+    "message": "録画を停止しました",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
@@ -78,6 +78,54 @@
   "galleryImages": {
     "message": "ギャラリーの画像",
     "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "設定",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "グリッドの種類",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "タイマーの時間",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "フィードバックを送信",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "ヘルプ",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "黄金比",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 秒",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 秒",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "写真を撮影",

@@ -79,6 +79,54 @@
     "message": "Изображения в галерее",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "Настройки",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Тип сетки",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Длительность таймера",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Оставить отзыв",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Справка",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 на 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 на 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Золотое сечение",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 секунды",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 секунд",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
     "message": "Сделать снимок",
     "description": "Label for the shutter button to take photo."

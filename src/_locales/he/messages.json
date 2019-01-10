@@ -79,8 +79,56 @@
     "message": "תמונות בגלריה",
     "description": "Text to speech label for the gallery list."
   },
+  "settingsButton": {
+    "message": "הגדרות",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "סוג הרשת",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "משך זמן בטיימר",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "שליחת משוב",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "עזרה",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "‎3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 על 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "‎4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 על 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "יחס הזהב",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 שניות",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 שניות",
+    "description": "Label for timer-duration: 10 seconds."
+  },
   "takePhotoButton": {
-    "message": "צילום תמונה",
+    "message": "צילום התמונה",
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
@@ -92,7 +140,7 @@
     "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "הפסקת צילום סרטון",
+    "message": "הפסקת צילום הסרטון",
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
@@ -152,7 +200,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "תמונות וסרטונים שצולמו באמצעות המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.\n\nאפליקציות עם הרשאות אחסון יקבלו גישה אל התמונות והסרטונים שלך.",
+    "message": "תמונות וסרטונים שצולמו באמצעות המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.\n\nאפליקציות עם הרשאות אחסון יקבלו גישה אל התמונות והסרטונים.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }
