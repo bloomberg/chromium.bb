@@ -3750,10 +3750,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 
       <!-- VR module -->
       <message name="IDS_VR_MODULE_INSTALL_START_TEXT" desc="Text shown on a toast when Chrome starts to download the VR dynamic feature module.">
-        Installing VR module...
-      </message>
-      <message name="IDS_VR_MODULE_INSTALL_SUCCESS_TEXT" desc="Text shown on a toast when Chrome successfully installed the VR dynamic feature module.">
-        Installed VR module
+        Installing virtual reality for Chrome…
       </message>
       <message name="IDS_VR_MODULE_INSTALL_FAILURE_TEXT" desc="Text shown on a toast when Chrome failed to install the VR dynamic feature module.">
         Failed to install VR module
@@ -3781,16 +3778,21 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         <message name="IDS_AR_MODULE_TITLE" desc="Title of the Augmented Reality (AR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
           AR
         </message>
-        <message name="IDS_AR_MODULE_INSTALL_START_TEXT" desc="Text shown on a toast when Chrome starts to download the AR dynamic feature module.">
-          Installing AR module...
-        </message>
-        <message name="IDS_AR_MODULE_INSTALL_SUCCESS_TEXT" desc="Text shown on a toast when Chrome successfully installed the AR dynamic feature module.">
-          Installed AR module
-        </message>
-        <message name="IDS_AR_MODULE_INSTALL_FAILURE_TEXT" desc="Text shown on a toast when Chrome failed to install the AR dynamic feature module.">
-          Failed to install AR module
+        <message name="IDS_AR_MODULE_INSTALL_TEXT_TITLE" desc="Text shown when Chrome references the AR module in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing augmented reality for Chrome…').">
+          augmented reality
         </message>
       </if>
+
+      <!-- Dynamic feature modules -->
+      <message name="IDS_MODULE_INSTALL_START_TEXT" desc="Text shown on a toast when Chrome starts to download a dynamic feature module.">
+        Installing <ph name="module">%1$s<ex>augmented reality</ex></ph> for Chrome…
+      </message>
+      <message name="IDS_MODULE_INSTALL_SUCCESS_TEXT" desc="Text shown on a toast when Chrome successfully installed a dynamic feature module.">
+        Installed
+      </message>
+      <message name="IDS_MODULE_INSTALL_FAILURE_TEXT" desc="Text shown on an infobar when Chrome failed to install a dynamic feature module.">
+        Unable to install <ph name="module">%1$s<ex>augmented reality</ex></ph> for Chrome
+      </message>
 
       <!-- Custom Context Menu Informations -->
       <message name="IDS_CONTEXTMENU_IMAGE_TITLE" desc="The title of a context menu tab when the item pressed contains more than one type. This indicates that all the actions are related to the image.">

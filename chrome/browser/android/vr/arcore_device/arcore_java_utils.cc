@@ -70,9 +70,11 @@ bool ArCoreJavaUtils::ShouldRequestInstallArModule() {
       AttachCurrentThread(), j_arcore_java_utils_);
 }
 
-void ArCoreJavaUtils::RequestInstallArModule() {
-  Java_ArCoreJavaUtils_requestInstallArModule(AttachCurrentThread(),
-                                              j_arcore_java_utils_);
+void ArCoreJavaUtils::RequestInstallArModule(int render_process_id,
+                                             int render_frame_id) {
+  Java_ArCoreJavaUtils_requestInstallArModule(
+      AttachCurrentThread(), j_arcore_java_utils_,
+      getTabFromRenderer(render_process_id, render_frame_id));
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallSupportedArCore() {
@@ -85,24 +87,10 @@ void ArCoreJavaUtils::RequestInstallSupportedArCore(int render_process_id,
                                                     int render_frame_id) {
   DCHECK(ShouldRequestInstallSupportedArCore());
 
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  DCHECK(render_frame_host);
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  DCHECK(web_contents);
-
-  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab_android);
-
-  base::android::ScopedJavaLocalRef<jobject> j_tab_android =
-      tab_android->GetJavaObject();
-  DCHECK(!j_tab_android.is_null());
-
   JNIEnv* env = AttachCurrentThread();
-  Java_ArCoreJavaUtils_requestInstallSupportedArCore(env, j_arcore_java_utils_,
-                                                     j_tab_android);
+  Java_ArCoreJavaUtils_requestInstallSupportedArCore(
+      env, j_arcore_java_utils_,
+      getTabFromRenderer(render_process_id, render_frame_id));
 }
 
 void ArCoreJavaUtils::OnRequestInstallArModuleResult(
@@ -129,6 +117,27 @@ bool ArCoreJavaUtils::EnsureLoaded() {
 ScopedJavaLocalRef<jobject> ArCoreJavaUtils::GetApplicationContext() {
   JNIEnv* env = AttachCurrentThread();
   return Java_ArCoreJavaUtils_getApplicationContext(env);
+}
+
+base::android::ScopedJavaLocalRef<jobject> ArCoreJavaUtils::getTabFromRenderer(
+    int render_process_id,
+    int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  DCHECK(render_frame_host);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab_android);
+
+  base::android::ScopedJavaLocalRef<jobject> j_tab_android =
+      tab_android->GetJavaObject();
+  DCHECK(!j_tab_android.is_null());
+
+  return j_tab_android;
 }
 
 static void JNI_ArCoreJavaUtils_InstallArCoreDeviceProviderFactory(

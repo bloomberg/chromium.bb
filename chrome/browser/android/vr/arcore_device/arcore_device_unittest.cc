@@ -92,7 +92,8 @@ class StubArCoreInstallUtils : public vr::ArCoreInstallUtils {
 
   bool ShouldRequestInstallArModule() override { return false; };
 
-  void RequestInstallArModule() override{};
+  void RequestInstallArModule(int render_process_id,
+                              int render_frame_id) override{};
   bool ShouldRequestInstallSupportedArCore() override { return false; };
   void RequestInstallSupportedArCore(int render_process_id,
                                      int render_frame_id) override{};

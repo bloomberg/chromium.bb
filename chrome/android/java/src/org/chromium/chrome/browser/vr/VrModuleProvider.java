@@ -115,7 +115,7 @@ public class VrModuleProvider {
     @CalledByNative
     private static void showInstallResult(boolean success) {
         // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-        int toastTextRes = success ? R.string.vr_module_install_success_text
+        int toastTextRes = success ? R.string.module_install_success_text
                                    : R.string.vr_module_install_failure_text;
         Toast.makeText(ContextUtils.getApplicationContext(), toastTextRes, Toast.LENGTH_SHORT)
                 .show();

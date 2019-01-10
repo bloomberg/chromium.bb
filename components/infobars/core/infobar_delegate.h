@@ -156,6 +156,7 @@ class InfoBarDelegate {
     SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE = 85,
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
     LITE_PAGE_PREVIEWS_INFOBAR = 87,
+    MODULE_INSTALL_FAILURE_INFOBAR_ANDROID = 88,
   };
 
   // Describes navigation events, used to decide whether infobars should be
