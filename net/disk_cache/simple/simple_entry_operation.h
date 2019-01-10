@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_once_callback.h"
+#include "net/disk_cache/simple/simple_histogram_enums.h"
 
 namespace net {
 class IOBuffer;
@@ -42,11 +43,11 @@ class SimpleEntryOperation {
   ~SimpleEntryOperation();
 
   static SimpleEntryOperation OpenOperation(SimpleEntryImpl* entry,
-                                            bool have_index,
+                                            OpenEntryIndexEnum index_state,
                                             CompletionOnceCallback,
                                             Entry** out_entry);
   static SimpleEntryOperation CreateOperation(SimpleEntryImpl* entry,
-                                              bool have_index,
+                                              OpenEntryIndexEnum index_state,
                                               CompletionOnceCallback callback,
                                               Entry** out_entry);
   static SimpleEntryOperation CloseOperation(SimpleEntryImpl* entry);
@@ -91,7 +92,7 @@ class SimpleEntryOperation {
   CompletionOnceCallback ReleaseCallback() { return std::move(callback_); }
 
   Entry** out_entry() { return out_entry_; }
-  bool have_index() const { return have_index_; }
+  bool have_index() const { return index_state_ != INDEX_NOEXIST; }
   int index() const { return index_; }
   int offset() const { return offset_; }
   int64_t sparse_offset() const { return sparse_offset_; }
@@ -111,7 +112,7 @@ class SimpleEntryOperation {
                        int length,
                        int64_t* out_start,
                        EntryOperationType type,
-                       bool have_index,
+                       OpenEntryIndexEnum index_state,
                        int index,
                        bool truncate,
                        bool optimistic);
@@ -134,7 +135,9 @@ class SimpleEntryOperation {
 
   const EntryOperationType type_;
   // Used in open and create operations.
-  const bool have_index_;
+  // For TYPE_CREATE, only distinguishes whether index exists or NOEXIST.
+  // Otherwise also indicates whether entry is HIT or MISS in the index.
+  const OpenEntryIndexEnum index_state_;
   // Used in write and read operations.
   const unsigned int index_;
   // Used only in write operations.

@@ -87,6 +87,14 @@ enum FileDescriptorLimiterOp {
   FD_LIMIT_OP_MAX = 3
 };
 
+// This enumeration is used in histograms, add entries only at end.
+enum OpenEntryIndexEnum {
+  INDEX_NOEXIST = 0,
+  INDEX_MISS = 1,
+  INDEX_HIT = 2,
+  INDEX_MAX = 3,
+};
+
 }  // namespace disk_cache
 
 #endif  // NET_DISK_CACHE_SIMPLE_SIMPLE_HISTOGRAM_ENUMS_H_
