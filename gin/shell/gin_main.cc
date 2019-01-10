@@ -82,7 +82,6 @@ int main(int argc, char** argv) {
 
   {
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                   gin::IsolateHolder::kStableV8Extras,
                                    gin::ArrayBufferAllocator::SharedInstance());
     gin::IsolateHolder instance(
         base::ThreadTaskRunnerHandle::Get(),

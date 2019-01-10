@@ -119,11 +119,10 @@ IsolateHolder::~IsolateHolder() {
 
 // static
 void IsolateHolder::Initialize(ScriptMode mode,
-                               V8ExtrasMode v8_extras_mode,
                                v8::ArrayBuffer::Allocator* allocator,
                                const intptr_t* reference_table) {
   CHECK(allocator);
-  V8Initializer::Initialize(mode, v8_extras_mode);
+  V8Initializer::Initialize(mode);
   g_array_buffer_allocator = allocator;
   g_reference_table = reference_table;
 }

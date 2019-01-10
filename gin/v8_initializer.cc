@@ -204,8 +204,7 @@ enum LoadV8FileResult {
 }  // namespace
 
 // static
-void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
-                               IsolateHolder::V8ExtrasMode v8_extras_mode) {
+void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
@@ -223,10 +222,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
-  }
-  if (IsolateHolder::kStableAndExperimentalV8Extras == v8_extras_mode) {
-    static const char flag[] = "--experimental_extras";
-    v8::V8::SetFlagsFromString(flag, sizeof(flag) - 1);
   }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)

@@ -691,12 +691,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
 
   DEFINE_STATIC_LOCAL(ArrayBufferAllocator, array_buffer_allocator, ());
-  auto v8_extras_mode = RuntimeEnabledFeatures::ExperimentalV8ExtrasEnabled()
-                            ? gin::IsolateHolder::kStableAndExperimentalV8Extras
-                            : gin::IsolateHolder::kStableV8Extras;
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
-                                 v8_extras_mode, &array_buffer_allocator,
-                                 reference_table);
+                                 &array_buffer_allocator, reference_table);
 
   ThreadScheduler* scheduler = ThreadScheduler::Current();
 
