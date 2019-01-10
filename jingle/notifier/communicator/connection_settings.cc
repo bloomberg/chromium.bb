@@ -8,11 +8,7 @@
 
 #include "base/logging.h"
 
-// Ideally we shouldn't include anything from talk/p2p, but we need
-// the definition of ProtocolType.  Don't use any functions from
-// port.h, since it won't link.
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
-#include "third_party/webrtc/p2p/base/port.h"
 
 namespace notifier {
 
@@ -62,10 +58,8 @@ std::string ConnectionSettings::ToString() const {
 
 void ConnectionSettings::FillXmppClientSettings(
     buzz::XmppClientSettings* client_settings) const {
-  client_settings->set_protocol(
-      (ssltcp_mode == USE_SSLTCP) ?
-      cricket::PROTO_SSLTCP :
-      cricket::PROTO_TCP);
+  client_settings->set_protocol((ssltcp_mode == USE_SSLTCP) ? buzz::PROTO_SSLTCP
+                                                            : buzz::PROTO_TCP);
   client_settings->set_server(server);
 }
 

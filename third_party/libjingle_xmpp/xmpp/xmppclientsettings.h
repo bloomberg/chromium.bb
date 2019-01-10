@@ -16,6 +16,13 @@
 
 namespace buzz {
 
+enum ProtocolType {
+  PROTO_TCP = 1,
+  PROTO_SSLTCP = 2,  // Pseudo-TLS.
+};
+
+enum ProxyType { PROXY_NONE, PROXY_HTTPS, PROXY_SOCKS5, PROXY_UNKNOWN };
+
 class XmppUserSettings {
  public:
   XmppUserSettings()
@@ -63,17 +70,16 @@ class XmppUserSettings {
 class XmppClientSettings : public XmppUserSettings {
  public:
   XmppClientSettings()
-    : protocol_(cricket::PROTO_TCP),
-      proxy_(rtc::PROXY_NONE),
-      proxy_port_(80),
-      use_proxy_auth_(false) {
-  }
+      : protocol_(PROTO_TCP),
+        proxy_(PROXY_NONE),
+        proxy_port_(80),
+        use_proxy_auth_(false) {}
 
   void set_server(const rtc::SocketAddress& server) {
       server_ = server;
   }
-  void set_protocol(cricket::ProtocolType protocol) { protocol_ = protocol; }
-  void set_proxy(rtc::ProxyType f) { proxy_ = f; }
+  void set_protocol(ProtocolType protocol) { protocol_ = protocol; }
+  void set_proxy(ProxyType f) { proxy_ = f; }
   void set_proxy_host(const std::string& host) { proxy_host_ = host; }
   void set_proxy_port(int port) { proxy_port_ = port; };
   void set_use_proxy_auth(bool f) { use_proxy_auth_ = f; }
@@ -81,8 +87,8 @@ class XmppClientSettings : public XmppUserSettings {
   void set_proxy_pass(const std::string& pass) { proxy_pass_ = pass; }
 
   const rtc::SocketAddress& server() const { return server_; }
-  cricket::ProtocolType protocol() const { return protocol_; }
-  rtc::ProxyType proxy() const { return proxy_; }
+  ProtocolType protocol() const { return protocol_; }
+  ProxyType proxy() const { return proxy_; }
   const std::string& proxy_host() const { return proxy_host_; }
   int proxy_port() const { return proxy_port_; }
   bool use_proxy_auth() const { return use_proxy_auth_; }
@@ -91,8 +97,8 @@ class XmppClientSettings : public XmppUserSettings {
 
  private:
   rtc::SocketAddress server_;
-  cricket::ProtocolType protocol_;
-  rtc::ProxyType proxy_;
+  ProtocolType protocol_;
+  ProxyType proxy_;
   std::string proxy_host_;
   int proxy_port_;
   bool use_proxy_auth_;

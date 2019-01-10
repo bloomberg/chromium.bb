@@ -29,7 +29,7 @@ buzz::AsyncSocket* CreateSocket(
         get_socket_factory_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   bool use_fake_ssl_client_socket =
-      (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
+      (xmpp_client_settings.protocol() == buzz::PROTO_SSLTCP);
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
   // These numbers were taken from similar numbers in
