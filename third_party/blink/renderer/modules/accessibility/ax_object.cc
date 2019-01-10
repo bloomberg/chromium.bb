@@ -2594,45 +2594,11 @@ int AXObject::AriaRowCount() const {
 }
 
 unsigned AXObject::ColumnIndex() const {
-  if (!IsTableCellLikeRole())
-    return 0;
-
-  const AXObject* row = TableRowParent();
-  if (!row)
-    return 0;
-
-  unsigned column_index = 0;
-  for (const auto& child : row->TableCellChildren()) {
-    if (child == this)
-      break;
-    column_index++;
-  }
-  return column_index;
+  return 0;
 }
 
 unsigned AXObject::RowIndex() const {
-  const AXObject* row = nullptr;
-  if (IsTableRowLikeRole())
-    row = this;
-  else if (IsTableCellLikeRole())
-    row = TableRowParent();
-
-  if (!row)
-    return 0;
-
-  const AXObject* table = row->TableParent();
-  if (!table)
-    return 0;
-
-  unsigned row_index = 0;
-  for (const auto& child : table->TableRowChildren()) {
-    if (child == row)
-      break;
-    if (!child->IsTableRowLikeRole())
-      continue;
-    row_index++;
-  }
-  return row_index;
+  return 0;
 }
 
 unsigned AXObject::ColumnSpan() const {
