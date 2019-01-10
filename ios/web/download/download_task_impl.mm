@@ -338,8 +338,7 @@ void DownloadTaskImpl::RemoveObserver(DownloadTaskObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
-                                              NSArray<NSHTTPCookie*>* cookies) {
+NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(identifier.length);
   base::WeakPtr<DownloadTaskImpl> weak_this = weak_factory_.GetWeakPtr();
@@ -394,8 +393,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
         }
         completion_handler();
       }];
-  return delegate_->CreateSession(identifier, cookies, session_delegate,
-                                  /*queue=*/nil);
+  return delegate_->CreateSession(identifier, session_delegate, /*queue=*/nil);
 }
 
 void DownloadTaskImpl::GetCookies(
@@ -427,7 +425,7 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   DCHECK(writer_);
 
   if (!session_) {
-    session_ = CreateSession(identifier_, cookies);
+    session_ = CreateSession(identifier_);
     DCHECK(session_);
   }
 
@@ -437,6 +435,8 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
 
   NSURL* url = net::NSURLWithGURL(GetOriginalUrl());
   session_task_ = [session_ dataTaskWithURL:url];
+  [session_.configuration.HTTPCookieStorage storeCookies:cookies
+                                                 forTask:session_task_];
   [session_task_ resume];
   OnDownloadUpdated();
 }

@@ -84,18 +84,11 @@ void DownloadControllerImpl::OnTaskDestroyed(DownloadTaskImpl* task) {
 
 NSURLSession* DownloadControllerImpl::CreateSession(
     NSString* identifier,
-    NSArray<NSHTTPCookie*>* cookies,
     id<NSURLSessionDataDelegate> delegate,
     NSOperationQueue* delegate_queue) {
   NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration
       backgroundSessionConfigurationWithIdentifier:identifier];
-  // Cookies have to be set in session configuration before the session is
-  // created. Once the session is created, the configuration object can't be
-  // edited and configuration property will return a copy of the originally used
-  // configuration.
-  for (NSHTTPCookie* cookie in cookies) {
-    [configuration.HTTPCookieStorage setCookie:cookie];
-  }
+
   std::string user_agent = GetWebClient()->GetUserAgent(UserAgentType::MOBILE);
   configuration.HTTPAdditionalHeaders = @{
     base::SysUTF8ToNSString(net::HttpRequestHeaders::kUserAgent) :

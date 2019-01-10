@@ -42,7 +42,6 @@ class DownloadControllerImpl : public DownloadController,
   // DownloadTaskImpl::Delegate overrides:
   void OnTaskDestroyed(DownloadTaskImpl* task) override;
   NSURLSession* CreateSession(NSString* identifier,
-                              NSArray<NSHTTPCookie*>* cookies,
                               id<NSURLSessionDataDelegate> delegate,
                               NSOperationQueue* delegate_queue) override;
 
