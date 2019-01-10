@@ -328,6 +328,10 @@ void FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
   // Since there are no stored articles, a refresh will be needed soon.
   profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
 
+  // The Feed will try to drop any outstanding refresh request, so we should
+  // stop tracking one as well.
+  tracking_oustanding_request_ = false;
+
   if (suppress_refreshes) {
     // Due to privacy, we should not fetch for a while (unless the user
     // explicitly asks for new suggestions) to give sync the time to propagate
