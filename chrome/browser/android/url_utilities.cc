@@ -88,6 +88,20 @@ static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
       net::registry_controlled_domains::GetDomainAndRegistry(gurl, filter));
 }
 
+static jboolean JNI_UrlUtilities_IsGoogleDomainUrl(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url,
+    jboolean allow_non_standard_port) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  if (gurl.is_empty())
+    return false;
+  return google_util::IsGoogleDomainUrl(
+      gurl, google_util::DISALLOW_SUBDOMAIN,
+      allow_non_standard_port == JNI_TRUE
+          ? google_util::ALLOW_NON_STANDARD_PORTS
+          : google_util::DISALLOW_NON_STANDARD_PORTS);
+}
+
 static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& url) {
