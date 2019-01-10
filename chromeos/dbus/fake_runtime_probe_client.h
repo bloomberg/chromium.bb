@@ -28,6 +28,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeRuntimeProbeClient
   void Init(dbus::Bus* bus) override {}
 
  private:
+  // Used to simulates changes in live values. This field will be iterated
+  // in small range and live values will be adjusted proportional to this
+  // value.
+  int live_offset_ = 0;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FakeRuntimeProbeClient> weak_ptr_factory_;

@@ -38,6 +38,7 @@
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -264,6 +265,11 @@ SessionManagerClient* DBusThreadManager::GetSessionManagerClient() {
   return clients_common_->session_manager_client_.get();
 }
 
+RuntimeProbeClient* DBusThreadManager::GetRuntimeProbeClient() {
+  return clients_browser_ ? clients_browser_->runtime_probe_client_.get()
+                          : nullptr;
+}
+
 SeneschalClient* DBusThreadManager::GetSeneschalClient() {
   return clients_browser_ ? clients_browser_->seneschal_client_.get() : nullptr;
 }
@@ -426,6 +432,12 @@ void DBusThreadManagerSetter::SetDebugDaemonClient(
 void DBusThreadManagerSetter::SetHammerdClient(
     std::unique_ptr<HammerdClient> client) {
   DBusThreadManager::Get()->clients_common_->hammerd_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetRuntimeProbeClient(
+    std::unique_ptr<RuntimeProbeClient> client) {
+  DBusThreadManager::Get()->clients_browser_->runtime_probe_client_ =
       std::move(client);
 }
 

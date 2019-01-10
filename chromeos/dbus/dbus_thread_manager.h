@@ -53,6 +53,7 @@ class ModemMessagingClient;
 class OobeConfigurationClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
+class RuntimeProbeClient;
 class SeneschalClient;
 class SessionManagerClient;
 class ShillDeviceClient;
@@ -161,6 +162,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   OobeConfigurationClient* GetOobeConfigurationClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
+  RuntimeProbeClient* GetRuntimeProbeClient();
   SeneschalClient* GetSeneschalClient();
   SessionManagerClient* GetSessionManagerClient();
   ShillDeviceClient* GetShillDeviceClient();
@@ -224,6 +226,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
       std::unique_ptr<PermissionBrokerClient> client);
   void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);
+  void SetRuntimeProbeClient(std::unique_ptr<RuntimeProbeClient> client);
   void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);
   void SetShillDeviceClient(std::unique_ptr<ShillDeviceClient> client);
   void SetShillIPConfigClient(std::unique_ptr<ShillIPConfigClient> client);
