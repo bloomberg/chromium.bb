@@ -763,6 +763,9 @@
       name: "MediaEngagementBypassAutoplayPolicies",
     },
     {
+      name: "MediaQueryPrefersColorScheme",
+    },
+    {
       name: "MediaQueryShape",
       status: "experimental",
     },

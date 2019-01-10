@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -139,6 +140,10 @@ DisplayShape MediaValuesDynamic::GetDisplayShape() const {
 
 ColorSpaceGamut MediaValuesDynamic::ColorGamut() const {
   return CalculateColorGamut(frame_);
+}
+
+WebColorScheme MediaValuesDynamic::PreferredColorScheme() const {
+  return CalculatePreferredColorScheme(frame_);
 }
 
 Document* MediaValuesDynamic::GetDocument() const {

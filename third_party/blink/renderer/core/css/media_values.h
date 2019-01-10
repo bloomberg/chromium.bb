@@ -18,6 +18,7 @@ class Document;
 class CSSPrimitiveValue;
 class LocalFrame;
 enum class ColorSpaceGamut;
+enum class WebColorScheme;
 
 class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
  public:
@@ -76,6 +77,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   virtual void OverrideViewportDimensions(double width, double height) = 0;
   virtual DisplayShape GetDisplayShape() const = 0;
   virtual ColorSpaceGamut ColorGamut() const = 0;
+  virtual WebColorScheme PreferredColorScheme() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -97,6 +99,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static int CalculateAvailableHoverTypes(LocalFrame*);
   static DisplayShape CalculateDisplayShape(LocalFrame*);
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
+  static WebColorScheme CalculatePreferredColorScheme(LocalFrame*);
 };
 
 }  // namespace blink

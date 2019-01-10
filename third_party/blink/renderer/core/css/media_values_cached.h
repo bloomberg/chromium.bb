@@ -36,6 +36,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     WebDisplayMode display_mode;
     DisplayShape display_shape;
     ColorSpaceGamut color_gamut;
+    WebColorScheme preferred_color_scheme;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -61,6 +62,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.display_mode = display_mode;
       data.display_shape = display_shape;
       data.color_gamut = color_gamut;
+      data.preferred_color_scheme = preferred_color_scheme;
       return data;
     }
   };
@@ -100,6 +102,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   WebDisplayMode DisplayMode() const override;
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
+  WebColorScheme PreferredColorScheme() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

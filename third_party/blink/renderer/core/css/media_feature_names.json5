@@ -48,6 +48,7 @@
     "min-width",
     "min-resolution",
     "pointer",
+    "prefers-color-scheme",
     "resolution",
     "-webkit-transform-3d",
     "scan",
