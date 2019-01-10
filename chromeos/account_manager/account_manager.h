@@ -47,15 +47,17 @@ class CHROMEOS_EXPORT AccountManager {
   // See |AccountManager::UpsertToken|.
   static const char kActiveDirectoryDummyToken[];
 
-  // A special token that marks an account in Account Manager as invalid, but
-  // does not remove the account. This is useful in scenarios where account
-  // names are imported from elsewhere (Chrome content area or ARC++) and their
-  // tokens are not yet known, but at the same time, these accounts need to be
-  // surfaced on the UI.
+  // A special token that is guaranteed to cheaply fail all network requests
+  // performed using it.
+  // Note that it neither marks an account in Account Manager as invalid, nor
+  // removes the account. This is useful in scenarios where account names are
+  // imported from elsewhere (Chrome content area or ARC++) and their tokens are
+  // not yet known, but at the same time, these accounts need to be surfaced on
+  // the UI.
   // Do not use this token for Active Directory accounts,
   // |kActiveDirectoryDummyToken| is meant for that.
   // See |AccountManager::UpsertToken|.
-  static const char kInvalidToken[];
+  static const char* const kInvalidToken;
 
   struct AccountKey {
     // |id| is obfuscated GAIA id for |AccountType::ACCOUNT_TYPE_GAIA|.

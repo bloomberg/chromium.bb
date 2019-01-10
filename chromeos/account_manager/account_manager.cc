@@ -19,6 +19,7 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -97,7 +98,8 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
 const char AccountManager::kActiveDirectoryDummyToken[] = "dummy_ad_token";
 
 // static
-const char AccountManager::kInvalidToken[] = "";
+const char* const AccountManager::kInvalidToken =
+    OAuth2TokenServiceDelegate::kInvalidRefreshToken;
 
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:
@@ -382,8 +384,7 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
 
   auto it = tokens_.find(account_key);
   return it != tokens_.end() && !it->second.empty() &&
-         it->second != kActiveDirectoryDummyToken &&
-         it->second != kInvalidToken;
+         it->second != kActiveDirectoryDummyToken;
 }
 
 void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
@@ -394,13 +395,9 @@ void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
 
   const std::string& token = it->second;
 
-  // Stored tokens can be empty for accounts recently migrated to
-  // AccountManager, for which we do not have LSTs yet. These accounts require
-  // re-authentication from the user, but are in a valid state (and hence don't
-  // do a DCHECK here for |!token.empty()|).
-  if (account_key.account_type ==
-          account_manager::AccountType::ACCOUNT_TYPE_GAIA &&
-      !token.empty()) {
+  if ((account_key.account_type ==
+       account_manager::AccountType::ACCOUNT_TYPE_GAIA) &&
+      !token.empty() && (token != kInvalidToken)) {
     RevokeGaiaTokenOnServer(token);
   }
 }

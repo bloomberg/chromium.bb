@@ -562,10 +562,10 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   const int initial_num_calls = auth_instance().num_account_upserted_calls();
 
   chromeos::AccountManager::AccountKey account_key{
-      account_info.gaia,
-      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  account_manager()->UpsertToken(account_key,
-                                 chromeos::AccountManager::kInvalidToken);
+      "object-guid",
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
+  account_manager()->UpsertToken(
+      account_key, chromeos::AccountManager::kActiveDirectoryDummyToken);
 
   EXPECT_EQ(auth_instance().num_account_upserted_calls(), initial_num_calls);
 }
