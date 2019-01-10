@@ -992,6 +992,12 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
   if (!NeedsBoxInfo())
     return;
 
+  // TODO(xiaochengh): Fix https://crbug.com/919146 and remove the checks below.
+  CHECK(items_->size()) << node;
+  CHECK_EQ(items_->back().GetLayoutObject(), node) << node;
+  CHECK(style) << node;
+  CHECK_EQ(items_->back().Style(), style) << node;
+
   // Set |ShouldCreateBoxFragment| of the parent box if needed.
   BoxInfo* current_box =
       &boxes_.emplace_back(items_->size() - 1, items_->back());
