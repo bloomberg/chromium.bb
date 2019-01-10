@@ -69,7 +69,9 @@ void FCMInvalidator::OnInvalidate(
 
 void FCMInvalidator::RequestDetailedStatus(
     base::RepeatingCallback<void(const base::DictionaryValue&)> callback)
-    const {}
+    const {
+  invalidation_listener_.RequestDetailedStatus(callback);
+}
 
 void FCMInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
   registrar_.UpdateInvalidatorState(state);

@@ -91,6 +91,9 @@ class FCMInvalidationListener : public InvalidationListener,
 
   void DoRegistrationUpdate();
 
+  void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) const;
+
   void StopForTest();
 
   TopicSet GetRegisteredIdsForTest() const;

@@ -25,6 +25,21 @@ namespace syncer {
 class ObjectIdInvalidationMap;
 }  // namespace syncer
 
+namespace {
+
+invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
+    Profile* profile) {
+  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
+    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+        profile);
+  } else {
+    return invalidation::DeprecatedProfileInvalidationProviderFactory::
+        GetForProfile(profile);
+  }
+}
+
+}  // namespace
+
 InvalidationsMessageHandler::InvalidationsMessageHandler()
     : logger_(NULL), weak_ptr_factory_(this) {}
 
@@ -45,16 +60,8 @@ void InvalidationsMessageHandler::RegisterMessages() {
 }
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
-  invalidation::ProfileInvalidationProvider* invalidation_provider;
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    invalidation_provider =
-        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-            profile);
-  } else {
-    invalidation_provider = invalidation::
-        DeprecatedProfileInvalidationProviderFactory::GetForProfile(profile);
-  }
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      GetInvalidationProvider(Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
     logger_ = invalidation_provider->GetInvalidationService()->
         GetInvalidationLogger();
@@ -67,8 +74,7 @@ void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
 void InvalidationsMessageHandler::HandleRequestDetailedStatus(
     const base::ListValue* args) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
+      GetInvalidationProvider(Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
     invalidation_provider->GetInvalidationService()->RequestDetailedStatus(
         base::Bind(&InvalidationsMessageHandler::OnDetailedStatus,
