@@ -5409,26 +5409,6 @@
             ]
         }
     ],
-    "WebSocketHandshakeReuseConnection": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Shipped",
-                    "enable_features": [
-                        "WebSocketHandshakeReuseConnection"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebViewUmaLogAppPackageName": [
         {
             "platforms": [

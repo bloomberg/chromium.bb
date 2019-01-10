@@ -1256,9 +1256,6 @@ extern const char kWebrtcStunOriginDescription[];
 extern const char kWebrtcUnifiedPlanByDefaultName[];
 extern const char kWebrtcUnifiedPlanByDefaultDescription[];
 
-extern const char kWebSocketHandshakeReuseConnectionName[];
-extern const char kWebSocketHandshakeReuseConnectionDescription[];
-
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
 

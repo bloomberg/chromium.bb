@@ -3806,11 +3806,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisallowUnsafeHttpDownloadsNameDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDisallowUnsafeHttpDownloads)},
 
-    {"enable-websocket-auth-connection-reuse",
-     flag_descriptions::kWebSocketHandshakeReuseConnectionName,
-     flag_descriptions::kWebSocketHandshakeReuseConnectionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::WebSocketBasicHandshakeStream::
-                            kWebSocketHandshakeReuseConnection)},
     {"unsafely-treat-insecure-origin-as-secure",
      flag_descriptions::kTreatInsecureOriginAsSecureName,
      flag_descriptions::kTreatInsecureOriginAsSecureDescription, kOsAll,
