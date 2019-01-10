@@ -68,9 +68,9 @@ void AppRegistryCache::DoOnApps(std::vector<apps::mojom::AppPtr> deltas) {
   // OnAppUpdate calls back into this AppRegistryCache then we can therefore
   // present a single delta for any given app_id.
   for (auto& delta : deltas) {
-    auto iter = deltas_in_progress_.find(delta->app_id);
-    if (iter != deltas_in_progress_.end()) {
-      AppUpdate::Merge(iter->second, delta.get());
+    auto d_iter = deltas_in_progress_.find(delta->app_id);
+    if (d_iter != deltas_in_progress_.end()) {
+      AppUpdate::Merge(d_iter->second, delta.get());
     } else {
       deltas_in_progress_[delta->app_id] = delta.get();
     }
@@ -92,13 +92,16 @@ void AppRegistryCache::DoOnApps(std::vector<apps::mojom::AppPtr> deltas) {
   }
 
   // Update the states for every de-duplicated delta.
-  for (const auto& delta : deltas_in_progress_) {
-    auto iter = states_.find(delta.second->app_id);
-    if (iter != states_.end()) {
-      AppUpdate::Merge(iter->second.get(), delta.second);
+  for (const auto& d_iter : deltas_in_progress_) {
+    auto s_iter = states_.find(d_iter.first);
+    apps::mojom::App* state =
+        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
+    apps::mojom::App* delta = d_iter.second;
+
+    if (state) {
+      AppUpdate::Merge(state, delta);
     } else {
-      states_.insert(
-          std::make_pair(delta.second->app_id, delta.second->Clone()));
+      states_.insert(std::make_pair(delta->app_id, delta->Clone()));
     }
   }
   deltas_in_progress_.clear();
