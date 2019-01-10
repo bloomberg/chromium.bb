@@ -18,6 +18,12 @@ COPY_FROM_TARGET = 1
 def _IsLinkLocalIPv6(hostname):
   return hostname.startswith('fe80::')
 
+# Adds ""
+def _EscapeIfIPv6Address(address):
+  if ':' in address:
+    return '[' + address + ']'
+  else:
+    return address
 
 class CommandRunner(object):
   """Helper class used to execute commands on a remote host over SSH."""
@@ -33,9 +39,6 @@ class CommandRunner(object):
     self._config_path = config_path
     self._host = host
     self._port = port
-
-    if ':' in self._host:
-      self._host = '[' + self._host + ']'
 
   def _GetSshCommandLinePrefix(self):
     return _SSH + ['-F', self._config_path, self._host, '-p', str(self._port)]
@@ -98,10 +101,12 @@ class CommandRunner(object):
     if recursive:
       scp_command.append('-r')
 
+    host = _EscapeIfIPv6Address(self._host)
+
     if direction == COPY_TO_TARGET:
-      dest = "%s:%s" % (self._host, dest)
+      dest = "%s:%s" % (host, dest)
     else:
-      sources = ["%s:%s" % (self._host, source) for source in sources]
+      sources = ["%s:%s" % (host, source) for source in sources]
 
     scp_command += ['-F', self._config_path, '-P', str(self._port)]
     scp_command += sources
