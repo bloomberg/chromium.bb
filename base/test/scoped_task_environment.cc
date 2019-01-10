@@ -311,7 +311,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
       file_descriptor_watcher_(main_thread_type == MainThreadType::IO
                                    ? std::make_unique<FileDescriptorWatcher>(
-                                         task_queue_->task_runner())
+                                         GetMainThreadTaskRunner())
                                    : nullptr),
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
       task_tracker_(new TestTaskTracker()),
@@ -323,7 +323,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
           BindRepeating([]() { LOG(FATAL) << "Run() timed out."; })) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
-  CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   CHECK(!TaskScheduler::GetInstance())
       << "Someone has already initialized TaskScheduler. If nothing in your "
          "test does so, then a test that ran earlier may have initialized one, "
@@ -331,7 +330,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
          "someone has explicitly disabled it with "
          "DisableCheckForLeakedGlobals().";
 
-  sequence_manager_->SetDefaultTaskRunner(task_queue_->task_runner());
+  CHECK(!base::ThreadTaskRunnerHandle::IsSet());
+  sequence_manager_->SetDefaultTaskRunner(GetMainThreadTaskRunner());
+  CHECK(base::ThreadTaskRunnerHandle::IsSet())
+      << "ThreadTaskRunnerHandle should've been set now.";
 
   // Instantiate a TaskScheduler with 2 threads in each of its 4 pools. Threads
   // stay alive even when they don't have work.
