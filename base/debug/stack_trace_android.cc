@@ -12,6 +12,7 @@
 #include <ostream>
 
 #include "base/debug/proc_maps_linux.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -70,7 +71,7 @@ bool EnableInProcessStackDumping() {
 }
 
 StackTrace::StackTrace(size_t count) {
-  count = std::min(arraysize(trace_), count);
+  count = std::min(base::size(trace_), count);
 
   StackCrawlState state(reinterpret_cast<uintptr_t*>(trace_), count);
   _Unwind_Backtrace(&TraceStackFrame, &state);

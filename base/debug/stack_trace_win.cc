@@ -14,8 +14,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -275,7 +275,7 @@ bool EnableInProcessStackDumping() {
 }
 
 NOINLINE StackTrace::StackTrace(size_t count) {
-  count = std::min(arraysize(trace_), count);
+  count = std::min(base::size(trace_), count);
 
   // When walking our own stack, use CaptureStackBackTrace().
   count_ = CaptureStackBackTrace(0, count, trace_, NULL);
@@ -324,20 +324,14 @@ void StackTrace::InitTrace(const CONTEXT* context_record) {
   stack_frame.AddrPC.Mode = AddrModeFlat;
   stack_frame.AddrFrame.Mode = AddrModeFlat;
   stack_frame.AddrStack.Mode = AddrModeFlat;
-  while (StackWalk64(machine_type,
-                     GetCurrentProcess(),
-                     GetCurrentThread(),
-                     &stack_frame,
-                     &context_copy,
-                     NULL,
-                     &SymFunctionTableAccess64,
-                     &SymGetModuleBase64,
-                     NULL) &&
-         count_ < arraysize(trace_)) {
+  while (StackWalk64(machine_type, GetCurrentProcess(), GetCurrentThread(),
+                     &stack_frame, &context_copy, NULL,
+                     &SymFunctionTableAccess64, &SymGetModuleBase64, NULL) &&
+         count_ < base::size(trace_)) {
     trace_[count_++] = reinterpret_cast<void*>(stack_frame.AddrPC.Offset);
   }
 
-  for (size_t i = count_; i < arraysize(trace_); ++i)
+  for (size_t i = count_; i < base::size(trace_); ++i)
     trace_[i] = NULL;
 }
 

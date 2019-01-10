@@ -19,8 +19,10 @@
 #include <array>
 #include <iomanip>
 #include <iostream>
+#include <type_traits>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace base {
 namespace debug {
@@ -28,7 +30,7 @@ namespace debug {
 namespace {
 
 const char kProcessNamePrefix[] = "app:";
-const size_t kProcessNamePrefixLen = arraysize(kProcessNamePrefix) - 1;
+const size_t kProcessNamePrefixLen = base::size(kProcessNamePrefix) - 1;
 
 struct BacktraceData {
   void** trace_array;
@@ -105,7 +107,7 @@ void SymbolMap::Populate() {
   // TODO(wez): Object names can only have up to ZX_MAX_NAME_LEN characters, so
   // if we keep hitting problems with truncation, find a way to plumb argv[0]
   // through to here instead, e.g. using CommandLine::GetProgramName().
-  char app_name[arraysize(SymbolMap::Entry::name)];
+  char app_name[std::extent<decltype(SymbolMap::Entry::name)>()];
   strcpy(app_name, kProcessNamePrefix);
   zx_status_t status = zx_object_get_property(
       process, ZX_PROP_NAME, app_name + kProcessNamePrefixLen,
