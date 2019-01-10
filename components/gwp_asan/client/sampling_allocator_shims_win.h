@@ -27,7 +27,13 @@ void TLSInit(TLSKey* key) {
 }
 
 size_t TLSGetValue(const TLSKey& key) {
-  return reinterpret_cast<size_t>(::TlsGetValue(key));
+  // TlsGetValue() sets GetLastError() to ERROR_SUCCESS to differentiate between
+  // success and failure since any return value is a possible valid result.
+  // Preserve it in case it was already set.
+  int last_error = ::GetLastError();
+  size_t retval = reinterpret_cast<size_t>(::TlsGetValue(key));
+  ::SetLastError(last_error);
+  return retval;
 }
 
 void TLSSetValue(const TLSKey& key, size_t value) {
