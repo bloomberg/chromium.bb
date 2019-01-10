@@ -98,7 +98,9 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->url_list_via_service_worker = response.url_list;
   out_head->response_type = response.response_type;
   out_head->response_time = response.response_time;
-  out_head->is_in_cache_storage = response.is_in_cache_storage;
+  out_head->is_in_cache_storage =
+      response.response_source ==
+      network::mojom::FetchResponseSource::kCacheStorage;
   if (response.cache_storage_cache_name)
     out_head->cache_storage_cache_name = *(response.cache_storage_cache_name);
   else

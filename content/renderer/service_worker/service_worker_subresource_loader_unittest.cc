@@ -1028,8 +1028,13 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
+  std::unique_ptr<network::ResourceResponseHead> expected_info =
+      CreateResponseInfoFromServiceWorker();
+  // |is_in_cache_storage| should be true because |fake_controller_| sets the
+  // response source as CacheStorage.
+  expected_info->is_in_cache_storage = true;
   const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  ExpectResponseInfo(info, *expected_info);
   EXPECT_EQ(33, info.content_length);
 
   // Test the cached metadata.

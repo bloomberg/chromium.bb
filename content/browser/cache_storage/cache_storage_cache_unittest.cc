@@ -290,7 +290,8 @@ bool ResponseSideDataEqual(const std::string& expected_side_data,
 
 blink::mojom::FetchAPIResponsePtr SetCacheName(
     blink::mojom::FetchAPIResponsePtr response) {
-  response->is_in_cache_storage = true;
+  response->response_source =
+      network::mojom::FetchResponseSource::kCacheStorage;
   response->cache_storage_cache_name = kCacheName;
   return response;
 }
@@ -471,7 +472,7 @@ class CacheStorageCacheTest : public testing::Test {
         nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
         response_time_, std::string() /* cache_storage_cache_name */,
         std::vector<std::string>() /* cors_exposed_header_names */,
-        false /* is_in_cache_storage */, nullptr /* side_data_blob */);
+        nullptr /* side_data_blob */);
   }
 
   std::unique_ptr<storage::BlobDataHandle> BuildBlobHandle(

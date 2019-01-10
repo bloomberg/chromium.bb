@@ -32,7 +32,7 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
       response->response_type, response->response_source, response->headers,
       CloneSerializedBlob(response->blob), response->error,
       response->response_time, response->cache_storage_cache_name,
-      response->cors_exposed_header_names, response->is_in_cache_storage,
+      response->cors_exposed_header_names,
       CloneSerializedBlob(response->side_data_blob));
 }
 

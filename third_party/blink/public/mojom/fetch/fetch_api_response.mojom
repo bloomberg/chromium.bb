@@ -61,10 +61,6 @@ struct FetchAPIResponse {
   // set of headers that should be exposed.
   array<string> cors_exposed_header_names;
 
-  // True when the response was retrieved from Cache Storage.
-  // TODO(bashi): Remove after |response_source| is stabilized.
-  bool is_in_cache_storage;
-
   // Side data is used to pass the metadata of the response (eg. V8 code cache).
   SerializedBlob? side_data_blob;
 };
