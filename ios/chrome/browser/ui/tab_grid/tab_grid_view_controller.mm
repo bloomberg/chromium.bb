@@ -793,7 +793,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)configureButtonsForActiveAndCurrentPage {
-  self.bottomToolbar.newTabButton.page = self.currentPage;
+  self.bottomToolbar.page = self.currentPage;
   if (self.currentPage == TabGridPageRemoteTabs) {
     [self configureDoneButtonBasedOnPage:self.activePage];
   } else {

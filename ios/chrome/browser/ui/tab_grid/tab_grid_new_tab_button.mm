@@ -80,22 +80,18 @@
 #pragma mark - Public
 
 - (void)setPage:(TabGridPage)page {
+  if (page == _page)
+    return;
   switch (page) {
     case TabGridPageIncognitoTabs:
-      self.enabled = YES;
-      self.button.alpha = 1.0;
       self.button.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_INCOGNITO_TAB);
       break;
     case TabGridPageRegularTabs:
-      self.enabled = YES;
-      self.button.alpha = 1.0;
       self.button.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_TAB);
       break;
     case TabGridPageRemoteTabs:
-      self.enabled = NO;
-      self.button.alpha = 0.0;
       break;
   }
   self.title = self.button.accessibilityLabel;
