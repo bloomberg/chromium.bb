@@ -132,6 +132,9 @@ function PDFViewer(browserApi) {
   this.isPrintPreviewLoadingFinished_ = false;
   this.isUserInitiatedEvent_ = true;
 
+  /** @private {boolean} */
+  this.hasEnteredAnnotationMode_ = false;
+
   /**
    * @type {!PDFMetrics}
    */
@@ -496,6 +499,7 @@ PDFViewer.prototype = {
   annotationModeChanged_: async function(e) {
     const annotationMode = e.detail.value;
     if (annotationMode) {
+      this.hasEnteredAnnotationMode_ = true;
       assert(this.currentController_ == this.pluginController_);
       // Enter annotation mode.
       // TODO(dstockwell): set plugin read-only, begin transition
@@ -1125,8 +1129,12 @@ PDFViewer.prototype = {
    * Saves the current PDF document to disk.
    */
   save: async function() {
+    // If we have entered annotation mode we must require the local
+    // contents to ensure annotations are saved. Otherwise we would
+    // save the cached or remote copy without annotatios.
+    const requireResult = this.hasEnteredAnnotationMode_;
     // TODO(dstockwell): Report an error to user if this fails.
-    const result = await this.currentController_.save(false);
+    const result = await this.currentController_.save(requireResult);
     if (result == null) {
       // The content controller handled the save internally.
       return;
