@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.preferences.autofill_assistant;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.intent.rule.IntentsTestRule;
-import android.support.test.filters.SmallTest;
-
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.intent.rule.IntentsTestRule;
+import android.support.test.filters.SmallTest;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -48,6 +49,11 @@ public class AutofillAssistantPreferencesTest {
     public IntentsTestRule<HistoryActivity> mHistoryActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
 
+    @Before
+    public void setUp() {
+        clearAutofillAssistantSwitch();
+    }
+
     /**
      * Set the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference to the given |value|.
      * @param value The value to set the preference to.
@@ -67,6 +73,16 @@ public class AutofillAssistantPreferencesTest {
     private boolean getAutofillAssistantSwitch(boolean defaultValue) {
         return ContextUtils.getAppSharedPreferences().getBoolean(
                 AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, defaultValue);
+    }
+
+    /**
+     * Removes the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference.
+     */
+    private void clearAutofillAssistantSwitch() {
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .remove(AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH)
+                .apply();
     }
 
     /**
@@ -125,16 +141,43 @@ public class AutofillAssistantPreferencesTest {
     }
 
     /**
-     * Ensure that the "Autofill Assistant" setting is shown when the feature is enabled.
+     * Test: if the onboarding was never shown, the AA chrome preference should not exist.
+     *
+     * Note: presence of the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference indicates whether
+     * onboarding was shown or not.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantPreferenceEnabled() throws Exception {
+    public void testAutofillAssistantNoPreferenceIfOnboardingNeverShown() throws Exception {
+        // Note: |PREF_AUTOFILL_ASSISTANT_SWITCH| is cleared in setUp().
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+                Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
+                        is(nullValue()));
+            }
+        });
+    }
 
+    /**
+     * Test: if the onboarding was shown at least once, the AA chrome preference should also exist.
+     *
+     * Note: presence of the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference indicates whether
+     * onboarding was shown or not.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantPreferenceShownIfOnboardingShown() throws Exception {
+        setAutofillAssistantSwitch(false);
+        final Preferences preferences = PreferencesTest.startPreferences(
+                InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -152,7 +195,7 @@ public class AutofillAssistantPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantPreferenceDisabled() throws Exception {
+    public void testAutofillAssistantNoPreferenceIfFeatureDisabled() throws Exception {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
