@@ -444,13 +444,6 @@ body._10sec #toggle-timer:checked {
   visibility: hidden;
 }
 
-#settings,
-#gridsettings,
-#timersettings {
-  /* Delay invisibility for menu sliding-out. */
-  transition: opacity 100ms, visibility 100ms;
-}
-
 body.camera #camera,
 body.settings #settings,
 body.gridsettings #gridsettings,
@@ -461,6 +454,13 @@ body.warning #warning {
   opacity: 1;
   visibility: visible;
   transition: opacity 100ms;
+}
+
+body.gridsettings #gridsettings,
+body.timersettings #timersettings,
+body.settings #settings {
+  /* Avoid flicking for transition between settings. */
+  transition: opacity 0ms;
 }
 
 body.settings .left-stripe,
@@ -841,14 +841,6 @@ body.ext-fs #browser-export {
   height: 100%;
   min-width: 360px;
   opacity: 0.9;
-  -webkit-transform: translateX(-100%);
-  transition: -webkit-transform 150ms ease-in;
-}
-
-body.settings:not(.gridsettings):not(.timersettings) #settings .menu,
-body.gridsettings #gridsettings .menu,
-body.timersettings #timersettings .menu {
-  -webkit-transform: translateX(0);
 }
 
 .menu-header,
