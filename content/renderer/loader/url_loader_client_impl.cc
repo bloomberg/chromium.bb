@@ -15,6 +15,7 @@
 #include "content/renderer/loader/url_response_body_consumer.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 namespace {
@@ -107,6 +108,22 @@ class URLLoaderClientImpl::DeferredOnReceiveCachedMetadata final
 
  private:
   const std::vector<uint8_t> data_;
+};
+
+class URLLoaderClientImpl::DeferredOnStartLoadingResponseBody final
+    : public DeferredMessage {
+ public:
+  explicit DeferredOnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body)
+      : body_(std::move(body)) {}
+
+  void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
+    dispatcher->OnStartLoadingResponseBody(request_id, std::move(body_));
+  }
+  bool IsCompletionMessage() const override { return false; }
+
+ private:
+  mojo::ScopedDataPipeConsumerHandle body_;
 };
 
 class URLLoaderClientImpl::DeferredOnComplete final : public DeferredMessage {
@@ -304,26 +321,46 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
   DCHECK(!has_received_response_body_);
   has_received_response_body_ = true;
 
-  if (pass_response_pipe_to_dispatcher_) {
-    resource_dispatcher_->OnStartLoadingResponseBody(request_id_,
-                                                     std::move(body));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kResourceLoadViaDataPipe)) {
+    if (pass_response_pipe_to_dispatcher_) {
+      resource_dispatcher_->OnStartLoadingResponseBody(request_id_,
+                                                       std::move(body));
+      return;
+    }
+
+    body_consumer_ = new URLResponseBodyConsumer(
+        request_id_, resource_dispatcher_, std::move(body), task_runner_);
+
+    if (NeedsStoringMessage()) {
+      body_consumer_->SetDefersLoading();
+      return;
+    }
+
+    body_consumer_->OnReadable(MOJO_RESULT_OK);
     return;
   }
-
-  body_consumer_ = new URLResponseBodyConsumer(
-      request_id_, resource_dispatcher_, std::move(body), task_runner_);
 
   if (NeedsStoringMessage()) {
-    body_consumer_->SetDefersLoading();
-    return;
+    StoreAndDispatch(
+        std::make_unique<DeferredOnStartLoadingResponseBody>(std::move(body)));
+  } else {
+    resource_dispatcher_->OnStartLoadingResponseBody(request_id_,
+                                                     std::move(body));
   }
-
-  body_consumer_->OnReadable(MOJO_RESULT_OK);
 }
 
 void URLLoaderClientImpl::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   has_received_complete_ = true;
+
+  // Dispatch completion status to the ResourceDispatcher.
+  //
+  // Non-ResourceLoadViaDataPipe: Call ResourceDispatcher::OnRequestComplete
+  // only when body doesn't exist since |body_consumer_| will call
+  // ResrouceDispatcher::OnRequestComplete() when body exists.
+  // ResourceLoadViaDataPipe: always go into this path since we no longer use
+  // |body_consumer_| for transferring the body.
   if (!body_consumer_) {
     // Except for errors, there must always be a response's body.
     DCHECK(has_received_response_body_ || status.error_code != net::OK);
@@ -334,6 +371,9 @@ void URLLoaderClientImpl::OnComplete(
     }
     return;
   }
+
+  DCHECK(
+      !base::FeatureList::IsEnabled(blink::features::kResourceLoadViaDataPipe));
   body_consumer_->OnComplete(status);
 }
 

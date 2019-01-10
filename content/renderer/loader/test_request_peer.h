@@ -68,6 +68,9 @@ class TestRequestPeer : public RequestPeer {
     // Data received. If downloading to file, remains empty.
     std::string data;
 
+    // Mojo's data pipe passed on OnStartLoadingResponseBody.
+    mojo::ScopedDataPipeConsumerHandle body_handle;
+
     // Total encoded data length, regardless of whether downloading to a file or
     // not.
     int total_encoded_data_length = 0;
