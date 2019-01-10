@@ -8,12 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/simple_geolocation_request.h"
 #include "url/gurl.h"
 
@@ -31,7 +31,7 @@ class GeolocationHandler;
 // Note: this should probably be a singleton to monitor requests rate.
 // But as it is used only diring ChromeOS Out-of-Box, it can be owned by
 // WizardController for now.
-class CHROMEOS_EXPORT SimpleGeolocationProvider {
+class COMPONENT_EXPORT(CHROMEOS_GEOLOCATION) SimpleGeolocationProvider {
  public:
   SimpleGeolocationProvider(
       scoped_refptr<network::SharedURLLoaderFactory> factory,
