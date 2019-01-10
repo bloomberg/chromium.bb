@@ -10,7 +10,7 @@ interface RTCRtpReceiver {
     [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcp_transport;
     static RTCRtpCapabilities?            getCapabilities(DOMString kind);
     RTCRtpReceiveParameters               getParameters();
+    sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
     sequence<RTCRtpContributingSource> getContributingSources();
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
-    // TODO(hbos): Support every member of the spec. https://crbug.com/700916
 };

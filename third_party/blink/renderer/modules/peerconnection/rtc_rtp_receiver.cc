@@ -46,6 +46,24 @@ RTCDtlsTransport* RTCRtpReceiver::rtcp_transport() {
   return nullptr;
 }
 
+HeapVector<Member<RTCRtpSynchronizationSource>>
+RTCRtpReceiver::getSynchronizationSources() {
+  UpdateSourcesIfNeeded();
+  HeapVector<Member<RTCRtpSynchronizationSource>> synchronization_sources;
+  for (const auto& web_source : web_sources_) {
+    // TODO(https://crbug.com/893172): Rename WebRTCRtpContributingSource to
+    // reflect that it is used for both SSRCs and CSRCs, e.g. "WebRTCRtpSource".
+    if (web_source->SourceType() != WebRTCRtpContributingSourceType::SSRC)
+      continue;
+    RTCRtpSynchronizationSource* synchronization_source =
+        MakeGarbageCollected<RTCRtpSynchronizationSource>();
+    synchronization_source->setTimestamp(web_source->TimestampMs());
+    synchronization_source->setSource(web_source->Source());
+    synchronization_sources.push_back(synchronization_source);
+  }
+  return synchronization_sources;
+}
+
 HeapVector<Member<RTCRtpContributingSource>>
 RTCRtpReceiver::getContributingSources() {
   UpdateSourcesIfNeeded();

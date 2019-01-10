@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 494 tests; 301 PASS, 193 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 494 tests; 302 PASS, 192 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: ReferenceError: RTCSctpTransport is not defined Reached unreachable code
@@ -266,7 +266,7 @@ FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototyp
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
 PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
-FAIL RTCRtpReceiver interface: operation getSynchronizationSources() assert_own_property: interface prototype object missing non-static operation expected property "getSynchronizationSources" missing
+PASS RTCRtpReceiver interface: operation getSynchronizationSources()
 PASS RTCRtpReceiver interface: operation getStats()
 FAIL RTCRtpReceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio').receiver assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio').receiver assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
