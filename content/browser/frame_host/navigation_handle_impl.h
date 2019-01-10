@@ -195,13 +195,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return appcache_handle_.get();
   }
 
-  typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
+  typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
   // Called when the URLRequest will start in the network stack.  |callback|
   // will be called when all throttle checks have completed. This will allow
   // the caller to cancel the navigation or let it proceed.
-  void WillStartRequest(const ThrottleChecksFinishedCallback& callback);
+  void WillStartRequest(ThrottleChecksFinishedCallback callback);
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.
@@ -212,7 +212,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
-      const ThrottleChecksFinishedCallback& callback);
+      ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This
@@ -231,7 +231,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       RenderProcessHost* post_redirect_process,
-      const ThrottleChecksFinishedCallback& callback);
+      ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest will fail. |render_frame_host| corresponds to
   // the RenderFrameHost in which the error page will load. |callback| will be
@@ -240,7 +240,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // custom error page HTML) or let the failure proceed as normal.
   void WillFailRequest(RenderFrameHostImpl* render_frame_host,
                        base::Optional<net::SSLInfo> ssl_info,
-                       const ThrottleChecksFinishedCallback& callback);
+                       ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest has delivered response headers and metadata.
   // |callback| will be called when all throttle checks have completed,
@@ -261,7 +261,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_stream,
       bool is_signed_exchange_inner_response,
       bool was_cached,
-      const ThrottleChecksFinishedCallback& callback);
+      ThrottleChecksFinishedCallback callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
@@ -315,8 +315,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   }
 
   void set_complete_callback_for_testing(
-      const ThrottleChecksFinishedCallback& callback) {
-    complete_callback_for_testing_ = callback;
+      ThrottleChecksFinishedCallback callback) {
+    complete_callback_for_testing_ = std::move(callback);
   }
 
   CSPDisposition should_check_main_world_csp() const {
