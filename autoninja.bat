@@ -13,6 +13,7 @@ FOR /f "usebackq tokens=*" %%a in (`python %~dp0autoninja.py "%*"`) do echo %%a 
 
 REM Use call to invoke python script here, because we use python via python.bat.
 @if "%NINJA_SUMMARIZE_BUILD%" == "1" call python.bat %~dp0post_build_ninja_summary.py %*
+@call python.bat %~dp0ninjalog_uploader_wrapper.py --cmdline %*
 
 exit /b
 :buildfailure
