@@ -10638,7 +10638,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
         std::min(num_vertices, kMaxVerticesPerLoop);
     std::vector<Vec4f> temp(vertices_per_loop, fvalue);
     for (GLuint offset = 0; offset < num_vertices;) {
-      size_t count = std::min(num_vertices - offset, vertices_per_loop);
+      GLuint count = std::min(num_vertices - offset, vertices_per_loop);
       api()->glBufferSubDataFn(GL_ARRAY_BUFFER, offset * sizeof(Vec4f),
                                count * sizeof(Vec4f), temp.data());
       offset += count;

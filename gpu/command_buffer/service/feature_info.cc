@@ -35,16 +35,6 @@ namespace gles2 {
 
 namespace {
 
-struct FormatInfo {
-  GLenum format;
-  const GLenum* types;
-  size_t count;
-};
-
-}  // anonymous namespace.
-
-namespace {
-
 class ScopedPixelUnpackBufferOverride {
  public:
   explicit ScopedPixelUnpackBufferOverride(bool has_pixel_buffers,
