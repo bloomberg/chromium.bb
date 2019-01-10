@@ -93,6 +93,11 @@ class PLATFORM_EXPORT FetchContext
 
   virtual ~FetchContext() = default;
 
+  // Binds |fetcher| to |this|.
+  void Bind(ResourceFetcher* fetcher);
+  // Unbinds the fetcher.
+  void Unbind() { fetcher_ = nullptr; }
+
   virtual void Trace(blink::Visitor*);
 
   virtual bool IsFrameFetchContext() const { return false; }
@@ -250,8 +255,8 @@ class PLATFORM_EXPORT FetchContext
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
-  // Returns a "detached" fetch context which can be null.
-  virtual FetchContext* Detach() { return nullptr; }
+  // Returns a "detached" fetch context which cannot be null.
+  virtual FetchContext* Detach() { return &NullInstance(task_runner_); }
 
   // Returns the updated priority of the resource based on the experiments that
   // may be currently enabled.
@@ -272,11 +277,15 @@ class PLATFORM_EXPORT FetchContext
 
  protected:
   void SetFetchClientSettingsObject(FetchClientSettingsObject*);
+  // This is needed to make FetchContext cleanup smoother. Do not use this
+  // function for other purposes.
+  ResourceFetcher* GetFetcher() { return fetcher_; }
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<FetchClientSettingsObject> fetch_client_settings_object_;
+  Member<ResourceFetcher> fetcher_;
 };
 
 }  // namespace blink
