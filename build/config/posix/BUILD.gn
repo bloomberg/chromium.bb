@@ -10,8 +10,7 @@ import("//build/config/sysroot.gni")
 import("//build/toolchain/toolchain.gni")
 import("//buildtools/deps_revisions.gni")
 
-# TODO(crbug.com/830987): Come up with a better name for is POSIX + Fuchsia
-# configuration.
+# This build configuration is used by both Fuchsia and POSIX systems.
 assert(is_posix || is_fuchsia)
 
 group("posix") {
