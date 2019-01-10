@@ -17,6 +17,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -962,6 +963,75 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
       "Where A = http://a.com/\n"
       "      B = http://b.is/",
       FrameTreeVisualizer().DepictFrameTree(root));
+}
+
+// Test to verify that a blob: URL that is created by an unique opaque origin
+// will correctly navigate back in session history.
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       OriginForBlobUrlsFromUniqueOpaqueOrigin) {
+  // Start off with a navigation to data: URL in the main frame. It should
+  // result in an unique opaque origin without any precursor information.
+  GURL data_url("data:text/html,foo<iframe id='child' src='" +
+                embedded_test_server()->GetURL("/title1.html").spec() +
+                "'></iframe>");
+  EXPECT_TRUE(NavigateToURL(shell(), data_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_TRUE(root->current_origin().opaque());
+  EXPECT_EQ(1UL, root->child_count());
+
+  // Create a blob: URL and navigate the child frame to it.
+  std::string html = "<html><body>This is blob content.</body></html>";
+  std::string script = JsReplace(
+      "var blob = new Blob([$1], {type: 'text/html'});"
+      "var blob_url = URL.createObjectURL(blob);"
+      "document.getElementById('child').src = blob_url;"
+      "blob_url",
+      html);
+  GURL blob_url;
+  {
+    TestFrameNavigationObserver observer(root->child_at(0));
+    blob_url = GURL(EvalJs(root, script).ExtractString());
+    observer.WaitForCommit();
+    EXPECT_EQ(blob_url,
+              root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+  }
+
+  // We expect the frame to have committed in an opaque origin which contains
+  // the same precursor information - aka none :).
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
+  url::Origin blob_origin = root->child_at(0)->current_origin();
+
+  // Navigate the frame away to any web URL.
+  {
+    GURL url(embedded_test_server()->GetURL("/title2.html"));
+    TestFrameNavigationObserver observer(root->child_at(0));
+    EXPECT_TRUE(
+        ExecJs(root->child_at(0), JsReplace("window.location = $1", url)));
+    observer.WaitForCommit();
+    EXPECT_EQ(url,
+              root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+  }
+  EXPECT_FALSE(root->child_at(0)->current_origin().opaque());
+  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoBack());
+  EXPECT_EQ(
+      2, shell()->web_contents()->GetController().GetLastCommittedEntryIndex());
+
+  EXPECT_EQ(blob_url, GURL(EvalJs(root, "blob_url;").ExtractString()));
+
+  // Now navigate back in session history. It should successfully go back to
+  // the blob: URL.
+  {
+    TestFrameNavigationObserver observer(root->child_at(0));
+    shell()->web_contents()->GetController().GoBack();
+    observer.WaitForCommit();
+    EXPECT_EQ(
+        1,
+        shell()->web_contents()->GetController().GetLastCommittedEntryIndex());
+  }
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
 }
 
 }  // namespace content

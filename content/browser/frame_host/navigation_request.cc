@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -72,6 +73,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -322,6 +324,21 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
+
+  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
+      common_params.url.SchemeIsBlob() &&
+      !navigation_request->blob_url_loader_factory_) {
+    // If this navigation entry came from session history then the blob factory
+    // would have been cleared in NavigationEntryImpl::ResetForCommit(). This is
+    // avoid keeping large blobs alive unnecessarily and the spec is unclear. So
+    // create a new blob factory which will work if the blob happens to still be
+    // alive.
+    navigation_request->blob_url_loader_factory_ =
+        ChromeBlobStorageContext::URLLoaderFactoryForUrl(
+            frame_tree_node->navigator()->GetController()->GetBrowserContext(),
+            common_params.url);
+  }
+
   return navigation_request;
 }
 
