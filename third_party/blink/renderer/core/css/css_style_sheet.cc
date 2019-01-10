@@ -104,10 +104,6 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
-    exception_state.ThrowTypeError("Illegal constructor");
-    return nullptr;
-  }
   // Folowing steps at spec draft
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   CSSParserContext* parser_context = CSSParserContext::Create(document);

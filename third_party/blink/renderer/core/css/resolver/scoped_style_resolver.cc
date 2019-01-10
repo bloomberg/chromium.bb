@@ -117,8 +117,7 @@ void ScopedStyleResolver::CollectFeaturesTo(
       device_dependent_media_query_results_);
 
   for (auto sheet : author_style_sheets_) {
-    if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
-      DCHECK(sheet->ownerNode());
+    DCHECK(sheet->ownerNode() || sheet->IsConstructed());
     StyleSheetContents* contents = sheet->Contents();
     if (contents->HasOneClient() ||
         visited_shared_style_sheet_contents.insert(contents).is_new_entry)
@@ -222,8 +221,7 @@ void ScopedStyleResolver::CollectMatchingAuthorRules(
     ShadowV0CascadeOrder cascade_order) {
   wtf_size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
-    if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
-      DCHECK(sheet->ownerNode());
+    DCHECK(sheet->ownerNode() || sheet->IsConstructed());
     MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
                                &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingRules(match_request, cascade_order);
@@ -235,8 +233,7 @@ void ScopedStyleResolver::CollectMatchingShadowHostRules(
     ShadowV0CascadeOrder cascade_order) {
   wtf_size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
-    if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
-      DCHECK(sheet->ownerNode());
+    DCHECK(sheet->ownerNode() || sheet->IsConstructed());
     MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
                                &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingShadowHostRules(match_request, cascade_order);
@@ -277,8 +274,7 @@ void ScopedStyleResolver::CollectMatchingPartPseudoRules(
     return;
   wtf_size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
-    if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
-      DCHECK(sheet->ownerNode());
+    DCHECK(sheet->ownerNode() || sheet->IsConstructed());
     MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
                                &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingPartPseudoRules(match_request, part_names,

@@ -30,7 +30,6 @@
 namespace blink {
 
 StyleSheetList* StyleSheetList::Create() {
-  DCHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
   return MakeGarbageCollected<StyleSheetList>();
 }
 

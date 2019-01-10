@@ -21,7 +21,6 @@ class CSSStyleSheetTest : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp();
-    RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(true);
   }
 
   class FunctionForTest : public ScriptFunction {
@@ -46,15 +45,6 @@ class CSSStyleSheetTest : public PageTestBase {
     ScriptValue* output_;
   };
 };
-
-TEST_F(CSSStyleSheetTest, ConstructorWithoutRuntimeFlagThrowsException) {
-  DummyExceptionStateForTesting exception_state;
-  RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(false);
-  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), CSSStyleSheetInit::Create(),
-                                  exception_state),
-            nullptr);
-  ASSERT_TRUE(exception_state.HadException());
-}
 
 TEST_F(CSSStyleSheetTest,
        CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit) {
