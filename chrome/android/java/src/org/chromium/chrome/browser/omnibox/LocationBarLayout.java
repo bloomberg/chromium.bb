@@ -356,6 +356,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public void clearOmniboxFocus() {
+        setUrlBarFocus(false);
+    }
+
+    @Override
     public void selectAll() {
         mUrlCoordinator.selectAll();
     }

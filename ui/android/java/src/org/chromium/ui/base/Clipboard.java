@@ -189,6 +189,16 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         if (nativeClipboardAndroid != 0) nativeOnPrimaryClipChanged(nativeClipboardAndroid);
     }
 
+    /**
+     * Copy the specified URL to the clipboard and show a toast indicating the action occurred.
+     * @param url The URL to copy to the clipboard.
+     */
+    public void copyUrlToClipboard(String url) {
+        ClipData clip = ClipData.newPlainText("url", url);
+        mClipboardManager.setPrimaryClip(clip);
+        Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
+    }
+
     private native long nativeInit();
     private native void nativeOnPrimaryClipChanged(long nativeClipboardAndroid);
 }

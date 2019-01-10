@@ -9,8 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -65,12 +63,12 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
-import org.chromium.ui.widget.Toast;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -720,14 +718,9 @@ public class CustomTabToolbar
                     getContext(), v, v.getContentDescription());
         }
         if (v == mTitleUrlContainer) {
-            ClipboardManager clipboard =
-                    (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
             Tab tab = getCurrentTab();
             if (tab == null) return false;
-            String url = tab.getOriginalUrl();
-            ClipData clip = ClipData.newPlainText("url", url);
-            clipboard.setPrimaryClip(clip);
-            Toast.makeText(getContext(), R.string.url_copied, Toast.LENGTH_SHORT).show();
+            Clipboard.getInstance().copyUrlToClipboard(tab.getOriginalUrl());
             return true;
         }
         return false;
