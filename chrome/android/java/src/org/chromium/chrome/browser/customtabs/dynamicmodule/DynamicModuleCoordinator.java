@@ -44,6 +44,7 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -90,15 +91,6 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     // Default height of the top control container prior to any header customization.
     private int mDefaultTopControlContainerHeight;
     private boolean mHasSetOverlayView;
-
-    // Whether isModuleManagedUrl(url) must check the URL's port number or not.
-    // This makes it easier to run tests with the EmbeddedTestServer.
-    private static boolean sCheckPortNumber = true;
-
-    @VisibleForTesting
-    public static void setCheckPortNumber(boolean checkPortNumber) {
-        sCheckPortNumber = checkPortNumber;
-    }
 
     private final EmptyTabObserver mHeaderVisibilityObserver = new EmptyTabObserver() {
         @Override
@@ -331,15 +323,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             return false;
         }
-        if (TextUtils.isEmpty(url)) {
-            return false;
-        }
+        List<String> moduleManagedHosts = mIntentDataProvider.getExtraModuleManagedHosts();
         Pattern urlsPattern = mIntentDataProvider.getExtraModuleManagedUrlsPattern();
-        if (urlsPattern == null) {
-            return false;
-        }
-        String pathAndQuery = url.substring(UrlUtilities.stripPath(url).length());
-        if (!urlsPattern.matcher(pathAndQuery).matches()) {
+        if (TextUtils.isEmpty(url) || moduleManagedHosts == null || moduleManagedHosts.isEmpty()
+                || urlsPattern == null) {
             return false;
         }
         Uri parsed = Uri.parse(url);
@@ -347,10 +334,17 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         if (!UrlConstants.HTTPS_SCHEME.equals(scheme)) {
             return false;
         }
-        if (!UrlUtilities.nativeIsGoogleDomainUrl(url, sCheckPortNumber)) {
+        String host = parsed.getHost();
+        if (host == null) {
             return false;
         }
-        return true;
+        String pathAndQuery = url.substring(UrlUtilities.stripPath(url).length());
+        for (String moduleManagedHost : moduleManagedHosts) {
+            if (host.equals(moduleManagedHost) && urlsPattern.matcher(pathAndQuery).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setTopBarHeight(int height) {
