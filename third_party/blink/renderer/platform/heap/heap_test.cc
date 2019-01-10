@@ -5367,59 +5367,6 @@ static bool AllocateAndReturnBool() {
   return true;
 }
 
-static bool CheckGCForbidden() {
-  DCHECK(ThreadState::Current()->IsGCForbidden());
-  return true;
-}
-
-class MixinClass : public GarbageCollectedMixin {
- public:
-  MixinClass() : dummy_(CheckGCForbidden()) {}
-
- private:
-  bool dummy_;
-};
-
-class ClassWithGarbageCollectingMixinConstructor
-    : public GarbageCollected<ClassWithGarbageCollectingMixinConstructor>,
-      public MixinClass {
-  USING_GARBAGE_COLLECTED_MIXIN(ClassWithGarbageCollectingMixinConstructor);
-
- public:
-  static int trace_called_;
-
-  ClassWithGarbageCollectingMixinConstructor()
-      : trace_counter_(TraceCounter::Create()),
-        wrapper_(IntWrapper::Create(32)) {}
-
-  void Trace(blink::Visitor* visitor) override {
-    trace_called_++;
-    visitor->Trace(trace_counter_);
-    visitor->Trace(wrapper_);
-  }
-
-  void Verify() {
-    EXPECT_EQ(32, wrapper_->Value());
-    EXPECT_EQ(0, trace_counter_->TraceCount());
-    EXPECT_EQ(0, trace_called_);
-  }
-
- private:
-  Member<TraceCounter> trace_counter_;
-  Member<IntWrapper> wrapper_;
-};
-
-int ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
-
-// Regression test for out of bounds call through vtable.
-// Passes if it doesn't crash.
-TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
-  ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
-  ClassWithGarbageCollectingMixinConstructor* a =
-      MakeGarbageCollected<ClassWithGarbageCollectingMixinConstructor>();
-  a->Verify();
-}
-
 template <typename T>
 class TraceIfNeededTester
     : public GarbageCollectedFinalized<TraceIfNeededTester<T>> {
@@ -5928,11 +5875,7 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
   USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationA);
 
  public:
-  TestMixinAllocationA() {
-    // Completely wrong in general, but test only
-    // runs this constructor while constructing another mixin.
-    DCHECK(ThreadState::Current()->IsGCForbidden());
-  }
+  TestMixinAllocationA() = default;
 
   void Trace(blink::Visitor* visitor) override {}
 };
@@ -5942,14 +5885,8 @@ class TestMixinAllocationB : public TestMixinAllocationA {
 
  public:
   TestMixinAllocationB()
-      : a_(MakeGarbageCollected<TestMixinAllocationA>())  // Construct object
-                                                          // during a mixin
-                                                          // construction.
-  {
-    // Completely wrong in general, but test only
-    // runs this constructor while constructing another mixin.
-    DCHECK(ThreadState::Current()->IsGCForbidden());
-  }
+      // Construct object during a mixin construction.
+      : a_(MakeGarbageCollected<TestMixinAllocationA>()) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(a_);
@@ -5993,47 +5930,6 @@ class ObjectWithLargeAmountsOfAllocationInConstructor {
     }
   }
 };
-
-class TestMixinAllocatingObject final
-    : public TestMixinAllocationB,
-      public ObjectWithLargeAmountsOfAllocationInConstructor {
-  USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocatingObject);
-
- public:
-  static TestMixinAllocatingObject* Create(ClassWithMember* member) {
-    return MakeGarbageCollected<TestMixinAllocatingObject>(member);
-  }
-
-  TestMixinAllocatingObject(ClassWithMember* member)
-      : ObjectWithLargeAmountsOfAllocationInConstructor(600, member),
-        trace_counter_(TraceCounter::Create()) {
-    DCHECK(!ThreadState::Current()->IsGCForbidden());
-    ConservativelyCollectGarbage();
-    EXPECT_GT(member->TraceCount(), 0);
-    EXPECT_GT(TraceCount(), 0);
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(trace_counter_);
-    TestMixinAllocationB::Trace(visitor);
-  }
-
-  int TraceCount() const { return trace_counter_->TraceCount(); }
-
- private:
-  Member<TraceCounter> trace_counter_;
-};
-
-TEST(HeapTest, MixinConstructionNoGC) {
-  ClearOutOldGarbage();
-  Persistent<ClassWithMember> object = ClassWithMember::Create();
-  EXPECT_EQ(0, object->TraceCount());
-  TestMixinAllocatingObject* mixin =
-      TestMixinAllocatingObject::Create(object.Get());
-  EXPECT_TRUE(mixin);
-  EXPECT_GT(object->TraceCount(), 0);
-  EXPECT_GT(mixin->TraceCount(), 0);
-}
 
 class WeakPersistentHolder final {
  public:
@@ -6420,85 +6316,25 @@ TEST(HeapTest, ShrinkVector) {
   vector.ShrinkToFit();
 }
 
-namespace {
-
-class MixinCheckingConstructionScope : public GarbageCollectedMixin {
- public:
-  MixinCheckingConstructionScope() {
-    // Oilpan treats mixin construction as forbidden scopes for garbage
-    // collection.
-    CHECK(ThreadState::Current()->IsMixinInConstruction());
-  }
-};
-
-class UsingMixinCheckingConstructionScope
-    : public GarbageCollected<UsingMixinCheckingConstructionScope>,
-      public MixinCheckingConstructionScope {
-  USING_GARBAGE_COLLECTED_MIXIN(UsingMixinCheckingConstructionScope);
-};
-
-}  // namespace
-
-TEST(HeapTest, NoConservativeGCDuringMixinConstruction) {
-  // Regression test: https://crbug.com/904546
-  MakeGarbageCollected<UsingMixinCheckingConstructionScope>();
-}
-
-namespace {
-
-class ObjectCheckingForInConstruction
-    : public GarbageCollected<ObjectCheckingForInConstruction> {
- public:
-  ObjectCheckingForInConstruction() {
-    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
-  }
-
-  virtual void Trace(Visitor* v) { v->Trace(foo_); }
-
- private:
-  Member<IntWrapper> foo_;
-};
-
-class MixinCheckingInConstruction : public GarbageCollectedMixin {
- public:
-  MixinCheckingInConstruction() {
-    BasePage* const page = PageFromObject(reinterpret_cast<Address>(this));
-    HeapObjectHeader* const header =
-        static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-            reinterpret_cast<Address>(
-                const_cast<MixinCheckingInConstruction*>(this)));
-    CHECK(header->IsInConstruction());
-  }
-
-  void Trace(Visitor* v) override { v->Trace(bar_); }
-
- private:
-  Member<IntWrapper> bar_;
-};
-
-class MixinAppCheckingInConstruction
-    : public GarbageCollected<MixinAppCheckingInConstruction>,
-      public MixinCheckingInConstruction {
-  USING_GARBAGE_COLLECTED_MIXIN(MixinAppCheckingInConstruction)
- public:
-  MixinAppCheckingInConstruction() {
-    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
-  }
-
-  void Trace(Visitor* v) override { v->Trace(foo_); }
-
- private:
-  Member<IntWrapper> foo_;
-};
-
-}  // namespace
-
 TEST(HeapTest, GarbageCollectedInConstruction) {
-  MakeGarbageCollected<ObjectCheckingForInConstruction>();
+  using O = ObjectWithCallbackBeforeInitializer<IntWrapper>;
+  MakeGarbageCollected<O>(base::BindOnce([](O* thiz) {
+    CHECK(HeapObjectHeader::FromPayload(thiz)->IsInConstruction());
+  }));
 }
 
 TEST(HeapTest, GarbageCollectedMixinInConstruction) {
-  MakeGarbageCollected<MixinAppCheckingInConstruction>();
+  using O = ObjectWithMixinWithCallbackBeforeInitializer<IntWrapper>;
+  MakeGarbageCollected<O>(base::BindOnce([](O::Mixin* thiz) {
+    CHECK(HeapObjectHeader::FromPayload(static_cast<O*>(thiz))
+              ->IsInConstruction());
+  }));
+}
+
+TEST(HeapTest, GarbageCollectedMixinIsAliveDuringConstruction) {
+  using O = ObjectWithMixinWithCallbackBeforeInitializer<IntWrapper>;
+  MakeGarbageCollected<O>(base::BindOnce(
+      [](O::Mixin* thiz) { CHECK(ThreadHeap::IsHeapObjectAlive(thiz)); }));
 }
 
 }  // namespace blink
