@@ -74,6 +74,9 @@ void NotificationSwipeControlView::UpdateButtonsVisibility() {
                          : NotificationSwipeControlView::ButtonPosition::LEFT;
   message_center::NotificationControlButtonsView* buttons =
       message_view_->GetControlButtonsView();
+  // Ignore when GetControlButtonsView() returns null.
+  if (!buttons)
+    return;
   bool has_settings_button = buttons->settings_button();
   bool has_snooze_button = buttons->snooze_button();
   ShowButtons(button_position, has_settings_button, has_snooze_button);
