@@ -70,7 +70,8 @@ int GetPerMonitorDPI(HMONITOR monitor) {
 //
 // Respects the forced device scale factor, and will fall back to the global
 // scale factor if per-monitor DPI is not supported.
-float GetMonitorScaleFactorImpl(HMONITOR monitor, bool include_accessibility) {
+float GetMonitorScaleFactor(HMONITOR monitor,
+                            bool include_accessibility = true) {
   DCHECK(monitor);
   if (Display::HasForceDeviceScaleFactor())
     return Display::GetForcedDeviceScaleFactor();
@@ -86,19 +87,6 @@ float GetMonitorScaleFactorImpl(HMONITOR monitor, bool include_accessibility) {
     scale_factor *= text_scale_factor;
   }
   return scale_factor;
-}
-
-// Rounds a scale factor to one we can display safely in pixels without
-// smearing.
-double RoundToNearestSafeScaleFactor(float scale_factor) {
-  return std::max(1.0f, std::round(4.0f * scale_factor) * 0.25f);
-}
-
-// Returns a pixel safe monitor scale factor rounded to a pixel-safe value.
-float GetSafeMonitorScaleFactor(HMONITOR monitor,
-                                bool include_accessibility = true) {
-  return RoundToNearestSafeScaleFactor(
-      GetMonitorScaleFactorImpl(monitor, include_accessibility));
 }
 
 bool GetPathInfo(HMONITOR monitor, DISPLAYCONFIG_PATH_INFO* path_info) {
@@ -292,7 +280,7 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
   display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
-                                       GetSafeMonitorScaleFactor(monitor),
+                                       GetMonitorScaleFactor(monitor),
                                        GetMonitorSDRWhiteLevel(monitor)));
   return TRUE;
 }
@@ -480,8 +468,7 @@ int ScreenWin::GetSystemMetricsForMonitor(HMONITOR monitor, int metric) {
   if (!monitor)
     monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
 
-  float scale_factor =
-      GetSafeMonitorScaleFactor(monitor, include_accessibility);
+  float scale_factor = GetMonitorScaleFactor(monitor, include_accessibility);
 
   // We'll then pull up the system metrics scaled by the appropriate amount.
   return GetSystemMetricsForScaleFactor(scale_factor, metric);
@@ -519,9 +506,8 @@ int ScreenWin::GetDPIForHWND(HWND hwnd) {
 
 // static
 float ScreenWin::GetScaleFactorForDPI(int dpi) {
-  return RoundToNearestSafeScaleFactor(
-      display::win::internal::GetScalingFactorFromDPI(dpi) *
-      UwpTextScaleFactor::Instance()->GetTextScaleFactor());
+  return display::win::internal::GetScalingFactorFromDPI(dpi) *
+         UwpTextScaleFactor::Instance()->GetTextScaleFactor();
 }
 
 // static
