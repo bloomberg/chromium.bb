@@ -11,7 +11,7 @@ namespace {
 
 class Serializer {
  public:
-  Serializer(char* memory, size_t memory_size)
+  Serializer(char* memory, uint32_t memory_size)
       : memory_(memory), memory_size_(memory_size) {}
   ~Serializer() = default;
 
@@ -21,7 +21,7 @@ class Serializer {
     WriteData(val, sizeof(T), alignof(T));
   }
 
-  void WriteData(const void* input, size_t bytes, size_t alignment) {
+  void WriteData(const void* input, uint32_t bytes, size_t alignment) {
     AlignMemory(bytes, alignment);
     if (bytes == 0)
       return;
@@ -32,7 +32,7 @@ class Serializer {
   }
 
  private:
-  void AlignMemory(size_t size, size_t alignment) {
+  void AlignMemory(uint32_t size, size_t alignment) {
     // Due to the math below, alignment must be a power of two.
     DCHECK_GT(alignment, 0u);
     DCHECK_EQ(alignment & (alignment - 1), 0u);
@@ -46,8 +46,8 @@ class Serializer {
   }
 
   char* memory_ = nullptr;
-  size_t memory_size_ = 0u;
-  size_t bytes_written_ = 0u;
+  uint32_t memory_size_ = 0u;
+  uint32_t bytes_written_ = 0u;
 };
 
 }  // namespace
@@ -109,7 +109,7 @@ void ClientFontManager::Serialize() {
   std::vector<uint8_t> strike_data;
   strike_server_.writeStrikeData(&strike_data);
 
-  const uint64_t num_handles_created =
+  const uint32_t num_handles_created =
       last_allocated_handle_id_ - last_serialized_handle_id_;
   if (strike_data.size() == 0u && num_handles_created == 0u &&
       locked_handles_.size() == 0u) {
@@ -117,19 +117,29 @@ void ClientFontManager::Serialize() {
     return;
   }
 
-  // Size requires for serialization.
-  size_t bytes_required =
-      // Skia data size.
-      +sizeof(uint64_t) + alignof(uint64_t) + strike_data.size() +
-      16
-      // num of handles created + SerializableHandles.
-      + sizeof(uint64_t) + alignof(uint64_t) +
-      num_handles_created * sizeof(SerializableSkiaHandle) +
-      alignof(SerializableSkiaHandle) +
-      // num of handles locked + DiscardableHandleIds.
-      +sizeof(uint64_t) + alignof(uint64_t) +
-      locked_handles_.size() * sizeof(SkDiscardableHandleId) +
-      alignof(SkDiscardableHandleId);
+  // Size required for serialization.
+  base::CheckedNumeric<uint32_t> checked_bytes_required = 0;
+  // Skia data size.
+  checked_bytes_required += sizeof(uint32_t) + alignof(uint32_t) + 16;
+  checked_bytes_required += strike_data.size();
+
+  // num of handles created + SerializableHandles.
+  checked_bytes_required +=
+      sizeof(uint32_t) + alignof(uint32_t) + alignof(SerializableSkiaHandle);
+  checked_bytes_required +=
+      base::CheckMul(num_handles_created, sizeof(SerializableSkiaHandle));
+
+  // num of handles locked + DiscardableHandleIds.
+  checked_bytes_required +=
+      sizeof(uint32_t) + alignof(uint32_t) + alignof(SkDiscardableHandleId);
+  checked_bytes_required +=
+      base::CheckMul(locked_handles_.size(), sizeof(SkDiscardableHandleId));
+
+  uint32_t bytes_required = 0;
+  if (!checked_bytes_required.AssignIfValid(&bytes_required)) {
+    DLOG(FATAL) << "ClientFontManager::Serialize: font buffer overflow";
+    return;
+  }
 
   // Allocate memory.
   void* memory = client_->MapFontBuffer(bytes_required);
@@ -141,7 +151,7 @@ void ClientFontManager::Serialize() {
   Serializer serializer(reinterpret_cast<char*>(memory), bytes_required);
 
   // Serialize all new handles.
-  serializer.Write<uint64_t>(&num_handles_created);
+  serializer.Write<uint32_t>(&num_handles_created);
   for (SkDiscardableHandleId handle_id = last_serialized_handle_id_ + 1;
        handle_id <= last_allocated_handle_id_; handle_id++) {
     auto it = discardable_handle_map_.find(handle_id);
@@ -157,14 +167,16 @@ void ClientFontManager::Serialize() {
   }
 
   // Serialize all locked handle ids, so the raster unlocks them when done.
-  const uint64_t num_locked_handles = locked_handles_.size();
-  serializer.Write<uint64_t>(&num_locked_handles);
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(locked_handles_.size()));
+  const uint32_t num_locked_handles = locked_handles_.size();
+  serializer.Write<uint32_t>(&num_locked_handles);
   for (auto handle_id : locked_handles_)
     serializer.Write<SkDiscardableHandleId>(&handle_id);
 
   // Serialize skia data.
-  const uint64_t skia_data_size = strike_data.size();
-  serializer.Write<uint64_t>(&skia_data_size);
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(strike_data.size()));
+  const uint32_t skia_data_size = strike_data.size();
+  serializer.Write<uint32_t>(&skia_data_size);
   serializer.WriteData(strike_data.data(), strike_data.size(), 16);
 
   // Reset all state for what has been serialized.

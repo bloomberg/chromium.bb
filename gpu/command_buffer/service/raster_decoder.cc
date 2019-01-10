@@ -516,10 +516,10 @@ class RasterDecoderImpl final : public RasterDecoder,
                              const volatile GLbyte* key);
   void DoRasterCHROMIUM(GLuint raster_shm_id,
                         GLuint raster_shm_offset,
-                        GLsizeiptr raster_shm_size,
+                        GLuint raster_shm_size,
                         GLuint font_shm_id,
                         GLuint font_shm_offset,
-                        GLsizeiptr font_shm_size);
+                        GLuint font_shm_size);
   void DoEndRasterCHROMIUM();
   void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
                                           GLuint entry_id,
@@ -2242,10 +2242,10 @@ scoped_refptr<Buffer> RasterDecoderImpl::GetShmBuffer(uint32_t shm_id) {
 
 void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
                                          GLuint raster_shm_offset,
-                                         GLsizeiptr raster_shm_size,
+                                         GLuint raster_shm_size,
                                          GLuint font_shm_id,
                                          GLuint font_shm_offset,
-                                         GLsizeiptr font_shm_size) {
+                                         GLuint font_shm_size) {
   TRACE_EVENT1("gpu", "RasterDecoderImpl::DoRasterCHROMIUM", "raster_id",
                ++raster_chromium_id_);
 

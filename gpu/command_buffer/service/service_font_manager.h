@@ -28,7 +28,7 @@ class GPU_GLES2_EXPORT ServiceFontManager
   void Destroy();
 
   bool Deserialize(const volatile char* memory,
-                   size_t memory_size,
+                   uint32_t memory_size,
                    std::vector<SkDiscardableHandleId>* locked_handles);
   bool Unlock(const std::vector<SkDiscardableHandleId>& handles);
   SkStrikeClient* strike_client() { return strike_client_.get(); }
