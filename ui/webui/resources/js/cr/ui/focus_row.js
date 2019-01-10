@@ -54,12 +54,12 @@ cr.define('cr.ui', function() {
       while (true) {
         assertInstanceof(current, Element);
 
-        var style = window.getComputedStyle(current);
+        const style = window.getComputedStyle(current);
         if (style.visibility == 'hidden' || style.display == 'none') {
           return false;
         }
 
-        var parent = current.parentNode;
+        const parent = current.parentNode;
         if (!parent) {
           return false;
         }
@@ -109,7 +109,7 @@ cr.define('cr.ui', function() {
     addItem(type, selectorOrElement) {
       assert(type);
 
-      var element;
+      let element;
       if (typeof selectorOrElement == 'string') {
         element = this.root.querySelector(selectorOrElement);
       } else {
@@ -163,9 +163,9 @@ cr.define('cr.ui', function() {
         return sampleElement;
       }
 
-      var sampleFocusType = this.getTypeForElement(sampleElement);
+      const sampleFocusType = this.getTypeForElement(sampleElement);
       if (sampleFocusType) {
-        var sameType = this.getFirstFocusable(sampleFocusType);
+        const sameType = this.getFirstFocusable(sampleFocusType);
         if (sameType) {
           return sameType;
         }
@@ -228,7 +228,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var currentTarget = /** @type {!Element} */ (e.currentTarget);
+      const currentTarget = /** @type {!Element} */ (e.currentTarget);
       if (this.getFocusableElements().indexOf(currentTarget) >= 0) {
         this.makeActive(false);
       }
@@ -265,9 +265,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onKeydown_(e) {
-      var elements = this.getFocusableElements();
-      var currentElement = /** @type {!Element} */ (e.currentTarget);
-      var elementIndex = elements.indexOf(currentElement);
+      const elements = this.getFocusableElements();
+      const currentElement = /** @type {!Element} */ (e.currentTarget);
+      const elementIndex = elements.indexOf(currentElement);
       assert(elementIndex >= 0);
 
       if (this.delegate && this.delegate.onKeydown(this, e)) {
@@ -278,7 +278,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var index = -1;
+      let index = -1;
 
       if (e.key == 'ArrowLeft') {
         index = elementIndex + (isRTL() ? 1 : -1);
@@ -290,7 +290,7 @@ cr.define('cr.ui', function() {
         index = elements.length - 1;
       }
 
-      var elementToFocus = elements[index];
+      const elementToFocus = elements[index];
       if (elementToFocus) {
         this.getEquivalentElement(elementToFocus).focus();
         e.preventDefault();

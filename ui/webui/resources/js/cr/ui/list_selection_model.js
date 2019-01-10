@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ const EventTarget = cr.EventTarget;
 
   /**
    * Creates a new selection model that is to be used with lists.
@@ -44,13 +44,13 @@ cr.define('cr.ui', function() {
     },
     set selectedIndexes(selectedIndexes) {
       this.beginChange();
-      var unselected = {};
-      for (var index in this.selectedIndexes_) {
+      const unselected = {};
+      for (const index in this.selectedIndexes_) {
         unselected[index] = true;
       }
 
-      for (var i = 0; i < selectedIndexes.length; i++) {
-        var index = selectedIndexes[i];
+      for (let i = 0; i < selectedIndexes.length; i++) {
+        const index = selectedIndexes[i];
         if (index in this.selectedIndexes_) {
           delete unselected[index];
         } else {
@@ -65,7 +65,7 @@ cr.define('cr.ui', function() {
         }
       }
 
-      for (var index in unselected) {
+      for (let index in unselected) {
         index = +index;
         delete this.selectedIndexes_[index];
         // Mark the index as changed. If previously marked, then unmark,
@@ -91,7 +91,7 @@ cr.define('cr.ui', function() {
      * @type {number}
      */
     get selectedIndex() {
-      for (var i in this.selectedIndexes_) {
+      for (const i in this.selectedIndexes_) {
         return Number(i);
       }
       return -1;
@@ -116,8 +116,8 @@ cr.define('cr.ui', function() {
         return -1;
       }
 
-      var result = Infinity;
-      for (var i in this.selectedIndexes_) {
+      let result = Infinity;
+      for (const i in this.selectedIndexes_) {
         if (Math.abs(i - index) < Math.abs(result - index)) {
           result = i;
         }
@@ -134,14 +134,14 @@ cr.define('cr.ui', function() {
     selectRange: function(start, end) {
       // Swap if starts comes after end.
       if (start > end) {
-        var tmp = start;
+        const tmp = start;
         start = end;
         end = tmp;
       }
 
       this.beginChange();
 
-      for (var index = start; index != end; index++) {
+      for (let index = start; index != end; index++) {
         this.setIndexSelected(index, true);
       }
       this.setIndexSelected(end, true);
@@ -176,7 +176,7 @@ cr.define('cr.ui', function() {
      */
     unselectAll: function() {
       this.beginChange();
-      for (var i in this.selectedIndexes_) {
+      for (const i in this.selectedIndexes_) {
         this.setIndexSelected(+i, false);
       }
       this.endChange();
@@ -188,7 +188,7 @@ cr.define('cr.ui', function() {
      * @param {boolean} b Whether to select the index or not.
      */
     setIndexSelected: function(index, b) {
-      var oldSelected = index in this.selectedIndexes_;
+      const oldSelected = index in this.selectedIndexes_;
       if (oldSelected == b) {
         return;
       }
@@ -253,9 +253,9 @@ cr.define('cr.ui', function() {
         }
         this.oldAnchorIndex_ = null;
 
-        var indexes = Object.keys(this.changedIndexes_);
+        const indexes = Object.keys(this.changedIndexes_);
         if (indexes.length) {
-          var e = new Event('change');
+          const e = new Event('change');
           e.changes = indexes.map(function(index) {
             return {
               index: Number(index),
@@ -280,8 +280,8 @@ cr.define('cr.ui', function() {
       return this.leadIndex_;
     },
     set leadIndex(leadIndex) {
-      var oldValue = this.leadIndex_;
-      var newValue = this.adjustIndex_(leadIndex);
+      const oldValue = this.leadIndex_;
+      const newValue = this.adjustIndex_(leadIndex);
       this.leadIndex_ = newValue;
       // Delays the call of dispatchPropertyChange if batch is running.
       if (!this.changeCount_ && newValue != oldValue) {
@@ -300,8 +300,8 @@ cr.define('cr.ui', function() {
       return this.anchorIndex_;
     },
     set anchorIndex(anchorIndex) {
-      var oldValue = this.anchorIndex_;
-      var newValue = this.adjustIndex_(anchorIndex);
+      const oldValue = this.anchorIndex_;
+      const newValue = this.adjustIndex_(anchorIndex);
       this.anchorIndex_ = newValue;
       // Delays the call of dispatchPropertyChange if batch is running.
       if (!this.changeCount_ && newValue != oldValue) {
@@ -321,7 +321,7 @@ cr.define('cr.ui', function() {
       // selected items. This rule is not enforces until end of batch update.
       if (!this.changeCount_ && !this.independentLeadItem_ &&
           !this.getIndexSelected(index)) {
-        var index2 = this.getNearestSelectedIndex_(index);
+        const index2 = this.getNearestSelectedIndex_(index);
         index = index2;
       }
       return index;
@@ -341,9 +341,9 @@ cr.define('cr.ui', function() {
      */
     adjustToReordering: function(permutation) {
       this.beginChange();
-      var oldLeadIndex = this.leadIndex;
-      var oldAnchorIndex = this.anchorIndex;
-      var oldSelectedItemsCount = this.selectedIndexes.length;
+      const oldLeadIndex = this.leadIndex;
+      const oldAnchorIndex = this.anchorIndex;
+      const oldSelectedItemsCount = this.selectedIndexes.length;
 
       this.selectedIndexes = this.selectedIndexes
                                  .map(function(oldIndex) {

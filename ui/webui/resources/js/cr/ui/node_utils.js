@@ -18,13 +18,13 @@ cr.ui.reverseButtonStrips = function(opt_root) {
     return;
   }
 
-  var root = opt_root || document;
-  var buttonStrips = root.querySelectorAll('.button-strip:not([reversed])');
-  for (var j = 0; j < buttonStrips.length; j++) {
-    var buttonStrip = buttonStrips[j];
+  const root = opt_root || document;
+  const buttonStrips = root.querySelectorAll('.button-strip:not([reversed])');
+  for (let j = 0; j < buttonStrips.length; j++) {
+    const buttonStrip = buttonStrips[j];
 
-    var childNodes = buttonStrip.childNodes;
-    for (var i = childNodes.length - 1; i >= 0; i--) {
+    const childNodes = buttonStrip.childNodes;
+    for (let i = childNodes.length - 1; i >= 0; i--) {
       buttonStrip.appendChild(childNodes[i]);
     }
 
@@ -42,9 +42,10 @@ cr.ui.setInitialFocus = function(root) {
     return;
   }
 
-  var elements = root.querySelectorAll('input, list, select, textarea, button');
-  for (var i = 0; i < elements.length; i++) {
-    var element = elements[i];
+  const elements =
+      root.querySelectorAll('input, list, select, textarea, button');
+  for (let i = 0; i < elements.length; i++) {
+    const element = elements[i];
     element.focus();
     // .focus() isn't guaranteed to work. Continue until it does.
     if (document.activeElement == element) {

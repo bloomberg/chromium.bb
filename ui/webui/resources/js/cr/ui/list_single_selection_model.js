@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ const EventTarget = cr.EventTarget;
 
   /**
    * Creates a new selection model that is to be used with lists. This only
@@ -37,7 +37,7 @@ cr.define('cr.ui', function() {
      * @type {!Array} The selected indexes.
      */
     get selectedIndexes() {
-      var i = this.selectedIndex;
+      const i = this.selectedIndex;
       return i != -1 ? [this.selectedIndex] : [];
     },
     set selectedIndexes(indexes) {
@@ -53,8 +53,8 @@ cr.define('cr.ui', function() {
       return this.selectedIndex_;
     },
     set selectedIndex(selectedIndex) {
-      var oldSelectedIndex = this.selectedIndex;
-      var i = Math.max(-1, Math.min(this.length_ - 1, selectedIndex));
+      const oldSelectedIndex = this.selectedIndex;
+      const i = Math.max(-1, Math.min(this.length_ - 1, selectedIndex));
 
       if (i != oldSelectedIndex) {
         this.beginChange();
@@ -106,7 +106,7 @@ cr.define('cr.ui', function() {
      */
     setIndexSelected: function(index, b) {
       // Only allow selection
-      var oldSelected = index == this.selectedIndex_;
+      const oldSelected = index == this.selectedIndex_;
       if (oldSelected == b) {
         return;
       }
@@ -147,7 +147,7 @@ cr.define('cr.ui', function() {
       this.changeCount_--;
       if (!this.changeCount_) {
         if (this.selectedIndexBefore_ != this.selectedIndex_) {
-          var beforeChange = this.createChangeEvent('beforeChange');
+          const beforeChange = this.createChangeEvent('beforeChange');
           if (this.dispatchEvent(beforeChange)) {
             this.dispatchEvent(this.createChangeEvent('change'));
           } else {
@@ -162,8 +162,8 @@ cr.define('cr.ui', function() {
      * @param {string} eventName Event name.
      */
     createChangeEvent: function(eventName) {
-      var e = new Event(eventName);
-      var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
+      const e = new Event(eventName);
+      const indexes = [this.selectedIndexBefore_, this.selectedIndex_];
       e.changes =
           indexes
               .filter(function(index) {
@@ -187,9 +187,9 @@ cr.define('cr.ui', function() {
       return this.leadIndex_;
     },
     set leadIndex(leadIndex) {
-      var li = this.adjustIndex_(leadIndex);
+      const li = this.adjustIndex_(leadIndex);
       if (li != this.leadIndex_) {
-        var oldLeadIndex = this.leadIndex_;
+        const oldLeadIndex = this.leadIndex_;
         this.leadIndex_ = li;
         cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
         cr.dispatchPropertyChange(this, 'anchorIndex', li, oldLeadIndex);
@@ -232,7 +232,7 @@ cr.define('cr.ui', function() {
         this.leadIndex = permutation[this.leadIndex];
       }
 
-      var oldSelectedIndex = this.selectedIndex;
+      const oldSelectedIndex = this.selectedIndex;
       if (oldSelectedIndex != -1) {
         this.selectedIndex = permutation[oldSelectedIndex];
       }

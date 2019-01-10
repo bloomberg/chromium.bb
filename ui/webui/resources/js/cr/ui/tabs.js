@@ -32,7 +32,7 @@ cr.define('cr.ui', function() {
    * @this {Tab|TabPanel}
    */
   function selectedSetHook(newValue, oldValue) {
-    var tabBox;
+    let tabBox;
     if (newValue && (tabBox = getTabBox(this))) {
       tabBox.selectedIndex = Array.prototype.indexOf.call(p.children, this);
     }
@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
    * @this {HTMLElement}
    */
   function decorateChildren() {
-    var map = {
+    const map = {
       TABBOX: TabBox,
       TABS: Tabs,
       TAB: Tab,
@@ -52,9 +52,9 @@ cr.define('cr.ui', function() {
     };
 
     Object.keys(map).forEach(function(tagName) {
-      var children = this.getElementsByTagName(tagName);
-      var constr = map[tagName];
-      for (var i = 0; child = children[i]; i++) {
+      const children = this.getElementsByTagName(tagName);
+      const constr = map[tagName];
+      for (let i = 0; child = children[i]; i++) {
         cr.ui.decorate(child, constr);
       }
     }.bind(this));
@@ -66,17 +66,19 @@ cr.define('cr.ui', function() {
    * @this {TabBox}
    */
   function selectedIndexSetHook(selectedIndex) {
-    var child, tabChild, element;
+    let child, tabChild, element;
     element = this.querySelector('tabs');
     if (element) {
-      for (var i = 0; child = element.children[i]; i++) {
+      let i;
+      for (i = 0; child = element.children[i]; i++) {
         child.selected = i == selectedIndex;
       }
     }
 
     element = this.querySelector('tabpanels');
     if (element) {
-      for (var i = 0; child = element.children[i]; i++) {
+      let i;
+      for (i = 0; child = element.children[i]; i++) {
         child.selected = i == selectedIndex;
       }
     }
@@ -88,7 +90,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var TabBox = cr.ui.define('tabbox');
+  const TabBox = cr.ui.define('tabbox');
 
   TabBox.prototype = {
     __proto__: HTMLElement.prototype,
@@ -104,9 +106,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleSelectedChange_: function(e) {
-      var target = e.target;
+      const target = e.target;
       if (e.newValue && isTabElement(target) && getTabBox(target) == this) {
-        var index =
+        const index =
             Array.prototype.indexOf.call(target.parentElement.children, target);
         this.selectedIndex = index;
       }
@@ -128,7 +130,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var Tabs = cr.ui.define('tabs');
+  const Tabs = cr.ui.define('tabs');
   Tabs.prototype = {
     __proto__: HTMLElement.prototype,
     decorate: function() {
@@ -150,7 +152,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleKeyDown_: function(e) {
-      var delta = 0;
+      let delta = 0;
       switch (e.key) {
         case 'ArrowLeft':
         case 'ArrowUp':
@@ -166,14 +168,14 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var cs = this.ownerDocument.defaultView.getComputedStyle(this);
+      const cs = this.ownerDocument.defaultView.getComputedStyle(this);
       if (cs.direction == 'rtl') {
         delta *= -1;
       }
 
-      var count = this.children.length;
-      var tabbox = getTabBox(this);
-      var index = tabbox.selectedIndex;
+      const count = this.children.length;
+      const tabbox = getTabBox(this);
+      const index = tabbox.selectedIndex;
       tabbox.selectedIndex = (index + delta + count) % count;
 
       // Show focus outline since we used the keyboard.
@@ -187,11 +189,11 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var Tab = cr.ui.define('tab');
+  const Tab = cr.ui.define('tab');
   Tab.prototype = {
     __proto__: HTMLElement.prototype,
     decorate: function() {
-      var self = this;
+      const self = this;
       this.addEventListener(cr.isMac ? 'click' : 'mousedown', function() {
         self.selected = true;
       });
@@ -210,7 +212,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var TabPanels = cr.ui.define('tabpanels');
+  const TabPanels = cr.ui.define('tabpanels');
   TabPanels.prototype = {
     __proto__: HTMLElement.prototype,
     decorate: decorateChildren
@@ -222,7 +224,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var TabPanel = cr.ui.define('tabpanel');
+  const TabPanel = cr.ui.define('tabpanel');
   TabPanel.prototype = {
     __proto__: HTMLElement.prototype,
     decorate: function() {}

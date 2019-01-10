@@ -7,7 +7,7 @@
  */
 
 cr.define('cr.ui.table', function() {
-  /** @const */ var TableSplitter = cr.ui.TableSplitter;
+  /** @const */ const TableSplitter = cr.ui.TableSplitter;
 
   /**
    * Creates a new table header.
@@ -15,7 +15,7 @@ cr.define('cr.ui.table', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var TableHeader = cr.ui.define('div');
+  const TableHeader = cr.ui.define('div');
 
   TableHeader.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -41,7 +41,7 @@ cr.define('cr.ui.table', function() {
      */
     updateWidth: function() {
       // Header should not span over the vertical scrollbar of the list.
-      var list = this.table_.querySelector('list');
+      const list = this.table_.querySelector('list');
       this.headerInner_.style.width = list.clientWidth + 'px';
     },
 
@@ -49,14 +49,14 @@ cr.define('cr.ui.table', function() {
      * Resizes columns.
      */
     resize: function() {
-      var headerCells = this.querySelectorAll('.table-header-cell');
+      const headerCells = this.querySelectorAll('.table-header-cell');
       if (this.needsFullRedraw_(headerCells)) {
         this.redraw();
         return;
       }
 
-      var cm = this.table_.columnModel;
-      for (var i = 0; i < cm.size; i++) {
+      const cm = this.table_.columnModel;
+      for (let i = 0; i < cm.size; i++) {
         headerCells[i].style.width = cm.getWidth(i) + 'px';
       }
       this.placeSplitters_(this.querySelectorAll('.table-header-splitter'));
@@ -83,8 +83,8 @@ cr.define('cr.ui.table', function() {
         return;
       }
 
-      var cm = this.table_.columnModel;
-      var dm = this.table_.dataModel;
+      const cm = this.table_.columnModel;
+      const dm = this.table_.dataModel;
 
       this.updateWidth();
       this.headerInner_.textContent = '';
@@ -93,8 +93,8 @@ cr.define('cr.ui.table', function() {
         return;
       }
 
-      for (var i = 0; i < cm.size; i++) {
-        var cell = this.ownerDocument.createElement('div');
+      for (let i = 0; i < cm.size; i++) {
+        const cell = this.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + 'px';
         // Don't display cells for hidden columns. Don't omit the cell
         // completely, as it's much simpler if the number of cell elements and
@@ -116,11 +116,11 @@ cr.define('cr.ui.table', function() {
      * Appends column splitters to the table header.
      */
     appendSplitters_: function() {
-      var cm = this.table_.columnModel;
-      var splitters = [];
-      for (var i = 0; i < cm.size; i++) {
+      const cm = this.table_.columnModel;
+      const splitters = [];
+      for (let i = 0; i < cm.size; i++) {
         // splitter should use CSS for background image.
-        var splitter = new TableSplitter({table: this.table_});
+        const splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
         splitter.addEventListener(
             'dblclick', this.handleDblClick_.bind(this, i));
@@ -140,9 +140,9 @@ cr.define('cr.ui.table', function() {
      * @param {Array<HTMLElement>|NodeList} splitters Array of splitters.
      */
     placeSplitters_: function(splitters) {
-      var cm = this.table_.columnModel;
-      var place = 0;
-      for (var i = 0; i < cm.size; i++) {
+      const cm = this.table_.columnModel;
+      let place = 0;
+      for (let i = 0; i < cm.size; i++) {
         // Don't account for the widths of hidden columns.
         if (splitters[i].hidden) {
           continue;
@@ -157,16 +157,16 @@ cr.define('cr.ui.table', function() {
      * @param {number} index Column index.
      */
     createHeaderLabel_: function(index) {
-      var cm = this.table_.columnModel;
-      var dm = this.table_.dataModel;
+      const cm = this.table_.columnModel;
+      const dm = this.table_.dataModel;
 
-      var labelDiv = this.ownerDocument.createElement('div');
+      const labelDiv = this.ownerDocument.createElement('div');
       labelDiv.className = 'table-header-label';
 
       if (cm.isEndAlign(index)) {
         labelDiv.style.textAlign = 'end';
       }
-      var span = this.ownerDocument.createElement('span');
+      const span = this.ownerDocument.createElement('span');
       span.appendChild(cm.renderHeader(index, this.table_));
       span.style.padding = '0';
 
@@ -203,15 +203,15 @@ cr.define('cr.ui.table', function() {
       if (e.touches.length != 1) {
         return;
       }
-      var clientX = e.touches[0].clientX;
+      const clientX = e.touches[0].clientX;
 
-      var minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
-      var candidate;
+      let minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
+      let candidate;
 
-      var splitters = /** @type {NodeList<cr.ui.TableSplitter>} */ (
+      const splitters = /** @type {NodeList<cr.ui.TableSplitter>} */ (
           this.querySelectorAll('.table-header-splitter'));
-      for (var i = 0; i < splitters.length; i++) {
-        var r = splitters[i].getBoundingClientRect();
+      for (let i = 0; i < splitters.length; i++) {
+        const r = splitters[i].getBoundingClientRect();
         if (clientX <= r.left && r.left - clientX <= minDistance) {
           minDistance = r.left - clientX;
           candidate = splitters[i];
@@ -244,14 +244,14 @@ cr.define('cr.ui.table', function() {
      * @return {boolean}
      */
     needsFullRedraw_: function(headerCells) {
-      var cm = this.table_.columnModel;
+      const cm = this.table_.columnModel;
       // If the number of columns in the model has changed, a full redraw is
       // needed.
       if (headerCells.length != cm.size) {
         return true;
       }
       // If the column visibility has changed, a full redraw is required.
-      for (var i = 0; i < cm.size; i++) {
+      for (let i = 0; i < cm.size; i++) {
         if (cm.isVisible(i) == headerCells[i].hidden) {
           return true;
         }

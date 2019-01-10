@@ -11,7 +11,7 @@
  */
 
 cr.define('cr.ui', function() {
-  /** @const */ var Splitter = cr.ui.Splitter;
+  /** @const */ const Splitter = cr.ui.Splitter;
 
   /**
    * Creates a new table splitter element.
@@ -19,7 +19,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.Splitter}
    */
-  var TableSplitter = cr.ui.define('div');
+  const TableSplitter = cr.ui.define('div');
 
   TableSplitter.prototype = {
     __proto__: Splitter.prototype,
@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
      * @override
      */
     handleSplitterDragStart: function() {
-      var cm = this.table_.columnModel;
+      const cm = this.table_.columnModel;
       this.ownerDocument.documentElement.classList.add('col-resize');
 
       this.columnWidth_ = cm.getWidth(this.columnIndex);

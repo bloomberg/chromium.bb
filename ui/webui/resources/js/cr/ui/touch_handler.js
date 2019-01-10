@@ -140,7 +140,7 @@ cr.define('cr.ui', function() {
    */
   TouchHandler.Event = function(
       type, bubbles, clientX, clientY, touchedElement) {
-    var event = document.createEvent('Event');
+    const event = document.createEvent('Event');
     event.initEvent(type, bubbles, true);
     event.__proto__ = TouchHandler.Event.prototype;
 
@@ -346,7 +346,7 @@ cr.define('cr.ui', function() {
      *      events for mouse input (in addition to touch input).
      */
     enable: function(opt_capture, opt_mouse) {
-      var capture = !!opt_capture;
+      const capture = !!opt_capture;
 
       // Just listen to start events for now. When a touch is occuring we'll
       // want to be subscribed to move and end events on the document, but we
@@ -387,7 +387,7 @@ cr.define('cr.ui', function() {
         // client to worry about this if it matters to them (typically a short
         // mouseDown/mouseUp without a click is no big problem and it's not
         // obvious how we identify such synthesized events in a general way).
-        var touch = {
+        const touch = {
           // any fixed value will do for the identifier - there will only
           // ever be a single active 'touch' when using the mouse.
           identifier: 0,
@@ -481,7 +481,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var touch = e.targetTouches[0];
+      const touch = e.targetTouches[0];
       this.activeTouch_ = touch.identifier;
 
       // We've just started touching so shouldn't swallow any upcoming click
@@ -547,7 +547,7 @@ cr.define('cr.ui', function() {
       assert(this.activeTouch_ !== undefined, 'Expecting an active touch');
       // A TouchList isn't actually an array, so we shouldn't use
       // Array.prototype.filter/some, etc.
-      for (var i = 0; i < touches.length; i++) {
+      for (let i = 0; i < touches.length; i++) {
         if (touches[i].identifier == this.activeTouch_) {
           return touches[i];
         }
@@ -568,23 +568,24 @@ cr.define('cr.ui', function() {
       // Our active touch should always be in the list of touches still active
       assert(this.findActiveTouch_(e.touches), 'Missing touchEnd');
 
-      var that = this;
-      var touch = this.findActiveTouch_(e.changedTouches);
+      const that = this;
+      const touch = this.findActiveTouch_(e.changedTouches);
       if (!touch) {
         return;
       }
 
-      var clientX = touch.clientX;
-      var clientY = touch.clientY;
+      const clientX = touch.clientX;
+      const clientY = touch.clientY;
 
-      var moveX = this.lastTouchX_ - clientX;
-      var moveY = this.lastTouchY_ - clientY;
+      const moveX = this.lastTouchX_ - clientX;
+      const moveY = this.lastTouchY_ - clientY;
       this.totalMoveX_ += Math.abs(moveX);
       this.totalMoveY_ += Math.abs(moveY);
       this.lastTouchX_ = clientX;
       this.lastTouchY_ = clientY;
 
-      var couldBeTap = this.totalMoveY_ <= TouchHandler.MAX_TRACKING_FOR_TAP_ ||
+      const couldBeTap =
+          this.totalMoveY_ <= TouchHandler.MAX_TRACKING_FOR_TAP_ ||
           this.totalMoveX_ <= TouchHandler.MAX_TRACKING_FOR_TAP_;
 
       if (!couldBeTap) {
@@ -675,11 +676,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     onEnd_: function(e) {
-      var that = this;
+      const that = this;
       assert(this.activeTouch_ !== undefined, 'Expect to already be touching');
 
       // If the touch we're tracking isn't changing here, ignore this touch end.
-      var touch = this.findActiveTouch_(e.changedTouches);
+      const touch = this.findActiveTouch_(e.changedTouches);
       if (!touch) {
         // In most cases, our active touch will be in the 'touches' collection,
         // but we can't assert that because occasionally two touchend events can
@@ -697,8 +698,8 @@ cr.define('cr.ui', function() {
       this.stopTouching_();
 
       if (this.tracking_) {
-        var clientX = touch.clientX;
-        var clientY = touch.clientY;
+        const clientX = touch.clientX;
+        const clientY = touch.clientY;
 
         if (this.dragging_) {
           this.endTime_ = e.timeStamp;
@@ -741,11 +742,11 @@ cr.define('cr.ui', function() {
      */
     getEndVelocity: function() {
       // Note that we could move velocity to just be an end-event parameter.
-      var velocityX = this.recentTouchesX_.length ?
+      let velocityX = this.recentTouchesX_.length ?
           (this.endTouchX_ - this.recentTouchesX_[0]) /
               (this.endTime_ - this.recentTouchesX_[1]) :
           0;
-      var velocityY = this.recentTouchesY_.length ?
+      let velocityY = this.recentTouchesY_.length ?
           (this.endTouchY_ - this.recentTouchesY_[0]) /
               (this.endTime_ - this.recentTouchesY_[1]) :
           0;
@@ -765,7 +766,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     correctVelocity_: function(velocity) {
-      var absVelocity = Math.abs(velocity);
+      let absVelocity = Math.abs(velocity);
 
       // We add to recent touches for each touchstart and touchmove. If we have
       // fewer than 3 touches (6 entries), we assume that the thread was blocked
@@ -829,7 +830,7 @@ cr.define('cr.ui', function() {
       // touch is our primary scenario (which we want to emulate with mouse),
       // we'll treat both cases the same and not depend on the target.
       /** @type {Element} */
-      var touchedElement;
+      let touchedElement;
       if (eventType == TouchHandler.EventType.TOUCH_START) {
         touchedElement = assertInstanceof(touch.target, Element);
       } else {
@@ -852,16 +853,16 @@ cr.define('cr.ui', function() {
      * @private
      */
     dispatchEventXY_: function(eventType, touchedElement, clientX, clientY) {
-      var isDrag =
+      const isDrag =
           (eventType == TouchHandler.EventType.DRAG_START ||
            eventType == TouchHandler.EventType.DRAG_MOVE ||
            eventType == TouchHandler.EventType.DRAG_END);
 
       // Drag events don't bubble - we're really just dragging the element,
       // not affecting its parent at all.
-      var bubbles = !isDrag;
+      const bubbles = !isDrag;
 
-      var event = new TouchHandler.Event(
+      const event = new TouchHandler.Event(
           eventType, bubbles, clientX, clientY, touchedElement);
 
       // Set enableDrag when it can be overridden

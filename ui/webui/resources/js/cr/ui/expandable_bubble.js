@@ -18,7 +18,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLDivElement}
    * @implements {EventListener}
    */
-  var ExpandableBubble = cr.ui.define('div');
+  const ExpandableBubble = cr.ui.define('div');
 
   ExpandableBubble.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -42,7 +42,7 @@ cr.define('cr.ui', function() {
      * @param {Node} node An HTML element to set as the title.
      */
     set contentTitle(node) {
-      var bubbleTitle = this.querySelector('.expandable-bubble-title');
+      const bubbleTitle = this.querySelector('.expandable-bubble-title');
       bubbleTitle.textContent = '';
       bubbleTitle.appendChild(node);
     },
@@ -53,7 +53,7 @@ cr.define('cr.ui', function() {
      * @param {Node} node An HTML element.
      */
     set content(node) {
-      var bubbleMain = this.querySelector('.expandable-bubble-main');
+      const bubbleMain = this.querySelector('.expandable-bubble-main');
       bubbleMain.textContent = '';
       bubbleMain.appendChild(node);
     },
@@ -110,17 +110,17 @@ cr.define('cr.ui', function() {
      * @private
      */
     reposition_: function() {
-      var clientRect = this.anchorNode_.getBoundingClientRect();
+      const clientRect = this.anchorNode_.getBoundingClientRect();
 
       // Center bubble in collapsed mode (if it doesn't take up all the room we
       // have).
-      var offset = 0;
+      let offset = 0;
       if (!this.expanded) {
         offset = (clientRect.width - parseInt(this.style.width, 10)) / 2;
       }
       this.style.left = this.style.right = clientRect.left + offset + 'px';
 
-      var top = Math.max(0, clientRect.top - 4);
+      const top = Math.max(0, clientRect.top - 4);
       this.style.top = this.expanded ?
           (top - this.offsetHeight + this.unexpandedHeight) + 'px' :
           top + 'px';
@@ -131,13 +131,13 @@ cr.define('cr.ui', function() {
      * @private
      */
     resizeAndReposition: function() {
-      var clientRect = this.anchorNode_.getBoundingClientRect();
-      var width = clientRect.width;
+      const clientRect = this.anchorNode_.getBoundingClientRect();
+      let width = clientRect.width;
 
-      var bubbleTitle = this.querySelector('.expandable-bubble-title');
-      var closeElement = this.querySelector('.expandable-bubble-close');
-      var closeWidth = this.expanded ? closeElement.clientWidth : 0;
-      var margin = 15;
+      const bubbleTitle = this.querySelector('.expandable-bubble-title');
+      const closeElement = this.querySelector('.expandable-bubble-close');
+      const closeWidth = this.expanded ? closeElement.clientWidth : 0;
+      const margin = 15;
 
       // Suppress the width style so we can get it to calculate its width.
       // We'll set the right width again when we are done.
@@ -146,12 +146,12 @@ cr.define('cr.ui', function() {
       if (this.expanded) {
         // We always show the full title but never show less width than 250
         // pixels.
-        var expandedWidth =
+        const expandedWidth =
             Math.max(250, bubbleTitle.scrollWidth + closeWidth + margin);
         this.style.marginLeft = (width - expandedWidth) + 'px';
         width = expandedWidth;
       } else {
-        var newWidth = Math.min(bubbleTitle.scrollWidth + margin, width);
+        const newWidth = Math.min(bubbleTitle.scrollWidth + margin, width);
         // If we've maxed out in width then apply the mask.
         this.masked = newWidth == width;
         width = newWidth;
@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
           window, 'resize', this.resizeAndReposition.bind(this));
       this.eventTracker_.add(this, 'click', this.onNotificationClick_);
 
-      var doc = this.ownerDocument;
+      const doc = this.ownerDocument;
       this.eventTracker_.add(assert(doc), 'keydown', this, true);
       this.eventTracker_.add(assert(doc), 'mousedown', this, true);
     },
@@ -258,7 +258,7 @@ cr.define('cr.ui', function() {
      * Node.prototype.contains() will be fixed.
      */
     handleEvent: function(e) {
-      var handled = false;
+      let handled = false;
       switch (e.type) {
         case 'keydown':
           if (e.keyCode == 27) {  // Esc.

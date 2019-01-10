@@ -8,7 +8,7 @@ cr.define('cr.icon', function() {
    *     webui resources.
    */
   function getSupportedScaleFactors() {
-    var supportedScaleFactors = [];
+    const supportedScaleFactors = [];
     if (!cr.isIOS) {
       // This matches the code in ResourceBundle::InitSharedInstance() that
       // supports SCALE_FACTOR_100P on all non-iOS platforms.
@@ -51,17 +51,17 @@ cr.define('cr.icon', function() {
    * @return {string} The CSS -webkit-image-set.
    */
   function getImageSet(path) {
-    var supportedScaleFactors = getSupportedScaleFactors();
+    const supportedScaleFactors = getSupportedScaleFactors();
 
-    var replaceStartIndex = path.indexOf('scalefactor');
+    const replaceStartIndex = path.indexOf('scalefactor');
     if (replaceStartIndex < 0) {
       return getUrlForCss(path);
     }
 
-    var s = '';
-    for (var i = 0; i < supportedScaleFactors.length; ++i) {
-      var scaleFactor = supportedScaleFactors[i];
-      var pathWithScaleFactor = path.substr(0, replaceStartIndex) +
+    let s = '';
+    for (let i = 0; i < supportedScaleFactors.length; ++i) {
+      const scaleFactor = supportedScaleFactors[i];
+      const pathWithScaleFactor = path.substr(0, replaceStartIndex) +
           scaleFactor + path.substr(replaceStartIndex + 'scalefactor'.length);
 
       s += getUrlForCss(pathWithScaleFactor) + ' ' + scaleFactor + 'x';
@@ -81,8 +81,8 @@ cr.define('cr.icon', function() {
    * @return {string} The url, or an image set of URLs.
    */
   function getImage(path) {
-    var chromeThemePath = 'chrome://theme';
-    var isChromeThemeUrl =
+    const chromeThemePath = 'chrome://theme';
+    const isChromeThemeUrl =
         (path.slice(0, chromeThemePath.length) == chromeThemePath);
     return isChromeThemeUrl ? getImageSet(path + '@scalefactorx') :
                               getUrlForCss(path);
@@ -92,7 +92,7 @@ cr.define('cr.icon', function() {
    * A regular expression for identifying favicon URLs.
    * @const {!RegExp}
    */
-  var FAVICON_URL_REGEX = /\.ico$/i;
+  const FAVICON_URL_REGEX = /\.ico$/i;
 
   /**
    * Creates a CSS -webkit-image-set for a favicon request.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ var BubbleButton = cr.ui.BubbleButton;
+  /** @const */ const BubbleButton = cr.ui.BubbleButton;
 
   /**
    * An indicator that can be placed on a UI element as a hint to the user that
@@ -12,14 +12,14 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.BubbleButton}
    */
-  var ControlledIndicator = cr.ui.define('span');
+  const ControlledIndicator = cr.ui.define('span');
 
   /**
    * Only a single bubble can be shown at a time. |bubble| holds a reference to
    * the bubble, if any.
    * @private
    */
-  var bubble;
+  let bubble;
 
   ControlledIndicator.prototype = {
     __proto__: cr.ui.BubbleButton.prototype,
@@ -73,8 +73,8 @@ cr.define('cr.ui', function() {
      * @return {string}
      */
     getBubbleText: function() {
-      var defaultStrings = this.getDefaultStrings();
-      var text = defaultStrings[this.controlledBy];
+      const defaultStrings = this.getDefaultStrings();
+      let text = defaultStrings[this.controlledBy];
 
       if (this.hasAttribute('text' + this.controlledBy)) {
         text = this.getAttribute('text' + this.controlledBy);
@@ -90,7 +90,7 @@ cr.define('cr.ui', function() {
      * @param {string} text to be shown in the bubble.
      */
     createDomTree: function(text) {
-      var content = document.createElement('div');
+      const content = document.createElement('div');
       content.textContent = text;
       return content;
     },

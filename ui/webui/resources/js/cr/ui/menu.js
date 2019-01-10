@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-
-  /** @const */ var MenuItem = cr.ui.MenuItem;
+  /** @const */ const MenuItem = cr.ui.MenuItem;
 
   /**
    * Creates a new menu element. Menu dispatches all commands on the element it
@@ -14,7 +13,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  var Menu = cr.ui.define('cr-menu');
+  const Menu = cr.ui.define('cr-menu');
 
   Menu.prototype = {
     __proto__: HTMLElement.prototype,
@@ -39,8 +38,8 @@ cr.define('cr.ui', function() {
       this.hidden = true;  // Hide the menu by default.
 
       // Decorate the children as menu items.
-      var menuItems = this.menuItems;
-      for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
+      const menuItems = this.menuItems;
+      for (let i = 0, menuItem; menuItem = menuItems[i]; i++) {
         cr.ui.decorate(menuItem, MenuItem);
       }
     },
@@ -51,7 +50,7 @@ cr.define('cr.ui', function() {
      * @return {cr.ui.MenuItem} The created menu item.
      */
     addMenuItem: function(item) {
-      var menuItem = this.ownerDocument.createElement('cr-menu-item');
+      const menuItem = this.ownerDocument.createElement('cr-menu-item');
       this.appendChild(menuItem);
 
       cr.ui.decorate(menuItem, MenuItem);
@@ -71,7 +70,7 @@ cr.define('cr.ui', function() {
      * Adds separator at the end of the list.
      */
     addSeparator: function() {
-      var separator = this.ownerDocument.createElement('hr');
+      const separator = this.ownerDocument.createElement('hr');
       cr.ui.decorate(separator, MenuItem);
       this.appendChild(separator);
     },
@@ -104,7 +103,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseOver_: function(e) {
-      var overItem = this.findMenuItem_(/** @type {Element} */ (e.target));
+      const overItem = this.findMenuItem_(/** @type {Element} */ (e.target));
       this.selectedItem = overItem;
     },
 
@@ -131,7 +130,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var pos = this.shown_.mouseDownPos;
+      const pos = this.shown_.mouseDownPos;
       if (!pos ||
           Math.abs(pos.x - e.screenX) + Math.abs(pos.y - e.screenY) > 4) {
         return;
@@ -163,7 +162,7 @@ cr.define('cr.ui', function() {
       return this.menuItems[this.selectedIndex];
     },
     set selectedItem(item) {
-      var index = Array.prototype.indexOf.call(this.menuItems, item);
+      const index = Array.prototype.indexOf.call(this.menuItems, item);
       this.selectedIndex = index;
     },
 
@@ -215,7 +214,7 @@ cr.define('cr.ui', function() {
     hasVisibleItems: function() {
       // Inspect items in reverse order to determine if the separator above each
       // set of items is required.
-      for (let menuItem of this.menuItems) {
+      for (const menuItem of this.menuItems) {
         if (this.isItemVisible_(menuItem)) {
           return true;
         }
@@ -230,17 +229,17 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether the event was handled be the menu.
      */
     handleKeyDown: function(e) {
-      var item = this.selectedItem;
+      let item = this.selectedItem;
 
-      var self = this;
-      var selectNextAvailable = function(m) {
-        var menuItems = self.menuItems;
-        var len = menuItems.length;
+      const self = this;
+      const selectNextAvailable = function(m) {
+        const menuItems = self.menuItems;
+        const len = menuItems.length;
         if (!len) {
           // Edge case when there are no items.
           return;
         }
-        var i = self.selectedIndex;
+        let i = self.selectedIndex;
         if (i == -1 && m == -1) {
           // Edge case when needed to go the last item first.
           i = 0;
@@ -249,7 +248,7 @@ cr.define('cr.ui', function() {
         // "i" may be negative(-1), so modulus operation and cycle below
         // wouldn't work as assumed. This trick makes startPosition positive
         // without altering it's modulo.
-        var startPosition = (i + len) % len;
+        const startPosition = (i + len) % len;
 
         while (true) {
           i = (i + m + len) % len;
@@ -285,8 +284,8 @@ cr.define('cr.ui', function() {
           if (item) {
             // Store |contextElement| since it'll be removed when handling the
             // 'activate' event.
-            var contextElement = this.contextElement;
-            var activationEvent = cr.doc.createEvent('Event');
+            const contextElement = this.contextElement;
+            const activationEvent = cr.doc.createEvent('Event');
             activationEvent.initEvent('activate', true, true);
             activationEvent.originalEvent = e;
             if (item.dispatchEvent(activationEvent)) {
@@ -317,9 +316,9 @@ cr.define('cr.ui', function() {
      * @param {Node=} node Node for which to actuate commands state.
      */
     updateCommands: function(node) {
-      var menuItems = this.menuItems;
+      const menuItems = this.menuItems;
 
-      for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
+      for (const menuItem of menuItems) {
         if (!menuItem.isSeparator()) {
           menuItem.updateCommand(node);
         }
@@ -329,7 +328,7 @@ cr.define('cr.ui', function() {
       let lastSeparator = null;
       // Hide any separators without a visible item between them and the next
       // separator or the end of the menu.
-      for (let menuItem of menuItems) {
+      for (const menuItem of menuItems) {
         if (menuItem.isSeparator()) {
           if (separatorRequired) {
             lastSeparator = menuItem;
@@ -349,12 +348,12 @@ cr.define('cr.ui', function() {
   };
 
   function selectedIndexChanged(selectedIndex, oldSelectedIndex) {
-    var oldSelectedItem = this.menuItems[oldSelectedIndex];
+    const oldSelectedItem = this.menuItems[oldSelectedIndex];
     if (oldSelectedItem) {
       oldSelectedItem.selected = false;
       oldSelectedItem.blur();
     }
-    var item = this.selectedItem;
+    const item = this.selectedItem;
     if (item) {
       item.selected = true;
     }

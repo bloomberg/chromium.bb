@@ -17,12 +17,12 @@
  */
 function assert(condition, opt_message) {
   if (!condition) {
-    var message = 'Assertion failed';
+    let message = 'Assertion failed';
     if (opt_message) {
       message = message + ': ' + opt_message;
     }
-    var error = new Error(message);
-    var global = function() {
+    const error = new Error(message);
+    const global = function() {
       /** @type {boolean} */
       this.traceAssertionsForTesting;
       return this;

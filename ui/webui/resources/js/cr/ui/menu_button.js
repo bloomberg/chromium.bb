@@ -18,13 +18,13 @@ cr.ui.HideType = {
 
 cr.define('cr.ui', function() {
   /** @const */
-  var Menu = cr.ui.Menu;
+  const Menu = cr.ui.Menu;
 
   /** @const */
-  var HideType = cr.ui.HideType;
+  const HideType = cr.ui.HideType;
 
   /** @const */
-  var positionPopupAroundElement = cr.ui.positionPopupAroundElement;
+  const positionPopupAroundElement = cr.ui.positionPopupAroundElement;
 
   /**
    * Creates a new menu button element.
@@ -33,7 +33,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLButtonElement}
    * @implements {EventListener}
    */
-  var MenuButton = cr.ui.define('button');
+  const MenuButton = cr.ui.define('button');
 
   MenuButton.prototype = {
     __proto__: HTMLButtonElement.prototype,
@@ -55,7 +55,7 @@ cr.define('cr.ui', function() {
       this.classList.add('custom-appearance');
       this.classList.add('menu-button');  // For styles in menu_button.css.
 
-      var menu;
+      let menu;
       if ((menu = this.getAttribute('menu'))) {
         this.menu = menu;
       }
@@ -174,9 +174,9 @@ cr.define('cr.ui', function() {
           this.classList.remove('using-mouse');
           break;
         case 'activate':
-          var hideDelayed =
+          const hideDelayed =
               e.target instanceof cr.ui.MenuItem && e.target.checkable;
-          var hideType = hideDelayed ? HideType.DELAYED : HideType.INSTANT;
+          const hideType = hideDelayed ? HideType.DELAYED : HideType.INSTANT;
           if (e.originalEvent instanceof MouseEvent ||
               e.originalEvent instanceof TouchEvent) {
             this.hideMenuWithoutTakingFocus_(hideType);
@@ -223,7 +223,7 @@ cr.define('cr.ui', function() {
 
       this.menu.updateCommands(this);
 
-      var event = new UIEvent(
+      const event = new UIEvent(
           'menushow', {bubbles: true, cancelable: true, view: window});
       if (!this.dispatchEvent(event)) {
         return;
@@ -234,8 +234,8 @@ cr.define('cr.ui', function() {
       this.setAttribute('menu-shown', '');
 
       // When the menu is shown we steal all keyboard events.
-      var doc = this.ownerDocument;
-      var win = doc.defaultView;
+      const doc = this.ownerDocument;
+      const win = doc.defaultView;
       this.showingEvents_.add(doc, 'keydown', this, true);
       this.showingEvents_.add(doc, 'mousedown', this, true);
       this.showingEvents_.add(doc, 'focus', this, true);
@@ -296,7 +296,7 @@ cr.define('cr.ui', function() {
         this.focus();
       }
 
-      var event = new UIEvent(
+      const event = new UIEvent(
           'menuhide', {bubbles: true, cancelable: false, view: window});
       this.dispatchEvent(event);
 

@@ -10,6 +10,7 @@
 /**
  * @typedef {EventListener|function(!Event):*}
  */
+// eslint-disable-next-line no-var
 var EventListenerType;
 
 cr.define('cr', function() {
@@ -36,7 +37,7 @@ cr.define('cr', function() {
       if (!(type in this.listeners_)) {
         this.listeners_[type] = [handler];
       } else {
-        var handlers = this.listeners_[type];
+        const handlers = this.listeners_[type];
         if (handlers.indexOf(handler) < 0) {
           handlers.push(handler);
         }
@@ -53,8 +54,8 @@ cr.define('cr', function() {
         return;
       }
       if (type in this.listeners_) {
-        var handlers = this.listeners_[type];
-        var index = handlers.indexOf(handler);
+        const handlers = this.listeners_[type];
+        const index = handlers.indexOf(handler);
         if (index >= 0) {
           // Clean up if this was the last listener.
           if (handlers.length == 1) {
@@ -80,17 +81,17 @@ cr.define('cr', function() {
 
       // Since we are using DOM Event objects we need to override some of the
       // properties and methods so that we can emulate this correctly.
-      var self = this;
+      const self = this;
       event.__defineGetter__('target', function() {
         return self;
       });
 
-      var type = event.type;
-      var prevented = 0;
+      const type = event.type;
+      let prevented = 0;
       if (type in this.listeners_) {
         // Clone to prevent removal during dispatch
-        var handlers = this.listeners_[type].concat();
-        for (var i = 0, handler; handler = handlers[i]; i++) {
+        const handlers = this.listeners_[type].concat();
+        for (let i = 0, handler; handler = handlers[i]; i++) {
           if (handler.handleEvent) {
             prevented |= handler.handleEvent.call(handler, event) === false;
           } else {

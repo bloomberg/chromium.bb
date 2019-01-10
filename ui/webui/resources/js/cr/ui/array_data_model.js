@@ -15,7 +15,7 @@
 // <include src="../../assert.js">
 
 cr.define('cr.ui', function() {
-  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ const EventTarget = cr.EventTarget;
 
   /**
    * A data model that wraps a simple array and supports sorting by storing
@@ -29,7 +29,7 @@ cr.define('cr.ui', function() {
     this.indexes_ = [];
     this.compareFunctions_ = {};
 
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
       this.indexes_.push(i);
     }
   }
@@ -111,7 +111,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index of the first found element or -1 if not found.
      */
     indexOf: function(item, opt_fromIndex) {
-      for (var i = opt_fromIndex || 0; i < this.indexes_.length; i++) {
+      for (let i = opt_fromIndex || 0; i < this.indexes_.length; i++) {
         if (item === this.item(i)) {
           return i;
         }
@@ -126,7 +126,7 @@ cr.define('cr.ui', function() {
      * @return {Array} An array of elements in the selected range.
      */
     slice: function(opt_from, opt_to) {
-      var arr = this.array_;
+      const arr = this.array_;
       return this.indexes_.slice(opt_from, opt_to).map(function(index) {
         return arr[index];
       });
@@ -143,15 +143,16 @@ cr.define('cr.ui', function() {
      * @return {!Array} An array with the removed items.
      */
     splice: function(index, deleteCount, var_args) {
-      var addCount = arguments.length - 2;
-      var newIndexes = [];
-      var deletePermutation = [];
-      var deletedItems = [];
-      var newArray = [];
+      const addCount = arguments.length - 2;
+      const newIndexes = [];
+      const deletePermutation = [];
+      const deletedItems = [];
+      const newArray = [];
       index = Math.min(index, this.indexes_.length);
       deleteCount = Math.min(deleteCount, this.indexes_.length - index);
       // Copy items before the insertion point.
-      for (var i = 0; i < index; i++) {
+      let i;
+      for (i = 0; i < index; i++) {
         newIndexes.push(newArray.length);
         deletePermutation.push(i);
         newArray.push(this.array_[this.indexes_[i]]);
@@ -162,7 +163,7 @@ cr.define('cr.ui', function() {
         deletedItems.push(this.array_[this.indexes_[i]]);
       }
       // Insert new items instead deleted ones.
-      for (var j = 0; j < addCount; j++) {
+      for (let j = 0; j < addCount; j++) {
         newIndexes.push(newArray.length);
         newArray.push(arguments[j + 2]);
       }
@@ -178,16 +179,16 @@ cr.define('cr.ui', function() {
       this.array_ = newArray;
 
       // TODO(arv): Maybe unify splice and change events?
-      var spliceEvent = new Event('splice');
+      const spliceEvent = new Event('splice');
       spliceEvent.removed = deletedItems;
       spliceEvent.added = Array.prototype.slice.call(arguments, 2);
 
-      var status = this.sortStatus;
+      const status = this.sortStatus;
       // if sortStatus.field is null, this restores original order.
-      var sortPermutation =
+      const sortPermutation =
           this.doSort_(this.sortStatus.field, this.sortStatus.direction);
       if (sortPermutation) {
-        var splicePermutation = deletePermutation.map(function(element) {
+        const splicePermutation = deletePermutation.map(function(element) {
           return element != -1 ? sortPermutation[element] : -1;
         });
         this.dispatchPermutedEvent_(splicePermutation);
@@ -219,7 +220,7 @@ cr.define('cr.ui', function() {
      * @return {number} The new length of the model.
      */
     push: function(var_args) {
-      var args = Array.prototype.slice.call(arguments);
+      const args = Array.prototype.slice.call(arguments);
       args.unshift(this.length, 0);
       this.splice.apply(this, args);
       return this.length;
@@ -236,7 +237,7 @@ cr.define('cr.ui', function() {
      * @param {*} newItem New item.
      */
     replaceItem: function(oldItem, newItem) {
-      var index = this.indexOf(oldItem);
+      const index = this.indexOf(oldItem);
       if (index < 0) {
         return;
       }
@@ -267,15 +268,15 @@ cr.define('cr.ui', function() {
         assert(index >= 0 && index < this.length, 'Invalid index');
       }, this);
 
-      for (var i = 0; i < indexes.length; i++) {
-        var e = new Event('change');
+      for (let i = 0; i < indexes.length; i++) {
+        const e = new Event('change');
         e.index = indexes[i];
         this.dispatchEvent(e);
       }
 
       if (this.sortStatus.field) {
-        var status = this.sortStatus;
-        var sortPermutation =
+        const status = this.sortStatus;
+        const sortPermutation =
             this.doSort_(this.sortStatus.field, this.sortStatus.direction);
         if (sortPermutation) {
           this.dispatchPermutedEvent_(sortPermutation);
@@ -317,7 +318,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     delayedSort_: function(field, direction) {
-      var self = this;
+      const self = this;
       setTimeout(function() {
         // If the sort status has been changed, sorting has already done
         // on the change event.
@@ -335,10 +336,10 @@ cr.define('cr.ui', function() {
      * @param {string} direction Sort direction.
      */
     sort: function(field, direction) {
-      var self = this;
+      const self = this;
 
       this.prepareSort(field, function() {
-        var sortPermutation = self.doSort_(field, direction);
+        const sortPermutation = self.doSort_(field, direction);
         if (sortPermutation) {
           self.dispatchPermutedEvent_(sortPermutation);
         }
@@ -353,21 +354,21 @@ cr.define('cr.ui', function() {
      * @private
      */
     doSort_: function(field, direction) {
-      var compareFunction = this.sortFunction_(field, direction);
-      var positions = [];
-      for (var i = 0; i < this.length; i++) {
+      const compareFunction = this.sortFunction_(field, direction);
+      const positions = [];
+      for (let i = 0; i < this.length; i++) {
         positions[this.indexes_[i]] = i;
       }
-      var sorted = this.indexes_.every(function(element, index, array) {
+      const sorted = this.indexes_.every(function(element, index, array) {
         return index == 0 || compareFunction(element, array[index - 1]) >= 0;
       });
       if (!sorted) {
         this.indexes_.sort(compareFunction);
       }
       this.sortStatus_ = this.createSortStatus(field, direction);
-      var sortPermutation = [];
-      var changed = false;
-      for (var i = 0; i < this.length; i++) {
+      const sortPermutation = [];
+      let changed = false;
+      for (let i = 0; i < this.length; i++) {
         if (positions[this.indexes_[i]] != i) {
           changed = true;
         }
@@ -380,12 +381,12 @@ cr.define('cr.ui', function() {
     },
 
     dispatchSortEvent_: function() {
-      var e = new Event('sorted');
+      const e = new Event('sorted');
       this.dispatchEvent(e);
     },
 
     dispatchPermutedEvent_: function(permutation) {
-      var e = new Event('permuted');
+      const e = new Event('permuted');
       e.permutation = permutation;
       e.newLength = this.length;
       this.dispatchEvent(e);
@@ -400,9 +401,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     createCompareFunction_: function(field) {
-      var compareFunction =
+      const compareFunction =
           this.compareFunctions_ ? this.compareFunctions_[field] : null;
-      var defaultValuesCompareFunction = this.defaultValuesCompareFunction;
+      const defaultValuesCompareFunction = this.defaultValuesCompareFunction;
       if (compareFunction) {
         return compareFunction;
       } else {
@@ -419,17 +420,17 @@ cr.define('cr.ui', function() {
      * @private
      */
     sortFunction_: function(field, direction) {
-      var compareFunction = null;
+      let compareFunction = null;
       if (field !== null) {
         compareFunction = this.createCompareFunction_(field);
       }
-      var dirMultiplier = direction == 'desc' ? -1 : 1;
+      const dirMultiplier = direction == 'desc' ? -1 : 1;
 
       return function(index1, index2) {
-        var item1 = this.array_[index1];
-        var item2 = this.array_[index2];
+        const item1 = this.array_[index1];
+        const item2 = this.array_[index2];
 
-        var compareResult = 0;
+        let compareResult = 0;
         if (typeof (compareFunction) === 'function') {
           compareResult = compareFunction.call(null, item1, item2);
         }
