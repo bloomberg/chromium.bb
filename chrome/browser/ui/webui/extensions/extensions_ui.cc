@@ -317,12 +317,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale())
               .spec()));
-  source->AddString(
-      "hostPermissionsLearnMoreLink",
-      l10n_util::GetStringFUTF16(
-          IDS_MD_EXTENSIONS_HOST_PERMISSIONS_LEARN_MORE,
-          base::ASCIIToUTF16(
-              chrome_extension_constants::kRuntimeHostPermissionsHelpURL)));
+  source->AddString("hostPermissionsLearnMoreLink",
+                    chrome_extension_constants::kRuntimeHostPermissionsHelpURL);
   source->AddBoolean(kInDevModeKey, in_dev_mode);
   source->AddBoolean(kShowActivityLogKey,
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
