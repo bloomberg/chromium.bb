@@ -932,8 +932,10 @@ CanvasRenderingContext2D::getContextAttributes() const {
   CanvasRenderingContext2DSettings* settings =
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
-  settings->setColorSpace(ColorSpaceAsString());
-  settings->setPixelFormat(PixelFormatAsString());
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
+    settings->setColorSpace(ColorSpaceAsString());
+    settings->setPixelFormat(PixelFormatAsString());
+  }
   return settings;
 }
 
