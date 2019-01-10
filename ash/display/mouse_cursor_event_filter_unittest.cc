@@ -159,7 +159,6 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
 // Otherwise, in one edge case, user may press one key repeatedly while moving
 // the cursor and then the user interface looks weird.
 // (http://crbug.com/855163).
-#if defined(OS_CHROMEOS)
 TEST_F(MouseCursorEventFilterTest, CursorVisibilityWontFlip) {
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
@@ -186,6 +185,5 @@ TEST_F(MouseCursorEventFilterTest, CursorVisibilityWontFlip) {
   generator->PressKey(ui::VKEY_A, ui::EF_NONE | ui::EF_IS_REPEAT);
   EXPECT_TRUE(manager->IsCursorVisible());
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

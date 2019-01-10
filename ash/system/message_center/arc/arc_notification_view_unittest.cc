@@ -271,9 +271,6 @@ TEST_F(ArcNotificationViewTest, SlideOutNested) {
   EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
-// Pinning notification is ChromeOS only feature.
-#if defined(OS_CHROMEOS)
-
 TEST_F(ArcNotificationViewTest, SlideOutPinned) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -315,8 +312,6 @@ TEST_F(ArcNotificationViewTest, SnoozeButton) {
   EXPECT_NE(nullptr,
             notification_view()->GetControlButtonsView()->snooze_button());
 }
-
-#endif  // defined(OS_CHROMEOS)
 
 TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   std::string notification_id(kDefaultNotificationId);
