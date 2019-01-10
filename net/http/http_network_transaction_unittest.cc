@@ -1417,7 +1417,9 @@ TEST_F(HttpNetworkTransactionTest, Ignores1xx) {
   EXPECT_EQ("hello world", response_data);
 }
 
-TEST_F(HttpNetworkTransactionTest, LoadTimingMeasuresTimeToFirstByteForHttp) {
+// TODO(https://crbug.com/918726): Exhibits timing flakes.
+TEST_F(HttpNetworkTransactionTest,
+       DISABLED_LoadTimingMeasuresTimeToFirstByteForHttp) {
   static const base::TimeDelta kSleepDuration =
       base::TimeDelta::FromMilliseconds(10);
 
@@ -1583,11 +1585,15 @@ void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
   EXPECT_EQ("hello world", response_data);
 }
 
-TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForHttp) {
+// TODO(https://crbug.com/918726): Exhibits timing flakes.
+TEST_F(HttpNetworkTransactionTest,
+       DISABLED_MeasuresTimeToFirst100ResponseForHttp) {
   Check100ResponseTiming(false /* use_spdy */);
 }
 
-TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForSpdy) {
+// TODO(https://crbug.com/918726): Exhibits timing flakes.
+TEST_F(HttpNetworkTransactionTest,
+       DISABLED_MeasuresTimeToFirst100ResponseForSpdy) {
   Check100ResponseTiming(true /* use_spdy */);
 }
 
