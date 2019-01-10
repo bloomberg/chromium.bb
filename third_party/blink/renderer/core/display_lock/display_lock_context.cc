@@ -238,13 +238,12 @@ void DisplayLockContext::DidStyle() {
   if (state_ != kCommitting && state_ != kUpdating && !update_forced_)
     return;
 
-  // We must have contain: content for display locking.
-  // Note that we should also have content containment even if we're forcing
+  // We must have "contain: style layout" for display locking.
+  // Note that we should also have this containment even if we're forcing
   // this update to happen. Otherwise, proceeding with layout may cause
   // unexpected behavior. By rejecting the promise, the behavior can be detected
   // by script.
-  auto* style = element_->GetComputedStyle();
-  if (!style || !style->ContainsContent()) {
+  if (!ElementSupportsDisplayLocking()) {
     FinishUpdateResolver(kReject);
     FinishCommitResolver(kReject);
     state_ = state_ == kUpdating ? kLocked : kUnlocked;
@@ -302,11 +301,9 @@ void DisplayLockContext::DidAttachLayoutTree() {
     return;
 
   // Note that although we checked at style recalc time that the element has
-  // "contain: content", it might not actually apply the containment (e.g. see
-  // ShouldApplyContentContainment()). This confirms that containment should
-  // apply.
-  auto* layout_object = element_->GetLayoutObject();
-  if (!layout_object || !layout_object->ShouldApplyContentContainment()) {
+  // "contain: style layout", it might not actually apply the containment at the
+  // layout object level. This confirms that containment should apply.
+  if (!ElementSupportsDisplayLocking()) {
     FinishUpdateResolver(kReject);
     FinishCommitResolver(kReject);
     state_ = state_ == kUpdating ? kLocked : kUnlocked;
@@ -572,6 +569,20 @@ void DisplayLockContext::CancelTimeoutTask() {
 void DisplayLockContext::TriggerTimeout() {
   StartCommit();
   timeout_task_is_scheduled_ = false;
+}
+
+bool DisplayLockContext::ElementSupportsDisplayLocking() const {
+  DCHECK(element_ && !IsElementDirtyForStyleRecalc());
+  // If we have a layout object, check that since it's a more authoritative
+  // source of containment information.
+  if (auto* layout_object = element_->GetLayoutObject()) {
+    return layout_object->ShouldApplyStyleContainment() &&
+           layout_object->ShouldApplyLayoutContainment();
+  }
+
+  // Otherwise, fallback on just checking style.
+  auto* style = element_->GetComputedStyle();
+  return style && style->ContainsStyle() && style->ContainsLayout();
 }
 
 // Scoped objects implementation
