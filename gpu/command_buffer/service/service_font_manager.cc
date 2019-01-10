@@ -14,7 +14,7 @@ namespace gpu {
 namespace {
 class Deserializer {
  public:
-  Deserializer(const volatile char* memory, size_t memory_size)
+  Deserializer(const volatile char* memory, uint32_t memory_size)
       : memory_(memory), memory_size_(memory_size) {}
   ~Deserializer() = default;
 
@@ -32,7 +32,7 @@ class Deserializer {
     return true;
   }
 
-  bool ReadStrikeData(SkStrikeClient* strike_client, size_t size) {
+  bool ReadStrikeData(SkStrikeClient* strike_client, uint32_t size) {
     if (size == 0u)
       return true;
 
@@ -48,14 +48,20 @@ class Deserializer {
   }
 
  private:
-  bool AlignMemory(size_t size, size_t alignment) {
+  bool AlignMemory(uint32_t size, size_t alignment) {
     // Due to the math below, alignment must be a power of two.
     DCHECK_GT(alignment, 0u);
     DCHECK_EQ(alignment & (alignment - 1), 0u);
 
     uintptr_t memory = reinterpret_cast<uintptr_t>(memory_);
     size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
-    if (bytes_read_ + size + padding > memory_size_)
+
+    base::CheckedNumeric<uint32_t> checked_padded_size = bytes_read_;
+    checked_padded_size += padding;
+    checked_padded_size += size;
+    uint32_t padded_size = 0;
+    if (!checked_padded_size.AssignIfValid(&padded_size) ||
+        padded_size > memory_size_)
       return false;
 
     memory_ += padding;
@@ -64,8 +70,8 @@ class Deserializer {
   }
 
   const volatile char* memory_;
-  size_t memory_size_;
-  size_t bytes_read_ = 0u;
+  uint32_t memory_size_;
+  uint32_t bytes_read_ = 0u;
 };
 }  // namespace
 
@@ -125,7 +131,7 @@ void ServiceFontManager::Destroy() {
 
 bool ServiceFontManager::Deserialize(
     const volatile char* memory,
-    size_t memory_size,
+    uint32_t memory_size,
     std::vector<SkDiscardableHandleId>* locked_handles) {
   base::AutoLock hold(lock_);
 
@@ -134,11 +140,11 @@ bool ServiceFontManager::Deserialize(
 
   // All new handles.
   Deserializer deserializer(memory, memory_size);
-  uint64_t new_handles_created;
-  if (!deserializer.Read<uint64_t>(&new_handles_created))
+  uint32_t new_handles_created;
+  if (!deserializer.Read<uint32_t>(&new_handles_created))
     return false;
 
-  for (size_t i = 0; i < new_handles_created; ++i) {
+  for (uint32_t i = 0; i < new_handles_created; ++i) {
     SerializableSkiaHandle handle;
     if (!deserializer.Read<SerializableSkiaHandle>(&handle))
       return false;
@@ -156,19 +162,19 @@ bool ServiceFontManager::Deserialize(
   }
 
   // All locked handles
-  uint64_t num_locked_handles;
-  if (!deserializer.Read<uint64_t>(&num_locked_handles))
+  uint32_t num_locked_handles;
+  if (!deserializer.Read<uint32_t>(&num_locked_handles))
     return false;
 
   locked_handles->resize(num_locked_handles);
-  for (size_t i = 0; i < num_locked_handles; ++i) {
+  for (uint32_t i = 0; i < num_locked_handles; ++i) {
     if (!deserializer.Read<SkDiscardableHandleId>(&locked_handles->at(i)))
       return false;
   }
 
   // Skia font data.
-  uint64_t skia_data_size = 0u;
-  if (!deserializer.Read<uint64_t>(&skia_data_size))
+  uint32_t skia_data_size = 0u;
+  if (!deserializer.Read<uint32_t>(&skia_data_size))
     return false;
 
   {

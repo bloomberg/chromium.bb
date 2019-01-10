@@ -22,7 +22,7 @@ class RASTER_EXPORT ClientFontManager
    public:
     virtual ~Client() {}
 
-    virtual void* MapFontBuffer(size_t size) = 0;
+    virtual void* MapFontBuffer(uint32_t size) = 0;
   };
 
   ClientFontManager(Client* client, CommandBuffer* command_buffer);
