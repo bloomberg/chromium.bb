@@ -23,8 +23,14 @@ const base::Feature kMediaSessionService {
 
 // Enables Audio Focus enforcement which means that only one media session can
 // have audio focus at any one time.
-const base::Feature kAudioFocusEnforcement{"AudioFocusEnforcement",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAudioFocusEnforcement {
+  "AudioFocusEnforcement",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables Audio Focus grouping which means that multiple media sessions can
 // share audio focus at the same time provided that they have the same group id.
