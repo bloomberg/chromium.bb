@@ -190,6 +190,12 @@ void BookmarkRemoteUpdatesHandler::Process(
 
     if (tracked_entity && tracked_entity->IsUnsynced()) {
       ProcessConflict(*update, tracked_entity);
+      if (!bookmark_tracker_->GetEntityForSyncId(update_entity.id)) {
+        // During conflict resolution, the entity could be dropped in case of
+        // a conflict between local and remote deletions. We shouldn't worry
+        // about changes to the encryption in that case.
+        continue;
+      }
     } else if (update_entity.is_deleted()) {
       ProcessDelete(update_entity, tracked_entity);
       // If the local entity has been deleted, no need to check for out of date
@@ -202,6 +208,9 @@ void BookmarkRemoteUpdatesHandler::Process(
         // the encryption.
         continue;
       }
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(bookmark_tracker_->GetEntityForSyncId(update_entity.id));
     } else {
       // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only
       // care about their children.
@@ -209,6 +218,9 @@ void BookmarkRemoteUpdatesHandler::Process(
         continue;
       }
       ProcessUpdate(*update, tracked_entity);
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(bookmark_tracker_->GetEntityForSyncId(update_entity.id));
     }
     // If the received entity has out of date encryption, we schedule another
     // commit to fix it.
