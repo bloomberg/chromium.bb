@@ -9,7 +9,7 @@
  */
 
 /** @polymerBehavior */
-var I18nBehavior = {
+const I18nBehavior = {
   properties: {
     /**
      * The language the UI is presented in. Used to signal dynamic language
@@ -46,7 +46,7 @@ var I18nBehavior = {
    * @return {string} A translated, sanitized, substituted string.
    */
   i18n: function(id, var_args) {
-    var rawString = this.i18nRaw_.apply(this, arguments);
+    const rawString = this.i18nRaw_.apply(this, arguments);
     return parseHtmlSubset('<b>' + rawString + '</b>').firstChild.textContent;
   },
 
@@ -61,8 +61,8 @@ var I18nBehavior = {
    */
   i18nAdvanced: function(id, opts) {
     opts = opts || {};
-    var args = [id].concat(opts.substitutions || []);
-    var rawString = this.i18nRaw_.apply(this, args);
+    const args = [id].concat(opts.substitutions || []);
+    const rawString = this.i18nRaw_.apply(this, args);
     return loadTimeData.sanitizeInnerHtml(rawString, opts);
   },
 
@@ -91,10 +91,10 @@ var I18nBehavior = {
    * @return {string} A translated, sanitized, substituted string.
    */
   i18nRecursive: function(locale, id, var_args) {
-    var args = Array.prototype.slice.call(arguments, 2);
+    let args = Array.prototype.slice.call(arguments, 2);
     if (args.length > 0) {
       // Try to replace IDs with localized values.
-      var self = this;
+      const self = this;
       args = args.map(function(str) {
         return self.i18nExists(str) ? loadTimeData.getString(str) : str;
       });

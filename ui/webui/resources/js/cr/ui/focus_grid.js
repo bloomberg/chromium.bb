@@ -51,10 +51,10 @@ cr.define('cr.ui', function() {
 
     /** @override */
     onKeydown: function(row, e) {
-      var rowIndex = this.rows.indexOf(row);
+      const rowIndex = this.rows.indexOf(row);
       assert(rowIndex >= 0);
 
-      var newRow = -1;
+      let newRow = -1;
 
       if (e.key == 'ArrowUp') {
         newRow = rowIndex - 1;
@@ -66,7 +66,7 @@ cr.define('cr.ui', function() {
         newRow = this.rows.length - 1;
       }
 
-      var rowToFocus = this.rows[newRow];
+      const rowToFocus = this.rows[newRow];
       if (rowToFocus) {
         this.ignoreFocusChange_ = true;
         rowToFocus.getEquivalentElement(this.lastFocused_).focus();
@@ -97,7 +97,7 @@ cr.define('cr.ui', function() {
      * @return {number} The row index. -1 if not found.
      */
     getRowIndexForTarget: function(target) {
-      for (var i = 0; i < this.rows.length; ++i) {
+      for (let i = 0; i < this.rows.length; ++i) {
         if (this.rows[i].getElements().indexOf(target) >= 0) {
           return i;
         }
@@ -110,7 +110,7 @@ cr.define('cr.ui', function() {
      * @return {?cr.ui.FocusRow} The row with root of |root| or null.
      */
     getRowForRoot: function(root) {
-      for (var i = 0; i < this.rows.length; ++i) {
+      for (let i = 0; i < this.rows.length; ++i) {
         if (this.rows[i].root == root) {
           return this.rows[i];
         }
@@ -135,7 +135,7 @@ cr.define('cr.ui', function() {
     addRowBefore: function(row, nextRow) {
       row.delegate = row.delegate || this;
 
-      var nextRowIndex = nextRow ? this.rows.indexOf(nextRow) : -1;
+      const nextRowIndex = nextRow ? this.rows.indexOf(nextRow) : -1;
       if (nextRowIndex == -1) {
         this.rows.push(row);
       } else {
@@ -148,7 +148,7 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.FocusRow} row The row that needs to be removed.
      */
     removeRow: function(row) {
-      var nextRowIndex = row ? this.rows.indexOf(row) : -1;
+      const nextRowIndex = row ? this.rows.indexOf(row) : -1;
       if (nextRowIndex > -1) {
         this.rows.splice(nextRowIndex, 1);
       }
@@ -166,7 +166,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      for (var i = 0; i < this.rows.length; ++i) {
+      for (let i = 0; i < this.rows.length; ++i) {
         if (this.rows[i].isActive()) {
           return;
         }

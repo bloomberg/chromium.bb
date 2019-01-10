@@ -8,6 +8,7 @@
  */
 
 /** @polymerBehavior */
+// eslint-disable-next-line no-var
 var WebUIListenerBehavior = {
   properties: {
     /**

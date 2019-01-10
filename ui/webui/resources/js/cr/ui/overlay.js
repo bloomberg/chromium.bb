@@ -13,7 +13,7 @@ cr.define('cr.ui.overlay', function() {
    * @return {HTMLElement} The overlay.
    */
   function getTopOverlay() {
-    var overlays = /** @type !NodeList<!HTMLElement> */ (
+    const overlays = /** @type !NodeList<!HTMLElement> */ (
         document.querySelectorAll('.overlay:not([hidden])'));
     return overlays[overlays.length - 1];
   }
@@ -29,9 +29,9 @@ cr.define('cr.ui.overlay', function() {
     function isHidden(node) {
       return node.hidden;
     }
-    var defaultButtons = /** @type !NodeList<!HTMLElement> */ (
+    const defaultButtons = /** @type !NodeList<!HTMLElement> */ (
         overlay.querySelectorAll('.page .button-strip > .default-button'));
-    for (var i = 0; i < defaultButtons.length; i++) {
+    for (let i = 0; i < defaultButtons.length; i++) {
       if (!findAncestor(defaultButtons[i], isHidden)) {
         return defaultButtons[i];
       }
@@ -40,7 +40,7 @@ cr.define('cr.ui.overlay', function() {
   }
 
   /** @type {boolean} */
-  var globallyInitialized = false;
+  let globallyInitialized = false;
 
   /**
    * Makes initializations which must hook at the document level.
@@ -48,7 +48,7 @@ cr.define('cr.ui.overlay', function() {
   function globalInitialization() {
     if (!globallyInitialized) {
       document.addEventListener('keydown', function(e) {
-        var overlay = getTopOverlay();
+        const overlay = getTopOverlay();
         if (!overlay) {
           return;
         }
@@ -60,10 +60,10 @@ cr.define('cr.ui.overlay', function() {
 
         // Execute the overlay's default button on enter, unless focus is on an
         // element that has standard behavior for the enter key.
-        var forbiddenTagNames = /^(A|BUTTON|SELECT|TEXTAREA)$/;
+        const forbiddenTagNames = /^(A|BUTTON|SELECT|TEXTAREA)$/;
         if (e.key == 'Enter' &&
             !forbiddenTagNames.test(document.activeElement.tagName)) {
-          var button = getDefaultButton(overlay);
+          const button = getDefaultButton(overlay);
           if (button) {
             button.click();
             // Executing the default button may result in focus moving to a
@@ -86,10 +86,11 @@ cr.define('cr.ui.overlay', function() {
    * height.
    */
   function setMaxHeightAllPages() {
-    var pages = document.querySelectorAll('.overlay .page:not(.not-resizable)');
+    const pages =
+        document.querySelectorAll('.overlay .page:not(.not-resizable)');
 
-    var maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
-    for (var i = 0; i < pages.length; i++) {
+    const maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
+    for (let i = 0; i < pages.length; i++) {
       pages[i].style.maxHeight = maxHeight;
     }
   }
@@ -100,8 +101,8 @@ cr.define('cr.ui.overlay', function() {
    */
   function setupOverlay(overlay) {
     // Close the overlay on clicking any of the pages' close buttons.
-    var closeButtons = overlay.querySelectorAll('.page > .close-button');
-    for (var i = 0; i < closeButtons.length; i++) {
+    const closeButtons = overlay.querySelectorAll('.page > .close-button');
+    for (let i = 0; i < closeButtons.length; i++) {
       closeButtons[i].addEventListener('click', function(e) {
         if (cr.ui.FocusOutlineManager) {
           cr.ui.FocusOutlineManager.forDocument(document).updateVisibility();
@@ -131,7 +132,7 @@ cr.define('cr.ui.overlay', function() {
       }
 
       // This may be null while the overlay is closing.
-      var overlayPage = this.querySelector('.page:not([hidden])');
+      const overlayPage = this.querySelector('.page:not([hidden])');
       if (overlayPage) {
         overlayPage.classList.add('pulse');
       }

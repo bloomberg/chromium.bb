@@ -13,7 +13,7 @@ function $(id) {
   // Disable getElementById restriction here, since we are instructing other
   // places to re-use the $() that is defined here.
   // eslint-disable-next-line no-restricted-properties
-  var el = document.getElementById(id);
+  const el = document.getElementById(id);
   return el ? assertInstanceof(el, HTMLElement) : null;
 }
 
@@ -28,7 +28,7 @@ function getSVGElement(id) {
   // Disable getElementById restriction here, since it is not suitable for SVG
   // elements.
   // eslint-disable-next-line no-restricted-properties
-  var el = document.getElementById(id);
+  const el = document.getElementById(id);
   return el ? assertInstanceof(el, Element) : null;
 }
 
@@ -37,7 +37,7 @@ function getSVGElement(id) {
  *     behind a shadow root), or null if nothing is focused.
  */
 function getDeepActiveElement() {
-  var a = document.activeElement;
+  let a = document.activeElement;
   while (a && a.shadowRoot && a.shadowRoot.activeElement) {
     a = a.shadowRoot.activeElement;
   }
@@ -51,7 +51,7 @@ function getDeepActiveElement() {
  * @param {string} msg The text to be pronounced.
  */
 function announceAccessibleMessage(msg) {
-  var element = document.createElement('div');
+  const element = document.createElement('div');
   element.setAttribute('aria-live', 'polite');
   element.style.position = 'fixed';
   element.style.left = '-9999px';
@@ -72,7 +72,7 @@ function getUrlForCss(s) {
   // http://www.w3.org/TR/css3-values/#uris
   // Parentheses, commas, whitespace characters, single quotes (') and double
   // quotes (") appearing in a URI must be escaped with a backslash
-  var s2 = s.replace(/(\(|\)|\,|\s|\'|\"|\\)/g, '\\$1');
+  let s2 = s.replace(/(\(|\)|\,|\s|\'|\"|\\)/g, '\\$1');
   // WebKit has a bug when it comes to URLs that end with \
   // https://bugs.webkit.org/show_bug.cgi?id=28885
   if (/\\\\$/.test(s2)) {
@@ -88,11 +88,11 @@ function getUrlForCss(s) {
  * @return {Object} Dictionary containing name value pairs for URL
  */
 function parseQueryParams(location) {
-  var params = {};
-  var query = unescape(location.search.substring(1));
-  var vars = query.split('&');
-  for (var i = 0; i < vars.length; i++) {
-    var pair = vars[i].split('=');
+  const params = {};
+  const query = unescape(location.search.substring(1));
+  const vars = query.split('&');
+  for (let i = 0; i < vars.length; i++) {
+    const pair = vars[i].split('=');
     params[pair[0]] = pair[1];
   }
   return params;
@@ -107,11 +107,11 @@ function parseQueryParams(location) {
  * @return {string} The constructed new URL.
  */
 function setQueryParam(location, key, value) {
-  var query = parseQueryParams(location);
+  const query = parseQueryParams(location);
   query[encodeURIComponent(key)] = encodeURIComponent(value);
 
-  var newQuery = '';
-  for (var q in query) {
+  let newQuery = '';
+  for (const q in query) {
     newQuery += (newQuery ? '&' : '?') + q + '=' + query[q];
   }
 
@@ -137,7 +137,7 @@ function findAncestorByClass(el, className) {
  * @return {Node} The found ancestor or null if not found.
  */
 function findAncestor(node, predicate) {
-  var last = false;
+  let last = false;
   while (node != null && !(last = predicate(node))) {
     node = node.parentNode;
   }
@@ -145,12 +145,12 @@ function findAncestor(node, predicate) {
 }
 
 function swapDomNodes(a, b) {
-  var afterA = a.nextSibling;
+  const afterA = a.nextSibling;
   if (afterA == b) {
     swapDomNodes(b, a);
     return;
   }
-  var aParent = a.parentNode;
+  const aParent = a.parentNode;
   b.parentNode.replaceChild(a, b);
   aParent.insertBefore(b, afterA);
 }
@@ -209,7 +209,7 @@ function getRequiredElement(id) {
  * @return {!HTMLElement} the Element.
  */
 function queryRequiredElement(selectors, opt_context) {
-  var element = (opt_context || document).querySelector(selectors);
+  const element = (opt_context || document).querySelector(selectors);
   return assertInstanceof(
       element, HTMLElement, 'Missing required element: ' + selectors);
 }
@@ -225,11 +225,11 @@ function queryRequiredElement(selectors, opt_context) {
       return;
     }
 
-    var eventPath = e.path;
-    var anchor = null;
+    const eventPath = e.path;
+    let anchor = null;
     if (eventPath) {
-      for (var i = 0; i < eventPath.length; i++) {
-        var element = eventPath[i];
+      for (let i = 0; i < eventPath.length; i++) {
+        const element = eventPath[i];
         if (element.tagName === 'A' && element.href) {
           anchor = element;
           break;
@@ -238,7 +238,7 @@ function queryRequiredElement(selectors, opt_context) {
     }
 
     // Fallback if Event.path is not available.
-    var el = e.target;
+    let el = e.target;
     if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
         el.webkitMatchesSelector('A, A *')) {
       while (el.tagName != 'A') {
@@ -272,7 +272,7 @@ function queryRequiredElement(selectors, opt_context) {
  * @return {string} The new URL.
  */
 function appendParam(url, key, value) {
-  var param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
+  const param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
 
   if (url.indexOf('?') == -1) {
     return url + '?' + param;
@@ -287,7 +287,7 @@ function appendParam(url, key, value) {
  * @return {Element} The created element.
  */
 function createElementWithClassName(type, className) {
-  var elm = document.createElement(type);
+  const elm = document.createElement(type);
   elm.className = className;
   return elm;
 }
@@ -303,14 +303,14 @@ function createElementWithClassName(type, className) {
  */
 function ensureTransitionEndEvent(el, opt_timeOut) {
   if (opt_timeOut === undefined) {
-    var style = getComputedStyle(el);
+    const style = getComputedStyle(el);
     opt_timeOut = parseFloat(style.transitionDuration) * 1000;
 
     // Give an additional 50ms buffer for the animation to complete.
     opt_timeOut += 50;
   }
 
-  var fired = false;
+  let fired = false;
   el.addEventListener('transitionend', function f(e) {
     el.removeEventListener('transitionend', f);
     fired = true;
@@ -414,7 +414,7 @@ function listenOnce(target, eventNames, callback) {
     eventNames = eventNames.split(/ +/);
   }
 
-  var removeAllAndCallCallback = function(event) {
+  const removeAllAndCallCallback = function(event) {
     eventNames.forEach(function(eventName) {
       target.removeEventListener(eventName, removeAllAndCallCallback, false);
     });
@@ -442,7 +442,7 @@ if (!('key' in KeyboardEvent.prototype)) {
 
       // A-Z
       if (this.keyCode >= 0x41 && this.keyCode <= 0x5a) {
-        var result = String.fromCharCode(this.keyCode).toLowerCase();
+        let result = String.fromCharCode(this.keyCode).toLowerCase();
         if (this.shiftKey) {
           result = result.toUpperCase();
         }

@@ -9,7 +9,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLLIElement}
    */
-  var ListItem = cr.ui.define('li');
+  const ListItem = cr.ui.define('li');
 
   /**
    * The next id suffix to use when giving each item an unique id.

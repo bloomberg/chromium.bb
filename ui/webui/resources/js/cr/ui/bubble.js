@@ -65,7 +65,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLDivElement}
    * @implements {EventListener}
    */
-  var BubbleBase = cr.ui.define('div');
+  const BubbleBase = cr.ui.define('div');
 
   /**
    * The horizontal distance between the tip of the arrow and the reference edge
@@ -128,7 +128,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var bubbleContent = this.querySelector('.bubble-content');
+      const bubbleContent = this.querySelector('.bubble-content');
       bubbleContent.innerHTML = '';
       bubbleContent.appendChild(node);
     },
@@ -171,31 +171,33 @@ cr.define('cr.ui', function() {
      * hidden so that it does not point to a nonsensical location on the page.
      */
     reposition: function() {
-      var documentWidth = document.documentElement.clientWidth;
-      var documentHeight = document.documentElement.clientHeight;
-      var anchor = this.anchorNode_.getBoundingClientRect();
-      var anchorMid = (anchor.left + anchor.right) / 2;
-      var bubble = this.getBoundingClientRect();
-      var arrow = this.querySelector('.bubble-arrow').getBoundingClientRect();
+      const documentWidth = document.documentElement.clientWidth;
+      const documentHeight = document.documentElement.clientHeight;
+      const anchor = this.anchorNode_.getBoundingClientRect();
+      const anchorMid = (anchor.left + anchor.right) / 2;
+      const bubble = this.getBoundingClientRect();
+      const arrow = this.querySelector('.bubble-arrow').getBoundingClientRect();
 
+      let left;
+      let top;
       if (this.bubbleAlignment_ == cr.ui.BubbleAlignment.ENTIRELY_VISIBLE) {
         // Work out horizontal placement. The bubble is initially positioned so
         // that the arrow tip points toward the midpoint of the anchor and is
         // BubbleBase.ARROW_OFFSET pixels from the reference edge and (as
         // specified by the arrow location). If the bubble is not entirely
         // within view, it is then shifted, preserving the arrow tip position.
-        var left = this.arrowAtRight_ ?
+        left = this.arrowAtRight_ ?
             anchorMid + BubbleBase.ARROW_OFFSET - bubble.width :
             anchorMid - BubbleBase.ARROW_OFFSET;
-        var maxLeftPos =
+        const maxLeftPos =
             documentWidth - bubble.width - BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
-        var minLeftPos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
+        const minLeftPos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
         if (document.documentElement.dir == 'rtl') {
           left = Math.min(Math.max(left, minLeftPos), maxLeftPos);
         } else {
           left = Math.max(Math.min(left, maxLeftPos), minLeftPos);
         }
-        var arrowTip = Math.min(
+        const arrowTip = Math.min(
             Math.max(
                 arrow.width / 2,
                 this.arrowAtRight_ ? left + bubble.width - anchorMid :
@@ -214,33 +216,32 @@ cr.define('cr.ui', function() {
         // * Outside the anchor, arrow tip overlapping the anchor (arrow at
         //   bottom/top, opposite the specified arrow location).
         // * Overlapping the anchor.
-        var offsetTop = Math.min(
+        const offsetTop = Math.min(
             documentHeight - anchor.bottom - bubble.height, arrow.height / 2);
-        var offsetBottom =
+        const offsetBottom =
             Math.min(anchor.top - bubble.height, arrow.height / 2);
         if (offsetTop < 0 && offsetBottom < 0) {
-          var top = 0;
+          top = 0;
           this.updateArrowPosition_(false, false, arrowTip);
         } else if (
             offsetTop > offsetBottom ||
             offsetTop == offsetBottom && this.arrowAtTop_) {
-          var top = anchor.bottom + offsetTop;
+          top = anchor.bottom + offsetTop;
           this.updateArrowPosition_(true, true, arrowTip);
         } else {
-          var top = anchor.top - bubble.height - offsetBottom;
+          top = anchor.top - bubble.height - offsetBottom;
           this.updateArrowPosition_(true, false, arrowTip);
         }
       } else {
         if (this.bubbleAlignment_ ==
             cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
-          var left =
-              this.arrowAtRight_ ? anchor.right - bubble.width : anchor.left;
+          left = this.arrowAtRight_ ? anchor.right - bubble.width : anchor.left;
         } else {
-          var left = this.arrowAtRight_ ?
+          left = this.arrowAtRight_ ?
               anchorMid - this.clientWidth + BubbleBase.ARROW_OFFSET :
               anchorMid - BubbleBase.ARROW_OFFSET;
         }
-        var top = this.arrowAtTop_ ?
+        top = this.arrowAtTop_ ?
             anchor.bottom + arrow.height / 2 :
             anchor.top - this.clientHeight - arrow.height / 2;
         this.updateArrowPosition_(
@@ -263,7 +264,7 @@ cr.define('cr.ui', function() {
       this.hidden = false;
       this.reposition();
 
-      var doc = assert(this.ownerDocument);
+      const doc = assert(this.ownerDocument);
       this.eventTracker_ = new EventTracker;
       this.eventTracker_.add(doc, 'keydown', this, true);
       this.eventTracker_.add(doc, 'mousedown', this, true);
@@ -314,13 +315,13 @@ cr.define('cr.ui', function() {
      * @private
      */
     updateArrowPosition_: function(visible, atTop, tipOffset) {
-      var bubbleArrow = this.querySelector('.bubble-arrow');
+      const bubbleArrow = this.querySelector('.bubble-arrow');
       bubbleArrow.hidden = !visible;
       if (!visible) {
         return;
       }
 
-      var edgeOffset = (-bubbleArrow.clientHeight / 2) + 'px';
+      let edgeOffset = (-bubbleArrow.clientHeight / 2) + 'px';
       bubbleArrow.style.top = atTop ? edgeOffset : 'auto';
       bubbleArrow.style.bottom = atTop ? 'auto' : edgeOffset;
 
@@ -338,7 +339,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.BubbleBase}
    */
-  var Bubble = cr.ui.define('div');
+  const Bubble = cr.ui.define('div');
 
   Bubble.prototype = {
     // Set up the prototype chain.
@@ -350,7 +351,7 @@ cr.define('cr.ui', function() {
     decorate: function() {
       BubbleBase.prototype.decorate.call(this);
 
-      var close = document.createElement('div');
+      const close = document.createElement('div');
       close.className = 'bubble-close';
       this.insertBefore(close, this.querySelector('.bubble-content'));
 
@@ -438,7 +439,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.BubbleBase}
    */
-  var AutoCloseBubble = cr.ui.define('div');
+  const AutoCloseBubble = cr.ui.define('div');
 
   AutoCloseBubble.prototype = {
     // Set up the prototype chain.
@@ -478,7 +479,7 @@ cr.define('cr.ui', function() {
       BubbleBase.prototype.show.call(this);
       this.domSibling_.showingBubble = true;
 
-      var doc = this.ownerDocument;
+      const doc = this.ownerDocument;
       this.eventTracker_.add(doc, 'click', this, true);
       this.eventTracker_.add(doc, 'mousewheel', this, true);
       this.eventTracker_.add(doc, 'scroll', this, true);
@@ -506,20 +507,21 @@ cr.define('cr.ui', function() {
     handleEvent: function(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
 
+      let target;
       switch (event.type) {
         // Close the bubble when the user clicks outside it, except if it is a
         // left-click on the bubble's target element (allowing the target to
         // handle the event and close the bubble itself).
         case 'mousedown':
         case 'click':
-          var target = assertInstanceof(event.target, Node);
+          target = assertInstanceof(event.target, Node);
           if (event.button == 0 && this.anchorNode_.contains(target)) {
             break;
           }
         // Close the bubble when the underlying document is scrolled.
         case 'mousewheel':
         case 'scroll':
-          var target = assertInstanceof(event.target, Node);
+          target = assertInstanceof(event.target, Node);
           if (this.contains(target)) {
             break;
           }
@@ -530,7 +532,7 @@ cr.define('cr.ui', function() {
         // Close the bubble when the focus moves to an element that is not the
         // bubble target and is not inside the bubble.
         case 'elementFocused':
-          var target = assertInstanceof(event.target, Node);
+          target = assertInstanceof(event.target, Node);
           if (!this.anchorNode_.contains(target) && !this.contains(target)) {
             this.hide();
           }
@@ -545,7 +547,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     attachToDOM_: function() {
-      var parent = this.domSibling_.parentNode;
+      const parent = this.domSibling_.parentNode;
       parent.insertBefore(this, this.domSibling_.nextSibling);
     },
   };

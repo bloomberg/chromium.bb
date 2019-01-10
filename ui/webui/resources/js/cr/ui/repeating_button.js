@@ -10,7 +10,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLButtonElement}
    */
-  var RepeatingButton = cr.ui.define('button');
+  const RepeatingButton = cr.ui.define('button');
 
   /**
    * DOM Events that may be fired by the Repeating button.
@@ -94,8 +94,8 @@ cr.define('cr.ui', function() {
       // TODO(kevers): Consider adding a common location for picking up the
       //               initial delay and repeat interval.
       this.buttonHeld_();
-      var self = this;
-      var armRepeaterCallback = function() {
+      const self = this;
+      const armRepeaterCallback = function() {
         // In the event of a click/tap operation, this button has already been
         // released by the time this timeout triggers. Test to ensure that the
         // button is still being held (i.e. clearTimeout has not been called).

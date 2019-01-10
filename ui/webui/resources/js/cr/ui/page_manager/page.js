@@ -5,7 +5,7 @@
 // <include src="../node_utils.js">
 
 cr.define('cr.ui.pageManager', function() {
-  var PageManager = cr.ui.pageManager.PageManager;
+  const PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * Base class for pages that can be shown and hidden by PageManager. Each Page
@@ -218,8 +218,8 @@ cr.define('cr.ui.pageManager', function() {
      */
     setOverlayVisible_: function(visible) {
       assert(this.isOverlay);
-      var pageDiv = this.pageDiv;
-      var container = this.container;
+      const pageDiv = this.pageDiv;
+      const container = this.container;
 
       if (container.hidden != visible) {
         if (visible) {
@@ -230,8 +230,8 @@ cr.define('cr.ui.pageManager', function() {
 
           // Hide all dialogs in this container since a different one may have
           // been previously visible before fading out.
-          var pages = container.querySelectorAll('.page');
-          for (var i = 0; i < pages.length; i++) {
+          const pages = container.querySelectorAll('.page');
+          for (let i = 0; i < pages.length; i++) {
             pages[i].hidden = true;
           }
           // Show the new dialog.
@@ -241,13 +241,13 @@ cr.define('cr.ui.pageManager', function() {
         return;
       }
 
-      var self = this;
-      var loading = PageManager.isLoading();
+      const self = this;
+      const loading = PageManager.isLoading();
       if (!loading) {
         // TODO(flackr): Use an event delegate to avoid having to subscribe and
         // unsubscribe for transitionend events.
         container.addEventListener('transitionend', function f(e) {
-          var propName = e.propertyName;
+          const propName = e.propertyName;
           if (e.target != e.currentTarget ||
               (propName && propName != 'opacity')) {
             return;

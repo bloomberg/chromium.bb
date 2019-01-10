@@ -9,7 +9,7 @@
  */
 cr.define('cr.ui', function() {
   /** @interface */
-  var DragWrapperDelegate = function() {};
+  const DragWrapperDelegate = function() {};
 
   // TODO(devlin): The only method this "delegate" actually needs is
   // shouldAcceptDrag(); the rest can be events emitted by the DragWrapper.

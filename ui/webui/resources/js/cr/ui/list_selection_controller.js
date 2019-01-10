@@ -120,9 +120,9 @@ cr.define('cr.ui', function() {
      *     none.
      */
     handlePointerDownUp: function(e, index) {
-      var sm = this.selectionModel;
-      var anchorIndex = sm.anchorIndex;
-      var isDown = (e.type == 'mousedown');
+      const sm = this.selectionModel;
+      const anchorIndex = sm.anchorIndex;
+      const isDown = (e.type == 'mousedown');
 
       sm.beginChange();
 
@@ -163,10 +163,10 @@ cr.define('cr.ui', function() {
           }
         } else {
           // Right click for a context menu needs to not clear the selection.
-          var isRightClick = e.button == 2;
+          const isRightClick = e.button == 2;
 
           // If the index is selected this is handled in mouseup.
-          var indexSelected = sm.getIndexSelected(index);
+          const indexSelected = sm.getIndexSelected(index);
           if ((indexSelected && !isDown || !indexSelected && isDown) &&
               !(indexSelected && isRightClick)) {
             sm.selectedIndex = index;
@@ -196,12 +196,12 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
-      var tagName = e.target.tagName;
+      const tagName = e.target.tagName;
       // If focus is in an input field of some kind, only handle navigation keys
       // that aren't likely to conflict with input interaction (e.g., text
       // editing, or changing the value of a checkbox or select).
       if (tagName == 'INPUT') {
-        var inputType = e.target.type;
+        const inputType = e.target.type;
         // Just protect space (for toggling) for checkbox and radio.
         if (inputType == 'checkbox' || inputType == 'radio') {
           if (e.key == ' ') {
@@ -218,10 +218,10 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      var sm = this.selectionModel;
-      var newIndex = -1;
-      var leadIndex = sm.leadIndex;
-      var prevent = true;
+      const sm = this.selectionModel;
+      let newIndex = -1;
+      const leadIndex = sm.leadIndex;
+      let prevent = true;
 
       // Ctrl/Meta+A
       if (sm.multiple && e.keyCode == 65 &&
@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
 
       if (e.key == ' ') {
         if (leadIndex != -1) {
-          var selected = sm.getIndexSelected(leadIndex);
+          const selected = sm.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
             sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
             return;
@@ -275,7 +275,7 @@ cr.define('cr.ui', function() {
 
         sm.leadIndex = newIndex;
         if (e.shiftKey) {
-          var anchorIndex = sm.anchorIndex;
+          const anchorIndex = sm.anchorIndex;
           if (sm.multiple) {
             sm.unselectAll();
           }

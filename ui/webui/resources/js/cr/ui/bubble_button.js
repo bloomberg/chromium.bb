@@ -10,7 +10,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLSpanElement}
    * @implements {EventListener}
    */
-  var BubbleButton = cr.ui.define('span');
+  const BubbleButton = cr.ui.define('span');
 
   BubbleButton.prototype = {
     __proto__: HTMLSpanElement.prototype,
