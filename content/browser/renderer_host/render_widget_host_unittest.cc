@@ -145,7 +145,6 @@ class MockInputRouter : public InputRouter {
   void OnHasTouchEventHandlers(bool has_handlers) override {
     has_handlers_ = has_handlers;
   }
-  void WaitForInputProcessed(base::OnceClosure callback) override {}
 
   bool sent_mouse_event_;
   bool sent_wheel_event_;

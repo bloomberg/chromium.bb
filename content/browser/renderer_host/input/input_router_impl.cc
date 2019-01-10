@@ -658,14 +658,6 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
 }
 
-void InputRouterImpl::WaitForInputProcessed(base::OnceClosure callback) {
-  // TODO(bokan): Some kinds of input is queued in one of the various queues
-  // available in this class. To be truly robust, we should wait until those
-  // queues are flushed before issuing this message. This will be done in a
-  // follow-up. https://crbug.com/902446.
-  client_->GetWidgetInputHandler()->WaitForInputProcessed(std::move(callback));
-}
-
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);

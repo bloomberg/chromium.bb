@@ -160,12 +160,6 @@ void WidgetInputHandlerImpl::DispatchNonBlockingEvent(
                                         DispatchEventCallback());
 }
 
-void WidgetInputHandlerImpl::WaitForInputProcessed(
-    WaitForInputProcessedCallback callback) {
-  // TODO(bokan): Implement this to actually ensure input is processed.
-  std::move(callback).Run();
-}
-
 void WidgetInputHandlerImpl::AttachSynchronousCompositor(
     mojom::SynchronousCompositorControlHostPtr control_host,
     mojom::SynchronousCompositorHostAssociatedPtrInfo host,
