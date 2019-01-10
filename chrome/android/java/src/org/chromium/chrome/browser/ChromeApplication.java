@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatDelegate;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.module_installer.ModuleInstaller;
@@ -57,11 +59,17 @@ public class ChromeApplication extends Application {
     @Nullable
     private static ChromeAppComponent sComponent;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (isBrowserProcess()) initDefaultNightMode();
+    }
+
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
+        boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
@@ -119,6 +127,10 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
+    }
+
+    private static boolean isBrowserProcess() {
+        return !ContextUtils.getProcessName().contains(":");
     }
 
     private static Boolean shouldUseDebugFlags() {
@@ -213,6 +225,16 @@ public class ChromeApplication extends Application {
             @Override
             public void onDenied() {}
         });
+    }
+
+    private void initDefaultNightMode() {
+        if (FeatureUtilities.isNightModeAvailable()) {
+            // TODO(huayinz): Initialize default night mode based on settings.
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            // Force not to use night mode.
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     /** Returns the application-scoped component. */

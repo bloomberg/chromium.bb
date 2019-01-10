@@ -167,6 +167,12 @@ public class ChromePreferenceManager {
     public static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
 
     /**
+     * Whether or not night mode is available.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
+
+    /**
      * Marks that the content suggestions surface has been shown.
      * Default value is false.
      */

@@ -16,6 +16,10 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
+#if defined(OS_ANDROID)
+#include "ui/android/buildflags.h"
+#endif  // defined(OS_ANDROID)
+
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and
 // testers. See https://crbug.com/587272 and https://crbug.com/703134 for more
@@ -1613,6 +1617,13 @@ extern const char kWebXrRenderPathDescription[];
 extern const char kWebXrRenderPathChoiceClientWaitDescription[];
 extern const char kWebXrRenderPathChoiceGpuFenceDescription[];
 extern const char kWebXrRenderPathChoiceSharedBufferDescription[];
+
+#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
+
+extern const char kAndroidNightModeName[];
+extern const char kAndroidNightModeDescription[];
+
+#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 // Non-Android ----------------------------------------------------------------
 
