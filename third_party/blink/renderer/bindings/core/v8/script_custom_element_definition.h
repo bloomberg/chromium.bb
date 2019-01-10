@@ -55,6 +55,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   bool HasDisconnectedCallback() const override;
   bool HasAdoptedCallback() const override;
   bool HasFormAssociatedCallback() const override;
+  bool HasFormResetCallback() const override;
   bool HasDisabledStateChangedCallback() const override;
 
   void RunConnectedCallback(Element*) override;
@@ -68,6 +69,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                    const AtomicString& new_value) override;
   void RunFormAssociatedCallback(Element* element,
                                  HTMLFormElement* nullable_form) override;
+  void RunFormResetCallback(Element* element) override;
   void RunDisabledStateChangedCallback(Element* element,
                                        bool is_disabled) override;
 
@@ -93,6 +95,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       attribute_changed_callback_;
   TraceWrapperMember<V8CustomElementFormAssociatedCallback>
       form_associated_callback_;
+  TraceWrapperMember<V8VoidFunction> form_reset_callback_;
   TraceWrapperMember<V8CustomElementDisabledStateChangedCallback>
       disabled_state_changed_callback_;
 };

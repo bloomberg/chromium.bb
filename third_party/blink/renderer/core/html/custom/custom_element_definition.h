@@ -75,6 +75,7 @@ class CORE_EXPORT CustomElementDefinition
   bool HasAttributeChangedCallback(const QualifiedName&) const;
   bool HasStyleAttributeChangedCallback() const;
   virtual bool HasFormAssociatedCallback() const = 0;
+  virtual bool HasFormResetCallback() const = 0;
   virtual bool HasDisabledStateChangedCallback() const = 0;
 
   virtual void RunConnectedCallback(Element*) = 0;
@@ -88,6 +89,7 @@ class CORE_EXPORT CustomElementDefinition
                                            const AtomicString& new_value) = 0;
   virtual void RunFormAssociatedCallback(Element* element,
                                          HTMLFormElement* nullable_form) = 0;
+  virtual void RunFormResetCallback(Element* element) = 0;
   virtual void RunDisabledStateChangedCallback(Element* element,
                                                bool is_disabled) = 0;
 

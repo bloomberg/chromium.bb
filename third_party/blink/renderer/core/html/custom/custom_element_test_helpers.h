@@ -78,6 +78,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   bool HasDisconnectedCallback() const override { return false; }
   bool HasAdoptedCallback() const override { return false; }
   bool HasFormAssociatedCallback() const override { return false; }
+  bool HasFormResetCallback() const override { return false; }
   bool HasDisabledStateChangedCallback() const override { return false; }
 
   void RunConnectedCallback(Element*) override {
@@ -104,6 +105,11 @@ class TestCustomElementDefinition : public CustomElementDefinition {
                                  HTMLFormElement* nullable_form) override {
     NOTREACHED() << "definition does not have formAssociatedCallback";
   }
+
+  void RunFormResetCallback(Element* element) override {
+    NOTREACHED() << "definition does not have formResetCallback";
+  }
+
   void RunDisabledStateChangedCallback(Element* element,
                                        bool is_disabled) override {
     NOTREACHED() << "definition does not have disabledStateChangedCallback";

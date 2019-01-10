@@ -225,6 +225,15 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
               v8_form_associated_callback_.As<v8::Function>());
     }
 
+    v8_form_reset_callback_ =
+        retriever.GetMethodOrUndefined("formResetCallback", exception_state_);
+    if (exception_state_.HadException())
+      return false;
+    if (v8_form_reset_callback_->IsFunction()) {
+      data_.form_reset_callback_ =
+          V8VoidFunction::Create(v8_form_reset_callback_.As<v8::Function>());
+    }
+
     v8_disabled_state_changed_callback_ = retriever.GetMethodOrUndefined(
         "disabledStateChangedCallback", exception_state_);
     if (exception_state_.HadException())

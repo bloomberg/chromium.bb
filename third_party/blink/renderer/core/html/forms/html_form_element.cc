@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -534,6 +535,8 @@ void HTMLFormElement::reset() {
   for (const auto& element : elements) {
     if (element->IsFormControlElement())
       ToHTMLFormControlElement(element)->Reset();
+    else if (element->IsElementInternals())
+      CustomElement::EnqueueFormResetCallback(*ToHTMLElement(element));
   }
 
   is_in_reset_function_ = false;
