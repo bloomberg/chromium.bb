@@ -479,7 +479,8 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   unsigned parent_id = resource_map[list.front().id];
 
   DisplayResourceProvider::LockSetForExternalUse lock_set(
-      resource_provider_.get());
+      resource_provider_.get(),
+      DisplayResourceProvider::LockSetForExternalUse::CreateSkImageCallback());
 
   ResourceMetadata metadata = lock_set.LockResource(parent_id);
   ASSERT_EQ(metadata.mailbox_holder.mailbox, mailbox);

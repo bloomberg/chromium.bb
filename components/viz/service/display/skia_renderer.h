@@ -120,6 +120,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool IsUsingVulkan() const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
+  // Get corresponding GrContext in DrawMode::GL or DrawMode::VULKAN. Returns
+  // nullptr when there is no GrContext.
+  GrContext* GetGrContext();
+  bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
+  bool is_using_vulkan() const { return draw_mode_ == DrawMode::VULKAN; }
+
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;
@@ -147,12 +153,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_map<RenderPassId, RenderPassBacking> render_pass_backings_;
 
   const DrawMode draw_mode_;
-
-  // Get corresponding GrContext in DrawMode::GL or DrawMode::VULKAN. Returns
-  // nullptr when there is no GrContext.
-  GrContext* GetGrContext();
-  bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
-  bool is_using_vulkan() const { return draw_mode_ == DrawMode::VULKAN; }
 
   // Interface used for drawing. Common among different draw modes.
   sk_sp<SkSurface> root_surface_;
@@ -203,7 +203,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // the compositor thread. And the sync token will be released when the DDL
   // for the current frame is replayed on the GPU thread.
   // It is only used with DDL.
-  DisplayResourceProvider::LockSetForExternalUse lock_set_for_external_use_;
+  base::Optional<DisplayResourceProvider::LockSetForExternalUse>
+      lock_set_for_external_use_;
 
   // Promise images created from resources used in the current frame. This map
   // will be cleared when the frame is done and before all resources in

@@ -188,11 +188,18 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // Maintains set of lock for external use.
   class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
-    explicit LockSetForExternalUse(DisplayResourceProvider* resource_provider);
+    using CreateSkImageCallback =
+        base::RepeatingCallback<sk_sp<SkImage>(ResourceMetadata)>;
+    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
+                          const CreateSkImageCallback& callback);
     ~LockSetForExternalUse();
 
     // Lock a resource for external use.
     ResourceMetadata LockResource(ResourceId resource_id);
+
+    // Lock a resource and create a SkImage from it by using the
+    // CreateSkImageCallback.
+    sk_sp<SkImage> LockResourceAndCreateSkImage(ResourceId resource_id);
 
     // Unlock all locked resources with a |sync_token|.
     // See UnlockForExternalUse for the detail. All resources must be unlocked
@@ -201,6 +208,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
+    CreateSkImageCallback create_sk_image_callback_;
     std::vector<ResourceId> resources_;
 
     DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);

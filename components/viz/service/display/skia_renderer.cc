@@ -108,11 +108,8 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     // to store the new created image later.
     auto& image = skia_renderer->promise_images_[resource_id];
     if (!image) {
-      auto metadata =
-          skia_renderer->lock_set_for_external_use_.LockResource(resource_id);
-      DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
-      image = skia_renderer->skia_output_surface_->MakePromiseSkImage(
-          std::move(metadata));
+      image = skia_renderer->lock_set_for_external_use_
+                  ->LockResourceAndCreateSkImage(resource_id);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
     sk_image_ = image.get();
@@ -148,22 +145,22 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
       const size_t number_of_textures = (is_i420 ? 3 : 2) + (has_alpha ? 1 : 0);
       std::vector<ResourceMetadata> metadatas;
       metadatas.reserve(number_of_textures);
-      auto y_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
+      auto y_metadata = skia_renderer->lock_set_for_external_use_->LockResource(
           quad->y_plane_resource_id());
       metadatas.push_back(std::move(y_metadata));
-      auto u_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
+      auto u_metadata = skia_renderer->lock_set_for_external_use_->LockResource(
           quad->u_plane_resource_id());
       metadatas.push_back(std::move(u_metadata));
       if (is_i420) {
         auto v_metadata =
-            skia_renderer->lock_set_for_external_use_.LockResource(
+            skia_renderer->lock_set_for_external_use_->LockResource(
                 quad->v_plane_resource_id());
         metadatas.push_back(std::move(v_metadata));
       }
 
       if (has_alpha) {
         auto a_metadata =
-            skia_renderer->lock_set_for_external_use_.LockResource(
+            skia_renderer->lock_set_for_external_use_->LockResource(
                 quad->a_plane_resource_id());
         metadatas.push_back(std::move(a_metadata));
       }
@@ -193,8 +190,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            DrawMode mode)
     : DirectRenderer(settings, output_surface, resource_provider),
       draw_mode_(mode),
-      skia_output_surface_(skia_output_surface),
-      lock_set_for_external_use_(resource_provider) {
+      skia_output_surface_(skia_output_surface) {
   switch (draw_mode_) {
     case DrawMode::GL: {
       DCHECK(output_surface_);
@@ -216,6 +212,10 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     }
     case DrawMode::DDL: {
       DCHECK(skia_output_surface_);
+      lock_set_for_external_use_.emplace(
+          resource_provider,
+          base::BindRepeating(&SkiaOutputSurface::MakePromiseSkImage,
+                              base::Unretained(skia_output_surface_)));
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -1259,7 +1259,7 @@ void SkiaRenderer::FinishDrawingQuadList() {
       promise_images_.clear();
       yuv_promise_images_.clear();
       gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
-      lock_set_for_external_use_.UnlockResources(sync_token);
+      lock_set_for_external_use_->UnlockResources(sync_token);
       break;
     }
     case DrawMode::GL:  // Fallthrough
