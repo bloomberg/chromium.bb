@@ -17,10 +17,13 @@
 #include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
+#endif
 
 namespace {
 
@@ -53,8 +56,11 @@ AccountFetcherService::AccountFetcherService()
       profile_loaded_(false),
       refresh_tokens_loaded_(false),
       shutdown_called_(false),
-      scheduled_refresh_enabled_(true),
-      child_info_request_(nullptr) {}
+#if defined(OS_ANDROID)
+      child_info_request_(nullptr),
+#endif
+      scheduled_refresh_enabled_(true) {
+}
 
 AccountFetcherService::~AccountFetcherService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -91,9 +97,11 @@ void AccountFetcherService::Initialize(
 
 void AccountFetcherService::Shutdown() {
   token_service_->RemoveObserver(this);
+#if defined(OS_ANDROID)
   // child_info_request_ is an invalidation handler and needs to be
   // unregistered during the lifetime of the invalidation service.
   child_info_request_.reset();
+#endif
   invalidation_service_ = nullptr;
   shutdown_called_ = true;
 }
@@ -113,7 +121,9 @@ void AccountFetcherService::SetupInvalidationsOnProfileLoad(
   DCHECK(!invalidation_service_);
   DCHECK(!profile_loaded_);
   DCHECK(!network_fetches_enabled_);
+#if defined(OS_ANDROID)
   DCHECK(!child_info_request_);
+#endif
   invalidation_service_ = invalidation_service;
   profile_loaded_ = true;
   MaybeEnableNetworkFetches();
@@ -215,12 +225,12 @@ void AccountFetcherService::StartFetchingUserInfo(
   }
 }
 
+#if defined(OS_ANDROID)
 // Starts fetching whether this is a child account. Handles refresh internally.
 void AccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
-  child_info_request_ = ChildAccountInfoFetcher::CreateFrom(
-      child_request_account_id_, this, token_service_,
-      signin_client_->GetURLLoaderFactory(), invalidation_service_);
+  child_info_request_ =
+      ChildAccountInfoFetcherAndroid::Create(this, child_request_account_id_);
 }
 
 void AccountFetcherService::ResetChildInfo() {
@@ -229,6 +239,13 @@ void AccountFetcherService::ResetChildInfo() {
   child_request_account_id_.clear();
   child_info_request_.reset();
 }
+
+void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
+                                              bool is_child_account) {
+  if (child_request_account_id_ == account_id)
+    account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
+}
+#endif
 
 void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
                                                bool only_fetch_if_invalid) {
@@ -307,12 +324,6 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
                                       base::Unretained(this));
   GetOrCreateImageFetcher()->FetchImage(account_id, image_url_with_size,
                                         callback, traffic_annotation);
-}
-
-void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
-                                              bool is_child_account) {
-  if (child_request_account_id_ == account_id)
-    account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(

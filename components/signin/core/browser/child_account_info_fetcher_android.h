@@ -9,15 +9,15 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "components/signin/core/browser/child_account_info_fetcher.h"
 
 class AccountFetcherService;
 
-class ChildAccountInfoFetcherAndroid : public ChildAccountInfoFetcher {
+class ChildAccountInfoFetcherAndroid {
  public:
-  static std::unique_ptr<ChildAccountInfoFetcher> Create(
+  static std::unique_ptr<ChildAccountInfoFetcherAndroid> Create(
       AccountFetcherService* service,
       const std::string& account_id);
+  ~ChildAccountInfoFetcherAndroid();
 
   static void InitializeForTests();
 
@@ -25,9 +25,7 @@ class ChildAccountInfoFetcherAndroid : public ChildAccountInfoFetcher {
   ChildAccountInfoFetcherAndroid(AccountFetcherService* service,
                                  const std::string& account_id,
                                  const std::string& account_name);
-  ~ChildAccountInfoFetcherAndroid() override;
 
- private:
   base::android::ScopedJavaGlobalRef<jobject> j_child_account_info_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildAccountInfoFetcherAndroid);

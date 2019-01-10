@@ -13,16 +13,20 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/gfx/image/image.h"
 
 class AccountInfoFetcher;
 class AccountTrackerService;
-class ChildAccountInfoFetcher;
 class OAuth2TokenService;
 class PrefRegistrySimple;
 class SigninClient;
+
+#if defined(OS_ANDROID)
+class ChildAccountInfoFetcherAndroid;
+#endif
 
 namespace base {
 class DictionaryValue;
@@ -37,9 +41,6 @@ class ImageFetcherImpl;
 namespace invalidation {
 class InvalidationService;
 }
-
-// TODO(maroun): Protect with macro for Android only everything that is related
-// to child account info fetching.
 
 class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer {
@@ -83,8 +84,10 @@ class AccountFetcherService : public KeyedService,
 
   void EnableNetworkFetchesForTest();
 
-  // Called by ChildAccountInfoFetcher.
+#if defined(OS_ANDROID)
+  // Called by ChildAccountInfoFetcherAndroid.
   void SetIsChildAccount(const std::string& account_id, bool is_child_account);
+#endif
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -93,15 +96,16 @@ class AccountFetcherService : public KeyedService,
 
  private:
   friend class AccountInfoFetcher;
-  friend class ChildAccountInfoFetcherImpl;
 
   void RefreshAllAccountInfo(bool only_fetch_if_invalid);
   void RefreshAllAccountsAndScheduleNext();
   void ScheduleNextRefresh();
 
+#if defined(OS_ANDROID)
   // Called on all account state changes. Decides whether to fetch new child
   // status information or reset old values that aren't valid now.
   void UpdateChildInfo();
+#endif
 
   void MaybeEnableNetworkFetches();
 
@@ -109,11 +113,13 @@ class AccountFetcherService : public KeyedService,
   // Further the two fetches are managed by a different refresh logic and
   // thus, can not be combined.
   virtual void StartFetchingUserInfo(const std::string& account_id);
+#if defined(OS_ANDROID)
   virtual void StartFetchingChildInfo(const std::string& account_id);
 
   // If there is more than one account in a profile, we forcibly reset the
   // child status for an account to be false.
   void ResetChildInfo();
+#endif
 
   // Refreshes the AccountInfo associated with |account_id|.
   void RefreshAccountInfo(const std::string& account_id,
@@ -143,11 +149,14 @@ class AccountFetcherService : public KeyedService,
   base::Time last_updated_;
   base::OneShotTimer timer_;
   bool shutdown_called_;
+
+#if defined(OS_ANDROID)
+  std::string child_request_account_id_;
+  std::unique_ptr<ChildAccountInfoFetcherAndroid> child_info_request_;
+#endif
+
   // Only disabled in tests.
   bool scheduled_refresh_enabled_;
-
-  std::string child_request_account_id_;
-  std::unique_ptr<ChildAccountInfoFetcher> child_info_request_;
 
   // Holds references to account info fetchers keyed by account_id.
   std::unordered_map<std::string, std::unique_ptr<AccountInfoFetcher>>
