@@ -15,6 +15,7 @@
 namespace cc {
 class LayerTreeFrameSink;
 class SwapPromise;
+struct ElementId;
 }  // namespace cc
 
 namespace viz {
@@ -40,6 +41,17 @@ class LayerTreeViewDelegate {
   virtual void RecordWheelAndTouchScrollingCount(
       bool has_scrolled_by_wheel,
       bool has_scrolled_by_touch) = 0;
+
+  // Send overscroll DOM event when overscrolling has happened on the compositor
+  // thread.
+  virtual void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) = 0;
+
+  // Send scrollend DOM event when gesture scrolling on the compositor thread
+  // has finished.
+  virtual void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) = 0;
 
   // Notifies that the compositor has issed a BeginMainFrame.
   virtual void BeginMainFrame(base::TimeTicks frame_time) = 0;

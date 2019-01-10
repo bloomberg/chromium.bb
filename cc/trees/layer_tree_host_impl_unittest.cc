@@ -5816,27 +5816,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, BrowserControlsPushUnsentRatio) {
   ASSERT_EQ(0, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
 }
 
-// Test that if only the browser controls are scrolled, we shouldn't request a
-// commit.
-TEST_F(LayerTreeHostImplBrowserControlsTest, BrowserControlsDontTriggerCommit) {
-  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
-      gfx::Size(100, 50), gfx::Size(100, 100), gfx::Size(100, 100));
-  DrawFrame();
-
-  // Show browser controls
-  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
-
-  // Scroll 25px to hide browser controls
-  gfx::Vector2dF scroll_delta(0.f, 25.f);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_
-                ->ScrollBegin(BeginState(gfx::Point()).get(),
-                              InputHandler::TOUCHSCREEN)
-                .thread);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
-  EXPECT_FALSE(did_request_commit_);
-}
-
 // Test that if a scrollable sublayer doesn't consume the scroll,
 // browser controls should hide when scrolling down.
 TEST_F(LayerTreeHostImplBrowserControlsTest,
@@ -10833,7 +10812,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
-  EXPECT_FALSE(did_request_commit_);
+  EXPECT_TRUE(did_request_commit_);
 
   // The browser controls should properly animate until finished, despite the
   // scroll offset being at the origin.
@@ -10919,7 +10898,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
-  EXPECT_FALSE(did_request_commit_);
+  EXPECT_TRUE(did_request_commit_);
 
   // Animate the browser controls to the limit.
   viz::BeginFrameArgs begin_frame_args = viz::CreateBeginFrameArgsForTesting(

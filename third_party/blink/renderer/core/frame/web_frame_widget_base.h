@@ -97,6 +97,11 @@ class CORE_EXPORT WebFrameWidgetBase
                          const WebFloatPoint& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 

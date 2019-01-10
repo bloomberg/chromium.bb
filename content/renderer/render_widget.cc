@@ -932,6 +932,21 @@ void RenderWidget::RecordWheelAndTouchScrollingCount(
                                                     has_scrolled_by_touch);
 }
 
+void RenderWidget::SendOverscrollEventFromImplSide(
+    const gfx::Vector2dF& overscroll_delta,
+    cc::ElementId scroll_latched_element_id) {
+  if (!GetWebWidget())
+    return;
+  GetWebWidget()->SendOverscrollEventFromImplSide(overscroll_delta,
+                                                  scroll_latched_element_id);
+}
+void RenderWidget::SendScrollEndEventFromImplSide(
+    cc::ElementId scroll_latched_element_id) {
+  if (!GetWebWidget())
+    return;
+  GetWebWidget()->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+}
+
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   if (!GetWebWidget())
     return;

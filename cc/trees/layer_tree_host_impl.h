@@ -966,6 +966,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   gfx::Vector2dF accumulated_root_overscroll_;
 
+  // Unconsumed scroll delta sent to the main thread for firing overscroll DOM
+  // events. Resets after each commit.
+  gfx::Vector2dF overscroll_delta_for_main_thread_;
+
   // True iff some of the delta has been consumed for the current scroll
   // sequence on the specific axis.
   bool did_scroll_x_for_scroll_gesture_;
@@ -1111,6 +1115,10 @@ class CC_EXPORT LayerTreeHostImpl
   // Set to true when a scroll gesture being handled on the compositor has
   // ended.
   bool scroll_gesture_did_end_;
+
+  // Set in ScrollEnd before clearing the currently scrolling node. This is
+  // used to send the scrollend DOM event when scrolling has happened on CC.
+  ElementId last_scroller_element_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

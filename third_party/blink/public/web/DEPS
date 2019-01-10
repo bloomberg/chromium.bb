@@ -11,6 +11,7 @@ include_rules = [
     "+cc/input/browser_controls_state.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
+    "+cc/trees/element_id.h",
     "+mojo/public",
     "+services/network/public/mojom/cors.mojom-shared.h",
     "+services/network/public/mojom/cors_origin_pattern.mojom-shared.h",

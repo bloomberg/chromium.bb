@@ -168,7 +168,19 @@ struct CC_EXPORT ScrollAndScaleSet {
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;
+
+  // Elastic overscroll effect offset delta. This is used only on Mac and shows
+  // the pixels that the page is rubber-banned/stretched by.
   gfx::Vector2dF elastic_overscroll_delta;
+
+  // Unconsumed scroll delta used to send overscroll events to the latched
+  // element on the main thread;
+  gfx::Vector2dF overscroll_delta;
+
+  // The element id of the node to which scrolling is latched. This is used to
+  // send overscroll/scrollend DOM events to proper targets whenever needed.
+  ElementId scroll_latched_element_id;
+
   float top_controls_delta;
   std::vector<LayerTreeHostCommon::ScrollbarsUpdateInfo> scrollbars;
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;

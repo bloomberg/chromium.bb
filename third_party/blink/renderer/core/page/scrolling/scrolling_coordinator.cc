@@ -152,27 +152,37 @@ void ScrollingCoordinator::NotifyTransformChanged(LocalFrame* frame,
   }
 }
 
-void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
-                                     const CompositorElementId& element_id) {
+ScrollableArea*
+ScrollingCoordinator::ScrollableAreaWithElementIdInAllLocalFrames(
+    const CompositorElementId& id) {
   for (auto* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    // Remote frames will receive DidScroll callbacks from their own compositor.
     if (!frame->IsLocalFrame())
       continue;
 
-    // Find the associated scrollable area using the element id and notify it
-    // of the compositor-side scroll. We explicitly do not check the
-    // VisualViewport which handles scroll offset differently (see:
-    // VisualViewport::didScroll).
+    // Find the associated scrollable area using the element id.
     if (LocalFrameView* view = ToLocalFrame(frame)->View()) {
-      if (auto* scrollable = view->ScrollableAreaWithElementId(element_id)) {
-        scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
-        return;
+      if (auto* scrollable = view->ScrollableAreaWithElementId(id)) {
+        return scrollable;
       }
     }
   }
+  // The ScrollableArea with matching ElementId does not exist in local frames.
+  return nullptr;
+}
+
+void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
+                                     const CompositorElementId& element_id) {
+  // Find the associated scrollable area using the element id and notify it of
+  // the compositor-side scroll. We explicitly do not check the VisualViewport
+  // which handles scroll offset differently (see: VisualViewport::didScroll).
+  // Remote frames will receive DidScroll callbacks from their own compositor.
   // The ScrollableArea with matching ElementId may have been deleted and we can
   // safely ignore the DidScroll callback.
+  if (auto* scrollable =
+          ScrollableAreaWithElementIdInAllLocalFrames(element_id)) {
+    scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
+  }
 }
 
 void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {

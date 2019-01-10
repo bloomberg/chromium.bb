@@ -166,6 +166,12 @@ class CORE_EXPORT ScrollingCoordinator final
     return programmatic_scroll_animator_timeline_.get();
   }
 
+  // Traverses the frame tree to find the scrollable area using the element id.
+  // This function only checks the local frames. This function does not check
+  // the VisualViewport element id.
+  ScrollableArea* ScrollableAreaWithElementIdInAllLocalFrames(
+      const CompositorElementId&);
+
   // Callback for compositor-side layer scrolls.
   void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&);
 

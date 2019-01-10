@@ -4413,6 +4413,10 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     client_->SetNeedsCommitOnImplThread();
     SetNeedsRedraw();
     client_->RenewTreePriority();
+  } else {
+    overscroll_delta_for_main_thread_ +=
+        gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
+    client_->SetNeedsCommitOnImplThread();
   }
 
   // Scrolling along an axis resets accumulated root overscroll for that axis.
@@ -4600,6 +4604,10 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
   scroll_gesture_did_end_ = true;
+  last_scroller_element_id_ = CurrentlyScrollingNode()
+                                  ? CurrentlyScrollingNode()->element_id
+                                  : ElementId();
+  client_->SetNeedsCommitOnImplThread();
 
   if (should_snap && SnapAtScrollEnd())
     return;
@@ -4782,6 +4790,23 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->has_scrolled_by_touch = has_scrolled_by_touch_;
   scroll_info->scroll_gesture_did_end = scroll_gesture_did_end_;
   has_scrolled_by_wheel_ = has_scrolled_by_touch_ = false;
+
+  // Record and reset overscroll delta.
+  scroll_info->overscroll_delta = overscroll_delta_for_main_thread_;
+  overscroll_delta_for_main_thread_ = gfx::Vector2dF();
+
+  if (scroll_gesture_did_end_) {
+    // When the scrolling has finished send the element id of the last node that
+    // has scrolled.
+    scroll_info->scroll_latched_element_id = last_scroller_element_id_;
+    last_scroller_element_id_ = ElementId();
+  } else {
+    // Send the element id of the currently scrolling node.
+    auto* node =
+        active_tree_->property_trees()->scroll_tree.CurrentlyScrollingNode();
+    scroll_info->scroll_latched_element_id =
+        node ? node->element_id : ElementId();
+  }
 
   if (browser_controls_manager()) {
     scroll_info->browser_controls_constraint =

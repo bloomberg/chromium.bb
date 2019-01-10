@@ -3293,6 +3293,56 @@ void WebViewImpl::RecordWheelAndTouchScrollingCount(
     UseCounter::Count(MainFrameImpl()->GetFrame(), WebFeature::kScrollByTouch);
 }
 
+Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(
+    cc::ElementId element_id) const {
+  if (!GetPage())
+    return nullptr;
+
+  if (element_id == GetPage()->GetVisualViewport().GetCompositorElementId()) {
+    // Return the Document in this case since the window.visualViewport DOM
+    // object is not a node.
+    if (MainFrameImpl())
+      return MainFrameImpl()->GetDocument();
+  }
+
+  if (!GetPage()->GetScrollingCoordinator())
+    return nullptr;
+  ScrollableArea* scrollable_area =
+      GetPage()
+          ->GetScrollingCoordinator()
+          ->ScrollableAreaWithElementIdInAllLocalFrames(element_id);
+  if (!scrollable_area || !scrollable_area->GetLayoutBox())
+    return nullptr;
+
+  return scrollable_area->GetLayoutBox()->GetNode();
+}
+
+void WebViewImpl::SendOverscrollEventFromImplSide(
+    const gfx::Vector2dF& overscroll_delta,
+    cc::ElementId scroll_latched_element_id) {
+  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
+    return;
+
+  DCHECK(!overscroll_delta.IsZero());
+  Node* target_node =
+      FindNodeFromScrollableCompositorElementId(scroll_latched_element_id);
+  if (target_node) {
+    target_node->GetDocument().EnqueueOverscrollEventForNode(
+        target_node, overscroll_delta.x(), overscroll_delta.y());
+  }
+}
+
+void WebViewImpl::SendScrollEndEventFromImplSide(
+    cc::ElementId scroll_latched_element_id) {
+  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
+    return;
+
+  Node* target_node =
+      FindNodeFromScrollableCompositorElementId(scroll_latched_element_id);
+  if (target_node)
+    target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
+}
+
 void WebViewImpl::UpdateLayerTreeViewport() {
   if (!GetPage() || !layer_tree_view_)
     return;
