@@ -2541,7 +2541,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   if (rd_stats->invalid_rate) return;
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#if 0  // CONFIG_COLLECT_INTER_MODE_RD_STATS
   if (cpi->sf.inter_mode_rd_model_estimation == 1 &&
       !tile_data->inter_mode_rd_models[plane_bsize].ready)
     return;
@@ -2549,7 +2549,10 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   (void)tile_data;
   // Generate small sample to restrict output size.
   static unsigned int seed = 95014;
-  if (lcg_rand16(&seed) % 256 > 0) return;
+
+  if ((lcg_rand16(&seed) % (1 << (14 - num_pels_log2_lookup[plane_bsize]))) !=
+      1)
+    return;
 
   const char output_file[] = "pu_stats.txt";
   FILE *fout = fopen(output_file, "a");
@@ -2621,11 +2624,10 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   fprintf(fout, " %g %g %g", model_rate_norm, model_dist_norm,
           model_rdcost_norm);
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#if 0  // CONFIG_COLLECT_INTER_MODE_RD_STATS
   if (cpi->sf.inter_mode_rd_model_estimation == 1) {
     assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
     const int64_t overall_sse = get_sse(cpi, x);
-    assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
     int est_residue_cost = 0;
     int64_t est_dist = 0;
     get_est_rate_dist(tile_data, plane_bsize, overall_sse, &est_residue_cost,
