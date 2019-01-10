@@ -248,12 +248,16 @@ void AshKeyboardController::ActivateKeyboard() {
 void AshKeyboardController::ActivateKeyboardForRoot(
     RootWindowController* controller) {
   DCHECK(controller);
-  if (!keyboard_controller_->IsEnabled())
+  // If the keyboard is already activated, do nothing.
+  if (!keyboard_controller_->IsEnabled() ||
+      keyboard_controller_->GetRootWindow()) {
+    if (keyboard_controller_->GetRootWindow() != controller->GetRootWindow()) {
+      LOG(ERROR)
+          << "Tried to activate an already activated virtual keyboard on a "
+             "different root window";
+    }
     return;
-
-  // If the keyboard is already activated for |controller|, do nothing.
-  if (controller->GetRootWindow() == keyboard_controller_->GetRootWindow())
-    return;
+  }
 
   aura::Window* container =
       controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
