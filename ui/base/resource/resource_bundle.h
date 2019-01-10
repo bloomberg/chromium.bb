@@ -252,6 +252,16 @@ class UI_BASE_EXPORT ResourceBundle {
       gfx::Font::FontStyle style = gfx::Font::NORMAL,
       gfx::Font::Weight weight = gfx::Font::Weight::NORMAL);
 
+  // Returns a font list derived from the user-specified typeface. The
+  // result is always cached and exists for the lifetime of the process.
+  // If typeface is empty, we default to the platform-specific "Base" font
+  // list.
+  const gfx::FontList& GetFontListWithTypefaceAndDelta(
+      const std::string& typeface,
+      int size_delta,
+      gfx::Font::FontStyle style = gfx::Font::NORMAL,
+      gfx::Font::Weight weight = gfx::Font::Weight::NORMAL);
+
   // Returns the primary font from the FontList given by GetFontListWithDelta().
   const gfx::Font& GetFontWithDelta(
       int size_delta,

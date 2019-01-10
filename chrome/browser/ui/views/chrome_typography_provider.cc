@@ -26,6 +26,15 @@
 
 namespace {
 
+#if defined(OS_MACOSX)
+constexpr char kDefaultMonospacedTypeface[] = "Menlo";
+#elif defined(OS_WIN)
+constexpr char kDefaultMonospacedTypeface[] = "Consolas";
+#else
+constexpr char kDefaultMonospacedTypeface[] = "DejaVu Sans Mono";
+#endif
+constexpr char kUnspecifiedTypeface[] = "";
+
 // If the default foreground color from the native theme isn't black, the rest
 // of the Harmony spec isn't going to work. Also skip Harmony if a Windows
 // High Contrast theme is enabled. One of the four standard High Contrast themes
@@ -128,6 +137,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
 
+  std::string typeface = kUnspecifiedTypeface;
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
@@ -174,8 +184,14 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     }
   }
 
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      size_delta, gfx::Font::NORMAL, font_weight);
+  if (style == STYLE_PRIMARY_MONOSPACED ||
+      style == STYLE_SECONDARY_MONOSPACED) {
+    typeface = kDefaultMonospacedTypeface;
+  }
+
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontListWithTypefaceAndDelta(typeface, size_delta, gfx::Font::NORMAL,
+                                       font_weight);
 }
 
 SkColor ChromeTypographyProvider::GetColor(const views::View& view,
@@ -204,9 +220,12 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   }
 
   // Use the secondary style instead of primary for message box body text.
-  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
-      style == views::style::STYLE_PRIMARY) {
-    style = STYLE_SECONDARY;
+  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT) {
+    if (style == views::style::STYLE_PRIMARY) {
+      style = STYLE_SECONDARY;
+    } else if (style == STYLE_PRIMARY_MONOSPACED) {
+      style = STYLE_SECONDARY_MONOSPACED;
+    }
   }
 
   switch (style) {
@@ -219,6 +238,7 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
     case STYLE_SECONDARY:
+    case STYLE_SECONDARY_MONOSPACED:
     case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
       return native_theme->SystemDarkModeEnabled()

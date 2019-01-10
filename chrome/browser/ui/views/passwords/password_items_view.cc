@@ -130,8 +130,10 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
           ? form.password_value
           : l10n_util::GetStringFUTF16(federation_message_id,
                                        GetDisplayFederation(form));
-  auto label = std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE,
-                                              STYLE_SECONDARY);
+  int text_style = form.federation_origin.opaque() ? STYLE_SECONDARY_MONOSPACED
+                                                   : STYLE_SECONDARY;
+  auto label =
+      std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE, text_style);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (form.federation_origin.opaque() && !are_passwords_revealed)
     label->SetObscured(true);
