@@ -269,7 +269,7 @@ class PersistentBase {
                        weaknessConfiguration, crossThreadnessConfiguration>;
     Base* persistent = reinterpret_cast<Base*>(persistent_pointer);
     T* object = persistent->Get();
-    if (object && !ThreadHeap::IsHeapObjectAlive(object))
+    if (object && !ObjectAliveTrait<T>::IsHeapObjectAlive(object))
       ClearWeakPersistent(persistent);
   }
 

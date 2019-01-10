@@ -44,7 +44,7 @@ void LiveNodeListRegistry::RecomputeMask() {
 
 void LiveNodeListRegistry::ClearWeakMembers(Visitor*) {
   auto* it = std::remove_if(data_.begin(), data_.end(), [](Entry entry) {
-    return !ThreadHeap::IsHeapObjectAlive(entry.first);
+    return !ObjectAliveTrait<LiveNodeListBase>::IsHeapObjectAlive(entry.first);
   });
   if (it == data_.end())
     return;

@@ -18,7 +18,6 @@ class MIDIDispatcher : public GarbageCollectedFinalized<MIDIDispatcher>,
                        public midi::mojom::blink::MidiSessionClient {
  public:
   static MIDIDispatcher& Instance();
-  MIDIDispatcher();
   ~MIDIDispatcher() override;
 
   void Trace(Visitor* visitor);
@@ -45,6 +44,10 @@ class MIDIDispatcher : public GarbageCollectedFinalized<MIDIDispatcher>,
                     base::TimeTicks timestamp) override;
 
  private:
+  friend class ConstructTrait<MIDIDispatcher>;
+
+  MIDIDispatcher();
+
   midi::mojom::blink::MidiSessionProvider& GetMidiSessionProvider();
   midi::mojom::blink::MidiSession& GetMidiSession();
 
