@@ -107,15 +107,6 @@ AudioContext* AudioContext::Create(Document& document,
       audio_context->destination()->maxChannelCount());
   sample_rate_histogram.Sample(audio_context->sampleRate());
 
-  // Warn users about new autoplay policy when it does not apply to them.
-  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kWarningMessageLevel,
-        "The Web Audio autoplay policy will be re-enabled in Chrome 71 ("
-        "December 2018). Please check that your website is compatible with it. "
-        "https://goo.gl/7K7WLu"));
-  }
-
   probe::didCreateAudioContext(&document);
 
   return audio_context;
