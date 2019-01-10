@@ -138,8 +138,7 @@ interface CanvasRenderingContext2D {
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
     [RuntimeEnabled=Canvas2dContextLostRestored] boolean isContextLost();
 
-    // TODO: This will have to be standardized for feature detection as part of the Canvas ColorSpace proposal.
-    [RuntimeEnabled=CanvasColorManagement, MeasureAs=GetCanvas2DContextAttributes] CanvasRenderingContext2DSettings getContextAttributes();
+    [MeasureAs=GetCanvas2DContextAttributes] CanvasRenderingContext2DSettings getContextAttributes();
 
     // FIXME: factor out to CanvasDrawingStyles
     // line caps/joins
