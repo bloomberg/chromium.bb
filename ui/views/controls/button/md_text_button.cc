@@ -249,9 +249,10 @@ void MdTextButton::UpdateColors() {
     bg_color = theme->GetSystemColor(
         HasFocus() ? ui::NativeTheme::kColorId_ProminentButtonFocusedColor
                    : ui::NativeTheme::kColorId_ProminentButtonColor);
-    if (is_disabled)
+    if (is_disabled) {
       bg_color = theme->GetSystemColor(
           ui::NativeTheme::kColorId_ProminentButtonDisabledColor);
+    }
   }
 
   if (state() == STATE_PRESSED) {
