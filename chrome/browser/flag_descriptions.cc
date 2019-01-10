@@ -2716,6 +2716,14 @@ const char kWebXrRenderPathChoiceGpuFenceDescription[] =
 const char kWebXrRenderPathChoiceSharedBufferDescription[] =
     "SharedBuffer (Android O+)";
 
+#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
+
+const char kAndroidNightModeName[] = "Enable night mode based on user settings";
+const char kAndroidNightModeDescription[] =
+    "If enabled, user can enable night mode through settings.";
+
+#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
+
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
