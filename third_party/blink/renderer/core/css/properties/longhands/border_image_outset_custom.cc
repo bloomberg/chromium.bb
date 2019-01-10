@@ -30,12 +30,10 @@ const CSSValue* BorderImageOutset::CSSValueFromComputedStyleInternal(
 
 const CSSValue* BorderImageOutset::InitialValue() const {
   DEFINE_STATIC_LOCAL(
-      Persistent<CSSValue>, zeroInteger,
-      (CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kInteger)));
-  DEFINE_STATIC_LOCAL(
       Persistent<CSSQuadValue>, value,
-      (CSSQuadValue::Create(zeroInteger, zeroInteger, zeroInteger, zeroInteger,
-                            CSSQuadValue::kSerializeAsQuad)));
+      (CSSQuadValue::Create(
+          CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kInteger),
+          CSSQuadValue::kSerializeAsQuad)));
   return value;
 }
 
