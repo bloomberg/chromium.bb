@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -29,7 +28,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/network_delegate.h"
 #include "net/url_request/url_request_redirect_job.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -350,11 +348,11 @@ void ProtocolHandlerRegistry::InstallDefaultsForChromeOS() {
   AddPredefinedHandler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto",
-          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_MAILTO_HANDLER_URL))));
+          GURL("https://mail.google.com/mail/?extsrc=mailto&amp;url=%s")));
   AddPredefinedHandler(
       ProtocolHandler::CreateProtocolHandler(
           "webcal",
-          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_WEBCAL_HANDLER_URL))));
+          GURL("https://www.google.com/calendar/render?cid=%s")));
 #else
   NOTREACHED();  // this method should only ever be called in chromeos.
 #endif
