@@ -195,6 +195,11 @@ class CORE_EXPORT DisplayLockContext final
   void FinishUpdateResolver(ResolverState);
   void FinishCommitResolver(ResolverState);
 
+  // Returns true if the element supports display locking. Note that this can
+  // only be called if the style is clean. It checks the layout object if it
+  // exists. Otherwise, falls back to checking computed style.
+  bool ElementSupportsDisplayLocking() const;
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> commit_resolver_;
