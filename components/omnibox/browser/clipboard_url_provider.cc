@@ -131,7 +131,8 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
 base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
     const AutocompleteInput& input) {
   // Only try text match if feature is enabled
-  if (!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+  if (!base::FeatureList::IsEnabled(
+          omnibox::kEnableClipboardProviderTextSuggestions)) {
     return base::nullopt;
   }
 
@@ -171,7 +172,8 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
 base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
     const AutocompleteInput& input) {
   // Only try image match if feature is enabled
-  if (!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+  if (!base::FeatureList::IsEnabled(
+          omnibox::kEnableClipboardProviderImageSuggestions)) {
     return base::nullopt;
   }
 

@@ -218,6 +218,12 @@ const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
 
+const char kCopiedContentBehaviorName[] =
+    "Enable differentiating between copied urls, text, and images";
+const char kCopiedContentBehaviorDescription[] =
+    "When enabled, places that handled copied urls (omnibox long-press, toolbar"
+    "menus) will differentiate between copied urls, text, and images.";
+
 const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
@@ -229,6 +235,16 @@ const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 const char kNewClearBrowsingDataUIName[] = "Clear Browsing Data UI";
 const char kNewClearBrowsingDataUIDescription[] =
     "Enable new Clear Browsing Data UI.";
+
+const char kEnableClipboardProviderTextSuggestionsName[] =
+    "Enable copied text provider";
+const char kEnableClipboardProviderTextSuggestionsDescription[] =
+    "Enable suggesting a search for text copied to the clipboard";
+
+const char kEnableClipboardProviderImageSuggestionsName[] =
+    "Enable copied image provider";
+const char kEnableClipboardProviderImageSuggestionsDescription[] =
+    "Enable suggesting a search for the image copied to the clipboard";
 
 const char kFCMInvalidationsName[] =
     "Enable invalidations delivery via new FCM based protocol";
@@ -326,11 +342,6 @@ const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";
 
-const char kSearchCopiedImageName[] = "Search copied image";
-const char kSearchCopiedImageDescription[] =
-    "Enable searching from the toolbar search button for an image copied to "
-    "the system pasteboard.";
-
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
@@ -348,12 +359,6 @@ const char kShowAutofillTypePredictionsDescription[] =
 const char kSSOWithWKWebViewName[] = "SSO with WKWebView";
 const char kSSOWithWKWebViewDescription[] =
     "Using WKWebView instead of UIWebView in SSO";
-
-const char kCopiedTextBehaviorName[] =
-    "Enable differentiating between copied text and urls";
-const char kCopiedTextBehaviorDescription[] =
-    "When enabled, places that handled copied urls (omnibox long-press, toolbar"
-    "menus) will differentiate between copied text and copied images.";
 
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =

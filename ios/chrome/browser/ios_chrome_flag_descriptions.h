@@ -172,6 +172,11 @@ extern const char kClosingLastIncognitoTabDescription[];
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];
 
+// Title and description for the flag to diffentiate between copied
+// urls, strings, and images.
+extern const char kCopiedContentBehaviorName[];
+extern const char kCopiedContentBehaviorDescription[];
+
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
@@ -179,6 +184,16 @@ extern const char kDragAndDropDescription[];
 // Title and description for the flag to enable new Clear Browsing Data UI.
 extern const char kNewClearBrowsingDataUIName[];
 extern const char kNewClearBrowsingDataUIDescription[];
+
+// Title and description for the flag to enable the clipboard provider to
+// suggest copied text
+extern const char kEnableClipboardProviderTextSuggestionsName[];
+extern const char kEnableClipboardProviderTextSuggestionsDescription[];
+
+// Title and description for the flag to enable the clipboard provider to
+// suggest searchihng for copied imagse
+extern const char kEnableClipboardProviderImageSuggestionsName[];
+extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
 // Title and description for the flag to enable invaliations delivery via FCM.
 extern const char kFCMInvalidationsName[];
@@ -261,10 +276,6 @@ extern const char kPhysicalWebDescription[];
 extern const char kIgnoresViewportScaleLimitsName[];
 extern const char kIgnoresViewportScaleLimitsDescription[];
 
-// Title and description for the flag to enable searching for a copied image.
-extern const char kSearchCopiedImageName[];
-extern const char kSearchCopiedImageDescription[];
-
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
@@ -282,11 +293,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // Title and description for the flag to enable WKWebView in SSO.
 extern const char kSSOWithWKWebViewName[];
 extern const char kSSOWithWKWebViewDescription[];
-
-// Title and description for the flag to diffentiate between copied
-// text and urls.
-extern const char kCopiedTextBehaviorName[];
-extern const char kCopiedTextBehaviorDescription[];
 
 // Title and description for the flag to enable the toolbar container
 // implementation.
