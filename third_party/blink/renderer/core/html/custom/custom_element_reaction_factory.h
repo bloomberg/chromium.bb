@@ -20,6 +20,9 @@ class CustomElementReactionFactory {
   STATIC_ONLY(CustomElementReactionFactory);
 
  public:
+  static CustomElementReaction& CreateUpgrade(
+      CustomElementDefinition& definition,
+      bool upgrade_invisible_elements);
   static CustomElementReaction& CreateConnected(
       CustomElementDefinition& definition);
   static CustomElementReaction& CreateDisconnected(

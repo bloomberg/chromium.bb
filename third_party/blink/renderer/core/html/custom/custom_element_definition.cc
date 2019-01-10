@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
@@ -253,9 +252,8 @@ bool CustomElementDefinition::HasStyleAttributeChangedCallback() const {
 void CustomElementDefinition::EnqueueUpgradeReaction(
     Element* element,
     bool upgrade_invisible_elements) {
-  CustomElement::Enqueue(element,
-                         MakeGarbageCollected<CustomElementUpgradeReaction>(
-                             this, upgrade_invisible_elements));
+  CustomElement::Enqueue(element, &CustomElementReactionFactory::CreateUpgrade(
+                                      *this, upgrade_invisible_elements));
 }
 
 void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {
