@@ -10,7 +10,6 @@ Bug(none) http/tests/devtools/tracing/ [ Skip ]
 Bug(none) printing/ [ Skip ]
 Bug(none) scrollbars/ [ Skip ]
 Bug(none) scrollingcoordinator/ [ Skip ]
-Bug(none) tables/ [ Skip ]
 Bug(none) transforms/ [ Skip ]
 
 Bug(none) virtual/android/ [ Skip ]
@@ -463,9 +462,6 @@ Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [ Failure ]
 Bug(none) virtual/outofblink-cors-ns/http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
 Bug(none) virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
-
-# Duplicated display item id of background of scrollable table cell.
-Bug(none) fast/table/overflowHidden.html [ Crash ]
 
 # These tests have additional hit test rects. These may correct and simply due
 # to different layerization decisions, but this needs investigation.
