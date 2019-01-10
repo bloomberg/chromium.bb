@@ -22,7 +22,7 @@ http_archive(
 
 git_repository(
     name = "com_google_absl",
-    commit = "c075ad321696fa5072e097f0a51e4fe76a6fe13e",
+    commit = "66f9becbb98ecc083f4db349b4b1e0ca9de93b15",
     remote = "https://github.com/abseil/abseil-cpp.git",
 )
 

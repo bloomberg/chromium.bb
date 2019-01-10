@@ -18,6 +18,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "absl/container/node_hash_map.h"
 #include "external/sdl2_ttf/SDL_ttf.h"
 #include "tools/render/program_state.h"
 #include "tools/render/sdl_util.h"
@@ -97,7 +98,7 @@ class TextRenderer {
   // The text cache.  Used to avoid having to render the text into texture every
   // frame.  All entries that are not rendered within the past frame are
   // evicted.
-  std::unordered_map<std::string, CacheEntry> cache_;
+  absl::node_hash_map<std::string, CacheEntry> cache_;
 };
 
 }  // namespace render

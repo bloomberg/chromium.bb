@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include "lib/quic_trace.pb.h"
 
 namespace quic_trace {
@@ -59,7 +60,7 @@ class NumberingWithoutRetransmissions {
 
  private:
   TraceOffset current_offset_ = 0;
-  std::unordered_map<uint64_t, Interval> offsets_;
+  absl::flat_hash_map<uint64_t, Interval> offsets_;
 };
 
 }  // namespace quic_trace

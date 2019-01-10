@@ -20,6 +20,8 @@ cc_binary(
     deps = [
         "//lib:quic_trace_cc_proto",
         "@com_github_gflags_gflags//:gflags",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
 

@@ -15,6 +15,8 @@
 #ifndef THIRD_PARTY_QUIC_TRACE_TOOLS_PROCESSED_TRACE_H_
 #define THIRD_PARTY_QUIC_TRACE_TOOLS_PROCESSED_TRACE_H_
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "lib/analysis/trace_numbering.h"
 #include "lib/quic_trace.pb.h"
 #include "tools/render/table.h"
@@ -79,12 +81,12 @@ class ProcessedTrace {
                  PacketType type);
 
   std::unique_ptr<Trace> trace_;
-  std::unordered_set<uint64_t> packets_acked_;
-  std::unordered_set<uint64_t> packets_lost_;
+  absl::flat_hash_set<uint64_t> packets_acked_;
+  absl::flat_hash_set<uint64_t> packets_lost_;
   // Map from packet-as-drawn offset to the ack.  This is required because
   // unlike sent or lost packets, there could be many acks derived from the same
   // Event object.
-  std::unordered_map<vec2, uint64_t, VectorHash> acks_;
+  absl::flat_hash_map<vec2, uint64_t, VectorHash> acks_;
   std::vector<RenderedPacket> rendered_packets_;
 };
 
