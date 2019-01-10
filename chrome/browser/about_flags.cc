@@ -4269,6 +4269,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaSessionServiceName,
      flag_descriptions::kEnableMediaSessionServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_session::features::kMediaSessionService)},
+    {"enable-safe-browsing-ap-download-verdicts",
+     flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsName,
+     flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(safe_browsing::kUseAPDownloadProtection)},
 };
 
 class FlagsStateSingleton {
