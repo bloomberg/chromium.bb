@@ -1,0 +1,13 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module image_annotation.mojom;
+
+interface ImageProcessor {
+  // Returns the (potentially resized and compressed) pixels for the image.
+  //
+  // TODO(crbug.com/916420): expand this signature to include arguments when we
+  //                         require more sophisticated render-side processing.
+  GetJpgImageData() => (array<uint8> bytes);
+};
