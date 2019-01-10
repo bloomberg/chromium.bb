@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -210,10 +211,15 @@ class OAuth2TokenService {
 
   // Lists account IDs of all accounts with a refresh token maintained by this
   // instance.
+  // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
+  // will return true.
+  // Note: If tokens have not been fully loaded yet, an empty list is returned.
   std::vector<std::string> GetAccounts() const;
 
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
+  // Note: This will return |true| if and only if |account_id| is contained in
+  // the list returned by |GetAccounts|.
   bool RefreshTokenIsAvailable(const std::string& account_id) const;
 
   // Returns true if a refresh token exists for |account_id| and it is in a

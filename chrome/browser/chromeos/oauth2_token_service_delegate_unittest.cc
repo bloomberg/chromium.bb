@@ -132,6 +132,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     account_info_ = CreateAccountInfoTestFixture(kGaiaId, kUserEmail);
     account_tracker_service_.SeedAccountInfo(account_info_);
     gaia_account_key_ = {account_info_.gaia, ACCOUNT_TYPE_GAIA};
+    ad_account_key_ = {"object-guid", ACCOUNT_TYPE_ACTIVE_DIRECTORY};
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
         &account_tracker_service_, &account_manager_);
@@ -176,6 +177,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
   base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;
   AccountManager::AccountKey gaia_account_key_;
+  AccountManager::AccountKey ad_account_key_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
@@ -189,16 +191,39 @@ class CrOSOAuthDelegateTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrOSOAuthDelegateTest);
 };
 
-TEST_F(CrOSOAuthDelegateTest, RefreshTokenIsAvailableForGaiaAccounts) {
+TEST_F(CrOSOAuthDelegateTest,
+       RefreshTokenIsAvailableReturnsTrueForValidGaiaTokens) {
   EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
                 LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate_->load_credentials_state());
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
+  EXPECT_FALSE(
+      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
 
   account_manager_.UpsertToken(gaia_account_key_, kGaiaToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
+  EXPECT_TRUE(
+      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+}
+
+TEST_F(CrOSOAuthDelegateTest,
+       RefreshTokenIsAvailableReturnsTrueForInvalidGaiaTokens) {
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
+                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            delegate_->load_credentials_state());
+
+  EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
+  EXPECT_FALSE(
+      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+
+  account_manager_.UpsertToken(gaia_account_key_,
+                               AccountManager::kInvalidToken);
+
+  EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
+  EXPECT_TRUE(
+      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
@@ -327,9 +352,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
   // Insert an Active Directory account into AccountManager.
-  AccountManager::AccountKey ad_account_key{"object-guid",
-                                            ACCOUNT_TYPE_ACTIVE_DIRECTORY};
-  account_manager_.UpsertToken(ad_account_key,
+  account_manager_.UpsertToken(ad_account_key_,
                                AccountManager::kActiveDirectoryDummyToken);
 
   // OAuth delegate should not return Active Directory accounts.
@@ -344,6 +367,50 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccounts) {
   std::vector<std::string> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(account_info_.account_id, accounts[0]);
+}
+
+// |GetAccounts| should return all known Gaia accounts, whether or not they have
+// a "valid" refresh token stored against them.
+TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
+  EXPECT_TRUE(delegate_->GetAccounts().empty());
+
+  account_manager_.UpsertToken(gaia_account_key_,
+                               AccountManager::kInvalidToken);
+
+  std::vector<std::string> accounts = delegate_->GetAccounts();
+  EXPECT_EQ(1UL, accounts.size());
+  EXPECT_EQ(account_info_.account_id, accounts[0]);
+}
+
+TEST_F(CrOSOAuthDelegateTest,
+       RefreshTokenMustBeAvailableForAllAccountsReturnedByGetAccounts) {
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
+                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            delegate_->load_credentials_state());
+  EXPECT_TRUE(delegate_->GetAccounts().empty());
+
+  // Insert 2 Gaia accounts and 1 Active Directory Account. Of the 2 Gaia
+  // accounts, 1 has a valid refresh token and 1 has a dummy token.
+  account_manager_.UpsertToken(gaia_account_key_, kGaiaToken);
+
+  AccountManager::AccountKey gaia_account_key2{"random-gaia-id",
+                                               ACCOUNT_TYPE_GAIA};
+  account_tracker_service_.SeedAccountInfo(CreateAccountInfoTestFixture(
+      gaia_account_key2.id, "random-email@domain.com"));
+  account_manager_.UpsertToken(gaia_account_key2,
+                               AccountManager::kInvalidToken);
+
+  account_manager_.UpsertToken(ad_account_key_,
+                               AccountManager::kActiveDirectoryDummyToken);
+
+  // Verify.
+  const std::vector<std::string> accounts = delegate_->GetAccounts();
+  // 2 Gaia accounts should be returned.
+  EXPECT_EQ(2UL, accounts.size());
+  // And |RefreshTokenIsAvailable| should return true for these accounts.
+  for (const std::string& account : accounts) {
+    EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account));
+  }
 }
 
 TEST_F(CrOSOAuthDelegateTest, UpdateCredentialsSucceeds) {

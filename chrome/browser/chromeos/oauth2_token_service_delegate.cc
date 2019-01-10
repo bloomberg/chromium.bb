@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "content/public/browser/network_service_instance.h"
@@ -37,6 +38,26 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
     false /* bool always_use_initial_delay */,
 };
+
+// Maps crOS Account Manager |account_keys| to the account id representation
+// used by the OAuth token service chain. |account_keys| can safely contain Gaia
+// and non-Gaia accounts. Non-Gaia accounts will be filtered out.
+// |account_keys| is the set of accounts that need to be translated.
+// |account_mapper_util| is an unowned pointer to |AccountMapperUtil|.
+std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
+    const std::set<AccountManager::AccountKey>& account_keys,
+    const AccountMapperUtil* const account_mapper_util) {
+  std::vector<std::string> accounts;
+  for (auto& account_key : account_keys) {
+    std::string account_id =
+        account_mapper_util->AccountKeyToOAuthAccountId(account_key);
+    if (!account_id.empty()) {
+      accounts.emplace_back(account_id);
+    }
+  }
+
+  return accounts;
+}
 
 }  // namespace
 
@@ -95,14 +116,21 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
       .release();
 }
 
+// Note: This method should use the same logic for filtering accounts as
+// |GetAccounts|. See crbug.com/919793 for details. At the time of writing,
+// both |GetAccounts| and |RefreshTokenIsAvailable| use
+// |GetOAuthAccountIdsFromAccountKeys|.
 bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
   }
 
-  return account_manager_->IsTokenAvailable(
-      account_mapper_util_->OAuthAccountIdToAccountKey(account_id));
+  // We intentionally do NOT check if the refresh token associated with
+  // |account_id| is valid or not. See crbug.com/919793 for details.
+  return base::ContainsValue(GetOAuthAccountIdsFromAccountKeys(
+                                 account_keys_, account_mapper_util_.get()),
+                             account_id);
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
@@ -142,19 +170,19 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
   return GoogleServiceAuthError::AuthErrorNone();
 }
 
+// Note: This method should use the same logic for filtering accounts as
+// |RefreshTokenIsAvailable|. See crbug.com/919793 for details. At the time of
+// writing, both |GetAccounts| and |RefreshTokenIsAvailable| use
+// |GetOAuthAccountIdsFromAccountKeys|.
 std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<std::string> accounts;
-  for (auto& account_key : account_keys_) {
-    std::string account_id =
-        account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
-    if (!account_id.empty()) {
-      accounts.emplace_back(account_id);
-    }
-  }
+  // |GetAccounts| intentionally does not care about the state of
+  // |load_credentials_state|. See crbug.com/919793 and crbug.com/900590 for
+  // details.
 
-  return accounts;
+  return GetOAuthAccountIdsFromAccountKeys(account_keys_,
+                                           account_mapper_util_.get());
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
