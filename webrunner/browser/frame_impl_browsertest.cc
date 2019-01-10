@@ -6,6 +6,7 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
+#include "base/test/test_timeouts.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -17,7 +18,6 @@
 #include "url/url_constants.h"
 #include "webrunner/browser/frame_impl.h"
 #include "webrunner/common/mem_buffer_util.h"
-#include "webrunner/common/test/run_with_timeout.h"
 #include "webrunner/common/test/test_common.h"
 #include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/service/common.h"
@@ -52,7 +52,9 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
 // navigation commands and page events.
 class FrameImplTest : public WebRunnerBrowserTest {
  public:
-  FrameImplTest() { set_test_server_root(base::FilePath(kTestServerRoot)); }
+  FrameImplTest() : run_timeout_(TestTimeouts::action_timeout()) {
+    set_test_server_root(base::FilePath(kTestServerRoot));
+  }
 
   ~FrameImplTest() = default;
 
@@ -76,7 +78,7 @@ class FrameImplTest : public WebRunnerBrowserTest {
                     Field(&NavigationDetails::url, url))))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(url, nullptr);
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     Mock::VerifyAndClearExpectations(this);
     navigation_observer_.Acknowledge();
   }
@@ -84,6 +86,8 @@ class FrameImplTest : public WebRunnerBrowserTest {
   testing::StrictMock<MockNavigationObserver> navigation_observer_;
 
  private:
+  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
+
   DISALLOW_COPY_AND_ASSIGN(FrameImplTest);
 };
 
@@ -402,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
                   testing::AllOf(Field(&NavigationDetails::title, kPage2Title),
                                  Field(&NavigationDetails::url, IsSet()))))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  CheckRunWithTimeout(&run_loop);
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
@@ -570,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
                              EXPECT_FALSE(success);
                              run_loop.Quit();
                            });
-  CheckRunWithTimeout(&run_loop);
+  run_loop.Run();
 }
 
 // Verifies that a Frame will handle navigation observer disconnection events
@@ -747,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
                   testing::AllOf(Field(&NavigationDetails::title, kPage1Title),
                                  Field(&NavigationDetails::url, IsSet()))))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  CheckRunWithTimeout(&run_loop);
+  run_loop.Run();
   EXPECT_TRUE(*post_result);
 }
 
@@ -778,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   }
 
@@ -791,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
@@ -824,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
@@ -836,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     message_port.set_error_handler(
         [&run_loop](zx_status_t) { run_loop.Quit(); });
     controller->LoadUrl(url::kAboutBlankURL, nullptr);
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
   }
 }
 
@@ -869,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     incoming_message_port = receiver->incoming_transfer->message_port().Bind();
     EXPECT_TRUE(*post_result);
@@ -906,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     ack_message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
@@ -917,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     incoming_message_port->ReceiveMessage(
         ConvertToFitFunction(receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
   }
 }
@@ -968,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
   message_port->ReceiveMessage(
       ConvertToFitFunction(receiver.GetReceiveCallback()));
-  CheckRunWithTimeout(&run_loop);
+  run_loop.Run();
   EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   incoming_message_port = receiver->incoming_transfer->message_port().Bind();
   EXPECT_TRUE(*post_result);

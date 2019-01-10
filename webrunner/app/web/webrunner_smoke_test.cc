@@ -5,12 +5,12 @@
 #include <fuchsia/sys/cpp/fidl.h>
 
 #include "base/fuchsia/component_context.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrunner/common/test/run_with_timeout.h"
 
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
@@ -21,6 +21,7 @@ namespace {
 
 class WebRunnerSmokeTest : public testing::Test {
  public:
+  WebRunnerSmokeTest() : run_timeout_(TestTimeouts::action_timeout()) {}
   void SetUp() final {
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &WebRunnerSmokeTest::HandleRequest, base::Unretained(this)));
@@ -48,6 +49,8 @@ class WebRunnerSmokeTest : public testing::Test {
   }
 
  protected:
+  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
+
   bool test_html_requested_ = false;
   bool test_image_requested_ = false;
 
@@ -68,7 +71,7 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
   fuchsia::sys::ComponentControllerSyncPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
 
-  webrunner::CheckRunWithTimeout(&run_loop_);
+  run_loop_.Run();
 
   EXPECT_TRUE(test_html_requested_);
   EXPECT_TRUE(test_image_requested_);

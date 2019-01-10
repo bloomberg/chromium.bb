@@ -8,13 +8,13 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/test/test_timeouts.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 #include "webrunner/common/mem_buffer_util.h"
 #include "webrunner/common/named_message_port_connector.h"
-#include "webrunner/common/test/run_with_timeout.h"
 #include "webrunner/common/test/test_common.h"
 #include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/test/promise.h"
@@ -29,7 +29,8 @@ class NamedMessagePortConnectorTest
     : public webrunner::WebRunnerBrowserTest,
       public chromium::web::NavigationEventObserver {
  public:
-  NamedMessagePortConnectorTest() {
+  NamedMessagePortConnectorTest()
+      : run_timeout_(TestTimeouts::action_timeout()) {
     set_test_server_root(base::FilePath("webrunner/common/test/data"));
   }
 
@@ -54,7 +55,7 @@ class NamedMessagePortConnectorTest
                     chromium::web::NavigationController* controller) {
     navigate_run_loop_ = std::make_unique<base::RunLoop>();
     controller->LoadUrl(url, nullptr);
-    CheckRunWithTimeout(navigate_run_loop_.get());
+    navigate_run_loop_->Run();
     navigate_run_loop_.reset();
   }
 
@@ -63,6 +64,8 @@ class NamedMessagePortConnectorTest
   NamedMessagePortConnector connector_;
 
  private:
+  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
+
   DISALLOW_COPY_AND_ASSIGN(NamedMessagePortConnectorTest);
 };
 
@@ -84,9 +87,8 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
       frame_.get());
   CheckLoadUrl(test_url.spec(), controller.get());
 
-  CheckRunWithTimeout(&receive_port_run_loop);
+  receive_port_run_loop.Run();
 
-  base::RunLoop run_loop;
   chromium::web::WebMessage msg;
   msg.data = MemBufferFromString("ping");
   Promise<bool> post_result;
@@ -101,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
     (*message_port)
         ->ReceiveMessage(
             ConvertToFitFunction(message_receiver.GetReceiveCallback()));
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ(StringFromMemBufferOrDie(message_receiver->data), expected_msg);
   }
 
@@ -112,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
       run_loop.Quit();
     });
     controller->LoadUrl("about:blank", nullptr);
-    CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
   }
 
   connector_.Unregister(frame_.get(), "hello");

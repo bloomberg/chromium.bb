@@ -10,13 +10,13 @@
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webrunner/app/cast/application_config_manager/test/fake_application_config_manager.h"
 #include "webrunner/app/cast/cast_runner.h"
 #include "webrunner/app/cast/test_common.h"
 #include "webrunner/app/common/web_component.h"
 #include "webrunner/app/common/web_content_runner.h"
-#include "webrunner/common/test/run_with_timeout.h"
 #include "webrunner/test/promise.h"
 
 namespace castrunner {
@@ -32,7 +32,7 @@ void ComponentErrorHandler(zx_status_t status) {
 
 class CastRunnerIntegrationTest : public testing::Test {
  public:
-  CastRunnerIntegrationTest() {
+  CastRunnerIntegrationTest() : run_timeout_(TestTimeouts::action_timeout()) {
     // Create a new test ServiceDirectory, and a test ComponentContext
     // connected to it, for the test to use to drive the CastRunner.
     zx::channel service_directory_request, service_directory_client;
@@ -81,6 +81,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
  protected:
+  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
+
   base::MessageLoopForIO message_loop_;
 
   net::EmbeddedTestServer test_server_;
@@ -121,7 +123,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
     webrunner::Promise<webrunner::WebComponent*> web_component(
         run_loop.QuitClosure());
     cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
-    webrunner::CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     ASSERT_NE(*web_component, nullptr);
     (*web_component)
         ->frame()
@@ -135,7 +137,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
         nav_entry(run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
         webrunner::ConvertToFitFunction(nav_entry.GetReceiveCallback()));
-    webrunner::CheckRunWithTimeout(&run_loop);
+    run_loop.Run();
     EXPECT_EQ(nav_entry->get()->url, test_server_.base_url().spec());
   }
 }
@@ -153,7 +155,7 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   webrunner::Promise<webrunner::WebComponent*> web_component(
       run_loop.QuitClosure());
   cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
-  webrunner::CheckRunWithTimeout(&run_loop);
+  run_loop.Run();
   EXPECT_EQ(*web_component, nullptr);
 }
 
