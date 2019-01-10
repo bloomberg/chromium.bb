@@ -359,11 +359,6 @@ void ShelfButton::SetImage(const gfx::ImageSkia& image) {
 
   const int icon_size = ShelfConstants::button_icon_size();
 
-  if (icon_size > image.width() || icon_size > image.height()) {
-    LOG(WARNING) << "An icon of size " << image.width() << "x" << image.height()
-                 << "is being scaled up and will look blurry.";
-  }
-
   // Resize the image maintaining our aspect ratio.
   float aspect_ratio =
       static_cast<float>(image.width()) / static_cast<float>(image.height());
