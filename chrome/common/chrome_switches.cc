@@ -322,9 +322,6 @@ const char kEnableOfflineAutoReloadVisibleOnly[] =
 const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
     "enable-potentially-annoying-security-features";
 
-// Enables the Power overlay in Settings.
-const char kEnablePowerOverlay[]            = "enable-power-overlay";
-
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
 const char kExtensionContentVerification[] = "extension-content-verification";

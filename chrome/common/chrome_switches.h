@@ -103,7 +103,6 @@ extern const char kEnableNetBenchmarking[];
 extern const char kEnableOfflineAutoReload[];
 extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
-extern const char kEnablePowerOverlay[];
 extern const char kExtensionContentVerification[];
 extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforce[];
