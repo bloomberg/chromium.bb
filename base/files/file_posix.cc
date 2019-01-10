@@ -535,6 +535,23 @@ bool File::Flush() {
   return true;
 #elif defined(OS_LINUX) || defined(OS_ANDROID)
   return !HANDLE_EINTR(fdatasync(file_.get()));
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+  // On macOS and iOS, fsync() is guaranteed to send the file's data to the
+  // underlying storage device, but may return before the device actually writes
+  // the data to the medium. When used by database systems, this may result in
+  // unexpected data loss.
+  // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/fsync.2.html
+  if (!HANDLE_EINTR(fcntl(file_.get(), F_FULLFSYNC)))
+    return true;
+
+  // Some filesystms do not support fcntl(F_FULLFSYNC). We handle these cases by
+  // falling back to fsync(). Unfortunately, lack of F_FULLFSYNC support results
+  // in various error codes, so we cannot use the error code as a definitive
+  // indicator that F_FULLFSYNC was not supported. So, if fcntl() errors out for
+  // any reason, we may end up making an unnecessary system call.
+  //
+  // See the CL description at https://crrev.com/c/1400159 for details.
+  return !HANDLE_EINTR(fsync(file_.get()));
 #else
   return !HANDLE_EINTR(fsync(file_.get()));
 #endif
