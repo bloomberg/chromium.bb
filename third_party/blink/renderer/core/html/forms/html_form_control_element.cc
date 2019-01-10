@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -58,15 +60,19 @@ void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-String HTMLFormControlElement::formAction() const {
+void HTMLFormControlElement::formAction(USVStringOrTrustedURL& result) const {
   const AtomicString& action = FastGetAttribute(kFormactionAttr);
-  if (action.IsEmpty())
-    return GetDocument().Url();
-  return GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action));
+  if (action.IsEmpty()) {
+    result.SetUSVString(GetDocument().Url());
+    return;
+  }
+  result.SetUSVString(
+      GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action)));
 }
 
-void HTMLFormControlElement::setFormAction(const AtomicString& value) {
-  setAttribute(kFormactionAttr, value);
+void HTMLFormControlElement::setFormAction(const USVStringOrTrustedURL& value,
+                                           ExceptionState& exception_state) {
+  setAttribute(kFormactionAttr, value, exception_state);
 }
 
 String HTMLFormControlElement::formEnctype() const {

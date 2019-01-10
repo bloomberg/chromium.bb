@@ -21,9 +21,6 @@
 
 // https://html.spec.whatwg.org/#the-input-element
 
-// The `URLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 enum SelectionMode { "select", "start", "end", "preserve" };
 
 [
@@ -42,7 +39,7 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList? files;
-    [CEReactions] attribute DOMString formAction;
+    [CEReactions, RaisesException=Setter] attribute URLString formAction;
     [CEReactions, CustomElementCallbacks] attribute DOMString formEnctype;
     [CEReactions, CustomElementCallbacks] attribute DOMString formMethod;
     [CEReactions, Reflect] attribute boolean formNoValidate;

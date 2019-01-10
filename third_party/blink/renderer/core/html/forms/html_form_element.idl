@@ -25,7 +25,7 @@
     OverrideBuiltins
 ] interface HTMLFormElement : HTMLElement {
     [CEReactions, Reflect=accept_charset] attribute DOMString acceptCharset;
-    [CEReactions, URL] attribute DOMString action;
+    [CEReactions, URL, RaisesException=Setter] attribute URLString action;
     [CEReactions, Reflect, ReflectOnly=("on","off"), ReflectMissing="on", ReflectInvalid="on"] attribute DOMString autocomplete;
     [CEReactions, CustomElementCallbacks] attribute DOMString enctype;
     [CEReactions, CustomElementCallbacks] attribute DOMString encoding;
