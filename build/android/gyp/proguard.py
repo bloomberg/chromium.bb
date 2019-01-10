@@ -6,11 +6,13 @@
 
 import optparse
 import os
+import re
 import shutil
 import sys
 import tempfile
 
 from util import build_utils
+from util import diff_utils
 from util import proguard_util
 
 
@@ -47,6 +49,17 @@ def _ParseOptions(args):
       '--apply-mapping', help='Path to proguard mapping to apply.')
   parser.add_option('--mapping-output',
                     help='Path for proguard to output mapping file to.')
+  parser.add_option(
+      '--output-config',
+      help='Path to write the merged proguard config file to.')
+  parser.add_option(
+      '--expected-configs-file',
+      help='Path to a file containing the expected merged proguard configs')
+  parser.add_option(
+      '--verify-expected-configs',
+      action='store_true',
+      help='Fail if the expected merged proguard configs differ from the '
+      'generated merged proguard configs.')
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
   parser.add_option('--main-dex-rules-path', action='append',
@@ -88,6 +101,32 @@ def _ParseOptions(args):
   return options
 
 
+def _NormalizeMergedConfig(merged_config_str):
+  stripped_config = re.sub(
+      r'(^\-(injars|libraryjars|print).*\n)|(#.*\n)',
+      '',
+      merged_config_str,
+      flags=re.MULTILINE)
+
+  config_groups = re.findall(
+      r'^(\-.*?(\n|(\{.*?\})))',
+      stripped_config,
+      flags=re.DOTALL | re.MULTILINE)
+
+  return '\n'.join(sorted(g[0].strip() for g in config_groups))
+
+
+def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
+  diff = diff_utils.DiffFileContents(expected_path, actual_path,
+                                     'Proguard Flags')
+  if not diff:
+    return
+
+  print diff
+  if fail_on_exit:
+    sys.exit(1)
+
+
 def _MoveTempDexFile(tmp_dex_dir, dex_path):
   """Move the temp dex file out of |tmp_dex_dir|.
 
@@ -107,8 +146,8 @@ def _MoveTempDexFile(tmp_dex_dir, dex_path):
   shutil.move(tmp_dex_path, dex_path)
 
 
-def _CreateR8Command(options, map_output_path, output_dir, tmp_proguard_config,
-                     libraries):
+def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
+                     tmp_printconfiguration_path, libraries):
   cmd = [
     'java', '-jar', options.r8_path,
     '--no-data-resources',
@@ -122,10 +161,13 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_proguard_config,
   for config_file in options.proguard_configs:
     cmd += ['--pg-conf', config_file]
 
-  if options.apply_mapping:
-    tmp_proguard_config.write('-applymapping ' + options.apply_mapping)
-    tmp_proguard_config.flush()
-    cmd += ['--pg-conf', tmp_proguard_config.name]
+  if options.apply_mapping or options.output_config:
+    with open(tmp_config_path, 'w') as f:
+      if options.apply_mapping:
+        f.write('-applymapping ' + options.apply_mapping)
+      if options.output_config:
+        f.write('-printconfiguration ' + tmp_printconfiguration_path)
+    cmd += ['--pg-conf', tmp_config_path]
 
   if options.min_api:
     cmd += ['--min-api', options.min_api]
@@ -150,27 +192,41 @@ def main(args):
 
   # TODO(agrieve): Remove proguard usages.
   if options.r8_path:
-    with tempfile.NamedTemporaryFile() as mapping_temp:
-      with tempfile.NamedTemporaryFile() as tmp_proguard_config:
-        if options.output_path.endswith('.dex'):
-          with build_utils.TempDir() as tmp_dex_dir:
-            cmd = _CreateR8Command(options, mapping_temp.name, tmp_dex_dir,
-                                   tmp_proguard_config, libraries)
-            build_utils.CheckOutput(cmd)
-            _MoveTempDexFile(tmp_dex_dir, options.output_path)
-        else:
-          cmd = _CreateR8Command(options, mapping_temp.name,
-                                 options.output_path, tmp_proguard_config,
-                                 libraries)
-          build_utils.CheckOutput(cmd)
+    with build_utils.TempDir() as tmp_dir:
+      tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
+      tmp_proguard_config_path = os.path.join(tmp_dir, 'proguard_config.txt')
+      tmp_merged_config_path = os.path.join(tmp_dir, 'merged_config.txt')
 
-      # Copy the mapping file back to where it should be.
-      map_path = options.mapping_output
-      with build_utils.AtomicOutput(map_path) as mapping:
+      if options.output_path.endswith('.dex'):
+        with build_utils.TempDir() as tmp_dex_dir:
+          cmd = _CreateR8Command(options, tmp_mapping_path, tmp_dex_dir,
+                                 tmp_proguard_config_path,
+                                 tmp_merged_config_path, libraries)
+          build_utils.CheckOutput(cmd)
+          _MoveTempDexFile(tmp_dex_dir, options.output_path)
+      else:
+        cmd = _CreateR8Command(options, tmp_mapping_path, options.output_path,
+                               tmp_proguard_config_path, tmp_merged_config_path,
+                               libraries)
+        build_utils.CheckOutput(cmd)
+
+      # Copy output files to correct locations.
+      with build_utils.AtomicOutput(options.mapping_output) as mapping:
         # Mapping files generated by R8 include comments that may break
         # some of our tooling so remove those.
-        mapping_temp.seek(0)
-        mapping.writelines(l for l in mapping_temp if not l.startswith("#"))
+        with open(tmp_mapping_path) as tmp:
+          mapping.writelines(l for l in tmp if not l.startswith("#"))
+
+      with build_utils.AtomicOutput(options.output_config) as merged_config:
+        with open(tmp_merged_config_path) as tmp:
+          # Sort flags alphabetically to make diffs more stable and easier to
+          # consume. Also strip out lines with build specific paths in them.
+          merged_config.write(_NormalizeMergedConfig(tmp.read()))
+
+    if options.expected_configs_file:
+      _VerifyExpectedConfigs(options.expected_configs_file,
+                             options.output_config,
+                             options.verify_expected_configs)
 
     other_inputs = []
     if options.apply_mapping:

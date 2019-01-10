@@ -11,6 +11,8 @@ per-file *.gn*=agrieve@chromium.org
 # For VR Javatest changes
 per-file BUILD.gn=bsheedy@chromium.org
 
+per-file *.proguard_flags.expected=*
+
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 

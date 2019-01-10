@@ -1954,6 +1954,8 @@ if (enable_java_templates) {
   #     resources.arsc file in the apk or module.
   #   resources_config_path: Path to the aapt2 optimize config file that tags
   #     resources with acceptable/non-acceptable optimizations.
+  #   proguard_expectations_file: Path to generated file containing the merged
+  #     proguard flags from all input config files.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2567,6 +2569,7 @@ if (enable_java_templates) {
                                [
                                  "min_sdk_version",
                                  "dexlayout_profile",
+                                 "proguard_expectations_file",
                                ])
         proguard_enabled = _proguard_enabled
         build_config = _build_config
@@ -2968,6 +2971,7 @@ if (enable_java_templates) {
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
+                               "proguard_expectations_file",
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
