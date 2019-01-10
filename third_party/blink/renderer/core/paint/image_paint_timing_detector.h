@@ -31,7 +31,9 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   unsigned frame_index = 0;
   base::TimeTicks first_paint_time_after_loaded = base::TimeTicks();
   bool loaded = false;
+#ifndef NDEBUG
   String image_url = "";
+#endif
 };
 
 // ImagePaintTimingDetector contains Largest Image Paint and Last Image Paint.

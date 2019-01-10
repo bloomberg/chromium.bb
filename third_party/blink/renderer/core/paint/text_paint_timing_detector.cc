@@ -46,7 +46,9 @@ void TextPaintTimingDetector::PopulateTraceValue(
     const TextRecord& first_text_paint,
     unsigned candidate_index) const {
   value.SetInteger("DOMNodeId", static_cast<int>(first_text_paint.node_id));
+#ifndef NDEBUG
   value.SetString("text", first_text_paint.text);
+#endif
   value.SetInteger("size", static_cast<int>(first_text_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
   value.SetString("frame",
@@ -211,8 +213,12 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
     size_zero_node_ids_.insert(node_id);
   } else {
     // Non-trivial text is found.
-    TextRecord record = {node_id, rect_size, base::TimeTicks(),
-                         ToLayoutText(&object)->GetText()};
+    TextRecord record;
+    record.node_id = node_id;
+    record.first_size = rect_size;
+#ifndef NDEBUG
+    record.text = ToLayoutText(&object)->GetText();
+#endif
     texts_to_record_swap_time_.push_back(record);
   }
 

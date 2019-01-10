@@ -22,7 +22,9 @@ struct TextRecord {
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
   base::TimeTicks first_paint_time = base::TimeTicks();
+#ifndef NDEBUG
   String text = "";
+#endif
 };
 
 // TextPaintTimingDetector contains Largest Text Paint and Last Text Paint.
