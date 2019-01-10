@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "net/base/escape.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 
@@ -52,13 +54,22 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
 std::string PasswordSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
-  NOTIMPLEMENTED();
-  return std::string();
+  DCHECK(entity_data.specifics.has_password())
+      << "EntityData does not have password specifics.";
+
+  const sync_pb::PasswordSpecificsData& password_data =
+      entity_data.specifics.password().client_only_encrypted_data();
+
+  return (net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
+          net::EscapePath(password_data.username_element()) + "|" +
+          net::EscapePath(password_data.username_value()) + "|" +
+          net::EscapePath(password_data.password_element()) + "|" +
+          net::EscapePath(password_data.signon_realm()));
 }
 
 std::string PasswordSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  NOTREACHED() << "PasswordSyncBridge do not support GetStorageKey.";
+  NOTREACHED() << "PasswordSyncBridge does not support GetStorageKey.";
   return std::string();
 }
 

@@ -446,6 +446,7 @@ source_set("unit_tests") {
     "statistics_table_unittest.cc",
     "store_metrics_reporter_unittest.cc",
     "suppressed_form_fetcher_unittest.cc",
+    "sync/password_sync_bridge_unittest.cc",
     "sync/password_syncable_service_unittest.cc",
     "sync_credentials_filter_unittest.cc",
     "sync_username_test_base.cc",
