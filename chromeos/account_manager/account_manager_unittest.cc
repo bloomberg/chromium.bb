@@ -331,12 +331,12 @@ TEST_F(AccountManagerTest,
   EXPECT_TRUE(base::ContainsValue(accounts, kActiveDirectoryAccountKey_));
 }
 
-TEST_F(AccountManagerTest, IsTokenAvailableReturnsFalseForInvalidTokens) {
+TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
   account_manager_->UpsertToken(kGaiaAccountKey_,
                                 AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
+  EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
   EXPECT_TRUE(base::ContainsValue(accounts, kGaiaAccountKey_));
 }
