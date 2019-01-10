@@ -233,18 +233,21 @@ struct Environment {
 
 Environment* env = new Environment();
 
-// Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Media pipeline starts new threads, which needs AtExitManager.
-  base::AtExitManager at_exit;
+// Entry points for LibFuzzer.
 
-  // Media pipeline checks command line arguments internally.
-  base::CommandLine::Init(0, nullptr);
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  base::CommandLine::Init(*argc, *argv);
 
   // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
   TestTimeouts::Initialize();
 
   media::InitializeMediaLibrary();
+  return 0;
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Media pipeline starts new threads, which needs AtExitManager.
+  base::AtExitManager at_exit;
 
   FuzzerVariant variant = PIPELINE_FUZZER_VARIANT;
 
