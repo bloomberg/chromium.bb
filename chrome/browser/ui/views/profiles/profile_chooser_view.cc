@@ -25,7 +25,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -58,14 +57,13 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -423,10 +421,11 @@ void ProfileChooserView::Init() {
   avatar_menu_->RebuildMenu();
 
   Profile* profile = browser_->profile();
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (oauth2_token_service)
-    oauth2_token_service->AddObserver(this);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+
+  if (identity_manager)
+    identity_manager->AddObserver(this);
 
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
@@ -462,8 +461,8 @@ void ProfileChooserView::OnAvatarMenuChanged(
   }
 }
 
-void ProfileChooserView::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+void ProfileChooserView::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info) {
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
@@ -476,7 +475,8 @@ void ProfileChooserView::OnRefreshTokenAvailable(
   }
 }
 
-void ProfileChooserView::OnRefreshTokenRevoked(const std::string& account_id) {
+void ProfileChooserView::OnRefreshTokenRemovedForAccount(
+    const std::string& account_id) {
   // Refresh the account management view when an account is removed from the
   // profile.
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
@@ -580,10 +580,10 @@ void ProfileChooserView::OnWidgetClosing(views::Widget* widget) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-  if (oauth2_token_service)
-    oauth2_token_service->RemoveObserver(this);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser_->profile());
+  if (identity_manager)
+    identity_manager->RemoveObserver(this);
 }
 
 bool ProfileChooserView::AcceleratorPressed(
@@ -802,10 +802,10 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
 void ProfileChooserView::RemoveAccount() {
   DCHECK(!account_id_to_remove_.empty());
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-  if (oauth2_token_service) {
-    oauth2_token_service->RevokeCredentials(
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser_->profile());
+  if (identity_manager) {
+    identity_manager->GetAccountsMutator()->RemoveAccount(
         account_id_to_remove_, signin_metrics::SourceForRefreshTokenOperation::
                                    kUserMenu_RemoveAccount);
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT);
@@ -1647,9 +1647,10 @@ void ProfileChooserView::EnableSync(
 
 void ProfileChooserView::SignOutAllWebAccounts() {
   Hide();
-  ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())
-      ->RevokeAllCredentials(signin_metrics::SourceForRefreshTokenOperation::
-                                 kUserMenu_SignOutAllAccounts);
+  IdentityManagerFactory::GetForProfile(browser_->profile())
+      ->GetAccountsMutator()
+      ->RemoveAllAccounts(signin_metrics::SourceForRefreshTokenOperation::
+                              kUserMenu_SignOutAllAccounts);
 }
 
 int ProfileChooserView::GetDiceSigninPromoShowCount() const {

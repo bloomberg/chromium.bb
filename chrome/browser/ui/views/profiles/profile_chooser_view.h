@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -46,7 +46,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
                            public views::LinkListener,
                            public views::StyledLabelListener,
                            public AvatarMenuObserver,
-                           public OAuth2TokenService::Observer {
+                           public identity::IdentityManager::Observer {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
@@ -111,9 +111,10 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
-  // OAuth2TokenService::Observer overrides.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  // identity::IdentityManager::Observer overrides.
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
+  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;
 
