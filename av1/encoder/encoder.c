@@ -6614,6 +6614,59 @@ static int allow_show_existing(const AV1_COMP *const cpi) {
   return !(is_error_resilient || is_s_frame) || is_key_frame;
 }
 
+// Called if this frame is an ARF or ARF2. Also handles forward-keyframes
+// For an ARF set arf2=0, for ARF2 set arf2=1
+// temporal_filtered is set to 1 if we temporally filter the ARF frame, so that
+// the correct post-filter buffer can be used.
+static struct lookahead_entry *setup_arf_or_arf2(AV1_COMP *const cpi,
+                                                 const int arf_src_index,
+                                                 const int arf2,
+                                                 int *temporal_filtered) {
+  AV1_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+
+  assert(arf_src_index <= rc->frames_to_key);
+  *temporal_filtered = 0;
+
+  struct lookahead_entry *source =
+      av1_lookahead_peek(cpi->lookahead, arf_src_index);
+
+  if (source != NULL) {
+    cm->showable_frame = 1;
+    cpi->alt_ref_source = source;
+
+    // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
+    if (!arf2 && arf_src_index == rc->frames_to_key) {
+      // Skip temporal filtering and mark as intra_only if we have a fwd_kf
+      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+      int which_arf = gf_group->arf_update_idx[gf_group->index];
+      cpi->is_arf_filter_off[which_arf] = 1;
+      cpi->no_show_kf = 1;
+    } else {
+      if (oxcf->arnr_max_frames > 0) {
+        // Produce the filtered ARF frame.
+        av1_temporal_filter(cpi, arf_src_index);
+        aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
+        *temporal_filtered = 1;
+      }
+    }
+    cm->show_frame = 0;
+
+    if (oxcf->pass < 2) {
+      // In second pass, the buffer updates configure will be set
+      // in the function av1_rc_get_second_pass_params
+      if (!arf2) {
+        av1_configure_buffer_updates_firstpass(cpi, ARF_UPDATE);
+      } else {
+        av1_configure_buffer_updates_firstpass(cpi, INTNL_ARF_UPDATE);
+      }
+    }
+  }
+  rc->source_alt_ref_pending = 0;
+  return source;
+}
+
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
@@ -6621,10 +6674,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
-  const int num_planes = av1_num_planes(cm);
   RATE_CONTROL *const rc = &cpi->rc;
   struct aom_usec_timer cmptimer;
-  YV12_BUFFER_CONFIG *force_src_buffer = NULL;
   struct lookahead_entry *last_source = NULL;
   struct lookahead_entry *source = NULL;
   int arf_src_index;
@@ -6702,6 +6753,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     return 0;
   }
 
+  int temporal_filtered = 0;
   // Should we encode an arf frame.
   arf_src_index = get_arf_src_index(cpi);
   if (arf_src_index &&
@@ -6711,38 +6763,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (arf_src_index) {
-    assert(arf_src_index <= rc->frames_to_key);
-
-    if ((source = av1_lookahead_peek(cpi->lookahead, arf_src_index)) != NULL) {
-      cm->showable_frame = 1;
-      cpi->alt_ref_source = source;
-      // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
-      if (arf_src_index == rc->frames_to_key) {
-        // Skip temporal filtering and mark as intra_only if we have a fwd_kf
-        const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-        int which_arf = gf_group->arf_update_idx[gf_group->index];
-        cpi->is_arf_filter_off[which_arf] = 1;
-        cpi->no_show_kf = 1;
-      } else {
-        if (oxcf->arnr_max_frames > 0) {
-          // Produce the filtered ARF frame.
-          av1_temporal_filter(cpi, arf_src_index);
-          aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
-          force_src_buffer = &cpi->alt_ref_buffer;
-        }
-      }
-      cm->show_frame = 0;
-
-      if (oxcf->pass < 2) {
-        // In second pass, the buffer updates configure will be set
-        // in the function av1_rc_get_second_pass_params
-        av1_configure_buffer_updates_firstpass(cpi, ARF_UPDATE);
-      }
-    }
-    rc->source_alt_ref_pending = 0;
+    source = setup_arf_or_arf2(cpi, arf_src_index, 0, &temporal_filtered);
   }
 
-  // Should we encode an arf2 frame.
+  // Should we encode an arf2 frame (mutually exclusive to ARF)
   arf_src_index = get_arf2_src_index(cpi);
   if (arf_src_index &&
       is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
@@ -6751,28 +6775,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (arf_src_index) {
-    assert(arf_src_index <= rc->frames_to_key);
-
-    if ((source = av1_lookahead_peek(cpi->lookahead, arf_src_index)) != NULL) {
-      cm->showable_frame = 1;
-      cpi->alt_ref_source = source;
-
-      if (oxcf->arnr_max_frames > 0) {
-        // Produce the filtered ARF frame.
-        av1_temporal_filter(cpi, arf_src_index);
-        aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
-        force_src_buffer = &cpi->alt_ref_buffer;
-      }
-
-      cm->show_frame = 0;
-
-      if (oxcf->pass < 2) {
-        // In second pass, the buffer updates configure will be set
-        // in the function av1_rc_get_second_pass_params
-        av1_configure_buffer_updates_firstpass(cpi, INTNL_ARF_UPDATE);
-      }
-    }
-    rc->source_alt_ref_pending = 0;
+    source = setup_arf_or_arf2(cpi, arf_src_index, 1, &temporal_filtered);
   }
 
   rc->is_bwd_ref_frame = 0;
@@ -6809,8 +6812,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     }
   }
   if (source) {
-    cpi->unscaled_source = cpi->source =
-        force_src_buffer ? force_src_buffer : &source->img;
+    if (temporal_filtered) {
+      cpi->unscaled_source = &cpi->alt_ref_buffer;
+      cpi->source = &cpi->alt_ref_buffer;
+    } else {
+      cpi->unscaled_source = &source->img;
+      cpi->source = &source->img;
+    }
     cpi->unscaled_last_source = last_source != NULL ? &last_source->img : NULL;
 
     *time_stamp = source->ts_start;
