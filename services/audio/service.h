@@ -64,13 +64,13 @@ class Service : public service_manager::Service {
   };
 
   // Service will attempt to quit if there are no connections to it within
-  // |quit_timeout| interval. If |quit_timeout| is base::TimeDelta() the
+  // |quit_timeout| interval. If |quit_timeout| is null the
   // service never quits. If |enable_remote_client_support| is true, the service
   // will make available a DeviceNotifier object that allows clients to
   // subscribe to notifications about device changes and a LogFactoryManager
   // object that allows clients to set a factory for audio logs.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
-          base::TimeDelta quit_timeout,
+          base::Optional<base::TimeDelta> quit_timeout,
           bool enable_remote_client_support,
           std::unique_ptr<service_manager::BinderRegistry> registry,
           service_manager::mojom::ServiceRequest request);

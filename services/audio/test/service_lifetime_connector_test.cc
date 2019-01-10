@@ -10,6 +10,7 @@
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
+#include "services/audio/service_factory.h"
 #include "services/audio/system_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -44,7 +45,10 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
     connector_ = connector_factory_.CreateConnector();
   }
 
-  void TearDown() override { audio_manager_->Shutdown(); }
+  void TearDown() override {
+    if (audio_manager_)
+      audio_manager_->Shutdown();
+  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
@@ -59,6 +63,64 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioServiceLifetimeConnectorTest);
 };
+
+TEST_F(AudioServiceLifetimeConnectorTest,
+       StandaloneServiceNeverTerminatesWhenNoTimeoutIsSet) {
+  service_.reset();
+  audio_manager_->Shutdown();
+  audio_manager_.reset();
+  service_manager::TestConnectorFactory connector_factory;
+  service_ = audio::CreateStandaloneService(
+      std::make_unique<service_manager::BinderRegistry>(),
+      connector_factory.RegisterInstance(mojom::kServiceName));
+  service_->set_termination_closure(quit_request_.Get());
+  connector_ = connector_factory.CreateConnector();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  mojom::SystemInfoPtr info;
+  connector_->BindInterface(mojom::kServiceName, &info);
+
+  // Make sure |info| is connected.
+  base::RunLoop loop;
+  info->HasOutputDevices(
+      base::BindOnce([](base::OnceClosure cl, bool) { std::move(cl).Run(); },
+                     loop.QuitClosure()));
+  loop.Run();
+
+  info.reset();
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  service_.reset();
+}
+
+TEST_F(AudioServiceLifetimeConnectorTest,
+       EmbeddedServiceNeverTerminatesWhenNoTimeoutIsSet) {
+  service_.reset();
+  service_manager::TestConnectorFactory connector_factory;
+  service_ = audio::CreateEmbeddedService(
+      audio_manager_.get(),
+      connector_factory.RegisterInstance(mojom::kServiceName));
+  service_->set_termination_closure(quit_request_.Get());
+  connector_ = connector_factory.CreateConnector();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  mojom::SystemInfoPtr info;
+  connector_->BindInterface(mojom::kServiceName, &info);
+
+  // Make sure |info| is connected.
+  base::RunLoop loop;
+  info->HasOutputDevices(
+      base::BindOnce([](base::OnceClosure cl, bool) { std::move(cl).Run(); },
+                     loop.QuitClosure()));
+  loop.Run();
+
+  info.reset();
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  service_.reset();
+}
 
 TEST_F(AudioServiceLifetimeConnectorTest, ServiceNotQuitWhenClientConnected) {
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));

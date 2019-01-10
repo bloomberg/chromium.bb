@@ -562,9 +562,6 @@
             "experiments": [
                 {
                     "name": "AudioProcess_Sandboxed_APM_v9",
-                    "params": {
-                        "teardown_timeout_s": "0"
-                    },
                     "enable_features": [
                         "AudioServiceAudioStreams",
                         "AudioServiceLaunchOnStartup",
