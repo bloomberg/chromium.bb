@@ -47,7 +47,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
                  timeout_duration,
                  priority,
                  SocketTag(),
-                 respect_limits,
+                 respect_limits == ClientSocketPool::RespectLimits::ENABLED,
                  delegate,
                  NetLogWithSource::Make(
                      pool_net_log,

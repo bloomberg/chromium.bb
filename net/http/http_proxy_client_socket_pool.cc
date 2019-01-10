@@ -190,7 +190,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           base::TimeDelta() /* The socket takes care of timeouts */,
           priority,
           socket_tag,
-          respect_limits,
+          respect_limits == ClientSocketPool::RespectLimits::ENABLED,
           delegate,
           NetLogWithSource::Make(net_log,
                                  NetLogSourceType::HTTP_PROXY_CONNECT_JOB)),

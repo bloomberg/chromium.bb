@@ -55,7 +55,7 @@ SOCKSConnectJob::SOCKSConnectJob(
           ConnectionTimeout(),
           priority,
           socket_tag,
-          respect_limits,
+          respect_limits == ClientSocketPool::RespectLimits::ENABLED,
           delegate,
           NetLogWithSource::Make(net_log, NetLogSourceType::SOCKS_CONNECT_JOB)),
       socks_params_(socks_params),

@@ -89,7 +89,7 @@ TransportConnectJob::TransportConnectJob(
           ConnectionTimeout(),
           priority,
           socket_tag,
-          respect_limits,
+          respect_limits == ClientSocketPool::RespectLimits::ENABLED,
           delegate,
           NetLogWithSource::Make(net_log,
                                  NetLogSourceType::TRANSPORT_CONNECT_JOB)),
