@@ -130,11 +130,12 @@ import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
@@ -2060,9 +2061,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         TabCreator tabCreator = getTabCreator(currentTab.isIncognito());
         if (tabCreator == null) return;
 
-        tabCreator.createNewTab(
-                new LoadUrlParams(searchUrl, PageTransition.LINK),
-                TabModel.TabLaunchType.FROM_LINK, getActivityTab());
+        tabCreator.createNewTab(new LoadUrlParams(searchUrl, PageTransition.LINK),
+                TabLaunchType.FROM_LINK, getActivityTab());
     }
 
     /**

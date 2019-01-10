@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -60,8 +59,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @return The new tab.
      */
     @Override
-    public Tab createNewTab(
-            LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type, Tab parent) {
+    public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
         return createNewTab(loadUrlParams, type, parent, null);
     }
 
@@ -73,8 +71,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent the source of the url if it isn't null.
      * @return The new tab.
      */
-    public Tab createNewTab(LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type,
-            Tab parent, Intent intent) {
+    public Tab createNewTab(
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, Intent intent) {
         // If parent is in the same tab model, place the new tab next to it.
         int position = TabModel.INVALID_TAB_INDEX;
         int index = mTabModel.indexOf(parent);
@@ -92,8 +90,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent the source of the url if it isn't null.
      * @return The new tab.
      */
-    private Tab createNewTab(LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type,
-            Tab parent, int position, Intent intent) {
+    private Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
+            int position, Intent intent) {
         try {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
@@ -185,7 +183,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     }
 
     @Override
-    public Tab launchUrl(String url, @TabModel.TabLaunchType int type) {
+    public Tab launchUrl(String url, @TabLaunchType int type) {
         return launchUrl(url, type, null, 0);
     }
 
@@ -200,8 +198,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the created tab.
      */
-    public Tab launchUrl(
-            String url, @TabModel.TabLaunchType int type, Intent intent, long intentTimestamp) {
+    public Tab launchUrl(String url, @TabLaunchType int type, Intent intent, long intentTimestamp) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
         return createNewTab(loadUrlParams, type, null, intent);

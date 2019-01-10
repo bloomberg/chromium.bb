@@ -44,13 +44,14 @@ import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.SPenSupport;
@@ -139,35 +140,33 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * need to override any related calls to add new functionality */
     protected class LayoutManagerTabModelObserver extends EmptyTabModelObserver {
         @Override
-        public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
+        public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
         }
 
         @Override
-        public void willAddTab(Tab tab, @TabModel.TabLaunchType int type) {
+        public void willAddTab(Tab tab, @TabLaunchType int type) {
             // Open the new tab
-            if (type == TabModel.TabLaunchType.FROM_RESTORE
-                    || type == TabModel.TabLaunchType.FROM_REPARENTING
-                    || type == TabModel.TabLaunchType.FROM_EXTERNAL_APP
-                    || type == TabModel.TabLaunchType.FROM_LAUNCHER_SHORTCUT)
+            if (type == TabLaunchType.FROM_RESTORE || type == TabLaunchType.FROM_REPARENTING
+                    || type == TabLaunchType.FROM_EXTERNAL_APP
+                    || type == TabLaunchType.FROM_LAUNCHER_SHORTCUT)
                 return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }
 
         @Override
-        public void didAddTab(Tab tab, @TabModel.TabLaunchType int launchType) {
+        public void didAddTab(Tab tab, @TabLaunchType int launchType) {
             int tabId = tab.getId();
-            if (launchType == TabModel.TabLaunchType.FROM_RESTORE) {
+            if (launchType == TabLaunchType.FROM_RESTORE) {
                 getActiveLayout().onTabRestored(time(), tabId);
             } else {
                 boolean incognito = tab.isIncognito();
-                boolean willBeSelected =
-                        launchType != TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
-                if (launchType != TabModel.TabLaunchType.FROM_CHROME_UI) {
+                if (launchType != TabLaunchType.FROM_CHROME_UI) {
                     float heightDelta = mHost.getHeightMinusBrowserControls() * mPxToDp;
                     lastTapX = mPxToDp * mLastTapX;
                     lastTapY = mPxToDp * mLastTapY - heightDelta;
@@ -571,7 +570,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @param originX        The x coordinate of the action that created this tab in dp.
      * @param originY        The y coordinate of the action that created this tab in dp.
      */
-    protected void tabCreated(int id, int sourceId, @TabModel.TabLaunchType int launchType,
+    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
             boolean incognito, boolean willBeSelected, float originX, float originY) {
         int newIndex = TabModelUtils.getTabIndexById(getTabModelSelector().getModel(incognito), id);
         getActiveLayout().onTabCreated(

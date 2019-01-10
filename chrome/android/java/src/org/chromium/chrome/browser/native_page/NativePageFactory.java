@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -204,7 +204,7 @@ public class NativePageFactory {
         public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
             if (incognito && !mTab.isIncognito()) {
                 mTab.getTabModelSelector().openNewTab(urlParams,
-                        TabModel.TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
+                        TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
                         /* incognito = */ true);
                 return TabLoadStatus.DEFAULT_PAGE_LOAD;
             }

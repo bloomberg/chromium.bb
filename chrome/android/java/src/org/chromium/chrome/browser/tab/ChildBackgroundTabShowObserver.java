@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
 import java.util.ArrayList;
 

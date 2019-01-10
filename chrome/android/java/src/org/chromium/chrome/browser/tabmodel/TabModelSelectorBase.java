@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 import java.util.ArrayList;
 import java.util.Collections;

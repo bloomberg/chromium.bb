@@ -35,8 +35,6 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
@@ -100,8 +98,7 @@ public class TabPersistentStoreTest {
         }
 
         @Override
-        public Tab createNewTab(
-                LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type, Tab parent) {
+        public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
             Tab tab = Tab.createTabForLazyLoad(
                     mIsIncognito, null, TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID, loadUrlParams);
             mSelector.getModel(mIsIncognito).addTab(tab, TabModel.INVALID_TAB_INDEX, type);
@@ -125,7 +122,7 @@ public class TabPersistentStoreTest {
         }
 
         @Override
-        public Tab launchUrl(String url, @TabModel.TabLaunchType int type) {
+        public Tab launchUrl(String url, @TabLaunchType int type) {
             return null;
         }
 

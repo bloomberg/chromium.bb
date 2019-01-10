@@ -8,8 +8,10 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
 /**
  * Mocks out all of the DocumentTabModel calls to fail.  Override specific ones as needed.
