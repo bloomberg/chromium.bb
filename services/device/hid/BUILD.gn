@@ -52,7 +52,7 @@ source_set("hid") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/dbus" ]
+    deps += [ "//chromeos" ]
   }
 
   if (is_win) {

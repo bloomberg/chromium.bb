@@ -20,7 +20,6 @@ component("drivefs") {
     "//base",
     "//chromeos",
     "//chromeos/components/drivefs/mojom",
-    "//chromeos/dbus",
     "//chromeos/disks",
     "//components/account_id",
     "//components/drive",
@@ -47,7 +46,6 @@ source_set("test_support") {
     "//base",
     "//chromeos",
     "//chromeos/components/drivefs/mojom",
-    "//chromeos/dbus",
     "//net",
   ]
 }

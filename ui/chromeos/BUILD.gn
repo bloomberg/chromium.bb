@@ -29,8 +29,7 @@ component("chromeos") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//chromeos",
-    "//chromeos/dbus",
+    "//chromeos:chromeos",
     "//chromeos/dbus:power_manager_proto",
     "//components/device_event_log",
     "//components/onc",

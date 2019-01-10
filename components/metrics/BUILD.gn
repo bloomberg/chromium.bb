@@ -423,10 +423,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//chromeos",
-      "//chromeos/dbus",
-    ]
+    deps += [ "//chromeos" ]
   }
 
   # iOS is not supported by the profiler and the ios-simulator bot chokes on
