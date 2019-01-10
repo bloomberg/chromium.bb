@@ -2821,7 +2821,7 @@
       # This tryserver doesn't actually exist; it's a separate
       # configuration from the Win AMD bot on this waterfall because we
       # don't have enough tryserver capacity to run all the tests from
-      # that bot on win_angle_rel_ng.
+      # that bot on win-angle-rel.
       'Win7 ANGLE Tryserver (AMD)': {
         'os_type': 'win',
         'browser_config': 'release',
