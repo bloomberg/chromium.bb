@@ -647,6 +647,18 @@ void LayerTreeView::RecordWheelAndTouchScrollingCount(
                                                has_scrolled_by_touch);
 }
 
+void LayerTreeView::SendOverscrollEventFromImplSide(
+    const gfx::Vector2dF& overscroll_delta,
+    cc::ElementId scroll_latched_element_id) {
+  delegate_->SendOverscrollEventFromImplSide(overscroll_delta,
+                                             scroll_latched_element_id);
+}
+
+void LayerTreeView::SendScrollEndEventFromImplSide(
+    cc::ElementId scroll_latched_element_id) {
+  delegate_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+}
+
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
   // When the compositor is not visible it would not request a
   // LayerTreeFrameSink so this is a race where it requested one then became

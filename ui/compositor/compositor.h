@@ -375,6 +375,11 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   }
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override {}
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override {}
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override {}
   void DidFailToInitializeLayerTreeFrameSink() override;

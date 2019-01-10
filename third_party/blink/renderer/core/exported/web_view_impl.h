@@ -403,6 +403,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void StopDeferringCommits() { scoped_defer_main_frame_update_.reset(); }
 
+  // This function checks the element ids of ScrollableAreas only and returns
+  // the equivalent DOM Node if such exists.
+  Node* FindNodeFromScrollableCompositorElementId(
+      cc::ElementId element_id) const;
+
   void DeferMainFrameUpdateForTesting();
 
  private:
@@ -448,6 +453,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;

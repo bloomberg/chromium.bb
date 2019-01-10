@@ -881,6 +881,19 @@ void LayerTreeHost::RecordWheelAndTouchScrollingCount(
   }
 }
 
+void LayerTreeHost::SendOverscrollAndScrollEndEventsFromImplSide(
+    const ScrollAndScaleSet& info) {
+  if (info.scroll_latched_element_id == ElementId())
+    return;
+
+  if (!info.overscroll_delta.IsZero()) {
+    client_->SendOverscrollEventFromImplSide(info.overscroll_delta,
+                                             info.scroll_latched_element_id);
+  }
+  if (info.scroll_gesture_did_end)
+    client_->SendScrollEndEventFromImplSide(info.scroll_latched_element_id);
+}
+
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   DCHECK(info);
   for (auto& swap_promise : info->swap_promises) {
@@ -907,6 +920,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       layer->SetScrollbarsHiddenFromImplSide(info->scrollbars[i].hidden);
     }
   }
+
+  SendOverscrollAndScrollEndEventsFromImplSide(*info);
 
   // This needs to happen after scroll deltas have been sent to prevent top
   // controls from clamping the layout viewport both on the compositor and

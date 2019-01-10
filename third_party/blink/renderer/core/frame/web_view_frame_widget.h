@@ -62,6 +62,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;

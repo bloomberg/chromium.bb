@@ -702,6 +702,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void ApplyViewportChanges(const ScrollAndScaleSet& info);
   void RecordWheelAndTouchScrollingCount(const ScrollAndScaleSet& info);
+  void SendOverscrollAndScrollEndEventsFromImplSide(
+      const ScrollAndScaleSet& info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 

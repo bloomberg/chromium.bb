@@ -286,6 +286,31 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
   return drag_operation_;
 }
 
+void WebFrameWidgetBase::SendOverscrollEventFromImplSide(
+    const gfx::Vector2dF& overscroll_delta,
+    cc::ElementId scroll_latched_element_id) {
+  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
+    return;
+
+  Node* target_node = View()->FindNodeFromScrollableCompositorElementId(
+      scroll_latched_element_id);
+  if (target_node) {
+    target_node->GetDocument().EnqueueOverscrollEventForNode(
+        target_node, overscroll_delta.x(), overscroll_delta.y());
+  }
+}
+
+void WebFrameWidgetBase::SendScrollEndEventFromImplSide(
+    cc::ElementId scroll_latched_element_id) {
+  if (!RuntimeEnabledFeatures::OverscrollCustomizationEnabled())
+    return;
+
+  Node* target_node = View()->FindNodeFromScrollableCompositorElementId(
+      scroll_latched_element_id);
+  if (target_node)
+    target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
+}
+
 WebFloatPoint WebFrameWidgetBase::ViewportToRootFrame(
     const WebFloatPoint& point_in_viewport) const {
   return GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);

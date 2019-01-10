@@ -35,6 +35,7 @@
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/paint/paint_canvas.h"
+#include "cc/trees/element_id.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -178,6 +179,12 @@ class WebWidget {
 
   virtual void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                                  bool has_scrolled_by_touch) {}
+
+  virtual void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) {}
+  virtual void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) {}
 
   // Called to inform the WebWidget that mouse capture was lost.
   virtual void MouseCaptureLost() {}

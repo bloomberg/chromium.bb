@@ -103,6 +103,16 @@ void WebViewFrameWidget::RecordWheelAndTouchScrollingCount(
   web_view_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
                                                has_scrolled_by_touch);
 }
+void WebViewFrameWidget::SendOverscrollEventFromImplSide(
+    const gfx::Vector2dF& overscroll_delta,
+    cc::ElementId scroll_latched_element_id) {
+  web_view_->SendOverscrollEventFromImplSide(overscroll_delta,
+                                             scroll_latched_element_id);
+}
+void WebViewFrameWidget::SendScrollEndEventFromImplSide(
+    cc::ElementId scroll_latched_element_id) {
+  web_view_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+}
 
 void WebViewFrameWidget::MouseCaptureLost() {
   web_view_->MouseCaptureLost();
