@@ -1334,9 +1334,14 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
                           HasVisibleNonCompositingDescendant(&owning_layer_);
   graphics_layer_->SetContentsVisible(contents_visible);
 
-  graphics_layer_->SetBackfaceVisibility(
-      GetLayoutObject().StyleRef().BackfaceVisibility() ==
-      EBackfaceVisibility::kVisible);
+  // In BGPT mode, we do not need to update the backface visibility here, as it
+  // will already be set by PaintArtifactCompsitor based on
+  // TransformPaintPropertyNode::GetBackfaceVisibility.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    graphics_layer_->SetBackfaceVisibility(
+        GetLayoutObject().StyleRef().BackfaceVisibility() ==
+        EBackfaceVisibility::kVisible);
+  }
 }
 
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
@@ -1540,9 +1545,15 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
           owning_layer_.SubpixelAccumulation());
   overflow_controls_host_layer_->SetSize(gfx::Size(border_box.Size()));
   overflow_controls_host_layer_->SetMasksToBounds(true);
-  overflow_controls_host_layer_->SetBackfaceVisibility(
-      owning_layer_.GetLayoutObject().StyleRef().BackfaceVisibility() ==
-      EBackfaceVisibility::kVisible);
+
+  // In BGPT mode, we do not need to update the backface visibility here, as it
+  // will already be set by PaintArtifactCompsitor based on
+  // TransformPaintPropertyNode::GetBackfaceVisibility.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    overflow_controls_host_layer_->SetBackfaceVisibility(
+        owning_layer_.GetLayoutObject().StyleRef().BackfaceVisibility() ==
+        EBackfaceVisibility::kVisible);
+  }
 }
 
 void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {

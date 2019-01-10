@@ -56,8 +56,7 @@
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
       "bounds": [102, 302],
-      "drawsContent": false,
-      "backfaceVisibility": "hidden"
+      "drawsContent": false
     },
     {
       "name": "Horizontal Scrollbar Layer",
