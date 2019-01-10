@@ -34,7 +34,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_targeter_delegate.h"
-#include "ui/views/view_tracker.h"
 
 class NewTabButton;
 class StackedTabStripLayout;
@@ -43,6 +42,7 @@ class TabDragController;
 class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
+class ViewObserver;
 
 namespace gfx {
 class Rect;
@@ -68,6 +68,7 @@ class ImageView;
 class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
+                 public views::ViewObserver,
                  public views::ViewTargeterDelegate,
                  public TabController,
                  public BrowserRootView::DropTarget,
@@ -629,6 +630,9 @@ class TabStrip : public views::AccessiblePaneView,
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
+  // views::ViewObserver:
+  void OnViewIsDeleting(views::View* observed_view) override;
+
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
@@ -649,7 +653,6 @@ class TabStrip : public views::AccessiblePaneView,
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.
   TabHoverCardBubbleView* hover_card_ = nullptr;
-  views::ViewTracker hover_card_view_tracker_;
 
   std::unique_ptr<TabStripController> controller_;
 
