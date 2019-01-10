@@ -1015,8 +1015,7 @@ void Tab::UpdateForegroundColors() {
   }
   const SkColor tab_bg_color = color_utils::AlphaBlend(
       controller_->GetTabBackgroundColor(TAB_ACTIVE),
-      controller_->GetTabBackgroundColor(TAB_INACTIVE),
-      gfx::ToRoundedInt(expected_opacity * SK_AlphaOPAQUE));
+      controller_->GetTabBackgroundColor(TAB_INACTIVE), expected_opacity);
   SkColor tab_title_color = controller_->GetTabForegroundColor(
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, tab_bg_color);
   tab_title_color =

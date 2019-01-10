@@ -516,12 +516,12 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return system_colors_[COLOR_WINDOW];
     case kColorId_ResultsTableHoveredBackground:
       return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHT],
-                                     system_colors_[COLOR_WINDOW], 0x40);
+                                     system_colors_[COLOR_WINDOW], 0.25f);
     case kColorId_ResultsTableNormalText:
       return system_colors_[COLOR_WINDOWTEXT];
     case kColorId_ResultsTableDimmedText:
       return color_utils::AlphaBlend(system_colors_[COLOR_WINDOWTEXT],
-                                     system_colors_[COLOR_WINDOW], 0x80);
+                                     system_colors_[COLOR_WINDOW], 0.5f);
     default:
       break;
   }

@@ -77,8 +77,9 @@ void DefaultFrameHeader::ColorAnimator::SetTargetColor(SkColor target) {
 }
 
 SkColor DefaultFrameHeader::ColorAnimator::GetCurrentColor() {
-  current_color_ = color_utils::AlphaBlend(
-      target_color_, start_color_, animation_.CurrentValueBetween(0, 255));
+  current_color_ =
+      color_utils::AlphaBlend(target_color_, start_color_,
+                              static_cast<float>(animation_.GetCurrentValue()));
   return current_color_;
 }
 
@@ -115,10 +116,10 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
           : kTopCornerRadiusWhenRestored;
 
   cc::PaintFlags flags;
-  int active_alpha = activation_animation().CurrentValueBetween(0, 255);
   flags.setColor(color_utils::AlphaBlend(
       active_frame_color_.GetCurrentColor(),
-      inactive_frame_color_.GetCurrentColor(), active_alpha));
+      inactive_frame_color_.GetCurrentColor(),
+      static_cast<float>(activation_animation().GetCurrentValue())));
   flags.setAntiAlias(true);
   if (width_in_pixels_ > 0) {
     canvas->Save();

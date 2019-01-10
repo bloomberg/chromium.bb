@@ -196,7 +196,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
       color_utils::AlphaBlend(SK_ColorBLACK,
                               GetNativeTheme()->GetSystemColor(
                                   ui::NativeTheme::kColorId_WindowBackground),
-                              0x10)));
+                              0.0625f)));
 
   AddChildView(caption_label);
 

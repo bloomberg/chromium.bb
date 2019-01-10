@@ -80,11 +80,9 @@ views::Label* CreateShortcutLabel(
     SkColor blackish = color_utils::AlphaBlend(
         SK_ColorBLACK,
         theme.GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
-        0x40);
-    SkColor transparent_blakish = color_utils::AlphaBlend(
-        SK_ColorTRANSPARENT, blackish, 0xE0);
+        0.25f);
     shortcut_label->SetBackground(
-        views::CreateSolidBackground(transparent_blakish));
+        views::CreateSolidBackground(SkColorSetA(blackish, 0xE0)));
   }
   shortcut_label->SetElideBehavior(gfx::NO_ELIDE);
 

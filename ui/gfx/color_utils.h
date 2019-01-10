@@ -98,8 +98,14 @@ GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
 // |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
 // the supplied colors are also taken into account, so the returned color may
 // be partially transparent.
-GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
+GFX_EXPORT SkColor AlphaBlend(SkColor foreground,
+                              SkColor background,
                               SkAlpha alpha);
+
+// As above, but with alpha specified as 0..1.
+GFX_EXPORT SkColor AlphaBlend(SkColor foreground,
+                              SkColor background,
+                              float alpha);
 
 // Returns the color that results from painting |foreground| on top of
 // |background|.

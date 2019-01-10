@@ -573,7 +573,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
       return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
-                                     SK_ColorBLACK, 230);
+                                     SK_ColorBLACK, 0.9f);
 #endif
   }
 

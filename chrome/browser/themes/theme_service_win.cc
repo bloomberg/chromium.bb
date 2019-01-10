@@ -109,9 +109,9 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
     // with 0xff to make an opaque ARGB color.
     SkColor input_color = SkColorSetA(colorization_color, 0xff);
 
-    dwm_accent_border_color_ = color_utils::AlphaBlend(
-        input_color, SkColorSetRGB(0xd9, 0xd9, 0xd9),
-        gfx::ToRoundedInt(255 * colorization_color_balance / 100.f));
+    dwm_accent_border_color_ =
+        color_utils::AlphaBlend(input_color, SkColorSetRGB(0xd9, 0xd9, 0xd9),
+                                colorization_color_balance / 100.0f);
   }
 
   inactive_frame_color_from_registry_ = false;
