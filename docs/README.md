@@ -154,7 +154,7 @@ used when committed.
 *   [Web Test Expectations and Baselines](testing/web_test_expectations.md) -
     Setting expected results of web tests.
 *   [Web Tests Tips](testing/web_tests_tips.md) - Best practices for web tests
-*   [Web Tests with Manual Fallback](testing/webt_tests_with_manual_fallback.md) -
+*   [Web Tests with Manual Fallback](testing/web_tests_with_manual_fallback.md) -
     Writing tests that simulate manual interventions
 *   [Extending the Web Test Framework](how_to_extend_web_test_framework.md)
 *   [Fixing Web Test Flakiness](testing/identifying_tests_that_depend_on_order.md) -
