@@ -1427,6 +1427,7 @@ template("chrome_public_apk_or_module_tmpl") {
                              "jni_registration_header",
                              "is_modern",
                              "module_name",
+                             "proguard_expectations_file",
                              "target_type",
                            ])
 
@@ -1478,12 +1479,20 @@ template("chrome_public_apk_or_module_tmpl") {
 chrome_public_apk_or_module_tmpl("chrome_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromePublic"
+  if (!is_java_debug) {
+    proguard_expectations_file =
+        "//chrome/android/java/chrome_public_apk.proguard_flags.expected"
+  }
 }
 
 chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromeModernPublic"
   is_modern = true
+  if (!is_java_debug) {
+    proguard_expectations_file =
+        "//chrome/android/java/chrome_modern_public_apk.proguard_flags.expected"
+  }
 }
 
 chrome_public_apk_or_module_tmpl("chrome_public_base_bundle_module") {
@@ -1534,6 +1543,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "apk_name",
                              "is_base_module",
                              "module_name",
+                             "proguard_expectations_file",
                              "proguard_jar_path",
                              "target_type",
                              "use_trichrome_library",
@@ -1574,6 +1584,10 @@ template("monochrome_public_apk_or_module_tmpl") {
 monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   apk_name = "MonochromePublic"
   target_type = "android_apk"
+  if (!is_java_debug) {
+    proguard_expectations_file =
+        "//chrome/android/java/monochrome_public_apk.proguard_flags.expected"
+  }
 }
 
 monochrome_public_apk_or_module_tmpl("monochrome_public_base_bundle_module") {

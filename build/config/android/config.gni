@@ -225,7 +225,13 @@ if (is_android || is_chromeos) {
     # already used as the default for public targets. This will evenutally be
     # the default. https://crbug.com/908988
     use_r8 = false
+
+    # Checks that proguard flags have not changed (!is_java_debug only).
+    check_android_configuration = false
   }
+
+  assert(!(check_android_configuration && is_java_debug),
+         "check_android_configuration only works when proguard is enabled")
 
   # We need a second declare_args block to make sure we are using the overridden
   # value of the arguments set above.

@@ -984,6 +984,27 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
 
+      if (defined(invoker.config_output_path)) {
+        _config_output_path = invoker.config_output_path
+        outputs += [ _config_output_path ]
+        args += [
+          "--output-config",
+          rebase_path(_config_output_path, root_build_dir),
+        ]
+
+        if (defined(invoker.proguard_expectations_file)) {
+          _expected_configs_file = invoker.proguard_expectations_file
+          inputs += [ _expected_configs_file ]
+          args += [
+            "--expected-configs-file",
+            rebase_path(_expected_configs_file, root_build_dir),
+          ]
+          if (check_android_configuration) {
+            args += [ "--verify-expected-configs" ]
+          }
+        }
+      }
+
       if (!defined(invoker.proguard_jar_path) || use_r8) {
         args += [
           "--r8-path",
@@ -1103,6 +1124,7 @@ if (enable_java_templates) {
       if (_proguarding_with_r8) {
         _proguard_output_path = invoker.output
         _proguard_target_name = target_name
+        _proguard_config_output_path = "$_proguard_output_path.proguard_flags"
       } else {
         _proguard_output_path = invoker.output + ".proguard.jar"
         _proguard_target_name = "${target_name}__proguard"
@@ -1112,9 +1134,10 @@ if (enable_java_templates) {
       proguard(_proguard_target_name) {
         forward_variables_from(invoker,
                                [
-                                 "proguard_jar_path",
-                                 "deps",
                                  "build_config",
+                                 "deps",
+                                 "proguard_expectations_file",
+                                 "proguard_jar_path",
                                  "proguard_mapping_path",
                                  "testonly",
                                ])
@@ -1166,6 +1189,9 @@ if (enable_java_templates) {
         }
 
         output_path = _proguard_output_path
+        if (_proguarding_with_r8) {
+          config_output_path = _proguard_config_output_path
+        }
       }
     }
 
