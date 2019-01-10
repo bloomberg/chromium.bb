@@ -101,10 +101,6 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   url_params.frame_tree_node_id = handle->GetFrameTreeNodeId();
   url_params.user_gesture = handle->HasUserGesture();
   url_params.started_from_context_menu = handle->WasStartedFromContextMenu();
-
-  if (previews::IsLitePageRedirectPreviewDomain(handle->GetReferrer().url))
-    url_params.referrer = content::Referrer();
-
   return url_params;
 }
 

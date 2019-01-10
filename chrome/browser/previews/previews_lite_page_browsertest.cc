@@ -1209,39 +1209,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsReferrer)) {
-  // Referrers should be copied across navigations unless the referrer is the
-  // lite page domain, in which case the referrer should not be set.
-  {
-    browser()->OpenURL(content::OpenURLParams(
-        HttpsLitePageURL(kSuccess),
-        content::Referrer(GURL("https://www.google.com"),
-                          network::mojom::ReferrerPolicy::kDefault),
-        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false /* is_renderer_initiated */));
-    VerifyPreviewLoaded();
-
-    content::NavigationEntry* entry =
-        GetWebContents()->GetController().GetLastCommittedEntry();
-    EXPECT_EQ(entry->GetReferrer().url, GURL("https://www.google.com"));
-  }
-
-  {
-    browser()->OpenURL(content::OpenURLParams(
-        HttpsLitePageURL(kSuccess),
-        content::Referrer(previews_server(),
-                          network::mojom::ReferrerPolicy::kDefault),
-        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false /* is_renderer_initiated */));
-    VerifyPreviewLoaded();
-
-    content::NavigationEntry* entry =
-        GetWebContents()->GetController().GetLastCommittedEntry();
-    EXPECT_EQ(entry->GetReferrer().url, content::Referrer().url);
-  }
-}
-
 class PreviewsLitePageServerTimeoutBrowserTest
     : public PreviewsLitePageServerBrowserTest {
  public:
