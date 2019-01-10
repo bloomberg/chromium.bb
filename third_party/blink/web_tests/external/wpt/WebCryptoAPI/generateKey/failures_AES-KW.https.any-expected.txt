@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 480 tests; 478 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Bad algorithm: generateKey(AES, false, [decrypt])
 PASS Bad algorithm: generateKey(AES, true, [decrypt])
 PASS Bad algorithm: generateKey(AES, RED, [decrypt])

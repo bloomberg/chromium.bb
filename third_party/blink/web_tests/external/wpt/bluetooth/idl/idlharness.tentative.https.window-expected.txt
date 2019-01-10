@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 180 tests; 122 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Bluetooth interface: existence and properties of interface object
