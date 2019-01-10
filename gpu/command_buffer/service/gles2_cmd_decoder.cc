@@ -236,7 +236,7 @@ class GLES2DecoderImpl;
 #define LOCAL_PEEK_GL_ERROR(function_name) \
   ERRORSTATE_PEEK_GL_ERROR(error_state_.get(), function_name)
 #define LOCAL_CLEAR_REAL_GL_ERRORS(function_name) \
-  ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_.get()) function_name)
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_.get(), function_name)
 #define LOCAL_PERFORMANCE_WARNING(msg) \
     PerformanceWarning(__FILE__, __LINE__, msg)
 #define LOCAL_RENDER_WARNING(msg) \
