@@ -1933,6 +1933,8 @@ jumbo_split_static_library("browser") {
     "//services/device/public/mojom",
     "//services/identity:lib",
     "//services/identity/public/cpp",
+    "//services/image_annotation/public/cpp:cpp",
+    "//services/image_annotation/public/mojom:mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:network_service",
     "//services/network/public/cpp",
