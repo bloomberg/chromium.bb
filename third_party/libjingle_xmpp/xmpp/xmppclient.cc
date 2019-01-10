@@ -10,12 +10,12 @@
 
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 #include "xmpptask.h"
 
 namespace buzz {
@@ -190,7 +190,7 @@ std::string XmppClient::GetAuthToken() {
 int XmppClient::ProcessStart() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
@@ -217,7 +217,7 @@ void XmppClient::OnAuthDone() {
 int XmppClient::ProcessTokenLogin() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
@@ -261,7 +261,7 @@ int XmppClient::ProcessTokenLogin() {
 int XmppClient::ProcessStartXmppLogin() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
@@ -340,7 +340,7 @@ void XmppClient::Private::OnSocketRead() {
   for (;;) {
     // Should not happen, but was observed in crash reports
     if (!socket_) {
-      RTC_LOG(LS_ERROR) << "socket_ already reset";
+      DVLOG(1) << "socket_ already reset";
       return;
     }
 

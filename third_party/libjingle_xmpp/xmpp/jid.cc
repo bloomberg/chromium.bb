@@ -17,7 +17,6 @@
 
 #include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace buzz {
 
@@ -108,7 +107,7 @@ bool Jid::IsValid() const {
 
 bool Jid::IsBare() const {
   if (IsEmpty()) {
-    RTC_LOG(LS_VERBOSE) << "Warning: Calling IsBare() on the empty jid.";
+    DVLOG(1) << "Warning: Calling IsBare() on the empty jid.";
     return true;
   }
   return IsValid() && resource_name_.empty();
