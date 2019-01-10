@@ -99,7 +99,7 @@ bool TransferCacheTestHelper::LockEntryInternal(const EntryKey& key) {
   return true;
 }
 
-size_t TransferCacheTestHelper::CreateEntryInternal(
+uint32_t TransferCacheTestHelper::CreateEntryInternal(
     const ClientTransferCacheEntry& client_entry,
     char* memory) {
   auto key = std::make_pair(client_entry.Type(), client_entry.Id());

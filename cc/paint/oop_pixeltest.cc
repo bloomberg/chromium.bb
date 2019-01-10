@@ -1615,8 +1615,8 @@ class OopPathPixelTest : public OopPixelTest,
   void RunTest() {
     auto* ri = static_cast<gpu::raster::RasterImplementation*>(
         raster_context_provider_->RasterInterface());
-    size_t max_inlined_entry_size =
-        AllowInlining() ? std::numeric_limits<size_t>::max() : 0u;
+    uint32_t max_inlined_entry_size =
+        AllowInlining() ? std::numeric_limits<uint32_t>::max() : 0u;
     ri->set_max_inlined_entry_size_for_testing(max_inlined_entry_size);
 
     RasterOptions options;

@@ -89,7 +89,7 @@ namespace raster {
 
 namespace {
 
-const size_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
+const uint32_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
 
 }  // namespace
 
@@ -101,7 +101,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
       : ri_(ri) {}
   ~TransferCacheSerializeHelperImpl() final = default;
 
-  size_t take_end_offset_of_last_inlined_entry() {
+  uint32_t take_end_offset_of_last_inlined_entry() {
     auto offset = end_offset_of_last_inlined_entry_;
     end_offset_of_last_inlined_entry_ = 0u;
     return offset;
@@ -113,12 +113,12 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
         static_cast<uint32_t>(key.first), key.second);
   }
 
-  size_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
-                             char* memory) final {
+  uint32_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
+                               char* memory) final {
     uint32_t size = entry.SerializedSize();
     // Cap the entries inlined to a specific size.
     if (size <= ri_->max_inlined_entry_size_ && ri_->raster_mapped_buffer_) {
-      size_t written = InlineEntry(entry, memory);
+      uint32_t written = InlineEntry(entry, memory);
       if (written > 0u)
         return written;
     }
@@ -144,7 +144,8 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
 
   // Writes the entry into |memory| if there is enough space. Returns the number
   // of bytes written on success or 0u on failure due to insufficient size.
-  size_t InlineEntry(const cc::ClientTransferCacheEntry& entry, char* memory) {
+  uint32_t InlineEntry(const cc::ClientTransferCacheEntry& entry,
+                       char* memory) {
     DCHECK(memory);
     DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory)));
 
@@ -153,9 +154,12 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
     const auto& buffer = ri_->raster_mapped_buffer_;
     DCHECK(buffer->BelongsToBuffer(memory));
 
-    size_t memory_offset = memory - static_cast<char*>(buffer->address());
+    DCHECK(base::CheckedNumeric<uint32_t>(memory -
+                                          static_cast<char*>(buffer->address()))
+               .IsValid());
+    uint32_t memory_offset = memory - static_cast<char*>(buffer->address());
     uint32_t bytes_to_write = entry.SerializedSize();
-    size_t bytes_remaining = buffer->size() - memory_offset;
+    uint32_t bytes_remaining = buffer->size() - memory_offset;
     DCHECK_GT(bytes_to_write, 0u);
 
     if (bytes_to_write > bytes_remaining)
@@ -173,7 +177,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
   }
 
   RasterImplementation* const ri_;
-  size_t end_offset_of_last_inlined_entry_ = 0u;
+  uint32_t end_offset_of_last_inlined_entry_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TransferCacheSerializeHelperImpl);
 };
@@ -181,7 +185,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
 // Helper to copy PaintOps to the GPU service over the transfer buffer.
 class RasterImplementation::PaintOpSerializer {
  public:
-  PaintOpSerializer(size_t initial_size,
+  PaintOpSerializer(uint32_t initial_size,
                     RasterImplementation* ri,
                     cc::DecodeStashingImageProvider* stashing_image_provider,
                     TransferCacheSerializeHelperImpl* transfer_cache_helper,
@@ -218,6 +222,7 @@ class RasterImplementation::PaintOpSerializer {
       size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
     }
     DCHECK_LE(size, free_bytes_);
+    DCHECK(base::CheckAdd<uint32_t>(written_bytes_, size).IsValid());
 
     ri_->paint_cache_->FinalizePendingEntries();
     written_bytes_ += size;
@@ -235,7 +240,7 @@ class RasterImplementation::PaintOpSerializer {
     // Check the address of the last inlined entry to figured out whether
     // transfer cache entries were written past the last successfully serialized
     // op.
-    size_t total_written_size = std::max(
+    uint32_t total_written_size = std::max(
         written_bytes_,
         transfer_cache_helper_->take_end_offset_of_last_inlined_entry());
 
@@ -264,8 +269,8 @@ class RasterImplementation::PaintOpSerializer {
   TransferCacheSerializeHelperImpl* const transfer_cache_helper_;
   ClientFontManager* font_manager_;
 
-  size_t written_bytes_ = 0;
-  size_t free_bytes_ = 0;
+  uint32_t written_bytes_ = 0;
+  uint32_t free_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PaintOpSerializer);
 };
@@ -1014,8 +1019,8 @@ void* RasterImplementation::MapFontBuffer(size_t size) {
   return font_mapped_buffer_->address();
 }
 
-void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
-                                               GLsizeiptr total_written_size) {
+void RasterImplementation::UnmapRasterCHROMIUM(uint32_t raster_written_size,
+                                               uint32_t total_written_size) {
   if (total_written_size < 0) {
     SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
                "negative written_size");
@@ -1033,9 +1038,9 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
   }
   raster_mapped_buffer_->Shrink(total_written_size);
 
-  GLuint font_shm_id = 0u;
-  GLuint font_shm_offset = 0u;
-  GLsizeiptr font_shm_size = 0u;
+  uint32_t font_shm_id = 0u;
+  uint32_t font_shm_offset = 0u;
+  uint32_t font_shm_size = 0u;
   if (font_mapped_buffer_) {
     font_shm_id = font_mapped_buffer_->shm_id();
     font_shm_offset = font_mapped_buffer_->offset();
@@ -1130,9 +1135,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
     return;
 
   // TODO(enne): Tune these numbers
-  // TODO(enne): Convert these types here and in transfer buffer to be size_t.
-  static constexpr unsigned int kMinAlloc = 16 * 1024;
-  unsigned int free_size = std::max(GetTransferBufferFreeSize(), kMinAlloc);
+  static constexpr uint32_t kMinAlloc = 16 * 1024;
+  uint32_t free_size = std::max(GetTransferBufferFreeSize(), kMinAlloc);
 
   // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
   cc::PaintOpBufferSerializer::Preamble preamble;

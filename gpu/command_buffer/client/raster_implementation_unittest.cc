@@ -70,10 +70,10 @@ class SizedResultHelper {
 class RasterImplementationTest : public testing::Test {
  protected:
   static const uint8_t kInitialValue = 0xBD;
-  static const int32_t kNumCommandEntries = 500;
-  static const int32_t kCommandBufferSizeBytes =
+  static const uint32_t kNumCommandEntries = 500;
+  static const uint32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const size_t kTransferBufferSize = 512;
+  static const uint32_t kTransferBufferSize = 512;
 
   static const GLint kMaxCombinedTextureImageUnits = 8;
   static const GLint kMaxTextureImageUnits = 8;
@@ -255,7 +255,7 @@ class RasterImplementationTest : public testing::Test {
     memset(ring_buffer->memory(), kInitialValue, ring_buffer->size());
   }
 
-  size_t MaxTransferBufferSize() {
+  uint32_t MaxTransferBufferSize() {
     return transfer_buffer_->MaxTransferBufferSize();
   }
 
@@ -263,15 +263,15 @@ class RasterImplementationTest : public testing::Test {
     gl_->mapped_memory_->set_max_allocated_bytes(limit);
   }
 
-  ExpectedMemoryInfo GetExpectedMemory(size_t size) {
+  ExpectedMemoryInfo GetExpectedMemory(uint32_t size) {
     return transfer_buffer_->GetExpectedMemory(size);
   }
 
-  ExpectedMemoryInfo GetExpectedResultMemory(size_t size) {
+  ExpectedMemoryInfo GetExpectedResultMemory(uint32_t size) {
     return transfer_buffer_->GetExpectedResultMemory(size);
   }
 
-  ExpectedMemoryInfo GetExpectedMappedMemory(size_t size) {
+  ExpectedMemoryInfo GetExpectedMappedMemory(uint32_t size) {
     ExpectedMemoryInfo mem;
 
     // Temporarily allocate memory and expect that memory block to be reused.
@@ -333,9 +333,9 @@ class RasterImplementationManualInitTest : public RasterImplementationTest {
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef _MSC_VER
 const uint8_t RasterImplementationTest::kInitialValue;
-const int32_t RasterImplementationTest::kNumCommandEntries;
-const int32_t RasterImplementationTest::kCommandBufferSizeBytes;
-const size_t RasterImplementationTest::kTransferBufferSize;
+const uint32_t RasterImplementationTest::kNumCommandEntries;
+const uint32_t RasterImplementationTest::kCommandBufferSizeBytes;
+const uint32_t RasterImplementationTest::kTransferBufferSize;
 const GLint RasterImplementationTest::kMaxCombinedTextureImageUnits;
 const GLint RasterImplementationTest::kMaxTextureImageUnits;
 const GLint RasterImplementationTest::kMaxTextureSize;
@@ -876,7 +876,7 @@ TEST_F(RasterImplementationManualInitTest, FailInitOnTransferBufferFail) {
 
 TEST_F(RasterImplementationTest, TransferCacheSerialization) {
   gl_->set_max_inlined_entry_size_for_testing(768u);
-  size_t buffer_size = transfer_buffer_->MaxTransferBufferSize();
+  uint32_t buffer_size = transfer_buffer_->MaxTransferBufferSize();
   ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
   ASSERT_EQ(buffer.size(), buffer_size);
 
@@ -900,7 +900,7 @@ TEST_F(RasterImplementationTest, TransferCacheSerialization) {
 TEST_F(RasterImplementationTest, SetActiveURLCHROMIUM) {
   const uint32_t kURLBucketId = RasterImplementation::kResultBucketId;
   const std::string url = "chrome://test";
-  const size_t kPaddedStringSize =
+  const uint32_t kPaddedStringSize =
       transfer_buffer_->RoundToAlignment(url.size());
 
   gl_->SetActiveURLCHROMIUM(url.c_str());
