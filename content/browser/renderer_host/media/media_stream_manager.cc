@@ -1119,8 +1119,12 @@ void MediaStreamManager::PostRequestToUI(
 
   // If using the fake UI, it will just auto-select from the available devices.
   // The fake UI doesn't work for desktop sharing requests since we can't see
-  // its devices from here; always use the real UI for such requests.
-  if (fake_ui_factory_) {
+  // its devices from here; always use the real UI for such requests. The
+  // processing below for MEDIA_GUM_DESKTOP_VIDEO_CAPTURE is for unittests only.
+  if (fake_ui_factory_ &&
+      (request->video_type() != MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
+       !base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kUseFakeUIForMediaStream))) {
     MediaStreamDevices devices;
     if (request->video_type() == MEDIA_DISPLAY_VIDEO_CAPTURE) {
       devices.push_back(MediaStreamDeviceFromFakeDeviceConfig());
