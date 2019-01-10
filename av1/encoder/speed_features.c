@@ -328,6 +328,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
     sf->prune_comp_search_by_single_result = 2;
+    // TODO(any): evaluate this speed feature for speed 1 & 2.
+    sf->disable_interinter_wedge_newmv_search = 1;
     sf->prune_motion_mode_level = boosted ? 2 : 3;
     sf->prune_warp_using_wmtype = 1;
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
@@ -578,6 +580,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->obmc_full_pixel_search_level = 0;
   sf->skip_sharp_interp_filter_search = 0;
   sf->prune_comp_type_by_comp_avg = 0;
+  sf->disable_interinter_wedge_newmv_search = 0;
   sf->prune_motion_mode_level = 0;
   sf->prune_warp_using_wmtype = 0;
 

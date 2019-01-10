@@ -7870,7 +7870,8 @@ static int64_t build_and_cost_compound_type(
   // Reuse data if matching record is found
   if (comp_rate[compound_type] == INT_MAX) {
     if (have_newmv_in_inter_mode(this_mode) &&
-        compound_type == COMPOUND_WEDGE) {
+        compound_type == COMPOUND_WEDGE &&
+        !cpi->sf.disable_interinter_wedge_newmv_search) {
       *out_rate_mv = interinter_compound_motion_search(
           cpi, x, cur_mv, bsize, this_mode, mi_row, mi_col);
       av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
