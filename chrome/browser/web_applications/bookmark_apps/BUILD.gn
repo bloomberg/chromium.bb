@@ -65,6 +65,8 @@ source_set("browser_tests") {
   sources = [
     "system_web_app_manager_browsertest.cc",
     "system_web_app_manager_browsertest.h",
+    "test_web_app_provider.cc",
+    "test_web_app_provider.h",
   ]
 
   deps = [

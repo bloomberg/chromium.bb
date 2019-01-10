@@ -96,8 +96,11 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   std::vector<GURL> system_apps;
   system_apps.push_back(GURL(kAppUrl1));
 
-  TestSystemWebAppManager system_web_app_manager(
-      profile(), pending_app_manager.get(), std::move(system_apps));
+  TestSystemWebAppManager system_web_app_manager(profile(),
+                                                 pending_app_manager.get());
+  system_web_app_manager.SetSystemApps(std::move(system_apps));
+  system_web_app_manager.Init();
+
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(pending_app_manager->install_requests().empty());
@@ -116,8 +119,11 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
   system_apps.push_back(GURL(kAppUrl1));
   system_apps.push_back(GURL(kAppUrl2));
 
-  TestSystemWebAppManager system_web_app_manager(
-      profile(), pending_app_manager.get(), std::move(system_apps));
+  TestSystemWebAppManager system_web_app_manager(profile(),
+                                                 pending_app_manager.get());
+  system_web_app_manager.SetSystemApps(std::move(system_apps));
+  system_web_app_manager.Init();
+
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -139,8 +145,11 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   std::vector<GURL> system_apps;
   system_apps.push_back(GURL(kAppUrl1));
 
-  TestSystemWebAppManager system_web_app_manager(
-      profile(), pending_app_manager.get(), std::move(system_apps));
+  TestSystemWebAppManager system_web_app_manager(profile(),
+                                                 pending_app_manager.get());
+  system_web_app_manager.SetSystemApps(std::move(system_apps));
+  system_web_app_manager.Init();
+
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the System App list.

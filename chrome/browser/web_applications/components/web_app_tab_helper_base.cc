@@ -64,6 +64,8 @@ void WebAppTabHelperBase::OnAssociatedAppChanged() {
 }
 
 void WebAppTabHelperBase::UpdateAudioFocusGroupId() {
+  DCHECK(audio_focus_id_map_);
+
   if (!app_id_.empty() && IsInAppWindow()) {
     audio_focus_group_id_ = audio_focus_id_map_->CreateOrGetIdForApp(app_id_);
   } else {

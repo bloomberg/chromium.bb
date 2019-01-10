@@ -144,7 +144,7 @@ using SystemWebAppNonClientFrameViewBrowserTest =
 // System Web Apps don't get the hosted app buttons.
 IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
                        HideHostedAppButtonContainer) {
-  Browser* app_browser = InstallAndLaunchSystemApp();
+  Browser* app_browser = WaitForSystemAppInstallAndLaunch();
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()

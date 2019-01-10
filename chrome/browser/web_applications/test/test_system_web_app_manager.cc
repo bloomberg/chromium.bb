@@ -8,12 +8,14 @@ namespace web_app {
 
 TestSystemWebAppManager::TestSystemWebAppManager(
     Profile* profile,
-    PendingAppManager* pending_app_manager,
-    std::vector<GURL> system_apps)
-    : SystemWebAppManager(profile, pending_app_manager),
-      system_apps_(std::move(system_apps)) {}
+    PendingAppManager* pending_app_manager)
+    : SystemWebAppManager(profile, pending_app_manager) {}
 
 TestSystemWebAppManager::~TestSystemWebAppManager() = default;
+
+void TestSystemWebAppManager::SetSystemApps(std::vector<GURL> system_apps) {
+  system_apps_ = std::move(system_apps);
+}
 
 std::vector<GURL> TestSystemWebAppManager::CreateSystemWebApps() {
   return std::move(system_apps_);

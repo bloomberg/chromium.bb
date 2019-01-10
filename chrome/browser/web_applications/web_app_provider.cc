@@ -55,19 +55,40 @@ WebAppProvider* WebAppProvider::GetForWebContents(
   return WebAppProvider::Get(profile);
 }
 
-WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
+WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {}
+
+WebAppProvider::~WebAppProvider() = default;
+
+void WebAppProvider::CreateSubsystems() {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
-    CreateWebAppsSubsystems(profile);
+    CreateWebAppsSubsystems(profile_);
   else
-    CreateBookmarkAppsSubsystems(profile);
-
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile));
+    CreateBookmarkAppsSubsystems(profile_);
 }
 
-WebAppProvider::~WebAppProvider() = default;
+void WebAppProvider::Init() {
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile_));
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    if (AllowWebAppInstallation(profile_)) {
+      registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
+                                      weak_ptr_factory_.GetWeakPtr()));
+    }
+  } else {
+    system_web_app_manager_->Init();
+
+    web_app::ScanForExternalWebApps(
+        profile_, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
+                                 weak_ptr_factory_.GetWeakPtr()));
+
+    extensions::ExtensionSystem::Get(profile_)->ready().Post(
+        FROM_HERE, base::BindRepeating(&WebAppProvider::OnRegistryReady,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  }
+}
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   if (!AllowWebAppInstallation(profile))
@@ -83,9 +104,6 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
       registrar_.get(), icon_manager_.get());
   install_manager_ = std::make_unique<WebAppInstallManager>(
       profile, std::move(install_finalizer));
-
-  registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
-                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
@@ -101,14 +119,6 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
       profile, pending_app_manager_.get());
-
-  web_app::ScanForExternalWebApps(
-      profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
-                              weak_ptr_factory_.GetWeakPtr()));
-
-  extensions::ExtensionSystem::Get(profile)->ready().Post(
-      FROM_HERE, base::BindRepeating(&WebAppProvider::OnRegistryReady,
-                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppProvider::OnRegistryReady() {
@@ -129,25 +139,20 @@ void WebAppProvider::RegisterProfilePrefs(
 // static
 WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
     content::WebContents* web_contents) {
+  WebAppProvider* provider = WebAppProvider::GetForWebContents(web_contents);
+  if (!provider)
+    return nullptr;
+
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
     WebAppTabHelper::CreateForWebContents(web_contents);
   else
     extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
 
-  WebAppTabHelperBase* helper =
+  WebAppTabHelperBase* tab_helper =
       WebAppTabHelperBase::FromWebContents(web_contents);
+  tab_helper->SetAudioFocusIdMap(provider->audio_focus_id_map_.get());
 
-  WebAppProvider* provider = WebAppProvider::GetForWebContents(web_contents);
-  if (provider) {
-    // In some tests where Reset() has been called |audio_focus_id_map_| will be
-    // a nullptr. Therefore, we should recreate it.
-    if (!provider->audio_focus_id_map_)
-      provider->audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
-
-    helper->SetAudioFocusIdMap(provider->audio_focus_id_map_.get());
-  }
-
-  return helper;
+  return tab_helper;
 }
 
 // static

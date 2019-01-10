@@ -55,12 +55,16 @@ class WebAppProvider : public KeyedService,
   static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
 
   explicit WebAppProvider(Profile* profile);
+  ~WebAppProvider() override;
+
+  // 1st pass: Just create subsystems.
+  void CreateSubsystems();
+  // 2nd pass: Initialize subsystems.
+  void Init();
 
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
-
-  ~WebAppProvider() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static WebAppTabHelperBase* CreateTabHelper(
@@ -89,7 +93,7 @@ class WebAppProvider : public KeyedService,
   // Requires app registry to be in a ready state.
   int CountUserInstalledApps() const;
 
- private:
+ protected:
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.
