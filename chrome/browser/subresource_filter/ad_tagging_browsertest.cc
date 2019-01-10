@@ -212,8 +212,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FramesByURL) {
 const char kSubresourceFilterOriginStatusHistogram[] =
     "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
     "OriginStatus";
-const char kGoogleOriginStatusHistogram[] =
-    "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
 const char kWindowOpenFromAdStateHistogram[] = "Blink.WindowOpen.FromAdState";
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
@@ -258,7 +256,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
   // Create the main frame and cross origin subframe from an ad script.
-  // This triggers both subresource_filter and Google ad detection.
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
   CreateSrcFrameFromAdScript(GetWebContents(),
                              embedded_test_server()->GetURL(
@@ -267,14 +264,11 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   // Waiting for the navigation to finish is not sufficient, as it blocks on the
   // main resource load finishing, not the iframe resource. Page loads 4
   // resources, a favicon, and 2 resources for the iframe.
-  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->AddMinimumCompleteResourcesExpectation(8);
   waiter->Wait();
 
   // Navigate away and ensure we report cross origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kGoogleOriginStatusHistogram,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
   histogram_tester.ExpectUniqueSample(
       kSubresourceFilterOriginStatusHistogram,
       AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
@@ -298,7 +292,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
 
   // Navigate away and ensure we report same origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
-  histogram_tester.ExpectTotalCount(kGoogleOriginStatusHistogram, 0);
   histogram_tester.ExpectUniqueSample(
       kSubresourceFilterOriginStatusHistogram,
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);

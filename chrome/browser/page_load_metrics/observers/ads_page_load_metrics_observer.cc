@@ -27,15 +27,8 @@
 
 namespace {
 
-#define ADS_HISTOGRAM(suffix, hist_macro, ad_type, value)                  \
-  switch (ad_type) {                                                       \
-    case AdsPageLoadMetricsObserver::AD_TYPE_GOOGLE:                       \
-      hist_macro("PageLoad.Clients.Ads.Google." suffix, value);            \
-      break;                                                               \
-    case AdsPageLoadMetricsObserver::AD_TYPE_SUBRESOURCE_FILTER:           \
-      hist_macro("PageLoad.Clients.Ads.SubresourceFilter." suffix, value); \
-      break;                                                               \
-  }
+#define ADS_HISTOGRAM(suffix, hist_macro, value) \
+  hist_macro("PageLoad.Clients.Ads.SubresourceFilter." suffix, value);
 
 #define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
   if (was_cached) {                                                        \
@@ -53,37 +46,6 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
              ? handle->GetRenderFrameHost()
              : handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
                    handle->GetFrameTreeNodeId());
-}
-
-bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
-  // Because sub-resource filtering isn't always enabled, and doesn't work
-  // well in monitoring mode (no CSS enforcement), it's difficult to identify
-  // ads. Google ads are prevalent and easy to track, so we'll start by
-  // tracking those. Note that the frame name can be very large, so be careful
-  // to avoid full string searches if possible.
-  // TODO(jkarlin): Track other ad networks that are easy to identify.
-
-  // In case the navigation aborted, look up the RFH by the Frame Tree Node
-  // ID. It returns the committed frame host or the initial frame host for the
-  // frame if no committed host exists. Using a previous host is fine because
-  // once a frame has an ad we always consider it to have an ad.
-  // NOTE: Just used for measuring bytes, does not grant security privileges.
-  content::RenderFrameHost* current_frame_host =
-      FindFrameMaybeUnsafe(navigation_handle);
-  if (current_frame_host) {
-    const std::string& frame_name = current_frame_host->GetFrameName();
-    if (base::StartsWith(frame_name, "google_ads_iframe",
-                         base::CompareCase::SENSITIVE) ||
-        base::StartsWith(frame_name, "google_ads_frame",
-                         base::CompareCase::SENSITIVE)) {
-      return true;
-    }
-  }
-
-  const GURL& url = navigation_handle->GetURL();
-  return url.host_piece() == "tpc.googlesyndication.com" &&
-         base::StartsWith(url.path_piece(), "/safeframe",
-                          base::CompareCase::SENSITIVE);
 }
 
 bool IsSubframeSameOriginToMainFrame(content::RenderFrameHost* sub_host,
@@ -112,13 +74,11 @@ using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
     FrameTreeNodeId frame_tree_node_id,
-    AdTypes ad_types,
     AdOriginStatus origin_status,
     bool frame_navigated)
     : frame_bytes(0u),
       frame_bytes_uncached(0u),
       frame_tree_node_id(frame_tree_node_id),
-      ad_types(ad_types),
       origin_status(origin_status),
       frame_navigated(frame_navigated) {}
 
@@ -168,7 +128,7 @@ AdsPageLoadMetricsObserver::OnCommit(
 // and record it into the appropriate data structures.
 void AdsPageLoadMetricsObserver::RecordAdFrameData(
     FrameTreeNodeId ad_id,
-    AdTypes ad_types,
+    bool is_adframe,
     content::RenderFrameHost* ad_host,
     bool frame_navigated) {
   // If an existing subframe is navigating and it was an ad previously that
@@ -178,8 +138,6 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   if (id_and_data != ad_frames_data_.end() && id_and_data->second) {
     DCHECK(frame_navigated);
     if (id_and_data->second->frame_navigated) {
-      // We need to update the types with any new types that triggered it.
-      id_and_data->second->ad_types |= ad_types;
       ProcessOngoingNavigationResource(ad_id);
       return;
     }
@@ -200,7 +158,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
 
   // This frame is not nested within an ad frame but is itself an ad.
   AdFrameData* ad_data = parent_id_and_data->second;
-  if (!ad_data && ad_types.any()) {
+  if (!ad_data && is_adframe) {
     AdOriginStatus origin_status = AdOriginStatus::kUnknown;
     if (ad_host) {
       // For ads triggered on render, their origin is their parent's origin.
@@ -210,13 +168,11 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
     }
     // If data existed already, update it and exit, otherwise, add it.
     if (previous_data) {
-      previous_data->ad_types |= ad_types;
       previous_data->origin_status = origin_status;
       previous_data->frame_navigated = frame_navigated;
       return;
     }
-    ad_frames_data_storage_.emplace_back(ad_id, ad_types, origin_status,
-                                         frame_navigated);
+    ad_frames_data_storage_.emplace_back(ad_id, origin_status, frame_navigated);
     ad_data = &ad_frames_data_storage_.back();
   }
 
@@ -232,7 +188,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
 void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
-  AdTypes ad_types = DetectAds(navigation_handle);
+  bool is_adframe = DetectAds(navigation_handle);
 
   // NOTE: Frame look-up only used for determining cross-origin status, not
   // granting security permissions.
@@ -243,7 +199,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     bool has_gesture = navigation_handle->HasUserGesture();
 
     std::vector<blink::mojom::WebFeature> web_features;
-    if (ad_types.any()) {
+    if (is_adframe) {
       // Note: Here it covers download due to navigations to non-web-renderable
       // content. These two features can also be logged from blink for download
       // originated from clicking on <a download> link that results in direct
@@ -267,7 +223,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     flags.has_sandbox = has_sandbox;
     flags.is_cross_origin =
         !IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false);
-    flags.is_ad_frame = ad_types.any();
+    flags.is_ad_frame = is_adframe;
     flags.has_gesture = has_gesture;
     blink::DownloadStats::RecordSubframeDownloadFlags(
         flags,
@@ -276,7 +232,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
         ukm::UkmRecorder::Get());
   }
 
-  RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
+  RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
                     /*frame_navigated=*/true);
   ProcessOngoingNavigationResource(frame_tree_node_id);
 }
@@ -364,10 +320,9 @@ void AdsPageLoadMetricsObserver::OnPageInteractive(
 
 void AdsPageLoadMetricsObserver::OnAdSubframeDetected(
     content::RenderFrameHost* render_frame_host) {
-  AdTypes ad_types;
-  ad_types.set(AD_TYPE_SUBRESOURCE_FILTER);
   FrameTreeNodeId frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
-  RecordAdFrameData(frame_tree_node_id, ad_types, render_frame_host,
+  RecordAdFrameData(frame_tree_node_id, true /* is_adframe */,
+                    render_frame_host,
                     /*frame_navigated=*/false);
 }
 
@@ -380,17 +335,9 @@ bool AdsPageLoadMetricsObserver::DetectSubresourceFilterAd(
   return unfinished_subresource_ad_frames_.erase(frame_tree_node_id);
 }
 
-AdsPageLoadMetricsObserver::AdTypes AdsPageLoadMetricsObserver::DetectAds(
+bool AdsPageLoadMetricsObserver::DetectAds(
     content::NavigationHandle* navigation_handle) {
-  AdTypes ad_types;
-
-  if (DetectGoogleAd(navigation_handle))
-    ad_types.set(AD_TYPE_GOOGLE);
-
-  if (DetectSubresourceFilterAd(navigation_handle->GetFrameTreeNodeId()))
-    ad_types.set(AD_TYPE_SUBRESOURCE_FILTER);
-
-  return ad_types;
+  return DetectSubresourceFilterAd(navigation_handle->GetFrameTreeNodeId());
 }
 
 void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
@@ -612,14 +559,13 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 }
 
 void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
-  RecordHistogramsForType(AD_TYPE_GOOGLE);
-  RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
+  RecordHistogramsForAdTagging();
   RecordPageResourceTotalHistograms(source_id);
   for (auto const& kv : page_resources_)
     RecordResourceHistograms(kv.second);
 }
 
-void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
+void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
   if (page_bytes_ == 0)
     return;
 
@@ -631,62 +577,56 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
     if (ad_frame_data.frame_bytes == 0)
       continue;
 
-    // If this isn't the type of ad we're looking for, move on to the next.
-    if (!ad_frame_data.ad_types.test(ad_type))
-      continue;
-
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes;
 
     uncached_ad_frame_bytes += ad_frame_data.frame_bytes_uncached;
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
-                  ad_type, ad_frame_data.frame_bytes);
+                  ad_frame_data.frame_bytes);
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
-                  ad_type, ad_frame_data.frame_bytes_uncached);
+                  ad_frame_data.frame_bytes_uncached);
     ADS_HISTOGRAM(
         "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
-        ad_type,
+
         ad_frame_data.frame_bytes_uncached * 100 / ad_frame_data.frame_bytes);
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
-                  UMA_HISTOGRAM_ENUMERATION, ad_type,
-                  ad_frame_data.origin_status);
+                  UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status);
   }
 
   // TODO(ericrobinson): Consider renaming this to match
   //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
   ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
-                UMA_HISTOGRAM_COUNTS_1000, ad_type, non_zero_ad_frames);
+                UMA_HISTOGRAM_COUNTS_1000, non_zero_ad_frames);
 
   // Don't post UMA for pages that don't have ads.
   if (non_zero_ad_frames == 0)
     return;
 
   ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                ad_type, page_bytes_ - total_ad_frame_bytes);
+                page_bytes_ - total_ad_frame_bytes);
 
-  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, ad_type,
-                page_bytes_);
-  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, ad_type,
+  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, page_bytes_);
+  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM,
                 uncached_page_bytes_);
 
   if (page_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  ad_type, total_ad_frame_bytes * 100 / page_bytes_);
+                  total_ad_frame_bytes * 100 / page_bytes_);
   }
   if (uncached_page_bytes_ > 0) {
     ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  ad_type,
+
                   uncached_ad_frame_bytes * 100 / uncached_page_bytes_);
   }
 
-  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM, ad_type,
+  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
                 total_ad_frame_bytes);
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
-                ad_type, uncached_ad_frame_bytes);
+                uncached_ad_frame_bytes);
 
   if (total_ad_frame_bytes) {
     ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.PercentNetwork",
-                  UMA_HISTOGRAM_PERCENTAGE, ad_type,
+                  UMA_HISTOGRAM_PERCENTAGE,
                   uncached_ad_frame_bytes * 100 / total_ad_frame_bytes);
   }
 }
