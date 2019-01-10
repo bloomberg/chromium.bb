@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Desligar</translation>
+<translation id="1999763610967697511">Arrastar e soltar</translation>
 <translation id="2012624427112548395">Ctrl+Pesquisa+H</translation>
 <translation id="2016340657076538683">Digite uma mensagem</translation>
 <translation id="2050339315714019657">Retrato</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Atualização disponível</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é uma sessão gerenciada por <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Conectado a <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Clicar com o botão esquerdo</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484513351006226581">Pressione <ph name="KEYBOARD_SHORTCUT" /> para alterar o layout do teclado.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3255483164551725916">O que você pode fazer?</translation>
 <translation id="3294437725009624529">Visitante</translation>
+<translation id="3308453408813785101">O usuário <ph name="USER_EMAIL_ADDRESS" /> ainda poderá fazer login mais tarde.</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
 <translation id="3351879221545518001">Você está transmitindo a tela.</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4849058404725798627">Destacar objeto com o foco de teclado</translation>
+<translation id="485592688953820832">Nenhuma ação (pausar)</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4890187583552566966">O Google Assistente foi desativado pelo seu administrador.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
@@ -421,9 +425,12 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8113423164597455979">Ativadas em todos os apps</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
+<translation id="8142441511840089262">Clicar duas vezes</translation>
 <translation id="8142699993796781067">Rede privada</translation>
+<translation id="8167567890448493835">Usando <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>
+<translation id="8203795194971602413">Clicar com o botão direito</translation>
 <translation id="8236042855478648955">Hora de fazer uma pausa</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8297006494302853456">Fraco</translation>
@@ -468,7 +475,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8874184842967597500">Não conectado</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
-<translation id="8898978413391960553">00:00s</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>

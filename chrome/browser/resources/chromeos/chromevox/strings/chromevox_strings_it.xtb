@@ -54,6 +54,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1346059596910821859">Suggerimento</translation>
 <translation id="1346748346194534595">Destra</translation>
 <translation id="135978014023467274">È stato effettuato l'aggiornamento a ChromeVox 63!</translation>
+<translation id="1360699455582016846">Fai clic sull'elemento sotto la chiave di routing <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Riga tabella successiva</translation>
 <translation id="1377925789329510816">Questa è l'ultima intestazione. Premi tasto per la ricerca + H per passare alla prima intestazione oppure tasto per la ricerca + MAIUSC + H per passare alla seconda intestazione in questa pagina.</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -112,6 +113,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1905379170753160525">Mostra elenco intestazioni</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678">Combinazione di tasti <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Controllo settimana dell'anno</translation>
 <translation id="1964135212174907577">Oggetto successivo</translation>
 <translation id="1969092762068865084">Luglio</translation>
@@ -266,6 +268,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="316542773973815724">Navigazione</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{spazio}other{# spazi}}</translation>
 <translation id="320961988183078793">Elemento <ph name="TYPE" /> inserito</translation>
+<translation id="3218691001991391708">incolla <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, scheda</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Link visitato</translation>
@@ -343,12 +346,14 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3468959318854349468">Senza titolo</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> sel</translation>
 <translation id="3486232535569802404">Da <ph name="V1" /> a <ph name="V2" /></translation>
+<translation id="3490765818161916458">Elenco griglia</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{parentesi quadra di chiusura}other{# parentesi quadre di chiusura}}</translation>
 <translation id="3493915602752813531">Nessun ancoraggio successivo.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{punto interrogativo}other{# punti interrogativi}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{accento circonflesso}other{# accenti circonflessi}}</translation>
 <translation id="352577523970648069">Un campo di testo modificabile</translation>
+<translation id="3549141990712742152">taglia <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tocca con due dita per interrompere temporaneamente i comandi vocali</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casella di controllo non selezionata</translation>
 <translation id="3589661172894441357">Glossario</translation>
@@ -380,6 +385,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3856075812838139784">Sola lettura</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3907138069015388678">lncgrgl</translation>
 <translation id="3909320334364316587">Intestazione livello 6 precedente</translation>
 <translation id="3914173277599553213">Obbligatorie</translation>
 <translation id="3914732343065571127">Riferimenti per i comandi di ChromeVox</translation>
@@ -673,6 +679,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6129953537138746214">Spazio</translation>
 <translation id="6132506484792346370">Una casella di riepilogo o combinata</translation>
 <translation id="6142308968191113180">Intestazione 4</translation>
+<translation id="6158882249329863701">riga <ph name="TABLECELLROWINDEX" /> colonna <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">indicatore</translation>
 <translation id="6169420925157477918">Immagine con descrizione lunga</translation>
 <translation id="6186305613600865047">Vai alla fine della pagina</translation>
@@ -688,6 +695,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6307969636681130414">Premuto</translation>
 <translation id="6322856989298155004">Suoni</translation>
 <translation id="6324551002951139333">Errore grammaticale rilevato</translation>
+<translation id="6325241889020214828">copia <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Casella combinata</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punto elenco}other{# punti elenco}}</translation>
 <translation id="6355910664415701303">Nessuna voce elenco precedente.</translation>
@@ -959,6 +967,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Tasti di modifica</translation>
 <translation id="8943175951035496220">Nessuna cella a destra.</translation>
+<translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Elimina</translation>
 <translation id="900114243503212879">file</translation>

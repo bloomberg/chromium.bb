@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">टीप</translation>
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="135978014023467274">तुम्हाला ChromeVox 63 वर अपडेट केले गेले आहे!</translation>
+<translation id="1360699455582016846"><ph name="ROUTING_KEY_NUMBER" /> राउटिंग की मधील आयटम क्लिक करा</translation>
 <translation id="136718599399906424">पुढील सारणी पंक्ती</translation>
 <translation id="1377925789329510816">हे अंतिम शीर्षक आहे. पहिल्या शीर्षकावर वेष्टन घालण्‍यासाठी Search+H दाबा किंवा या पेजवरील दुसर्‍या शीर्षकावर जाण्यासाठी Search+Shift+H दाबा.</translation>
 <translation id="1383876407941801731">शोधा</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">शीर्षक सूची दर्शवा</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> कॉर्ड</translation>
 <translation id="1954623340234317532">वर्ष  नियंत्रणाचा आठवडा</translation>
 <translation id="1964135212174907577">पुढील ऑब्जेक्ट</translation>
 <translation id="1969092762068865084">जुलै</translation>
@@ -266,6 +268,7 @@
 <translation id="316542773973815724">नेव्हिगेशन</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{जागा}one{# जागा}other{# जागा}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> एंटर केला</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> पेस्ट करा.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, टॅब</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">भेट दिलेला दुवा</translation>
@@ -343,12 +346,14 @@
 <translation id="3468959318854349468">शीर्षक नाही</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ते <ph name="V2" /></translation>
+<translation id="3490765818161916458">सूची ग्रिड</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{उजवा चौकोनी कंस}one{# उजवे चौकोनी कंस}other{# उजवे चौकोनी कंस}}</translation>
 <translation id="3493915602752813531">पुढील अँकर नाही.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्नचिन्ह}one{# प्रश्नचिन्हे}other{# प्रश्नचिन्हे}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कॅरेट}one{# कॅरेट}other{# कॅरेट}}</translation>
 <translation id="352577523970648069">एक संपादन करण्यायोग्य मजकूर फील्ड</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> कट करा.</translation>
 <translation id="3549680091535286226">बोलणे तात्पुरते थांबवण्यासाठी दोन बोटांनी टॅप करा</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्स चेक केलेला नाही</translation>
 <translation id="3589661172894441357">शब्दावली</translation>
@@ -380,6 +385,7 @@
 <translation id="3856075812838139784">केवळ वाचनीय</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">मेनू</translation>
+<translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">मागील स्तर 6 शीर्षक</translation>
 <translation id="3914173277599553213">आवश्यक</translation>
 <translation id="3914732343065571127">ChromeVox कमांड संदर्भ</translation>
@@ -673,6 +679,7 @@
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6132506484792346370">एक सूचीबॉक्स किंवा काँबो बॉक्स</translation>
 <translation id="6142308968191113180">मथळा 4</translation>
+<translation id="6158882249329863701">पंक्ती <ph name="TABLECELLROWINDEX" /> स्तंभ <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6169420925157477918">मोठ्या वर्णनासह इमेज</translation>
 <translation id="6186305613600865047">पृष्ठाच्या तळाशी जंप करा</translation>
@@ -688,6 +695,7 @@
 <translation id="6307969636681130414">दाबलेले</translation>
 <translation id="6322856989298155004">ध्वनी</translation>
 <translation id="6324551002951139333">व्‍याकरण चूक आढळली</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> कॉपी करा.</translation>
 <translation id="6348657800373377022">काँबो बॉक्स</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">मागील सूची आयटम नाही.</translation>
@@ -959,6 +967,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">सुधारणा की</translation>
 <translation id="8943175951035496220">उजवीकडे सेल नाही.</translation>
+<translation id="8946628535652548639">पं<ph name="TABLECELLROWINDEX" />स्तं<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="900114243503212879">फाईल</translation>

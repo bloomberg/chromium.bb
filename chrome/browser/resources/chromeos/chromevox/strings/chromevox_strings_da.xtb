@@ -54,6 +54,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="135978014023467274">Du har opdateret til ChromeVox 63</translation>
+<translation id="1360699455582016846">Klik på elementet under routing-tasten <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Næste tabelrække</translation>
 <translation id="1377925789329510816">Dette er den sidste overskrift. Tryk på søgetasten+H for at gå til den første overskrift, eller tryk på søgetasten+Shift+H for at gå til den anden overskrift på siden.</translation>
 <translation id="1383876407941801731">Søg</translation>
@@ -112,6 +113,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1905379170753160525">Vis overskriftliste</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678">Tastekombinationen <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Kontrol for en uge om året</translation>
 <translation id="1964135212174907577">Næste objekt</translation>
 <translation id="1969092762068865084">Juli</translation>
@@ -267,6 +269,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mellemrum}one{# mellemrum}other{# mellemrum}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> er indtastet</translation>
+<translation id="3218691001991391708">indsæt <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">Fanen <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Besøgt link</translation>
@@ -278,7 +281,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
 <translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, markørstyring til brailletekst, valg og meget mere.</translation>
 <translation id="3307886118343381874">Gå til slutningen af ​​tabellen</translation>
-<translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse underretninger</translation>
+<translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse notifikationer</translation>
 <translation id="3312997241656799641">Næste besøgte link</translation>
 <translation id="3313245066383501820">Ændringstasten til ChromeVox</translation>
 <translation id="3317212938060708859">En skydeknap</translation>
@@ -344,12 +347,14 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3468959318854349468">Ingen titel</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> til <ph name="V2" /></translation>
+<translation id="3490765818161916458">Listegitter</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{højre kantet parentes}one{# højre kantede parenteser}other{# højre kantede parenteser}}</translation>
 <translation id="3493915602752813531">Ikke flere ankre.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{spørgsmålstegn}one{# spørgsmålstegn}other{# spørgsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{cirkumfleks}one{ # cirkumflekser}other{# cirkumflekser}}</translation>
 <translation id="352577523970648069">Et justerbart tekstfelt</translation>
+<translation id="3549141990712742152">klip <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tryk med to fingre for midlertidigt at stoppe tale</translation>
 <translation id="3568702578574425662">Afkrydsningsfeltet <ph name="NAME" /> er ikke markeret</translation>
 <translation id="3589661172894441357">Ordliste</translation>
@@ -381,6 +386,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3856075812838139784">Skrivebeskyttet</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3907138069015388678">lstgttr</translation>
 <translation id="3909320334364316587">Forrige niveau 6-overskrift</translation>
 <translation id="3914173277599553213">Påkrævet</translation>
 <translation id="3914732343065571127">Kommandoreference i ChromeVox</translation>
@@ -406,7 +412,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4099274309791143834">med undermenu</translation>
 <translation id="4101527861445851766">Et markeret afkrydsningsfelt</translation>
 <translation id="4107807507418787238">Ingen celle nedenfor.</translation>
-<translation id="4116415223832267137">Underretning</translation>
+<translation id="4116415223832267137">Notifikation</translation>
 <translation id="4147126331795725888">Der er ikke flere kontrolelementer.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{højre klammeparentes}one{# højre klammeparenteser}other{# højre klammeparenteser}}</translation>
 <translation id="4158704014418536539">Der er forskel på store og små bogstaver.</translation>
@@ -674,6 +680,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6129953537138746214">Mellemrum</translation>
 <translation id="6132506484792346370">Et listefelt eller kombifelt</translation>
 <translation id="6142308968191113180">Overskrift 4</translation>
+<translation id="6158882249329863701">række <ph name="TABLECELLROWINDEX" /> kolonne <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">måler</translation>
 <translation id="6169420925157477918">Billede med lang beskrivelse</translation>
 <translation id="6186305613600865047">Gå til bunden af siden</translation>
@@ -689,6 +696,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6307969636681130414">Trykket på</translation>
 <translation id="6322856989298155004">Lyde</translation>
 <translation id="6324551002951139333">Der blev fundet en grammatisk fejl</translation>
+<translation id="6325241889020214828">kopiér <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Kombifelt</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkttegn}one{# punkttegn}other{# punkttegn}}</translation>
 <translation id="6355910664415701303">Ingen tidligere elementer på listen.</translation>
@@ -960,6 +968,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Ændringstaster</translation>
 <translation id="8943175951035496220">Ingen celle til højre.</translation>
+<translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">fil</translation>

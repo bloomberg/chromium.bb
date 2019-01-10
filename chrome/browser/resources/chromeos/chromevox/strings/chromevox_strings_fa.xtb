@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">نکته</translation>
 <translation id="1346748346194534595">راست</translation>
 <translation id="135978014023467274">‏به ChromeVox نسخه ۶۳ به‌روزرسانی شدید!</translation>
+<translation id="1360699455582016846">روی مورد زیر کلید مسیریابی <ph name="ROUTING_KEY_NUMBER" /> کلیک کنید</translation>
 <translation id="136718599399906424">ردیف بعدی جدول</translation>
 <translation id="1377925789329510816">‏این آخرین عنوان است. با فشار دادن Search+H اولین عنوان را ببندید یا با فشار دادن Search+Shift+H به عنوان دوم در این صفحه بروید.</translation>
 <translation id="1383876407941801731">جستجو</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">نمایش فهرست عناوین</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">‎#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> ترکیب کلید</translation>
 <translation id="1954623340234317532">کنترل هفته از سال</translation>
 <translation id="1964135212174907577">شیء بعدی</translation>
 <translation id="1969092762068865084">ژوئیه</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">پیمایش</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{فاصله}one{# فاصله}other{# فاصله}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> قرار داده شد</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> را جای‌گذاری کنید.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />، برگه</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">پیوند بازدیدشده</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">بدون عنوان</translation>
 <translation id="3473644018603298796">‏<ph name="COUNT" /> مورد انتخابی</translation>
 <translation id="3486232535569802404"><ph name="V1" /> تا <ph name="V2" /></translation>
+<translation id="3490765818161916458">جدول فهرست</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{کروشه راست}one{# کروشه راست}other{# کروشه راست}}</translation>
 <translation id="3493915602752813531">مرجع بعدی موجود نیست.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{علامت سؤال}one{# علامت سؤال}other{# علامت سؤال}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{علامت هشتک}one{# علامت هشتک}other{# علامت هشتک}}</translation>
 <translation id="352577523970648069">فیلد نوشتاری قابل ویرایش</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> را ببرید.</translation>
 <translation id="3549680091535286226">برای توقف موقتی گفتار، با دو انگشت ضربه بزنید</translation>
 <translation id="3568702578574425662"><ph name="NAME" />، کادر انتخاب انتخاب نشده است</translation>
 <translation id="3589661172894441357">واژه‌نامه</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">فقط خوانده شده</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">منو</translation>
+<translation id="3907138069015388678">جدول فهرست</translation>
 <translation id="3909320334364316587">عنوان قبلی سطح ۶</translation>
 <translation id="3914173277599553213">ضروری</translation>
 <translation id="3914732343065571127">‏مرجع فرمان ChromeVox</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">فاصله</translation>
 <translation id="6132506484792346370">کادر فهرست یا کادر ترکیبی</translation>
 <translation id="6142308968191113180">عنوان ۴</translation>
+<translation id="6158882249329863701">ردیف <ph name="TABLECELLROWINDEX" /> ستون <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">متر</translation>
 <translation id="6169420925157477918">تصویر با شرح طولانی</translation>
 <translation id="6186305613600865047">رفتن به پایین صفحه</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">فشرده شده</translation>
 <translation id="6322856989298155004">آواها</translation>
 <translation id="6324551002951139333">اشتباه دستوری شناسایی شد</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> را کپی کنید.</translation>
 <translation id="6348657800373377022">کادر ترکیبی</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ گلوله}one{ # گلوله}other{ # گلوله}}</translation>
 <translation id="6355910664415701303">مورد قبلی فهرست وجود ندارد.</translation>
@@ -960,6 +968,7 @@
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">کلیدهای تغییردهنده</translation>
 <translation id="8943175951035496220">سلولی در راست موجود نیست.</translation>
+<translation id="8946628535652548639">ر<ph name="TABLECELLROWINDEX" />س<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">فراموش شود</translation>
 <translation id="900114243503212879">فایل</translation>

@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">提示</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="135978014023467274">您已更新至 ChromeVox 63！</translation>
+<translation id="1360699455582016846">点击路由键 <ph name="ROUTING_KEY_NUMBER" /> 下面的项</translation>
 <translation id="136718599399906424">表格下一行</translation>
 <translation id="1377925789329510816">这是最后一个标题。按 Search+H 组合键可跳回至第一个标题，按 Search+Shift+H 组合键则可转到此页面上的第二个标题。</translation>
 <translation id="1383876407941801731">搜索</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">显示标题列表</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> 并击</translation>
 <translation id="1954623340234317532">年周数控件</translation>
 <translation id="1964135212174907577">下一个对象</translation>
 <translation id="1969092762068865084">7月</translation>
@@ -266,6 +268,7 @@
 <translation id="316542773973815724">导航</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{1个空格}other{#个空格}}</translation>
 <translation id="320961988183078793">进入了<ph name="TYPE" /></translation>
+<translation id="3218691001991391708">粘贴<ph name="TEXT" />。</translation>
 <translation id="3223701887221307104"><ph name="NAME" />，标签页</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">访问过的链接</translation>
@@ -343,12 +346,14 @@
 <translation id="3468959318854349468">无标题</translation>
 <translation id="3473644018603298796">已选择<ph name="COUNT" />项</translation>
 <translation id="3486232535569802404"><ph name="V1" />到<ph name="V2" /></translation>
+<translation id="3490765818161916458">列表网格</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{1个右方括号}other{#个右方括号}}</translation>
 <translation id="3493915602752813531">不存在下一个定位点。</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{1个问号}other{#个问号}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{1个插入符号}other{#个插入符号}}</translation>
 <translation id="352577523970648069">可编辑的文本字段</translation>
+<translation id="3549141990712742152">剪切<ph name="TEXT" />。</translation>
 <translation id="3549680091535286226">用 2 根手指点按即可暂时关闭语音</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未选中的复选框</translation>
 <translation id="3589661172894441357">词汇表</translation>
@@ -380,6 +385,7 @@
 <translation id="3856075812838139784">只读</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">菜单</translation>
+<translation id="3907138069015388678">列表网格</translation>
 <translation id="3909320334364316587">上一个6级标题</translation>
 <translation id="3914173277599553213">必需</translation>
 <translation id="3914732343065571127">ChromeVox 命令参考</translation>
@@ -673,6 +679,7 @@
 <translation id="6129953537138746214">空格</translation>
 <translation id="6132506484792346370">列表框或组合框</translation>
 <translation id="6142308968191113180">4级标题标记</translation>
+<translation id="6158882249329863701">第 <ph name="TABLECELLROWINDEX" /> 行，第 <ph name="TABLECELLCOLUMNINDEX" /> 列</translation>
 <translation id="6164829606128959761">计量条</translation>
 <translation id="6169420925157477918">图片含有详细说明</translation>
 <translation id="6186305613600865047">跳至页尾</translation>
@@ -688,6 +695,7 @@
 <translation id="6307969636681130414">已按下</translation>
 <translation id="6322856989298155004">提示音</translation>
 <translation id="6324551002951139333">检测到语法错误</translation>
+<translation id="6325241889020214828">复制<ph name="TEXT" />。</translation>
 <translation id="6348657800373377022">组合框</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{1 个项目符号}other{# 个项目符号}}</translation>
 <translation id="6355910664415701303">不存在上一个列表项。</translation>
@@ -959,6 +967,7 @@
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">辅助键</translation>
 <translation id="8943175951035496220">不存在右侧单元格。</translation>
+<translation id="8946628535652548639">行 <ph name="TABLECELLROWINDEX" />，列 <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="900114243503212879">文件</translation>

@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Läs mer om den senaste uppdateringen av <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Stäng av</translation>
+<translation id="1999763610967697511">Dra och släppa</translation>
 <translation id="2012624427112548395">Ctrl+Sök+H</translation>
 <translation id="2016340657076538683">Skriv ett meddelande</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Det finns en uppdatering</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> är en hanterad session som hanteras av <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Ansluten till <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Vänsterklicka</translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2484513351006226581">Tryck på <ph name="KEYBOARD_SHORTCUT" /> om du vill byta tangentbordslayout.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3255483164551725916">Vad kan du göra?</translation>
 <translation id="3294437725009624529">Gäst</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan ändå logga in igen senare.</translation>
 <translation id="332587331255250389">Byt batteri</translation>
 <translation id="3351879221545518001">Skärmen castas.</translation>
 <translation id="3364721542077212959">Verktyg för e-penna</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4849058404725798627">Markera objekt med tangentbordsfokus</translation>
+<translation id="485592688953820832">Ingen åtgärd (pausa)</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
 <translation id="4890187583552566966">Administratören har inaktiverat Google Assistent.</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">På för alla appar</translation>
 <translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initierar …</translation>
+<translation id="8142441511840089262">Dubbelklicka</translation>
 <translation id="8142699993796781067">Privat nätverk</translation>
+<translation id="8167567890448493835">Använder <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Anpassa språk och inmatning...</translation>
 <translation id="8192202700944119416">Aviseringar har dolts.</translation>
+<translation id="8203795194971602413">Högerklicka</translation>
 <translation id="8236042855478648955">Dags för en paus</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8297006494302853456">Svag</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Inte ansluten</translation>
 <translation id="8877788021141246043">Ställ in en påminnelse</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>

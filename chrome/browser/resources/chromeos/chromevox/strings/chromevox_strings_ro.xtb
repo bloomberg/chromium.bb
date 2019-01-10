@@ -54,6 +54,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1346059596910821859">Sfat</translation>
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="135978014023467274">ChromeVox a fost actualizat la versiunea 63!</translation>
+<translation id="1360699455582016846">Dă clic pe elementul de sub tasta de deplasare <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Rândul următor din tabel</translation>
 <translation id="1377925789329510816">Acesta este ultimul titlu. Apasă pe tasta de căutare + H pentru a reveni la primul titlu sau pe tasta de căutare + Shift + H pentru a accesa cel de-al doilea titlu de pe pagină.</translation>
 <translation id="1383876407941801731">Caută</translation>
@@ -112,6 +113,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1905379170753160525">Afișați lista de titluri</translation>
 <translation id="1912556590115083156">link accesat</translation>
 <translation id="1913761808037590218">număr</translation>
+<translation id="1914635379910604678">Combinația de taste <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Comandă pentru săptămâna din an</translation>
 <translation id="1964135212174907577">Obiectul următor</translation>
 <translation id="1969092762068865084">Iulie</translation>
@@ -267,6 +269,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="316542773973815724">Navigare</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{spațiu}few{# spații}other{# de spații}}</translation>
 <translation id="320961988183078793">s-a accesat <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">inserează <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, filă</translation>
 <translation id="3226035351387556942">casetă de selectare</translation>
 <translation id="3229375994964697375">Link accesat</translation>
@@ -344,12 +347,14 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3468959318854349468">Fără titlu</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> selectate</translation>
 <translation id="3486232535569802404">De la <ph name="V1" /> la <ph name="V2" /></translation>
+<translation id="3490765818161916458">Listă grilă</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{paranteză pătrată dreapta}few{# paranteze pătrate dreapta}other{# de paranteze pătrate dreapta}}</translation>
 <translation id="3493915602752813531">Nu există o ancoră următoare.</translation>
 <translation id="3494946239022273294">element meniu</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{semn de întrebare}few{# semne de întrebare}other{# de semne de întrebare}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{accent circumflex}few{# accente circumflexe}other{# de accente circumflexe}}</translation>
 <translation id="352577523970648069">Un câmp de text editabil</translation>
+<translation id="3549141990712742152">decupează <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Atingeți cu două degete ca să opriți vorbirea temporar</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casetă de selectare nebifată</translation>
 <translation id="3589661172894441357">Glosar</translation>
@@ -381,6 +386,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3856075812838139784">Numai în citire</translation>
 <translation id="3887576927692165210">casetă text</translation>
 <translation id="3897092660631435901">Meniu</translation>
+<translation id="3907138069015388678">listă grilă</translation>
 <translation id="3909320334364316587">Titlul de nivel 6 anterior</translation>
 <translation id="3914173277599553213">Solicitate</translation>
 <translation id="3914732343065571127">Referințe pentru comenzile ChromeVox</translation>
@@ -674,6 +680,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6129953537138746214">Spațiu</translation>
 <translation id="6132506484792346370">O casetă de tip listă sau combo</translation>
 <translation id="6142308968191113180">Titlu 4</translation>
+<translation id="6158882249329863701">rândul <ph name="TABLECELLROWINDEX" />, coloana <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">instrument de măsurare</translation>
 <translation id="6169420925157477918">Imagine cu descriere lungă</translation>
 <translation id="6186305613600865047">Navigați la sfârșitul paginii</translation>
@@ -689,6 +696,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6307969636681130414">Apăsat</translation>
 <translation id="6322856989298155004">Sunete</translation>
 <translation id="6324551002951139333">Greșeală de gramatică detectată</translation>
+<translation id="6325241889020214828">copiază <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Casetă combo</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{marcator}few{# marcatori}other{# de marcatori}}</translation>
 <translation id="6355910664415701303">Nu există un element de listă anterior.</translation>
@@ -960,6 +968,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8937112856099038376">link intern</translation>
 <translation id="8940925288729953902">Taste de modificare</translation>
 <translation id="8943175951035496220">Nu există celule în dreapta.</translation>
+<translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">balon explicativ</translation>
 <translation id="8986362086234534611">Șterge</translation>
 <translation id="900114243503212879">fișier</translation>

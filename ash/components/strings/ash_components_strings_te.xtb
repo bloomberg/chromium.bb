@@ -22,7 +22,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">చిరునామా బార్‌లో మీరు నమోదు చేసే దానికి www. మరియు .com జోడించి, ఆపై పేజీని తెరవండి</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> లేదా <ph name="LEFT" /></translation>
-<translation id="1996162290124031907">తదుపరి ట్యాబ్‌కి వెళ్లండి</translation>
+<translation id="1996162290124031907">తరువాత ట్యాబ్‌కి వెళ్లండి</translation>
 <translation id="2010818616644390445">విండోలో చివరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2040706009561734834">లాంచర్‌ని తెరవండి/మూసివేయండి</translation>
 <translation id="2088054208777350526">కీబోర్డ్ షార్ట్‌కట్‌ల కోసం శోధించు</translation>
@@ -33,7 +33,7 @@
 <translation id="2185166372312820725">మునుపటి ట్యాబ్‌కి వెళ్లండి</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="2382644247745281995">ప్రస్తుత కీబోర్డ్ లేఅవుట్‌తో మద్దతు లేదు</translation>
-<translation id="2397416548179033562">Chrome మెనును చూపు</translation>
+<translation id="2397416548179033562">Chrome మెనూను చూపు</translation>
 <translation id="2424073332829844142">Caps Lock ఆన్ మరియు ఆఫ్ చేయండి</translation>
 <translation id="2441202986792279177">విండోల మధ్య త్వరగా మారండి</translation>
 <translation id="2454251766545114447">డిస్‌ప్లేని దూరంగా జూమ్ చేస్తుంది</translation>
@@ -54,7 +54,7 @@
 <translation id="2914313326123580426">డెవలపర్ సాధనాల ప్యానెల్‌ని చూపండి లేదా దాచండి</translation>
 <translation id="292495055542441795">పూర్తి స్క్రీన్‌ను టోగుల్ చేయండి</translation>
 <translation id="3020183492814296499">షార్ట్‌కట్‌లు</translation>
-<translation id="3084301071537457911">మీ అరలో ఉన్న తదుపరి అంశాన్ని హైలైట్ చేయండి</translation>
+<translation id="3084301071537457911">మీ అరలో ఉన్న తరువాత అంశాన్ని హైలైట్ చేయండి</translation>
 <translation id="309173601632226815">మీ అరలో లాంచర్ బటన్‌ని హైలైట్ చేయండి</translation>
 <translation id="3105917916468784889">స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="3126026824346185272">Ctrl</translation>
@@ -62,7 +62,7 @@
 <translation id="3256109297135787951">మీ అరలోని ఒక అంశానికి గల హైలైట్‌ని తీసివేయండి</translation>
 <translation id="3288816184963444640">ప్రస్తుత విండోను మూసివేయండి</translation>
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
-<translation id="3422679037938588196">మీ శోధన కోసం తదుపరి సరిపోలికకు వెళ్లండి</translation>
+<translation id="3422679037938588196">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
 <translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో నేపథ్యంలో తెరవండి</translation>
@@ -91,11 +91,11 @@
 <translation id="4240486403425279990">స్థూలదృష్టి మోడ్</translation>
 <translation id="4382340674111381977">మునుపటి పేజీకి తిరిగి వెళ్లండి</translation>
 <translation id="4472417192667361414">సిస్టమ్ &amp; డిస్‌ప్లే సెట్టింగ్‌లు</translation>
-<translation id="4556221320735744018">కీబోర్డ్ షార్ట్‌కట్ హెల్పర్‌ని చూడండి</translation>
+<translation id="4556221320735744018">కీబోర్డ్ షార్ట్‌కట్ హెల్పర్‌ను చూడండి</translation>
 <translation id="4628718545549558538">స్థితి ప్రాంతాన్ని తెరవండి (మీ ఖాతా చిత్రం కనిపించే స్థలం)</translation>
 <translation id="4642092649622328492">పాక్షిక స్క్రీన్‌షాట్ తీసుకోండి</translation>
 <translation id="4698850295812410683">స్టైలస్ సాధనాలను చూపండి</translation>
-<translation id="4801989101741319327">తదుపరి పదం యొక్క ముగింపునకు వెళ్లండి</translation>
+<translation id="4801989101741319327">తర్వాత పదం యొక్క ముగింపునకు వెళ్లండి</translation>
 <translation id="4916163929714267752">లింక్‌ను కొత్త విండోలో తెరవండి</translation>
 <translation id="5030659775136592441">బుక్‌మార్క్ మేనేజర్‌ని చూపండి</translation>
 <translation id="5034421018520995080">పేజీ ఎగువకు వెళ్లండి</translation>
@@ -138,19 +138,19 @@
 <translation id="649811797655257835">ఫైల్‌ని ఎంచుకుని, ఆపై <ph name="SPACE" />ని నొక్కండి</translation>
 <translation id="6556040137485212400">అత్యంత ఎక్కువ సమయం నుండి ఉపయోగించని విండోని తెరవండి</translation>
 <translation id="666343722268997814">హైలైట్ చేసిన అంశం కోసం కుడి-క్లిక్ మెనూను తెరవండి</translation>
-<translation id="6671538777808758331">మీ శోధన కోసం తదుపరి సరిపోలికకు వెళ్లండి</translation>
+<translation id="6671538777808758331">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> లేదా <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">ఎడమ వైపున విండోని డాక్ చేయండి</translation>
 <translation id="6692847073476874842">ఫైల్స్ యాప్‌లో ఫైల్‌ని ప్రివ్యూ చేయండి</translation>
 <translation id="671928215901716392">స్క్రీన్‌ను లాక్ చేయి</translation>
 <translation id="6727005317916125192">మునుపటి పేన్</translation>
-<translation id="6740781404993465795">తదుపరి పదం లేదా అక్షరాన్ని ఎంచుకోండి</translation>
+<translation id="6740781404993465795">తర్వాత పదం లేదా అక్షరాన్ని ఎంచుకోండి</translation>
 <translation id="6755851152783057058">చివరిగా ఉపయోగించిన ఇన్‌పుట్ విధానానికి మారండి</translation>
 <translation id="6760706756348334449">వాల్యూమ్ తగ్గించండి</translation>
 <translation id="6941333068993625698">అభిప్రాయాన్ని సమర్పించండి</translation>
 <translation id="6981982820502123353">యాక్సెస్ సామర్థ్యం</translation>
 <translation id="7020813747703216897">సరిపోలే ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
-<translation id="7025325401470358758">తదుపరి పేన్</translation>
+<translation id="7025325401470358758">తరువాత పేన్</translation>
 <translation id="7076878155205969899">ధ్వనిని మ్యూట్ చేస్తుంది</translation>
 <translation id="7077383985738259936">బుక్‌మార్క్‌ల బార్‌పై దృష్టి ఉంచండి లేదా దానిని హైలైట్ చేయండి (చూపబడినట్లయితే)</translation>
 <translation id="7237562915163138771">చిరునామా బార్‌లో వెబ్ చిరునామాని టైప్ చేసి, <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" />ని నొక్కండి</translation>
@@ -158,7 +158,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">తర్వాత అందుబాటులో ఉన్న ఇన్‌పుట్ విధానానికి మారండి</translation>
 <translation id="743754632698445141">యాప్‌ని అన్‌పిన్ చేయండి</translation>
-<translation id="7439718573248533901">తదుపరి అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
+<translation id="7439718573248533901">తరువాత అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
 <translation id="7611271430932669992">దృష్టిని పాప్అప్‌లు మరియు డైలాగ్‌లపైకి మార్చండి</translation>
 <translation id="766326951329901120">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను సాదా వచనంగా అతికించండి</translation>
 <translation id="7724603315864178912">కత్తిరించు</translation>
@@ -186,11 +186,11 @@
 <translation id="88986195241502842">దిగువ పేజీకి వెళుతుంది</translation>
 <translation id="8924883688469390268">మునుపటి వినియోగదారుకి మారండి</translation>
 <translation id="8977648847395357314">చిరునామా బార్‌‍లోని కంటెంట్‌ను ఎంచుకోండి</translation>
-<translation id="8982190978301344584">అందుబాటులో ఉన్న IMEల జాబితాని ప్రదర్శించే మెనూని చూపండి</translation>
+<translation id="8982190978301344584">అందుబాటులో ఉన్న IMEల జాబితాను ప్రదర్శించే మెనూను చూపండి</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="9005984960510803406">Crosh విండోని తెరవండి</translation>
 <translation id="9041599225465145264">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను అతికించండి</translation>
-<translation id="9052808072970550123">తదుపరి వినియోగదారుకు మారండి</translation>
+<translation id="9052808072970550123">తరువాత వినియోగదారుకు మారండి</translation>
 <translation id="906458777597946297">విండోను గరిష్టీకరించు</translation>
 <translation id="9091855755813503076">పంక్తి ప్రారంభానికి వెళ్లు</translation>
 <translation id="9106898733795143799">పేజీ &amp; వెబ్ బ్రౌజర్</translation>

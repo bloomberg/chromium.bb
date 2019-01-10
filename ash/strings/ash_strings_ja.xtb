@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください</translation>
 <translation id="1995660704900986789">電源を切る</translation>
+<translation id="1999763610967697511">ドラッグ＆ドロップ</translation>
 <translation id="2012624427112548395">Ctrl+検索+H</translation>
 <translation id="2016340657076538683">メッセージを入力</translation>
 <translation id="2050339315714019657">縦</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">アップデートが利用可能</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する管理対象セッションです</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> に接続されています</translation>
+<translation id="2427507373259914951">左クリック</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">キーボード レイアウトを切り替えるには <ph name="KEYBOARD_SHORTCUT" /> キーを押します。</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
 <translation id="3255483164551725916">何ができる？</translation>
 <translation id="3294437725009624529">ゲスト</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> が後でログインすることは引き続き可能です。</translation>
 <translation id="332587331255250389">バッテリーを交換してください</translation>
 <translation id="3351879221545518001">現在、画面をキャストしています。</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
+<translation id="485592688953820832">なし（一時停止）</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="4890187583552566966">Google アシスタントは管理者によって無効にされています。</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">すべてのアプリでオン</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
+<translation id="8142441511840089262">ダブルクリック</translation>
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>
+<translation id="8203795194971602413">右クリック</translation>
 <translation id="8236042855478648955">休憩の時間です</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8297006494302853456">弱い</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8877788021141246043">リマインダーを設定して</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
-<translation id="8898978413391960553">00:00 秒</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>

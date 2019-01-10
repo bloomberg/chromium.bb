@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिवसापूर्वी}one{# दिवसापूर्वी}other{# दिवसांपूर्वी}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनिटापूर्वी}one{# मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1मि}one{#मि}other{#मि}}</translation>
+<translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1243314992276662751">अपलोड करा</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">भाषण</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिवस शिल्लक}one{# दिवस शिल्लक}other{# दिवस शिल्लक}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” पहा</translation>
 <translation id="364720409959344976">अपलोड करण्यासाठी फोल्डर निवडा</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
@@ -116,7 +118,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तृत करा</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
-<translation id="6351032674660237738">अॅप सूचना</translation>
+<translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
 <translation id="6394627529324717982">स्वल्पविराम</translation>
 <translation id="6397363302884558537">बोलणे थांबवा</translation>

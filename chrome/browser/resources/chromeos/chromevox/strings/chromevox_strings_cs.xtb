@@ -54,6 +54,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="135978014023467274">Byla u vás provedena aktualizace na ChromeVox 63!</translation>
+<translation id="1360699455582016846">Klikněte na položku pod navigační klávesou <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Další řádek tabulky</translation>
 <translation id="1377925789329510816">Toto je poslední nadpis. Stisknutím kláves Hledat+H přejdete na první nadpis. Stisknutím kláves Hledat+Shift+H přejdete na druhý nadpis na této stránce.</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
@@ -112,6 +113,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1905379170753160525">Zobrazit seznam nadpisů</translation>
 <translation id="1912556590115083156">navšt odkaz</translation>
 <translation id="1913761808037590218">upr číslo</translation>
+<translation id="1914635379910604678">Současné stisknutí tlačítek <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Ovládací prvek – týden v roce</translation>
 <translation id="1964135212174907577">Další objekt</translation>
 <translation id="1969092762068865084">Červenec</translation>
@@ -266,6 +268,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="316542773973815724">Navigace</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mezera}few{# mezery}many{# spaces}other{# mezer}}</translation>
 <translation id="320961988183078793">zadá: <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">vložit <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, karta</translation>
 <translation id="3226035351387556942">zaškrt pol</translation>
 <translation id="3229375994964697375">Navštívený odkaz</translation>
@@ -343,12 +346,14 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3468959318854349468">Bez názvu</translation>
 <translation id="3473644018603298796">vybr <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> až <ph name="V2" /></translation>
+<translation id="3490765818161916458">Mřížka seznamu</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{pravá hranatá závorka}few{# pravé hranaté závorky}many{# right brackets}other{# pravých hranatých závorek}}</translation>
 <translation id="3493915602752813531">Žádné další ukotvení.</translation>
 <translation id="3494946239022273294">pol nabíd</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{otazník}few{# otazníky}many{# question marks}other{# otazníků}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{stříška}few{# stříšky}many{# carets}other{# stříšek}}</translation>
 <translation id="352577523970648069">Upravitelné textové pole</translation>
+<translation id="3549141990712742152">vyjmout <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Klepnutím dvěma prsty hlasovou odezvu dočasně zastavíte</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, zaškrtávací políčko není zaškrtnuto</translation>
 <translation id="3589661172894441357">Glosář</translation>
@@ -380,6 +385,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3856075812838139784">Pouze ke čtení</translation>
 <translation id="3887576927692165210">upr</translation>
 <translation id="3897092660631435901">Nabídka</translation>
+<translation id="3907138069015388678">mřžszn</translation>
 <translation id="3909320334364316587">Předchozí nadpis 6. úrovně</translation>
 <translation id="3914173277599553213">Vyžadováno</translation>
 <translation id="3914732343065571127">Referenční materiál s příkazy nástroje ChromeVox</translation>
@@ -673,6 +679,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6129953537138746214">Mezera</translation>
 <translation id="6132506484792346370">Seznam nebo pole se seznamem</translation>
 <translation id="6142308968191113180">Nadpis 4</translation>
+<translation id="6158882249329863701">řádek <ph name="TABLECELLROWINDEX" /> sloupec <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">měřič</translation>
 <translation id="6169420925157477918">Obrázek s dlouhým popisem</translation>
 <translation id="6186305613600865047">Přejít na konec stránky</translation>
@@ -688,6 +695,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6307969636681130414">Stisknuto</translation>
 <translation id="6322856989298155004">Zvuky</translation>
 <translation id="6324551002951139333">Zjištěna gramatická chyba</translation>
+<translation id="6325241889020214828">kopírovat <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Pole se seznamem</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{odrážka}few{# odrážky}many{# odrážky}other{# odrážek}}</translation>
 <translation id="6355910664415701303">Žádná předchozí položka seznamu.</translation>
@@ -959,6 +967,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8937112856099038376">interní odk</translation>
 <translation id="8940925288729953902">Modifikační klávesy</translation>
 <translation id="8943175951035496220">Vpravo není žádná buňka.</translation>
+<translation id="8946628535652548639">ř<ph name="TABLECELLROWINDEX" />s<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">popisek</translation>
 <translation id="8986362086234534611">Odstranit</translation>
 <translation id="900114243503212879">soubor</translation>

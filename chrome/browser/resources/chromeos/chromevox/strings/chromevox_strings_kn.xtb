@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">ಸಲಹೆ</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="135978014023467274">ನೀವು ChromeVox 63 ಗೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಿರುವಿರಿ!</translation>
+<translation id="1360699455582016846">ರೂಟಿಂಗ್ ಕೀ <ph name="ROUTING_KEY_NUMBER" /> ಕೆಳಗಿರುವ ಐಟಂ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="136718599399906424">ಮುಂದಿನ ಕೋಷ್ಟಕ ಸಾಲು</translation>
 <translation id="1377925789329510816">ಇದು ಕೊನೆಯ ಶಿರೋನಾಮೆ. ಈ ಪುಟದಲ್ಲಿ ಮೊದಲ ಶಿರೋನಾಮೆಗೆ ವ್ರ್ಯಾಪ್ ಮಾಡಲು ಹುಡುಕಾಟ+H ಅಥವಾ ಎರಡನೇ ಶಿರೋನಾಮಗೆ ಹೋಗಲು ಹುಡುಕಾಟ+Shift+H ಒತ್ತಿ.</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">ಶಿರೋನಾಮೆಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> ಕೋರ್ಡ್</translation>
 <translation id="1954623340234317532">ವರ್ಷದ ವಾರದ ನಿಯಂತ್ರಣ</translation>
 <translation id="1964135212174907577">ಮುಂದಿನ ವಿಷಯ</translation>
 <translation id="1969092762068865084">ಜುಲೈ</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ಅಂತರ}one{# ಅಂತರಗಳು}other{# ಅಂತರಗಳು}}</translation>
 <translation id="320961988183078793">ನಮೂದಿಸಲಾಗಿದೆ <ph name="TYPE" /></translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> ಅನ್ನು ಅಂಟಿಸಿ.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ಟ್ಯಾಬ್</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಯಿಲ್ಲ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ನಿಂದ <ph name="V2" /></translation>
+<translation id="3490765818161916458">ಪಟ್ಟಿಯ ಗ್ರಿಡ್</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ಬಲ ಆವರಣ}one{# ಬಲ ಆವರಣಗಳು}other{# ಬಲ ಆವರಣಗಳು}}</translation>
 <translation id="3493915602752813531">ಮುಂದಿನ ಆಧಾರವಿಲ್ಲ.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆ}one{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}other{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ಕ್ಯಾರೆಟ್}one{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}other{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}}</translation>
 <translation id="352577523970648069">ಎಡಿಟ್ ಮಾಡಬಹುದಾದ ಪಠ್ಯ ಕ್ಷೇತ್ರ</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> ಅನ್ನು ಕತ್ತರಿಸಿ.</translation>
 <translation id="3549680091535286226">ತಾತ್ಕಾಲಿಕವಾಗಿ ಮಾತನ್ನು ನಿಲ್ಲಿಸಲು 2 ಬೆರಳುಗಳ ಮೂಲಕ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ಚೆಕ್‌ಬಾಕ್ಸ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿಲ್ಲ</translation>
 <translation id="3589661172894441357">ಪದಕೋಶ</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">ಓದಲು ಮಾತ್ರ</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
+<translation id="3907138069015388678">ಪ.ಗ್ರಿ</translation>
 <translation id="3909320334364316587">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="3914173277599553213">ಅಗತ್ಯವಿರುವುದು</translation>
 <translation id="3914732343065571127">ChromeVox ಕಮಾಂಡ್‌ ಉಲ್ಲೇಖ</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
 <translation id="6132506484792346370">ಪಟ್ಟಿ ಬಾಕ್ಸ್ ಅಥವಾ ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
 <translation id="6142308968191113180">ಶೀರ್ಷಿಕೆ 4</translation>
+<translation id="6158882249329863701">ಸಾಲು <ph name="TABLECELLROWINDEX" /> ಕಾಲಮ್ <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">ಮೀಟರ್</translation>
 <translation id="6169420925157477918">ದೀರ್ಘ ವಿವರಣೆಯೊಂದಿಗೆ ಚಿತ್ರ</translation>
 <translation id="6186305613600865047">ಪುಟದ ಕೆಳಕ್ಕೆ ಹೋಗಿ</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">ಒತ್ತಿದ</translation>
 <translation id="6322856989298155004">ಧ್ವನಿಗಳು</translation>
 <translation id="6324551002951139333">ವ್ಯಾಕರಣ ತಪ್ಪು ಕಂಡುಬಂದಿದೆ</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> ಅನ್ನು ನಕಲಿಸಿ.</translation>
 <translation id="6348657800373377022">ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ಬುಲೆಟ್}one{# ಬುಲೆಟ್‌ಗಳು}other{# ಬುಲೆಟ್‌ಗಳು}}</translation>
 <translation id="6355910664415701303">ಮುಂದಿನ ಯಾವುದೇ ಪಟ್ಟಿ ಐಟಂಯಿಲ್ಲ.</translation>
@@ -960,6 +968,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">ಮಾರ್ಪಡಿಸುವ ಕೀಗಳು</translation>
 <translation id="8943175951035496220">ಯಾವುದೇ ಬಲ ಸೆಲ್ ಇಲ್ಲ.</translation>
+<translation id="8946628535652548639">ಸಾಲು<ph name="TABLECELLROWINDEX" />ಕಾಲಮ್‌<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">ಮರೆತುಹೋಗು</translation>
 <translation id="900114243503212879">ಫೈಲ್</translation>

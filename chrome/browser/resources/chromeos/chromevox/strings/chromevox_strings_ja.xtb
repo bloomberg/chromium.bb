@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">ヒント</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="135978014023467274">ChromeVox 63 にアップデートしました。</translation>
+<translation id="1360699455582016846">ルーティング キー <ph name="ROUTING_KEY_NUMBER" /> の下のアイテムをクリックします</translation>
 <translation id="136718599399906424">表の次の行</translation>
 <translation id="1377925789329510816">これは最後の見出しです。このページの最初の見出しに移動するには検索+H キーを押します。2 番目の見出しに移動するには検索+Shift+H キーを押します。</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">見出しリストを表示</translation>
 <translation id="1912556590115083156">アクセス済みのリンク</translation>
 <translation id="1913761808037590218">数字を編集</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> コード</translation>
 <translation id="1954623340234317532">週の設定（年間通し番号）</translation>
 <translation id="1964135212174907577">次のオブジェクト</translation>
 <translation id="1969092762068865084">7 月</translation>
@@ -267,6 +269,7 @@
 <translation id="316542773973815724">ナビゲーション</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{スペース}other{# 個のスペース}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" />を入力しました</translation>
+<translation id="3218691001991391708"><ph name="TEXT" /> を貼り付けます。</translation>
 <translation id="3223701887221307104"><ph name="NAME" />、タブ</translation>
 <translation id="3226035351387556942">チェックボックス</translation>
 <translation id="3229375994964697375">アクセス済みのリンク</translation>
@@ -344,12 +347,14 @@
 <translation id="3468959318854349468">タイトルなし</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> 件選択</translation>
 <translation id="3486232535569802404"><ph name="V1" />～<ph name="V2" /></translation>
+<translation id="3490765818161916458">リストグリッド</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{右角かっこ}other{# 個の右角かっこ}}</translation>
 <translation id="3493915602752813531">次のアンカーはありません。</translation>
 <translation id="3494946239022273294">メニュー項目</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{疑問符}other{# 個の疑問符}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{キャレット}other{# 個のキャレット}}</translation>
 <translation id="352577523970648069">編集可能なテキスト欄</translation>
+<translation id="3549141990712742152"><ph name="TEXT" /> を切り取ります。</translation>
 <translation id="3549680091535286226">読み上げを一時停止するには 2 本の指でタップします</translation>
 <translation id="3568702578574425662"><ph name="NAME" />、オフのチェックボックス</translation>
 <translation id="3589661172894441357">用語集</translation>
@@ -381,6 +386,7 @@
 <translation id="3856075812838139784">読み取り専用</translation>
 <translation id="3887576927692165210">編集</translation>
 <translation id="3897092660631435901">メニュー</translation>
+<translation id="3907138069015388678">リストグリッド</translation>
 <translation id="3909320334364316587">前のレベル 6 見出し</translation>
 <translation id="3914173277599553213">必須</translation>
 <translation id="3914732343065571127">ChromeVox コマンド リファレンス</translation>
@@ -674,6 +680,7 @@
 <translation id="6129953537138746214">Space</translation>
 <translation id="6132506484792346370">リストボックスまたはコンボボックス</translation>
 <translation id="6142308968191113180">見出し 4</translation>
+<translation id="6158882249329863701">行 <ph name="TABLECELLROWINDEX" /> 列 <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">メーター</translation>
 <translation id="6169420925157477918">長い説明付きの画像です</translation>
 <translation id="6186305613600865047">ページの最後に移動します</translation>
@@ -689,6 +696,7 @@
 <translation id="6307969636681130414">オン</translation>
 <translation id="6322856989298155004">通知音</translation>
 <translation id="6324551002951139333">文法の誤りが見つかりました</translation>
+<translation id="6325241889020214828"><ph name="TEXT" /> をコピーします。</translation>
 <translation id="6348657800373377022">コンボ ボックス</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{箇条書き}other{# 件の箇条書き}}</translation>
 <translation id="6355910664415701303">前のリスト項目はありません。</translation>
@@ -960,8 +968,9 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8937112856099038376">内部リンク</translation>
 <translation id="8940925288729953902">修飾キー</translation>
 <translation id="8943175951035496220">右にセルはありません。</translation>
+<translation id="8946628535652548639">行<ph name="TABLECELLROWINDEX" />列<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">ツールチップ</translation>
-<translation id="8986362086234534611">切断</translation>
+<translation id="8986362086234534611">削除</translation>
 <translation id="900114243503212879">ファイル</translation>
 <translation id="9027462562263121875">表がありません。</translation>
 <translation id="9040132695316389094">見出し 1</translation>

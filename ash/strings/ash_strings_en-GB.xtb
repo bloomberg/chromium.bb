@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update</translation>
 <translation id="1995660704900986789">Power off</translation>
+<translation id="1999763610967697511">Drag and drop</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2050339315714019657">Portrait</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">Update available</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Connected to <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Left click</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Hit <ph name="KEYBOARD_SHORTCUT" /> to switch keyboard layout.</translation>
@@ -231,6 +233,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
+<translation id="485592688953820832">No action (pause)</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="4890187583552566966">The Google Assistant is disabled by your administrator.</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
@@ -420,10 +423,12 @@
 <translation id="8113423164597455979">On, all apps</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
+<translation id="8142441511840089262">Double click</translation>
 <translation id="8142699993796781067">Private networks</translation>
 <translation id="8167567890448493835">Using <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>
+<translation id="8203795194971602413">Right click</translation>
 <translation id="8236042855478648955">Time for a break</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8297006494302853456">Weak</translation>
@@ -468,7 +473,6 @@
 <translation id="8874184842967597500">Not connected</translation>
 <translation id="8877788021141246043">Set a reminder</translation>
 <translation id="8878886163241303700">Extending screen</translation>
-<translation id="8898978413391960553">00:00s</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE" />%)</translation>

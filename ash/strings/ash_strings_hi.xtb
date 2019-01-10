@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> के नए अपडेट के बारे में ज़्यादा जानें</translation>
 <translation id="1995660704900986789">पावर बंद करें</translation>
+<translation id="1999763610967697511">खींचें और छोड़ें</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">कोई मैसेज लिखें</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">अपडेट मौजूद है</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ऐसा प्रबंधित सत्र है जिसका प्रबंधन <ph name="DOMAIN" /> करते हैं</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> से कनेक्ट है</translation>
+<translation id="2427507373259914951">बायां क्लिक</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3255483164551725916">तुम क्या-क्या कर सकती हो?</translation>
 <translation id="3294437725009624529">अतिथि</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अभी भी बाद में साइन इन कर सकते हैं.</translation>
 <translation id="332587331255250389">कृपया बैटरी बदलें</translation>
 <translation id="3351879221545518001">आप इस समय स्क्रीन कास्ट कर रहे हैं.</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
@@ -231,6 +234,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
+<translation id="485592688953820832">कोई कार्रवाई नहीं (रोकें)</translation>
 <translation id="4872237917498892622">Alt+Search या Shift</translation>
 <translation id="4890187583552566966">आपके एडमिन ने Google Assistant को बंद कर दिया है.</translation>
 <translation id="4895488851634969361">बैटरी भरी हुई है.</translation>
@@ -420,9 +424,12 @@
 <translation id="8113423164597455979">चालू, सभी ऐप्लिकेशन</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
 <translation id="813913629614996137">शुरू हो रहा है...</translation>
+<translation id="8142441511840089262">दो बार क्लिक करें</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>
+<translation id="8167567890448493835"><ph name="LOCALE_NAME" /> का इस्तेमाल किया जा रहा है</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8192202700944119416">सूचनाएं छिपी हुई हैं.</translation>
+<translation id="8203795194971602413">राइट क्लिक करें</translation>
 <translation id="8236042855478648955">ब्रेक लेने का समय हो गया</translation>
 <translation id="8261506727792406068">हटाएं</translation>
 <translation id="8297006494302853456">कमज़ोर</translation>
@@ -467,7 +474,6 @@
 <translation id="8874184842967597500">कनेक्ट नहीं है</translation>
 <translation id="8877788021141246043">रिमाइंडर लगाओ</translation>
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
-<translation id="8898978413391960553">00:00s</translation>
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
 <translation id="8940956008527784070">बैटरी कम (<ph name="PERCENTAGE" />%)</translation>

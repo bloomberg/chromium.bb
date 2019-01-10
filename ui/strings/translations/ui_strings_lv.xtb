@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pirms 1 minūtes}zero{Pirms # minūtēm}one{Pirms # minūtes}other{Pirms # minūtēm}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}zero{# min}one{# min}other{# min}}</translation>
+<translation id="1181037720776840403">Noņemt</translation>
 <translation id="1243314992276662751">Augšupielādēt</translation>
 <translation id="1269641567813814718">Windows</translation>
 <translation id="1293699935367580298">Atsolis</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Runa</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
+<translation id="3608915363409716668">Vairāk nekā <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Meklēt “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Augšupielādējamās mapes atlase</translation>
 <translation id="3660179305079774227">Bulta augšup</translation>

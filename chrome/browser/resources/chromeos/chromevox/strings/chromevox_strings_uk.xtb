@@ -54,6 +54,7 @@
 <translation id="1346059596910821859">Чайові</translation>
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="135978014023467274">Тепер ви використовуєте ChromeVox 63!</translation>
+<translation id="1360699455582016846">Натиснути елемент під клавішею маршрутизації <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Наступний рядок таблиці</translation>
 <translation id="1377925789329510816">Перехід між заголовками. Натисніть комбінацію Search+H, щоб повернутися до першого заголовка, або Search+Shift+H, щоб перейти до другого заголовка на цій сторінці.</translation>
 <translation id="1383876407941801731">Пошук</translation>
@@ -112,6 +113,7 @@
 <translation id="1905379170753160525">Показати список заголовків</translation>
 <translation id="1912556590115083156">натиснуте посилання</translation>
 <translation id="1913761808037590218">номер</translation>
+<translation id="1914635379910604678">акорд <ph name="DOT" /></translation>
 <translation id="1954623340234317532">Елемент керування для вибору тижня в році</translation>
 <translation id="1964135212174907577">Наступний об’єкт</translation>
 <translation id="1969092762068865084">липень</translation>
@@ -266,6 +268,7 @@
 <translation id="316542773973815724">Навігація</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{пробіл}one{# пробіл}few{# пробіли}many{# пробілів}other{# spaces}}</translation>
 <translation id="320961988183078793">введено: <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">вставити <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, вкладка</translation>
 <translation id="3226035351387556942">прапорець</translation>
 <translation id="3229375994964697375">Натиснуте посилання</translation>
@@ -343,12 +346,14 @@
 <translation id="3468959318854349468">Без назви</translation>
 <translation id="3473644018603298796">виділено: <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Від <ph name="V1" /> до <ph name="V2" /></translation>
+<translation id="3490765818161916458">Сітка списку</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{права квадратна дужка}one{# права квадратна дужка}few{# праві квадратні дужки}many{# правих квадратних дужок}other{# right brackets}}</translation>
 <translation id="3493915602752813531">Немає наступної прив’язки.</translation>
 <translation id="3494946239022273294">пункт меню</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{знак запитання}one{# знак запитання}few{# знаки запитання}many{# знаків запитання}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{знак вставки}one{# знак вставки}few{# знаки вставки}many{# знаків вставки}other{# carets}}</translation>
 <translation id="352577523970648069">Текстове поле, яке можна редагувати</translation>
+<translation id="3549141990712742152">вирізати <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Торкніться 2 пальцями, щоб тимчасово припинити озвучення</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, прапорець не поставлено</translation>
 <translation id="3589661172894441357">Глосарій</translation>
@@ -380,6 +385,7 @@
 <translation id="3856075812838139784">Лише читання</translation>
 <translation id="3887576927692165210">текстове поле</translation>
 <translation id="3897092660631435901">Меню</translation>
+<translation id="3907138069015388678">сітка</translation>
 <translation id="3909320334364316587">Попередній заголовок рівня 6</translation>
 <translation id="3914173277599553213">Обов’язково</translation>
 <translation id="3914732343065571127">Довідка щодо команд у ChromeVox</translation>
@@ -673,6 +679,7 @@
 <translation id="6129953537138746214">Пробіл</translation>
 <translation id="6132506484792346370">Вікно зі списком або комбіноване вікно</translation>
 <translation id="6142308968191113180">Заголовок 4</translation>
+<translation id="6158882249329863701">рядок <ph name="TABLECELLROWINDEX" />, стовпець <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">вимірювач</translation>
 <translation id="6169420925157477918">Зображення з докладним описом</translation>
 <translation id="6186305613600865047">Перейти вниз сторінки</translation>
@@ -688,6 +695,7 @@
 <translation id="6307969636681130414">Натиснуто</translation>
 <translation id="6322856989298155004">Звуки</translation>
 <translation id="6324551002951139333">Виявлено граматичну помилку</translation>
+<translation id="6325241889020214828">копіювати <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Комбіноване вікно</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списку}one{# маркер списку}few{# маркери списку}many{# маркерів списку}other{# маркера списку}}</translation>
 <translation id="6355910664415701303">Немає попереднього пункту списку.</translation>
@@ -959,6 +967,7 @@
 <translation id="8937112856099038376">внутрішнє посилання</translation>
 <translation id="8940925288729953902">Клавіші-модифікатори</translation>
 <translation id="8943175951035496220">Немає клітинки праворуч.</translation>
+<translation id="8946628535652548639">р<ph name="TABLECELLROWINDEX" />с<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">підказка</translation>
 <translation id="8986362086234534611">Видалити</translation>
 <translation id="900114243503212879">файл</translation>

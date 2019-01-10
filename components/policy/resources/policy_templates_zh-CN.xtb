@@ -24,6 +24,13 @@
       如果此政策设为 false 或未设置，仅当用户首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。
 
       此政策只会影响所在网域与设备注册网域匹配的用户。对于所有其他用户，仅当他们首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。</translation>
+<translation id="1030120600562044329">允许向 Google 匿名报告 <ph name="PRODUCT_NAME" /> 的使用情况和崩溃数据，并禁止用户更改此设置。
+
+      如果启用了此设置，系统将会向 Google 匿名发送使用情况和崩溃数据报告。如果停用了此设置，系统将不会向 Google 发送此类信息。无论此设置是处于启用状态还是处于停用状态，用户都无法更改或覆盖此设置。
+      如果此政策未设置，系统将会采用用户在安装/首次运行该浏览器时选择的设置。
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。
+      （对于 Chrome 操作系统，请参阅 DeviceMetricsReportingEnabled。）</translation>
 <translation id="1035385378988781231">此政策用于控制适用于 <ph name="PRODUCT_NAME" />的网络文件共享功能是否将使用 NTLM 进行身份验证。
 
       如果此政策设为 True，系统会视需要使用 NTLM 对 SMB 共享文件进行身份验证。
@@ -59,6 +66,11 @@
 
       有关安全上下文的详情，请访问 https://www.w3.org/TR/secure-contexts/。
       </translation>
+<translation id="1107764601871839136">指定群组政策对象 (GPO) 缓存的期限（以小时为单位）。系统可以重复使用已缓存的 GPO（前提是它们的版本未变），而不必在每次提取政策时都重新下载 GPO。此政策可指定已缓存的 GPO 在不必重新下载的情况下可被重复使用的时长上限。重新启动和退出帐号会清除缓存。
+
+      如果此政策未设置，已缓存的 GPO 最多可被重复使用 25 小时。
+
+      如果此政策设为 0，系统就会关闭 GPO 缓存。请注意，这样设置会增加服务器负载，因为系统在每次提取政策时都要重新下载 GPO（即使版本未变也是如此）。</translation>
 <translation id="1117535567637097036">通过此政策设置的协议处理程序不会被用于处理 Android intent。</translation>
 <translation id="1118093128235245168">允许网站请求用户授权其访问所连接的 USB 设备</translation>
 <translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
@@ -154,6 +166,15 @@
 <translation id="142346659686073702">允许独立用户使用 Crostini</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
+<translation id="1431272318313028342">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并禁止用户更改此设置。
+
+      如果您启用了此设置，安全浏览功能将一直处于启用状态。如果您停用了此设置，安全浏览功能将一直处于停用状态。如果您启用或停用了此设置，用户将无法更改或覆盖 <ph name="PRODUCT_NAME" /> 中的“启用针对网上诱骗和恶意软件的防护功能”设置。
+
+      如果此政策未设置，安全浏览功能将会处于启用状态，但用户可以自行更改。
+
+      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
@@ -247,9 +268,25 @@
 <translation id="1675002386741412210">支持的环境：</translation>
 <translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME" />的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
+<translation id="1717817358640580294">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
+
+      如果此政策处于停用状态，当 Chrome 清理功能检测到垃圾软件时，它不会向 Google 报告与此项扫描相关的元数据，而是会覆盖 SafeBrowsingExtendedReportingEnabled 设置的任何政策。Chrome 清理功能会询问用户是否要清理垃圾软件。它不会向 Google 报告清理结果，也不会为用户提供用于向 Google 报告清理结果的选项。
+
+      如果此政策处于启用状态，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。Chrome 清理功能会询问用户是否要清理垃圾软件。它会向 Google 报告清理结果，但不会为用户提供用于禁止向 Google 报告清理结果的选项。
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="172374442286684480">允许所有网站设置本地数据</translation>
 <translation id="1734716591049455502">配置远程访问选项</translation>
 <translation id="1736269219679256369">允许关闭 SSL 警告页面并继续操作</translation>
+<translation id="1745780278307622857">指明当来源可信时，<ph name="PRODUCT_NAME" /> 是否允许不经安全浏览功能检查直接下载文件。
+
+      如果此政策设为 False，当来源可信时，系统不会发送下载的文件以供安全浏览功能进行分析。
+
+      如果此政策未设置（或设为 True），系统将会发送下载的文件以供安全浏览功能进行分析，即使来源可信也是如此。
+
+      请注意，这些限制适用于从网页内容以及“下载链接…”上下文菜单选项触发的下载内容。这些限制不适用于保存/下载当前显示的页面，也不适用于通过打印选项另存为 PDF 文件。
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1749815929501097806">设置用户在开始设备本地帐号会话前必须接受的服务条款。
 
       如果设置了此政策，<ph name="PRODUCT_OS_NAME" />会下载服务条款并在用户开始设备本地帐号会话时将其呈现给用户。用户必须先接受服务条款才能进入会话。
@@ -260,6 +297,7 @@
 <translation id="1750315445671978749">拦截所有下载内容</translation>
 <translation id="1781356041596378058">此政策亦用于控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
 <translation id="1797233582739332495">显示要求用户重新启动浏览器的周期性提示</translation>
+<translation id="1798559516913615713">GPO 缓存期限</translation>
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
 <translation id="1810261428246410396">允许使用即时网络共享功能。</translation>
@@ -267,6 +305,13 @@
 
       应采用以 JSON 格式表示网址和哈希值的字符串形式来指定此政策。</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
+<translation id="1831495419375964631">此政策是一个网址，它指向一个与 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策采用相同格式的 XML 文件。此政策会加载 XML 文件中的规则，但不会与 Internet Explorer 共享这些规则。
+
+      如果此政策未设置，或未设为一个有效网址，<ph name="PRODUCT_NAME" /> 便不会使用它作为浏览器切换规则的来源。
+
+      如果此政策设为一个有效网址，<ph name="PRODUCT_NAME" /> 就会从该网址下载网站列表，并会应用相应规则，就好像这些规则是使用 <ph name="SITELIST_POLICY_NAME" /> 政策配置的一样。
+
+      要详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="1844620919405873871">配置快速解锁相关政策。</translation>
 <translation id="1847960418907100918">指定通过 POST 执行“即搜即得”搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
@@ -313,6 +358,12 @@
       如果此政策设为 false，指标和诊断数据报告功能便会被停用。
 
       如果未配置此政策，指标和诊断数据报告功能将会在非托管设备上停用，但会在托管设备上启用。</translation>
+<translation id="1907431809333268751">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
+      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码指纹，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
+
+      如果启用了此设置，密码保护服务就会在这些网址上捕获密码指纹，以用于密码重用检测。
+      如果停用了或未设定此设置，则密码保护服务会仅在 https://accounts.google.com 上捕获密码指纹。
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1920046221095339924">允许在设备上使用受管理自助服务终端</translation>
 <translation id="1929709556673267855">为绑定到设备的企业打印机提供配置。
 
@@ -386,6 +437,9 @@
 <translation id="209586405398070749">稳定版</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
 <translation id="2104418465060359056">报告扩展程序和插件信息</translation>
+<translation id="2107601598727098402">
+        此政策在 M72 中已弃用。请改用 CloudManagementEnrollmentToken。
+        </translation>
 <translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的内容视图中启用“点按搜索”功能。
 
       如果您启用了此设置，用户将能够使用“点按搜索”功能，并可选择开启或关闭该功能。
@@ -422,10 +476,6 @@
 <translation id="214901426630414675">限制双面打印模式</translation>
 <translation id="2149330464730004005">启用彩色打印</translation>
 <translation id="2156132677421487971">为 <ph name="PRODUCT_NAME" /> 配置相关政策。借助这项功能，用户可从浏览器将标签页、网站或桌面中的内容发送到远程显示器和音响系统。</translation>
-<translation id="2163878108829382394">
-        当此政策设为 True 时，云管理注册是强制性的。如果注册失败，Chrome 便无法正常启动。
-
-        当此政策设为 False 或未设置时，云管理注册是可选的。如果注册失败，Chrome 仍能正常启动。</translation>
 <translation id="2166472654199325139">不滤除提供成人内容的网站</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
@@ -565,6 +615,19 @@
       如果已停用此设置，用户就无法通过 <ph name="PRODUCT_NAME" /> 进行打印。扳手菜单、扩展程序、JavaScript 应用等中的打印功能已停用。但如果有插件在打印时绕过 <ph name="PRODUCT_NAME" />，那么仍有可能使用该插件打印。例如某些 Flash 应用在自身的右键菜单中提供了打印选项，此策略中没有涉及这一点。</translation>
 <translation id="2518231489509538392">允许播放视频</translation>
 <translation id="2521581787935130926">在书签栏中显示应用快捷方式</translation>
+<translation id="2529659024053332711">让您能够指定启动时的行为。
+如果您选择“打开新的标签页”，当您启动 <ph name="PRODUCT_NAME" /> 时，系统将会始终打开“新标签页”页面。
+
+          如果您选择“恢复上次的会话”，系统将会重新打开 <ph name="PRODUCT_NAME" /> 上次关闭时处于打开状态的网址，并会将浏览会话恢复到上次离开时的状态。
+          如果您选择此选项，某些依赖于会话的设置或用于指定退出时应执行什么操作的设置（例如：退出时清除浏览数据，或仅在会话期间有效的 Cookie）便会被停用。
+
+          如果您选择“打开网址列表”，系统就会在用户启动 <ph name="PRODUCT_NAME" /> 时打开“启动时打开的网址”列表。
+
+          如果您启用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖此设置。
+
+          停用此设置等同于将其留空。用户仍能在 <ph name="PRODUCT_NAME" /> 中更改此设置。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="2529880111512635313">配置强制安装的应用和扩展程序的列表</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2536525645274582300">用户可决定是否要启用 Google 位置信息服务</translation>
@@ -726,6 +789,7 @@
           |created_time_millis| 是表示替换值的创建时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。这项参数用于确定是否仍应将相应替换值付诸应用。如果目前有效的时间限制功能（时间用量限制或时段限制）的开始时间晚于替换值的创建时间，系统便不应采取任何行动。另外，如果替换值的创建时间早于有效 time_window_limit 或 time_usage_window 的上次更改时间，系统也不应将该替换值付诸应用。
 
           可以发送多个替换值，最新的有效条目会得到应用。</translation>
+<translation id="2905984450136807296">身份验证数据缓存期限</translation>
 <translation id="2906874737073861391">AppPack 扩展程序列表</translation>
 <translation id="2907992746861405243">控制用户可以使用 <ph name="BULK_PRINTERS_POLICY" /> 中的哪些打印机。
 
@@ -758,6 +822,7 @@
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
+<translation id="3023572080620427845">与包含要在替代浏览器中加载的网址的 XML 文件对应的网址。</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME" />关闭后继续运行后台应用</translation>
@@ -806,6 +871,12 @@
        如果此政策未设置或设为 false，系统将不会在 TLS 中启用 DHE 加密套件。您也可以将此政策设为 true，以便启用 DHE 加密套件，并与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确的做法。
 
       我们建议您让服务器改用 ECDHE 加密套件。如果这些加密套件不可用，请确保使用 RSA 密钥交换机制的加密套件处于启用状态。</translation>
+<translation id="3117706142826400449">如果此政策处于停用状态，Chrome 清理功能将无法扫描系统以检测是否存在垃圾软件，也无法执行清理操作。此外，还会禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理功能。
+
+      如果此政策处于启用状态或未设置，Chrome 清理功能将会定期扫描系统以检测是否存在垃圾软件，并会在发现任何垃圾软件时询问用户是否要将其移除。此外，还会允许通过 chrome://settings 手动触发 Chrome 清理功能。
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
+<translation id="3165808775394012744">将这些政策列于此处是为了方便您移除它们。</translation>
 <translation id="316778957754360075">此设置从 <ph name="PRODUCT_NAME" />版本 29 起开始弃用。我们建议您将托管 CRX 软件包的网站包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放在某网页上，从而建立一个由企业托管的扩展程序/应用包。相关网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="3171369832001535378">设备网络主机名模板</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
@@ -1481,6 +1552,19 @@
 <translation id="5058573563327660283">选择在自动清理期间释放磁盘空间时采用的策略（已弃用）</translation>
 <translation id="5067143124345820993">登录用户白名单</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 云政策会替换机器政策。</translation>
+<translation id="5076274878326940940">启用默认的搜索服务提供商。
+
+          如果您启用了此设置，当用户在多功能框中输入的内容不是网址时，系统将会执行默认搜索。
+
+          您可以通过设置其余的默认搜索政策来指定要使用的默认搜索服务提供商。如果您不设置这些政策，用户便可自行选择默认提供商。
+
+          如果您停用了此设置，当用户在多功能框中输入的内容不是网址时，系统将不会执行任何搜索。
+
+          如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或覆盖此设置。
+
+          如果此政策未设置，系统就会启用默认搜索服务提供商，而且用户也能设置搜索服务提供商列表。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5085647276663819155">停用打印预览</translation>
 <translation id="5090209345759901501">将 Flash 内容设置的涵盖面扩展至所有内容</translation>
 <translation id="5093540029655764852">指定客户端应以怎样的频率（单位：天）更改其设备帐号密码。密码是由客户端随机生成的，不会显示给用户。
@@ -1494,6 +1578,15 @@
       请注意，如果客户端在较长时间内一直处于离线状态，那么即使指定的天数已过，密码也可能不会更改。</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
+<translation id="5113732180192599620">此政策可控制始终不会导致切换浏览器的网站列表。
+
+      请注意，还可以通过 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 和 <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 政策向该列表添加元素。
+
+      如果此政策未设置，则不会向该列表添加任何网站。
+
+      如果此政策已设置，则系统会将每项内容视为一条规则，这与 <ph name="URL_LIST_POLICY_NAME" /> 政策类似。不过，逻辑是相反的：匹配的规则将不会打开替代浏览器。
+
+      与 <ph name="URL_LIST_POLICY_NAME" /> 不同的是，此政策中的规则双向适用。也就是说，如果 Internet Explorer 附加组件存在且处于启用状态，此政策还可控制 <ph name="IE_PRODUCT_NAME" /> 是否应在 <ph name="PRODUCT_NAME" /> 中打开这些网址。</translation>
 <translation id="5130288486815037971">是否在 TLS 中启用 RC4 加密套件</translation>
 <translation id="5141670636904227950">设置登录屏幕上启用的默认放大镜类型</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>
@@ -1518,6 +1611,15 @@
       如果此政策设为 false，系统会停用标签页生命周期，并且所有标签页都将保持正常运行。
 
       如果此政策设为 true 或未指定，系统会启用标签页生命周期。</translation>
+<translation id="5207823059027350538">配置默认的“新标签页”页面网址，并禁止用户更改此设置。
+
+          “新标签页”页面是系统在创建新标签页时打开的页面（包括在新窗口中打开的页面）。
+
+          此政策不影响在启动时会打开哪些页面。启动时打开的页面是由 <ph name="RESTORE_ON_STARTUP_POLICY_NAME" /> 政策控制的。不过，如果主页被设为“打开新的标签页”，则此政策会影响主页；如果启动页被设为“打开新的标签页”，则此政策会影响启动页。
+
+          如果此政策未设置或留空，系统便会使用默认的“新标签页”页面。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5213038356678567351">始终不应触发浏览器切换的网站。</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
@@ -1628,6 +1730,17 @@
 <translation id="546726650689747237">使用交流电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5469143988693423708">允许用户运行 Crostini</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
+<translation id="5472668698895343595">此政策可控制要在替代浏览器中打开的网站列表。
+
+      请注意，还可以通过 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 和 <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 政策向该列表添加元素。
+
+      如果此政策未设置，则不会向该列表添加任何网站。
+
+      如果此政策已设置，则系统会将每项内容视为一条规则，以用于确定要在替代浏览器中打开的网站。<ph name="PRODUCT_NAME" /> 会使用这些规则来确定是否应在替代浏览器中打开某个网址。
+
+      如果 Internet Explorer 附加组件存在且处于启用状态，那么在规则不一致的情况下，Internet Explorer 会切换回 <ph name="PRODUCT_NAME" />。
+
+      如果规则之间相互冲突，<ph name="PRODUCT_NAME" /> 会使用最具体的规则。</translation>
 <translation id="5475361623548884387">启用打印功能</translation>
 <translation id="547601067149622666">不允许含侵扰性广告的网站展示广告</translation>
 <translation id="5499375345075963939">此策略仅在零售模式下有效。
@@ -1702,6 +1815,13 @@
 
       如果此设置已停用或未配置，用户则可使用自己设备所支持的所有类型的外部存储设备。</translation>
 <translation id="5697306356229823047">报告设备用户</translation>
+<translation id="5699487516670033016">指定身份验证数据缓存的期限（以小时为单位）。此缓存用于加快登录速度。此缓存包含与关联领域（即机器领域所信任的领域）相关的一般数据（工作群组名称等）。系统不会缓存特定于用户的数据以及非关联领域的数据。重启设备会清除缓存。
+
+      如果此政策未设置，已缓存的身份验证数据最多可被重复使用 73 小时。
+
+      如果此政策设为 0，系统就会关闭身份验证数据缓存。这样设置可能会显著降低关联用户的登录速度，因为系统在每次登录时都必须提取特定于领域的数据。
+
+      请注意，系统会为所有用户（甚至是临时用户）缓存领域数据。若想阻止跟踪临时用户的领域，则应关闭此缓存。</translation>
 <translation id="570062449808736508">此政策设为非空字符串时，WebView 将读取具有指定机构名称的内容提供方的网址限制条件。</translation>
 <translation id="5701714006401683963">如果此政策设为 false，受管理访客自助服务终端的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用自助服务终端”的行为一样。
 
@@ -1747,6 +1867,7 @@
       如果停用了此政策，系统会立即开始下载文件，且不会询问用户要在何处保存相应文件。
       如果未配置此政策，用户将能够更改此设置。
       </translation>
+<translation id="5832274826894536455">已弃用的政策</translation>
 <translation id="5835124959204887277">指定网址和网域，当相应网站需要取得安全密钥认证证书时，系统将不会显示任何提示。此外，系统还将向安全密钥发送信号，以指明可能会使用个人认证。如果未设置此政策，当网站需要取得安全密钥认证时，Chrome 65+ 将会提示用户。
 
       网址（如 https://example.com/some/path）将仅匹配为 U2F appID。网域（如 example.com）将仅匹配为 webauthn RP ID。因此，要同时涵盖指定网址的 U2F 和 webauthn API，必须同时列出 appID 网址和网域。</translation>
@@ -1980,6 +2101,11 @@
       如果此政策设为False，则不报告这些用户。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
+<translation id="6406448383934634215">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果此政策未设置，启动时将不会打开任何网址。
+
+          仅当“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”时，此政策才有效。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="6426205278746959912">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置：
 
           如果您选择永不使用代理服务器，则系统会通知 Android 应用未配置任何代理。
@@ -1995,7 +2121,26 @@
 <translation id="645425387487868471">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
 <translation id="6464074037294098618">自动填充地址信息</translation>
 <translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
+<translation id="6488627892044759800">配置 <ph name="PRODUCT_NAME" /> 中的默认主页的类型，并禁止用户更改主页偏好设置。您可以将主页设为指定的网址，也可以将其设为“新标签页”页面。
+
+          如果您启用了此设置，该浏览器将会始终使用“新标签页”页面作为主页，并会忽略主页网址。
+
+          如果您停用了此设置，那么除非用户的主页网址设为“chrome://newtab”，否则该浏览器始终不会使用“新标签页”页面作为主页。
+
+          如果您启用或停用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 中的主页类型。
+
+          如果此政策未设置，用户将可以自行选择是否使用“新标签页”页面作为主页。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="6491139795995924304">允许在设备上使用蓝牙功能</translation>
+<translation id="6495328383950074966">配置安全浏览功能将会信任的一系列网域。这意味着：
+      如果相应网址与所指定的任一网域匹配，安全浏览功能将不会检查其中是否含有危险资源（例如网上诱骗、恶意软件或垃圾软件）。
+      安全浏览功能的下载保护服务将不会检查托管在这些网域上的下载内容。
+      如果相应网页的网址与所指定的任一网域匹配，安全浏览功能的密码保护服务将不会检查密码重用情况。
+
+      如果启用了此设置，安全浏览功能将会信任这些网域。
+      如果停用或未设置，系统便会将默认的安全浏览保护功能应用于所有资源。
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>
 <translation id="6525955212636890608">如果启用此设置，那么在内容设置中设为允许运行 Flash（无论是由用户还是由企业政策设置）的网站中内嵌的所有 Flash 内容（包括来自其他来源的内容或不重要的内容）都会运行。
 
@@ -2109,6 +2254,13 @@
 
       如果此政策未设置，或替换后的值不是有效的主机名，系统将不会在 DHCP 请求中设置任何主机名。 </translation>
 <translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
+<translation id="6837480141980366278">控制是否在 <ph name="PRODUCT_NAME" /> 中使用内置 DNS 客户端。
+
+      如果此政策设为 True，系统将会使用内置 DNS 客户端（如果有）。
+
+      如果此政策设为 False，系统将永远不会使用内置 DNS 客户端。
+
+      如果此政策未设置，那么在 MacOS、Android（当私人 DNS 和 VPN 均未启用时）和 ChromeOS 中，内置 DNS 客户端将会默认处于启用状态，并且用户将能够通过修改 chrome://flags 或指定命令行标记来更改是否使用内置 DNS 客户端。</translation>
 <translation id="6838056959556423778">替换 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
       此政策用于确定：当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统会遵循什么样的规则来选择默认打印机。
 
@@ -2139,6 +2291,7 @@
       连接到 <ph name="CLOUD_PRINT_NAME" />的打印机会被视为<ph name="PRINTER_TYPE_CLOUD" />打印机，其余打印机则会归类为<ph name="PRINTER_TYPE_LOCAL" />打印机。
       如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么当进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
       正则表达式的格式必须遵循 JavaScript RegExp 语法，并在匹配时区分大小写。</translation>
+<translation id="6843296367238757293">此政策已被弃用。建议您改用其他政策。如需了解详情，请访问 https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">此政策已在 <ph name="PRODUCT_NAME" /> 68 中移除，并已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6856743875250214792">我们已在 M66 中弃用并移除了此政策，因为它仅用于内部测试且存在安全隐患。
 
@@ -2302,6 +2455,17 @@
           “自动播放”仅适用于 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明确列出的网域。如果要为所有网站启用“自动播放”，可以将 http://* 和 https://* 添加到此列表。
 
           如果此策略未设置，用户将能够手动更改此项设置。</translation>
+<translation id="7229876938563670511">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
+
+          主页是由“主页”按钮打开的网页。启动时打开的网页是由 RestoreOnStartup 政策控制的。
+
+          您既可将主页类型设为在此处指定的网址，也可将其设为“新标签页”。如果您选择“新标签页”，此政策将不会产生任何效力。
+
+          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 中的主页网址，但仍可选择“新标签页”作为主页。
+
+          如果此政策未设置，并且 HomepageIsNewTabPage 也未设置，用户将可以自行选择主页。
+
+          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="7229975860249300121">这项政策包含一个正则表达式，用于决定哪些 Google 帐号可以设定为 <ph name="PRODUCT_NAME" /> 中的浏览器主帐号（也就是在同步功能启用流程中所选的帐号）。
 
       如果用户尝试使用与此格式不匹配的用户名设置浏览器主帐号，就会显示相应错误。
@@ -2630,6 +2794,16 @@
 <translation id="793473937901685727">为 ARC 应用设置证书可用性</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
+<translation id="7952002811557367112">此政策可禁止用户从已列入黑名单的网址加载网页。黑名单提供了一系列网址格式，从而指定了哪些网址会被禁止。
+      必须根据 https://www.chromium.org/administrators/url-blacklist-filter-format 来设置网址格式。
+
+      可在网址白名单政策中定义例外情况。这类政策最多只能包含 1000 个条目；在超出这一上限后添加的条目将被忽略。
+
+      请注意：最好不要屏蔽内部“chrome://*”网址，否则可能会导致意外的错误。
+
+      请注意，此政策不会阻止网页通过 JavaScript 进行动态更新。例如，如果您屏蔽了“example.com/abc”，用户可能仍能访问“example.com”并点击链接以访问“example.com/abc”，前提是页面不刷新。
+
+      如果此政策未设置，浏览器便不会禁止任何网址。</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
@@ -2796,6 +2970,12 @@
 <translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="8371178326720637170">允许托管扩展程序使用 Enterprise Hardware Platform API</translation>
+<translation id="8377433219608936819">
+      如果此政策设为 True，当云政策与机器政策冲突时，即会以云政策为准。
+      如果此政策设为 False 或未配置，当机器政策与云政策冲突时，就会以机器政策为准。
+      有关政策优先级的更多详情，请访问：https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。
@@ -2944,6 +3124,12 @@
 <translation id="8758831693895931466">启用强制性云管理注册</translation>
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
+<translation id="8765776988041674792">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
+
+      如果启用了此设置，当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+      如果停用或未设置，则密码保护服务会将用户转到 https://myaccounts.google.com，以便其更改密码。
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。
 
           如果设置此政策，则指定当设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。屏幕变暗延迟时间调整后，系统会调整屏幕关闭、锁定和待机的延迟时间，使其与屏幕变暗延迟时间之间的差值与原有配置下的差值相同。

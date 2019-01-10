@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 p}other{# p}}</translation>
+<translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1243314992276662751">Feltöltés</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">Beszéd</translation>
 <translation id="3479552764303398839">Ne most</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 nap van hátra}other{# nap van hátra}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
 <translation id="3660179305079774227">Felfelé nyíl</translation>

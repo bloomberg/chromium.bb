@@ -18,7 +18,7 @@
 למידע על פרטיות, ניתן לעיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ובמדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
-<translation id="1389790901665088353">‏הורדת המתקין של מארח Chrome Remote Desktop</translation>
+<translation id="1389790901665088353">‏הורדת מנהל ההתקנה של מארח Chrome Remote Desktop</translation>
 <translation id="1450760146488584666">האובייקט המבוקש אינו קיים.</translation>
 <translation id="1480046233931937785">שותפים לעשייה</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
@@ -70,7 +70,7 @@
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
 <translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏האפליקציה הזו כבר לא נתמכת. כדי לוודא שיש לך גישה לתכונות ולעדכוני האבטחה העדכניים ביותר, יש להשתמש ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
+<translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנחנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
@@ -86,11 +86,11 @@
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
 <translation id="2891243864890517178">‏בשביל Mac (‏OS X Yosemite 10.10 ואילך)</translation>
-<translation id="289405675947420287">‏האפליקציה מאפשרת לגשת למחשב באופן מאובטח ממכשיר ה-iOS. זה מהיר, פשוט ובחינם.
+<translation id="289405675947420287">‏האפליקציה מאפשרת לגשת למחשב באופן מאובטח ממכשיר iOS. זה מהיר, פשוט ובחינם.
 
 • יש להוריד את האפליקציה Chrome Remote Desktop מחנות האינטרנט של Chrome למחשב שאליו רוצים לגשת מרחוק.
-• יש להתקין את התוכנה Chrome Remote Desktop ולפעול לפי ההוראות לסיום תהליך ההגדרה.
-• במכשיר ה-iOS, יש לפתוח את האפליקציה ולהקיש על אחד מהמחשבים שבמצב מקוון כדי להתחבר אליו.</translation>
+• יש להתקין את התוכנה של Chrome Remote Desktop ולפעול לפי ההוראות לסיום תהליך ההגדרה.
+• במכשיר iOS, יש לפתוח את האפליקציה ולהקיש על אחד מהמחשבים המחוברים כדי להתחבר אליו.</translation>
 <translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Chromium<ph name="LINK_END" /> עם החשבון והתקן מחדש את Chromoting.</translation>
@@ -208,7 +208,7 @@ Desktop
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="533625276787323658">אין מחשבים שניתן להתחבר אליהם</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
-<translation id="5379087427956679853">‏Chrome Remote Desktop מאפשר לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chrome Remote Desktop, שניתן למצוא בכתובת <ph name="URL" />.</translation>
+<translation id="5379087427956679853">‏Chrome Remote Desktop מאפשר לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את האפליקציה Chrome Remote Desktop, שניתן למצוא בכתובת <ph name="URL" />.</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח Chrome Remote Desktop</translation>
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="5419418238395129586">חיבור אחרון לרשת: <ph name="DATE" /></translation>
@@ -271,7 +271,7 @@ Desktop
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="6944854424004126054">שחזר חלון</translation>
-<translation id="6948905685698011662">‏Chrome Remote Desktop זמין עכשיו באינטרנט. רוצה לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט החינמית<ph name="LINK_END" />?.</translation>
+<translation id="6948905685698011662">‏Chrome Remote Desktop זמין עכשיו באינטרנט. רוצה לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט החינמית<ph name="LINK_END" />?</translation>
 <translation id="6963936880795878952">‏החיבורים למחשב המרוחק חסומים באופן זמני משום שמישהו ניסה להתחבר אליו עם PIN לא חוקי. נסה שוב מאוחר יותר.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6985691951107243942">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />? אם תשנה את דעתך, יהיה עליך להיכנס למחשב זה כדי להפעיל מחדש את החיבורים.</translation>
@@ -283,7 +283,7 @@ Desktop
 <translation id="7067321367069083429">המסך פועל כמסך מגע</translation>
 <translation id="7116737094673640201">‏ברוכים הבאים אל Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">נסה שוב</translation>
-<translation id="7149517134817561223">‏יישום לשליחת פקודות אל המארח של Chrome Remote Desktop.</translation>
+<translation id="7149517134817561223">‏אפליקציה לשליחת פקודות אל המארח של Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>
 <translation id="7312846573060934304">המארח אינו מקוון.</translation>
 <translation id="7319983568955948908">הפסק את השיתוף</translation>
@@ -311,7 +311,7 @@ Desktop
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
 <translation id="7981525049612125370">פג התוקף של ההפעלה המרוחקת.</translation>
 <translation id="8041089156583427627"> שליחת משוב</translation>
-<translation id="8041721485428375115">‏בהורדת מנהל ההתקנה של מארח Chrome Remote Desktop, את/ה מביע/ה הסכמה ל<ph name="LINK_BEGIN" />תנאים ולהגבלות<ph name="LINK_END" /> של Google.</translation>
+<translation id="8041721485428375115">‏הורדת מנהל ההתקנה של מארח Chrome Remote Desktop מהווה את הסכמתך לל<ph name="LINK_BEGIN" />תנאים ולהגבלות<ph name="LINK_END" /> של Google.</translation>
 <translation id="8060029310790625334">מרכז העזרה</translation>
 <translation id="806699900641041263">המערכת יוצרת התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="8073845705237259513">‏כדי להשתמש ב-Chrome Remote Desktop, עליך להוסיף חשבון Google למכשיר שלך.</translation>
@@ -341,7 +341,7 @@ Desktop
 • תמיכה בשינוי הרזולוציה של המחשב המרוחק כך שתתאים למסך של מכשיר ה-Android.</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8743328882720071828">האם ברצונך לאפשר ל-<ph name="CLIENT_USERNAME" /> לראות את המחשב שלך ולשלוט בו?</translation>
-<translation id="8747048596626351634">‏ההפעלה קרסה או שלא התחילה. אם ‎~/.chrome-remote-desktop-session קיים במחשב המרוחק, יש לוודא שהוא מפעיל תהליך ארוך טווח בחזית. לדוגמה: סביבת שולחן העבודה או מנהל החלונות.</translation>
+<translation id="8747048596626351634">‏ההפעלה קרסה או שלא התחילה. אם ‎~/.chrome-remote-desktop-session קיים במחשב המרוחק, יש לוודא שהוא מפעיל תהליך ארוך טווח בחזית. לדוגמה: סביבת המחשב או מנהל החלונות.</translation>
 <translation id="8759753423332885148">למידע נוסף</translation>
 <translation id="8791202241915690908">‏הורד את מנהל ההתקנה של מארח Chromoting</translation>
 <translation id="894763922177556086">איכות טובה</translation>

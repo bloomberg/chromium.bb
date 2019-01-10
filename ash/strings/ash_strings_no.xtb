@@ -68,6 +68,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen</translation>
 <translation id="1995660704900986789">Slå av</translation>
+<translation id="1999763610967697511">Dra-og-slipp</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2016340657076538683">Skriv inn en melding</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -94,6 +95,7 @@
 <translation id="2412593942846481727">En oppdatering er tilgjengelig</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en administrert økt administrert av <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Koblet til <ph name="NETWORK_NAME" /></translation>
+<translation id="2427507373259914951">Venstreklikk</translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2484513351006226581">Trykk på <ph name="KEYBOARD_SHORTCUT" /> for å bytte tastaturoppsett.</translation>
@@ -147,6 +149,7 @@
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3255483164551725916">Hva kan du gjøre?</translation>
 <translation id="3294437725009624529">Gjest</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
 <translation id="3351879221545518001">Du caster for øyeblikket skjermen.</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
@@ -230,6 +233,7 @@
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
+<translation id="485592688953820832">Ingen handling (pause)</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
 <translation id="4890187583552566966">Administratoren din har slått av Google-assistenten.</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
@@ -419,9 +423,12 @@
 <translation id="8113423164597455979">På for alle apper</translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
+<translation id="8142441511840089262">Dobbeltklikk</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
+<translation id="8167567890448493835">Bruker <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8192202700944119416">Varsler er skjult.</translation>
+<translation id="8203795194971602413">Høyreklikk</translation>
 <translation id="8236042855478648955">På tide med en pause</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
@@ -466,7 +473,6 @@
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
 <translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
-<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>

@@ -5,6 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 రోజు క్రితం}other{# రోజుల క్రితం}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 నిమిషం క్రితం}other{# నిమిషాల క్రితం}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
+<translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1243314992276662751">అప్‌లోడ్ చేయి</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -65,6 +66,7 @@
 <translation id="335581015389089642">ప్రసంగం</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 రోజు మిగిలి ఉంది}other{# రోజులు మిగిలి ఉన్నాయి}}</translation>
+<translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="364720409959344976">అప్‌లోడ్ చేయడానికి ఫోల్డర్‌ని ఎంచుకోండి</translation>
 <translation id="3660179305079774227">ఎగువ బాణం</translation>
@@ -128,7 +130,7 @@
 <translation id="6578407462441924264">పేరు లేదు</translation>
 <translation id="6612467943526193239">క్రమాంకనం నుండి నిష్క్రమించేందుకు, Esc నొక్కండి.</translation>
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
-<translation id="6699343763173986273">మీడియా తదుపరి ట్రాక్</translation>
+<translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
 <translation id="673773751041746814">తొలగింపు</translation>
 <translation id="6786750046913594791">ఫోల్డర్‌ను మూసివేయండి</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
@@ -151,7 +153,7 @@
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ఎమోజి</translation>
-<translation id="7658239707568436148">రద్దు చెయ్యి</translation>
+<translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7781829728241885113">నిన్న</translation>
 <translation id="7814458197256864873">&amp;కాపీ</translation>
 <translation id="7879499977785298635">బ్లాక్ చేయవద్దు</translation>

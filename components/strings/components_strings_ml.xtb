@@ -37,6 +37,7 @@
 <translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="1175364870820465910">&amp;അച്ചടിക്കൂ...</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
+<translation id="1197088940767939838">ഓറഞ്ച്</translation>
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1201895884277373915">ഈ സൈറ്റിൽ നിന്നും കൂടുതൽ</translation>
 <translation id="1206967143813997005">പ്രാരംഭ സിഗ്നേച്ചർ ശരിയല്ല</translation>
@@ -101,6 +102,7 @@
 <translation id="153384715582417236">ഇപ്പോൾ ഇത്രമാത്രമേ ലഭ്യമായിട്ടുള്ളൂ</translation>
 <translation id="154408704832528245">ഡെലിവറി നൽകേണ്ട വിലാസം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1549470594296187301">ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ JavaScript പ്രവർത്തനക്ഷമമാക്കിയിരിക്കണം.</translation>
+<translation id="1555130319947370107">നീല</translation>
 <translation id="1559528461873125649">അത്തരത്തിലുള്ള ഫയലോ ഡയറക്ടറിയോ ഇല്ല</translation>
 <translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
 
@@ -109,6 +111,7 @@
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
 <translation id="1592005682883173041">പ്രാദേശിക ഡാറ്റ ആക്‌സസ്സ്</translation>
 <translation id="1594030484168838125">തിരഞ്ഞെടുക്കുക</translation>
+<translation id="161042844686301425">സിയാൻ</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1623104350909869708">കൂടുതൽ ഡയലോഗുകൾ സൃഷ്‌ടിക്കുന്നതിൽ നിന്നും ഈ പേജിനെ തടയുക</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
@@ -174,6 +177,7 @@
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />പ്രോക്‌സിയും ഫയർവാളും പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">തപാൽ കോഡ്</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{ഒരു നിർദ്ദേശം}other{# നിർദ്ദേശങ്ങൾ}}</translation>
+<translation id="2068663545051464999">ക്രാഷ് റിപ്പോർട്ട് ഐഡി <ph name="CRASH_ID" /> അപ്‌ലോഡ് ചെയ്‌തു (പ്രാദേശിക സന്ദർഭം: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
 <translation id="20817612488360358">സിസ്റ്റം പ്രോക്‌സി ക്രമീകരണം ഉപയോഗിക്കുന്നതിനായി സജ്ജമാക്കി, പക്ഷെ ഒരു സ്‌പഷ്‌ടമായ പ്രോക്‌സി കോൺഫിഗറേഷനും അതോടൊപ്പം നിർദ്ദേശിച്ചിരിക്കുന്നു.</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" /> ഫലം</translation>
@@ -272,6 +276,7 @@
 <translation id="2705137772291741111">ഈ സൈറ്റിന്റെ സംരക്ഷിച്ച (കാഷെ ചെയ്‌ത) പതിപ്പ് വായിക്കാനാകാത്തതാണ്.</translation>
 <translation id="2709516037105925701">ഓട്ടോഫില്‍</translation>
 <translation id="2712173769900027643">അനുമതി ചോദിക്കുക</translation>
+<translation id="2713444072780614174">വെള്ള</translation>
 <translation id="2720342946869265578">സമീപമുള്ളവ</translation>
 <translation id="2721148159707890343">അഭ്യർത്ഥന വിജയിച്ചു</translation>
 <translation id="2728127805433021124">ഒരു ദുര്‍ബ്ബല സിഗ്നേച്ചര്‍ അല്‍ഗോരിതം ഉപയോഗിച്ചുകൊണ്ട് സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് ഒപ്പുവച്ചു.</translation>
@@ -392,6 +397,8 @@
 <translation id="3479539252931486093">ഇത് അപ്രതീക്ഷിതമായിരുന്നോ? <ph name="BEGIN_LINK" />ഞങ്ങളെ അറിയിക്കുക<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3484560055331845446">നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്കുള്ള ആക്‌സസ് നഷ്‌ടപ്പെടാനിടയുണ്ട്. ഇപ്പോൾ തന്നെ പാസ്‌വേഡ് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു. സൈൻ ഇൻ ചെയ്യാൻ നിങ്ങളോട് ആവശ്യപ്പെടും.</translation>
+<translation id="3495081129428749620">പേജിൽ കണ്ടെത്തുക
+    <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">ഇപ്പോൾ ഞങ്ങൾക്ക് നിങ്ങളുടെ രക്ഷകർത്താവിനെ ബന്ധപ്പെടാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3528171143076753409">സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് വിശ്വാസയോഗ്യമല്ല.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ ഒരു ഇനമെങ്കിലും}=1{ഒരു ഇനം (ഒപ്പം സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ അതിൽ കൂടുതലും)}other{# ഇനങ്ങൾ (ഒപ്പം സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ അതിൽ കൂടുതലും)}}</translation>
@@ -565,6 +572,7 @@
 <translation id="4728558894243024398">പ്ലാറ്റ്ഫോം</translation>
 <translation id="4736825316280949806">Chromium റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
 <translation id="473775607612524610">അപ്‌ഡേറ്റുചെയ്യുക</translation>
+<translation id="4738601419177586157"><ph name="TEXT" /> തിരയൽ നിർദ്ദേശം</translation>
 <translation id="4742407542027196863">പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക…</translation>
 <translation id="4744603770635761495">നിര്‍വ്വഹിക്കാവുന്ന പാത</translation>
 <translation id="4750917950439032686">നിങ്ങളുടെ വിവരങ്ങൾ (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകളോ ക്രെഡിറ്റ് കാർഡ് നമ്പറുകളോ) ഈ സൈറ്റിലേക്ക് അയച്ച് കഴിഞ്ഞാൽ പിന്നെയത് സ്വകാര്യമായിരിക്കും.</translation>
@@ -585,6 +593,7 @@
 <translation id="4854362297993841467">ഈ ഡെലിവറി രീതി ലഭ്യമല്ല. മറ്റൊരു രീതി പരീക്ഷിക്കുക.</translation>
 <translation id="4858792381671956233">ഈ സൈറ്റ് സന്ദർശിക്കുന്നതിന് നിങ്ങൾ രക്ഷിതാക്കളോട് അനുമതി ആവശ്യപ്പെട്ടു</translation>
 <translation id="4876305945144899064">ഉപയോക്തൃനാമമില്ല</translation>
+<translation id="4877422487531841831"><ph name="TEXT" /> തിരയുക</translation>
 <translation id="4879491255372875719">സ്വമേധയാ (ഡിഫോൾട്ട്)</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
@@ -611,6 +620,7 @@
 <translation id="5029568752722684782">പകർപ്പ് മായ്‌ക്കുക</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" സോഫ്റ്റ്‌വെയറിന് ഒരു റൂട്ട് സർട്ടിഫിക്കറ്റ് ആവശ്യമാണ്, എന്നാൽ അത് ഇൻസ്‌റ്റാൾ ചെയ്‌‌തിട്ടില്ല. ഈ പ്രശ്‌നം പരിഹരിക്കാൻ, "<ph name="SOFTWARE_NAME" />" സോഫ്റ്റ്‌വെയറിനുള്ള കോൺഫിഗറേഷൻ നിർദ്ദേശങ്ങൾ ഐടി അഡ്‌മിനിസ്‌ട്രേറ്റർ പരിശോധിക്കേണ്ടതുണ്ട്. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google വിവര്‍ത്തനം എന്നതിനെക്കുറിച്ച് </translation>
+<translation id="5034369478845443529">പ്രാദേശിക സന്ദർഭം <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5040262127954254034">സ്വകാര്യത</translation>
 <translation id="5045550434625856497">ശരിയല്ലാത്ത രഹസ്യവാക്ക്</translation>
@@ -735,6 +745,7 @@
 <translation id="5869522115854928033">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
 <translation id="5887400589839399685">കാർഡ് സംരക്ഷിച്ചു</translation>
 <translation id="5893752035575986141">ക്രെഡിറ്റ് കാർഡുകൾ സ്വീകരിക്കുന്നു.</translation>
+<translation id="5901630391730855834">മഞ്ഞ</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (സമന്വയിപ്പിച്ചത്)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ഒരെണ്ണം ഉപയോഗത്തിലുണ്ട്}other{# എണ്ണം ഉപയോഗത്തിലുണ്ട്}}</translation>
 <translation id="5921639886840618607">Google അക്കൗണ്ടിൽ കാർഡ് സംരക്ഷിക്കണോ?</translation>
@@ -753,6 +764,7 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">വര്‍ഷം</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{പേജ് 1}other{പേജ് #}}</translation>
+<translation id="6017514345406065928">പച്ച</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്നതിലുള്ള അക്രമികൾ, മറ്റെന്തെങ്കിലുമാണെന്ന വ്യാജേന തെറ്റിദ്ധരിപ്പിക്കുന്ന ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാം അല്ലെങ്കിൽ ഡാറ്റ ശേഖരിച്ച് നിങ്ങളെ ട്രാക്കുചെയ്യാൻ ഉപയോഗിക്കാം. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (സമന്വയിപ്പിച്ചത്)</translation>
 <translation id="6027201098523975773">ഒരു പേര് നൽകുക</translation>
@@ -969,6 +981,7 @@
 <translation id="7564049878696755256">നിങ്ങളുടെ <ph name="ORG_NAME" /> അക്കൗണ്ടിലേക്കുള്ള ആക്‌സസ് നഷ്‌ടമാകാനോ നിങ്ങളുടെ ഐഡന്‍റിറ്റി മോഷ്ടിക്കപ്പെടാനോ സാധ്യതയുണ്ട്. ഇപ്പോൾ തന്നെ പാസ്‍വേഡ് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="7567204685887185387">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; സെർവറിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റ് വഞ്ചനാപരമായി ഇഷ്യൂ ചെയ്‌തിരിക്കാം. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="7569952961197462199">Chrome-ൽ നിന്ന് ക്രെഡിറ്റ് കാർഡ് നീക്കംചെയ്യണോ?</translation>
+<translation id="7569983096843329377">കറുപ്പ്</translation>
 <translation id="7578104083680115302">നിങ്ങൾ Google-ൽ സംരക്ഷിച്ച കാർഡുകൾ ഉപയോഗിച്ച് ഉപകരണങ്ങളിലുടനീളമുള്ള സൈറ്റുകളിലും ആപ്‌സിലും പെട്ടെന്ന് പണമടയ്‌ക്കുക.</translation>
 <translation id="7592362899630581445">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് പേരിന്റെ പരിധി ലംഘിക്കുന്നു.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />-യിൽ താഴെ</translation>
@@ -1017,6 +1030,7 @@
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' എന്നതിന്റെ <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> കണ്ടു</translation>
 <translation id="7818867226424560206">പോളിസി മാനേജ്‌മെന്‍റ്</translation>
 <translation id="782886543891417279">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi (<ph name="WIFI_NAME" />) അതിന്റെ ലോഗിൻ പേജ് സന്ദർശിക്കാൻ ആവശ്യപ്പെടാം..</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു ആപ്പ് (<ph name="EXAMPLE_APP_1" />)}=2{2 ആപ്പുകൾ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ആപ്പുകൾ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">എന്നിരുന്നാലും നിങ്ങൾ അദൃശ്യനല്ല. ആൾമാറാട്ടത്തിലേയ്‌ക്ക് പോകുന്നത്, നിങ്ങളുടെ തൊഴിൽ ദാതാവിൽ നിന്നോ ഇന്റർനെറ്റ് സേവന ദാതാവിൽ നിന്നോ നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിൽ നിന്നോ ഉള്ള ബ്രൗസിംഗിനെ മറയ്‌ക്കില്ല.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">സൈറ്റ് വിടണോ?</translation>
@@ -1028,6 +1042,7 @@
 <translation id="7935318582918952113">DOM ഡിസ്‌റ്റിലർ</translation>
 <translation id="7937554595067888181"><ph name="EXPIRATION_DATE_ABBR" />-ന് കാലഹരണപ്പെടുന്നു</translation>
 <translation id="7938958445268990899">സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് ഇതുവരെയും സാധുവല്ല.</translation>
+<translation id="7942349550061667556">ചുവപ്പ്</translation>
 <translation id="7947285636476623132">കാലാവധി തീരുന്ന വർഷം പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="7951415247503192394">(32-ബിറ്റ്)</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
@@ -1155,7 +1170,6 @@
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചവ</translation>
 <translation id="8874824191258364635">ശരിയായ കാർഡ് നമ്പർ നൽകുക</translation>
 <translation id="8891727572606052622">അസാധുവായ പ്രോക്സി മോഡ്</translation>
-<translation id="8892964541482452187">ടാബ് സ്വിച്ച് ബട്ടണ്‍, ഈ ടാബിലേക്ക് സ്വിച്ച് ചെയ്യാൻ എന്റര്‍ അമര്‍ത്തുക</translation>
 <translation id="8903921497873541725">സൂം ഇന്‍</translation>
 <translation id="8931333241327730545">ഈ കാർഡ് നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംരക്ഷിക്കണോ?</translation>
 <translation id="8932102934695377596">നിങ്ങളുടെ ക്ലോക്ക് വളരെ പിന്നിലാണ്</translation>
@@ -1186,6 +1200,7 @@
 <translation id="9049981332609050619">നിങ്ങള്‍ <ph name="DOMAIN" /> എന്നതില്‍ എത്താന്‍ ശ്രമിച്ചു, പക്ഷേ സെര്‍വര്‍ ഒരു അസാധുവായ സര്‍ട്ടിഫിക്കറ്റ് അവതരിപ്പിച്ചു.</translation>
 <translation id="9050666287014529139">പാസ്ഫ്രെയ്സ്</translation>
 <translation id="9065203028668620118">എഡിറ്റുചെയ്യുക</translation>
+<translation id="9065745800631924235">ചരിത്രത്തിൽ നിന്നുള്ള <ph name="TEXT" /> തിരയൽ</translation>
 <translation id="9069693763241529744">ഒരു വിപുലീകരണം മുഖേന ബ്ലോക്കുചെയ്‌തു</translation>
 <translation id="9076283476770535406">ഇതിൽ മുതിർന്നവർക്കുള്ള ഉള്ളടക്കം ഉണ്ടായിരിക്കാം</translation>
 <translation id="9078964945751709336">കൂടുതൽ വിവരങ്ങൾ ആവശ്യമാണ്</translation>

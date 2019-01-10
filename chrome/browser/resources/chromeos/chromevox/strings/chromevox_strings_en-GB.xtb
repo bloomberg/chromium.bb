@@ -54,6 +54,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="135978014023467274">You've been updated to ChromeVox 63!</translation>
+<translation id="1360699455582016846">Click the item under routing key <ph name="ROUTING_KEY_NUMBER" /></translation>
 <translation id="136718599399906424">Next table row</translation>
 <translation id="1377925789329510816">This is the last heading. Press Search+H to wrap to the first heading, or Search+Shift+H to go to the second heading on this page.</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -112,6 +113,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1905379170753160525">Show headings list</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914635379910604678"><ph name="DOT" /> chord</translation>
 <translation id="1954623340234317532">Week of the year control</translation>
 <translation id="1964135212174907577">Next Object</translation>
 <translation id="1969092762068865084">July</translation>
@@ -267,6 +269,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{space}other{# spaces}}</translation>
 <translation id="320961988183078793">entered <ph name="TYPE" /></translation>
+<translation id="3218691001991391708">paste <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Visited link</translation>
@@ -351,6 +354,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3497063866483065785">{COUNT,plural, =1{question mark}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}other{# carets}}</translation>
 <translation id="352577523970648069">An editable text field</translation>
+<translation id="3549141990712742152">cut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tap with 2 fingers to temporarily stop speech</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, tick box not ticked</translation>
 <translation id="3589661172894441357">Glossary</translation>
@@ -676,6 +680,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6129953537138746214">Space</translation>
 <translation id="6132506484792346370">A list box or combo box</translation>
 <translation id="6142308968191113180">Heading 4</translation>
+<translation id="6158882249329863701">row <ph name="TABLECELLROWINDEX" /> column <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">meter</translation>
 <translation id="6169420925157477918">Image with long description</translation>
 <translation id="6186305613600865047">Jump to the bottom of the page</translation>
@@ -691,6 +696,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6307969636681130414">Pressed</translation>
 <translation id="6322856989298155004">Sounds</translation>
 <translation id="6324551002951139333">Grammatical mistake detected</translation>
+<translation id="6325241889020214828">copy <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Combo box</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bullet}other{# bullets}}</translation>
 <translation id="6355910664415701303">No previous list item.</translation>
@@ -962,6 +968,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Modifier Keys</translation>
 <translation id="8943175951035496220">No cell right.</translation>
+<translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="900114243503212879">file</translation>
