@@ -119,7 +119,7 @@ interface Testola {
 
   NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
 
-  PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
+  PassHandles(handle<job> job) -> (handle<process> process);
 
   ReceiveUnions(StructOfMultipleUnions somu);
 
