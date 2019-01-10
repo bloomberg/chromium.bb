@@ -64,8 +64,7 @@ class GridPositionsResolver {
   static GridPositionSide InitialPositionSide(GridTrackSizingDirection);
   static GridPositionSide FinalPositionSide(GridTrackSizingDirection);
 
-  static size_t SpanSizeForAutoPlacedItem(const ComputedStyle&,
-                                          const LayoutBox&,
+  static size_t SpanSizeForAutoPlacedItem(const LayoutBox&,
                                           GridTrackSizingDirection);
   static GridSpan ResolveGridPositionsFromStyle(
       const ComputedStyle&,

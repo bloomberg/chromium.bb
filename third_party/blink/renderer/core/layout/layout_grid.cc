@@ -920,8 +920,8 @@ void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
     } else {
       // Grow the grid for items with a definite row span, getting the largest
       // such span.
-      size_t span_size = GridPositionsResolver::SpanSizeForAutoPlacedItem(
-          *Style(), *child, kForRows);
+      size_t span_size =
+          GridPositionsResolver::SpanSizeForAutoPlacedItem(*child, kForRows);
       maximum_row_index = std::max(maximum_row_index, span_size);
     }
 
@@ -933,8 +933,8 @@ void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
     } else {
       // Grow the grid for items with a definite column span, getting the
       // largest such span.
-      size_t span_size = GridPositionsResolver::SpanSizeForAutoPlacedItem(
-          *Style(), *child, kForColumns);
+      size_t span_size =
+          GridPositionsResolver::SpanSizeForAutoPlacedItem(*child, kForColumns);
       maximum_column_index = std::max(maximum_column_index, span_size);
     }
   }
@@ -954,7 +954,7 @@ LayoutGrid::CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       specified_direction == kForColumns ? kForRows : kForColumns;
   const size_t end_of_cross_direction = grid.NumTracks(cross_direction);
   size_t cross_direction_span_size =
-      GridPositionsResolver::SpanSizeForAutoPlacedItem(*Style(), grid_item,
+      GridPositionsResolver::SpanSizeForAutoPlacedItem(grid_item,
                                                        cross_direction);
   GridSpan cross_direction_positions = GridSpan::TranslatedDefiniteGridSpan(
       end_of_cross_direction,
@@ -989,7 +989,7 @@ void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(
              .IsTranslatedDefinite());
     size_t minor_axis_span_size =
         GridPositionsResolver::SpanSizeForAutoPlacedItem(
-            *Style(), *auto_grid_item, AutoPlacementMinorAxisDirection());
+            *auto_grid_item, AutoPlacementMinorAxisDirection());
     unsigned major_axis_initial_position = major_axis_positions.StartLine();
 
     auto iterator = grid.CreateIterator(
@@ -1038,7 +1038,7 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
               .IsTranslatedDefinite());
   size_t major_axis_span_size =
       GridPositionsResolver::SpanSizeForAutoPlacedItem(
-          *Style(), grid_item, AutoPlacementMajorAxisDirection());
+          grid_item, AutoPlacementMajorAxisDirection());
 
   const size_t end_of_major_axis =
       grid.NumTracks(AutoPlacementMajorAxisDirection());
@@ -1074,7 +1074,7 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
   } else {
     size_t minor_axis_span_size =
         GridPositionsResolver::SpanSizeForAutoPlacedItem(
-            *Style(), grid_item, AutoPlacementMinorAxisDirection());
+            grid_item, AutoPlacementMinorAxisDirection());
 
     for (size_t major_axis_index = major_axis_auto_placement_cursor;
          major_axis_index < end_of_major_axis; ++major_axis_index) {
