@@ -1051,21 +1051,32 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
   EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
 
   AXNode* child_node = GetRootNode()->children()[0];
+
+  // A focus event on a child node should not cause the window to
+  // activate.
   {
     ActivationTester tester(root_atk_object);
     GetPlatformNode(child_node)
         ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+    EXPECT_FALSE(tester.saw_activate_);
+    EXPECT_FALSE(tester.saw_deactivate_);
+    EXPECT_FALSE(tester.IsActivatedInStateSet());
+  }
+
+  // A focus event on the window itself should cause the window to activate.
+  {
+    ActivationTester tester(root_atk_object);
+    GetRootPlatformNode()->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
     EXPECT_TRUE(tester.saw_activate_);
     EXPECT_FALSE(tester.saw_deactivate_);
     EXPECT_TRUE(tester.IsActivatedInStateSet());
   }
 
-  // Since the toplevel window is already active, we shouldn't see another
-  // activation event, but it should still be active.
+  // Since the window is already active, we shouldn't see another activation
+  // event, but it should still be active.
   {
     ActivationTester tester(root_atk_object);
-    GetPlatformNode(child_node)
-        ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+    GetRootPlatformNode()->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_FALSE(tester.saw_deactivate_);
     EXPECT_TRUE(tester.IsActivatedInStateSet());

@@ -2172,7 +2172,10 @@ void AXPlatformNodeAuraLinux::OnWindowDeactivated() {
 void AXPlatformNodeAuraLinux::OnFocused() {
   DCHECK(atk_object_);
 
-  OnWindowActivated();
+  if (atk_object_get_role(atk_object_) == ATK_ROLE_FRAME) {
+    OnWindowActivated();
+    return;
+  }
 
   if (atk_object_ == g_current_focused)
     return;
