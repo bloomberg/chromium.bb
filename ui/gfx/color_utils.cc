@@ -267,40 +267,42 @@ double CalculateBoringScore(const SkBitmap& bitmap) {
 }
 
 SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
-  if (alpha == 0)
+  return AlphaBlend(foreground, background, alpha / 255.0f);
+}
+
+SkColor AlphaBlend(SkColor foreground, SkColor background, float alpha) {
+  DCHECK_GE(alpha, 0.0f);
+  DCHECK_LE(alpha, 1.0f);
+
+  if (alpha == 0.0f)
     return background;
-  if (alpha == 255)
+  if (alpha == 1.0f)
     return foreground;
 
   int f_alpha = SkColorGetA(foreground);
   int b_alpha = SkColorGetA(background);
 
-  float normalizer = (f_alpha * alpha + b_alpha * (255 - alpha)) / 255.0f;
+  float normalizer = f_alpha * alpha + b_alpha * (1.0f - alpha);
   if (normalizer == 0.0f)
     return SK_ColorTRANSPARENT;
 
   float f_weight = f_alpha * alpha / normalizer;
-  float b_weight = b_alpha * (255 - alpha) / normalizer;
+  float b_weight = b_alpha * (1.0f - alpha) / normalizer;
 
-  float r = (SkColorGetR(foreground) * f_weight +
-             SkColorGetR(background) * b_weight) /
-            255.0f;
-  float g = (SkColorGetG(foreground) * f_weight +
-             SkColorGetG(background) * b_weight) /
-            255.0f;
-  float b = (SkColorGetB(foreground) * f_weight +
-             SkColorGetB(background) * b_weight) /
-            255.0f;
+  float r =
+      SkColorGetR(foreground) * f_weight + SkColorGetR(background) * b_weight;
+  float g =
+      SkColorGetG(foreground) * f_weight + SkColorGetG(background) * b_weight;
+  float b =
+      SkColorGetB(foreground) * f_weight + SkColorGetB(background) * b_weight;
 
-  return SkColorSetARGB(static_cast<int>(std::round(normalizer)),
-                        static_cast<int>(std::round(r)),
-                        static_cast<int>(std::round(g)),
-                        static_cast<int>(std::round(b)));
+  return SkColorSetARGB(gfx::ToRoundedInt(normalizer), gfx::ToRoundedInt(r),
+                        gfx::ToRoundedInt(g), gfx::ToRoundedInt(b));
 }
 
 SkColor GetResultingPaintColor(SkColor foreground, SkColor background) {
   return AlphaBlend(SkColorSetA(foreground, SK_AlphaOPAQUE), background,
-                    SkColorGetA(foreground));
+                    SkAlpha{SkColorGetA(foreground)});
 }
 
 bool IsDark(SkColor color) {
@@ -317,18 +319,17 @@ SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha) {
 
 SkColor GetThemedAssetColor(SkColor theme_color) {
   // Minimum theme light color contrast.
-  constexpr float kContrastLightItemThreshold = 3;
+  constexpr float kContrastLightItemThreshold = 3.0f;
 
   // The amount to darken a light theme color by for use as foreground color.
-  constexpr float kThemedForegroundBlackFraction = 0.64;
+  constexpr float kThemedForegroundBlackFraction = 0.64f;
 
   // This mimics |shouldUseLightForegroundOnBackground| from ColorUtils.java.
   bool use_light_color = GetContrastRatio(SK_ColorWHITE, theme_color) >=
                          kContrastLightItemThreshold;
   if (use_light_color)
     return SK_ColorWHITE;
-  return AlphaBlend(SK_ColorBLACK, theme_color,
-                    255 * kThemedForegroundBlackFraction);
+  return AlphaBlend(SK_ColorBLACK, theme_color, kThemedForegroundBlackFraction);
 }
 
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
@@ -388,9 +389,9 @@ SkAlpha FindBlendValueForContrastRatio(SkColor source,
   // conversion to SkAlpha for the end (reduces casts).
   int low = SK_AlphaTRANSPARENT;
   int high = SK_AlphaOPAQUE + 1;
-  int best = SK_AlphaOPAQUE;
+  SkAlpha best = SK_AlphaOPAQUE;
   while (low + alpha_error_tolerance < high) {
-    const int alpha = (low + high) / 2;
+    const SkAlpha alpha = (low + high) / 2;
     const SkColor blended = AlphaBlend(target, source, alpha);
     const float luminance = GetRelativeLuminance(blended);
     const float contrast = GetContrastRatio(luminance, base_luminance);

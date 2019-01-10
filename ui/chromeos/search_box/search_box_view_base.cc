@@ -49,8 +49,6 @@ constexpr SkColor kSelectedColor = SkColorSetARGB(15, 0, 0, 0);
 
 constexpr SkColor kSearchTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 
-constexpr int kLightVibrantBlendAlpha = 0xE6;
-
 // Color of placeholder text in zero query state.
 constexpr SkColor kZeroQuerySearchboxColor =
     SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
@@ -464,11 +462,10 @@ void SearchBoxViewBase::NotifyActiveChanged() {
 
 // TODO(crbug.com/755219): Unify this with UpdateBackgroundColor.
 void SearchBoxViewBase::SetBackgroundColor(SkColor light_vibrant) {
-  const SkColor light_vibrant_mixed = color_utils::AlphaBlend(
-      SK_ColorWHITE, light_vibrant, kLightVibrantBlendAlpha);
-  background_color_ = SK_ColorTRANSPARENT == light_vibrant
-                          ? kSearchBoxBackgroundDefault
-                          : light_vibrant_mixed;
+  background_color_ =
+      (light_vibrant == SK_ColorTRANSPARENT)
+          ? kSearchBoxBackgroundDefault
+          : color_utils::AlphaBlend(SK_ColorWHITE, light_vibrant, 0.9f);
 }
 
 void SearchBoxViewBase::SetSearchBoxColor(SkColor color) {

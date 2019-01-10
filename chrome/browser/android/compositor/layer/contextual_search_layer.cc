@@ -23,10 +23,6 @@ const SkColor kSearchBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
 const SkColor kBarBannerRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 const SkColor kTouchHighlightColor = SkColorSetARGB(0x33, 0x99, 0x99, 0x99);
 
-// The alpha blend used in the Bar Banner Background in order to achieve
-// a lighter shade of the color of the Bar Banner Ripple.
-const SkAlpha kBarBannerBackgroundMaximumAlphaBlend = 0.25f * 255;
-
 }  // namespace
 
 namespace android {
@@ -153,13 +149,10 @@ void ContextualSearchLayer::SetProperties(
 
     // Apply a blend based on the ripple opacity. The resulting color will
     // be an interpolation between the background color of the Search Bar and
-    // a lighter shade of the background color of the Ripple. The range of
-    // the alpha value used in the blend will be:
-    // [0.f, kBarBannerBackgroundMaximumAlphaBlend]
+    // a lighter shade of the background color of the Ripple.
     bar_banner_container_->SetBackgroundColor(color_utils::AlphaBlend(
         kBarBannerRippleBackgroundColor, kSearchBarBackgroundColor,
-        kBarBannerBackgroundMaximumAlphaBlend *
-            search_bar_banner_ripple_opacity));
+        0.25f * search_bar_banner_ripple_opacity));
 
     // -----------------------------------------------------------------
     // Bar Banner Ripple

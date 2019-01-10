@@ -1310,10 +1310,8 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
   }
 
   if (!is_active_frame) {
-    // For inactive frames, we draw text at 75%.
-    constexpr SkAlpha inactive_alpha = 0.75 * SK_AlphaOPAQUE;
-    default_color = color_utils::AlphaBlend(default_color, background_color,
-                                            inactive_alpha);
+    default_color =
+        color_utils::AlphaBlend(default_color, background_color, 0.75f);
   }
 
   return color_utils::GetColorWithMinimumContrast(default_color,

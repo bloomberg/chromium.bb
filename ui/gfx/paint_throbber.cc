@@ -162,15 +162,15 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
 
   // Blend the color between "waiting" and "spinning" states.
   base::TimeDelta color_fade_time = base::TimeDelta::FromMilliseconds(900);
-  double color_progress = 1.0;
+  float color_progress = 1.0f;
   if (elapsed_time < color_fade_time) {
-    color_progress = Tween::CalculateValue(
+    color_progress = static_cast<float>(Tween::CalculateValue(
         Tween::LINEAR_OUT_SLOW_IN,
         static_cast<double>(elapsed_time.InMicroseconds()) /
-            color_fade_time.InMicroseconds());
+            color_fade_time.InMicroseconds()));
   }
-  SkColor blend_color = color_utils::AlphaBlend(color, waiting_state->color,
-                                                color_progress * 255);
+  SkColor blend_color =
+      color_utils::AlphaBlend(color, waiting_state->color, color_progress);
 
   int64_t start_angle =
       waiting_start_angle +

@@ -300,7 +300,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused),
-          0x80);
+          0.5f);
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
       return SkColorFromColorId(
           ui::NativeTheme::kColorId_TextfieldDefaultColor);
@@ -309,7 +309,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
           SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor),
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-          0x80);
+          0.5f);
 
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.

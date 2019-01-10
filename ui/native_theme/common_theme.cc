@@ -57,7 +57,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_MenuBackgroundColor:
       case NativeTheme::kColorId_BubbleBackground:
       case NativeTheme::kColorId_DialogBackground:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0xA);
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
+                                       0.04f);
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
@@ -73,7 +74,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
             GetAuraColor(
                 NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
                 base_theme),
-            0xDD);
+            SkAlpha{0xDD});
       case NativeTheme::kColorId_MenuSeparatorColor:
       case NativeTheme::kColorId_SeparatorColor:
         return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
@@ -127,7 +128,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   constexpr SkColor kTextSelectionBackgroundFocused =
       SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
   static const SkColor kTextSelectionColor = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextSelectionBackgroundFocused, 0xdd);
+      SK_ColorBLACK, kTextSelectionBackgroundFocused, SkAlpha{0xDD});
 
   switch (color_id) {
     // Dialogs

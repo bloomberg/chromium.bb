@@ -180,16 +180,16 @@ TEST(ColorUtils, AlphaBlend) {
   SkColor fore = SkColorSetARGB(255, 200, 200, 200);
   SkColor back = SkColorSetARGB(255, 100, 100, 100);
 
-  EXPECT_TRUE(AlphaBlend(fore, back, 255) == fore);
-  EXPECT_TRUE(AlphaBlend(fore, back, 0) == back);
+  EXPECT_TRUE(AlphaBlend(fore, back, 1.0f) == fore);
+  EXPECT_TRUE(AlphaBlend(fore, back, 0.0f) == back);
 
   // One is fully transparent, result is partially transparent.
   back = SkColorSetA(back, 0);
-  EXPECT_EQ(136U, SkColorGetA(AlphaBlend(fore, back, 136)));
+  EXPECT_EQ(136U, SkColorGetA(AlphaBlend(fore, back, SkAlpha{136})));
 
   // Both are fully transparent, result is fully transparent.
   fore = SkColorSetA(fore, 0);
-  EXPECT_EQ(0U, SkColorGetA(AlphaBlend(fore, back, 255)));
+  EXPECT_EQ(0U, SkColorGetA(AlphaBlend(fore, back, 1.0f)));
 }
 
 TEST(ColorUtils, SkColorToRgbaString) {

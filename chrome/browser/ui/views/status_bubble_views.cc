@@ -491,7 +491,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // Text color is the foreground tab text color at 60% alpha.
   SkColor blended_text_color = color_utils::AlphaBlend(
       theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0x99);
+      0.6f);
 
   canvas->DrawStringRect(
       text_, GetFont(),
