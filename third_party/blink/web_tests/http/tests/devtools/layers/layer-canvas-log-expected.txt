@@ -10,15 +10,11 @@ Canvas log:
                 color : "#FF0000FF"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 100
@@ -36,15 +32,11 @@ Canvas log:
                 color : "#FFFF0000"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 50
@@ -73,15 +65,11 @@ Canvas log:
                 color : "#FF000000"
                 filterLevel : "Medium"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             src : {
                 bottom : 21
@@ -126,15 +114,11 @@ Canvas log:
                 color : "#7F000000"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 10

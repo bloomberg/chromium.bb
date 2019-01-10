@@ -126,7 +126,6 @@ bool PaintFlags::SupportsFoldingAlpha() const {
 
 SkPaint PaintFlags::ToSkPaint() const {
   SkPaint paint;
-  paint.setTypeface(typeface_);
   paint.setPathEffect(path_effect_);
   if (shader_)
     paint.setShader(shader_->GetSkShader());
@@ -135,7 +134,6 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setDrawLooper(draw_looper_);
   if (image_filter_)
     paint.setImageFilter(image_filter_->cached_sk_filter_);
-  paint.setTextSize(text_size_);
   paint.setColor(color_);
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
@@ -144,7 +142,6 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));
-  paint.setHinting(static_cast<SkFontHinting>(getHinting()));
   paint.setFilterQuality(getFilterQuality());
   return paint;
 }

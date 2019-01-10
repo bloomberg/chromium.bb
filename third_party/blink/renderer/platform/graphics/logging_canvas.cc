@@ -415,27 +415,8 @@ String StyleName(SkPaint::Style style) {
   };
 }
 
-String HintingName(SkFontHinting hinting) {
-  switch (hinting) {
-    case SkFontHinting::kNone:
-      return "None";
-    case SkFontHinting::kSlight:
-      return "Slight";
-    case SkFontHinting::kNormal:
-      return "Normal";
-    case SkFontHinting::kFull:
-      return "Full";
-    default:
-      NOTREACHED();
-      return "?";
-  };
-}
-
 std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   std::unique_ptr<JSONObject> paint_item = JSONObject::Create();
-  paint_item->SetDouble("textSize", paint.getTextSize());
-  paint_item->SetDouble("textScaleX", paint.getTextScaleX());
-  paint_item->SetDouble("textSkewX", paint.getTextSkewX());
   if (SkShader* shader = paint.getShader())
     paint_item->SetObject("shader", ObjectForSkShader(*shader));
   paint_item->SetString("color", StringForSkColor(paint.getColor()));
@@ -447,7 +428,6 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("strokeCap", StrokeCapName(paint.getStrokeCap()));
   paint_item->SetString("strokeJoin", StrokeJoinName(paint.getStrokeJoin()));
   paint_item->SetString("styleName", StyleName(paint.getStyle()));
-  paint_item->SetString("hinting", HintingName(paint.getHinting()));
   if (paint.getBlendMode() != SkBlendMode::kSrcOver)
     paint_item->SetString("blendMode", SkBlendMode_Name(paint.getBlendMode()));
   if (paint.getImageFilter())
