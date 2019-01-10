@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ownership/owner_key_util.h"
@@ -95,15 +94,6 @@ KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
   if (profile->IsGuestSession() || ProfileHelper::IsSigninProfile(profile) ||
       ProfileHelper::IsLockScreenAppProfile(profile)) {
     return nullptr;
-  }
-
-  // TODO(olsen): Delete this code once no tests use kStubCrosSettings switch.
-  // See http://crbug.com/909635
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCrosSettings) &&
-      g_stub_cros_settings_provider_for_testing_ == nullptr) {
-    g_stub_cros_settings_provider_for_testing_ =
-        CrosSettings::Get()->stubbed_provider_for_test();
   }
 
   // If g_stub_cros_settings_provider_for_testing_ is set, we treat the current

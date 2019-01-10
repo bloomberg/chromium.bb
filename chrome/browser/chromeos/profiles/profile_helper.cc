@@ -198,11 +198,6 @@ std::string ProfileHelper::GetLockScreenAppProfileName() {
 
 // static
 bool ProfileHelper::IsOwnerProfile(const Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kStubCrosSettings)) {
-    return true;
-  }
-
   if (!profile)
     return false;
   const user_manager::User* user =

@@ -128,11 +128,6 @@ constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
 // session by default.
 constexpr bool kManagedSessionEnabledByDefault = true;
 
-bool FakeOwnership() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kStubCrosSettings);
-}
-
 std::string FullyCanonicalize(const std::string& email) {
   return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
 }
@@ -864,13 +859,6 @@ void ChromeUserManagerImpl::RegularUserLoggedIn(
 
   MaybeStartBluetoothLogging(account_id);
 
-  if (FakeOwnership()) {
-    std::string owner_email;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                             &owner_email);
-    if (owner_email == account_id.GetUserEmail())
-      SetOwnerId(account_id);
-  }
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), false);
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 

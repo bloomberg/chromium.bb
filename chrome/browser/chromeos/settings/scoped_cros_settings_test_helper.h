@@ -49,11 +49,8 @@ class ScopedCrosSettingsTestHelper {
   std::unique_ptr<FakeOwnerSettingsService> CreateOwnerSettingsService(
       Profile* profile);
 
-  // Returns the stubbed CrosSettingsProvider - either the one that was
-  // initialized by |CrosSettings::Initialize()| (that is, if the switch
-  // |kStubCrosSettings| is set). Or, if CrosSettings was not initialized with
-  // a stub, this returns a stub that is only swapped into |CrosSettings| once
-  // |ReplaceDeviceSettingsProviderWithStub()| is called.
+  // Returns the stubbed CrosSettingsProvider - the one that is swapped into
+  // |CrosSettings| once |ReplaceDeviceSettingsProviderWithStub()| is called.
   // Note that if you want to test the real DeviceSettingsProvider in your test
   // (not a stub), you should set the settings using the OwnerSettingsService
   // which uses the current user's private key to sign the settings.
@@ -61,8 +58,7 @@ class ScopedCrosSettingsTestHelper {
 
   // These methods simply call the appropriate method on |GetStubbedProvider()|.
   // So if you use them, you need to make sure that a stubbed provider is used
-  // in your test - either by setting |kStubCrosSettings| switch or by calling
-  // |ReplaceDeviceSettingsProviderWithStub()|.
+  // in your test by calling |ReplaceDeviceSettingsProviderWithStub()|.
   void SetTrustedStatus(CrosSettingsProvider::TrustedStatus status);
   void SetCurrentUserIsOwner(bool owner);
   void Set(const std::string& path, const base::Value& in_value);

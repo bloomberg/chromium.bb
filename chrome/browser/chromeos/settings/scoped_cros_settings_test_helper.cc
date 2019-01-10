@@ -42,13 +42,10 @@ ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
 
 void ScopedCrosSettingsTestHelper::ReplaceDeviceSettingsProviderWithStub() {
   CHECK(CrosSettings::IsInitialized());
-  CrosSettings* const cros_settings = CrosSettings::Get();
-
-  // If CrosSettings is already using a stub, then we shouldn't be replacing it
-  // with a different stub - that would be confusing and unnecessary.
-  CHECK(!cros_settings->stubbed_provider_for_test());
-  // And, this function shouldn't be called twice either, for the same reason:
+  // This function shouldn't be called twice.
   CHECK(!real_settings_provider_);
+
+  CrosSettings* const cros_settings = CrosSettings::Get();
 
   // TODO(olsen): This could be simplified if DeviceSettings and CrosSettings
   // were the same thing, which they nearly are, except for 3 timezone settings.
@@ -74,14 +71,6 @@ void ScopedCrosSettingsTestHelper::RestoreRealDeviceSettingsProvider() {
 }
 
 StubCrosSettingsProvider* ScopedCrosSettingsTestHelper::GetStubbedProvider() {
-  // If CrosSettings was already initialized with kStubCrosSettings, then
-  // we use the StubCrosSettingsProvider that was already initialized:
-  if (CrosSettings::IsInitialized() &&
-      CrosSettings::Get()->stubbed_provider_for_test()) {
-    return CrosSettings::Get()->stubbed_provider_for_test();
-  }
-  // Otherwise, we use this one - it has to be explicitly swapped in using
-  // ReplaceDeviceSettingsProviderWithStub() however.
   return stub_settings_provider_ptr_;
 }
 
