@@ -81,12 +81,16 @@ bool GetAbsoluteDimensionValue(const AtomicString& attribute_value,
 }
 
 bool IsLazyLoadableImage(const LocalFrame* frame,
-                         HTMLImageElement* html_image) {
+                         HTMLImageElement* html_image,
+                         const KURL& url) {
   // Minimum width or height attribute of the image to start lazyloading.
   const unsigned kMinDimensionToLazyLoad = 10;
 
   // Do not lazyload image elements created from javascript.
   if (!html_image->ElementCreatedByParser())
+    return false;
+
+  if (!url.ProtocolIsInHTTPFamily())
     return false;
 
   if (EqualIgnoringASCIICase(
@@ -537,7 +541,8 @@ void ImageLoader::DoUpdateFromElement(
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        if (IsLazyLoadableImage(frame, html_image)) {
+        if (IsLazyLoadableImage(frame, html_image,
+                                params.GetResourceRequest().Url())) {
           if (frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
               frame->IsLazyLoadingImageAllowed()) {
             params.SetLazyImagePlaceholder();

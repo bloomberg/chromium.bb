@@ -80,7 +80,9 @@ StyleImage* CSSImageValue::CacheImage(
     }
     cached_image_ = StyleFetchedImage::Create(
         document, params,
-        image_request_optimization == FetchParameters::kDeferImageLoad);
+        // Only http/https images are eligible to be lazily loaded.
+        params.Url().ProtocolIsInHTTPFamily() &&
+            image_request_optimization == FetchParameters::kDeferImageLoad);
   }
 
   return cached_image_.Get();
