@@ -19,9 +19,6 @@
  */
 
 // https://dom.spec.whatwg.org/#interface-range
-// The `HTMLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 [
     Constructor,
     ConstructorCallWith=Document

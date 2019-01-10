@@ -20,10 +20,6 @@
 
 // https://html.spec.whatwg.org/#the-embed-element
 
-// The `ScriptURLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
-
 // TODO(yukishiino): HTMLEmbedElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
