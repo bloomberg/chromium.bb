@@ -9,6 +9,10 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios_web_view {
 
 WebViewTranslateService::TranslateRequestsAllowedListener::
