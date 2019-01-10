@@ -1999,6 +1999,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
+    {"crostini-backup", flag_descriptions::kCrostiniBackupName,
+     flag_descriptions::kCrostiniBackupDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBackup)},
     {"crostini-files", flag_descriptions::kCrostiniFilesName,
      flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniFiles)},
