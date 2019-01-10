@@ -528,6 +528,16 @@ PDFViewer.prototype = {
   },
 
   /**
+   * Exits annotation mode if active.
+   */
+  exitAnnotationMode_: function() {
+    if (!this.toolbar_.annotationMode) {
+      return;
+    }
+    this.toolbar_.toggleAnnotation();
+  },
+
+  /**
    * Request to change the viewport fitting type.
    *
    * @param {CustomEvent} e Event received with the new FittingType as detail.
@@ -1130,6 +1140,9 @@ PDFViewer.prototype = {
     a.href = URL.createObjectURL(blob);
     a.click();
     URL.revokeObjectURL(a.href);
+
+    // Saving in Annotation mode is destructive: crbug.com/919364
+    this.exitAnnotationMode_();
   },
 };
 
