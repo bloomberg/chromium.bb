@@ -404,8 +404,6 @@ repack("service_pak") {
 source_set("test_common") {
   testonly = true
   sources = [
-    "common/test/run_with_timeout.cc",
-    "common/test/run_with_timeout.h",
     "common/test/test_common.cc",
     "common/test/test_common.h",
   ]
