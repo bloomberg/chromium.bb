@@ -6471,13 +6471,15 @@ TEST_F(InputMethodStateAuraTest, GetCompositionTextRange) {
 
 // This test is for selection range.
 TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
-  base::string16 text;
   gfx::Range expected_range(0U, 1U);
 
   for (auto index : active_view_sequence_) {
-    render_widget_host_delegate()->set_focused_widget(
-        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
-    views_[index]->SelectionChanged(text, 0U, expected_range);
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    TextInputState state_with_selection;
+    state_with_selection.type = ui::TEXT_INPUT_TYPE_TEXT;
+    state_with_selection.selection_start = expected_range.start();
+    state_with_selection.selection_end = expected_range.end();
+    views_[index]->TextInputStateChanged(state_with_selection);
     gfx::Range range_from_client;
 
     // This method always returns true.

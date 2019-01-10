@@ -1419,17 +1419,15 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
 
 bool RenderWidgetHostViewAura::GetEditableSelectionRange(
     gfx::Range* range) const {
-  // TODO(yhanada, crbug.com/908762): Return only selections in a text field.
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
-  if (!selection)
+  const TextInputState* state = text_input_manager_->GetTextInputState();
+  if (!state)
     return false;
 
-  range->set_start(selection->range().start());
-  range->set_end(selection->range().end());
+  range->set_start(state->selection_start);
+  range->set_end(state->selection_end);
   return true;
 }
 
