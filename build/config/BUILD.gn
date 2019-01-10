@@ -61,8 +61,7 @@ declare_args() {
 # flags. See //build/config/BUILDCONFIG.gn for advice on where to define
 # build flags.
 config("feature_flags") {
-  # Don't use deprecated V8 APIs anywhere.
-  defines = [ "V8_DEPRECATION_WARNINGS" ]
+  defines = []
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON=1" ]
     if (dcheck_is_configurable) {
