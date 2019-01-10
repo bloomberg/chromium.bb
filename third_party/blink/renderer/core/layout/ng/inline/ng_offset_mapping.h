@@ -20,6 +20,7 @@ namespace blink {
 
 class LayoutBlockFlow;
 class LayoutObject;
+class NGCaretNavigator;
 
 enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
 
@@ -105,7 +106,10 @@ class CORE_EXPORT NGOffsetMapping {
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
   NGOffsetMapping(NGOffsetMapping&&);
-  NGOffsetMapping(UnitVector&&, RangeMap&&, String);
+  NGOffsetMapping(UnitVector&&,
+                  RangeMap&&,
+                  String,
+                  std::unique_ptr<NGCaretNavigator>);
   ~NGOffsetMapping();
 
   const UnitVector& GetUnits() const { return units_; }
@@ -138,6 +142,9 @@ class CORE_EXPORT NGOffsetMapping {
   // contains the given object. Note that the object can be in either legacy or
   // NG layout, while NGOffsetMapping is supported on both of them.
   static LayoutBlockFlow* GetInlineFormattingContextOf(const LayoutObject&);
+
+  // Variants taking position instead of |LayoutObject|.
+  static LayoutBlockFlow* GetInlineFormattingContextOf(const Position&);
 
   // ------ Mapping APIs from DOM to text content ------
 
@@ -207,6 +214,10 @@ class CORE_EXPORT NGOffsetMapping {
   // control charcters. Returns true otherwise.
   bool HasBidiControlCharactersOnly(unsigned start, unsigned end) const;
 
+  const NGCaretNavigator* GetCaretNavigator() const {
+    return caret_navigator_.get();
+  }
+
  private:
   // The NGOffsetMappingUnits of the inline formatting context in osrted order.
   UnitVector units_;
@@ -217,6 +228,9 @@ class CORE_EXPORT NGOffsetMapping {
   // The text content string of the inline formatting context. Same string as
   // |NGInlineNodeData::text_content_|.
   String text_;
+
+  // Helper class for caret nagivation on |text_|.
+  std::unique_ptr<NGCaretNavigator> caret_navigator_;
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };

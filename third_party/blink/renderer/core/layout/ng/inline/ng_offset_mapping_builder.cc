@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
@@ -198,7 +199,8 @@ void NGOffsetMappingBuilder::SetDestinationString(String string) {
   destination_string_ = string;
 }
 
-NGOffsetMapping NGOffsetMappingBuilder::Build() {
+NGOffsetMapping NGOffsetMappingBuilder::Build(
+    std::unique_ptr<NGCaretNavigator> caret_navigator) {
   // All mapping units are already built. Scan them to build mapping ranges.
   for (unsigned range_start = 0; range_start < mapping_units_.size();) {
     const Node* node = &mapping_units_[range_start].GetOwner();
@@ -214,7 +216,7 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
   }
 
   return NGOffsetMapping(std::move(mapping_units_), std::move(unit_ranges_),
-                         destination_string_);
+                         destination_string_, std::move(caret_navigator));
 }
 
 void NGOffsetMappingBuilder::EnterInline(const LayoutObject& layout_object) {
