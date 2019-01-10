@@ -193,7 +193,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   ValidateBrowserWindowProperties(profile2_browser, entry->GetName());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, HostedApp) {
+// TODO(crbug.com/919760): This test is flaky.
+IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
   // Load an app.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app/"));
