@@ -51,11 +51,14 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
 
   // Marking implementation.
 
-  // Conservatively marks an object if pointed to by Address.
+  // Conservatively marks an object if pointed to by Address. The object may
+  // be in construction as the scan is conservative without relying on a
+  // Trace method.
   void ConservativelyMarkAddress(BasePage*, Address);
 
   // Marks an object dynamically using any address within its body and adds a
-  // tracing callback for processing of the object.
+  // tracing callback for processing of the object. The object is not allowed
+  // to be in construction.
   void DynamicallyMarkAddress(Address);
 
   // Marks an object and adds a tracing callback for processing of the object.
@@ -97,8 +100,11 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
       // that lead to many recursions.
       DCHECK(Heap().GetStackFrameDepth().IsAcceptableStackUse());
       if (LIKELY(Heap().GetStackFrameDepth().IsSafeToRecurse())) {
-        if (MarkHeaderNoTracing(
-                HeapObjectHeader::FromPayload(desc.base_object_payload))) {
+        HeapObjectHeader* header =
+            HeapObjectHeader::FromPayload(desc.base_object_payload);
+        if (header->IsInConstruction()) {
+          not_fully_constructed_worklist_.Push(desc.base_object_payload);
+        } else if (MarkHeaderNoTracing(header)) {
           desc.callback(this, desc.base_object_payload);
         }
         return;
@@ -199,7 +205,9 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
   DCHECK(header);
   DCHECK(callback);
 
-  if (MarkHeaderNoTracing(header)) {
+  if (header->IsInConstruction()) {
+    not_fully_constructed_worklist_.Push(header->Payload());
+  } else if (MarkHeaderNoTracing(header)) {
     marking_worklist_.Push(
         {reinterpret_cast<void*>(header->Payload()), callback});
   }

@@ -121,6 +121,8 @@ class WeakMember;
 template <typename T>
 class UntracedMember;
 
+namespace internal {
+
 template <typename T, bool = NeedsAdjustPointer<T>::value>
 class ObjectAliveTrait;
 
@@ -143,9 +145,16 @@ class ObjectAliveTrait<T, true> {
   NO_SANITIZE_ADDRESS
   static bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
-    return object->GetHeapObjectHeader()->IsMarked();
+    const HeapObjectHeader* header = object->GetHeapObjectHeader();
+    if (header == BlinkGC::kNotFullyConstructedObject) {
+      // Objects under construction are always alive.
+      return true;
+    }
+    return header->IsMarked();
   }
 };
+
+}  // namespace internal
 
 class PLATFORM_EXPORT ThreadHeap {
  public:
@@ -173,7 +182,7 @@ class PLATFORM_EXPORT ThreadHeap {
       return true;
     DCHECK(&ThreadState::Current()->Heap() ==
            &PageFromObject(object)->Arena()->GetThreadState()->Heap());
-    return ObjectAliveTrait<T>::IsHeapObjectAlive(object);
+    return internal::ObjectAliveTrait<T>::IsHeapObjectAlive(object);
   }
   template <typename T>
   static inline bool IsHeapObjectAlive(const Member<T>& member) {
@@ -546,53 +555,18 @@ class GarbageCollected {
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
-template <typename T, bool is_mixin = IsGarbageCollectedMixin<T>::value>
-class ConstructTrait {
- public:
-};
-
-template <typename T>
-class ConstructTrait<T, false> {
- public:
-  template <typename... Args>
-  static T* Construct(Args&&... args) {
-    void* memory =
-        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
-    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-    header->MarkIsInConstruction();
-    // Placement new as regular operator new() is deleted.
-    T* object = ::new (memory) T(std::forward<Args>(args)...);
-    header->UnmarkIsInConstruction();
-    return object;
-  }
-};
-
-template <typename T>
-class ConstructTrait<T, true> {
- public:
-  template <typename... Args>
-  NO_SANITIZE_UNRELATED_CAST static T* Construct(Args&&... args) {
-    void* memory =
-        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
-    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-    header->MarkIsInConstruction();
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    state->EnterGCForbiddenScopeIfNeeded(
-        &(reinterpret_cast<T*>(memory)->mixin_constructor_marker_));
-    // Placement new as regular operator new() is deleted.
-    T* object = ::new (memory) T(std::forward<Args>(args)...);
-    header->UnmarkIsInConstruction();
-    return object;
-  }
-};
-
 // Constructs an instance of T, which is a garbage collected type.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  return ConstructTrait<T>::Construct(std::forward<Args>(args)...);
+  void* memory = T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+  header->MarkIsInConstruction();
+  // Placement new as regular operator new() is deleted.
+  T* object = ::new (memory) T(std::forward<Args>(args)...);
+  header->UnmarkIsInConstruction();
+  return object;
 }
 
 // Assigning class types to their arenas.
@@ -753,7 +727,7 @@ void Visitor::HandleWeakCell(Visitor* self, void* object) {
       // preserved to avoid reviving objects in containers.
       return;
     }
-    if (!ObjectAliveTrait<T>::IsHeapObjectAlive(contents))
+    if (!ThreadHeap::IsHeapObjectAlive(contents))
       *cell = nullptr;
   }
 }

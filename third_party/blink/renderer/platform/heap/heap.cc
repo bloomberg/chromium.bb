@@ -165,10 +165,31 @@ void ThreadHeap::CommitCallbackStacks() {
 
 void ThreadHeap::DecommitCallbackStacks() {
   marking_worklist_.reset(nullptr);
-  not_fully_constructed_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
   ephemeron_callbacks_.clear();
+
+  // The fixed point iteration may have found not-fully-constructed objects.
+  // Such objects should have already been found through the stack scan though
+  // and should thus already be marked.
+  if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
+#if DCHECK_IS_ON()
+    NotFullyConstructedItem item;
+    while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
+                                                &item)) {
+      BasePage* const page = PageFromObject(item);
+      HeapObjectHeader* const header =
+          page->IsLargeObjectPage()
+              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+              : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                    reinterpret_cast<Address>(const_cast<void*>(item)));
+      DCHECK(header->IsMarked());
+    }
+#else
+    not_fully_constructed_worklist_->Clear();
+#endif
+  }
+  not_fully_constructed_worklist_.reset(nullptr);
 }
 
 HeapCompact* ThreadHeap::Compaction() {
@@ -260,8 +281,6 @@ bool DrainWorklistWithDeadline(TimeTicks deadline,
 }  // namespace
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
-  // const size_t kDeadlineCheckInterval = 2500;
-  // size_t processed_callback_count = 0;
   bool finished;
   // Ephemeron fixed point loop.
   do {
@@ -271,11 +290,13 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
       ThreadHeapStatsCollector::Scope stats_scope(
           stats_collector(), ThreadHeapStatsCollector::kMarkProcessWorklist);
 
-      finished =
-          DrainWorklistWithDeadline(deadline, marking_worklist_.get(),
-                                    [visitor](const MarkingItem& item) {
-                                      item.callback(visitor, item.object);
-                                    });
+      finished = DrainWorklistWithDeadline(
+          deadline, marking_worklist_.get(),
+          [visitor](const MarkingItem& item) {
+            DCHECK(!HeapObjectHeader::FromPayload(item.object)
+                        ->IsInConstruction());
+            item.callback(visitor, item.object);
+          });
       if (!finished)
         return false;
 
@@ -599,6 +620,12 @@ void ThreadHeap::WriteBarrier(void* value) {
                 reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())
     return;
+
+  if (header->IsInConstruction()) {
+    not_fully_constructed_worklist_->Push(WorklistTaskId::MainThread,
+                                          header->Payload());
+    return;
+  }
 
   // Mark and push trace callback.
   header->Mark();
