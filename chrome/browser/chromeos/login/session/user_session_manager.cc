@@ -1194,11 +1194,22 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
 }
 
 // http://crbug/866790: After Supervised Users are deprecated, remove this.
-void ShowSupervisedUserDeprecationNotification(Profile* profile) {
-  base::string16 title = l10n_util::GetStringUTF16(
-      IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE);
-  base::string16 message =
-      l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY);
+void ShowSupervisedUserDeprecationNotification(Profile* profile,
+                                               bool is_manager) {
+  base::string16 title;
+  base::string16 message;
+
+  if (is_manager) {
+    title = l10n_util::GetStringUTF16(
+        IDS_MANAGER_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE);
+    message = l10n_util::GetStringUTF16(
+        IDS_MANAGER_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY);
+  } else {
+    title = l10n_util::GetStringUTF16(
+        IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE);
+    message = l10n_util::GetStringUTF16(
+        IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY);
+  }
 
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
@@ -1213,7 +1224,7 @@ void ShowSupervisedUserDeprecationNotification(Profile* profile) {
                                     GURL("https://support.google.com/chrome/"
                                          "?p=ui_supervised_user"),
                                     ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-              params.disposition = WindowOpenDisposition::SINGLETON_TAB;
+              params.disposition = WindowOpenDisposition::NEW_WINDOW;
               Navigate(&params);
             }
           }));
@@ -1344,9 +1355,15 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled() &&
-      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
-    ShowSupervisedUserDeprecationNotification(profile);
+  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled()) {
+    bool is_supervised_user =
+        user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
+    bool is_manager = ChromeUserManager::Get()
+                          ->GetSupervisedUserManager()
+                          ->HasSupervisedUsers(account_id.GetUserEmail());
+    if (is_manager || is_supervised_user)
+      ShowSupervisedUserDeprecationNotification(profile, is_manager);
+  }
 
   // Demo user signed in.
   if (is_incognito_profile) {
