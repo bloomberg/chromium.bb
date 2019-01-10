@@ -820,12 +820,12 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
-    didCommitNavigationWithDetails:
-        (const web::LoadCommittedDetails&)load_details {
+    didFinishNavigation:(web::NavigationContext*)navigation {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   [self notifyTabChanged:tab];
 
-  if (!load_details.is_in_page && !self.offTheRecord) {
+  if (!navigation->IsSameDocument() && navigation->HasCommitted() &&
+      !self.offTheRecord) {
     int tabCount = static_cast<int>(self.count);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
   }
@@ -895,12 +895,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
       addLocationToNavigationItem:navigationItem
                      browserState:ios::ChromeBrowserState::FromBrowserState(
                                       webState->GetBrowserState())];
-}
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
