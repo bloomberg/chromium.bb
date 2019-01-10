@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
@@ -181,6 +182,12 @@ class AudioFocusManagerTest
   }
 
   bool IsEnforcementEnabled() const {
+#if defined(OS_CHROMEOS)
+    // Enforcement is enabled by default on Chrome OS.
+    if (GetParam() == mojom::EnforcementMode::kDefault)
+      return true;
+#endif
+
     return GetParam() == mojom::EnforcementMode::kSingleSession ||
            GetParam() == mojom::EnforcementMode::kSingleGroup;
   }
