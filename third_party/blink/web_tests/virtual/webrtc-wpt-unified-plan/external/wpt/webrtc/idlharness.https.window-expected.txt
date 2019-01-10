@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 494 tests; 337 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 494 tests; 339 PASS, 155 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: ReferenceError: RTCSctpTransport is not defined Reached unreachable code
@@ -266,7 +266,7 @@ FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototyp
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
 PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
-FAIL RTCRtpReceiver interface: operation getSynchronizationSources() assert_own_property: interface prototype object missing non-static operation expected property "getSynchronizationSources" missing
+PASS RTCRtpReceiver interface: operation getSynchronizationSources()
 PASS RTCRtpReceiver interface: operation getStats()
 PASS RTCRtpReceiver must be primary interface of new RTCPeerConnection().addTransceiver('audio').receiver
 PASS Stringification of new RTCPeerConnection().addTransceiver('audio').receiver
@@ -277,7 +277,7 @@ PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').r
 PASS RTCRtpReceiver interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').receiver with too few arguments must throw TypeError
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getParameters()" with the proper type
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getContributingSources()" with the proper type
-FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getSynchronizationSources()" with the proper type assert_inherits: property "getSynchronizationSources" not found in prototype chain
+PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getSynchronizationSources()" with the proper type
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getStats()" with the proper type
 PASS RTCRtpTransceiver interface: existence and properties of interface object
 PASS RTCRtpTransceiver interface object length
