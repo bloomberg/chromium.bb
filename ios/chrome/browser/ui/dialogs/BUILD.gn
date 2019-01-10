@@ -50,6 +50,8 @@ source_set("unit_tests") {
 source_set("dialogs_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "completion_block_util.h",
+    "completion_block_util.mm",
     "dialog_presenter.h",
     "dialog_presenter.mm",
     "java_script_dialog_presenter_impl.h",
@@ -78,6 +80,7 @@ source_set("unit_tests_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "completion_block_util_unittest.mm",
     "dialog_presenter_unittest.mm",
     "java_script_dialog_presenter_impl_unittest.mm",
     "nsurl_protection_space_util_unittest.mm",
