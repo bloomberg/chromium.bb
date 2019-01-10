@@ -1283,8 +1283,10 @@ function TEST(testCaseName, testName, testBody) {
  * @param {string} testFixture The name of the test fixture class.
  * @param {string} testName The name of the test function.
  * @param {Function} testBody The body to execute when running this test.
+ * @param {string=} opt_preamble C++ code to be generated before the test. Does
+ * nothing here in the runtime phase.
  */
-function TEST_F(testFixture, testName, testBody) {
+function TEST_F(testFixture, testName, testBody, opt_preamble) {
   var fixtureConstructor = this[testFixture];
   if (!fixtureConstructor.prototype.name) {
     fixtureConstructor.prototype.name = testFixture;
@@ -1293,6 +1295,18 @@ function TEST_F(testFixture, testName, testBody) {
     fixtureConstructor.testCaseBodies = {};
   }
   fixtureConstructor.testCaseBodies[testName] = testBody;
+}
+
+/**
+ * Similar to TEST_F above but with a mandatory |preamble|.
+ * @param {string} preamble C++ code to be generated before the test. Does
+ *                 nothing here in the runtime phase.
+ * @param {string} testFixture The name of the test fixture class.
+ * @param {string} testName The name of the test function.
+ * @param {Function} testBody The body to execute when running this test.
+ */
+function TEST_F_WITH_PREAMBLE(preamble, testFixture, testName, testBody) {
+  TEST_F(testFixture, testName, testBody);
 }
 
 /**
@@ -1856,6 +1870,7 @@ exports.runTestFunction = runTestFunction;
 exports.DUMMY_URL = DUMMY_URL;
 exports.TEST = TEST;
 exports.TEST_F = TEST_F;
+exports.TEST_F_WITH_PREAMBLE = TEST_F_WITH_PREAMBLE;
 exports.RUNTIME_TEST_F = TEST_F;
 exports.GEN = GEN;
 exports.GEN_INCLUDE = GEN_INCLUDE;

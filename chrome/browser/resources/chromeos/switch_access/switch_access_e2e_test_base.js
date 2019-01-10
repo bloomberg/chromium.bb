@@ -29,7 +29,7 @@ SwitchAccessE2ETest.prototype = {
 
   /** @override */
   testGenCppIncludes: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -38,12 +38,12 @@ SwitchAccessE2ETest.prototype = {
 #include "chrome/common/extensions/extension_constants.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/keyboard/keyboard_util.h"
-    */ });
+    `);
   },
 
   /** @override */
   testGenPreamble: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
   //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
   //ash::Shell::Get()->CreateKeyboard();
   base::Closure load_cb =
@@ -54,7 +54,7 @@ SwitchAccessE2ETest.prototype = {
       ::switches::kEnableExperimentalAccessibilitySwitchAccess);
   chromeos::AccessibilityManager::Get()->SetSwitchAccessEnabled(true);
   WaitForExtension(extension_misc::kSwitchAccessExtensionId, load_cb);
-    */ });
+    `);
   },
 
   /**

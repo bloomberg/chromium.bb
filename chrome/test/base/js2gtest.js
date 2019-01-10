@@ -330,22 +330,6 @@ function GEN(code) {
 }
 
 /**
- * Outputs |commentEncodedCode|, converting comment to enclosed C++ code.
- * @param {function} commentEncodedCode A function in the following format (note
- * the space in '/ *' and '* /' should be removed to form a comment delimiter):
- *    function() {/ *! my_cpp_code.DoSomething(); * /
- *    Code between / *! and * / will be extracted and written to stdout.
- */
-function GEN_BLOCK(commentEncodedCode) {
-  var code = commentEncodedCode.toString().
-      replace(/^[^\/]+\/\*!?/, '').
-      replace(/\*\/[^\/]+$/, '').
-      replace(/^\n|\n$/, '').
-      replace(/\s+$/, '');
-  GEN(code);
-}
-
-/**
  * Generate includes for the current |jsFile| by including them
  * immediately and at runtime.
  * The paths must be relative to the directory of the current file.
@@ -385,8 +369,10 @@ function getTestDeclarationLineNumber() {
  * @param {string} testFixture The name of this test's fixture.
  * @param {string} testFunction The name of this test's function.
  * @param {Function} testBody The function body to execute for this test.
+ * @param {string=} opt_preamble C++ to be generated before the TEST_F block.
+ * Useful for including #ifdef blocks. See TEST_F_WITH_PREAMBLE.
  */
-function TEST_F(testFixture, testFunction, testBody) {
+function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
   maybeGenHeader(testFixture);
   var browsePreload = this[testFixture].prototype.browsePreload;
   var browsePrintPreload = this[testFixture].prototype.browsePrintPreload;
@@ -478,6 +464,10 @@ class ${testFixture} : public ${typedefCppFixture} {
     typedeffedCppFixtures[testFixture] = typedefCppFixture;
   }
 
+  if (opt_preamble) {
+    GEN(opt_preamble);
+  }
+
   var outputLine = countOutputLines() + 3;
   output(`
 #line ${testFLine} "${jsFile}"
@@ -519,6 +509,18 @@ ${testF}(${testFixture}, ${testFunction}) {
   if (testGenPostamble)
     testGenPostamble(testFixture, testFunction);
   output('}\n');
+}
+
+/**
+ * Same as TEST_F above, with a mandatory preamble.
+ * @param {string} preamble C++ to be generated before the TEST_F block.
+ *                 Useful for including #ifdef blocks.
+ * @param {string} testFixture The name of this test's fixture.
+ * @param {string} testFunction The name of this test's function.
+ * @param {Function} testBody The function body to execute for this test.
+ */
+function TEST_F_WITH_PREAMBLE(preamble, testFixture, testFunction, testBody) {
+  TEST_F(testFixture, testFunction, testBody, preamble);
 }
 
 // Now that generation functions are defined, load in |jsFile|.
