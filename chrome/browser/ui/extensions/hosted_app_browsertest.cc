@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/badging/badge_service_delegate.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -976,6 +978,113 @@ IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
   EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
             app_browser->GetWindowTitleForCurrentTab(false));
 }
+
+#if !defined(OS_CHROMEOS)
+class HostedAppBadgingTest : public HostedAppTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HostedAppTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features", "Badging");
+  }
+
+  void OnBadgeSet(content::WebContents* web_contents,
+                  base::Optional<uint64_t> badge_content) {
+    if (badge_content.has_value())
+      last_badge_content_ = badge_content;
+    else
+      was_flagged_ = true;
+
+    awaiter_->Quit();
+  }
+
+  void OnBadgeCleared(content::WebContents* web_contents) {
+    was_cleared_ = true;
+    awaiter_->Quit();
+  }
+
+  void SetUpOnMainThread() override {
+    HostedAppTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(https_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    InstallSecurePWA();
+
+    awaiter_ = std::make_unique<base::RunLoop>();
+    badge_service_delegate_ = app_browser_->window()->GetBadgeServiceDelegate();
+    badge_service_delegate_->SetImplForTesting(
+        base::BindRepeating(&HostedAppBadgingTest::OnBadgeSet,
+                            base::Unretained(this)),
+        base::BindRepeating(&HostedAppBadgingTest::OnBadgeCleared,
+                            base::Unretained(this)));
+  }
+
+ protected:
+  void ExecuteScriptAndWaitForBadgeChange(std::string script) {
+    was_cleared_ = false;
+    was_flagged_ = false;
+    last_badge_content_ = base::nullopt;
+    awaiter_.reset(new base::RunLoop());
+
+    content::WebContents* web_contents =
+        app_browser_->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(content::ExecuteScript(web_contents, script));
+
+    if (was_cleared_ || was_flagged_ || last_badge_content_ != base::nullopt)
+      return;
+
+    awaiter_->Run();
+  }
+
+  BadgeServiceDelegate* badge_service_delegate_;
+
+  bool was_cleared_ = false;
+  bool was_flagged_ = false;
+  base::Optional<uint64_t> last_badge_content_ = base::nullopt;
+
+ private:
+  std::unique_ptr<base::RunLoop> awaiter_;
+};
+
+// Tests that setting the badge to an integer will be propagated across
+// processes.
+IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetToAnInteger) {
+  ExecuteScriptAndWaitForBadgeChange("Badge.set(99)");
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_EQ(base::Optional<uint64_t>(99u), last_badge_content_);
+}
+
+// Tests that calls to |Badge.clear| are propagated across processes.
+IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithClearMethod) {
+  ExecuteScriptAndWaitForBadgeChange("Badge.set(55)");
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_EQ(base::Optional<uint64_t>(55u), last_badge_content_);
+
+  ExecuteScriptAndWaitForBadgeChange("Badge.clear()");
+  ASSERT_TRUE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that calling Badge.set(0) is equivalent to calling |Badge.clear| and
+// that it propagates across processes.
+IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithZero) {
+  ExecuteScriptAndWaitForBadgeChange("Badge.set(0)");
+  ASSERT_TRUE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that setting the badge without content is propagated across processes.
+IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetWithoutAValue) {
+  ExecuteScriptAndWaitForBadgeChange("Badge.set()");
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_TRUE(was_flagged_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+#endif  // !defined(OS_CHROMEOS)
 
 using HostedAppPWAOnlyTest = HostedAppTest;
 
@@ -2816,3 +2925,12 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
                        ::testing::Bool(),
                        ::testing::Bool()));
+
+#if !defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HostedAppBadgingTest,
+    ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
+                       ::testing::Values(true),
+                       ::testing::Bool()));
+#endif  // !defined(OS_CHROMEOS)

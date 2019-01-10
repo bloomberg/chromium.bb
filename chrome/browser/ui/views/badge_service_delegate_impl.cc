@@ -58,10 +58,8 @@ std::string GetBadgeString(base::Optional<uint64_t> badge_content) {
 }
 #endif
 
-}  // namespace
-
-void BadgeServiceDelegate::SetBadge(content::WebContents* contents,
-                                    base::Optional<uint64_t> badge_content) {
+void SetBadgeImpl(content::WebContents* contents,
+                  base::Optional<uint64_t> badge_content) {
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   auto* window = browser->window()->GetNativeWindow();
@@ -71,7 +69,7 @@ void BadgeServiceDelegate::SetBadge(content::WebContents* contents,
 #endif
 }
 
-void BadgeServiceDelegate::ClearBadge(content::WebContents* contents) {
+void ClearBadgeImpl(content::WebContents* contents) {
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -82,4 +80,28 @@ void BadgeServiceDelegate::ClearBadge(content::WebContents* contents) {
 #elif defined(OS_MACOSX)
   SetAppShimBadgeLabel(contents, "");
 #endif
+}
+
+}  // namespace
+
+BadgeServiceDelegate::BadgeServiceDelegate()
+    : on_set_badge_(base::BindRepeating(&SetBadgeImpl)),
+      on_clear_badge_(base::BindRepeating(&ClearBadgeImpl)) {}
+
+BadgeServiceDelegate::~BadgeServiceDelegate() {}
+
+void BadgeServiceDelegate::SetBadge(content::WebContents* contents,
+                                    base::Optional<uint64_t> badge_content) {
+  on_set_badge_.Run(contents, badge_content);
+}
+
+void BadgeServiceDelegate::ClearBadge(content::WebContents* contents) {
+  on_clear_badge_.Run(contents);
+}
+
+void BadgeServiceDelegate::SetImplForTesting(
+    SetBadgeCallback on_set_badge,
+    ClearBadgeCallback on_clear_badge) {
+  on_set_badge_ = on_set_badge;
+  on_clear_badge_ = on_clear_badge;
 }
