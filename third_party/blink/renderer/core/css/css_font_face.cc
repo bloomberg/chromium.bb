@@ -43,10 +43,16 @@ void CSSFontFace::AddSource(CSSFontFaceSource* source) {
   sources_.push_back(source);
 }
 
-void CSSFontFace::SetSegmentedFontFace(
+void CSSFontFace::AddSegmentedFontFace(
     CSSSegmentedFontFace* segmented_font_face) {
-  DCHECK(!segmented_font_face_);
-  segmented_font_face_ = segmented_font_face;
+  DCHECK(!segmented_font_faces_.Contains(segmented_font_face));
+  segmented_font_faces_.insert(segmented_font_face);
+}
+
+void CSSFontFace::RemoveSegmentedFontFace(
+    CSSSegmentedFontFace* segmented_font_face) {
+  DCHECK(segmented_font_faces_.Contains(segmented_font_face));
+  segmented_font_faces_.erase(segmented_font_face);
 }
 
 void CSSFontFace::DidBeginLoad() {
@@ -70,8 +76,8 @@ bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
     }
   }
 
-  if (segmented_font_face_)
-    segmented_font_face_->FontFaceInvalidated();
+  for (CSSSegmentedFontFace* segmented_font_face : segmented_font_faces_)
+    segmented_font_face->FontFaceInvalidated();
   return true;
 }
 
@@ -82,17 +88,21 @@ void CSSFontFace::SetDisplay(FontDisplay value) {
 }
 
 size_t CSSFontFace::ApproximateBlankCharacterCount() const {
-  if (!sources_.IsEmpty() && sources_.front()->IsInBlockPeriod() &&
-      segmented_font_face_)
-    return segmented_font_face_->ApproximateCharacterCount();
-  return 0;
+  if (sources_.IsEmpty() || !sources_.front()->IsInBlockPeriod())
+    return 0;
+  size_t approximate_character_count_ = 0;
+  for (CSSSegmentedFontFace* segmented_font_face : segmented_font_faces_) {
+    approximate_character_count_ +=
+        segmented_font_face->ApproximateCharacterCount();
+  }
+  return approximate_character_count_;
 }
 
 bool CSSFontFace::FallbackVisibilityChanged(RemoteFontFaceSource* source) {
   if (!IsValid() || source != sources_.front())
     return false;
-  if (segmented_font_face_)
-    segmented_font_face_->FontFaceInvalidated();
+  for (CSSSegmentedFontFace* segmented_font_face : segmented_font_faces_)
+    segmented_font_face->FontFaceInvalidated();
   return true;
 }
 
@@ -113,8 +123,7 @@ scoped_refptr<SimpleFontData> CSSFontFace::GetFontData(
       return nullptr;
 
     if (scoped_refptr<SimpleFontData> result = source->GetFontData(
-            font_description,
-            segmented_font_face_->GetFontSelectionCapabilities())) {
+            font_description, font_face_->GetFontSelectionCapabilities())) {
       // The active source may already be loading or loaded. Adjust our
       // FontFace status accordingly.
       if (LoadStatus() == FontFace::kUnloaded &&
@@ -202,7 +211,7 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   else
     font_face_->SetLoadStatus(new_status);
 
-  if (!segmented_font_face_ || !font_face_->GetExecutionContext())
+  if (segmented_font_faces_.IsEmpty() || !font_face_->GetExecutionContext())
     return;
 
   if (auto* document = DynamicTo<Document>(font_face_->GetExecutionContext())) {
@@ -216,7 +225,7 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
 }
 
 void CSSFontFace::Trace(blink::Visitor* visitor) {
-  visitor->Trace(segmented_font_face_);
+  visitor->Trace(segmented_font_faces_);
   visitor->Trace(sources_);
   visitor->Trace(font_face_);
 }
