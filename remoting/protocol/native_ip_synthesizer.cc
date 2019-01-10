@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "net/base/sys_addrinfo.h"
 #include "remoting/protocol/rfc7050_ip_synthesizer.h"
+#include "remoting/protocol/rfc7050_prefix_refresher.h"
 #include "third_party/webrtc/rtc_base/ipaddress.h"
 #include "third_party/webrtc/rtc_base/socketaddress.h"
 
@@ -59,6 +60,10 @@ rtc::SocketAddress ToNativeSocket(const rtc::SocketAddress& original_socket) {
 #if defined(OS_NACL)
 void RefreshNativeIpSynthesizer(base::OnceClosure on_done) {
   Rfc7050IpSynthesizer::GetInstance()->UpdateDns64Prefix(std::move(on_done));
+}
+#elif !defined(OS_ANDROID) && !defined(OS_IOS)
+void InitializeNativeIpSynthesizer() {
+  static base::NoDestructor<Rfc7050PrefixRefresher> refresher;
 }
 #endif
 

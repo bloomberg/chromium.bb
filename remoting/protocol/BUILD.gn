@@ -226,6 +226,8 @@ static_library("protocol") {
       "chromium_port_allocator_factory.h",
       "chromium_socket_factory.cc",
       "chromium_socket_factory.h",
+      "rfc7050_prefix_refresher.cc",
+      "rfc7050_prefix_refresher.h",
       "webrtc_audio_module.cc",
       "webrtc_audio_module.h",
       "webrtc_audio_sink_adapter.cc",

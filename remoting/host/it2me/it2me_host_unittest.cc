@@ -20,6 +20,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/policy_constants.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -191,6 +192,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<FakeSignalStrategy> fake_bot_signal_strategy_;
 
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+
   std::unique_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
@@ -210,6 +213,8 @@ void It2MeHostTest::SetUp() {
   base::GetLinuxDistro();
 #endif
   run_loop_.reset(new base::RunLoop());
+
+  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
 
   host_context_ = ChromotingHostContext::Create(new AutoThreadTaskRunner(
       base::ThreadTaskRunnerHandle::Get(), run_loop_->QuitClosure()));

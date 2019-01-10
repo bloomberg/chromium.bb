@@ -14,6 +14,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -200,6 +201,10 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
+
+  // NetworkChangeNotifier must be initialized after MessageLoop.
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      net::NetworkChangeNotifier::Create());
 
   std::unique_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 

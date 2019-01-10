@@ -38,7 +38,16 @@ rtc::SocketAddress ToNativeSocket(const rtc::SocketAddress& original_socket);
 // NetworkChangeNotifier, so caller must manually refresh to make sure the
 // synthesizer is up to date.
 void RefreshNativeIpSynthesizer(base::OnceClosure on_done);
+#elif !defined(OS_ANDROID) && !defined(OS_IOS)
+// Call this to setup the native IP synthesizer. Does nothing if the synthesizer
+// is already initialized.
+//
+// This will cause the IP synthesizer to refresh itself when this function is
+// first called, and every time the network conditions are changed.
+void InitializeNativeIpSynthesizer();
 #endif
+// Android and iOS have built-in IPv6 synthesizing logic so refreshing IP
+// synthesizer is not needed.
 
 }  // namespace protocol
 }  // namespace remoting
