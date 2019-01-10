@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.VisibleForTesting;
 import android.text.format.DateUtils;
@@ -41,6 +42,40 @@ public final class UiUtils {
     }
 
     private UiUtils() {}
+
+    /**
+     * Builds the accessibility text to be used for a given chip on the chips row.
+     * @param resources The resources to use for lookup.
+     * @param filter The filter type of the chip.
+     * @param itemCount The number of items being shown on the given chip.
+     * @return The content description to be used for the chip.
+     */
+    public static String getChipContentDescription(
+            Resources resources, @Filters.FilterType int filter, int itemCount) {
+        switch (filter) {
+            case Filters.FilterType.NONE:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_generic, itemCount, itemCount);
+            case Filters.FilterType.VIDEOS:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_video, itemCount, itemCount);
+            case Filters.FilterType.MUSIC:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_audio, itemCount, itemCount);
+            case Filters.FilterType.IMAGES:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_images, itemCount, itemCount);
+            case Filters.FilterType.SITES:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_pages, itemCount, itemCount);
+            case Filters.FilterType.OTHER:
+                return resources.getQuantityString(
+                        R.plurals.accessibility_download_manager_ui_generic, itemCount, itemCount);
+            default:
+                assert false;
+                return null;
+        }
+    }
 
     /**
      * Converts {@code date} into a string meant to be used as a list header.

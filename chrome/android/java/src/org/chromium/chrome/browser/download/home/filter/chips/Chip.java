@@ -23,8 +23,8 @@ public class Chip {
     /** The resource id for the text to show in the chip. */
     public final @StringRes int text;
 
-    /** The resource id for the accessibility text to use for the chip. */
-    public final @StringRes int contentDescription;
+    /** The accessibility text to use for the chip. */
+    public String contentDescription;
 
     /** The resource id for the icon to use in the chip. */
     public final @DrawableRes int icon;
@@ -39,11 +39,9 @@ public class Chip {
     public boolean selected;
 
     /** Builds a new {@link Chip} instance.  These properties cannot be changed. */
-    public Chip(int id, @StringRes int text, @StringRes int contentDescription,
-            @DrawableRes int icon, Runnable chipSelectedListener) {
+    public Chip(int id, @StringRes int text, @DrawableRes int icon, Runnable chipSelectedListener) {
         this.id = id;
         this.text = text;
-        this.contentDescription = contentDescription;
         this.icon = icon;
         this.chipSelectedListener = chipSelectedListener;
     }
