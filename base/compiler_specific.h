@@ -31,9 +31,6 @@
 // Pop effects of innermost MSVC_PUSH_* macro.
 #define MSVC_POP_WARNING() __pragma(warning(pop))
 
-#define MSVC_DISABLE_OPTIMIZE() __pragma(optimize("", off))
-#define MSVC_ENABLE_OPTIMIZE() __pragma(optimize("", on))
-
 #else  // Not MSVC
 
 #define _Printf_format_string_
@@ -43,6 +40,24 @@
 #define MSVC_ENABLE_OPTIMIZE()
 
 #endif  // COMPILER_MSVC
+
+// These macros can be helpful when investigating compiler bugs or when
+// investigating issues in local optimized builds, by temporarily disabling
+// optimizations for a single function or file. These macros should never be
+// used to permanently work around compiler bugs or other mysteries, and should
+// not be used in landed changes.
+#if !defined(OFFICIAL_BUILD)
+#if defined(__clang__)
+#define DISABLE_OPTIMIZE() __pragma(clang optimize off)
+#define ENABLE_OPTIMIZE() __pragma(clang optimize on)
+#elif defined(COMPILER_MSVC)
+#define DISABLE_OPTIMIZE() __pragma(optimize("", off))
+#define ENABLE_OPTIMIZE() __pragma(optimize("", on))
+#else
+// These macros are not currently available for other compiler options.
+#endif
+// These macros are not available in official builds.
+#endif  // !defined(OFFICIAL_BUILD)
 
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment
