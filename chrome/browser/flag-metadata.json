@@ -1744,6 +1744,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-safe-browsing-ap-download-verdicts",
+    "owners": [ "drubery" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-scroll-anchor-serialization",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

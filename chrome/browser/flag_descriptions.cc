@@ -1606,6 +1606,13 @@ const char kResourceLoadSchedulerDescription[] =
     "Uses the resource load scheduler in blink to throttle resource load "
     "requests.";
 
+const char kSafeBrowsingUseAPDownloadVerdictsName[] =
+    "Request Advanced Protection verdicts when inspecting downloads";
+const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
+    "If enabled, download protection will request Advanced Protection "
+    "verdicts from Safe Browsing. These will provide stronger protections "
+    "from files Safe Browsing is unsure about.";
+
 const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";
 const char kSafeSearchUrlReportingDescription[] =
     "If enabled, inappropriate URLs can be reported back to SafeSearch.";

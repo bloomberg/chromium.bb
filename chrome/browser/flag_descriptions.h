@@ -968,6 +968,9 @@ extern const char kResetAppListInstallStateDescription[];
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
 
+extern const char kSafeBrowsingUseAPDownloadVerdictsName[];
+extern const char kSafeBrowsingUseAPDownloadVerdictsDescription[];
+
 extern const char kSafeSearchUrlReportingName[];
 extern const char kSafeSearchUrlReportingDescription[];
 
