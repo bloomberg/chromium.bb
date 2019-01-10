@@ -486,21 +486,27 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                   PaygenTestStage(
                       self._run, self.buildstore, suite_name, archive_board,
                       model.name, model.lab_board_name, self.channel,
-                      archive_build, self.skip_duts_check, self.debug)
+                      archive_build, self.skip_duts_check, self.debug,
+                      config_lib.GetHWTestEnv(self._run.config,
+                                              model_config=model))
                   for model in models
               ]
               steps = [stage.Run for stage in stages]
               parallel.RunParallelSteps(steps)
             elif len(models) == 1:
+              model = models[0]
               PaygenTestStage(
                   self._run, self.buildstore, suite_name, archive_board,
-                  models[0].name, models[0].lab_board_name, self.channel,
-                  archive_build, self.skip_duts_check, self.debug).Run()
+                  model.name, model.lab_board_name, self.channel,
+                  archive_build, self.skip_duts_check, self.debug,
+                  config_lib.GetHWTestEnv(self._run.config,
+                                          model_config=model)).Run()
           else:
             PaygenTestStage(self._run, self.buildstore, suite_name,
                             archive_board, None, archive_board, self.channel,
                             archive_build, self.skip_duts_check,
-                            self.debug).Run()
+                            self.debug,
+                            config_lib.GetHWTestEnv(self._run.config)).Run()
 
 
 
@@ -518,7 +524,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
 
   def __init__(self, builder_run, buildstore, suite_name, board, model,
                lab_board_name, channel, build, skip_duts_check, debug,
-               **kwargs):
+               test_env, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
@@ -532,6 +538,8 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       build: Version of payloads to generate.
       skip_duts_check: Do not check minimum available DUTs before tests.
       debug: Boolean indicating if this is a test run or a real run.
+      test_env: A string to indicate the env that the test should run in. The
+                value could be constants.ENV_SKYLAB or constants.ENV_AUTOTEST.
     """
     self.suite_name = suite_name
     self.board = board
@@ -541,6 +549,8 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.build = build
     self.skip_duts_check = skip_duts_check
     self.debug = debug
+    assert test_env in [constants.ENV_SKYLAB, constants.ENV_AUTOTEST]
+    self.test_env = test_env
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
@@ -560,6 +570,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
                                            self.build,
                                            self.skip_duts_check,
                                            self.debug,
+                                           self.test_env,
                                            job_keyvals=self.GetJobKeyvals())
 
   def _HandleStageException(self, exc_info):

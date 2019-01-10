@@ -949,7 +949,7 @@ def ValidateBoardConfig(board):
 
 
 def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
-                          debug, job_keyvals=None):
+                          debug, test_env, job_keyvals=None):
   """Run the appropriate command to schedule the Autotests we have prepped.
 
   Args:
@@ -959,24 +959,39 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
     build: A string representing the name of the archive build.
     skip_duts_check: A boolean indicating to not check minimum available DUTs.
     debug: A boolean indicating whether or not we are in debug mode.
+    test_env: A string to indicate the env that the test should run in. The
+              value could be constants.ENV_SKYLAB, constants.ENV_AUTOTEST.
     job_keyvals: A dict of job keyvals to be injected to suite control file.
   """
   timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-  cmd_result = commands.RunHWTestSuite(
-      board=board,
-      model=model,
-      build=build,
-      suite=suite_name,
-      file_bugs=True,
-      pool='bvt',
-      priority=constants.HWTEST_BUILD_PRIORITY,
-      retry=True,
-      wait_for_results=False,
-      timeout_mins=timeout_mins,
-      suite_min_duts=2,
-      debug=debug,
-      skip_duts_check=skip_duts_check,
-      job_keyvals=job_keyvals)
+  if test_env == constants.ENV_SKYLAB:
+    cmd_result = commands.RunSkylabHWTestSuite(
+        build=build,
+        suite=suite_name,
+        board=board,
+        model=model,
+        pool='bvt',
+        wait_for_results=False,
+        priority=constants.HWTEST_BUILD_PRIORITY,
+        timeout_mins=timeout_mins,
+        retry=True,
+        job_keyvals=job_keyvals)
+  else:
+    cmd_result = commands.RunHWTestSuite(
+        board=board,
+        model=model,
+        build=build,
+        suite=suite_name,
+        file_bugs=True,
+        pool='bvt',
+        priority=constants.HWTEST_BUILD_PRIORITY,
+        retry=True,
+        wait_for_results=False,
+        timeout_mins=timeout_mins,
+        suite_min_duts=2,
+        debug=debug,
+        skip_duts_check=skip_duts_check,
+        job_keyvals=job_keyvals)
 
   if cmd_result.to_raise:
     if isinstance(cmd_result.to_raise, failures_lib.TestWarning):

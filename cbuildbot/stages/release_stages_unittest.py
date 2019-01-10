@@ -13,6 +13,7 @@ from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
 from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import parallel
 from chromite.lib import results_lib
@@ -423,6 +424,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
+          constants.ENV_AUTOTEST,
           job_keyvals=mock.ANY)
 
     # Ensure arguments are properly converted and passed along.
@@ -434,6 +436,34 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         dry_run=True,
         skip_delta_payloads=False,
         skip_duts_check=False)
+
+  def testRunPaygenInProcessInSkylab(self):
+    """Test that _RunPaygenInProcess works in Skylab."""
+    self._run.config.enable_skylab_hw_tests = True
+    # Have to patch and verify that the PaygenTestStage is created.
+    stage = self.ConstructStage()
+
+    with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
+      # Call the method under test.
+      stage._RunPaygenInProcess(
+          'foo',
+          'foo-board',
+          'foo-version',
+          True,
+          False,
+          False,
+          skip_duts_check=False)
+      # Ensure that PaygenTestStage is created and schedules the test suite
+      # with the correct arguments.
+      sched_tests.assert_called_once_with(
+          'foo-suite-name',
+          'foo-archive-board',
+          None,
+          'foo-archive-build',
+          False,
+          True,
+          constants.ENV_SKYLAB,
+          job_keyvals=mock.ANY)
 
   def testRunPaygenInProcessComplex(self):
     """Test that _RunPaygenInProcess with arguments that are more unusual."""
@@ -489,6 +519,40 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
+          constants.ENV_AUTOTEST,
+          job_keyvals=mock.ANY)
+
+  def testRunPaygenInProcessWithUnifiedBuildInSkylab(self):
+    """Test that _RunPaygenInProcess works for unibuild in Skylab."""
+    self._run.config.enable_skylab_hw_tests = True
+    self._run.config.models = [
+        config_lib.ModelTestConfig('model2', 'board', ['au'],
+                                   enable_skylab=True),
+    ]
+
+    # Have to patch and verify that the PaygenTestStage is created.
+    stage = self.ConstructStage()
+
+    with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
+      # Call the method under test.
+      stage._RunPaygenInProcess(
+          'foo',
+          'foo-board',
+          'foo-version',
+          True,
+          False,
+          False,
+          skip_duts_check=False)
+      # Ensure that the first model from the unified build was selected
+      # as the platform to be tested
+      sched_tests.assert_called_once_with(
+          'foo-suite-name',
+          'board',
+          'model2',
+          'foo-archive-build',
+          False,
+          True,
+          constants.ENV_SKYLAB,
           job_keyvals=mock.ANY)
 
   def testRunPaygenInParallelWithUnifiedBuild(self):
@@ -569,7 +633,8 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         channel='foochan-channel',
         build='foo-version',
         skip_duts_check=False,
-        debug=True)
+        debug=True,
+        test_env=constants.ENV_AUTOTEST)
 
   def testStageName(self):
     """See if the stage name is correctly formed."""
