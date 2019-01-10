@@ -7,6 +7,18 @@
 
 #include "url/gurl.h"
 
+class Profile;
+
+namespace content {
+class StoragePartition;
+}  // namespace content
+
+namespace network {
+namespace mojom {
+class CookieManager;
+}  // namespace mojom
+}  // namespace network
+
 namespace chromeos {
 
 namespace android_sms {
@@ -20,6 +32,12 @@ GURL GetAndroidMessagesURL();
 // TODO(https://crbug.com/917855): Remove this function when migration is
 // complete.
 GURL GetAndroidMessagesURLOld();
+
+content::StoragePartition* GetStoragePartitionForAndroidMessagesURL(
+    Profile* profile);
+
+network::mojom::CookieManager* GetCookieManagerForAndroidMessagesURL(
+    Profile* profile);
 
 }  // namespace android_sms
 

@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
@@ -51,11 +51,10 @@ void OnRetrySetHostNowResult(bool success) {
 MultideviceHandler::MultideviceHandler(
     PrefService* prefs,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-    std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-        android_sms_app_helper)
+    multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
-      android_sms_app_helper_(std::move(android_sms_app_helper)),
+      android_sms_app_helper_(android_sms_app_helper),
       multidevice_setup_observer_(this),
       callback_weak_ptr_factory_(this) {
   RegisterPrefChangeListeners();

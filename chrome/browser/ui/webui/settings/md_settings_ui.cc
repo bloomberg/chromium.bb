@@ -76,6 +76,7 @@
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -280,14 +281,17 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_CHROMEOS)
   if (!profile->IsGuestSession()) {
+    chromeos::android_sms::AndroidSmsService* android_sms_service =
+        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
+            profile);
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             profile->GetPrefs(),
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
                 GetForProfile(profile),
-            std::make_unique<
-                chromeos::android_sms::AndroidSmsAppHelperDelegateImpl>(
-                profile)));
+            android_sms_service
+                ? android_sms_service->android_sms_app_helper_delegate()
+                : nullptr));
   }
   html_source->AddBoolean(
       "multideviceAllowedByPolicy",

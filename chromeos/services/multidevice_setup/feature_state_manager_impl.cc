@@ -166,30 +166,28 @@ FeatureStateManagerImpl::Factory::BuildInstance(
     PrefService* pref_service,
     HostStatusProvider* host_status_provider,
     device_sync::DeviceSyncClient* device_sync_client,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker) {
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker) {
   return base::WrapUnique(new FeatureStateManagerImpl(
       pref_service, host_status_provider, device_sync_client,
-      std::move(android_sms_pairing_state_tracker)));
+      android_sms_pairing_state_tracker));
 }
 
 FeatureStateManagerImpl::FeatureStateManagerImpl(
     PrefService* pref_service,
     HostStatusProvider* host_status_provider,
     device_sync::DeviceSyncClient* device_sync_client,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker)
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker)
     : pref_service_(pref_service),
       host_status_provider_(host_status_provider),
       device_sync_client_(device_sync_client),
-      android_sms_pairing_state_tracker_(
-          std::move(android_sms_pairing_state_tracker)),
+      android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       feature_to_enabled_pref_name_map_(GenerateFeatureToEnabledPrefNameMap()),
       feature_to_allowed_pref_name_map_(GenerateFeatureToAllowedPrefNameMap()),
       cached_feature_state_map_(GenerateInitialDefaultCachedStateMap()) {
   host_status_provider_->AddObserver(this);
   device_sync_client_->AddObserver(this);
-  android_sms_pairing_state_tracker_->AddObserver(this);
+  if (android_sms_pairing_state_tracker_)
+    android_sms_pairing_state_tracker_->AddObserver(this);
 
   registrar_.Init(pref_service_);
 
@@ -221,7 +219,8 @@ FeatureStateManagerImpl::FeatureStateManagerImpl(
 FeatureStateManagerImpl::~FeatureStateManagerImpl() {
   host_status_provider_->RemoveObserver(this);
   device_sync_client_->RemoveObserver(this);
-  android_sms_pairing_state_tracker_->RemoveObserver(this);
+  if (android_sms_pairing_state_tracker_)
+    android_sms_pairing_state_tracker_->RemoveObserver(this);
 }
 
 FeatureStateManager::FeatureStatesMap
