@@ -285,7 +285,7 @@ base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
 }  // namespace
 
 // static
-extensions::ExtensionUninstallDialog*
+std::unique_ptr<extensions::ExtensionUninstallDialog>
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
                                              gfx::NativeWindow parent,
                                              Delegate* delegate) {
@@ -293,9 +293,10 @@ extensions::ExtensionUninstallDialog::Create(Profile* profile,
 }
 
 // static
-extensions::ExtensionUninstallDialog*
+std::unique_ptr<extensions::ExtensionUninstallDialog>
 extensions::ExtensionUninstallDialog::CreateViews(Profile* profile,
                                                   gfx::NativeWindow parent,
                                                   Delegate* delegate) {
-  return new ExtensionUninstallDialogViews(profile, parent, delegate);
+  return std::make_unique<ExtensionUninstallDialogViews>(profile, parent,
+                                                         delegate);
 }

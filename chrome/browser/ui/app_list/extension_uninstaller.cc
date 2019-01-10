@@ -26,8 +26,8 @@ void ExtensionUninstaller::Run() {
     CleanUp();
     return;
   }
-  dialog_.reset(
-      extensions::ExtensionUninstallDialog::Create(profile_, nullptr, this));
+  dialog_ =
+      extensions::ExtensionUninstallDialog::Create(profile_, nullptr, this);
   dialog_->ConfirmUninstall(extension,
                             extensions::UNINSTALL_REASON_USER_INITIATED,
                             extensions::UNINSTALL_SOURCE_APP_LIST);

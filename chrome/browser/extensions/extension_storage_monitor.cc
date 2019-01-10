@@ -548,8 +548,7 @@ void ExtensionStorageMonitor::ShowUninstallPrompt(
   if (!extension)
     return;
 
-  uninstall_dialog_.reset(
-      ExtensionUninstallDialog::Create(profile_, nullptr, this));
+  uninstall_dialog_ = ExtensionUninstallDialog::Create(profile_, nullptr, this);
 
   uninstall_extension_id_ = extension->id();
   uninstall_dialog_->ConfirmUninstall(

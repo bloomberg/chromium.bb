@@ -91,9 +91,8 @@ class ManagementUninstallFunctionUninstallDialogDelegate
       bool show_programmatic_uninstall_ui)
       : function_(function) {
     ChromeExtensionFunctionDetails details(function);
-    extension_uninstall_dialog_.reset(
-        extensions::ExtensionUninstallDialog::Create(
-            details.GetProfile(), details.GetNativeWindowForUI(), this));
+    extension_uninstall_dialog_ = extensions::ExtensionUninstallDialog::Create(
+        details.GetProfile(), details.GetNativeWindowForUI(), this);
     bool uninstall_from_webstore =
         function->extension() &&
         function->extension()->id() == extensions::kWebStoreAppId;
