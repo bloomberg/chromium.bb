@@ -56,21 +56,22 @@ namespace blink {
 class DoubleOrPerformanceMarkOptions;
 class ExceptionState;
 class MemoryInfo;
-class PerformanceNavigation;
-class PerformanceObserver;
+class PerformanceElementTiming;
+class PerformanceEventTiming;
 class PerformanceMark;
 class PerformanceMeasure;
+class PerformanceNavigation;
+class PerformanceObserver;
 class PerformanceTiming;
 class ResourceResponse;
 class ResourceTimingInfo;
-class SecurityOrigin;
-class UserTiming;
 class ScriptState;
 class ScriptValue;
-class SubTaskAttribution;
-class V8ObjectBuilder;
-class PerformanceEventTiming;
+class SecurityOrigin;
 class StringOrDoubleOrPerformanceMeasureOptions;
+class SubTaskAttribution;
+class UserTiming;
+class V8ObjectBuilder;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceEntryDeque = HeapDeque<Member<PerformanceEntry>>;
@@ -156,6 +157,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void AddFirstPaintTiming(TimeTicks start_time);
 
   void AddFirstContentfulPaintTiming(TimeTicks start_time);
+
+  bool IsElementTimingBufferFull() const;
+  void AddElementTimingBuffer(PerformanceElementTiming&);
+  unsigned ElementTimingBufferSize() const;
+  void clearElementTimings();
+  void setElementTimingBufferMaxSize(unsigned);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(elementtimingbufferfull,
+                                  kElementtimingbufferfull);
 
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
@@ -303,6 +312,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   bool resource_timing_buffer_full_event_pending_ = false;
   PerformanceEntryVector event_timing_buffer_;
   unsigned event_timing_buffer_max_size_;
+  PerformanceEntryVector element_timing_buffer_;
+  unsigned element_timing_buffer_max_size_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

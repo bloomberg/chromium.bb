@@ -60,6 +60,7 @@ PASS window.cached_navigator_usb.ondisconnect is null
 PASS window.cached_navigator_userActivation.hasBeenActive is false
 PASS window.cached_navigator_userActivation.isActive is false
 PASS window.cached_navigator_xr.ondevicechange is null
+PASS window.cached_performance.onelementtimingbufferfull is null
 PASS window.cached_performance.oneventtimingbufferfull is null
 PASS window.cached_performance.onresourcetimingbufferfull is null
 PASS window.cached_performance.shouldYield is false

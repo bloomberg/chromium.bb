@@ -327,9 +327,9 @@ void WindowPerformance::ReportLongTask(
   }
 }
 
-// We buffer long-latency events until onload, i.e., LoadEventStart is not
-// reached yet.
-bool WindowPerformance::ShouldBufferEventTiming() {
+// We buffer Element Timing and Event Timing (long-latency events) entries until
+// onload, i.e., LoadEventStart is not reached yet.
+bool WindowPerformance::ShouldBufferEntries() {
   return !timing() || !timing()->loadEventStart();
 }
 
@@ -395,7 +395,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (ShouldBufferEventTiming() && !IsEventTimingBufferFull())
+    if (ShouldBufferEntries() && !IsEventTimingBufferFull())
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
@@ -405,9 +405,15 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const IntRect& rect,
                                          TimeTicks timestamp) {
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled());
-  PerformanceEntry* entry = PerformanceElementTiming::Create(
+  PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(timestamp));
-  NotifyObserversOfEntry(*entry);
+  if (HasObserverFor(PerformanceEntry::kElement)) {
+    UseCounter::Count(GetFrame(),
+                      WebFeature::kElementTimingExplicitlyRequested);
+    NotifyObserversOfEntry(*entry);
+  }
+  if (ShouldBufferEntries() && !IsElementTimingBufferFull())
+    AddElementTimingBuffer(*entry);
 }
 
 void WindowPerformance::DispatchFirstInputTiming(
