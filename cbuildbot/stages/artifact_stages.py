@@ -149,7 +149,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     buildroot = self._build_root
     config = self._run.config
     board = self._current_board
-    debug = self._run.debug
+    debug = self._run.options.debug
     upload_url = self.upload_url
     archive_path = self.archive_path
     image_dir = self.GetImageDirSymlink()
@@ -447,7 +447,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     board = self._current_board
 
     # Generate breakpad symbols of Chrome OS binaries.
-    commands.GenerateBreakpadSymbols(buildroot, board, self._run.debug)
+    commands.GenerateBreakpadSymbols(buildroot, board, self._run.options.debug)
 
     # Generate breakpad symbols of Android binaries if we have a symbol archive.
     # This archive is created by AndroidDebugSymbolsStage in Android PFQ.
@@ -494,7 +494,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     failed_name = 'failed_upload_symbols.list'
     failed_list = os.path.join(self.archive_path, failed_name)
 
-    if self._run.options.remote_trybot or self._run.debug:
+    if self._run.options.remote_trybot or self._run.options.debug:
       # For debug builds, limit ourselves to just uploading 1 symbol.
       # This way trybots and such still exercise this code.
       cnt = 1
@@ -859,7 +859,7 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
     gs_context = gs.GSContext()
     filename = os.path.join(path, tar_file)
 
-    debug = self._run.debug
+    debug = self._run.options.debug
     if debug:
       logging.info('Debug run: not uploading tarball.')
       logging.info('If this were not a debug run, would upload %s to %s.',

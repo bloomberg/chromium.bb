@@ -584,7 +584,6 @@ class _BuilderRunBase(object):
       # Some pre-computed run configuration values.
       'buildnumber',     # The build number for this run.
       'buildroot',       # The build root path for this run.
-      'debug',           # Boolean, represents "dry run" concept, really.
       'manifest_branch', # The manifest branch to build and test for this run.
 
       # Some attributes are available as properties.  In particular, attributes
@@ -617,15 +616,6 @@ class _BuilderRunBase(object):
     self.buildroot = self.options.buildroot
     self.buildnumber = self.options.buildnumber
     self.manifest_branch = self.options.branch
-
-    # For remote_trybot runs, options.debug is implied, but we want true dryrun
-    # mode only if --debug was actually specified (i.e. options.debug_forced).
-    # TODO(mtennant): Get rid of confusing debug and debug_forced, if at all
-    # possible.  Also, eventually use "dry_run" and "verbose" options instead to
-    # represent two distinct concepts.
-    self.debug = self.options.debug
-    if self.options.remote_trybot:
-      self.debug = self.options.debug_forced
 
     # The __slots__ logic above confuses pylint.
     # https://bitbucket.org/logilab/pylint/issue/380/

@@ -196,7 +196,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         buildbucket_id,
         test_name,
         _uploader,
-        self._run.debug,
+        self._run.options.debug,
         update_list=False,
         acl=self.acl)
 
