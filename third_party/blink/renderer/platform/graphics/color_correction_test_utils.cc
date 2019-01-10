@@ -77,12 +77,12 @@ ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
   if (conversion == kColorSpaceConversion_LinearRGB)
     return SkColorSpace::MakeSRGBLinear();
   if (conversion == kColorSpaceConversion_P3) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kDCIP3_D65_Gamut);
+    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                 SkNamedGamut::kDCIP3);
   }
   if (conversion == kColorSpaceConversion_Rec2020) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kRec2020_Gamut);
+    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                 SkNamedGamut::kRec2020);
   }
   return nullptr;
 }

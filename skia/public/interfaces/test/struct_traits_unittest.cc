@@ -58,8 +58,7 @@ TEST_F(StructTraitsTest, ImageInfo) {
   SkImageInfo input = SkImageInfo::Make(
       34, 56, SkColorType::kGray_8_SkColorType,
       SkAlphaType::kUnpremul_SkAlphaType,
-      SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                            SkColorSpace::kAdobeRGB_Gamut));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kAdobeRGB));
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   SkImageInfo output;
   proxy->EchoImageInfo(input, &output);
@@ -77,8 +76,8 @@ TEST_F(StructTraitsTest, Bitmap) {
   SkBitmap input;
   input.allocPixels(SkImageInfo::MakeN32Premul(
       10, 5,
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kRec2020_Gamut)));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                            SkNamedGamut::kRec2020)));
   input.eraseColor(SK_ColorYELLOW);
   input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

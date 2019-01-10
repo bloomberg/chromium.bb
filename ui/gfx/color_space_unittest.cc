@@ -101,10 +101,18 @@ TEST(ColorSpace, RasterAndBlend) {
 
 TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   const size_t kNumTests = 5;
-  SkMatrix44 primary_matrix;
-  primary_matrix.set3x3(0.205276f, 0.149185f, 0.609741f, 0.625671f, 0.063217f,
-                        0.311111f, 0.060867f, 0.744553f, 0.019470f);
-  SkColorSpaceTransferFn transfer_fn = {2.1f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+  skcms_Matrix3x3 primary_matrix = {{
+      {0.205276f, 0.625671f, 0.060867f},
+      {0.149185f, 0.063217f, 0.744553f},
+      {0.609741f, 0.311111f, 0.019470f},
+  }};
+  skcms_TransferFunction transfer_fn = {2.1f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+
+  SkColorSpaceTransferFn sk_transfer_fn;
+  memcpy(&sk_transfer_fn, &transfer_fn, sizeof(sk_transfer_fn));
+  SkMatrix44 primary_matrix_4x4;
+  primary_matrix_4x4.set3x3RowMajorf(&primary_matrix.vals[0][0]);
+
   ColorSpace color_spaces[kNumTests] = {
       ColorSpace(ColorSpace::PrimaryID::BT709,
                  ColorSpace::TransferID::IEC61966_2_1),
@@ -114,16 +122,13 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
                  ColorSpace::TransferID::LINEAR),
       ColorSpace(ColorSpace::PrimaryID::BT2020,
                  ColorSpace::TransferID::IEC61966_2_1),
-      ColorSpace::CreateCustom(primary_matrix, transfer_fn),
+      ColorSpace::CreateCustom(primary_matrix_4x4, sk_transfer_fn),
   };
   sk_sp<SkColorSpace> sk_color_spaces[kNumTests] = {
       SkColorSpace::MakeSRGB(),
-      SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                            SkColorSpace::kAdobeRGB_Gamut),
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut),
-      SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                            SkColorSpace::kRec2020_Gamut),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kAdobeRGB),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kRec2020),
       SkColorSpace::MakeRGB(transfer_fn, primary_matrix),
   };
 

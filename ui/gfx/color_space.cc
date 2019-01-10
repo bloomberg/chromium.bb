@@ -311,22 +311,22 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
     PRINT_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
     case PrimaryID::CUSTOM:
-      // |custom_primary_matrix_| is in column-major order.
-      const float sum_X = custom_primary_matrix_[0] +
+      // |custom_primary_matrix_| is in row-major order.
+      const float sum_R = custom_primary_matrix_[0] +
                           custom_primary_matrix_[3] + custom_primary_matrix_[6];
-      const float sum_Y = custom_primary_matrix_[1] +
+      const float sum_G = custom_primary_matrix_[1] +
                           custom_primary_matrix_[4] + custom_primary_matrix_[7];
-      const float sum_Z = custom_primary_matrix_[2] +
+      const float sum_B = custom_primary_matrix_[2] +
                           custom_primary_matrix_[5] + custom_primary_matrix_[8];
-      if (IsAlmostZero(sum_X) || IsAlmostZero(sum_Y) || IsAlmostZero(sum_Z))
+      if (IsAlmostZero(sum_R) || IsAlmostZero(sum_G) || IsAlmostZero(sum_B))
         break;
 
-      ss << "{primaries_d50_referred: [[" << (custom_primary_matrix_[0] / sum_X)
-         << ", " << (custom_primary_matrix_[3] / sum_X) << "], "
-         << " [" << (custom_primary_matrix_[1] / sum_Y) << ", "
-         << (custom_primary_matrix_[4] / sum_Y) << "], "
-         << " [" << (custom_primary_matrix_[2] / sum_Z) << ", "
-         << (custom_primary_matrix_[5] / sum_Z) << "]]";
+      ss << "{primaries_d50_referred: [[" << (custom_primary_matrix_[0] / sum_R)
+         << ", " << (custom_primary_matrix_[3] / sum_R) << "], "
+         << " [" << (custom_primary_matrix_[1] / sum_G) << ", "
+         << (custom_primary_matrix_[4] / sum_G) << "], "
+         << " [" << (custom_primary_matrix_[2] / sum_B) << ", "
+         << (custom_primary_matrix_[5] / sum_B) << "]]";
       break;
   }
   ss << ", transfer:";
@@ -482,44 +482,36 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       return SkColorSpace::MakeSRGBLinear();
   }
 
-  // Prefer to used the named gamma and gamut, if possible.
-  bool has_named_gamma = true;
-  SkColorSpace::RenderTargetGamma named_gamma =
-      SkColorSpace::kSRGB_RenderTargetGamma;
-  SkColorSpaceTransferFn custom_gamma;
+  skcms_TransferFunction transfer_fn = SkNamedTransferFn::kSRGB;
   switch (transfer_) {
     case TransferID::IEC61966_2_1:
       break;
     case TransferID::LINEAR:
     case TransferID::LINEAR_HDR:
-      named_gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      transfer_fn = SkNamedTransferFn::kLinear;
       break;
     default:
-      has_named_gamma = false;
-      if (!GetTransferFunction(&custom_gamma)) {
+      if (!GetTransferFunction((SkColorSpaceTransferFn*)&transfer_fn)) {
         DLOG(ERROR) << "Failed to transfer function for SkColorSpace";
         return nullptr;
       }
       break;
   }
-  bool has_named_gamut = true;
-  SkColorSpace::Gamut named_gamut = SkColorSpace::kSRGB_Gamut;
-  SkMatrix44 custom_gamut;
+  skcms_Matrix3x3 gamut = SkNamedGamut::kSRGB;
   switch (primaries_) {
     case PrimaryID::BT709:
       break;
     case PrimaryID::ADOBE_RGB:
-      named_gamut = SkColorSpace::kAdobeRGB_Gamut;
+      gamut = SkNamedGamut::kAdobeRGB;
       break;
     case PrimaryID::SMPTEST432_1:
-      named_gamut = SkColorSpace::kDCIP3_D65_Gamut;
+      gamut = SkNamedGamut::kDCIP3;
       break;
     case PrimaryID::BT2020:
-      named_gamut = SkColorSpace::kRec2020_Gamut;
+      gamut = SkNamedGamut::kRec2020;
       break;
     default:
-      has_named_gamut = false;
-      GetPrimaryMatrix(&custom_gamut);
+      GetPrimaryMatrix(&gamut);
       break;
   }
 
@@ -532,18 +524,8 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   if (found != g_sk_color_space_cache.Get().end())
     return found->second;
 
-  sk_sp<SkColorSpace> sk_color_space;
-  if (has_named_gamma) {
-    if (has_named_gamut)
-      sk_color_space = SkColorSpace::MakeRGB(named_gamma, named_gamut);
-    else
-      sk_color_space = SkColorSpace::MakeRGB(named_gamma, custom_gamut);
-  } else {
-    if (has_named_gamut)
-      sk_color_space = SkColorSpace::MakeRGB(custom_gamma, named_gamut);
-    else
-      sk_color_space = SkColorSpace::MakeRGB(custom_gamma, custom_gamut);
-  }
+  sk_sp<SkColorSpace> sk_color_space =
+      SkColorSpace::MakeRGB(transfer_fn, gamut);
   if (!sk_color_space)
     DLOG(ERROR) << "SkColorSpace::MakeRGB failed.";
 
@@ -551,15 +533,15 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return sk_color_space;
 }
 
-void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
+void ColorSpace::GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const {
   SkColorSpacePrimaries primaries = {0};
   switch (primaries_) {
     case ColorSpace::PrimaryID::CUSTOM:
-      to_XYZD50->set3x3RowMajorf(custom_primary_matrix_);
+      memcpy(to_XYZD50, custom_primary_matrix_, 9 * sizeof(float));
       return;
 
     case ColorSpace::PrimaryID::INVALID:
-      to_XYZD50->setIdentity();
+      *to_XYZD50 = SkNamedGamut::kXYZ;  // Identity
       return;
 
     case ColorSpace::PrimaryID::BT709:
@@ -711,6 +693,12 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       break;
   }
   primaries.toXYZD50(to_XYZD50);
+}
+
+void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
+  skcms_Matrix3x3 toXYZ_3x3;
+  GetPrimaryMatrix(&toXYZ_3x3);
+  to_XYZD50->set3x3RowMajorf(&toXYZ_3x3.vals[0][0]);
 }
 
 bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
