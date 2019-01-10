@@ -14,7 +14,7 @@ format - it's just a text dump, meant to be compared to expected output.
 The exact output can be filtered so it only dumps the specific attributes
 you care about for a specific test.
 
-One the output has been generated, it compares the output to an expectation
+Once the output has been generated, it compares the output to an expectation
 file in the same directory. If an expectation file for that test for that
 platform is present, it must match exactly or the test fails. If no
 expectation file is present, the test passes. Most tests don't have
@@ -47,7 +47,7 @@ Format for expected files:
 Filters:
 
 * By default only some attributes of nodes in the accessibility tree, or
-  events fired (when running DumpAccessibilityEvents) are output.
+  events fired (when running DumpAccessibilityEvents), are output.
   This is to keep the tests robust and not prone to failure when unrelated
   changes affect the accessibility tree in unimportant ways.
 * Filters contained in the HTML file can be used to control what is output.
@@ -76,7 +76,7 @@ Filters:
   - @WIN-DENY:name='X* - this will skip outputting any name that begins with
       the letter X.
 ```
-* By default empty attributes are skipped. To output the value an attribute
+* By default empty attributes are skipped. To output the value of an attribute
   even if it's empty, use @WIN-ALLOW-EMPTY:name, for example, and similarly
   for other platforms.
 
@@ -109,7 +109,8 @@ To skip dumping a particular element, make its accessible name equal to
 @NO_DUMP, for example <div aria-label="@NO_DUMP"></div>.
 
 To skip dumping all children of a particular element, make its accessible
-name equal to @NO_CHILDREN_DUMP.
+name equal to @NO_CHILDREN_DUMP, for example
+<div aria-label="@NO_CHILDREN_DUMP"></div>.
 
 To load an iframe from a different site, forcing it into a different process,
 use /cross-site/HOSTNAME/ in the url, for example:
@@ -124,7 +125,7 @@ argument, for example:
 
   out/Debug/content_browsertests \
     --generate-accessibility-test-expectations
-    --gtest_filter="DumpAccessibilityTreeTest.AccessibilityA"
+    --gtest_filter="DumpAccessibilityTreeTest.AccessibilityAriaAtomic"
 
 This will replace the -expected-*.txt file with the current output. It's
 a great way to rebaseline a bunch of tests after making a change. Please
