@@ -250,15 +250,8 @@ TEST_F(ShelfBackgroundAnimatorTest, SplitViewBackground) {
   EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
-// Crashes on ChromeOS .  http://crbug.com/878944
-#if defined(OS_CHROMEOS)
-#define MAYBE_FullscreenAppListBackground DISABLED_FullscreenAppListBackground
-#else
-#define MAYBE_FullscreenAppListBackground FullscreenAppListBackground
-#endif
-
 // Verify the alpha values for the SHELF_BACKGROUND_APP_LIST state.
-TEST_F(ShelfBackgroundAnimatorTest, MAYBE_FullscreenAppListBackground) {
+TEST_F(ShelfBackgroundAnimatorTest, FullscreenAppListBackground) {
   PaintBackground(SHELF_BACKGROUND_APP_LIST);
 
   EXPECT_EQ(SHELF_BACKGROUND_APP_LIST, animator_->target_background_type());
