@@ -43,7 +43,7 @@
 // To disable a test from running on Chromium waterfalls, you would still use
 // the default DISABLED_test_name macro. To disable it from running as an E2E
 // test outside Chromium waterfalls you would need to remove the E2E* macro.
-#define MACRO_CONCAT(prefix, test_name) prefix##_##test_name
+#define MACRO_CONCAT(prefix, test_name) prefix ## _ ## test_name
 #define E2E_ONLY(test_name) MACRO_CONCAT(DISABLED_E2ETest, test_name)
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
@@ -328,9 +328,6 @@ class SyncTest : public InProcessBrowserTest {
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
   std::unique_ptr<fake_server::FakeServer> fake_server_;
 
-  // The factory used to mock out GAIA signin.
-  network::TestURLLoaderFactory test_url_loader_factory_;
-
  protected:
   virtual void BeforeSetupClient(int index);
 
@@ -503,6 +500,9 @@ class SyncTest : public InProcessBrowserTest {
 
   // Used to start and stop the local test server.
   base::Process test_server_;
+
+  // The factory used to mock out GAIA signin.
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   // The shared URLLoaderFactory backed by |test_url_loader_factory_|.
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
