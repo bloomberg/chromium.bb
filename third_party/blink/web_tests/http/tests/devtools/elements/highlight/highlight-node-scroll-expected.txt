@@ -88,8 +88,7 @@ inspectedElement1{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250"
-  },
-  "displayAsMaterial": false
+  }
 }
 inspectedElement2{
   "paths": [
@@ -179,7 +178,6 @@ inspectedElement2{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250"
-  },
-  "displayAsMaterial": false
+  }
 }
 
