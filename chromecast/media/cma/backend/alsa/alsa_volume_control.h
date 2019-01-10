@@ -42,7 +42,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
                                         const std::string& mixer_element_name,
                                         const std::string& mute_card_name);
   static std::string GetMuteDeviceName();
-  static std::string GetAmpElementName();
+  static std::vector<std::string> GetAmpElementNames();
   static std::string GetAmpDeviceName();
 
   static int VolumeOrMuteChangeCallback(snd_mixer_elem_t* elem,
@@ -66,7 +66,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   const std::string mute_mixer_device_name_;
   const std::string mute_mixer_element_name_;
   const std::string amp_mixer_device_name_;
-  const std::string amp_mixer_element_name_;
+  const std::vector<std::string> amp_mixer_element_names_;
 
   long volume_range_min_;  // NOLINT(runtime/int)
   long volume_range_max_;  // NOLINT(runtime/int)
@@ -74,7 +74,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   std::unique_ptr<ScopedAlsaMixer> volume_mixer_;
   std::unique_ptr<ScopedAlsaMixer> mute_mixer_;
   ScopedAlsaMixer* mute_mixer_ptr_;
-  std::unique_ptr<ScopedAlsaMixer> amp_mixer_;
+  std::vector<std::unique_ptr<ScopedAlsaMixer>> amp_mixers_;
 
   std::vector<std::unique_ptr<base::MessagePumpForIO::FdWatchController>>
       file_descriptor_watchers_;
