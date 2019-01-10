@@ -45,9 +45,8 @@ public class ChipsViewHolder extends ViewHolder {
         getChipView().setEnabled(chip.enabled);
         getChipView().setSelected(chip.selected);
         getChipView().setOnClickListener(v -> chip.chipSelectedListener.run());
-        getChipView().getInnerTextView().setContentDescription(
-                getChipView().getResources().getString(chip.contentDescription));
         getChipView().getInnerTextView().setText(chip.text);
         getChipView().setIcon(chip.icon);
+        getChipView().getInnerTextView().setContentDescription(chip.contentDescription);
     }
 }

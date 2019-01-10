@@ -45,7 +45,8 @@ public class FilterCoordinator {
      * @param context The context to build the views and pull parameters from.
      */
     public FilterCoordinator(Context context, OfflineItemFilterSource chipFilterSource) {
-        mChipsProvider = new FilterChipsProvider(type -> handleChipSelected(), chipFilterSource);
+        mChipsProvider =
+                new FilterChipsProvider(context, type -> handleChipSelected(), chipFilterSource);
         mChipsCoordinator = new ChipsCoordinator(context, mChipsProvider);
 
         mView = new FilterView(context);

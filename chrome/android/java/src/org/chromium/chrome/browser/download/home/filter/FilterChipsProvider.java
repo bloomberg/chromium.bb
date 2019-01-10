@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.filter;
 
+import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.base.ObserverList;
@@ -11,13 +12,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.filter.chips.Chip;
 import org.chromium.chrome.browser.download.home.filter.chips.ChipsProvider;
+import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * A {@link ChipsProvider} implementation that wraps a subset of {@link Filters} to be used as a
@@ -32,6 +34,7 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
         void onFilterSelected(@FilterType int filterType);
     }
 
+    private final Context mContext;
     private final Delegate mDelegate;
     private final OfflineItemFilterSource mSource;
 
@@ -40,29 +43,24 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
     private final List<Chip> mSortedChips = new ArrayList<>();
 
     /** Builds a new FilterChipsBackend. */
-    public FilterChipsProvider(Delegate delegate, OfflineItemFilterSource source) {
+    public FilterChipsProvider(Context context, Delegate delegate, OfflineItemFilterSource source) {
+        mContext = context;
         mDelegate = delegate;
         mSource = source;
 
         Chip noneChip =
                 new Chip(Filters.FilterType.NONE, R.string.download_manager_ui_all_downloads,
-                        R.string.download_manager_ui_all_downloads, Chip.INVALID_ICON_ID,
-                        () -> onChipSelected(Filters.FilterType.NONE));
+                        Chip.INVALID_ICON_ID, () -> onChipSelected(Filters.FilterType.NONE));
         Chip videosChip = new Chip(Filters.FilterType.VIDEOS, R.string.download_manager_ui_video,
-                R.string.download_manager_ui_video, R.drawable.ic_videocam_24dp,
-                () -> onChipSelected(Filters.FilterType.VIDEOS));
+                R.drawable.ic_videocam_24dp, () -> onChipSelected(Filters.FilterType.VIDEOS));
         Chip musicChip = new Chip(Filters.FilterType.MUSIC, R.string.download_manager_ui_audio,
-                R.string.download_manager_ui_audio, R.drawable.ic_music_note_24dp,
-                () -> onChipSelected(Filters.FilterType.MUSIC));
+                R.drawable.ic_music_note_24dp, () -> onChipSelected(Filters.FilterType.MUSIC));
         Chip imagesChip = new Chip(Filters.FilterType.IMAGES, R.string.download_manager_ui_images,
-                R.string.download_manager_ui_images, R.drawable.ic_drive_image_24dp,
-                () -> onChipSelected(Filters.FilterType.IMAGES));
+                R.drawable.ic_drive_image_24dp, () -> onChipSelected(Filters.FilterType.IMAGES));
         Chip sitesChip = new Chip(Filters.FilterType.SITES, R.string.download_manager_ui_pages,
-                R.string.download_manager_ui_pages, R.drawable.ic_globe_24dp,
-                () -> onChipSelected(Filters.FilterType.SITES));
+                R.drawable.ic_globe_24dp, () -> onChipSelected(Filters.FilterType.SITES));
         Chip otherChip = new Chip(Filters.FilterType.OTHER, R.string.download_manager_ui_other,
-                R.string.download_manager_ui_other, R.drawable.ic_drive_file_24dp,
-                () -> onChipSelected(Filters.FilterType.OTHER));
+                R.drawable.ic_drive_file_24dp, () -> onChipSelected(Filters.FilterType.OTHER));
 
         // By default select the none chip.
         noneChip.selected = true;
@@ -154,19 +152,31 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
     }
 
     private void generateFilterStates() {
-        // Build a set of all filter types in our data set.
-        Set</* @FilterType */ Integer> filters = new HashSet<>();
-        filters.add(Filters.FilterType.NONE);
+        // Build a map of all filter types in our data set.
+        Map</* @FilterType */ Integer, /*item count*/ Integer> filters = new HashMap<>();
         for (OfflineItem item : mSource.getItems()) {
-            filters.add(Filters.fromOfflineItem(item));
+            int filter = Filters.fromOfflineItem(item);
+            int itemCount = (filters.containsKey(filter) ? filters.get(filter) : 0) + 1;
+            filters.put(filter, itemCount);
         }
+
+        int noneChipItemCount = 0;
+        for (Map.Entry<Integer, Integer> entry : filters.entrySet()) {
+            if (entry.getKey() != FilterType.PREFETCHED) noneChipItemCount += entry.getValue();
+        }
+
+        filters.put(Filters.FilterType.NONE, noneChipItemCount);
 
         // Set the enabled states correctly for all chips.
         boolean chipsHaveChanged = false;
         for (Chip chip : mSortedChips) {
-            boolean shouldEnable = filters.contains(chip.id);
+            boolean shouldEnable = filters.containsKey(chip.id);
             chipsHaveChanged |= (shouldEnable != chip.enabled);
             chip.enabled = shouldEnable;
+            if (chip.enabled) {
+                chip.contentDescription = UiUtils.getChipContentDescription(
+                        mContext.getResources(), chip.id, filters.get(chip.id));
+            }
         }
 
         if (chipsHaveChanged) {
