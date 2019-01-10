@@ -455,7 +455,6 @@ TEST_F(WebFrameTest, RequestExecuteScript) {
 
 TEST_F(WebFrameTest, SuspendedRequestExecuteScript) {
   RegisterMockedHttpURLLoad("foo.html");
-  RegisterMockedHttpURLLoad("bar.html");
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
@@ -465,11 +464,7 @@ TEST_F(WebFrameTest, SuspendedRequestExecuteScript) {
       web_view_helper.LocalMainFrame()->MainWorldScriptContext());
 
   // Suspend scheduled tasks so the script doesn't run.
-  web_view_helper.GetWebView()
-      ->MainFrameImpl()
-      ->GetFrame()
-      ->GetDocument()
-      ->PauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
   web_view_helper.GetWebView()
       ->MainFrameImpl()
       ->RequestExecuteScriptAndReturnValue(
@@ -477,10 +472,7 @@ TEST_F(WebFrameTest, SuspendedRequestExecuteScript) {
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
-  // If the frame navigates, pending scripts should be removed, but the callback
-  // should always be ran.
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "bar.html");
+  web_view_helper.Reset();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ(String(), callback_helper.StringValue());
 }
@@ -529,7 +521,7 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
 
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
@@ -540,7 +532,7 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
-  main_frame->GetFrame()->GetDocument()->UnpauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(false);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.StringValue());
@@ -560,7 +552,7 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
@@ -579,7 +571,7 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
-  main_frame->GetFrame()->GetDocument()->UnpauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(false);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ(true, callback_helper.BoolValue());
