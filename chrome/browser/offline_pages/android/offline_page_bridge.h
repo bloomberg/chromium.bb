@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/offline_items_collection/core/launch_location.h"
+#include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
@@ -38,6 +39,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   static base::android::ScopedJavaLocalRef<jobject> ConvertToJavaOfflinePage(
       JNIEnv* env,
       const OfflinePageItem& offline_page);
+
+  static base::android::ScopedJavaLocalRef<jobjectArray>
+  CreateJavaSavePageRequests(
+      JNIEnv* env,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
+
+  static void AddOfflinePageItemsToJavaList(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_result_obj,
+      const std::vector<OfflinePageItem>& offline_pages);
 
   static std::string GetEncodedOriginApp(
       const content::WebContents* web_contents);
