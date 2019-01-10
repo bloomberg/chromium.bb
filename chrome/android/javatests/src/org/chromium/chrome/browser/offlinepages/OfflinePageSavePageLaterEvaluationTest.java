@@ -405,24 +405,10 @@ public class OfflinePageSavePageLaterEvaluationTest {
     /**
      * Get saved offline pages and align them with the metadata we got from testing.
      */
-    private void loadSavedPages() throws InterruptedException {
-        final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
-                    @Override
-                    public void onResult(List<OfflinePageItem> pages) {
-                        for (OfflinePageItem page : pages) {
-                            mRequestMetadata.get(page.getOfflineId()).mPage = page;
-                        }
-                        semaphore.release();
-                    }
-                });
-            }
-        });
-        checkTrue(semaphore.tryAcquire(GET_PAGES_TIMEOUT_MS, TimeUnit.MILLISECONDS),
-                "Timed out when getting all offline pages");
+    private void loadSavedPages() throws TimeoutException, InterruptedException {
+        for (OfflinePageItem page : OfflineTestUtil.getAllPages()) {
+            mRequestMetadata.get(page.getOfflineId()).mPage = page;
+        }
     }
 
     private boolean copyToShareableLocation(File src, File dst) {
