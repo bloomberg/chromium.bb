@@ -116,7 +116,7 @@ std::string GetUserClassString(UserClassifier::UserClass user_class) {
 
 JsonRequest::JsonRequest(
     base::Optional<Category> exclusive_category,
-    base::Clock* clock,  // Needed until destruction of the request.
+    const base::Clock* clock,  // Needed until destruction of the request.
     const ParseJSONCallback& callback)
     : exclusive_category_(exclusive_category),
       clock_(clock),
@@ -249,7 +249,7 @@ JsonRequest::Builder& JsonRequest::Builder::SetParseJsonCallback(
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetClock(base::Clock* clock) {
+JsonRequest::Builder& JsonRequest::Builder::SetClock(const base::Clock* clock) {
   clock_ = clock;
   return *this;
 }

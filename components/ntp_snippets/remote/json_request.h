@@ -85,7 +85,7 @@ class JsonRequest {
     // The clock borrowed from the fetcher will be injected into the
     // request. It will be used at build time and after the fetch returned.
     // It has to be alive until the request is destroyed.
-    Builder& SetClock(base::Clock* clock);
+    Builder& SetClock(const base::Clock* clock);
     Builder& SetUrl(const GURL& url);
     Builder& SetUrlLoaderFactory(
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -118,7 +118,7 @@ class JsonRequest {
 
     // Only required, if the request needs to be sent.
     std::string auth_header_;
-    base::Clock* clock_;
+    const base::Clock* clock_;
     RequestParams params_;
     ParseJSONCallback parse_json_callback_;
     GURL url_;
@@ -133,7 +133,7 @@ class JsonRequest {
   };
 
   JsonRequest(base::Optional<Category> exclusive_category,
-              base::Clock* clock,
+              const base::Clock* clock,
               const ParseJSONCallback& callback);
   JsonRequest(JsonRequest&&);
   ~JsonRequest();
@@ -169,7 +169,7 @@ class JsonRequest {
   // Use the Clock from the Fetcher to measure the fetch time. It will be
   // used on creation and after the fetch returned. It has to be alive until the
   // request is destroyed.
-  base::Clock* clock_;
+  const base::Clock* clock_;
   base::Time creation_time_;
 
   // This callback is called to parse a json string. It contains callbacks for

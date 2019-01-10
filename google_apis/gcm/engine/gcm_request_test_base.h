@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -61,7 +61,8 @@ class GCMRequestTestBase : public testing::Test {
   // Fast forward the timer used in the test to retry the request immediately.
   void FastForwardToTriggerNextRetry();
 
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

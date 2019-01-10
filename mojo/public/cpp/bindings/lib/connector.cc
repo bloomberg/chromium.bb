@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
@@ -33,8 +33,9 @@ namespace {
 // The NestingObserver for each thread. Note that this is always a
 // Connector::RunLoopNestingObserver; we use the base type here because that
 // subclass is private to Connector.
-base::LazyInstance<base::ThreadLocalPointer<base::RunLoop::NestingObserver>>::
-    Leaky g_tls_nesting_observer = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<
+    base::SequenceLocalStorageSlot<base::RunLoop::NestingObserver*>>::Leaky
+    g_sls_nesting_observer = LAZY_INSTANCE_INITIALIZER;
 
 // The default outgoing serialization mode for new Connectors.
 Connector::OutgoingSerializationMode g_default_outgoing_serialization_mode =
@@ -87,8 +88,8 @@ class Connector::RunLoopNestingObserver
   void WillDestroyCurrentMessageLoop() override {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
     base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
-    DCHECK_EQ(this, g_tls_nesting_observer.Get().Get());
-    g_tls_nesting_observer.Get().Set(nullptr);
+    DCHECK_EQ(this, g_sls_nesting_observer.Get().Get());
+    g_sls_nesting_observer.Get().Set(nullptr);
     delete this;
   }
 
@@ -96,10 +97,10 @@ class Connector::RunLoopNestingObserver
     if (!base::MessageLoopCurrent::Get())
       return nullptr;
     auto* observer = static_cast<RunLoopNestingObserver*>(
-        g_tls_nesting_observer.Get().Get());
+        g_sls_nesting_observer.Get().Get());
     if (!observer) {
       observer = new RunLoopNestingObserver;
-      g_tls_nesting_observer.Get().Set(observer);
+      g_sls_nesting_observer.Get().Set(observer);
     }
     return observer;
   }

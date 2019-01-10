@@ -264,7 +264,7 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
   }
 
   base::Closure done_closure_;
-  scoped_refptr<base::SingleThreadTaskRunner> done_runner_;
+  scoped_refptr<base::SequencedTaskRunner> done_runner_;
   std::unique_ptr<MathCalculatorUI> calculator_ui_;
   std::unique_ptr<MathCalculatorImpl> calc_impl_;
 };
