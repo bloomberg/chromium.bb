@@ -662,7 +662,6 @@
       'fuchsia-x64-cast': 'release_trybot_fuchsia_cast',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
-      'linux-blink-gen-property-trees': 'release_trybot',
       'linux-blink-heap-incremental-marking': 'debug_trybot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-coverage-rel': 'clang_code_coverage_trybot',
