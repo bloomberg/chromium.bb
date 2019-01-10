@@ -193,6 +193,15 @@ CrostiniImpl.prototype.canSharePath = function(entry, persist) {
 
   // Allow Downloads, and Drive if DriveFS is enabled.
   const rootType = this.volumeManager_.getLocationInfo(entry).rootType;
+
+  // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
+  // Disallow Computers Grand Root, and Computer Root.
+  if (rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+      (rootType === VolumeManagerCommon.RootType.COMPUTER &&
+       entry.fullPath.split('/').length <= 3)) {
+    return false;
+  }
+
   return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(rootType) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
        CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(rootType));
