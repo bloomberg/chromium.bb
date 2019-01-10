@@ -15,19 +15,19 @@
 #include "components/signin/core/browser/account_info.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     const base::FilePath& profile_path)
-    : signin_error_controller_(signin_error_controller),
-      signin_manager_(signin_manager),
+    : identity_manager_(identity_manager),
+      signin_error_controller_(signin_error_controller),
       profile_path_(profile_path),
-      signin_error_controller_observer_(this),
-      signin_manager_observer_(this) {
+      identity_manager_observer_(this),
+      signin_error_controller_observer_(this) {
   // Some tests don't have a ProfileManager, disable this service.
   if (!g_browser_process->profile_manager())
     return;
 
-  signin_manager_observer_.Add(signin_manager_);
+  identity_manager_observer_.Add(identity_manager_);
   signin_error_controller_observer_.Add(signin_error_controller);
 
   UpdateProfileAttributes();
@@ -39,8 +39,8 @@ SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
 SigninProfileAttributesUpdater::~SigninProfileAttributesUpdater() = default;
 
 void SigninProfileAttributesUpdater::Shutdown() {
+  identity_manager_observer_.RemoveAll();
   signin_error_controller_observer_.RemoveAll();
-  signin_manager_observer_.RemoveAll();
 }
 
 void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
@@ -53,8 +53,8 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
 
   std::string old_gaia_id = entry->GetGAIAId();
 
-  if (signin_manager_->IsAuthenticated()) {
-    AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  if (identity_manager_->HasPrimaryAccount()) {
+    AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
     entry->SetAuthInfo(account_info.gaia,
                        base::UTF8ToUTF16(account_info.email));
   } else {
@@ -79,12 +79,12 @@ void SigninProfileAttributesUpdater::OnErrorChanged() {
   entry->SetIsAuthError(signin_error_controller_->HasError());
 }
 
-void SigninProfileAttributesUpdater::GoogleSigninSucceeded(
-    const AccountInfo& account_info) {
+void SigninProfileAttributesUpdater::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   UpdateProfileAttributes();
 }
 
-void SigninProfileAttributesUpdater::GoogleSignedOut(
-    const AccountInfo& account_info) {
+void SigninProfileAttributesUpdater::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   UpdateProfileAttributes();
 }
