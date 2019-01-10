@@ -27,7 +27,7 @@ bool TransferCacheSerializeHelper::LockEntry(TransferCacheEntryType type,
   return true;
 }
 
-size_t TransferCacheSerializeHelper::CreateEntry(
+uint32_t TransferCacheSerializeHelper::CreateEntry(
     const ClientTransferCacheEntry& entry,
     char* memory) {
   // We shouldn't be creating entries if they were already created or locked.
