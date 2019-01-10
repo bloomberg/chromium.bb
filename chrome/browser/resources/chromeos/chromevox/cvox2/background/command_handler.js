@@ -109,47 +109,25 @@ CommandHandler.onCommand = function(command) {
       chrome.windows.create(explorerPage);
       break;
     case 'showLogPage':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var logPage = {url: 'cvox2/background/log.html'};
-              chrome.tabs.create(logPage);
-            }
-          });
+      var logPage = {url: 'cvox2/background/log.html'};
+      chrome.tabs.create(logPage);
       break;
     case 'enableLogging':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var prefs = new cvox.ChromeVoxPrefs();
-              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                prefs.setLoggingPrefs(
-                    cvox.ChromeVoxPrefs.loggingPrefs[type], true);
-              }
-            }
-          });
+      var prefs = new cvox.ChromeVoxPrefs();
+      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+      }
       break;
     case 'disableLogging':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var prefs = new cvox.ChromeVoxPrefs();
-              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                prefs.setLoggingPrefs(
-                    cvox.ChromeVoxPrefs.loggingPrefs[type], false);
-              }
-            }
-          });
+      var prefs = new cvox.ChromeVoxPrefs();
+      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+      }
       break;
     case 'dumpTree':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              chrome.automation.getDesktop(function(root) {
-                LogStore.getInstance().writeTreeLog(new TreeDumper(root));
-              });
-            }
-          });
+      chrome.automation.getDesktop(function(root) {
+        LogStore.getInstance().writeTreeLog(new TreeDumper(root));
+      });
       break;
     case 'decreaseTtsRate':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
@@ -1202,5 +1180,4 @@ CommandHandler.init = function() {
     }
   });
 };
-
 });  //  goog.scope
