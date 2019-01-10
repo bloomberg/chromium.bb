@@ -264,7 +264,7 @@ void DOMStorageContextWrapper::PerformLocalStorageCleanup(
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &LocalStorageContextMojo::PerformCleanup,
+          &LocalStorageContextMojo::PerformStorageCleanup,
           base::Unretained(mojo_state_),
           base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
                          std::move(callback))));
@@ -306,9 +306,10 @@ void DOMStorageContextWrapper::PerformSessionStorageCleanup(
     // mojo_session_state_ is set to null, preventing further tasks from being
     // queued.
     mojo_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&SessionStorageContextMojo::PerformCleanup,
-                                  base::Unretained(mojo_session_state_),
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&SessionStorageContextMojo::PerformStorageCleanup,
+                       base::Unretained(mojo_session_state_),
+                       std::move(callback)));
     return;
   }
   std::move(callback).Run();

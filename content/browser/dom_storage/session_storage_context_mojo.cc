@@ -287,11 +287,12 @@ void SessionStorageContextMojo::DeleteStorage(const url::Origin& origin,
   }
 }
 
-void SessionStorageContextMojo::PerformCleanup(base::OnceClosure callback) {
+void SessionStorageContextMojo::PerformStorageCleanup(
+    base::OnceClosure callback) {
   if (connection_state_ != CONNECTION_FINISHED) {
-    RunWhenConnected(base::BindOnce(&SessionStorageContextMojo::PerformCleanup,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    std::move(callback)));
+    RunWhenConnected(
+        base::BindOnce(&SessionStorageContextMojo::PerformStorageCleanup,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
   if (database_) {

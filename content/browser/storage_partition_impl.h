@@ -121,7 +121,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-                 bool perform_cleanup,
+                 bool perform_storage_cleanup,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -259,7 +259,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const GURL& remove_origin,
       const OriginMatcherFunction& origin_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-      bool perform_cleanup,
+      bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end,
       base::OnceClosure callback);
