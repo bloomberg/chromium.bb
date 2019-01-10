@@ -166,13 +166,10 @@ const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
 }
 
 SkColor Checkbox::GetIconImageColor(int icon_state) const {
-  const SkColor active_color =
+  const SkColor active_color = GetNativeTheme()->GetSystemColor(
       (icon_state & IconState::CHECKED)
-          ? GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_ProminentButtonColor)
-          // When unchecked, the icon color matches push button text color.
-          : style::GetColor(*this, style::CONTEXT_BUTTON_MD,
-                            style::STYLE_PRIMARY);
+          ? ui::NativeTheme::kColorId_ProminentButtonColor
+          : ui::NativeTheme::kColorId_ButtonEnabledColor);
   return (icon_state & IconState::ENABLED)
              ? active_color
              : color_utils::BlendTowardMaxContrast(active_color,
