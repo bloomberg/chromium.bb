@@ -400,12 +400,15 @@ void CastBrowserMainParts::ToolkitInitialized() {
   // the background (resources have not yet been granted to cast) since it
   // prevents the long delay the user would have seen on first rendering. Note
   // that future calls to FcInit() are safe no-ops per the FontConfig interface.
-  FcChar8 bundle_dir[] = "/chrome/fonts/";
+  base::FilePath dir_module;
+  base::PathService::Get(base::DIR_MODULE, &dir_module);
+  base::FilePath dir_font = dir_module.Append("fonts");
 
   FcInit();
 
-  if (FcConfigAppFontAddDir(nullptr, bundle_dir) == FcFalse) {
-    LOG(ERROR) << "Cannot load fonts from " << bundle_dir;
+  const FcChar8 *dir_font_char8 = reinterpret_cast<const FcChar8*>(dir_font.value().data());
+  if (FcConfigAppFontAddDir(nullptr, dir_font_char8) == FcFalse) {
+    LOG(ERROR) << "Cannot load fonts from " << dir_font_char8;
   }
 #endif
 }
