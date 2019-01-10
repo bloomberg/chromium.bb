@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
@@ -30,6 +31,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -62,6 +64,8 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return prefixed_account_id.substr(10 /* length of "AccountId-" */);
 }
 
+// An |AccountMigrationRunner::Step| to migrate the Chrome OS Device Account's
+// LST to |AccountManager|.
 class DeviceAccountMigration : public AccountMigrationRunner::Step,
                                public WebDataServiceConsumer {
  public:
@@ -190,6 +194,122 @@ class DeviceAccountMigration : public AccountMigrationRunner::Step,
   DISALLOW_COPY_AND_ASSIGN(DeviceAccountMigration);
 };
 
+// An |AccountMigrationRunner::Step| to migrate the Chrome content area accounts
+// to |AccountManager|. The objective is to migrate the account names only. We
+// cannot migrate any credentials (cookies).
+class ContentAreaAccountsMigration : public AccountMigrationRunner::Step,
+                                     GaiaCookieManagerService::Observer {
+ public:
+  ContentAreaAccountsMigration(
+      AccountManager* account_manager,
+      AccountTrackerService* const account_tracker_service,
+      GaiaCookieManagerService* gaia_cookie_manager_service)
+      : AccountMigrationRunner::Step("ContentAreaAccountsMigration"),
+        account_manager_(account_manager),
+        account_tracker_service_(account_tracker_service),
+        gaia_cookie_manager_service_(gaia_cookie_manager_service),
+        weak_factory_(this) {}
+  ~ContentAreaAccountsMigration() override = default;
+
+  void Run(base::OnceCallback<void(bool)> callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    callback_ = std::move(callback);
+
+    account_manager_->GetAccounts(
+        base::BindOnce(&ContentAreaAccountsMigration::OnGetAccounts,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void OnGetAccounts(
+      std::vector<AccountManager::AccountKey> account_manager_accounts) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    account_manager_accounts_ = std::move(account_manager_accounts);
+
+    std::vector<gaia::ListedAccount> signed_in_content_area_accounts;
+    std::vector<gaia::ListedAccount> signed_out_content_area_accounts;
+    gaia_cookie_manager_service_->AddObserver(this);
+    if (gaia_cookie_manager_service_->ListAccounts(
+            &signed_in_content_area_accounts,
+            &signed_out_content_area_accounts)) {
+      OnGaiaAccountsInCookieUpdated(
+          signed_in_content_area_accounts, signed_out_content_area_accounts,
+          GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+    }
+  }
+
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& signed_in_content_area_accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_content_area_accounts,
+      const GoogleServiceAuthError& error) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // We should not have reached here without |OnGetAccounts| having been
+    // called and |account_manager_accounts_| empty.
+    // Furthermore, Account Manager must have been populated with the Device
+    // Account before this |Step| is run.
+    DCHECK(!account_manager_accounts_.empty());
+    gaia_cookie_manager_service_->RemoveObserver(this);
+
+    MigrateAccounts(signed_in_content_area_accounts,
+                    signed_out_content_area_accounts);
+
+    std::move(callback_).Run(true);
+  }
+
+  void MigrateAccounts(
+      const std::vector<gaia::ListedAccount>& signed_in_content_area_accounts,
+      const std::vector<gaia::ListedAccount>&
+          signed_out_content_area_accounts) {
+    for (const gaia::ListedAccount& account : signed_in_content_area_accounts) {
+      MigrateAccount(account);
+    }
+    for (const gaia::ListedAccount& account :
+         signed_out_content_area_accounts) {
+      MigrateAccount(account);
+    }
+  }
+
+  void MigrateAccount(const gaia::ListedAccount& account) {
+    AccountManager::AccountKey account_key{
+        account.gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+    if (base::ContainsValue(account_manager_accounts_, account_key)) {
+      // Do not overwrite any existing account in |AccountManager|.
+      return;
+    }
+
+    // |AccountTrackerService::SeedAccountInfo| must be called before
+    // |AccountManager::UpsertToken|. |AccountManager| observers will need to
+    // translate |AccountManager::AccountKey| to other formats using
+    // |AccountTrackerService| and hence |AccountTrackerService| should be
+    // updated first.
+    account_tracker_service_->SeedAccountInfo(account.gaia_id,
+                                              account.raw_email);
+    account_manager_->UpsertToken(account_key, AccountManager::kInvalidToken);
+  }
+
+  // A non-owning pointer to |AccountManager|.
+  AccountManager* const account_manager_;
+
+  // A non-owning pointer to |AccountTrackerService|.
+  AccountTrackerService* const account_tracker_service_;
+
+  // A non-owning pointer to |GaiaCookieManagerService|.
+  GaiaCookieManagerService* const gaia_cookie_manager_service_;
+
+  // A temporary cache of accounts in |AccountManager|.
+  std::vector<AccountManager::AccountKey> account_manager_accounts_;
+
+  // Callback to invoke at the end of this |Step|, with the final result of the
+  // operation.
+  base::OnceCallback<void(bool)> callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ContentAreaAccountsMigration> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentAreaAccountsMigration);
+};
+
 }  // namespace
 
 AccountManagerMigrator::AccountManagerMigrator(Profile* profile)
@@ -216,15 +336,15 @@ void AccountManagerMigrator::Start() {
   AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile_);
 
-  scoped_refptr<TokenWebData> token_web_data =
-      WebDataServiceFactory::GetTokenWebDataForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
-
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
       GetDeviceAccount(profile_), account_manager, account_tracker_service,
-      token_web_data));
+      WebDataServiceFactory::GetTokenWebDataForProfile(
+          profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
+  migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
+      account_manager, account_tracker_service,
+      GaiaCookieManagerServiceFactory::GetForProfile(
+          profile_) /* gaia_cookie_manager_service */));
 
-  // TODO(sinhak): Migrate Secondary Accounts in Chrome content area.
   // TODO(sinhak): Migrate Secondary Accounts in ARC.
   // TODO(sinhak): Store success state in Preferences.
   // TODO(sinhak): Verify Device Account LST state.
@@ -279,6 +399,8 @@ AccountManagerMigratorFactory::AccountManagerMigratorFactory()
   // Account reconciliation is paused for the duration of migration and needs to
   // be re-enabled once migration is done.
   DependsOn(AccountReconcilorFactory::GetInstance());
+  // For getting Chrome content area accounts.
+  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
 }
 
 AccountManagerMigratorFactory::~AccountManagerMigratorFactory() = default;
