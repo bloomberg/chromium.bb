@@ -262,17 +262,18 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       v8_session_(v8_session),
       dom_agent_(dom_agent),
       swallow_next_mouse_up_(false),
-      inspect_mode_(kNotSearching),
       backend_node_id_to_inspect_(0),
-      enabled_(&agent_state_, /*default_value=*/false),
-      suspended_(&agent_state_, /*default_value=*/false),
-      show_debug_borders_(&agent_state_, /*default_value=*/false),
-      show_fps_counter_(&agent_state_, /*default_value=*/false),
-      show_paint_rects_(&agent_state_, /*default_value=*/false),
-      show_scroll_bottleneck_rects_(&agent_state_, /*default_value=*/false),
-      show_hit_test_borders_(&agent_state_, /*default_value=*/false),
-      show_size_on_resize_(&agent_state_, /*default_value=*/false),
-      paused_in_debugger_message_(&agent_state_, /*default_value=*/String()) {}
+      enabled_(&agent_state_, false),
+      suspended_(&agent_state_, false),
+      show_debug_borders_(&agent_state_, false),
+      show_fps_counter_(&agent_state_, false),
+      show_paint_rects_(&agent_state_, false),
+      show_scroll_bottleneck_rects_(&agent_state_, false),
+      show_hit_test_borders_(&agent_state_, false),
+      show_size_on_resize_(&agent_state_, false),
+      paused_in_debugger_message_(&agent_state_, String()),
+      inspect_mode_(&agent_state_, kNotSearching),
+      inspect_mode_protocol_config_(&agent_state_, String()) {}
 
 InspectorOverlayAgent::~InspectorOverlayAgent() {
   DCHECK(!overlay_page_);
@@ -301,6 +302,18 @@ void InspectorOverlayAgent::Restore() {
   if (paused_in_debugger_message_.Get().IsNull())
     setPausedInDebuggerMessage(paused_in_debugger_message_.Get());
   setSuspended(suspended_.Get());
+  if (inspect_mode_.Get() != kNotSearching) {
+    std::unique_ptr<protocol::Value> value =
+        protocol::StringUtil::parseJSON(inspect_mode_protocol_config_.Get());
+    std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config;
+    protocol::ErrorSupport errors;
+    if (value) {
+      highlight_config =
+          protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
+    }
+    SetSearchingForNode(static_cast<SearchMode>(inspect_mode_.Get()),
+                        std::move(highlight_config));
+  }
 }
 
 void InspectorOverlayAgent::Dispose() {
@@ -690,7 +703,7 @@ bool InspectorOverlayAgent::IsEmpty() {
       highlight_node_ || event_target_node_ || highlight_quad_ ||
       (resize_timer_active_ && show_size_on_resize_.Get()) ||
       !paused_in_debugger_message_.Get().IsNull();
-  return !has_visible_elements && inspect_mode_ == kNotSearching;
+  return !has_visible_elements && inspect_mode_.Get() == kNotSearching;
 }
 
 void InspectorOverlayAgent::ScheduleUpdate() {
@@ -787,7 +800,7 @@ void InspectorOverlayAgent::DrawQuadHighlight() {
 }
 
 void InspectorOverlayAgent::DrawPausedInDebuggerMessage() {
-  if (inspect_mode_ == kNotSearching &&
+  if (inspect_mode_.Get() == kNotSearching &&
       !paused_in_debugger_message_.Get().IsNull()) {
     EvaluateInOverlay("drawPausedInDebuggerMessage",
                       paused_in_debugger_message_.Get());
@@ -988,7 +1001,8 @@ void InspectorOverlayAgent::ClearInternal() {
   }
   resize_timer_active_ = false;
   paused_in_debugger_message_.Clear();
-  inspect_mode_ = kNotSearching;
+  inspect_mode_.Set(kNotSearching);
+  inspect_mode_protocol_config_.Set(String());
   screenshot_mode_ = false;
   timer_.Stop();
   frame_overlay_.reset();
@@ -1039,7 +1053,7 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
       frame, event, event.GetModifiers() & WebInputEvent::kShiftKey);
 
   // Do not highlight within user agent shadow root unless requested.
-  if (inspect_mode_ != kSearchingForUAShadow) {
+  if (inspect_mode_.Get() != kSearchingForUAShadow) {
     ShadowRoot* shadow_root = InspectorDOMAgent::UserAgentShadowRoot(node);
     if (shadow_root)
       node = &shadow_root->host();
@@ -1174,7 +1188,7 @@ Response InspectorOverlayAgent::CompositingEnabled() {
 }
 
 bool InspectorOverlayAgent::ShouldSearchForNode() {
-  return inspect_mode_ != kNotSearching;
+  return inspect_mode_.Get() != kNotSearching;
 }
 
 void InspectorOverlayAgent::Inspect(Node* inspected_node) {
@@ -1216,7 +1230,7 @@ Response InspectorOverlayAgent::SetSearchingForNode(
     SearchMode search_mode,
     Maybe<protocol::Overlay::HighlightConfig> highlight_inspector_object) {
   if (search_mode == kNotSearching) {
-    inspect_mode_ = search_mode;
+    inspect_mode_.Set(search_mode);
     screenshot_mode_ = false;
     ScheduleUpdate();
     hovered_node_for_inspect_mode_.Clear();
@@ -1224,12 +1238,17 @@ Response InspectorOverlayAgent::SetSearchingForNode(
     return Response::OK();
   }
 
+  String serialized_config =
+      highlight_inspector_object.isJust()
+          ? highlight_inspector_object.fromJust()->serialize()
+          : String();
   std::unique_ptr<InspectorHighlightConfig> config;
   Response response = HighlightConfigFromInspectorObject(
       std::move(highlight_inspector_object), &config);
   if (!response.isSuccess())
     return response;
-  inspect_mode_ = search_mode;
+  inspect_mode_.Set(search_mode);
+  inspect_mode_protocol_config_.Set(serialized_config);
   inspect_mode_highlight_config_ = std::move(config);
   ScheduleUpdate();
   return Response::OK();
