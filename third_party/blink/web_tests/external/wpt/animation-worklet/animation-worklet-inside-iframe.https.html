@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<title>Test that AW inside frames with different origin causes new global scopes</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>Test that AnimationWorklet inside frames with different origin causes new global scopes</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-animationworklet/">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="common.js"></script>
 
 <style>
 .redbox {
@@ -21,7 +23,6 @@ registerAnimator("duplicate_animator", class {
 });
 </script>
 
-<script src="resources/animation-worklet-tests.js"></script>
 <script>
 async_test(t => {
   // Wait for iframe to load and start its animations.
