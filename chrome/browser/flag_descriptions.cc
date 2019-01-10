@@ -2103,13 +2103,6 @@ const char kWebrtcUnifiedPlanByDefaultDescription[] =
     "passing {sdpSemantics:'plan-b'} to the RTCPeerConnection constructor. "
     "RTCRtpTransceiver support is also enabled in Unified Plan.";
 
-const char kWebSocketHandshakeReuseConnectionName[] =
-    "Enable WebSocket connection reuse for authentication";
-const char kWebSocketHandshakeReuseConnectionDescription[] =
-    "Permits the WebSocket handshake to keep the connection open after an "
-    "authentication failure. The connection may be used for further requests "
-    "to send credentials. This is sometimes needed for Windows authentication.";
-
 const char kWebvrName[] = "WebVR";
 const char kWebvrDescription[] =
     "Enables access to experimental Virtual Reality functionality via the "

@@ -159,10 +159,6 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
 
 }  // namespace
 
-const base::Feature
-    WebSocketBasicHandshakeStream::kWebSocketHandshakeReuseConnection{
-        "WebSocketHandshakeReuseConnection", base::FEATURE_ENABLED_BY_DEFAULT};
-
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::unique_ptr<ClientSocketHandle> connection,
     WebSocketStream::ConnectDelegate* connect_delegate,
@@ -298,9 +294,6 @@ void WebSocketBasicHandshakeStream::SetConnectionReused() {
 }
 
 bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
-  if (!base::FeatureList::IsEnabled(kWebSocketHandshakeReuseConnection))
-    return false;
-
   return parser() && parser()->CanReuseConnection();
 }
 
@@ -356,9 +349,6 @@ void WebSocketBasicHandshakeStream::SetPriority(RequestPriority priority) {
 }
 
 HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
-  if (!base::FeatureList::IsEnabled(kWebSocketHandshakeReuseConnection))
-    return nullptr;
-
   DCHECK(IsResponseBodyComplete());
   DCHECK(!parser()->IsMoreDataBuffered());
   // The HttpStreamParser object still has a pointer to the connection. Just to
