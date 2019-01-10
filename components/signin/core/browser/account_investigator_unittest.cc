@@ -150,25 +150,23 @@ AccountInfo Account(const std::string& id) {
   return account;
 }
 
-AccountInfo Info(const std::string& id) {
-  AccountInfo info;
-  info.account_id = id;
-  return info;
-}
-
 // NOTE: IdentityTestEnvironment uses a prefix for generating gaia IDs:
 // "gaia_id_for_". For this reason, the tests prefix expected account IDs
 // used so that there is a match.
-const std::vector<AccountInfo> no_accounts{};
-const std::vector<AccountInfo> just_one{Account("gaia_id_for_1_mail.com")};
-const std::vector<AccountInfo> just_two{Account("gaia_id_for_2_mail.com")};
-const std::vector<AccountInfo> both{Account("gaia_id_for_1_mail.com"),
-                                    Account("gaia_id_for_2_mail.com")};
-const std::vector<AccountInfo> both_reversed{Account("gaia_id_for_2_mail.com"),
-                                             Account("gaia_id_for_1_mail.com")};
 
-const AccountInfo one(Info("gaia_id_for_1_mail.com"));
-const AccountInfo three(Info("gaia_id_for_3_mail.com"));
+const std::string kGaiaId1 = identity::GetTestGaiaIdForEmail("1@mail.com");
+const std::string kGaiaId2 = identity::GetTestGaiaIdForEmail("2@mail.com");
+const std::string kGaiaId3 = identity::GetTestGaiaIdForEmail("3@mail.com");
+
+const AccountInfo one(Account(kGaiaId1));
+const AccountInfo two(Account(kGaiaId2));
+const AccountInfo three(Account(kGaiaId3));
+
+const std::vector<AccountInfo> no_accounts{};
+const std::vector<AccountInfo> just_one{one};
+const std::vector<AccountInfo> just_two{two};
+const std::vector<AccountInfo> both{one, two};
+const std::vector<AccountInfo> both_reversed{two, one};
 
 TEST_F(AccountInvestigatorTest, CalculatePeriodicDelay) {
   const Time epoch;
