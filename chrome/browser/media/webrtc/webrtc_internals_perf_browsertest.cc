@@ -116,7 +116,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
   void RunsAudioVideoCall60SecsAndLogsInternalMetrics(
       const std::string& video_codec,
       bool prefer_hw_video_codec = false,
-      const std::string& video_codec_profile = std::string()) {
+      const std::string& video_codec_profile = std::string(),
+      const std::string& video_codec_print_modifier = std::string()) {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -133,8 +134,10 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(right_tab);
 
     if (!video_codec.empty()) {
-      SetDefaultVideoCodec(left_tab, video_codec, prefer_hw_video_codec);
-      SetDefaultVideoCodec(right_tab, video_codec, prefer_hw_video_codec);
+      SetDefaultVideoCodec(left_tab, video_codec, prefer_hw_video_codec,
+                           video_codec_profile);
+      SetDefaultVideoCodec(right_tab, video_codec, prefer_hw_video_codec,
+                           video_codec_profile);
     }
     NegotiateCall(left_tab, right_tab);
 
@@ -155,8 +158,11 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     const base::DictionaryValue* first_pc_dict =
         GetDataOnPeerConnection(all_data.get(), 0);
     ASSERT_TRUE(first_pc_dict != NULL);
-    test::PrintBweForVideoMetrics(*first_pc_dict, "", video_codec);
-    test::PrintMetricsForAllStreams(*first_pc_dict, "", video_codec);
+    const std::string print_modifier = video_codec_print_modifier.empty()
+                                           ? video_codec
+                                           : video_codec_print_modifier;
+    test::PrintBweForVideoMetrics(*first_pc_dict, "", print_modifier);
+    test::PrintMetricsForAllStreams(*first_pc_dict, "", print_modifier);
 
     HangUp(left_tab);
     HangUp(right_tab);
@@ -238,6 +244,15 @@ IN_PROC_BROWSER_TEST_F(
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP9");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcInternalsPerfBrowserTest,
+    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9Profile2) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
+      "VP9", true /* prefer_hw_video_codec */,
+      WebRtcTestBase::kVP9Profile2Specifier, "VP9p2");
 }
 
 #if BUILDFLAG(RTC_USE_H264)

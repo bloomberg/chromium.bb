@@ -127,25 +127,27 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
 
   void RunsAudioAndVideoCallCollectingMetricsWithAudioCodec(
       const std::string& audio_codec) {
-    RunsAudioAndVideoCallCollectingMetrics(audio_codec, kUseDefaultVideoCodec,
-                                           false /* prefer_hw_video_codec */,
-                                           "");
+    RunsAudioAndVideoCallCollectingMetrics(
+        audio_codec, kUseDefaultVideoCodec, false /* prefer_hw_video_codec */,
+        "" /* video_codec_profile */, "" /* video_codec_print_modifier */);
   }
 
   void RunsAudioAndVideoCallCollectingMetricsWithVideoCodec(
       const std::string& video_codec,
       bool prefer_hw_video_codec = false,
-      const std::string& video_codec_profile = std::string()) {
-    RunsAudioAndVideoCallCollectingMetrics(kUseDefaultAudioCodec, video_codec,
-                                           prefer_hw_video_codec,
-                                           video_codec_profile);
+      const std::string& video_codec_profile = std::string(),
+      const std::string& video_codec_print_modifier = std::string()) {
+    RunsAudioAndVideoCallCollectingMetrics(
+        kUseDefaultAudioCodec, video_codec, prefer_hw_video_codec,
+        video_codec_profile, video_codec_print_modifier);
   }
 
   void RunsAudioAndVideoCallCollectingMetrics(
       const std::string& audio_codec,
       const std::string& video_codec,
       bool prefer_hw_video_codec,
-      const std::string& video_codec_profile) {
+      const std::string& video_codec_profile,
+      const std::string& video_codec_print_modifier) {
     StartCall(audio_codec, video_codec, prefer_hw_video_codec,
               video_codec_profile);
 
@@ -207,10 +209,12 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
           (video_bytes_received_after - video_bytes_received_before) /
           measure_duration_seconds;
 
-      std::string video_codec_modifier = "_" + video_codec;
-      perf_test::PrintResult(
-          "video", video_codec_modifier, "send_rate", video_send_rate,
-          "bytes/second", false);
+      std::string video_codec_modifier =
+          "_" + (video_codec_print_modifier.empty()
+                     ? video_codec
+                     : video_codec_print_modifier);
+      perf_test::PrintResult("video", video_codec_modifier, "send_rate",
+                             video_send_rate, "bytes/second", false);
       perf_test::PrintResult(
           "video", video_codec_modifier, "receive_rate", video_receive_rate,
           "bytes/second", false);
@@ -302,6 +306,15 @@ IN_PROC_BROWSER_TEST_F(
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithVideoCodec("VP9");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcStatsPerfBrowserTest,
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  RunsAudioAndVideoCallCollectingMetricsWithVideoCodec(
+      "VP9", true /* prefer_hw_video_codec */,
+      WebRtcTestBase::kVP9Profile2Specifier, "VP9p2");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
