@@ -1420,6 +1420,14 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
 
   StoreDataForFillOnAccountSelect(form_data, username_element,
                                   password_element);
+
+  // If wait_for_username is true, we don't want to initially fill the form
+  // until the user types in a valid username.
+  if (form_data.wait_for_username) {
+    LogFirstFillingResult(FillingResult::kWaitForUsername);
+    return;
+  }
+
   FillFormOnPasswordReceived(form_data, username_element, password_element,
                              &field_data_manager_, logger.get());
 }
