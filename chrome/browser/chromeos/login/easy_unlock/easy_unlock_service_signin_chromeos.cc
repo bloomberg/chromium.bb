@@ -382,6 +382,10 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
 
   // Only record metrics for users who have enabled the feature.
   if (IsEnabled()) {
+    if (will_authenticate_using_easy_unlock()) {
+      SmartLockMetricsRecorder::RecordAuthResultSignInSuccess();
+    }
+
     EasyUnlockAuthEvent event = GetPasswordAuthEvent();
     if (event == PASSWORD_ENTRY_PHONE_LOCKED ||
         event == PASSWORD_ENTRY_PHONE_NOT_LOCKABLE ||
