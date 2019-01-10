@@ -380,7 +380,6 @@ class EchoCancellationContainer {
     bool default_audio_processing_value =
         GetDefaultValueForAudioProperties(echo_cancellation_constraint);
 
-    properties->goog_audio_mirroring &= default_audio_processing_value;
     properties->goog_auto_gain_control &= default_audio_processing_value;
     properties->goog_experimental_echo_cancellation &=
         default_audio_processing_value;
