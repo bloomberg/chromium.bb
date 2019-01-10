@@ -201,6 +201,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'unittest_only_paladin',
       chroot_replace=False,
+      board_replace=True,
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
