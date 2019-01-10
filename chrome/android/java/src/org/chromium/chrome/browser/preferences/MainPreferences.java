@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsE
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
+import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -159,8 +160,11 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
         }
 
-        // This checks whether Autofill Assistant is enabled.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+        // This checks whether Autofill Assistant is enabled and was shown at least once (only then
+        // will the AA switch be assigned a value).
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                || !ContextUtils.getAppSharedPreferences().contains(
+                        AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH)) {
             getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
         }
     }
