@@ -152,6 +152,8 @@ class MeanAndError {
     }
   }
 
+  void SetMeanAsAbsoluteValue() { mean_ = std::abs(mean_); }
+
   std::string AsString() const {
     return base::StringPrintf("%f,%f", mean_, std_dev_);
   }
@@ -255,8 +257,11 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
     EXPECT_GE(deltas.size(), kMinDataPoints);
 
-    // Close to zero is better. (can be negative)
-    MeanAndError(deltas).Print(name, modifier, "av_sync", "ms");
+    MeanAndError av_sync(deltas);
+    av_sync.Print(name, modifier, "av_sync", "ms");
+    // Close to zero is better (av_sync can be negative).
+    av_sync.SetMeanAsAbsoluteValue();
+    av_sync.Print(name, modifier, "abs_av_sync", "ms");
     // lower is better.
     AnalyzeJitter(audio_events_).Print(name, modifier, "audio_jitter", "ms");
     // lower is better.
