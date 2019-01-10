@@ -31,29 +31,32 @@ const char kMimeType[] = "application/pdf";
 // Test fixture for testing DownloadControllerImpl class.
 class DownloadControllerImplTest : public WebTest {
  protected:
-  DownloadControllerImplTest() : delegate_(download_controller()) {
+  DownloadControllerImplTest()
+      : download_controller_(std::make_unique<DownloadControllerImpl>()),
+        delegate_(download_controller_.get()) {
     web_state_.SetBrowserState(GetBrowserState());
   }
 
-  DownloadController* download_controller() {
-    return DownloadController::FromBrowserState(GetBrowserState());
-  }
-
   TestWebState web_state_;
+  std::unique_ptr<DownloadControllerImpl> download_controller_;
   FakeDownloadControllerDelegate delegate_;
 };
 
 // Tests that DownloadController::GetDelegate returns delegate_.
 TEST_F(DownloadControllerImplTest, Delegate) {
-  ASSERT_EQ(&delegate_, download_controller()->GetDelegate());
+  ASSERT_EQ(&delegate_, download_controller_->GetDelegate());
 }
 
 // Tests that DownloadController::FromBrowserState returns the same object for
 // each call.
 TEST_F(DownloadControllerImplTest, FromBrowserState) {
-  DownloadController* controller = download_controller();
-  ASSERT_TRUE(controller);
-  ASSERT_EQ(controller, download_controller());
+  DownloadController* first_call_controller =
+      DownloadController::FromBrowserState(GetBrowserState());
+  ASSERT_TRUE(first_call_controller);
+  DownloadController* second_call_controller =
+      DownloadController::FromBrowserState(GetBrowserState());
+
+  ASSERT_EQ(first_call_controller, second_call_controller);
 }
 
 // Tests that DownloadController::CreateDownloadTask calls
@@ -61,7 +64,7 @@ TEST_F(DownloadControllerImplTest, FromBrowserState) {
 TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
   NSString* identifier = [NSUUID UUID].UUIDString;
   GURL url("https://download.test");
-  download_controller()->CreateDownloadTask(
+  download_controller_->CreateDownloadTask(
       &web_state_, identifier, url, kContentDisposition,
       /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_TYPED);
 
@@ -84,11 +87,30 @@ TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
 // Tests that DownloadController::FromBrowserState does not crash if used
 // without delegate.
 TEST_F(DownloadControllerImplTest, NullDelegate) {
-  download_controller()->SetDelegate(nullptr);
+  download_controller_->SetDelegate(nullptr);
   GURL url("https://download.test");
-  download_controller()->CreateDownloadTask(
+  download_controller_->CreateDownloadTask(
       &web_state_, [NSUUID UUID].UUIDString, url, kContentDisposition,
       /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_LINK);
+}
+
+// Tests that DownloadController::CreateSession sets cookies correctly into the
+// session's NSURLSessionConfiguration object.
+TEST_F(DownloadControllerImplTest, SessionCookies) {
+  NSString* identifier = [NSUUID UUID].UUIDString;
+  NSURL* cookie_url = [NSURL URLWithString:@"https://download.test"];
+  NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
+    NSHTTPCookieName : @"name",
+    NSHTTPCookieValue : @"value",
+    NSHTTPCookiePath : cookie_url.path,
+    NSHTTPCookieDomain : cookie_url.host,
+    NSHTTPCookieVersion : @1,
+  }];
+  NSURLSession* session = download_controller_->CreateSession(
+      identifier, @[ cookie ], /*delegate=*/nil, /*delegate_queue=*/nil);
+  NSArray* cookies = session.configuration.HTTPCookieStorage.cookies;
+  EXPECT_EQ(1U, cookies.count);
+  EXPECT_NSEQ(cookie, cookies.firstObject);
 }
 
 }  // namespace web
