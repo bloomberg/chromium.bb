@@ -22,6 +22,7 @@
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -124,6 +125,8 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.remove_popup_overlay = create_archive_params.remove_popup_overlay;
   params.use_page_problem_detectors =
       create_archive_params.use_page_problem_detectors;
+  params.use_mojo_for_mhtml_serialization =
+      IsOnTheFlyMhtmlHashComputationEnabled();
 
   web_contents->GenerateMHTML(
       params,

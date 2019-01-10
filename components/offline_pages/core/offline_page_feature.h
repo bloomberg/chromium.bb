@@ -121,6 +121,10 @@ bool IsOfflineIndicatorFeatureEnabled();
 // above.
 bool IsOfflineIndicatorAlwaysHttpProbeEnabled();
 
+// Returns true if we are saving MHTML files to the target location and
+// calculating their content digests in one step.
+bool IsOnTheFlyMhtmlHashComputationEnabled();
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_

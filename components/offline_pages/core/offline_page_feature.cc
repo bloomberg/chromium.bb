@@ -190,4 +190,8 @@ bool IsOfflineIndicatorAlwaysHttpProbeEnabled() {
   return base::FeatureList::IsEnabled(kOfflineIndicatorAlwaysHttpProbeFeature);
 }
 
+bool IsOnTheFlyMhtmlHashComputationEnabled() {
+  return base::FeatureList::IsEnabled(kOnTheFlyMhtmlHashComputationFeature);
+}
+
 }  // namespace offline_pages
