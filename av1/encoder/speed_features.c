@@ -217,7 +217,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->model_based_motion_mode_rd_breakout = 1;
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
-  sf->inter_mode_rd_model_estimation = 0;
+  sf->inter_mode_rd_model_estimation = 1;
 
   sf->prune_ref_frame_for_rect_partitions =
       !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);

@@ -12345,15 +12345,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
       *mbmi = inter_modes_info->mbmi_arr[data_idx];
       int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
-      if (cpi->sf.inter_mode_rd_model_estimation == 1) {
-        if (curr_est_rd * 0.85 > top_est_rd) break;
-      } else if (cpi->sf.inter_mode_rd_model_estimation == 2) {
-        if (x->source_variance < 256) {
-          if (curr_est_rd * 0.80 > top_est_rd) break;
-        } else {
-          if (curr_est_rd * 0.75 > top_est_rd) break;
-        }
-      }
+      if (curr_est_rd * 0.80 > top_est_rd) break;
+
       const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
 
       x->skip = 0;
