@@ -1474,7 +1474,8 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
               max_vpx_resolutions.first, video_device.Get(),
               {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
               {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-               gfx::Size(7680, 4320)});
+               gfx::Size(7680, 4320), gfx::Size(8192, 4320),
+               gfx::Size(8192, 8192)});
         }
       }
     }
