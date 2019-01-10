@@ -1106,8 +1106,6 @@ class CC_EXPORT LayerTreeHostImpl
   int last_color_space_id_ = -1;
   bool is_animating_for_snap_;
 
-  std::unique_ptr<PaintWorkletLayerPainter> painter_;
-
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 
   // Set to true when a scroll gesture being handled on the compositor has

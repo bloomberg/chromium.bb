@@ -1694,6 +1694,11 @@ TileManager::ActivationStateAsValue() {
   return std::move(state);
 }
 
+void TileManager::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  image_controller_.SetPaintWorkletLayerPainter(std::move(painter));
+}
+
 void TileManager::ActivationStateAsValueInto(
     base::trace_event::TracedValue* state) {
   state->SetString("tree_priority",

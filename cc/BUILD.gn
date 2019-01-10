@@ -496,6 +496,8 @@ cc_test_static_library("test_support") {
     "test/test_options_provider.h",
     "test/test_paint_worklet_input.cc",
     "test/test_paint_worklet_input.h",
+    "test/test_paint_worklet_layer_painter.cc",
+    "test/test_paint_worklet_layer_painter.h",
     "test/test_skcanvas.cc",
     "test/test_skcanvas.h",
     "test/test_task_graph_runner.cc",

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "cc/tiles/paint_worklet_image_cache.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 
 namespace cc {
 
+// TODO(xidachen): Rename this to PaintWorkletTaskImpl.
 class PaintWorkletImageCacheImpl : public TileTask {
  public:
   PaintWorkletImageCacheImpl(PaintWorkletImageCache* cache,
@@ -32,6 +34,11 @@ PaintWorkletImageCache::PaintWorkletImageCache() {}
 
 PaintWorkletImageCache::~PaintWorkletImageCache() {}
 
+void PaintWorkletImageCache::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  painter_ = std::move(painter);
+}
+
 scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
     const DrawImage& image) {
   return base::MakeRefCounted<PaintWorkletImageCacheImpl>(this,
@@ -39,6 +46,16 @@ scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
 }
 
 // TODO(xidachen): dispatch the work to a worklet thread, invoke JS callback.
-void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {}
+// Do check the cache first. If there is already a cache entry for this input,
+// then there is no need to call the Paint() function.
+void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
+  sk_sp<PaintRecord> record = painter_->Paint();
+  records_[paint_image.paint_worklet_input()] = record;
+}
+
+PaintRecord* PaintWorkletImageCache::GetPaintRecordForTest(
+    PaintWorkletInput* input) {
+  return records_[input].get();
+}
 
 }  // namespace cc

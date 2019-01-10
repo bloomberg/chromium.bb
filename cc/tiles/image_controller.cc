@@ -129,6 +129,11 @@ void ImageController::StopWorkerTasks() {
   image_decode_queue_.clear();
 }
 
+void ImageController::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  paint_worklet_image_cache_.SetPaintWorkletLayerPainter(std::move(painter));
+}
+
 void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
   DCHECK(!cache_ || !cache);
 
@@ -157,7 +162,7 @@ void ImageController::ConvertPaintWorkletImagesToTask(
       continue;
     }
     scoped_refptr<TileTask> result =
-        paint_worklet_image_cache_->GetTaskForPaintWorkletImage(*it);
+        paint_worklet_image_cache_.GetTaskForPaintWorkletImage(*it);
     DCHECK(result);
     tasks->push_back(std::move(result));
     // Remove it so that there is no need to check whether an image is
