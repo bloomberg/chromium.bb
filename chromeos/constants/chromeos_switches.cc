@@ -471,8 +471,7 @@ const char kLoginManager[] = "login-manager";
 // to pass user_id hash for primary user.
 const char kLoginProfile[] = "login-profile";
 
-// Specifies the user which is already logged in. If kStubCrosSettings is set,
-// this user will also be treated as the owner (see kStubCrosSettings).
+// Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
 
 // The memory pressure threshold selection which is used to decide whether and
@@ -528,14 +527,6 @@ const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
-
-// Indicates that a stub implementation of CrosSettings that stores settings in
-// memory without signing should be used, treating current user as the owner.
-// The DeviceSettingsProvider class is replaced with StubCrosSettingsProvider
-// for reading the settings from memory, and OwnerSettingsServiceChromeOS is
-// replaced with FakeOwnerSettingsService for writing the settings to memory.
-// This option is for testing the chromeos build of chrome on the desktop only.
-const char kStubCrosSettings[] = "stub-cros-settings";
 
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
