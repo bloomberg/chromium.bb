@@ -36,7 +36,7 @@ localizer_template_h = \
 
 static const UILocalizerResourceMap kUIResources[] = {
 %(resource_map_list)s  };
-static const size_t kUIResourcesSize = arraysize(kUIResources);
+static const size_t kUIResourcesSize = base::size(kUIResources);
 
 #endif  // CHROME_APP_NIBS_LOCALIZER_TABLE_H_
 '''

@@ -10,7 +10,7 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
@@ -200,10 +200,10 @@ uintptr_t GetStackEnd() {
 }
 #endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
-StackTrace::StackTrace() : StackTrace(arraysize(trace_)) {}
+StackTrace::StackTrace() : StackTrace(base::size(trace_)) {}
 
 StackTrace::StackTrace(const void* const* trace, size_t count) {
-  count = std::min(count, arraysize(trace_));
+  count = std::min(count, base::size(trace_));
   if (count)
     memcpy(trace_, trace, count * sizeof(trace_[0]));
   count_ = count;

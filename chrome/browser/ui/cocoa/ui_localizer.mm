@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"

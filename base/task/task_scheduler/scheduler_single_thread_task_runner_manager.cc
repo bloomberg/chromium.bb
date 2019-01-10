@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/task_scheduler/delayed_task_manager.h"
@@ -371,14 +372,17 @@ SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
 #if defined(OS_WIN)
-  static_assert(arraysize(shared_com_scheduler_workers_) ==
-                    arraysize(shared_scheduler_workers_),
+  static_assert(std::extent<decltype(shared_com_scheduler_workers_)>() ==
+                    std::extent<decltype(shared_scheduler_workers_)>(),
                 "The size of |shared_com_scheduler_workers_| must match "
                 "|shared_scheduler_workers_|");
-  static_assert(arraysize(shared_com_scheduler_workers_[0]) ==
-                    arraysize(shared_scheduler_workers_[0]),
-                "The size of |shared_com_scheduler_workers_| must match "
-                "|shared_scheduler_workers_|");
+  static_assert(
+      std::extent<std::remove_reference<decltype(
+              shared_com_scheduler_workers_[0])>>() ==
+          std::extent<
+              std::remove_reference<decltype(shared_scheduler_workers_[0])>>(),
+      "The size of |shared_com_scheduler_workers_| must match "
+      "|shared_scheduler_workers_|");
 #endif  // defined(OS_WIN)
   DCHECK(!g_manager_is_alive);
   g_manager_is_alive = true;
@@ -610,8 +614,8 @@ void SchedulerSingleThreadTaskRunnerManager::ReleaseSharedSchedulerWorkers() {
 #endif
   {
     AutoSchedulerLock auto_lock(lock_);
-    for (size_t i = 0; i < arraysize(shared_scheduler_workers_); ++i) {
-      for (size_t j = 0; j < arraysize(shared_scheduler_workers_[i]); ++j) {
+    for (size_t i = 0; i < base::size(shared_scheduler_workers_); ++i) {
+      for (size_t j = 0; j < base::size(shared_scheduler_workers_[i]); ++j) {
         local_shared_scheduler_workers[i][j] = shared_scheduler_workers_[i][j];
         shared_scheduler_workers_[i][j] = nullptr;
 #if defined(OS_WIN)
@@ -623,8 +627,8 @@ void SchedulerSingleThreadTaskRunnerManager::ReleaseSharedSchedulerWorkers() {
     }
   }
 
-  for (size_t i = 0; i < arraysize(local_shared_scheduler_workers); ++i) {
-    for (size_t j = 0; j < arraysize(local_shared_scheduler_workers[i]); ++j) {
+  for (size_t i = 0; i < base::size(local_shared_scheduler_workers); ++i) {
+    for (size_t j = 0; j < base::size(local_shared_scheduler_workers[i]); ++j) {
       if (local_shared_scheduler_workers[i][j])
         UnregisterSchedulerWorker(local_shared_scheduler_workers[i][j]);
 #if defined(OS_WIN)

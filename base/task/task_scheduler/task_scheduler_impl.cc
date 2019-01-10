@@ -65,9 +65,10 @@ TaskSchedulerImpl::TaskSchedulerImpl(
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
-  static_assert(arraysize(environment_to_worker_pool_) == ENVIRONMENT_COUNT,
-                "The size of |environment_to_worker_pool_| must match "
-                "ENVIRONMENT_COUNT.");
+  static_assert(
+      std::extent<decltype(environment_to_worker_pool_)>() == ENVIRONMENT_COUNT,
+      "The size of |environment_to_worker_pool_| must match "
+      "ENVIRONMENT_COUNT.");
   static_assert(
       size(kEnvironmentParams) == ENVIRONMENT_COUNT,
       "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");

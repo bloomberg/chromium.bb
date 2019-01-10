@@ -566,15 +566,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'/\barraysize\b',
-      (
-          "arraysize is deprecated, please use base::size(array) instead ",
-          "(https://crbug.com/837308). ",
-      ),
-      False,
-      (),
-    ),
-    (
       r'std::random_shuffle',
       (
         'std::random_shuffle is deprecated in C++14, and removed in C++17. Use',

@@ -43,11 +43,11 @@
 #include "base/debug/debugger.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/singleton.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -400,7 +400,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   const int kRegisterPadding = 16;
 #endif
 
-  for (size_t i = 0; i < arraysize(registers); i++) {
+  for (size_t i = 0; i < base::size(registers); i++) {
     PrintToStderr(registers[i].label);
     internal::itoa_r(registers[i].value, buf, sizeof(buf),
                      16, kRegisterPadding);
@@ -813,11 +813,11 @@ StackTrace::StackTrace(size_t count) {
 // stack dumping signal handler). NO malloc or stdio is allowed here.
 
 #if !defined(__UCLIBC__) && !defined(_AIX)
-  count = std::min(arraysize(trace_), count);
+count = std::min(base::size(trace_), count);
 
-  // Though the backtrace API man page does not list any possible negative
-  // return values, we take no chance.
-  count_ = base::saturated_cast<size_t>(backtrace(trace_, count));
+// Though the backtrace API man page does not list any possible negative
+// return values, we take no chance.
+count_ = base::saturated_cast<size_t>(backtrace(trace_, count));
 #else
   count_ = 0;
 #endif
