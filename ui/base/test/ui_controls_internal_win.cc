@@ -4,6 +4,8 @@
 
 #include "ui/base/test/ui_controls_internal_win.h"
 
+#include <windows.h>
+
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -34,22 +36,35 @@ class InputDispatcher {
   // Constructs an InputDispatcher that will invoke |callback| when
   // |message_type| is received. This must be invoked on thread, after the input
   // is sent but before it is processed.
-  static void CreateForMessage(WPARAM message_type, base::OnceClosure callback);
+  static void CreateForMessage(base::OnceClosure callback, WPARAM message_type);
 
-  // Constructs a dispatcher that will invoke |callback| when a mouse move
-  // message has been received. Upon receipt, an error message is logged if the
-  // destination of the move is not |screen_point|. |callback| is run regardless
-  // after a sufficiently long delay. This generally happens when another
-  // process has a window over the test's window, or if |screen_point| is not
-  // over a window owned by the test. This must be invoked on thread, after the
-  // input is sent but before it is processed.
-  static void CreateForMouseMove(const gfx::Point& screen_point,
-                                 base::OnceClosure callback);
+  // Special case of CreateForMessage() for WM_KEYUP (can await multiple events
+  // when modifiers are involved).
+  static void CreateForKeyUp(base::OnceClosure callback,
+                             int num_keyups_awaited);
+
+  // Special case of CreateForMessage() for WM_MOUSEMOVE. Upon receipt, an error
+  // message is logged if the destination of the move is not |screen_point|.
+  // |callback| is run regardless after a sufficiently long delay. This
+  // generally happens when another process has a window over the test's window,
+  // or if |screen_point| is not over a window owned by the test.
+  static void CreateForMouseMove(base::OnceClosure callback,
+                                 const gfx::Point& screen_point);
 
  private:
-  InputDispatcher(WPARAM message_waiting_for,
-                  const gfx::Point& screen_point,
-                  base::OnceClosure callback);
+  // Generic message
+  InputDispatcher(base::OnceClosure callback, WPARAM message_waiting_for);
+
+  // WM_KEYUP
+  InputDispatcher(base::OnceClosure callback,
+                  WPARAM message_waiting_for,
+                  int num_keyups_awaited);
+
+  // WM_MOUSEMOVE
+  InputDispatcher(base::OnceClosure callback,
+                  WPARAM message_waiting_for,
+                  const gfx::Point& screen_point);
+
   ~InputDispatcher();
 
   // Installs the dispatcher as the current hook.
@@ -91,6 +106,10 @@ class InputDispatcher {
   // messages.
   const WPARAM message_waiting_for_;
 
+  // The number of WM_KEYUP messages to receive before dispatching |callback_|.
+  // Only relevant when |message_waiting_for_| is WM_KEYUP.
+  int num_keyups_awaited_ = 0;
+
   // The desired mouse position for a mouse move event.
   const gfx::Point expected_mouse_location_;
 
@@ -106,28 +125,56 @@ InputDispatcher* InputDispatcher::current_dispatcher_ = nullptr;
 HHOOK InputDispatcher::next_hook_ = nullptr;
 
 // static
-void InputDispatcher::CreateForMessage(WPARAM message_type,
-                                       base::OnceClosure callback) {
+void InputDispatcher::CreateForMessage(base::OnceClosure callback,
+                                       WPARAM message_type) {
   DCHECK_NE(message_type, static_cast<WPARAM>(WM_MOUSEMOVE));
+  DCHECK_NE(message_type, static_cast<WPARAM>(WM_KEYUP));
 
   // Owns self.
-  new InputDispatcher(message_type, gfx::Point(0, 0), std::move(callback));
+  new InputDispatcher(std::move(callback), message_type);
 }
 
 // static
-void InputDispatcher::CreateForMouseMove(const gfx::Point& screen_point,
-                                         base::OnceClosure callback) {
+void InputDispatcher::CreateForKeyUp(base::OnceClosure callback,
+                                     int num_keyups_awaited) {
   // Owns self.
-  new InputDispatcher(WM_MOUSEMOVE, screen_point, std::move(callback));
+  new InputDispatcher(std::move(callback), WM_KEYUP, num_keyups_awaited);
 }
 
-InputDispatcher::InputDispatcher(WPARAM message_waiting_for,
-                                 const gfx::Point& screen_point,
-                                 base::OnceClosure callback)
+// static
+void InputDispatcher::CreateForMouseMove(base::OnceClosure callback,
+                                         const gfx::Point& screen_point) {
+  // Owns self.
+  new InputDispatcher(std::move(callback), WM_MOUSEMOVE, screen_point);
+}
+
+InputDispatcher::InputDispatcher(base::OnceClosure callback,
+                                 WPARAM message_waiting_for)
+    : callback_(std::move(callback)),
+      message_waiting_for_(message_waiting_for),
+      weak_factory_(this) {
+  InstallHook();
+}
+
+InputDispatcher::InputDispatcher(base::OnceClosure callback,
+                                 WPARAM message_waiting_for,
+                                 int num_keyups_awaited)
+    : callback_(std::move(callback)),
+      message_waiting_for_(message_waiting_for),
+      num_keyups_awaited_(num_keyups_awaited),
+      weak_factory_(this) {
+  DCHECK_EQ(message_waiting_for_, static_cast<WPARAM>(WM_KEYUP));
+  InstallHook();
+}
+
+InputDispatcher::InputDispatcher(base::OnceClosure callback,
+                                 WPARAM message_waiting_for,
+                                 const gfx::Point& screen_point)
     : callback_(std::move(callback)),
       message_waiting_for_(message_waiting_for),
       expected_mouse_location_(screen_point),
       weak_factory_(this) {
+  DCHECK_EQ(message_waiting_for_, static_cast<WPARAM>(WM_MOUSEMOVE));
   InstallHook();
 }
 
@@ -166,7 +213,7 @@ void InputDispatcher::InstallHook() {
   }
   next_hook_ =
       SetWindowsHookEx(hook_type, hook_function, nullptr, GetCurrentThreadId());
-  DCHECK(next_hook_);
+  DPCHECK(next_hook_);
 }
 
 // static
@@ -190,10 +237,27 @@ LRESULT CALLBACK InputDispatcher::KeyHook(int n_code,
   HHOOK next_hook = next_hook_;
   if (n_code == HC_ACTION) {
     DCHECK(current_dispatcher_);
-    if (l_param & (1 << 30)) {
-      // Only send on key up.
+    // Only send when the key is transitioning from pressed to released. Note
+    // that the documentation for the bit state on KeyboardProc [1] can lead to
+    // confusion. The relevant information is that the transition state (bit 31
+    // -- zero-based) is always 1 for WM_KEYUP.
+    // [1]
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms644984.aspx
+    //
+    // While this documentation states that the previous key state (bit 30) is
+    // always 1 on WM_KEYUP it has been observed to be 0 when the preceding
+    // WM_KEYDOWN is intercepted (e.g., by an extension hooking a keyboard
+    // shortcut).
+    //
+    // And to add to the confusion about bit 30, the documentation for WM_KEYUP
+    // [2] and for general keyboard input [3] contradict each other, one saying
+    // it's always set to 1, the other saying it's always set to 0 on
+    // WM_KEYUP...
+    // [2] https://docs.microsoft.com/en-us/windows/desktop/inputdev/wm-keyup
+    // [3]
+    // https://docs.microsoft.com/en-us/windows/desktop/inputdev/about-keyboard-input#keystroke-message-flags
+    if (l_param & (1 << 31))
       current_dispatcher_->MatchingMessageFound();
-    }
   }
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
@@ -231,8 +295,11 @@ void InputDispatcher::DispatchedMessage(
 void InputDispatcher::MatchingMessageFound() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // The hook proc is invoked before the message is process. Post a task to run
-  // the callback so that handling of this event completes first.
+  if (message_waiting_for_ == WM_KEYUP && --num_keyups_awaited_ > 0)
+    return;
+
+  // The hook proc is invoked before the message is processed. Post a task to
+  // run the callback so that handling of this event completes first.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 std::move(callback_));
   delete this;
@@ -364,7 +431,7 @@ bool SendKeyPressImpl(HWND window,
     ::SendMessage(popup_menu, WM_KEYUP, w_param, l_param);
 
     if (task)
-      InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
+      InputDispatcher::CreateForKeyUp(std::move(task), 1);
     return true;
   }
 
@@ -384,7 +451,7 @@ bool SendKeyPressImpl(HWND window,
   }
 
   if (task)
-    InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
+    InputDispatcher::CreateForKeyUp(std::move(task), input.size() / 2);
   return true;
 }
 
@@ -432,7 +499,7 @@ bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task) {
     return false;
 
   if (task)
-    InputDispatcher::CreateForMouseMove({screen_x, screen_y}, std::move(task));
+    InputDispatcher::CreateForMouseMove(std::move(task), {screen_x, screen_y});
   return true;
 }
 
@@ -492,7 +559,7 @@ bool SendMouseEventsImpl(MouseButton type,
   }
 
   if (task)
-    InputDispatcher::CreateForMessage(last_event, std::move(task));
+    InputDispatcher::CreateForMessage(std::move(task), last_event);
   return true;
 }
 
