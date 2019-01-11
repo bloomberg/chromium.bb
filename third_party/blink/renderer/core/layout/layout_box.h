@@ -1306,8 +1306,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutObject* container) const;
   LayoutRect LayoutOverflowRectForPropagation(LayoutObject* container) const;
 
-  // TODO(chrishtr): delete callsites of this.
-  bool HasOverflowModel() const { return overflow_.get(); }
   bool HasSelfVisualOverflow() const {
     return VisualOverflowIsSet() &&
            !BorderBoxRect().Contains(

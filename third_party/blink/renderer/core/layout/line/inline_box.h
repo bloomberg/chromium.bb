@@ -362,6 +362,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void FlipForWritingMode(LayoutRect&) const;
   LayoutPoint FlipForWritingMode(const LayoutPoint&) const;
 
+  // Returns trus if it is known that this box has no layout or visual
+  // overflow. This is used as a fast-path to skip expensive overflow
+  // recalc.
   bool KnownToHaveNoOverflow() const {
     return bitfields_.KnownToHaveNoOverflow();
   }

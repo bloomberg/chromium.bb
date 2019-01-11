@@ -74,7 +74,8 @@ class LineLayoutBox : public LineLayoutBoxModel {
     ToBox()->Move(width, height);
   }
 
-  bool HasOverflowModel() const { return ToBox()->HasOverflowModel(); }
+  bool HasLayoutOverflow() const { return ToBox()->HasLayoutOverflow(); }
+  bool HasVisualOverflow() const { return ToBox()->HasVisualOverflow(); }
   LayoutRect LogicalVisualOverflowRectForPropagation() const {
     return ToBox()->LogicalVisualOverflowRectForPropagation();
   }

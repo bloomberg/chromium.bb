@@ -202,7 +202,8 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
         child->ClearKnownToHaveNoOverflow();
     } else if (child->GetLineLayoutItem().IsAtomicInlineLevel()) {
       LineLayoutBox box = LineLayoutBox(child->GetLineLayoutItem());
-      if (box.HasOverflowModel() || box.HasSelfPaintingLayer())
+      if (box.HasLayoutOverflow() || box.HasVisualOverflow() ||
+          box.HasSelfPaintingLayer())
         child->ClearKnownToHaveNoOverflow();
     } else if (!child->GetLineLayoutItem().IsBR() &&
                (child->GetLineLayoutItem()
