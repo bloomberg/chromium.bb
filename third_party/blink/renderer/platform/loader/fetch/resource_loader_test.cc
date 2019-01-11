@@ -191,4 +191,72 @@ TEST_F(ResourceLoaderTest, ResponseType) {
   }
 }
 
+class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
+ protected:
+  bool LoadAndCheckIsolatedCodeCache(ResourceResponse response) {
+    const scoped_refptr<const SecurityOrigin> origin =
+        SecurityOrigin::Create(foo_url_);
+
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+    FetchContext* context = MakeGarbageCollected<MockFetchContext>(
+        MockFetchContext::kShouldLoadNewResource, nullptr, origin,
+        std::make_unique<TestWebURLLoaderFactory>());
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+
+    ResourceRequest request;
+    request.SetURL(foo_url_);
+    request.SetRequestContext(mojom::RequestContextType::FETCH);
+
+    FetchParameters fetch_parameters(request);
+    Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
+    ResourceLoader* loader = resource->Loader();
+
+    loader->DidReceiveResponse(WrappedResourceResponse(response));
+    return loader->should_use_isolated_code_cache_;
+  }
+};
+
+TEST_F(ResourceLoaderIsolatedCodeCacheTest, ResponseFromNetwork) {
+  ResourceResponse response(foo_url_);
+  response.SetHTTPStatusCode(200);
+  EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
+}
+
+TEST_F(ResourceLoaderIsolatedCodeCacheTest,
+       SyntheticResponseFromServiceWorker) {
+  ResourceResponse response(foo_url_);
+  response.SetHTTPStatusCode(200);
+  response.SetWasFetchedViaServiceWorker(true);
+  EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
+}
+
+TEST_F(ResourceLoaderIsolatedCodeCacheTest,
+       PassThroughResponseFromServiceWorker) {
+  ResourceResponse response(foo_url_);
+  response.SetHTTPStatusCode(200);
+  response.SetWasFetchedViaServiceWorker(true);
+  response.SetURLListViaServiceWorker(Vector<KURL>(1, foo_url_));
+  EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
+}
+
+TEST_F(ResourceLoaderIsolatedCodeCacheTest,
+       DifferentUrlResponseFromServiceWorker) {
+  ResourceResponse response(foo_url_);
+  response.SetHTTPStatusCode(200);
+  response.SetWasFetchedViaServiceWorker(true);
+  response.SetURLListViaServiceWorker(Vector<KURL>(1, bar_url_));
+  EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
+}
+
+TEST_F(ResourceLoaderIsolatedCodeCacheTest, CacheResponseFromServiceWorker) {
+  ResourceResponse response(foo_url_);
+  response.SetHTTPStatusCode(200);
+  response.SetWasFetchedViaServiceWorker(true);
+  response.SetCacheStorageCacheName("dummy");
+  // The browser does support code cache for cache_storage Responses, but they
+  // are loaded via a different mechanism.  So the ResourceLoader code caching
+  // value should be false here.
+  EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
+}
+
 }  // namespace blink
