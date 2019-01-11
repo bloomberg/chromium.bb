@@ -47,6 +47,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/renderer_context_menu/accessibility_labels_menu_observer.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
@@ -350,11 +351,12 @@ const struct UmaEnumCommandIdPair {
     {96, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4},
     {97, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5},
     {98, -1, IDC_CONTENT_CONTEXT_LOOK_UP},
+    {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {99, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
-                  // was added.
+    {100, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+                   // was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -546,6 +548,21 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
   } else {
     menu->AddItemWithStringId(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
                               IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
+    AddGoogleIconToLastMenuItem(menu);
+  }
+}
+
+// static
+void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(
+    ui::SimpleMenuModel* menu,
+    bool is_checked) {
+  if (is_checked) {
+    menu->AddCheckItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
+  } else {
+    menu->AddItemWithStringId(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+                              IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
     AddGoogleIconToLastMenuItem(menu);
   }
 }
@@ -868,6 +885,11 @@ void RenderViewContextMenu::InitMenu() {
                ContextMenuContentType::ITEM_GROUP_ALL_EXTENSION));
     AppendCurrentExtensionItems();
   }
+
+  // Accessibility label items are appended to all menus when a screen reader
+  // is enabled. It can be difficult to open a specific context menu with a
+  // screen reader, so this is a UX approved solution.
+  AppendAccessibilityLabelsItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -1552,6 +1574,16 @@ void RenderViewContextMenu::AppendSpellingSuggestionItems() {
   spelling_suggestions_menu_observer_->InitMenu(params_);
 }
 
+void RenderViewContextMenu::AppendAccessibilityLabelsItems() {
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!accessibility_labels_menu_observer_) {
+    accessibility_labels_menu_observer_ =
+        std::make_unique<AccessibilityLabelsMenuObserver>(this);
+  }
+  observers_.AddObserver(accessibility_labels_menu_observer_.get());
+  accessibility_labels_menu_observer_->InitMenu(params_);
+}
+
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
   const ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       GetHandlersForLinkUrl();
@@ -2135,6 +2167,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 void RenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
   AddSpellCheckServiceItem(&menu_model_, is_checked);
+}
+
+void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(bool is_checked) {
+  AddAccessibilityLabelsServiceItem(&menu_model_, is_checked);
 }
 
 // static
