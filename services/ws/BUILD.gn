@@ -92,8 +92,10 @@ component("lib") {
   ]
 
   deps = [
+    "//components/viz/common",
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/host",
+    "//skia",
   ]
 
   if (use_ozone) {
