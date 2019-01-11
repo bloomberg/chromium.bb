@@ -81,36 +81,36 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   bool HasFormResetCallback() const override { return false; }
   bool HasDisabledStateChangedCallback() const override { return false; }
 
-  void RunConnectedCallback(Element*) override {
+  void RunConnectedCallback(Element&) override {
     NOTREACHED() << "definition does not have connected callback";
   }
 
-  void RunDisconnectedCallback(Element*) override {
+  void RunDisconnectedCallback(Element&) override {
     NOTREACHED() << "definition does not have disconnected callback";
   }
 
-  void RunAdoptedCallback(Element*,
-                          Document* old_owner,
-                          Document* new_owner) override {
+  void RunAdoptedCallback(Element&,
+                          Document& old_owner,
+                          Document& new_owner) override {
     NOTREACHED() << "definition does not have adopted callback";
   }
 
-  void RunAttributeChangedCallback(Element*,
+  void RunAttributeChangedCallback(Element&,
                                    const QualifiedName&,
                                    const AtomicString& old_value,
                                    const AtomicString& new_value) override {
     NOTREACHED() << "definition does not have attribute changed callback";
   }
-  void RunFormAssociatedCallback(Element* element,
+  void RunFormAssociatedCallback(Element& element,
                                  HTMLFormElement* nullable_form) override {
     NOTREACHED() << "definition does not have formAssociatedCallback";
   }
 
-  void RunFormResetCallback(Element* element) override {
+  void RunFormResetCallback(Element& element) override {
     NOTREACHED() << "definition does not have formResetCallback";
   }
 
-  void RunDisabledStateChangedCallback(Element* element,
+  void RunDisabledStateChangedCallback(Element& element,
                                        bool is_disabled) override {
     NOTREACHED() << "definition does not have disabledStateChangedCallback";
   }

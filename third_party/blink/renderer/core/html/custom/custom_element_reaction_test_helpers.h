@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_queue.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -27,17 +28,17 @@ class Command : public GarbageCollectedFinalized<Command> {
   Command() = default;
   virtual ~Command() = default;
   virtual void Trace(blink::Visitor* visitor) {}
-  virtual void Run(Element*) = 0;
+  virtual void Run(Element&) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Command);
 };
 
 class Call : public Command {
  public:
-  using Callback = base::OnceCallback<void(Element*)>;
+  using Callback = base::OnceCallback<void(Element&)>;
   Call(Callback callback) : callback_(std::move(callback)) {}
   ~Call() override = default;
-  void Run(Element* element) override { std::move(callback_).Run(element); }
+  void Run(Element& element) override { std::move(callback_).Run(element); }
 
  private:
   Callback callback_;
@@ -49,7 +50,7 @@ class Unreached : public Command {
  public:
   Unreached(const char* message) : message_(message) {}
   ~Unreached() override = default;
-  void Run(Element*) override { EXPECT_TRUE(false) << message_; }
+  void Run(Element&) override { EXPECT_TRUE(false) << message_; }
 
  private:
   const char* message_;
@@ -61,7 +62,7 @@ class Log : public Command {
  public:
   Log(char what, std::vector<char>& where) : what_(what), where_(where) {}
   ~Log() override = default;
-  void Run(Element*) override { where_.push_back(what_); }
+  void Run(Element&) override { where_.push_back(what_); }
 
  private:
   char what_;
@@ -78,7 +79,7 @@ class Recurse : public Command {
     Command::Trace(visitor);
     visitor->Trace(queue_);
   }
-  void Run(Element* element) override { queue_->InvokeReactions(element); }
+  void Run(Element& element) override { queue_->InvokeReactions(element); }
 
  private:
   Member<CustomElementReactionQueue> queue_;
@@ -96,7 +97,7 @@ class Enqueue : public Command {
     visitor->Trace(queue_);
     visitor->Trace(reaction_);
   }
-  void Run(Element*) override { queue_->Add(reaction_); }
+  void Run(Element&) override { queue_->Add(reaction_); }
 
  private:
   Member<CustomElementReactionQueue> queue_;
@@ -108,13 +109,16 @@ class Enqueue : public Command {
 class TestReaction : public CustomElementReaction {
  public:
   TestReaction(HeapVector<Member<Command>>* commands)
-      : CustomElementReaction(nullptr), commands_(commands) {}
+      : CustomElementReaction(
+            *MakeGarbageCollected<TestCustomElementDefinition>(
+                CustomElementDescriptor("mock-element", "mock-element"))),
+        commands_(commands) {}
   ~TestReaction() override = default;
   void Trace(blink::Visitor* visitor) override {
     CustomElementReaction::Trace(visitor);
     visitor->Trace(commands_);
   }
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     for (auto& command : *commands_)
       command->Run(element);
   }

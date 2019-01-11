@@ -200,7 +200,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   Vector<AttributeChanged> attribute_changed_;
 
   struct Adopted : public GarbageCollected<Adopted> {
-    Adopted(Document* old_owner, Document* new_owner)
+    Adopted(Document& old_owner, Document& new_owner)
         : old_owner_(old_owner), new_owner_(new_owner) {}
 
     Member<Document> old_owner_;
@@ -228,30 +228,30 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   bool HasDisconnectedCallback() const override { return true; }
   bool HasAdoptedCallback() const override { return true; }
 
-  void RunConnectedCallback(Element* element) override {
+  void RunConnectedCallback(Element& element) override {
     logs_.push_back(kConnectedCallback);
-    EXPECT_EQ(element, element_);
+    EXPECT_EQ(&element, element_);
   }
 
-  void RunDisconnectedCallback(Element* element) override {
+  void RunDisconnectedCallback(Element& element) override {
     logs_.push_back(kDisconnectedCallback);
-    EXPECT_EQ(element, element_);
+    EXPECT_EQ(&element, element_);
   }
 
-  void RunAdoptedCallback(Element* element,
-                          Document* old_owner,
-                          Document* new_owner) override {
+  void RunAdoptedCallback(Element& element,
+                          Document& old_owner,
+                          Document& new_owner) override {
     logs_.push_back(kAdoptedCallback);
-    EXPECT_EQ(element, element_);
+    EXPECT_EQ(&element, element_);
     adopted_.push_back(MakeGarbageCollected<Adopted>(old_owner, new_owner));
   }
 
-  void RunAttributeChangedCallback(Element* element,
+  void RunAttributeChangedCallback(Element& element,
                                    const QualifiedName& name,
                                    const AtomicString& old_value,
                                    const AtomicString& new_value) override {
     logs_.push_back(kAttributeChangedCallback);
-    EXPECT_EQ(element, element_);
+    EXPECT_EQ(&element, element_);
     attribute_changed_.push_back(AttributeChanged{name, old_value, new_value});
   }
 

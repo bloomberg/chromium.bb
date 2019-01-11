@@ -78,19 +78,19 @@ class CORE_EXPORT CustomElementDefinition
   virtual bool HasFormResetCallback() const = 0;
   virtual bool HasDisabledStateChangedCallback() const = 0;
 
-  virtual void RunConnectedCallback(Element*) = 0;
-  virtual void RunDisconnectedCallback(Element*) = 0;
-  virtual void RunAdoptedCallback(Element*,
-                                  Document* old_owner,
-                                  Document* new_owner) = 0;
-  virtual void RunAttributeChangedCallback(Element*,
+  virtual void RunConnectedCallback(Element&) = 0;
+  virtual void RunDisconnectedCallback(Element&) = 0;
+  virtual void RunAdoptedCallback(Element&,
+                                  Document& old_owner,
+                                  Document& new_owner) = 0;
+  virtual void RunAttributeChangedCallback(Element&,
                                            const QualifiedName&,
                                            const AtomicString& old_value,
                                            const AtomicString& new_value) = 0;
-  virtual void RunFormAssociatedCallback(Element* element,
+  virtual void RunFormAssociatedCallback(Element& element,
                                          HTMLFormElement* nullable_form) = 0;
-  virtual void RunFormResetCallback(Element* element) = 0;
-  virtual void RunDisabledStateChangedCallback(Element* element,
+  virtual void RunFormResetCallback(Element& element) = 0;
+  virtual void RunDisabledStateChangedCallback(Element& element,
                                                bool is_disabled) = 0;
 
   void EnqueueUpgradeReaction(Element*,

@@ -9,7 +9,7 @@
 namespace blink {
 
 CustomElementReaction::CustomElementReaction(
-    CustomElementDefinition* definition)
+    CustomElementDefinition& definition)
     : definition_(definition) {}
 
 void CustomElementReaction::Trace(blink::Visitor* visitor) {

@@ -275,31 +275,31 @@ bool ScriptCustomElementDefinition::HasDisabledStateChangedCallback() const {
   return disabled_state_changed_callback_;
 }
 
-void ScriptCustomElementDefinition::RunConnectedCallback(Element* element) {
+void ScriptCustomElementDefinition::RunConnectedCallback(Element& element) {
   if (!connected_callback_)
     return;
 
-  connected_callback_->InvokeAndReportException(element);
+  connected_callback_->InvokeAndReportException(&element);
 }
 
-void ScriptCustomElementDefinition::RunDisconnectedCallback(Element* element) {
+void ScriptCustomElementDefinition::RunDisconnectedCallback(Element& element) {
   if (!disconnected_callback_)
     return;
 
-  disconnected_callback_->InvokeAndReportException(element);
+  disconnected_callback_->InvokeAndReportException(&element);
 }
 
-void ScriptCustomElementDefinition::RunAdoptedCallback(Element* element,
-                                                       Document* old_owner,
-                                                       Document* new_owner) {
+void ScriptCustomElementDefinition::RunAdoptedCallback(Element& element,
+                                                       Document& old_owner,
+                                                       Document& new_owner) {
   if (!adopted_callback_)
     return;
 
-  adopted_callback_->InvokeAndReportException(element, old_owner, new_owner);
+  adopted_callback_->InvokeAndReportException(&element, &old_owner, &new_owner);
 }
 
 void ScriptCustomElementDefinition::RunAttributeChangedCallback(
-    Element* element,
+    Element& element,
     const QualifiedName& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
@@ -307,29 +307,29 @@ void ScriptCustomElementDefinition::RunAttributeChangedCallback(
     return;
 
   attribute_changed_callback_->InvokeAndReportException(
-      element, name.LocalName(), old_value, new_value, name.NamespaceURI());
+      &element, name.LocalName(), old_value, new_value, name.NamespaceURI());
 }
 
 void ScriptCustomElementDefinition::RunFormAssociatedCallback(
-    Element* element,
+    Element& element,
     HTMLFormElement* nullable_form) {
   if (!form_associated_callback_)
     return;
-  form_associated_callback_->InvokeAndReportException(element, nullable_form);
+  form_associated_callback_->InvokeAndReportException(&element, nullable_form);
 }
 
-void ScriptCustomElementDefinition::RunFormResetCallback(Element* element) {
+void ScriptCustomElementDefinition::RunFormResetCallback(Element& element) {
   if (!form_reset_callback_)
     return;
-  form_reset_callback_->InvokeAndReportException(element);
+  form_reset_callback_->InvokeAndReportException(&element);
 }
 
 void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
-    Element* element,
+    Element& element,
     bool is_disabled) {
   if (!disabled_state_changed_callback_)
     return;
-  disabled_state_changed_callback_->InvokeAndReportException(element,
+  disabled_state_changed_callback_->InvokeAndReportException(&element,
                                                              is_disabled);
 }
 

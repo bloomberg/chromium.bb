@@ -24,9 +24,9 @@ void CustomElementReactionQueue::Add(CustomElementReaction* reaction) {
 
 // There is one queue per element, so this could be invoked
 // recursively.
-void CustomElementReactionQueue::InvokeReactions(Element* element) {
+void CustomElementReactionQueue::InvokeReactions(Element& element) {
   TRACE_EVENT1("blink", "CustomElementReactionQueue::invokeReactions", "name",
-               element->localName().Utf8());
+               element.localName().Utf8());
   while (index_ < reactions_.size()) {
     CustomElementReaction* reaction = reactions_[index_];
     reactions_[index_++] = nullptr;

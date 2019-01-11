@@ -199,7 +199,7 @@ class EnqueueToStack : public Command {
     visitor->Trace(element_);
     visitor->Trace(reaction_);
   }
-  void Run(Element*) override {
+  void Run(Element&) override {
     stack_->EnqueueToCurrentQueue(element_, reaction_);
   }
 
