@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #endif
 
+class AccessibilityLabelsMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
@@ -67,12 +68,17 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static void AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                                        bool is_checked);
 
+  // Adds the accessibility labels service item to the context menu.
+  static void AddAccessibilityLabelsServiceItem(ui::SimpleMenuModel* menu,
+                                                bool is_checked);
+
   // RenderViewContextMenuBase:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdVisible(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
+  void AddAccessibilityLabelsServiceItem(bool is_checked) override;
 
   // Registers a one-time callback that will be called the next time a context
   // menu is shown.
@@ -166,6 +172,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendEditableItems();
   void AppendLanguageSettings();
   void AppendSpellingSuggestionItems();
+  void AppendAccessibilityLabelsItems();
   void AppendSearchProvider();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
@@ -242,6 +249,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // An observer that handles spelling suggestions, "Add to dictionary", and
   // "Ask Google for suggestions" items.
   std::unique_ptr<SpellingMenuObserver> spelling_suggestions_menu_observer_;
+
+  // An observer that handles accessibility labels items.
+  std::unique_ptr<AccessibilityLabelsMenuObserver>
+      accessibility_labels_menu_observer_;
 
 #if !defined(OS_MACOSX)
   // An observer that handles the submenu for showing spelling options. This

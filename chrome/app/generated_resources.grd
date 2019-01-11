@@ -535,6 +535,15 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
             &amp;Add to dictionary
           </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND" desc="The context-menu item that asks whether to integrate the accessibility image labeling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+            Get image labels from Google
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_ENABLE" desc="The button text that allows integrating the accessibility labels service of Google. This should use the same verb as IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND.">
+            Get labels
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE" desc="The button text that disallows integrating the accessibility labels service of Google.">
+            Cancel
+          </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
             Ask Google for suggestions
           </message>
@@ -758,6 +767,15 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="In Title Case: The name of the Add to dictionary command in the content area context menu">
             &amp;Add to Dictionary
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND" desc="The context-menu item that asks whether to integrate the accessibility image labeling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+            Get Image Labels from Google
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_ENABLE" desc="The button text that allows integrating the accessibility labels service of Google. This should use the same verb as IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND.">
+            Get Labels
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE" desc="The button text that disallows integrating the accessibility labels service of Google.">
+            Cancel
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
             Ask Google for Suggestions

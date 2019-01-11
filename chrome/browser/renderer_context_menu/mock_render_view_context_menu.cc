@@ -147,6 +147,13 @@ void MockRenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 }
 
+void MockRenderViewContextMenu::AddAccessibilityLabelsServiceItem(
+    bool is_checked) {
+  AddCheckItem(
+      IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND));
+}
+
 content::RenderViewHost* MockRenderViewContextMenu::GetRenderViewHost() const {
   return nullptr;
 }

@@ -775,6 +775,7 @@ test("browser_tests") {
       "../browser/profiles/profile_manager_browsertest.cc",
       "../browser/push_messaging/push_messaging_browsertest.cc",
       "../browser/referrer_policy_browsertest.cc",
+      "../browser/renderer_context_menu/accessibility_labels_menu_observer_browsertest.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.h",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest.cc",
