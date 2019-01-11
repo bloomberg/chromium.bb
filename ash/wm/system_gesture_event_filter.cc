@@ -4,7 +4,7 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
-#include "ash/touch/touch_uma.h"
+#include "ash/public/cpp/touch_uma.h"
 #include "ash/wm/gestures/overview_gesture_handler.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
@@ -36,12 +36,12 @@ void SystemGestureEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  TouchUMA::GetInstance()->RecordTouchEvent(target, *event);
+  TouchUMA::RecordTouchEvent(target, *event);
 }
 
 void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
+  TouchUMA::RecordGestureEvent(target, *event);
 }
 
 }  // namespace ash

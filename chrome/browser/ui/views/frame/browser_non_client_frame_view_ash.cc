@@ -15,12 +15,14 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_util.h"  // mash-ok
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -522,10 +524,13 @@ void BrowserNonClientFrameViewAsh::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
       if (event->details().tap_count() == 2) {
-        // TODO(estade): need to log TouchUMA for GESTURE_MAXIMIZE_DOUBLETAP and
-        // GESTURE_FRAMEVIEW_TAP, as in WorkspaceEventHandler.
         ash_window_manager_->MaximizeWindowByCaptionClick(
             GetServerWindowId(), ui::mojom::PointerKind::TOUCH);
+        base::RecordAction(
+            base::UserMetricsAction("Caption_GestureTogglesMaximize"));
+        ash::TouchUMA::RecordGestureAction(ash::GESTURE_MAXIMIZE_DOUBLETAP);
+      } else {
+        ash::TouchUMA::RecordGestureAction(ash::GESTURE_FRAMEVIEW_TAP);
       }
       break;
 
