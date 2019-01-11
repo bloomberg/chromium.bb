@@ -80,7 +80,10 @@ enum QuicAsyncStatus {
 // TODO(wtc): see if WriteStatus can be replaced by QuicAsyncStatus.
 enum WriteStatus {
   WRITE_STATUS_OK,
+  // Write is blocked, caller needs to retry.
   WRITE_STATUS_BLOCKED,
+  // Write is blocked but the packet data is buffered, caller should not retry.
+  WRITE_STATUS_BLOCKED_DATA_BUFFERED,
   // To make the IsWriteError(WriteStatus) function work properly:
   // - Non-errors MUST be added before WRITE_STATUS_ERROR.
   // - Errors MUST be added after WRITE_STATUS_ERROR.
@@ -88,6 +91,11 @@ enum WriteStatus {
   WRITE_STATUS_MSG_TOO_BIG,
   WRITE_STATUS_NUM_VALUES,
 };
+
+inline bool IsWriteBlockedStatus(WriteStatus status) {
+  return status == WRITE_STATUS_BLOCKED ||
+         status == WRITE_STATUS_BLOCKED_DATA_BUFFERED;
+}
 
 inline bool IsWriteError(WriteStatus status) {
   return status >= WRITE_STATUS_ERROR;
@@ -107,6 +115,7 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
       case WRITE_STATUS_OK:
         return bytes_written == other.bytes_written;
       case WRITE_STATUS_BLOCKED:
+      case WRITE_STATUS_BLOCKED_DATA_BUFFERED:
         return true;
       default:
         return error_code == other.error_code;

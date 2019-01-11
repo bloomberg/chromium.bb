@@ -342,7 +342,10 @@ class TestPacketWriter : public QuicPacketWriter {
       return WriteResult(WRITE_STATUS_ERROR, net::ERR_MSG_TOO_BIG);
     }
     if (IsWriteBlocked()) {
-      return WriteResult(WRITE_STATUS_BLOCKED, -1);
+      return WriteResult(is_write_blocked_data_buffered_
+                             ? WRITE_STATUS_BLOCKED_DATA_BUFFERED
+                             : WRITE_STATUS_BLOCKED,
+                         0);
     }
 
     if (ShouldWriteFail()) {
