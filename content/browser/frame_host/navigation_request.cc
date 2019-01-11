@@ -220,12 +220,12 @@ void AddAdditionalRequestHeaders(
         site_value = "same-site";
       }
     }
-    std::string value = base::StringPrintf(
-        "cause=%s, destination=%s, site=%s",
-        has_user_gesture ? "user-activated" : "forced",
-        frame_tree_node->IsMainFrame() ? "document" : "nested-document",
-        site_value.c_str());
-    headers->SetHeaderIfMissing("Sec-Metadata", value);
+    headers->SetHeaderIfMissing("Sec-Fetch-Dest", frame_tree_node->IsMainFrame()
+                                                      ? "document"
+                                                      : "nested-document");
+    headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
+    headers->SetHeaderIfMissing("Sec-Fetch-User",
+                                has_user_gesture ? "?T" : "?F");
   }
 
   // Ask whether we should request a policy.

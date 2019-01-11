@@ -161,9 +161,9 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
         }
       }
 
-      String value = String::Format("destination=%s, site=%s",
-                                    destination_value, site_value);
-      request.AddHTTPHeaderField("Sec-Metadata", AtomicString(value));
+      request.AddHTTPHeaderField("Sec-Fetch-Dest", destination_value);
+      request.AddHTTPHeaderField("Sec-Fetch-Site", site_value);
+      request.AddHTTPHeaderField("Sec-Fetch-User", "?F");
     }
   }
 }

@@ -198,7 +198,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
     resource_request->headers.SetHeaderIfMissing("Save-Data", "on");
   }
 
-  // Set the "Sec-Metadata" header if necessary.
+  // Set Fetch metadata headers if necessary.
   if (base::FeatureList::IsEnabled(features::kSecMetadata) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
@@ -211,9 +211,11 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
             url::Origin::Create(resource_request->url))) {
       site_value = "same-origin";
     }
-    std::string value = base::StringPrintf("destination=sharedworker, site=%s",
-                                           site_value.c_str());
-    resource_request->headers.SetHeaderIfMissing("Sec-Metadata", value);
+    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
+                                                 "sharedworker");
+    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
+                                                 site_value.c_str());
+    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-User", "?F");
   }
 }
 
