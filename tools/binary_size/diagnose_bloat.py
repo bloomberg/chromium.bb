@@ -148,13 +148,13 @@ class ResourceSizesDiff(BaseDiff):
     return self._ResultLines()
 
   def Summary(self):
-    header_lines = [
+    footer_lines = [
+        '',
         'For an explanation of these metrics, see:',
         ('https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
-         'binary_size/metrics.md#Metrics-for-Android'),
-        '']
-    return header_lines + self._ResultLines(
-        include_sections=ResourceSizesDiff._SUMMARY_SECTIONS)
+         'binary_size/metrics.md#Metrics-for-Android')]
+    return self._ResultLines(
+        include_sections=ResourceSizesDiff._SUMMARY_SECTIONS) + footer_lines
 
   def ProduceDiff(self, before_dir, after_dir):
     before = self._LoadResults(before_dir)
