@@ -30,9 +30,12 @@ namespace content {
 PushMessagingClient::PushMessagingClient(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
   if (ChildThreadImpl::current()) {
+    // See https://bit.ly/2S0zRAS for task types.
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
-        mojo::MakeRequest(&push_messaging_manager_));
+        mojo::MakeRequest(
+            &push_messaging_manager_,
+            render_frame->GetTaskRunner(blink::TaskType::kMiscPlatformAPI)));
   }
 }
 
