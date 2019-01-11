@@ -122,13 +122,8 @@ void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
-  if (!is_in_legacy_host_mode_) {
-    return feature_state_ ==
-           chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
-  }
-
-  return pref_service_->GetBoolean(
-      chromeos::multidevice_setup::kSmartLockEnabledDeprecatedPrefName);
+  return feature_state_ ==
+         chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
 void ProximityAuthProfilePrefManager::SetEasyUnlockEnabledStateSet() const {
@@ -197,14 +192,6 @@ void ProximityAuthProfilePrefManager::OnFeatureStatesChanged(
     return;
   }
   feature_state_ = it->second;
-
-  if (local_state_ && account_id_.is_valid())
-    SyncPrefsToLocalState();
-}
-
-void ProximityAuthProfilePrefManager::SetIsInLegacyHostMode(
-    bool is_in_legacy_host_mode) {
-  is_in_legacy_host_mode_ = is_in_legacy_host_mode;
 
   if (local_state_ && account_id_.is_valid())
     SyncPrefsToLocalState();

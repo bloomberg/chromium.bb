@@ -73,10 +73,6 @@ class ProximityAuthProfilePrefManager
       const chromeos::multidevice_setup::MultiDeviceSetupClient::
           FeatureStatesMap& feature_states_map) override;
 
-  // TODO(crbug.com/894585): Needed for legacy special case. Remove after M71.
-  // This is only to be used by EasyUnlockServiceRegular.
-  void SetIsInLegacyHostMode(bool is_in_legacy_host_mode);
-
  private:
   const base::DictionaryValue* GetRemoteBleDevices() const;
 
@@ -103,10 +99,6 @@ class ProximityAuthProfilePrefManager
   // |multidevice_setup_client_|.
   chromeos::multidevice_setup::mojom::FeatureState feature_state_ = chromeos::
       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
-
-  // TODO(https://crbug.com/894585): Needed for legacy special case. Remove
-  // after M71.
-  bool is_in_legacy_host_mode_ = false;
 
   base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_;
 
