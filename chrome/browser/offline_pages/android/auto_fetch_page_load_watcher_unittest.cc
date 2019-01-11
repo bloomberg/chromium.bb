@@ -8,238 +8,253 @@
 #include <string>
 #include <utility>
 
-#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
-#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 namespace {
-using ::offline_pages::auto_fetch_internal::AndroidTabFinder;
-using ::offline_pages::auto_fetch_internal::InternalImpl;
-using ::offline_pages::auto_fetch_internal::RequestInfo;
-using ::offline_pages::auto_fetch_internal::TabInfo;
-using ::testing::_;
-
-const int kDefaultTabId = 123;
-const base::Time kEpoch = base::Time::FromDoubleT(1.0e6);
+using content::NavigationSimulator;
 
 GURL TestURL() {
   return GURL("http://www.url.com");
 }
-GURL OtherURL() {
-  return GURL("http://other.com");
+
+SavePageRequest TestRequest(int64_t id, const GURL& url = TestURL()) {
+  return SavePageRequest(id, url,
+                         ClientId(kAutoAsyncNamespace, std::to_string(id)),
+                         base::Time::Now(), false);
 }
 
-RequestInfo TestInfo(
-    int64_t id,
-    const GURL& url = TestURL(),
-    SavePageRequest::AutoFetchNotificationState notification_state =
-        SavePageRequest::AutoFetchNotificationState::kUnknown) {
-  RequestInfo info;
-  info.request_id = id;
-  info.url = url;
-  info.notification_state = notification_state;
-  info.metadata.android_tab_id = kDefaultTabId;
-  return info;
-}
-
-class MockAutoFetchNotifier : public AutoFetchNotifier {
+// For access to protected methods.
+class TestAutoFetchPageLoadWatcher : public AutoFetchPageLoadWatcher {
  public:
-  MOCK_METHOD1(NotifyInProgress, void(int in_flight_count));
-  MOCK_METHOD1(InProgressCountChanged, void(int in_flight_count));
-};
-
-class FakeInternalImplDelegate : public InternalImpl::Delegate {
- public:
-  ~FakeInternalImplDelegate() override {}
-  void SetNotificationStateToShown(int64_t request_id) override {
-    set_notification_state_requests.push_back(request_id);
-  }
+  explicit TestAutoFetchPageLoadWatcher(RequestCoordinator* request_coordinator)
+      : AutoFetchPageLoadWatcher(request_coordinator) {}
   void RemoveRequests(const std::vector<int64_t>& request_ids) override {
-    removed_requests.insert(removed_requests.end(), request_ids.begin(),
-                            request_ids.end());
+    removed_ids_ = request_ids;
+  }
+  std::vector<int64_t> removed_ids() const { return removed_ids_; }
+
+  std::map<GURL, std::vector<int64_t>>* live_auto_fetch_requests() {
+    return &live_auto_fetch_requests_;
   }
 
-  std::vector<int64_t> removed_requests;
-  std::vector<int64_t> set_notification_state_requests;
-};
-
-// Note that TabAndroid doesn't work in unit tests, so this stubs out access to
-// tab information.
-class StubTabFinder : public AutoFetchPageLoadWatcher::AndroidTabFinder {
- public:
-  ~StubTabFinder() override {}
-
-  // AutoFetchPageLoadWatcher::AndroidTabFinder.
-  std::map<int, TabInfo> FindAndroidTabs(
-      std::vector<int> android_tab_ids) override {
-    std::map<int, TabInfo> result;
-    for (const int tab_id : android_tab_ids) {
-      if (tabs_.count(tab_id)) {
-        result[tab_id] = TabInfo{tab_id, tabs_[tab_id]};
-      }
-    }
-    return result;
-  }
-
-  base::Optional<TabInfo> FindNavigationTab(
-      content::WebContents* web_contents) override {
-    if (!tabs_.count(current_tab_id_))
-      return base::nullopt;
-    return TabInfo{current_tab_id_, tabs_[current_tab_id_]};
-  }
-
-  // Methods to alter stub behavior.
-  void SetTabs(std::map<int, GURL> tab_urls) { tabs_ = std::move(tab_urls); }
-  void SetCurrentTabId(int tab_id) { current_tab_id_ = tab_id; }
+  using AutoFetchPageLoadWatcher::HandlePageNavigation;
+  using AutoFetchPageLoadWatcher::ObserverInitialize;
 
  private:
-  std::map<int, GURL> tabs_;
-  // ID of the current tab to return from FindNavigationTab.
-  int current_tab_id_ = kDefaultTabId;
+  std::vector<int64_t> removed_ids_;
 };
 
-// Note: This unittest doesn't attempt to directly test
-// |AutoFetchPageLoadWatcher| because the set-up is difficult, especially for
-// testing various call orderings. Additionally, TabAndroid can't be tested
-// in a unit test. Instead, see OfflinePageAutoFetchTest.java for coverage.
-class AutoFetchInternalImplTest : public testing::Test {
+// Tests AutoFetchPageLoadWatcher in a realistic way by simulating navigations.
+class AutoFetchPageLoadWatcherNavigationTest
+    : public ChromeRenderViewHostTestHarness {
  public:
- protected:
-  // A WebContents* is needed for some |InternalImpl| methods, but nullptr is
-  // sufficient because |StubTabFinder| doesn't inspect the value.
-  content::WebContents* const web_contents_ = nullptr;
-  MockAutoFetchNotifier notifier_;
-  FakeInternalImplDelegate delegate_;
-  StubTabFinder* tab_finder_ = new StubTabFinder;
-  InternalImpl impl_{&notifier_, &delegate_, base::WrapUnique(tab_finder_)};
+  AutoFetchPageLoadWatcherNavigationTest() = default;
+  ~AutoFetchPageLoadWatcherNavigationTest() override = default;
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), request_coordinator_taco_.FactoryFunction());
+
+    AutoFetchPageLoadWatcher::CreateForWebContents(web_contents());
+  }
+
+  std::unique_ptr<NavigationSimulator> CreateNavigation(const GURL& url) {
+    return NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  }
+
+  RequestCoordinator* request_coordinator() {
+    return request_coordinator_taco_.request_coordinator();
+  }
+
+  void AddAutoSavePageRequest() {
+    RequestCoordinator::SavePageLaterParams params;
+    params.url = TestURL();
+    params.client_id = ClientId(kAutoAsyncNamespace, "request1");
+    request_coordinator()->SavePageLater(params, base::DoNothing());
+  }
+
+  std::vector<GURL> RequestsInQueue() {
+    std::vector<GURL> request_urls;
+    request_coordinator()->GetAllRequests(base::BindLambdaForTesting(
+        [&](std::vector<std::unique_ptr<SavePageRequest>> requests) {
+          for (const auto& request : requests) {
+            request_urls.push_back(request->url());
+          }
+        }));
+    RunUntilIdle();
+    return request_urls;
+  }
+
+  void RunUntilIdle() { thread_bundle()->RunUntilIdle(); }
+
+ private:
+  RequestCoordinatorStubTaco request_coordinator_taco_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoFetchPageLoadWatcherNavigationTest);
 };
 
-TEST_F(AutoFetchInternalImplTest, NoInitialization) {
-  // Just verify there is no crash.
-  impl_.SuccessfulPageNavigation(TestURL());
-  impl_.NavigationFrom(TestURL(), web_contents_);
+// Navigation results in an error page, and has no effect on
+// AutoFetchPageLoadWatcher.
+TEST_F(AutoFetchPageLoadWatcherNavigationTest, NavigateToErrorPage) {
+  AddAutoSavePageRequest();
+  RunUntilIdle();
+
+  std::unique_ptr<NavigationSimulator> simulator = CreateNavigation(TestURL());
+  simulator->Start();
+  simulator->Fail(net::ERR_TIMED_OUT);
+  simulator->CommitErrorPage();
+
+  std::vector<GURL> expected_requests{TestURL()};
+  EXPECT_EQ(expected_requests, RequestsInQueue());
 }
 
-TEST_F(AutoFetchInternalImplTest, RemoveRequestOnSuccessfulNavigation) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
-  impl_.SuccessfulPageNavigation(TestURL());
+// Successful navigation results in cancellation of request.
+TEST_F(AutoFetchPageLoadWatcherNavigationTest, NavigateAndCancel) {
+  AddAutoSavePageRequest();
+  RunUntilIdle();
 
-  EXPECT_EQ(std::vector<int64_t>({1}), delegate_.removed_requests);
+  std::unique_ptr<NavigationSimulator> simulator = CreateNavigation(TestURL());
+  simulator->Start();
+  simulator->Commit();
+
+  std::vector<GURL> expected_requests{};
+  EXPECT_EQ(expected_requests, RequestsInQueue());
 }
 
-TEST_F(AutoFetchInternalImplTest,
-       RemoveRequestOnSuccessfulNavigationBeforeInitialization) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.SuccessfulPageNavigation(TestURL());
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
+TEST_F(AutoFetchPageLoadWatcherNavigationTest, NavigateToDifferentURL) {
+  AddAutoSavePageRequest();
+  RunUntilIdle();
 
-  EXPECT_EQ(std::vector<int64_t>({1}), delegate_.removed_requests);
+  std::unique_ptr<NavigationSimulator> simulator =
+      CreateNavigation(GURL("http://www.different.com"));
+  simulator->Start();
+  simulator->Commit();
+
+  std::vector<GURL> expected_requests{TestURL()};
+  EXPECT_EQ(expected_requests, RequestsInQueue());
 }
 
-// Successful navigation to a URL that we are not auto fetching should not
-// remove any requests from the list of in progress auto fetches.
-TEST_F(AutoFetchInternalImplTest, SuccessfulNavigationToOtherURL) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
-  impl_.SuccessfulPageNavigation(OtherURL());
+TEST_F(AutoFetchPageLoadWatcherNavigationTest, RedirectToAndCancel) {
+  AddAutoSavePageRequest();
+  RunUntilIdle();
 
-  EXPECT_EQ(std::vector<int64_t>(), delegate_.removed_requests);
+  std::unique_ptr<NavigationSimulator> simulator =
+      CreateNavigation(GURL("http://different.com"));
+  simulator->Start();
+  simulator->Redirect(TestURL());
+  simulator->Commit();
+
+  std::vector<GURL> expected_requests{};
+  EXPECT_EQ(expected_requests, RequestsInQueue());
 }
 
-TEST_F(AutoFetchInternalImplTest,
-       SuccessfulNavigationToOtherURLBeforeInitialization) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.SuccessfulPageNavigation(OtherURL());
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
+TEST_F(AutoFetchPageLoadWatcherNavigationTest, RedirectFromAndCancel) {
+  AddAutoSavePageRequest();
+  RunUntilIdle();
 
-  EXPECT_EQ(std::vector<int64_t>(), delegate_.removed_requests);
+  std::unique_ptr<NavigationSimulator> simulator = CreateNavigation(TestURL());
+
+  simulator->Start();
+  simulator->Redirect(GURL("http://different.com"));
+  simulator->Commit();
+
+  std::vector<GURL> expected_requests{};
+  EXPECT_EQ(expected_requests, RequestsInQueue());
 }
 
-TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifies) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
+// Tests some details of AutoFetchPageLoadWatcher
+class AutoFetchPageLoadWatcherTest : public testing::Test {
+ public:
+  AutoFetchPageLoadWatcherTest() {}
+  ~AutoFetchPageLoadWatcherTest() override {}
 
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
-  impl_.NavigationFrom(TestURL(), web_contents_);
-  EXPECT_EQ(std::vector<int64_t>({1}),
-            delegate_.set_notification_state_requests);
+  void SetUp() override {
+    testing::Test::SetUp();
 
-  EXPECT_CALL(notifier_, NotifyInProgress(1));
-  impl_.SetNotificationStateComplete(1, true);
+    taco_.CreateRequestCoordinator();
+  }
+
+  RequestCoordinator* request_coordinator() {
+    return taco_.request_coordinator();
+  }
+
+ private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_ =
+      base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  base::ThreadTaskRunnerHandle handle_{task_runner_};
+
+  RequestCoordinatorStubTaco taco_;
+};
+
+// Simulate navigation to a URL prior to ObserverInitialize. Verify the
+// RemoveRequests is called.
+TEST_F(AutoFetchPageLoadWatcherTest, NavigateBeforeObserverInitialize) {
+  TestAutoFetchPageLoadWatcher tab_helper(request_coordinator());
+  tab_helper.HandlePageNavigation(TestURL());
+  std::vector<std::unique_ptr<SavePageRequest>> all_requests;
+  all_requests.push_back(std::make_unique<SavePageRequest>(TestRequest(1)));
+  all_requests.push_back(std::make_unique<SavePageRequest>(
+      TestRequest(2, GURL("http://different.com"))));
+  tab_helper.ObserverInitialize(std::move(all_requests));
+
+  std::vector<int64_t> expected_requests{1};
+  EXPECT_EQ(expected_requests, tab_helper.removed_ids());
 }
 
-TEST_F(AutoFetchInternalImplTest, CompletedRequestUpdatesInProgressCount) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
-  impl_.NavigationFrom(TestURL(), web_contents_);
+TEST_F(AutoFetchPageLoadWatcherTest, OnCompletedNoRequest) {
+  TestAutoFetchPageLoadWatcher tab_helper(request_coordinator());
+  tab_helper.ObserverInitialize({});
 
-  EXPECT_CALL(notifier_, InProgressCountChanged(0));
-  impl_.RequestRemoved(TestInfo(1, TestURL()));
+  tab_helper.OnCompleted(TestRequest(1),
+                         RequestNotifier::BackgroundSavePageResult());
+
+  // Nothing happens, just verify there is no crash.
+  SUCCEED();
 }
 
-TEST_F(AutoFetchInternalImplTest, NavigatingFromNotifiesTwoRequests) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, TestURL()}});
-  impl_.RequestListInitialized(
-      {TestInfo(1, TestURL()), TestInfo(2, TestURL())});
+TEST_F(AutoFetchPageLoadWatcherTest, OnCompletedOneRequestWithURL) {
+  TestAutoFetchPageLoadWatcher tab_helper(request_coordinator());
+  tab_helper.ObserverInitialize({});
+  std::map<GURL, std::vector<int64_t>>* requests =
+      tab_helper.live_auto_fetch_requests();
 
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
-  impl_.NavigationFrom(TestURL(), web_contents_);
-  EXPECT_EQ(std::vector<int64_t>({1, 2}),
-            delegate_.set_notification_state_requests);
+  tab_helper.OnAdded(TestRequest(1));
+  ASSERT_EQ(1ul, requests->count(TestURL()));
 
-  EXPECT_CALL(notifier_, NotifyInProgress(2)).Times(2);
-  impl_.SetNotificationStateComplete(1, true);
-  impl_.SetNotificationStateComplete(2, true);
+  tab_helper.OnCompleted(TestRequest(1),
+                         RequestNotifier::BackgroundSavePageResult());
+
+  EXPECT_EQ(0ul, requests->count(TestURL()));
 }
 
-TEST_F(AutoFetchInternalImplTest, NavigatingFromBeforeInitialization) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
-  impl_.RequestListInitialized(
-      {TestInfo(1, TestURL()), TestInfo(2, TestURL())});
+// Verify multiple requests with the same URL are handled as expected.
+TEST_F(AutoFetchPageLoadWatcherTest, OnCompletedMultipleRequestsWithURL) {
+  TestAutoFetchPageLoadWatcher tab_helper(request_coordinator());
+  tab_helper.ObserverInitialize({});
 
-  EXPECT_EQ(std::vector<int64_t>({1, 2}),
-            delegate_.set_notification_state_requests);
+  // Three requests with the same URL.
+  tab_helper.OnAdded(TestRequest(1));
+  tab_helper.OnAdded(TestRequest(2));
+  tab_helper.OnAdded(TestRequest(3));
 
-  EXPECT_CALL(notifier_, NotifyInProgress(2)).Times(2);
-  impl_.SetNotificationStateComplete(1, true);
-  impl_.SetNotificationStateComplete(2, true);
-}
+  // Only one is completed.
+  tab_helper.OnCompleted(TestRequest(2),
+                         RequestNotifier::BackgroundSavePageResult());
 
-TEST_F(AutoFetchInternalImplTest, TabCloseNotifies) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId + 1, TestURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
-
-  EXPECT_EQ(std::vector<int64_t>({1}),
-            delegate_.set_notification_state_requests);
-
-  EXPECT_CALL(notifier_, NotifyInProgress(1)).Times(1);
-  impl_.SetNotificationStateComplete(1, true);
-}
-
-TEST_F(AutoFetchInternalImplTest, RequestRemovedWhileSettingNotificationState) {
-  tab_finder_->SetTabs(std::map<int, GURL>{{kDefaultTabId, OtherURL()}});
-  impl_.RequestListInitialized(
-      std::vector<RequestInfo>{TestInfo(1, TestURL())});
-
-  EXPECT_EQ(std::vector<int64_t>({1}),
-            delegate_.set_notification_state_requests);
-
-  impl_.RequestRemoved({TestInfo(1, TestURL())});
-
-  EXPECT_CALL(notifier_, NotifyInProgress(1)).Times(0);
-  impl_.SetNotificationStateComplete(1, false);
+  std::vector<int64_t> expected_requests = {1, 3};
+  EXPECT_EQ(expected_requests,
+            (*tab_helper.live_auto_fetch_requests())[TestURL()]);
 }
 
 }  // namespace

@@ -65,6 +65,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void OfflinePageDeleted(
       const OfflinePageModel::DeletedPageInfo& page_info) override;
 
+  void GetAllPages(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& j_result_obj,
+                   const base::android::JavaParamRef<jobject>& j_callback_obj);
+
   void GetPageByOfflineId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
