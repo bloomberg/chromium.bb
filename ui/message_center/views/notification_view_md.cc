@@ -703,17 +703,17 @@ void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
 
 void NotificationViewMD::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  // Certain operations can cause |this| to be destructed, so copy the members
-  // we send to other parts of the code.
-  // TODO(dewittj): Remove this hack.
-  std::string id(notification_id());
-
   // Tapping anywhere on |header_row_| can expand the notification, though only
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->visible()) {
       SetManuallyExpandedOrCollapsed(true);
+      auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
+      // Check |this| is valid before continuing, because ToggleExpanded() might
+      // cause |this| to be deleted.
+      if (!weak_ptr)
+        return;
       Layout();
       SchedulePaint();
     }
@@ -743,7 +743,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
       Layout();
       SchedulePaint();
     } else {
-      MessageCenter::Get()->ClickOnNotificationButton(id, i);
+      MessageCenter::Get()->ClickOnNotificationButton(notification_id(), i);
     }
     return;
   }
