@@ -128,7 +128,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       hover_controller_(this) {
   DCHECK(controller);
 
-  tab_style_.reset(TabStyle::CreateForTab(this));
+  tab_style_ = TabStyle::CreateForTab(this);
 
   // So we get don't get enter/exit on children and don't prematurely stop the
   // hover.

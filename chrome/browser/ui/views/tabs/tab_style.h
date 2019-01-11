@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STYLE_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STYLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -72,7 +74,7 @@ class TabStyle {
   // We've implemented this as a factory function so that when we're playing
   // with new variatons on tab shapes we can have a few possible implementations
   // and switch them in one place.
-  static TabStyle* CreateForTab(const Tab* tab);
+  static std::unique_ptr<TabStyle> CreateForTab(const Tab* tab);
 
   virtual ~TabStyle();
 
