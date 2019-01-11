@@ -480,7 +480,7 @@ void RenderViewImpl::Initialize(
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  webview()->SetDisplayMode(GetWidget()->display_mode());
+  webview()->SetDisplayMode(params->visual_properties.display_mode);
   webview()->GetSettings()->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
