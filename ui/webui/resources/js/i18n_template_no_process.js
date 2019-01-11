@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/* eslint-disable no-var */
+
 /** @typedef {Document|DocumentFragment|Element} */
-let ProcessingRoot;
+var ProcessingRoot;
 
 /**
  * @fileoverview This is a simple template engine inspired by JsTemplates
@@ -28,14 +30,14 @@ let ProcessingRoot;
  * load_time_data.js. It should replace i18n_template.js eventually.
  */
 
-const i18nTemplate = (function() {
+var i18nTemplate = (function() {
   /**
    * This provides the handlers for the templating engine. The key is used as
    * the attribute name and the value is the function that gets called for every
    * single node that has this attribute.
    * @type {!Object}
    */
-  const handlers = {
+  var handlers = {
     /**
      * This handler sets the textContent of the element.
      * @param {!HTMLElement} element The node to modify.
@@ -58,9 +60,9 @@ const i18nTemplate = (function() {
      * @param {!Set<ProcessingRoot>} visited
      */
     'i18n-options': function(select, key, data, visited) {
-      const options = data.getValue(key);
+      var options = data.getValue(key);
       options.forEach(function(optionData) {
-        const option = typeof optionData == 'string' ?
+        var option = typeof optionData == 'string' ?
             new Option(optionData) :
             new Option(optionData[1], optionData[0]);
         select.appendChild(option);
@@ -80,27 +82,27 @@ const i18nTemplate = (function() {
      * @param {!Set<ProcessingRoot>} visited
      */
     'i18n-values': function(element, attributeAndKeys, data, visited) {
-      const parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
+      var parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
       parts.forEach(function(part) {
         if (!part) {
           return;
         }
 
-        const attributeAndKeyPair = part.match(/^([^:]+):(.+)$/);
+        var attributeAndKeyPair = part.match(/^([^:]+):(.+)$/);
         if (!attributeAndKeyPair) {
           throw new Error('malformed i18n-values: ' + attributeAndKeys);
         }
 
-        const propName = attributeAndKeyPair[1];
-        const propExpr = attributeAndKeyPair[2];
+        var propName = attributeAndKeyPair[1];
+        var propExpr = attributeAndKeyPair[2];
 
-        const value = data.getValue(propExpr);
+        var value = data.getValue(propExpr);
 
         // Allow a property of the form '.foo.bar' to assign a value into
         // element.foo.bar.
         if (propName[0] == '.') {
-          const path = propName.slice(1).split('.');
-          let targetObject = element;
+          var path = propName.slice(1).split('.');
+          var targetObject = element;
           while (targetObject && path.length > 1) {
             targetObject = targetObject[path.shift()];
           }
@@ -109,7 +111,7 @@ const i18nTemplate = (function() {
             // In case we set innerHTML (ignoring others) we need to recursively
             // check the content.
             if (path == 'innerHTML') {
-              for (let i = 0; i < element.children.length; ++i) {
+              for (var i = 0; i < element.children.length; ++i) {
                 processWithoutCycles(element.children[i], data, visited, false);
               }
             }
@@ -121,7 +123,7 @@ const i18nTemplate = (function() {
     }
   };
 
-  const prefixes = [''];
+  var prefixes = [''];
 
   // Only look through shadow DOM when it's supported. As of April 2015, iOS
   // Chrome doesn't support shadow DOM.
@@ -129,13 +131,13 @@ const i18nTemplate = (function() {
     prefixes.push('* /deep/ ');
   }
 
-  const attributeNames = Object.keys(handlers);
-  const selector = prefixes
-                       .map(function(prefix) {
-                         return prefix + '[' +
-                             attributeNames.join('], ' + prefix + '[') + ']';
-                       })
-                       .join(', ');
+  var attributeNames = Object.keys(handlers);
+  var selector = prefixes
+                     .map(function(prefix) {
+                       return prefix + '[' +
+                           attributeNames.join('], ' + prefix + '[') + ']';
+                     })
+                     .join(', ');
 
   /**
    * Processes a DOM tree using a |data| source to populate template values.
@@ -162,9 +164,9 @@ const i18nTemplate = (function() {
     // Mark the node as visited before recursing.
     visited.add(root);
 
-    const importLinks = root.querySelectorAll('link[rel=import]');
-    for (let i = 0; i < importLinks.length; ++i) {
-      const importLink = /** @type {!HTMLLinkElement} */ (importLinks[i]);
+    var importLinks = root.querySelectorAll('link[rel=import]');
+    for (var i = 0; i < importLinks.length; ++i) {
+      var importLink = /** @type {!HTMLLinkElement} */ (importLinks[i]);
       if (!importLink.import) {
         // Happens when a <link rel=import> is inside a <template>.
         // TODO(dbeam): should we log an error if we detect that here?
@@ -173,29 +175,29 @@ const i18nTemplate = (function() {
       processWithoutCycles(importLink.import, data, visited, mark);
     }
 
-    const templates = root.querySelectorAll('template');
-    for (let i = 0; i < templates.length; ++i) {
-      const template = /** @type {HTMLTemplateElement} */ (templates[i]);
+    var templates = root.querySelectorAll('template');
+    for (var i = 0; i < templates.length; ++i) {
+      var template = /** @type {HTMLTemplateElement} */ (templates[i]);
       if (!template.content) {
         continue;
       }
       processWithoutCycles(template.content, data, visited, mark);
     }
 
-    const isElement = root instanceof Element;
+    var isElement = root instanceof Element;
     if (isElement && root.webkitMatchesSelector(selector)) {
       processElement(/** @type {!Element} */ (root), data, visited);
     }
 
-    const elements = root.querySelectorAll(selector);
-    for (let i = 0; i < elements.length; ++i) {
+    var elements = root.querySelectorAll(selector);
+    for (var i = 0; i < elements.length; ++i) {
       processElement(elements[i], data, visited);
     }
 
     if (mark) {
-      const processed = isElement ? [root] : root.children;
+      var processed = isElement ? [root] : root.children;
       if (processed) {
-        for (let i = 0; i < processed.length; ++i) {
+        for (var i = 0; i < processed.length; ++i) {
           processed[i].setAttribute('i18n-processed', '');
         }
       }
@@ -209,9 +211,9 @@ const i18nTemplate = (function() {
    * @param {!Set<ProcessingRoot>} visited
    */
   function processElement(element, data, visited) {
-    for (let i = 0; i < attributeNames.length; i++) {
-      const name = attributeNames[i];
-      const attribute = element.getAttribute(name);
+    for (var i = 0; i < attributeNames.length; i++) {
+      var name = attributeNames[i];
+      var attribute = element.getAttribute(name);
       if (attribute != null) {
         handlers[name](element, attribute, data, visited);
       }
