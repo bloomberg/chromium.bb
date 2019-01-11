@@ -239,6 +239,42 @@ NGCaretPosition AdjustCaretPositionForBidiText(
   return BidiAdjustment::AdjustForCaretPositionResolution(caret_position);
 }
 
+bool IsUpstreamAfterLineBreak(const NGCaretPosition& caret_position) {
+  if (caret_position.position_type != NGCaretPositionType::kAtTextOffset)
+    return false;
+
+  DCHECK(caret_position.fragment);
+  DCHECK(caret_position.fragment->PhysicalFragment().IsText());
+  DCHECK(caret_position.text_offset.has_value());
+
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+  if (!text_fragment.IsLineBreak())
+    return false;
+  return caret_position.text_offset.value() == text_fragment.EndOffset();
+}
+
+NGCaretPosition BetterCandidateBetween(const NGCaretPosition& current,
+                                       const NGCaretPosition& other,
+                                       unsigned offset,
+                                       TextAffinity affinity) {
+  DCHECK(!other.IsNull());
+  if (current.IsNull())
+    return other;
+
+  // There shouldn't be too many cases where we have multiple candidates.
+  // Make sure all of them are captured and handled here.
+
+  // Only known case: either |current| or |other| is upstream after line break.
+  DCHECK_EQ(affinity, TextAffinity::kUpstream);
+  if (IsUpstreamAfterLineBreak(current)) {
+    DCHECK(!IsUpstreamAfterLineBreak(other));
+    return other;
+  }
+  DCHECK(IsUpstreamAfterLineBreak(other));
+  return current;
+}
+
 }  // namespace
 
 // The main function for compute an NGCaretPosition. See the comments at the top
@@ -265,10 +301,8 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
       return AdjustCaretPositionForBidiText(resolution.caret_position);
 
     DCHECK_EQ(ResolutionType::kFoundCandidate, resolution.type);
-    // TODO(xiaochengh): We are not sure if we can ever find multiple
-    // candidates. Handle it once reached.
-    DCHECK(candidate.IsNull());
-    candidate = resolution.caret_position;
+    candidate = BetterCandidateBetween(candidate, resolution.caret_position,
+                                       offset, affinity);
   }
 
   return AdjustCaretPositionForBidiText(candidate);
