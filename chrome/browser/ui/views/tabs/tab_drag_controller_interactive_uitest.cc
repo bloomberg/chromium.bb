@@ -443,11 +443,14 @@ class DetachToBrowserTabDragControllerTest
 #endif
 
 #if defined(OS_CHROMEOS)
-  void SendTouchEventsSync(int action, int id, const gfx::Point& location) {
+  bool SendTouchEventsSync(int action, int id, const gfx::Point& location) {
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    ui_controls::SendTouchEventsNotifyWhenDone(
-        action, id, location.x(), location.y(), run_loop.QuitClosure());
+    if (!ui_controls::SendTouchEventsNotifyWhenDone(
+            action, id, location.x(), location.y(), run_loop.QuitClosure())) {
+      return false;
+    }
     run_loop.Run();
+    return true;
   }
 #endif
 
@@ -460,34 +463,34 @@ class DetachToBrowserTabDragControllerTest
               ui_controls::LEFT, ui_controls::DOWN);
     }
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::PRESS, id, location);
+    return SendTouchEventsSync(ui_controls::PRESS, id, location);
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   bool DragInputTo(const gfx::Point& location) {
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_test_utils::SendMouseMoveSync(location);
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::MOVE, 0, location);
+    return SendTouchEventsSync(ui_controls::MOVE, 0, location);
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   bool DragInputToAsync(const gfx::Point& location) {
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMove(location.x(), location.y());
 #if defined(OS_CHROMEOS)
-    ui_controls::SendTouchEvents(ui_controls::MOVE, 0, location.x(),
-                                 location.y());
+    return ui_controls::SendTouchEvents(ui_controls::MOVE, 0, location.x(),
+                                        location.y());
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   bool DragInputToNotifyWhenDone(const gfx::Point& location,
@@ -498,12 +501,12 @@ class DetachToBrowserTabDragControllerTest
     }
 
 #if defined(OS_CHROMEOS)
-    ui_controls::SendTouchEventsNotifyWhenDone(
+    return ui_controls::SendTouchEventsNotifyWhenDone(
         ui_controls::MOVE, 0, location.x(), location.y(), std::move(task));
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   bool ReleaseInput(int id = 0, bool async = false) {
@@ -514,11 +517,12 @@ class DetachToBrowserTabDragControllerTest
                                                         ui_controls::UP);
     }
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::RELEASE, id, gfx::Point());
+    return async ? ui_controls::SendTouchEvents(ui_controls::RELEASE, id, 0, 0)
+                 : SendTouchEventsSync(ui_controls::RELEASE, id, gfx::Point());
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   void ReleaseInputAfterWindowDetached() {
@@ -545,11 +549,11 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_test_utils::SendMouseMoveSync(location);
 #if defined(OS_CHROMEOS)
-    SendTouchEventsSync(ui_controls::MOVE, 0, location);
+    return SendTouchEventsSync(ui_controls::MOVE, 0, location);
 #else
     NOTREACHED();
+    return false;
 #endif
-    return true;
   }
 
   void AddBlankTabAndShow(Browser* browser) {
