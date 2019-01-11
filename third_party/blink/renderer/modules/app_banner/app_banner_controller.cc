@@ -26,8 +26,10 @@ void AppBannerController::BindMojoRequest(
     mojom::blink::AppBannerControllerRequest request) {
   DCHECK(frame);
 
+  // See https://bit.ly/2S0zRAS for task types.
   mojo::MakeStrongBinding(std::make_unique<AppBannerController>(*frame),
-                          std::move(request));
+                          std::move(request),
+                          frame->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 void AppBannerController::BannerPromptRequest(

@@ -113,8 +113,11 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
   mojom::blink::WebBluetoothServerClientAssociatedPtrInfo ptr_info;
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   auto request = mojo::MakeRequest(&ptr_info);
-  client_bindings_.AddBinding(this, std::move(request));
+  client_bindings_.AddBinding(this, std::move(request), std::move(task_runner));
 
   service->RemoteServerConnect(
       device_->id(), std::move(ptr_info),
