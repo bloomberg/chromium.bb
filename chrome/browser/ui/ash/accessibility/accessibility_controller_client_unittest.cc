@@ -52,6 +52,7 @@ class TestAccessibilityController : ash::mojom::AccessibilityController {
   void ToggleDictationFromSource(
       ash::mojom::DictationToggleSource source) override {}
   void ForwardKeyEventsToSwitchAccess(bool should_forward) override {}
+  void GetBatteryDescription(GetBatteryDescriptionCallback callback) override {}
 
   bool was_client_set() const { return was_client_set_; }
 

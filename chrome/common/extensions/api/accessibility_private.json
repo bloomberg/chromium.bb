@@ -107,6 +107,25 @@
     ],
     "functions": [
       {
+        "name": "getBatteryDescription",
+        "type": "function",
+        "description": "Called to request battery status from Chrome OS system.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Returns battery description as a string.",
+            "parameters": [
+              {
+                "name": "batteryDescription",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "setNativeAccessibilityEnabled",
         "type": "function",
         "description": "Enables or disables native accessibility support. Once disabled, it is up to the calling extension to provide accessibility for web contents.",

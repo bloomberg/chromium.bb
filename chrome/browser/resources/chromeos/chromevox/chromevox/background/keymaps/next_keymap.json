@@ -996,6 +996,15 @@
           "keyCode": [79, 83]
         }
       }
+    },
+    {
+      "command": "getBatteryDescription",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [79, 66]
+        }
+      }
     }
   ]
 }

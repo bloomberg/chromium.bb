@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -35,7 +36,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
@@ -419,6 +419,34 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
       params->should_forward);
 
   return RespondNow(NoArguments());
+}
+
+AccessibilityPrivateGetBatteryDescriptionFunction::
+    AccessibilityPrivateGetBatteryDescriptionFunction() {}
+
+AccessibilityPrivateGetBatteryDescriptionFunction::
+    ~AccessibilityPrivateGetBatteryDescriptionFunction() {}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateGetBatteryDescriptionFunction::Run() {
+  // Get AccessibilityControllerPtr; needs to exist for lifetime of this
+  // function and its callback.
+  controller_ = GetAccessibilityController();
+
+  // Get battery description from ash and return it via callback.
+  controller_->GetBatteryDescription(
+      base::BindOnce(&AccessibilityPrivateGetBatteryDescriptionFunction::
+                         OnGotBatteryDescription,
+                     this));
+
+  return RespondLater();
+}
+
+void AccessibilityPrivateGetBatteryDescriptionFunction::OnGotBatteryDescription(
+    const base::string16& battery_description) {
+  // Send battery description to extension.
+  Respond(OneArgument(std::make_unique<base::Value>(battery_description)));
+  controller_.reset();
 }
 
 #endif  // defined (OS_CHROMEOS)

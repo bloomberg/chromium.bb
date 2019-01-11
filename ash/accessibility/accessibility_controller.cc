@@ -26,6 +26,7 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
+#include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
@@ -1239,6 +1240,13 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
     Shell::Get()->EnableKeyboard();
   else
     Shell::Get()->DisableKeyboard();
+}
+
+void AccessibilityController::GetBatteryDescription(
+    GetBatteryDescriptionCallback callback) {
+  // Pass battery status as string to callback function.
+  std::move(callback).Run(PowerStatus::Get()->GetAccessibleNameString(
+      true /* Enables full description*/));
 }
 
 }  // namespace ash

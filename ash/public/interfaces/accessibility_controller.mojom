@@ -4,6 +4,7 @@
 
 module ash.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/accessibility/ax_enums.mojom";
 import "ui/events/mojo/event.mojom";
@@ -173,6 +174,10 @@ interface AccessibilityController {
   // Tells the Switch Access Event Handler whether to forward all key events to
   // the Switch Access extension.
   ForwardKeyEventsToSwitchAccess(bool should_forward);
+
+  // Retrieves a string description of the current battery status.
+  GetBatteryDescription()
+    => (mojo_base.mojom.String16 battery_description);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.

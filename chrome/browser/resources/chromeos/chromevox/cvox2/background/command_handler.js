@@ -850,6 +850,15 @@ CommandHandler.onCommand = function(command) {
       }
       cvox.ChromeVox.tts.speak(announce, cvox.QueueMode.FLUSH);
       return false;
+    case 'getBatteryDescription':
+      chrome.accessibilityPrivate.getBatteryDescription(function(
+          batteryDescription) {
+        new Output()
+            .withString(batteryDescription)
+            .withQueueMode(cvox.QueueMode.FLUSH)
+            .go();
+      });
+      break;
     default:
       return true;
   }
