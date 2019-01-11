@@ -39,7 +39,7 @@ ARCH_MAP = {
         'arm64'
     ],
     'mac': ['x64'],
-    'win': ['ia32', 'x64'],
+    'win': ['ia32', 'x64', 'arm64'],
 }
 
 USAGE_BEGIN = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]"""
@@ -250,6 +250,17 @@ def SetupWindowsCrossCompileToolchain(target_arch):
     new_args += ['--extra-cflags=-m32']
   if target_arch == 'ia32':
     target_arch = 'x86'
+  if target_arch == 'arm64':
+    new_args += [
+        # With ASM enabled, an ARCH must be specified.
+        '--arch=aarch64',
+        # When cross-compiling (from Linux), armasm64.exe is not available.
+        '--as=clang-cl',
+        # FFMPEG is not yet enlightened for ARM64 Windows.
+        # Imitate Android workaround.
+        '--extra-cflags=--target=arm64-windows',
+        '--extra-ldflags=--target=arm64-windows',
+    ]
 
   # Turn this into a dictionary.
   win_dirs = gn_helpers.FromGNArgs(output)
@@ -279,7 +290,8 @@ def SetupWindowsCrossCompileToolchain(target_arch):
 
   # Unlike the cflags, the lib include paths are each in a separate variable.
   for k in flags:
-    if 'lib' in k:
+    # libpath_flags is like cflags. Since it is also redundant, skip it.
+    if 'lib' in k and k != 'libpath_flags':
       new_args += ['--extra-ldflags=-libpath:' + flags[k]]
   return new_args
 
@@ -395,6 +407,14 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   if target_os == 'mac' and host_os == 'linux':
     RewriteFile(
         os.path.join(config_dir, 'ffbuild/config.mak'), [(r'LD=ld64.lld',
+        r'LD=' + os.path.join(SCRIPTS_DIR, 'fake_linker.py'))])
+
+  # The FFMPEG roll build hits a bug in lld-link that does not impact the
+  # overall Chromium build.
+  # Replace the linker step with something that just creates the target.
+  if target_os == 'win' and target_arch == 'arm64' and host_os == 'linux':
+    RewriteFile(
+        os.path.join(config_dir, 'ffbuild/config.mak'), [(r'LD=lld-link',
         r'LD=' + os.path.join(SCRIPTS_DIR, 'fake_linker.py'))])
 
   if target_os in (host_os, host_os + '-noasm', 'android',
@@ -814,7 +834,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
 
     if target_arch == 'x64':
       configure_flags['Common'].extend(['--target-os=win64'])
-    else:
+    elif target_arch == 'x86':
       configure_flags['Common'].extend(['--target-os=win32'])
 
     if host_os != 'win':
