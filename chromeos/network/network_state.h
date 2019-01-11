@@ -118,6 +118,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
   const std::string& payment_url() const { return payment_url_; }
+  const std::string& payment_post_data() const { return payment_post_data_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
   const std::string& tethering_state() const { return tethering_state_; }
 
@@ -265,6 +266,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string activation_state_;
   std::string roaming_;
   std::string payment_url_;
+  std::string payment_post_data_;
   bool cellular_out_of_credits_ = false;
   std::string tethering_state_;
 
