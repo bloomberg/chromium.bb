@@ -532,9 +532,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Provides functionality to transition a frame to DWM.
   void PerformDwmTransition();
 
-  // Updates DWM frame to extend into client area if needed.
-  void UpdateDwmFrame();
-
   // Generates a touch event and adds it to the |touch_events| parameter.
   // |point| is the point where the touch was initiated.
   // |id| is the event id associated with the touch event.
