@@ -11,10 +11,10 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "net/base/arena.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/spdy/platform/api/spdy_unsafe_arena.h"
 
 namespace spdy {
 namespace {
@@ -45,7 +45,7 @@ SpdyStringPiece SeparatorForKey(SpdyStringPiece key) {
 }  // namespace
 
 // This class provides a backing store for SpdyStringPieces. It previously used
-// custom allocation logic, but now uses an net::UnsafeArena instead. It has the
+// custom allocation logic, but now uses an UnsafeArena instead. It has the
 // property that SpdyStringPieces that refer to data in Storage are never
 // invalidated until the Storage is deleted or Clear() is called.
 //
@@ -97,7 +97,7 @@ class SpdyHeaderBlock::Storage {
   }
 
  private:
-  net::UnsafeArena arena_;
+  SpdyUnsafeArena arena_;
 };
 
 SpdyHeaderBlock::HeaderValue::HeaderValue(Storage* storage,

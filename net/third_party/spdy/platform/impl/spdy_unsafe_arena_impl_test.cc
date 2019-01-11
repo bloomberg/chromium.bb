@@ -2,48 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/arena.h"
+#include "net/third_party/spdy/platform/impl/spdy_unsafe_arena_impl.h"
 
 #include <string>
 #include <vector>
 
-#include "base/strings/string_piece.h"
+#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::StringPiece;
-
-namespace net {
+namespace spdy {
 namespace {
 
 size_t kDefaultBlockSize = 2048;
 const char kTestString[] = "This is a decently long test string.";
 
-TEST(UnsafeArenaTest, Memdup) {
-  UnsafeArena arena(kDefaultBlockSize);
+TEST(SpdyUnsafeArenaImplTest, Memdup) {
+  SpdyUnsafeArenaImpl arena(kDefaultBlockSize);
   const size_t length = strlen(kTestString);
   char* c = arena.Memdup(kTestString, length);
   EXPECT_NE(nullptr, c);
   EXPECT_NE(c, kTestString);
-  EXPECT_EQ(StringPiece(c, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c, length), kTestString);
 }
 
-TEST(UnsafeArenaTest, MemdupLargeString) {
-  UnsafeArena arena(10 /* block size */);
+TEST(SpdyUnsafeArenaImplTest, MemdupLargeString) {
+  SpdyUnsafeArenaImpl arena(10 /* block size */);
   const size_t length = strlen(kTestString);
   char* c = arena.Memdup(kTestString, length);
   EXPECT_NE(nullptr, c);
   EXPECT_NE(c, kTestString);
-  EXPECT_EQ(StringPiece(c, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c, length), kTestString);
 }
 
-TEST(UnsafeArenaTest, MultipleBlocks) {
-  UnsafeArena arena(40 /* block size */);
+TEST(SpdyUnsafeArenaImplTest, MultipleBlocks) {
+  SpdyUnsafeArenaImpl arena(40 /* block size */);
   std::vector<std::string> strings = {
       "One decently long string.", "Another string.",
       "A third string that will surely go in a different block."};
-  std::vector<StringPiece> copies;
+  std::vector<SpdyStringPiece> copies;
   for (const std::string& s : strings) {
-    StringPiece sp(arena.Memdup(s.data(), s.size()), s.size());
+    SpdyStringPiece sp(arena.Memdup(s.data(), s.size()), s.size());
     copies.push_back(sp);
   }
   EXPECT_EQ(strings.size(), copies.size());
@@ -52,19 +50,19 @@ TEST(UnsafeArenaTest, MultipleBlocks) {
   }
 }
 
-TEST(UnsafeArenaTest, UseAfterReset) {
-  UnsafeArena arena(kDefaultBlockSize);
+TEST(SpdyUnsafeArenaImplTest, UseAfterReset) {
+  SpdyUnsafeArenaImpl arena(kDefaultBlockSize);
   const size_t length = strlen(kTestString);
   char* c = arena.Memdup(kTestString, length);
   arena.Reset();
   c = arena.Memdup(kTestString, length);
   EXPECT_NE(nullptr, c);
   EXPECT_NE(c, kTestString);
-  EXPECT_EQ(StringPiece(c, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c, length), kTestString);
 }
 
-TEST(UnsafeArenaTest, Free) {
-  UnsafeArena arena(kDefaultBlockSize);
+TEST(SpdyUnsafeArenaImplTest, Free) {
+  SpdyUnsafeArenaImpl arena(kDefaultBlockSize);
   const size_t length = strlen(kTestString);
   // Freeing memory not owned by the arena should be a no-op, and freeing
   // before any allocations from the arena should be a no-op.
@@ -89,8 +87,8 @@ TEST(UnsafeArenaTest, Free) {
   EXPECT_EQ(c4, c5);
 }
 
-TEST(UnsafeArenaTest, Alloc) {
-  UnsafeArena arena(kDefaultBlockSize);
+TEST(SpdyUnsafeArenaImplTest, Alloc) {
+  SpdyUnsafeArenaImpl arena(kDefaultBlockSize);
   const size_t length = strlen(kTestString);
   char* c1 = arena.Alloc(length);
   char* c2 = arena.Alloc(2 * length);
@@ -99,40 +97,40 @@ TEST(UnsafeArenaTest, Alloc) {
   EXPECT_EQ(c1 + length, c2);
   EXPECT_EQ(c2 + 2 * length, c3);
   EXPECT_EQ(c3 + 3 * length, c4);
-  EXPECT_EQ(StringPiece(c4, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c4, length), kTestString);
 }
 
-TEST(UnsafeArenaTest, Realloc) {
-  UnsafeArena arena(kDefaultBlockSize);
+TEST(SpdyUnsafeArenaImplTest, Realloc) {
+  SpdyUnsafeArenaImpl arena(kDefaultBlockSize);
   const size_t length = strlen(kTestString);
   // Simple realloc that fits in the block.
   char* c1 = arena.Memdup(kTestString, length);
   char* c2 = arena.Realloc(c1, length, 2 * length);
   EXPECT_TRUE(c1);
   EXPECT_EQ(c1, c2);
-  EXPECT_EQ(StringPiece(c1, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c1, length), kTestString);
   // Multiple reallocs.
   char* c3 = arena.Memdup(kTestString, length);
   EXPECT_EQ(c2 + 2 * length, c3);
-  EXPECT_EQ(StringPiece(c3, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c3, length), kTestString);
   char* c4 = arena.Realloc(c3, length, 2 * length);
   EXPECT_EQ(c3, c4);
-  EXPECT_EQ(StringPiece(c4, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c4, length), kTestString);
   char* c5 = arena.Realloc(c4, 2 * length, 3 * length);
   EXPECT_EQ(c4, c5);
-  EXPECT_EQ(StringPiece(c5, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c5, length), kTestString);
   char* c6 = arena.Memdup(kTestString, length);
   EXPECT_EQ(c5 + 3 * length, c6);
-  EXPECT_EQ(StringPiece(c6, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c6, length), kTestString);
   // Realloc that does not fit in the remainder of the first block.
   char* c7 = arena.Realloc(c6, length, kDefaultBlockSize);
-  EXPECT_EQ(StringPiece(c7, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c7, length), kTestString);
   arena.Free(c7, kDefaultBlockSize);
   char* c8 = arena.Memdup(kTestString, length);
   EXPECT_NE(c6, c7);
   EXPECT_EQ(c7, c8);
-  EXPECT_EQ(StringPiece(c8, length), kTestString);
+  EXPECT_EQ(SpdyStringPiece(c8, length), kTestString);
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace spdy

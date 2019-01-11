@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/arena.h"
+#include "net/third_party/spdy/platform/impl/spdy_unsafe_arena_impl.h"
 
 #include <string.h>
 
@@ -10,16 +10,18 @@
 
 #include "base/logging.h"
 
-namespace net {
+namespace spdy {
 
-UnsafeArena::UnsafeArena(size_t block_size) : block_size_(block_size) {}
+SpdyUnsafeArenaImpl::SpdyUnsafeArenaImpl(size_t block_size)
+    : block_size_(block_size) {}
 
-UnsafeArena::~UnsafeArena() = default;
+SpdyUnsafeArenaImpl::~SpdyUnsafeArenaImpl() = default;
 
-UnsafeArena::UnsafeArena(UnsafeArena&& other) = default;
-UnsafeArena& UnsafeArena::operator=(UnsafeArena&& other) = default;
+SpdyUnsafeArenaImpl::SpdyUnsafeArenaImpl(SpdyUnsafeArenaImpl&& other) = default;
+SpdyUnsafeArenaImpl& SpdyUnsafeArenaImpl::operator=(
+    SpdyUnsafeArenaImpl&& other) = default;
 
-char* UnsafeArena::Alloc(size_t size) {
+char* SpdyUnsafeArenaImpl::Alloc(size_t size) {
   Reserve(size);
   Block& b = blocks_.back();
   DCHECK_GE(b.size, b.used + size);
@@ -28,7 +30,9 @@ char* UnsafeArena::Alloc(size_t size) {
   return out;
 }
 
-char* UnsafeArena::Realloc(char* original, size_t oldsize, size_t newsize) {
+char* SpdyUnsafeArenaImpl::Realloc(char* original,
+                                   size_t oldsize,
+                                   size_t newsize) {
   DCHECK(!blocks_.empty());
   Block& last = blocks_.back();
   if (last.data.get() <= original && original < last.data.get() + last.size) {
@@ -48,13 +52,13 @@ char* UnsafeArena::Realloc(char* original, size_t oldsize, size_t newsize) {
   return out;
 }
 
-char* UnsafeArena::Memdup(const char* data, size_t size) {
+char* SpdyUnsafeArenaImpl::Memdup(const char* data, size_t size) {
   char* out = Alloc(size);
   memcpy(out, data, size);
   return out;
 }
 
-void UnsafeArena::Free(char* data, size_t size) {
+void SpdyUnsafeArenaImpl::Free(char* data, size_t size) {
   if (blocks_.empty()) {
     return;
   }
@@ -66,12 +70,12 @@ void UnsafeArena::Free(char* data, size_t size) {
   }
 }
 
-void UnsafeArena::Reset() {
+void SpdyUnsafeArenaImpl::Reset() {
   blocks_.clear();
   status_.bytes_allocated_ = 0;
 }
 
-void UnsafeArena::Reserve(size_t additional_space) {
+void SpdyUnsafeArenaImpl::Reserve(size_t additional_space) {
   if (blocks_.empty()) {
     AllocBlock(std::max(additional_space, block_size_));
   } else {
@@ -82,25 +86,27 @@ void UnsafeArena::Reserve(size_t additional_space) {
   }
 }
 
-void UnsafeArena::AllocBlock(size_t size) {
+void SpdyUnsafeArenaImpl::AllocBlock(size_t size) {
   blocks_.push_back(Block(size));
   status_.bytes_allocated_ += size;
 }
 
-UnsafeArena::Block::Block(size_t s) : data(new char[s]), size(s), used(0) {}
+SpdyUnsafeArenaImpl::Block::Block(size_t s)
+    : data(new char[s]), size(s), used(0) {}
 
-UnsafeArena::Block::~Block() = default;
+SpdyUnsafeArenaImpl::Block::~Block() = default;
 
-UnsafeArena::Block::Block(UnsafeArena::Block&& other)
+SpdyUnsafeArenaImpl::Block::Block(SpdyUnsafeArenaImpl::Block&& other)
     : size(other.size), used(other.used) {
   data = std::move(other.data);
 }
 
-UnsafeArena::Block& UnsafeArena::Block::operator=(UnsafeArena::Block&& other) {
+SpdyUnsafeArenaImpl::Block& SpdyUnsafeArenaImpl::Block::operator=(
+    SpdyUnsafeArenaImpl::Block&& other) {
   size = other.size;
   used = other.used;
   data = std::move(other.data);
   return *this;
 }
 
-}  // namespace net
+}  // namespace spdy
