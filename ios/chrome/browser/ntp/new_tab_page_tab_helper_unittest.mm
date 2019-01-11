@@ -136,12 +136,14 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
   EXPECT_FALSE(tab_helper()->IsActive());
 
   GURL url(kChromeUINewTabURL);
+  test_web_state_.SetCurrentURL(url);
   web::FakeNavigationContext context;
   context.SetUrl(url);
   test_web_state_.OnNavigationFinished(&context);
   EXPECT_TRUE(tab_helper()->IsActive());
 
   GURL not_ntp_url(kTestURL);
+  test_web_state_.SetCurrentURL(not_ntp_url);
   context.SetUrl(not_ntp_url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_FALSE(tab_helper()->IsActive());
@@ -149,10 +151,12 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
   EXPECT_FALSE(tab_helper()->IsActive());
 
   context.SetUrl(url);
+  test_web_state_.SetCurrentURL(url);
   test_web_state_.OnNavigationFinished(&context);
   EXPECT_TRUE(tab_helper()->IsActive());
 
   context.SetUrl(not_ntp_url);
+  test_web_state_.SetCurrentURL(not_ntp_url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_FALSE(tab_helper()->IsActive());
   test_web_state_.OnNavigationFinished(&context);

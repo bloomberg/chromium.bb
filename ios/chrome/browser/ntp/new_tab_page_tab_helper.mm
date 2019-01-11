@@ -93,7 +93,7 @@ void NewTabPageTabHelper::DidFinishNavigation(
     return;
   }
 
-  SetActive(IsNTPURL(navigation_context->GetUrl()));
+  SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
 }
 
 #pragma mark - Private
