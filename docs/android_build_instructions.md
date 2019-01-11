@@ -119,10 +119,12 @@ Chromium uses [Ninja](https://ninja-build.org) as its main build tool along with
 a tool called [GN](https://gn.googlesource.com/gn/+/master/docs/quick_start.md)
 to generate `.ninja` files. You can create any number of *build directories*
 with different configurations. To create a build directory which builds Chrome
-for Android, run:
+for Android, run `gn args out/Default` and edit the file to contain the
+following arguments:
 
-```shell
-gn gen --args='target_os="android"' out/Default
+```gn
+target_os = "android"
+target_cpu = "arm64"  # See "Figuring out target_cpu" below
 ```
 
 * You only have to run this once for each new build directory, Ninja will
@@ -131,13 +133,33 @@ gn gen --args='target_os="android"' out/Default
   it should be a subdirectory of `out`.
 * For other build arguments, including release settings, see [GN build
   configuration](https://www.chromium.org/developers/gn-build-configuration).
-  The default will be a debug component build matching the current host
-  operating system and CPU.
+  The default will be a debug component build.
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](../tools/gn/docs/quick_start.md).
 
 Also be aware that some scripts (e.g. `tombstones.py`, `adb_gdb.py`)
 require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
+
+### Figuring out target\_cpu
+
+The value of
+[`target_cpu`](https://gn.googlesource.com/gn/+/master/docs/reference.md#target_cpu)
+determines what instruction set to use for native code. Given a device (or
+emulator), you can determine the correct instruction set with `adb shell getprop
+ro.product.cpu.abi`:
+
+| `getprop ro.product.cpu.abi` output | `target_cpu` value |
+|-------------------------------------|--------------------|
+| `arm64-v8a`                         | `arm64`            |
+| `armeabi-v7a`                       | `arm`              |
+| `x86`                               | `x86`              |
+| `x86_64`                            | `x64`              |
+
+*** promo
+`arm` and `x86` may optionally be used instead of `arm64` and `x64` for
+non-WebView targets. This is also allowed for Monochrome, but only when not set
+as WebView the provider.
+***
 
 ## Build Chromium
 
