@@ -69,7 +69,8 @@ bool VulkanInProcessContextProvider::Initialize() {
                           vulkan_function_pointers->vkGetDeviceProcAddrFn);
   backend_context.fOwnsInstanceAndDevice = false;
   gr_context_ = GrContext::MakeVulkan(backend_context);
-  return true;
+
+  return gr_context_ != nullptr;
 }
 
 void VulkanInProcessContextProvider::Destroy() {
