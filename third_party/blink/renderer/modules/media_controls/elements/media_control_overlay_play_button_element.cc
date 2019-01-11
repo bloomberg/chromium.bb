@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
@@ -36,7 +37,7 @@ namespace blink {
 //   This contains the inner circle with the actual play/pause icon.
 MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaPlayButton),
+    : MediaControlInputElement(media_controls, kMediaIgnore),
       internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
   setType(input_type_names::kButton);
@@ -53,8 +54,11 @@ void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
   SetIsWanted(MediaElement().ShouldShowControls() &&
               (MediaControlsImpl::IsModern() || MediaElement().paused()));
   if (MediaControlsImpl::IsModern()) {
-    SetDisplayType(MediaElement().paused() ? kMediaPlayButton
-                                           : kMediaPauseButton);
+    WebLocalizedString::Name state =
+        MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
+                                : WebLocalizedString::kAXMediaPauseButton;
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(state)));
   }
   MediaControlInputElement::UpdateDisplayType();
 }

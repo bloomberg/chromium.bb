@@ -66,10 +66,8 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaControlsPanel:
       return AXMediaControlsContainer::Create(layout_object, ax_object_cache);
 
-    case kMediaPlayButton:
     case kMediaSliderThumb:
     case kMediaTextTrackList:
-    case kMediaPauseButton:
     case kMediaTimelineContainer:
     case kMediaTrackSelectionCheckmark:
     case kMediaCastOffButton:
@@ -123,10 +121,6 @@ String AccessibilityMediaControl::TextAlternative(
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
-    case kMediaPlayButton:
-      return QueryString(WebLocalizedString::kAXMediaPlayButton);
-    case kMediaPauseButton:
-      return QueryString(WebLocalizedString::kAXMediaPauseButton);
     case kMediaCurrentTimeDisplay:
       return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplay);
     case kMediaTimeRemainingDisplay:
@@ -183,8 +177,6 @@ String AccessibilityMediaControl::Description(
     // read by accessibility, we get the same thing said twice, with no value
     // added. So instead, we just return an empty string.
     case kMediaDisplayCutoutFullscreenButton:
-    case kMediaPlayButton:
-    case kMediaPauseButton:
     case kMediaCastOffButton:
     case kMediaOverlayCastOffButton:
     case kMediaCastOnButton:
@@ -224,8 +216,6 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
 
 ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
-    case kMediaPlayButton:
-    case kMediaPauseButton:
     case kMediaOverlayCastOffButton:
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:
