@@ -451,6 +451,12 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         base::BindOnce(&GetStatusState::OnTpmStatusReceived, this));
   }
 
+  void FetchProbeData(
+      policy::DeviceStatusCollector::ProbeDataFetcher probe_data_fetcher) {
+    std::move(probe_data_fetcher)
+        .Run(base::BindOnce(&GetStatusState::OnProbeDataReceived, this));
+  }
+
  private:
   friend class RefCountedThreadSafe<GetStatusState>;
 
@@ -510,6 +516,51 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         tpm_status_struct.dictionary_attack_lockout_seconds_remaining);
     tpm_status_proto->set_boot_lockbox_finalized(
         tpm_status_struct.boot_lockbox_finalized);
+  }
+
+  void OnProbeDataReceived(
+      const base::Optional<runtime_probe::ProbeResult>& probe_result,
+      const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
+    // Make sure we edit the state on the right thread.
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!probe_result.has_value())
+      return;
+    if (probe_result.value().error() !=
+        runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET) {
+      return;
+    }
+    if (probe_result.value().battery_size() > 0) {
+      em::PowerStatus* const power_status =
+          device_status_->mutable_power_status();
+      for (const auto& battery : probe_result.value().battery()) {
+        em::BatteryInfo* const battery_info = power_status->add_batteries();
+        battery_info->set_serial(battery.values().serial_number());
+        battery_info->set_manufacturer(battery.values().manufacturer());
+        battery_info->set_cycle_count(battery.values().cycle_count_smart());
+        // uAh to mAh
+        battery_info->set_design_capacity(
+            battery.values().charge_full_design() / 1000);
+        battery_info->set_full_charge_capacity(battery.values().charge_full() /
+                                               1000);
+        for (const std::unique_ptr<SampledData>& sample_data : samples) {
+          auto it = sample_data->battery_samples.find(battery.name());
+          if (it != sample_data->battery_samples.end())
+            battery_info->add_samples()->CheckTypeAndMergeFrom(it->second);
+        }
+      }
+    }
+    if (probe_result.value().storage_size() > 0) {
+      em::StorageStatus* const storage_status =
+          device_status_->mutable_storage_status();
+      for (const auto& storage : probe_result.value().storage()) {
+        em::DiskInfo* const disk_info = storage_status->add_disks();
+        disk_info->set_serial(base::NumberToString(storage.values().serial()));
+        disk_info->set_manufacturer(
+            base::NumberToString(storage.values().manfid()));
+        disk_info->set_model(storage.values().name());
+        disk_info->set_type(storage.values().type());
+      }
+    }
   }
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -864,6 +915,9 @@ void DeviceStatusCollector::ActivityStorage::StoreChildScreenTime(
   pref_service_->CommitPendingWrite();
 }
 
+SampledData::SampledData() = default;
+SampledData::~SampledData() = default;
+
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* pref_service,
     chromeos::system::StatisticsProvider* provider,
@@ -890,6 +944,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       power_manager_(
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
       session_manager_(session_manager::SessionManager::Get()),
+      runtime_probe_(
+          chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
       is_enterprise_reporting_(is_enterprise_reporting),
       activity_day_start_(activity_day_start),
       task_runner_(nullptr),
@@ -913,6 +969,10 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (tpm_status_fetcher_.is_null())
     tpm_status_fetcher_ = base::BindRepeating(&ReadTpmStatus);
+
+  if (probe_data_fetcher_.is_null())
+    probe_data_fetcher_ = base::BindRepeating(
+        &DeviceStatusCollector::FetchProbeData, weak_factory_.GetWeakPtr());
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
@@ -946,6 +1006,12 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportOsUpdateStatus, callback);
   running_kiosk_app_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportRunningKioskApp, callback);
+  power_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDevicePowerStatus, callback);
+  storage_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceStorageStatus, callback);
+  board_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceBoardStatus, callback);
 
   // Watch for changes on the device state to calculate the child's active time.
   power_manager_->AddObserver(this);
@@ -1070,6 +1136,18 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceHardwareStatus,
                                   &report_hardware_status_)) {
     report_hardware_status_ = is_enterprise_reporting_;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDevicePowerStatus,
+                                  &report_power_status_)) {
+    report_power_status_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceStorageStatus,
+                                  &report_storage_status_)) {
+    report_storage_status_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBoardStatus,
+                                  &report_board_status_)) {
+    report_board_status_ = false;
   }
 
   if (!report_hardware_status_) {
@@ -1245,10 +1323,11 @@ void DeviceStatusCollector::SampleResourceUsage() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       cpu_statistics_fetcher_,
       base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), base::Time::Now()));
 }
 
-void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
+void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
+                                                 const std::string& stats) {
   int cpu_usage_percent = 0;
   if (stats.empty()) {
     DLOG(WARNING) << "Unable to read CPU statistics";
@@ -1299,6 +1378,71 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   // sample.
   if (resource_usage_.size() > kMaxResourceUsageSamples)
     resource_usage_.pop_front();
+
+  if (report_power_status_) {
+    runtime_probe::ProbeRequest request;
+    request.add_categories(runtime_probe::ProbeRequest::battery);
+    runtime_probe_->ProbeCategories(
+        request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
+                                weak_factory_.GetWeakPtr(), timestamp));
+  }
+}
+
+void DeviceStatusCollector::SampleProbeData(
+    const base::Time& timestamp,
+    base::Optional<runtime_probe::ProbeResult> result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!result.has_value())
+    return;
+  if (result.value().error() != runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET)
+    return;
+
+  if (result.value().battery_size() == 0)
+    return;
+
+  std::unique_ptr<SampledData> sample = std::make_unique<SampledData>();
+  sample->timestamp = timestamp;
+  for (const auto& battery : result.value().battery()) {
+    enterprise_management::BatterySample battery_sample;
+    battery_sample.set_timestamp(timestamp.ToJavaTime());
+    // Convert uV to mV
+    battery_sample.set_voltage(battery.values().voltage_now() / 1000);
+    // Convert uAh to mAh
+    battery_sample.set_remaining_capacity(battery.values().charge_now() / 1000);
+    // Convert 0.1 Kelvin to Celsius
+    battery_sample.set_temperature(
+        (battery.values().temperature_smart() - 2731) / 10);
+    sample->battery_samples[battery.name()] = battery_sample;
+  }
+
+  sampled_data_.push_back(std::move(sample));
+
+  // If our cache of samples is full, throw out old samples to make room for new
+  // sample.
+  if (sampled_data_.size() > kMaxResourceUsageSamples)
+    sampled_data_.pop_front();
+}
+
+void DeviceStatusCollector::FetchProbeData(
+    policy::DeviceStatusCollector::ProbeDataReceiver callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  runtime_probe::ProbeRequest request;
+  if (report_power_status_)
+    request.add_categories(runtime_probe::ProbeRequest::battery);
+  if (report_storage_status_)
+    request.add_categories(runtime_probe::ProbeRequest::storage);
+
+  runtime_probe_->ProbeCategories(
+      request, base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DeviceStatusCollector::OnProbeDataFetched(
+    policy::DeviceStatusCollector::ProbeDataReceiver callback,
+    base::Optional<runtime_probe::ProbeResult> reply) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  SampleProbeData(base::Time(), reply);
+  std::move(callback).Run(reply, sampled_data_);
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
@@ -1604,6 +1748,9 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // Fetch TPM status information on a background thread.
   state->FetchTpmStatus(tpm_status_fetcher_);
 
+  if (report_power_status_ || report_storage_status_) {
+    state->FetchProbeData(probe_data_fetcher_);
+  }
   return true;
 }
 

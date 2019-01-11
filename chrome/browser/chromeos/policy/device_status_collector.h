@@ -26,6 +26,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/runtime_probe/runtime_probe.pb.h"
+#include "chromeos/dbus/runtime_probe_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
 #include "components/session_manager/core/session_manager.h"
@@ -85,6 +87,22 @@ struct TpmStatusInfo {
   bool boot_lockbox_finalized = false;
 };
 
+// Sampled hardware measurement data for single time point.
+class SampledData {
+ public:
+  SampledData();
+  ~SampledData();
+
+  // Sampling timestamp.
+  base::Time timestamp;
+  // Battery samples for each battery.
+  std::map<std::string, enterprise_management::BatterySample> battery_samples;
+  // Thermal samples for each thermal point.
+  std::map<std::string, enterprise_management::ThermalSample> thermal_samples;
+
+  DISALLOW_COPY_AND_ASSIGN(SampledData);
+};
+
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector : public session_manager::SessionManagerObserver,
                               public chromeos::PowerManagerClient::Observer {
@@ -121,6 +139,14 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   using TpmStatusReceiver = base::OnceCallback<void(const TpmStatusInfo&)>;
   // Gets the TpmStatusInfo and passes it to TpmStatusReceiver.
   using TpmStatusFetcher = base::RepeatingCallback<void(TpmStatusReceiver)>;
+
+  // Format of the function that asynchronously receives ProbeResult / sampled
+  // data.
+  using ProbeDataReceiver = base::OnceCallback<void(
+      const base::Optional<runtime_probe::ProbeResult>&,
+      const base::circular_deque<std::unique_ptr<SampledData>>&)>;
+  // Gets the ProbeResult/sampled data and passes it to ProbeDataReceiver.
+  using ProbeDataFetcher = base::RepeatingCallback<void(ProbeDataReceiver)>;
 
   // Called in the UI thread after the device and session status have been
   // collected asynchronously in GetDeviceAndSessionStatusAsync. Null pointers
@@ -282,7 +308,23 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   void UpdateReportingSettings();
 
   // Callback invoked to update our cpu usage information.
-  void ReceiveCPUStatistics(const std::string& statistics);
+  void ReceiveCPUStatistics(const base::Time& timestamp,
+                            const std::string& statistics);
+
+  // Callback for RuntimeProbe that samples probe live data.
+  void SampleProbeData(const base::Time& timestamp,
+                       base::Optional<runtime_probe::ProbeResult> result);
+
+  // ProbeDataReceiver interface implementation, fetches data from
+  // RuntimeProbe passes it to |callback| via OnProbeDataFetched().
+  void FetchProbeData(
+      policy::DeviceStatusCollector::ProbeDataReceiver callback);
+
+  // Callback for RuntimeProbe that performs final sampling and
+  // actually invokes |callback|.
+  void OnProbeDataFetched(
+      policy::DeviceStatusCollector::ProbeDataReceiver callback,
+      base::Optional<runtime_probe::ProbeResult> reply);
 
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
@@ -337,6 +379,10 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // periodically every kHardwareStatusSampleIntervalSeconds).
   base::circular_deque<ResourceUsage> resource_usage_;
 
+  // Samples of probe data (contains multiple samples taken
+  // periodically every kHardwareStatusSampleIntervalSeconds)
+  base::circular_deque<std::unique_ptr<SampledData>> sampled_data_;
+
   // Callback invoked to fetch information about the mounted disk volumes.
   VolumeInfoFetcher volume_info_fetcher_;
 
@@ -350,6 +396,8 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
 
   TpmStatusFetcher tpm_status_fetcher_;
 
+  ProbeDataFetcher probe_data_fetcher_;
+
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
   chromeos::CrosSettings* const cros_settings_;
@@ -359,6 +407,9 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
 
   // Session manager. Used to listen to session state changes.
   session_manager::SessionManager* const session_manager_;
+
+  // Runtime probe client. Used to fetch hardware data.
+  chromeos::RuntimeProbeClient* const runtime_probe_;
 
   // Stores and filters activity periods used for reporting.
   std::unique_ptr<ActivityStorage> activity_storage_;
@@ -377,6 +428,9 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   bool report_kiosk_session_status_ = false;
   bool report_os_update_status_ = false;
   bool report_running_kiosk_app_ = false;
+  bool report_power_status_ = false;
+  bool report_storage_status_ = false;
+  bool report_board_status_ = false;
 
   // Whether reporting is for enterprise or consumer.
   bool is_enterprise_reporting_ = false;
@@ -403,6 +457,12 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
       os_update_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       running_kiosk_app_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      power_status_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      storage_status_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      board_status_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
