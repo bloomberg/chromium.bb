@@ -7,6 +7,11 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to control the autocomplete retention
+// policy.
+extern const char kEnableAutocompleteDataRetentionPolicyName[];
+extern const char kEnableAutocompleteDataRetentionPolicyDescription[];
+
 // Title and description for the flag to control the autofill query cache.
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];

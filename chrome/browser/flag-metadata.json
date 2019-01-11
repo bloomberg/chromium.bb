@@ -909,6 +909,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autocomplete-data-retention-policy",
+    "owners": [ "seblalancette" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-autoplay-ignore-web-audio",
     "owners": [ "beccahughes", "mlamouri", "media-dev" ],
     "expiry_milestone": 73

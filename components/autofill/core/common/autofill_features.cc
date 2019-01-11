@@ -21,8 +21,8 @@ namespace autofill {
 namespace features {
 
 // Controls whether the Autocomplete Retention Policy is being enforced or not.
-const base::Feature kAutocompleteRententionPolicyEnabled{
-    "AutocompleteRententionPolicyEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutocompleteRetentionPolicyEnabled{
+    "AutocompleteRetentionPolicyEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether autofill activates on non-HTTP(S) pages. Useful for
 // automated with data URLS in cases where it's too difficult to use the

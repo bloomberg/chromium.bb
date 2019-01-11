@@ -512,6 +512,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"snapshot-draw-view", flag_descriptions::kSnapshotDrawViewName,
      flag_descriptions::kSnapshotDrawViewDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSnapshotDrawView)},
+    {"enable-autocomplete-data-retention-policy",
+     flag_descriptions::kEnableAutocompleteDataRetentionPolicyName,
+     flag_descriptions::kEnableAutocompleteDataRetentionPolicyDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutocompleteRetentionPolicyEnabled)},
 };
 
 // Add all switches from experimental flags to |command_line|.

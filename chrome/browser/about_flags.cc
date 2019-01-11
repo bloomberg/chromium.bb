@@ -4279,6 +4279,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsName,
      flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(safe_browsing::kUseAPDownloadProtection)},
+    {"enable-autocomplete-data-retention-policy",
+     flag_descriptions::kEnableAutocompleteDataRetentionPolicyName,
+     flag_descriptions::kEnableAutocompleteDataRetentionPolicyDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutocompleteRetentionPolicyEnabled)},
 };
 
 class FlagsStateSingleton {
