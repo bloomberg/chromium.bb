@@ -36,7 +36,7 @@ quic::WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
   callback_ = callback;
   quic::WriteResult result =
       WritePacket(buffer, buf_len, self_address, peer_address, options);
-  if (result.status != quic::WRITE_STATUS_BLOCKED) {
+  if (!quic::IsWriteBlockedStatus(result.status)) {
     callback_.Reset();
   }
   return result;
@@ -91,7 +91,7 @@ quic::WriteResult QuicSimpleServerPacketWriter::WritePacket(
       base::UmaHistogramSparse("Net.quic::QuicSession.WriteError", -rv);
       status = quic::WRITE_STATUS_ERROR;
     } else {
-      status = quic::WRITE_STATUS_BLOCKED;
+      status = quic::WRITE_STATUS_BLOCKED_DATA_BUFFERED;
       write_blocked_ = true;
     }
   }

@@ -1602,9 +1602,9 @@ void QuicConnection::SendVersionNegotiationPacket(bool ietf_quic) {
     OnWriteError(result.error_code);
     return;
   }
-  if (result.status == WRITE_STATUS_BLOCKED) {
+  if (IsWriteBlockedStatus(result.status)) {
     visitor_->OnWriteBlocked();
-    if (writer_->IsWriteBlockedDataBuffered()) {
+    if (result.status == WRITE_STATUS_BLOCKED_DATA_BUFFERED) {
       pending_version_negotiation_packet_ = false;
     }
     return;
@@ -2197,7 +2197,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       packet->encrypted_buffer, encrypted_length, self_address().host(),
       peer_address(), per_packet_options_);
   if (result.error_code == net::ERR_IO_PENDING) {
-    DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
+    DCHECK_EQ(WRITE_STATUS_BLOCKED_DATA_BUFFERED, result.status);
   }
 
   QUIC_HISTOGRAM_ENUM(
@@ -2205,7 +2205,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       WRITE_STATUS_NUM_VALUES,
       "Status code returned by writer_->WritePacket() in QuicConnection.");
 
-  if (result.status == WRITE_STATUS_BLOCKED) {
+  if (IsWriteBlockedStatus(result.status)) {
     // Ensure the writer is still write blocked, otherwise QUIC may continue
     // trying to write when it will not be able to.
     DCHECK(writer_->IsWriteBlocked());
@@ -2214,7 +2214,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     // be queued and sent again, which would result in an unnecessary
     // duplicate packet being sent.  The helper must call OnCanWrite
     // when the write completes, and OnWriteError if an error occurs.
-    if (!writer_->IsWriteBlockedDataBuffered()) {
+    if (result.status != WRITE_STATUS_BLOCKED_DATA_BUFFERED) {
       return false;
     }
   }
@@ -3196,13 +3196,13 @@ bool QuicConnection::SendGenericPathProbePacket(
       packet_send_time, probing_packet->transmission_type,
       NO_RETRANSMITTABLE_DATA);
 
-  if (result.status == WRITE_STATUS_BLOCKED) {
+  if (IsWriteBlockedStatus(result.status)) {
     if (probing_writer == writer_) {
       // Visitor should not be write blocked if the probing writer is not the
       // default packet writer.
       visitor_->OnWriteBlocked();
     }
-    if (probing_writer->IsWriteBlockedDataBuffered()) {
+    if (result.status == WRITE_STATUS_BLOCKED_DATA_BUFFERED) {
       QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet blocked";
     }
   }
