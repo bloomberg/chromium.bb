@@ -2235,6 +2235,13 @@ extern const char kPnaclSubzeroDescription[];
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 
+#if defined(OS_CHROMEOS)
+
+extern const char kPdfAnnotations[];
+extern const char kPdfAnnotationsDescription[];
+
+#endif  // defined(OS_CHROMEOS)
+
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
 
