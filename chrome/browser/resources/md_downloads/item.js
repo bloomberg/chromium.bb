@@ -6,6 +6,10 @@ cr.define('downloads', function() {
   const Item = Polymer({
     is: 'downloads-item',
 
+    behaviors: [
+      cr.ui.FocusRowBehavior,
+    ],
+
     properties: {
       /** @type {!downloads.Data} */
       data: Object,

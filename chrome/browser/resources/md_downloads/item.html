@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -25,6 +26,7 @@
       :host {
         display: flex;
         flex-direction: column;
+        outline: none;
       }
 
       paper-button {
@@ -274,7 +276,8 @@
                                  data.dateString)]]</h3>
 
     <div id="content" on-dragstart="onDragStart_"
-        class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
+        class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]"
+        focus-row-container>
       <div id="file-icon-wrapper" class="icon-wrapper">
         <img class="icon" id="file-icon" alt="" hidden="[[!useFileIcon_]]">
         <iron-icon class="icon" icon$="[[computeIcon_(
@@ -286,7 +289,8 @@
         <div id="title-area"><!--
           Can't have any line breaks.
           --><a is="action-link" id="file-link" href="[[data.url]]"
-              on-click="onFileLinkTap_"
+              on-click="onFileLinkTap_" focus-row-control
+              focus-type="fileLink"
               hidden="[[!completelyOnDisk_]]">[[data.fileName]]</a><!--
           Before #name.
           --><span id="name"
@@ -296,7 +300,8 @@
                                        data.fileExternallyRemoved)]]</span>
         </div>
 
-        <a id="url" target="_blank">[[chopUrl_(data.url)]]</a>
+        <a id="url" target="_blank" focus-row-control
+            focus-type="url">[[chopUrl_(data.url)]]</a>
 
         <div id="description">[[computeDescription_(
           data.state,
@@ -312,19 +317,23 @@
 
         <div id="safe" class="controls" hidden="[[isDangerous_]]">
           <a is="action-link" id="show" on-click="onShowTap_"
-              hidden="[[!completelyOnDisk_]]">$i18n{controlShowInFolder}</a>
+              hidden="[[!completelyOnDisk_]]" focus-row-control
+              focus-type="show">$i18n{controlShowInFolder}</a>
           <template is="dom-if" if="[[data.retry]]">
-            <paper-button class="action-button" on-click="onRetryTap_">
+            <paper-button class="action-button" on-click="onRetryTap_"
+                focus-row-control focus-type="retry">
               $i18n{controlRetry}
             </paper-button>
           </template>
           <template is="dom-if" if="[[pauseOrResumeText_]]">
-            <paper-button on-click="onPauseOrResumeTap_" id="pauseOrResume">
+            <paper-button on-click="onPauseOrResumeTap_" id="pauseOrResume"
+                focus-row-control focus-type="pauseOrResume">
               [[pauseOrResumeText_]]
             </paper-button>
           </template>
           <template is="dom-if" if="[[showCancel_]]">
-            <paper-button on-click="onCancelTap_">
+            <paper-button on-click="onCancelTap_" focus-row-control
+                focus-type="cancel">
               $i18n{controlCancel}
             </paper-button>
           </template>
@@ -336,17 +345,20 @@
             <!-- Dangerous file types (e.g. .exe, .jar). -->
             <template is="dom-if" if="[[!isMalware_]]">
               <paper-button on-click="onDiscardDangerousTap_"
-                  class="action-button">$i18n{dangerDiscard}</paper-button>
-              <paper-button on-click="onSaveDangerousTap_">
+                  class="action-button" focus-row-control
+                  focus-type="discard">$i18n{dangerDiscard}</paper-button>
+              <paper-button on-click="onSaveDangerousTap_" focus-row-control
+                  focus-type="save">
                 $i18n{dangerSave}</paper-button>
             </template>
 
             <!-- Things that safe browsing has determined to be dangerous. -->
             <template is="dom-if" if="[[isMalware_]]">
               <paper-button on-click="onDiscardDangerousTap_"
-                  class="action-button">
+                  class="action-button" focus-row-control focus-type="discard">
                 $i18n{controlRemoveFromList}</paper-button>
-              <paper-button on-click="onSaveDangerousTap_">
+              <paper-button on-click="onSaveDangerousTap_" focus-row-control
+                  focus-type="save">
                 $i18n{dangerRestore}</paper-button>
             </template>
           </div>
@@ -359,7 +371,8 @@
           <button id="remove"
               title="$i18n{controlRemoveFromList}"
               aria-label$="[[controlRemoveFromListAriaLabel_]]"
-              on-click="onRemoveTap_"></button>
+              on-click="onRemoveTap_" focus-row-control focus-type="remove">
+          </button>
         </paper-icon-button-light>
       </div>
 

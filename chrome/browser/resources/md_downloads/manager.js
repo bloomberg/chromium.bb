@@ -43,6 +43,12 @@ cr.define('downloads', function() {
         type: Boolean,
         notify: true,
       },
+
+      /** @private {Element} */
+      lastFocused_: Object,
+
+      /** @private */
+      listBlurred_: Boolean,
     },
 
     hostAttributes: {
