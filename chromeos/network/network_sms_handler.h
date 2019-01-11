@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 
@@ -25,7 +25,8 @@ class Value;
 namespace chromeos {
 
 // Class to watch sms without Libcros.
-class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
+    : public ShillPropertyChangedObserver {
  public:
   static const char kNumberKey[];
   static const char kTextKey[];

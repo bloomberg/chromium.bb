@@ -6,7 +6,7 @@ import("//testing/test.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
-source_set("timezone") {
+component("timezone") {
   defines = [ "IS_CHROMEOS_TIMEZONE_IMPL" ]
   deps = [
     "//base",

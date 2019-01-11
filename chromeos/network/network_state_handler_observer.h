@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_type_pattern.h"
 
 namespace chromeos {
@@ -19,7 +19,7 @@ class NetworkState;
 
 // Observer class for all network state changes, including changes to
 // active (connecting or connected) services.
-class CHROMEOS_EXPORT NetworkStateHandlerObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
  public:
   NetworkStateHandlerObserver();
   virtual ~NetworkStateHandlerObserver();

@@ -232,6 +232,7 @@ source_set("app_shell_lib") {
       "//chromeos/dbus",
       "//chromeos/disks",
       "//chromeos/login/login_state",
+      "//chromeos/network",
       "//ui/chromeos",
       "//ui/display/manager",
     ]

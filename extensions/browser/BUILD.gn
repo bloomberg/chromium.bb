@@ -510,6 +510,7 @@ source_set("browser_tests") {
       "//chromeos/dbus:power_manager_proto",
       "//chromeos/dbus:test_support",
       "//chromeos/login/login_state",
+      "//chromeos/network",
     ]
   }
 }
@@ -698,6 +699,7 @@ source_set("unit_tests") {
       "//chromeos/dbus:media_perception_proto",
       "//chromeos/dbus:test_support",
       "//chromeos/login/login_state",
+      "//chromeos/network:test_support",
       "//components/feedback",
       "//extensions/shell:app_shell_lib",
     ]

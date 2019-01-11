@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "base/test/fuzzed_data_provider.h"
-#include "chromeos/tools/variable_expander.h"
+#include "chromeos/network/onc/variable_expander.h"
 
 namespace chromeos {
 namespace variable_expander {

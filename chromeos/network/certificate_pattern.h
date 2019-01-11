@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,7 +19,7 @@ namespace chromeos {
 
 // Class to represent the DER fields of an issuer or a subject in a
 // certificate and compare them.
-class CHROMEOS_EXPORT IssuerSubjectPattern {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) IssuerSubjectPattern {
  public:
   IssuerSubjectPattern();
   IssuerSubjectPattern(const std::string& common_name,
@@ -61,7 +61,7 @@ class CHROMEOS_EXPORT IssuerSubjectPattern {
 
 // A class to contain a certificate pattern and find existing matches to the
 // pattern in the certificate database.
-class CHROMEOS_EXPORT CertificatePattern {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) CertificatePattern {
  public:
   CertificatePattern();
   CertificatePattern(const CertificatePattern& other);

@@ -34,7 +34,8 @@ namespace chromeos {
 //   GetWifiAccessPoints();  // returns true + same data, requests update
 //   (Delay some amount of time after data did not change, ~2 mins)
 
-class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) GeolocationHandler
+    : public ShillPropertyChangedObserver {
  public:
   ~GeolocationHandler() override;
 

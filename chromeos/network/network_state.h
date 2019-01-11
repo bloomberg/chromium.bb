@@ -33,7 +33,7 @@ namespace chromeos {
 // Manager.ServiceCompleteList. The visible() method indicates whether the
 // network is visible, and the IsInProfile() method indicates whether the
 // network is saved in a profile.
-class CHROMEOS_EXPORT NetworkState : public ManagedState {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
  public:
   explicit NetworkState(const std::string& path);
   ~NetworkState() override;

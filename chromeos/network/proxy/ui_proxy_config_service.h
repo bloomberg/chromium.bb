@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/proxy/ui_proxy_config.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -26,7 +26,7 @@ class NetworkState;
 // configurations set by an extension, and for ONC policy information associated
 // with a network. (Per-network proxy configurations are stored in Shill,
 // but ONC policy configuration is stored in PrefService).
-class CHROMEOS_EXPORT UIProxyConfigService {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
  public:
   // |local_state_prefs| must not be null. |profile_prefs| can be
   // null if there is no logged in user, in which case only the local state

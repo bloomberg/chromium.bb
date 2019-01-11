@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -18,7 +19,7 @@ namespace chromeos {
 // ChromeBrowserMainPartsChromeos.
 // This class is responsible for propagating Fast Transition policy
 // changes (prefs::kFastTransitionEnabled) in Chrome down to Shill.
-class FastTransitionObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) FastTransitionObserver {
  public:
   explicit FastTransitionObserver(PrefService* local_state);
   ~FastTransitionObserver();

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
@@ -21,7 +21,7 @@ namespace chromeos {
 // Helper for accessing and setting values in the network's UI data dictionary.
 // Accessing values is done via static members that take the network as an
 // argument.
-class CHROMEOS_EXPORT NetworkUIData {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkUIData {
  public:
   NetworkUIData();
   NetworkUIData(const NetworkUIData& other);

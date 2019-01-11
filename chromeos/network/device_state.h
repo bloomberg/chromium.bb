@@ -16,7 +16,7 @@ namespace chromeos {
 
 // Simple class to provide device state information. Similar to NetworkState;
 // see network_state.h for usage guidelines.
-class CHROMEOS_EXPORT DeviceState : public ManagedState {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
  public:
   typedef std::vector<CellularScanResult> CellularScanResults;
 

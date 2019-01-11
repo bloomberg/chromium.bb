@@ -10,7 +10,8 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockNetworkStateHandler : public NetworkStateHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkStateHandler
+    : public NetworkStateHandler {
  public:
   MockNetworkStateHandler();
   virtual ~MockNetworkStateHandler();
