@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -31,6 +32,7 @@ namespace {
 
 constexpr int kHostedAppMenuMargin = 7;
 constexpr int kFramePaddingLeft = 75;
+constexpr double kTitlePaddingWidthFraction = 0.1;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(
     const PrefService* pref_service) {
@@ -301,8 +303,12 @@ void BrowserNonClientFrameViewMac::Layout() {
   if (hosted_app_button_container()) {
     trailing_x = hosted_app_button_container()->LayoutInContainer(
         leading_x, trailing_x, 0, available_height);
+
+    const int title_padding = base::checked_cast<int>(
+        std::round(width() * kTitlePaddingWidthFraction));
     window_title_->SetBoundsRect(GetCenteredTitleBounds(
-        width(), available_height, leading_x, trailing_x,
+        width(), available_height, leading_x + title_padding,
+        trailing_x - title_padding,
         window_title_->CalculatePreferredSize().width()));
   }
 }
