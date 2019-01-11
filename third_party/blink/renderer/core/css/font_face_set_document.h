@@ -59,8 +59,6 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
 
   AtomicString status() const override;
 
-  Document* GetDocument() const;
-
   void DidLayout();
   void BeginFontLoading(FontFace*);
 

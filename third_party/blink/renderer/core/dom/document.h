@@ -550,6 +550,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ResourceFetcher* Fetcher() const override { return fetcher_.Get(); }
 
+  using ExecutionContext::NotifyContextDestroyed;
+
   void Initialize();
   virtual void Shutdown();
 

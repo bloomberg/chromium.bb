@@ -73,9 +73,18 @@ void LocalWindowProxy::Trace(blink::Visitor* visitor) {
 
 void LocalWindowProxy::DisposeContext(Lifecycle next_status,
                                       FrameReuseStatus frame_reuse_status) {
-  DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
-         next_status == Lifecycle::kFrameIsDetached ||
-         next_status == Lifecycle::kForciblyPurgeV8Memory);
+  DCHECK(next_status == Lifecycle::kForciblyPurgeV8Memory ||
+         next_status == Lifecycle::kGlobalObjectIsDetached ||
+         next_status == Lifecycle::kFrameIsDetached);
+
+  // If the current lifecycle is kForciblyPurgeV8Memory, the next state should
+  // be kGlobalObjectIsDetached. The necessary operations are already done in
+  // kForciblyPurgeMemory and thus can return here.
+  if (lifecycle_ == Lifecycle::kForciblyPurgeV8Memory) {
+    DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached);
+    lifecycle_ = next_status;
+    return;
+  }
 
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
@@ -87,8 +96,8 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
-  if (next_status == Lifecycle::kGlobalObjectIsDetached ||
-      next_status == Lifecycle::kForciblyPurgeV8Memory) {
+  if (next_status == Lifecycle::kForciblyPurgeV8Memory ||
+      next_status == Lifecycle::kGlobalObjectIsDetached) {
     // Clean up state on the global proxy, which will be reused.
     if (!global_proxy_.IsEmpty()) {
       CHECK(global_proxy_ == context->Global());

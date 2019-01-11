@@ -51,15 +51,24 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
 
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
                                        FrameReuseStatus) {
-  DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
-         next_status == Lifecycle::kFrameIsDetached ||
-         next_status == Lifecycle::kForciblyPurgeV8Memory);
+  DCHECK(next_status == Lifecycle::kForciblyPurgeV8Memory ||
+         next_status == Lifecycle::kGlobalObjectIsDetached ||
+         next_status == Lifecycle::kFrameIsDetached);
+
+  // If the current lifecycle is kForciblyPurgeV8Memory, the next state should
+  // be kGlobalObjectIsDetached. The necessary operations are already done in
+  // kForciblyPurgeMemory and thus can return here.
+  if (lifecycle_ == Lifecycle::kForciblyPurgeV8Memory) {
+    DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached);
+    lifecycle_ = next_status;
+    return;
+  }
 
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  if ((next_status == Lifecycle::kGlobalObjectIsDetached ||
-       next_status == Lifecycle::kForciblyPurgeV8Memory) &&
+  if ((next_status == Lifecycle::kForciblyPurgeV8Memory ||
+       next_status == Lifecycle::kGlobalObjectIsDetached) &&
       !global_proxy_.IsEmpty()) {
     global_proxy_.Get().SetWrapperClassId(0);
     V8DOMWrapper::ClearNativeInfo(GetIsolate(),

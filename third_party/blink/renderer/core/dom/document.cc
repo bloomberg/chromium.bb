@@ -7017,9 +7017,11 @@ ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
   if (!scripted_idle_task_controller_) {
     scripted_idle_task_controller_ = ScriptedIdleTaskController::Create(this);
     // We need to make sure that we don't start up the idle controller if we
-    // don't have an attached frame.
-    if (!frame_ || !frame_->IsAttached())
+    // don't have an attached frame and if execution context is destroyed.
+    if (!frame_ || !frame_->IsAttached() ||
+        ExecutionContext::IsContextDestroyed()) {
       scripted_idle_task_controller_->Pause();
+    }
   }
   return *scripted_idle_task_controller_;
 }

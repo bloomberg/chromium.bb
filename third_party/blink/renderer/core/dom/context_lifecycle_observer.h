@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class Document;
 class LocalDOMWindow;
 class LocalFrame;
 
@@ -66,6 +67,9 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
   // Returns the execution context until it is detached.
   // From then on, returns null instead.
   ExecutionContext* GetExecutionContext() const;
+
+  // Return a live document if associated with it. Returns null otherwise.
+  Document* GetDocument() const;
 
   // If associated with a live document, returns the associated frame.
   // Returns null otherwise.
