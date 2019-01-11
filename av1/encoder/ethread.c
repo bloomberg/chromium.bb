@@ -236,26 +236,30 @@ static void switch_tile_and_get_next_job(AV1_COMP *const cpi, int *cur_tile_id,
       int tile_index = tile_row * tile_cols + tile_col;
       TileDataEnc *this_tile = &cpi->tile_data[tile_index];
       AV1RowMTInfo *row_mt_info = &this_tile->row_mt_info;
-      int num_mis_to_encode =
-          this_tile->tile_info.mi_row_end - row_mt_info->current_mi_row;
+      int theoretical_limit_on_threads = (int)(round(AOMMAX(
+          (double)(av1_get_sb_cols_in_tile(cm, this_tile->tile_info)) / 2, 1)));
+      int num_threads_working = row_mt_info->num_threads_working;
+      if (num_threads_working < theoretical_limit_on_threads) {
+        int num_mis_to_encode =
+            this_tile->tile_info.mi_row_end - row_mt_info->current_mi_row;
 
-      // Tile to be processed by this thread is selected on the basis of
-      // availability of jobs:
-      // 1) If jobs are available, tile to be processed is chosen on the
-      // basis of minimum number of threads working for that tile. If two or
-      // more tiles have same number of threads working for them, then the tile
-      // with maximum number of jobs available will be chosen.
-      // 2) If no jobs are available, then end_of_frame is reached.
-      if (num_mis_to_encode > 0) {
-        int num_threads_working = row_mt_info->num_threads_working;
-        if (num_threads_working < min_num_threads_working) {
-          min_num_threads_working = num_threads_working;
-          max_mis_to_encode = 0;
-        }
-        if (num_threads_working == min_num_threads_working &&
-            num_mis_to_encode > max_mis_to_encode) {
-          tile_id = tile_index;
-          max_mis_to_encode = num_mis_to_encode;
+        // Tile to be processed by this thread is selected on the basis of
+        // availability of jobs:
+        // 1) If jobs are available, tile to be processed is chosen on the
+        // basis of minimum number of threads working for that tile. If two or
+        // more tiles have same number of threads working for them, then the
+        // tile with maximum number of jobs available will be chosen.
+        // 2) If no jobs are available, then end_of_frame is reached.
+        if (num_mis_to_encode > 0) {
+          if (num_threads_working < min_num_threads_working) {
+            min_num_threads_working = num_threads_working;
+            max_mis_to_encode = 0;
+          }
+          if (num_threads_working == min_num_threads_working &&
+              num_mis_to_encode > max_mis_to_encode) {
+            tile_id = tile_index;
+            max_mis_to_encode = num_mis_to_encode;
+          }
         }
       }
     }
@@ -616,7 +620,7 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   const int tile_rows = cm->tile_rows;
   MultiThreadHandle *multi_thread_ctxt = &cpi->multi_thread_ctxt;
   int num_workers = 0;
-  int total_num_sb_rows = 0;
+  int total_num_threads_row_mt = 0;
   int max_sb_rows = 0;
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {
@@ -631,11 +635,19 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
       TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
       int num_sb_rows_in_tile =
           av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
-      total_num_sb_rows += num_sb_rows_in_tile;
+      int num_sb_cols_in_tile =
+          av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
+      total_num_threads_row_mt += (int)round(AOMMIN(
+          AOMMAX((double)(num_sb_cols_in_tile) / 2, 1), num_sb_rows_in_tile));
       max_sb_rows = AOMMAX(max_sb_rows, num_sb_rows_in_tile);
     }
   }
-  num_workers = AOMMIN(cpi->oxcf.max_threads, total_num_sb_rows);
+  // TODO(ravi.chaudhary@ittiam.com): Currently the percentage of
+  // post-processing stages in encoder is quiet low, so limiting the number of
+  // threads to the theoretical limit in row-mt does not have much impact on
+  // post-processing multi-threading stage. Need to revisit this when
+  // post-processing time starts shooting up.
+  num_workers = AOMMIN(cpi->oxcf.max_threads, total_num_threads_row_mt);
 
   if (multi_thread_ctxt->allocated_tile_cols != tile_cols ||
       multi_thread_ctxt->allocated_tile_rows != tile_rows ||
