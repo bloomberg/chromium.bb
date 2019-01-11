@@ -5,6 +5,8 @@
 #include "ui/display/manager/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
@@ -32,8 +34,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
@@ -59,8 +59,8 @@
 
 namespace ash {
 
-using std::vector;
 using std::string;
+using std::vector;
 
 using base::StringPrintf;
 
@@ -3512,21 +3512,19 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
   void SetUp() override {
     DisplayManagerTest::SetUp();
     const float kMeanGravity = 9.8066f;
-    portrait_primary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity,
-                          0.f, 0.f);
-    portrait_secondary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, kMeanGravity,
-                            0.f, 0.f);
-    landscape_primary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0,
-                           -kMeanGravity, 0.f);
+    portrait_primary->Set(ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.f, 0.f);
+    portrait_secondary->Set(ACCELEROMETER_SOURCE_SCREEN, kMeanGravity, 0.f,
+                            0.f);
+    landscape_primary->Set(ACCELEROMETER_SOURCE_SCREEN, 0, -kMeanGravity, 0.f);
   }
 
  protected:
-  scoped_refptr<chromeos::AccelerometerUpdate> portrait_primary =
-      new chromeos::AccelerometerUpdate();
-  scoped_refptr<chromeos::AccelerometerUpdate> portrait_secondary =
-      new chromeos::AccelerometerUpdate();
-  scoped_refptr<chromeos::AccelerometerUpdate> landscape_primary =
-      new chromeos::AccelerometerUpdate();
+  scoped_refptr<AccelerometerUpdate> portrait_primary =
+      new AccelerometerUpdate();
+  scoped_refptr<AccelerometerUpdate> portrait_secondary =
+      new AccelerometerUpdate();
+  scoped_refptr<AccelerometerUpdate> landscape_primary =
+      new AccelerometerUpdate();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerOrientationTest);

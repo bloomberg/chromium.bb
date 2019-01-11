@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/ash_export.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/wm/lock_state_observer.h"
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/manager/display_configurator.h"
 
@@ -42,7 +42,7 @@ class PowerButtonScreenshotController;
 class ASH_EXPORT PowerButtonController
     : public display::DisplayConfigurator::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public chromeos::AccelerometerReader::Observer,
+      public AccelerometerReader::Observer,
       public BacklightsForcedOffSetter::Observer,
       public TabletModeObserver,
       public LockStateObserver {
@@ -136,9 +136,9 @@ class ASH_EXPORT PowerButtonController
 
   // TODO(minch): Remove this if/when all applicable devices expose a tablet
   // mode switch: https://crbug.com/798646.
-  // chromeos::AccelerometerReader::Observer:
+  // AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
+      scoped_refptr<const AccelerometerUpdate> update) override;
 
   // BacklightsForcedOffSetter::Observer:
   void OnBacklightsForcedOffChanged(bool forced_off) override;

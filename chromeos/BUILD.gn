@@ -37,13 +37,8 @@ component("chromeos") {
     "//google_apis",
     "//services/network/public/cpp:cpp",
     "//third_party/protobuf:protobuf_lite",
-    "//ui/gfx/geometry",  # For accelerometer.
   ]
   sources = [
-    "accelerometer/accelerometer_reader.cc",
-    "accelerometer/accelerometer_reader.h",
-    "accelerometer/accelerometer_types.cc",
-    "accelerometer/accelerometer_types.h",
     "account_manager/account_manager.cc",
     "account_manager/account_manager.h",
     "account_manager/account_manager_factory.cc",

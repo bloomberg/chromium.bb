@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_reader.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,7 +28,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -70,7 +70,7 @@ const char kAccelerometerScanIndexPathFormatString[] =
     "scan_elements/in_accel_%s_index";
 
 // The names of the accelerometers. Matches up with the enum AccelerometerSource
-// in chromeos/accelerometer/accelerometer_types.h.
+// in ash/accelerometer/accelerometer_types.h.
 const char kAccelerometerNames[ACCELEROMETER_SOURCE_COUNT][5] = {"lid", "base"};
 
 // The axes on each accelerometer. The order was changed on kernel 3.18+.
@@ -231,8 +231,7 @@ class AccelerometerFileReader
 AccelerometerFileReader::AccelerometerFileReader()
     : initialization_successful_(false),
       observers_(
-          new base::ObserverListThreadSafe<AccelerometerReader::Observer>()) {
-}
+          new base::ObserverListThreadSafe<AccelerometerReader::Observer>()) {}
 
 void AccelerometerFileReader::Initialize(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
@@ -450,7 +449,7 @@ bool AccelerometerFileReader::InitializeLegacyAccelerometers(
   }
 
   // Adjust the directions of accelerometers to match the AccelerometerUpdate
-  // type specified in chromeos/accelerometer/accelerometer_types.h.
+  // type specified in ash/accelerometer/accelerometer_types.h.
   configuration_.scale[ACCELEROMETER_SOURCE_SCREEN][1] *= -1.0f;
   configuration_.scale[ACCELEROMETER_SOURCE_SCREEN][2] *= -1.0f;
 
@@ -484,8 +483,9 @@ void AccelerometerFileReader::ReadFileAndNotify() {
     for (AccelerometerSource source : reading_data.sources) {
       DCHECK(configuration_.has[source]);
       int16_t* values = reinterpret_cast<int16_t*>(reading);
-      update_->Set(source, values[configuration_.index[source][0]] *
-                               configuration_.scale[source][0],
+      update_->Set(source,
+                   values[configuration_.index[source][0]] *
+                       configuration_.scale[source][0],
                    values[configuration_.index[source][1]] *
                        configuration_.scale[source][1],
                    values[configuration_.index[source][2]] *
@@ -535,9 +535,8 @@ void AccelerometerReader::RemoveObserver(Observer* observer) {
 }
 
 AccelerometerReader::AccelerometerReader()
-    : accelerometer_file_reader_(new AccelerometerFileReader()) {
-}
+    : accelerometer_file_reader_(new AccelerometerFileReader()) {}
 
 AccelerometerReader::~AccelerometerReader() = default;
 
-}  // namespace chromeos
+}  // namespace ash

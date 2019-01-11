@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -20,8 +22,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
@@ -79,7 +79,7 @@ class TabletModeControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTabletMode);
     AshTestBase::SetUp();
-    chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
+    AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
 
     // Set the first display to be the internal display for the accelerometer
@@ -91,8 +91,7 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    chromeos::AccelerometerReader::GetInstance()->AddObserver(
-        tablet_mode_controller());
+    AccelerometerReader::GetInstance()->AddObserver(tablet_mode_controller());
     AshTestBase::TearDown();
   }
 
@@ -769,8 +768,8 @@ TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   EXPECT_FALSE(AreEventsBlocked());
 
   // Attach external mouse doesn't change the mode.
-  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
-      3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());

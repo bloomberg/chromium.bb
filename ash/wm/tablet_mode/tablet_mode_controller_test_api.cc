@@ -26,28 +26,26 @@ void TabletModeControllerTestApi::LeaveTabletMode() {
 }
 
 void TabletModeControllerTestApi::AttachExternalMouse() {
-  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
-      3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   base::RunLoop().RunUntilIdle();
   tablet_mode_controller_->OnInputDeviceConfigurationChanged(
       ui::InputDeviceEventObserver::kMouse);
 }
 
 void TabletModeControllerTestApi::TriggerLidUpdate(const gfx::Vector3dF& lid) {
-  scoped_refptr<chromeos::AccelerometerUpdate> update(
-      new chromeos::AccelerometerUpdate());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+  scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   tablet_mode_controller_->OnAccelerometerUpdated(update);
 }
 
 void TabletModeControllerTestApi::TriggerBaseAndLidUpdate(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
-  scoped_refptr<chromeos::AccelerometerUpdate> update(
-      new chromeos::AccelerometerUpdate());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(),
-              base.y(), base.z());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+  scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(), base.y(),
+              base.z());
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   tablet_mode_controller_->OnAccelerometerUpdated(update);
 }
 

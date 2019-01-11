@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -20,8 +22,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -54,7 +54,7 @@ class TabletModeWindowManager;
 // enters and exits tablet mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in tablet mode.
 class ASH_EXPORT TabletModeController
-    : public chromeos::AccelerometerReader::Observer,
+    : public AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
       public mojom::TabletModeController,
       public ShellObserver,
@@ -123,9 +123,9 @@ class ASH_EXPORT TabletModeController
   // SessionObserver:
   void OnChromeTerminating() override;
 
-  // chromeos::AccelerometerReader::Observer:
+  // AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
+      scoped_refptr<const AccelerometerUpdate> update) override;
 
   // chromeos::PowerManagerClient::Observer:
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
@@ -151,8 +151,7 @@ class ASH_EXPORT TabletModeController
 
   // Detect hinge rotation from base and lid accelerometers and automatically
   // start / stop tablet mode.
-  void HandleHingeRotation(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update);
+  void HandleHingeRotation(scoped_refptr<const AccelerometerUpdate> update);
 
   void OnGetSwitchStates(
       base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
