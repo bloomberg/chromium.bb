@@ -698,7 +698,10 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   if (window && !windows.empty() && windows[0] != window &&
       windows[0]->IsVisible()) {
     // Do not run slide down animation for the |window| if another active
-    // window in mru list exists.
+    // window in mru list exists. Windows minimized in clamshell mode may
+    // have opacity of 0, so set them to 1 to ensure visibility.
+    if (wm::GetWindowState(window)->IsMinimized())
+      window->layer()->SetOpacity(1.f);
     window1_.reset();
     return false;
   }
