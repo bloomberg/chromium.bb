@@ -5371,7 +5371,6 @@ crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ 
 # Sheriff 2018-7-13
 crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
-crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
 crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
 
@@ -5675,7 +5674,6 @@ crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-renderer.js [ Timeout
 
 # New rebaselines because LayoutNG is more correct
 crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]
-crbug.com/902591 [ Linux ] tables/mozilla/bugs/bug2973.html [ Failure ]
 
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
