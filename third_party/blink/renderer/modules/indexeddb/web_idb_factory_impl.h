@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
@@ -19,35 +18,35 @@ class String;
 
 namespace blink {
 
-class WebIDBFactoryImpl : public blink::WebIDBFactory {
+class WebIDBFactoryImpl : public WebIDBFactory {
  public:
   explicit WebIDBFactoryImpl(mojom::blink::IDBFactoryPtrInfo factory_info);
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
   void GetDatabaseInfo(
-      blink::WebIDBCallbacks* callbacks,
+      WebIDBCallbacks* callbacks,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GetDatabaseNames(
-      blink::WebIDBCallbacks* callbacks,
+      WebIDBCallbacks* callbacks,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void Open(const WTF::String& name,
             long long version,
             long long transaction_id,
-            blink::WebIDBCallbacks* callbacks,
-            blink::WebIDBDatabaseCallbacks* databaseCallbacks,
+            WebIDBCallbacks* callbacks,
+            WebIDBDatabaseCallbacks* databaseCallbacks,
             scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void DeleteDatabase(
       const WTF::String& name,
-      blink::WebIDBCallbacks* callbacks,
+      WebIDBCallbacks* callbacks,
       bool force_close,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBCallbacksImpl> callbacks);
+      std::unique_ptr<WebIDBCallbacks> callbacks);
   mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBDatabaseCallbacksImpl> callbacks);
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
   mojom::blink::IDBFactoryPtr factory_;
 };

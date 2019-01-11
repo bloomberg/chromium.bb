@@ -49,9 +49,7 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   ResetPrefetchCache();
 
   callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
-  auto callbacks_impl =
-      std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
-  cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
+  cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks)));
 }
 
 void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
@@ -76,10 +74,8 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
       ++pending_onsuccess_callbacks_;
 
       callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
-      auto callbacks_impl =
-          std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
       cursor_->Prefetch(prefetch_amount_,
-                        GetCallbacksProxy(std::move(callbacks_impl)));
+                        GetCallbacksProxy(std::move(callbacks)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -94,10 +90,8 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
   }
 
   callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
-  auto callbacks_impl =
-      std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
   cursor_->CursorContinue(IDBKey::Clone(key), IDBKey::Clone(primary_key),
-                          GetCallbacksProxy(std::move(callbacks_impl)));
+                          GetCallbacksProxy(std::move(callbacks)));
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {
@@ -200,7 +194,7 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
 }
 
 IDBCallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
   IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));

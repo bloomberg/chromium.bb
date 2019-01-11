@@ -185,7 +185,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     NOTREACHED();
   }
 
-  void Detach() override { NOTREACHED(); }
+  void DetachRequestFromCallback() override { NOTREACHED(); }
 
  private:
   Persistent<ScriptPromiseResolver> promise_resolver_;

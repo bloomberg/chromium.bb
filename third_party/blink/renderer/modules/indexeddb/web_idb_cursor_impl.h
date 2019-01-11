@@ -18,8 +18,6 @@
 
 namespace blink {
 
-class IndexedDBCallbacksImpl;
-
 class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  public:
   WebIDBCursorImpl(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
@@ -46,7 +44,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+      std::unique_ptr<WebIDBCallbacks> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorTransactionId);
