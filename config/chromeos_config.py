@@ -1772,6 +1772,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve-campfire', # contact:yueherngl@
       'flapjack', # contact:yueherngl@
       'hatch', # contact:yueherngl@
+      'samus-kernelnext', # contact:bhthompson@
   ])
 
   # Paladin configs that exist and should stay as experimental until further

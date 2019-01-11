@@ -120,6 +120,7 @@
     rammus-paladin
     reef-paladin
     romer-paladin
+    samus-kernelnext-paladin
     samus-paladin
     scarlet-paladin
     sentry-paladin
@@ -2356,6 +2357,7 @@
     rammus-paladin
     reef-paladin
     romer-paladin
+    samus-kernelnext-paladin
     samus-paladin
     scarlet-paladin
     sentry-paladin
