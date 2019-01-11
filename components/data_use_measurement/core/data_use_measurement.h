@@ -112,6 +112,7 @@ class DataUseMeasurement
 
   void RecordTrafficSizeMetric(bool is_user_traffic,
                                bool is_downstream,
+                               bool is_tab_visible,
                                int64_t bytes);
 
  protected:

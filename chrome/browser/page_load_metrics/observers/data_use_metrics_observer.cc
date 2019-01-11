@@ -23,19 +23,47 @@ DataUseMetricsObserver::OnCommit(content::NavigationHandle* navigation_handle,
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataUseMetricsObserver::OnStart(content::NavigationHandle* navigation_handle,
+                                const GURL& currently_committed_url,
+                                bool started_in_foreground) {
+  currently_in_foreground_ = started_in_foreground;
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataUseMetricsObserver::OnHidden(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  currently_in_foreground_ = false;
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataUseMetricsObserver::OnShown() {
+  currently_in_foreground_ = true;
+  return CONTINUE_OBSERVING;
+}
+
 void DataUseMetricsObserver::OnResourceDataUseObserved(
     FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* chrome_data_use_measurement =
+      data_use_measurement::ChromeDataUseMeasurement::GetInstance();
+  if (!chrome_data_use_measurement)
+    return;
+
   int64_t received_data_length = 0;
   for (auto const& resource : resources) {
     received_data_length += resource->delta_bytes;
+    chrome_data_use_measurement->RecordContentTypeMetric(
+        resource->mime_type, resource->is_main_frame_resource,
+        currently_in_foreground_, resource->delta_bytes);
   }
   if (!received_data_length)
     return;
-  if (auto* chrome_data_use_measurement =
-          data_use_measurement::ChromeDataUseMeasurement::GetInstance()) {
-    chrome_data_use_measurement->ReportUserTrafficDataUse(received_data_length);
-  }
+  chrome_data_use_measurement->ReportUserTrafficDataUse(
+      currently_in_foreground_, received_data_length);
 }
