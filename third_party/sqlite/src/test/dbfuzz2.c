@@ -56,9 +56,7 @@ static const char *azSql[] = {
   "ALTER TABLE t1 RENAME TO alkjalkjdfiiiwuer987lkjwer82mx97sf98788s9789s;",
   "INSERT INTO t3 SELECT * FROM t2;",
   "DELETE FROM t3 WHERE x IN (SELECT x FROM t4);",
-#if !defined(SQLITE_OMIT_REINDEX)
   "REINDEX;",
-#endif
   "DROP TABLE t3;",
   "VACUUM;",
 };

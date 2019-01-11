@@ -1,28 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Matthew Denton <mpdenton@chromium.org>
 Date: Fri, 7 Dec 2018 14:49:36 -0700
-Subject: [PATCH 6/6] Fix dbfuzz2 for Clusterfuzz.
+Subject: [PATCH 06/17] Fix dbfuzz2 for Clusterfuzz.
 
 This backports https://www.sqlite.org/src/info/9ad796a8822f1b7e
 ---
- third_party/sqlite/src/test/dbfuzz2.c | 3 +++
- 1 file changed, 3 insertions(+)
+ third_party/sqlite/src/test/dbfuzz2.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/third_party/sqlite/src/test/dbfuzz2.c b/third_party/sqlite/src/test/dbfuzz2.c
-index 0833f0386884..4ec43302ac37 100644
+index 0833f0386884..9e3aca25274b 100644
 --- a/third_party/sqlite/src/test/dbfuzz2.c
 +++ b/third_party/sqlite/src/test/dbfuzz2.c
-@@ -56,7 +56,9 @@ static const char *azSql[] = {
-   "ALTER TABLE t1 RENAME TO alkjalkjdfiiiwuer987lkjwer82mx97sf98788s9789s;",
-   "INSERT INTO t3 SELECT * FROM t2;",
-   "DELETE FROM t3 WHERE x IN (SELECT x FROM t4);",
-+#if !defined(SQLITE_OMIT_REINDEX)
-   "REINDEX;",
-+#endif
-   "DROP TABLE t3;",
-   "VACUUM;",
- };
-@@ -78,6 +80,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *aData, size_t nByte){
+@@ -78,6 +78,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *aData, size_t nByte){
      printf("************** nByte=%d ***************\n", (int)nByte);
      fflush(stdout);
    }
