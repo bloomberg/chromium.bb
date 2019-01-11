@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc/rtc_rtp_source.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
@@ -32,6 +34,19 @@ double RTCRtpSource::TimestampMs() const {
 
 uint32_t RTCRtpSource::Source() const {
   return source_.source_id();
+}
+
+base::Optional<double> RTCRtpSource::AudioLevel() const {
+  if (!source_.audio_level())
+    return base::nullopt;
+  // Converted according to equation defined here:
+  // https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-audiolevel
+  uint8_t rfc_level = *source_.audio_level();
+  if (rfc_level > 127u)
+    rfc_level = 127u;
+  if (rfc_level == 127u)
+    return 0.0;
+  return std::pow(10.0, -(double)rfc_level / 20.0);
 }
 
 }  // namespace content

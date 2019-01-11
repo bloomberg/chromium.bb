@@ -6,5 +6,5 @@
 dictionary RTCRtpContributingSource {
     required DOMHighResTimeStamp timestamp;
     required unsigned long       source;
-    // TODO(hbos): Implement audioLevel. https://crbug.com/883288
+             double              audioLevel;
 };

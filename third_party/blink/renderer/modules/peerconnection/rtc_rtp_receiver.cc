@@ -57,6 +57,8 @@ RTCRtpReceiver::getSynchronizationSources() {
         MakeGarbageCollected<RTCRtpSynchronizationSource>();
     synchronization_source->setTimestamp(web_source->TimestampMs());
     synchronization_source->setSource(web_source->Source());
+    if (web_source->AudioLevel())
+      synchronization_source->setAudioLevel(*web_source->AudioLevel());
     synchronization_sources.push_back(synchronization_source);
   }
   return synchronization_sources;
@@ -73,6 +75,8 @@ RTCRtpReceiver::getContributingSources() {
         MakeGarbageCollected<RTCRtpContributingSource>();
     contributing_source->setTimestamp(web_source->TimestampMs());
     contributing_source->setSource(web_source->Source());
+    if (web_source->AudioLevel())
+      contributing_source->setAudioLevel(*web_source->AudioLevel());
     contributing_sources.push_back(contributing_source);
   }
   return contributing_sources;
