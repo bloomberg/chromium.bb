@@ -252,6 +252,7 @@ class PLATFORM_EXPORT FontDescription {
       const;  // Returns either the computedSize or the computedPixelSize
   FontCacheKey CacheKey(
       const FontFaceCreationParams&,
+      bool is_unique_match,
       const FontSelectionRequest& = FontSelectionRequest()) const;
 
   void SetFamily(const FontFamily& family) { family_list_ = family; }

@@ -214,6 +214,7 @@ float FontDescription::EffectiveFontSize() const {
 
 FontCacheKey FontDescription::CacheKey(
     const FontFaceCreationParams& creation_params,
+    bool is_unique_match,
     const FontSelectionRequest& font_selection_request) const {
   unsigned options =
       static_cast<unsigned>(fields_.synthetic_italic_) << 6 |  // bit 7
@@ -229,7 +230,8 @@ FontCacheKey FontDescription::CacheKey(
 #endif
   FontCacheKey cache_key(creation_params, EffectiveFontSize(),
                          options | font_selection_request_.GetHash() << 8,
-                         device_scale_factor_for_key, variation_settings_);
+                         device_scale_factor_for_key, variation_settings_,
+                         is_unique_match);
   return cache_key;
 }
 

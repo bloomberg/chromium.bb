@@ -202,7 +202,8 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
               platform_data);
       }
       if (result) {
-        key.Add(font_description.CacheKey(params));
+        bool is_unique_match = false;
+        key.Add(font_description.CacheKey(params, is_unique_match));
         if (!result->IsSegmented() && !result->IsCustomFont())
           FontCache::GetFontCache()->ReleaseFontData(ToSimpleFontData(result));
       }
