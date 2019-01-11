@@ -16,7 +16,7 @@ HistoryBackendClientImpl::HistoryBackendClientImpl(
 HistoryBackendClientImpl::~HistoryBackendClientImpl() {
 }
 
-bool HistoryBackendClientImpl::IsBookmarked(const GURL& url) {
+bool HistoryBackendClientImpl::IsPinnedURL(const GURL& url) {
   if (!model_loader_)
     return false;
 
@@ -27,10 +27,10 @@ bool HistoryBackendClientImpl::IsBookmarked(const GURL& url) {
   return model_loader_->history_bookmark_model()->IsBookmarked(url);
 }
 
-void HistoryBackendClientImpl::GetBookmarks(
-    std::vector<history::URLAndTitle>* bookmarks) {
+std::vector<history::URLAndTitle> HistoryBackendClientImpl::GetPinnedURLs() {
+  std::vector<history::URLAndTitle> result;
   if (!model_loader_)
-    return;
+    return result;
 
   // HistoryBackendClient is used to determine the set of bookmarked URLs. The
   // data is loaded on a separate thread and may not be done when this method is
@@ -39,11 +39,12 @@ void HistoryBackendClientImpl::GetBookmarks(
   model_loader_->BlockTillLoaded();
   model_loader_->history_bookmark_model()->GetBookmarks(&url_and_titles);
 
-  bookmarks->reserve(bookmarks->size() + url_and_titles.size());
+  result.reserve(url_and_titles.size());
   for (const auto& url_and_title : url_and_titles) {
-    history::URLAndTitle value = {url_and_title.url, url_and_title.title};
-    bookmarks->push_back(value);
+    result.push_back(
+        history::URLAndTitle{url_and_title.url, url_and_title.title});
   }
+  return result;
 }
 
 bool HistoryBackendClientImpl::ShouldReportDatabaseError() {
