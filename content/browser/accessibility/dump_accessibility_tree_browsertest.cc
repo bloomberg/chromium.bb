@@ -1759,7 +1759,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySelect) {
   RunHtmlTest(FILE_PATH_LITERAL("select.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySource) {
+#if defined(OS_LINUX)
+#define MAYBE_AccessibilitySource DISABLED_AccessibilitySource
+#else
+#define MAYBE_AccessibilitySource AccessibilitySource
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilitySource) {
   RunHtmlTest(FILE_PATH_LITERAL("source.html"));
 }
 
