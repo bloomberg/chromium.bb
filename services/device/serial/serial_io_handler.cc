@@ -23,7 +23,7 @@
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
-    const std::string& port,
+    const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : port_(port), ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
@@ -58,7 +58,7 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&chromeos::PermissionBrokerClient::OpenPath,
-                     base::Unretained(client), port_,
+                     base::Unretained(client), port_.value(),
                      base::BindRepeating(&SerialIoHandler::OnPathOpened, this,
                                          task_runner),
                      base::BindRepeating(&SerialIoHandler::OnPathOpenError,
@@ -127,17 +127,11 @@ void SerialIoHandler::StartOpen(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   DCHECK(open_complete_);
   DCHECK(!file_.IsValid());
-  // It's the responsibility of the API wrapper around SerialIoHandler to
-  // validate the supplied path against the set of valid port names, and
-  // it is a reasonable assumption that serial port names are ASCII.
-  DCHECK(base::IsStringASCII(port_));
-  base::FilePath path(
-      base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_WRITE |
               base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
               base::File::FLAG_TERMINAL_DEVICE;
-  base::File file(path, flags);
+  base::File file(port_, flags);
   io_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SerialIoHandler::FinishOpen, this, std::move(file)));

@@ -549,7 +549,7 @@ TypeConverter<extensions::api::serial::DeviceInfo,
               device::mojom::SerialPortInfoPtr>::
     Convert(const device::mojom::SerialPortInfoPtr& device) {
   extensions::api::serial::DeviceInfo info;
-  info.path = device->path;
+  info.path = device->path.AsUTF8Unsafe();
   if (device->has_vendor_id)
     info.vendor_id.reset(new int(static_cast<int>(device->vendor_id)));
   if (device->has_product_id)

@@ -25,8 +25,9 @@
 namespace device {
 
 namespace {
-static const char kFakeDevicePath1[] = "/dev/fakeserialmojo";
-static const char kFakeDevicePath2[] = "\\\\COM800\\";
+
+const base::FilePath kFakeDevicePath1(FILE_PATH_LITERAL("/dev/fakeserialmojo"));
+const base::FilePath kFakeDevicePath2(FILE_PATH_LITERAL("\\\\COM800\\"));
 
 void CreateAndBindOnBlockableRunner(
     mojom::SerialPortManagerRequest request,
@@ -41,11 +42,11 @@ void CreateAndBindOnBlockableRunner(
   mojo::MakeStrongBinding(std::move(manager), std::move(request));
 }
 
-void ExpectDevicesAndThen(const std::set<std::string>& expected_paths,
+void ExpectDevicesAndThen(const std::set<base::FilePath>& expected_paths,
                           base::OnceClosure continuation,
                           std::vector<mojom::SerialPortInfoPtr> results) {
   EXPECT_EQ(expected_paths.size(), results.size());
-  std::set<std::string> actual_paths;
+  std::set<base::FilePath> actual_paths;
   for (size_t i = 0; i < results.size(); ++i)
     actual_paths.insert(results[i]->path);
   EXPECT_EQ(expected_paths, actual_paths);
@@ -123,7 +124,8 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
 TEST_F(SerialPortManagerImplTest, GetDevices) {
   mojom::SerialPortManagerPtr port_manager;
   BindSerialPortManager(mojo::MakeRequest(&port_manager));
-  std::set<std::string> expected_paths = {kFakeDevicePath1, kFakeDevicePath2};
+  std::set<base::FilePath> expected_paths = {kFakeDevicePath1,
+                                             kFakeDevicePath2};
 
   base::RunLoop loop;
   port_manager->GetDevices(base::BindOnce(&ExpectDevicesAndThen, expected_paths,

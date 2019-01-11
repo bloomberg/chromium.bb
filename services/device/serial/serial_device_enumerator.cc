@@ -14,7 +14,7 @@ SerialDeviceEnumerator::SerialDeviceEnumerator() = default;
 
 SerialDeviceEnumerator::~SerialDeviceEnumerator() = default;
 
-base::Optional<std::string> SerialDeviceEnumerator::GetPathFromToken(
+base::Optional<base::FilePath> SerialDeviceEnumerator::GetPathFromToken(
     const base::UnguessableToken& token) {
   auto it = token_path_map_.find(token);
   if (it == token_path_map_.end())
@@ -24,7 +24,7 @@ base::Optional<std::string> SerialDeviceEnumerator::GetPathFromToken(
 }
 
 const base::UnguessableToken& SerialDeviceEnumerator::GetTokenFromPath(
-    const std::string& path) {
+    const base::FilePath& path) {
   for (const auto& pair : token_path_map_) {
     if (pair.second == path)
       return pair.first;

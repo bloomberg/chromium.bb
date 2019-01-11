@@ -55,17 +55,21 @@ bool GetProperty(HDEVINFO dev_info,
   return true;
 }
 
-// Searches for the COM port in the device's friendly name, assigns its value to
-// com_port, and returns whether the operation was successful.
-bool GetCOMPort(const std::string friendly_name, std::string* com_port) {
-  return RE2::PartialMatch(friendly_name, ".* \\((COM[0-9]+)\\)", com_port);
+base::FilePath FixUpPortName(base::StringPiece port_name) {
+  // For COM numbers less than 9, CreateFile is called with a string such as
+  // "COM1". For numbers greater than 9, a prefix of "\\.\" must be added.
+  if (port_name.length() > std::string("COM9").length())
+    return base::FilePath(LR"(\\.\)").AppendASCII(port_name);
+
+  return base::FilePath::FromUTF8Unsafe(port_name);
 }
 
 // Searches for the display name in the device's friendly name, assigns its
 // value to display_name, and returns whether the operation was successful.
 bool GetDisplayName(const std::string friendly_name,
                     std::string* display_name) {
-  return RE2::PartialMatch(friendly_name, "(.*) \\(COM[0-9]+\\)", display_name);
+  return RE2::PartialMatch(friendly_name, R"((.*) \(COM[0-9]+\))",
+                           display_name);
 }
 
 // Searches for the vendor ID in the device's hardware ID, assigns its value to
@@ -113,7 +117,7 @@ std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
   // take the device from the new enumeration method because it's able to
   // collect more information. We do this by inserting the new devices first,
   // because insertions are ignored if the key already exists.
-  std::unordered_set<std::string> devices_seen;
+  std::unordered_set<base::FilePath> devices_seen;
   for (const auto& device : devices) {
     bool inserted = devices_seen.insert(device->path).second;
     DCHECK(inserted);
@@ -123,6 +127,16 @@ std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
       devices.push_back(std::move(device));
   }
   return devices;
+}
+
+// static
+base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPath(
+    const std::string& friendly_name) {
+  std::string com_port;
+  if (!RE2::PartialMatch(friendly_name, ".* \\((COM[0-9]+)\\)", &com_port))
+    return base::nullopt;
+
+  return FixUpPortName(com_port);
 }
 
 // Returns an array of devices as retrieved through the new method of
@@ -142,18 +156,22 @@ SerialDeviceEnumeratorWin::GetDevicesNew() {
   SP_DEVINFO_DATA dev_info_data;
   dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
   for (DWORD i = 0; SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
-    std::string friendly_name, com_port;
+    std::string friendly_name;
     // SPDRP_FRIENDLYNAME looks like "USB_SERIAL_PORT (COM3)".
+    // In Windows, the COM port is the path used to uniquely identify the
+    // serial device. If the COM can't be found, ignore the device.
     if (!GetProperty(dev_info, dev_info_data, SPDRP_FRIENDLYNAME,
-                     &friendly_name) ||
-        !GetCOMPort(friendly_name, &com_port))
-      // In Windows, the COM port is the path used to uniquely identify the
-      // serial device. If the COM can't be found, ignore the device.
+                     &friendly_name)) {
+      continue;
+    }
+
+    base::Optional<base::FilePath> path = GetPath(friendly_name);
+    if (!path)
       continue;
 
     auto info = mojom::SerialPortInfo::New();
-    info->token = GetTokenFromPath(com_port);
-    info->path = com_port;
+    info->path = *path;
+    info->token = GetTokenFromPath(info->path);
 
     std::string display_name;
     if (GetDisplayName(friendly_name, &display_name))
@@ -191,7 +209,7 @@ SerialDeviceEnumeratorWin::GetDevicesOld() {
   std::vector<mojom::SerialPortInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
     auto info = mojom::SerialPortInfo::New();
-    info->path = base::UTF16ToASCII(iter_key.Value());
+    info->path = FixUpPortName(base::UTF16ToASCII(iter_key.Value()));
     info->token = GetTokenFromPath(info->path);
     devices.push_back(std::move(info));
   }

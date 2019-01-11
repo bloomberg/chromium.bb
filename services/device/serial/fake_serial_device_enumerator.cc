@@ -14,7 +14,7 @@ FakeSerialEnumerator::FakeSerialEnumerator() = default;
 
 FakeSerialEnumerator::~FakeSerialEnumerator() = default;
 
-bool FakeSerialEnumerator::AddDevicePath(const std::string& path) {
+bool FakeSerialEnumerator::AddDevicePath(const base::FilePath& path) {
   if (base::ContainsValue(device_paths_, path))
     return false;
 
