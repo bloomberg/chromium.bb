@@ -28,16 +28,12 @@ component("chromeos") {
   public_deps = [
     ":chromeos_constants",
     ":chromeos_export",
-    "//chromeos/settings",
   ]
   deps = [
     ":account_manager_proto",
     "//base",
     "//base:i18n",
-    "//components/device_event_log",
     "//components/policy/proto",
-    "//components/pref_registry",
-    "//components/prefs",
     "//google_apis",
     "//services/network/public/cpp:cpp",
     "//third_party/protobuf:protobuf_lite",
@@ -151,7 +147,6 @@ source_set("test_support_source_set") {
   public_deps = [
     ":chromeos",
     ":test_utils",
-    "//chromeos/network:test_support",
   ]
   deps = [
     "//chromeos/attestation:test_support",
@@ -160,6 +155,7 @@ source_set("test_support_source_set") {
     "//chromeos/disks:test_support",
     "//chromeos/login/auth:test_support",
     "//chromeos/login/login_state:test_support",
+    "//chromeos/network:test_support",
     "//google_apis",
     "//net:test_support",
     "//services/network:test_support",

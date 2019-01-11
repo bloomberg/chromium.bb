@@ -4,13 +4,14 @@
 
 #include "chromeos/settings/timezone_settings_helper.h"
 
+#include "base/component_export.h"
 #include "base/logging.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace system {
 
-CHROMEOS_EXPORT const icu::TimeZone* GetKnownTimezoneOrNull(
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+const icu::TimeZone* GetKnownTimezoneOrNull(
     const icu::TimeZone& timezone,
     const std::vector<std::unique_ptr<icu::TimeZone>>& timezone_list) {
   const icu::TimeZone* known_timezone = nullptr;

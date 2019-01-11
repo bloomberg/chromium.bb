@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class Value;
@@ -16,7 +16,7 @@ class Value;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT CrosSettingsProvider {
+class COMPONENT_EXPORT(CHROMEOS_SETTINGS) CrosSettingsProvider {
  public:
   // The callback type that is called to notify the CrosSettings observers
   // about a setting change.
