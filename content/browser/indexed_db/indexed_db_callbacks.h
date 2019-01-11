@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/origin.h"
@@ -32,7 +33,9 @@ struct IndexedDBDatabaseMetadata;
 }
 
 namespace content {
+class IndexedDBBlobInfo;
 class IndexedDBConnection;
+class IndexedDBContextImpl;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 struct IndexedDBDataLossInfo;
@@ -43,6 +46,12 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
+  static bool CreateAllBlobs(
+      storage::BlobStorageContext* blob_context,
+      IndexedDBContextImpl* indexed_db_context,
+      const std::vector<IndexedDBBlobInfo>& blob_info,
+      std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
+
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                      const url::Origin& origin,
                      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
