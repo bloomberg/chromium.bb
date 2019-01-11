@@ -69,7 +69,7 @@ void BackgroundFetchDelegateImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-BackgroundFetchDelegateImpl::JobDetails::UploadData::UploadData(
+BackgroundFetchDelegateImpl::JobDetails::RequestData::RequestData(
     bool has_upload_data) {
   if (has_upload_data)
     status = Status::kIncluded;
@@ -77,7 +77,7 @@ BackgroundFetchDelegateImpl::JobDetails::UploadData::UploadData(
     status = Status::kAbsent;
 }
 
-BackgroundFetchDelegateImpl::JobDetails::UploadData::~UploadData() = default;
+BackgroundFetchDelegateImpl::JobDetails::RequestData::~RequestData() = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
@@ -108,27 +108,31 @@ void BackgroundFetchDelegateImpl::JobDetails::MarkJobAsStarted() {
     job_state = State::kStartedButPaused;
 }
 
-void BackgroundFetchDelegateImpl::JobDetails::UpdateJobOnDownloadComplete() {
-  fetch_description->completed_parts++;
-  in_progress_parts_size = 0u;
-  if (fetch_description->completed_parts == fetch_description->total_parts)
+void BackgroundFetchDelegateImpl::JobDetails::UpdateJobOnDownloadComplete(
+    const std::string& download_guid) {
+  fetch_description->completed_requests++;
+  if (fetch_description->completed_requests ==
+      fetch_description->total_requests) {
     job_state = State::kDownloadsComplete;
+  }
+
+  current_fetch_guids.erase(download_guid);
 }
 
 void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
-  DCHECK_GT(fetch_description->total_parts, 0);
+  DCHECK_GT(fetch_description->total_requests, 0);
 
   if (ShouldReportProgressBySize()) {
-    offline_item.progress.value = GetProcessedDataSize();
+    offline_item.progress.value = GetProcessedBytes();
     // If we have completed all downloads, update progress max to
-    // completed_parts_size in case total_parts_size was set too high. This
+    // |downloaded_bytes| in case |download_total_bytes| was set too high. This
     // avoid unnecessary jumping in the progress bar.
     offline_item.progress.max = job_state == State::kDownloadsComplete
-                                    ? fetch_description->completed_parts_size
-                                    : fetch_description->total_parts_size;
+                                    ? fetch_description->downloaded_bytes
+                                    : fetch_description->download_total_bytes;
   } else {
-    offline_item.progress.value = fetch_description->completed_parts;
-    offline_item.progress.max = fetch_description->total_parts;
+    offline_item.progress.value = fetch_description->completed_requests;
+    offline_item.progress.max = fetch_description->total_requests;
   }
 
   offline_item.progress.unit =
@@ -163,19 +167,44 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   }
 }
 
-uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedDataSize() const {
-  return fetch_description->completed_parts_size + in_progress_parts_size;
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedBytes() const {
+  return fetch_description->downloaded_bytes + GetInProgressBytes();
+}
+
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetInProgressBytes() const {
+  uint64_t bytes = 0u;
+  for (const auto& current_fetch : current_fetch_guids)
+    bytes += current_fetch.second.in_progress_downloaded_bytes;
+  return bytes;
+}
+
+void BackgroundFetchDelegateImpl::JobDetails::UpdateInProgressBytes(
+    const std::string& download_guid,
+    uint64_t bytes_uploaded,
+    uint64_t bytes_downloaded) {
+  DCHECK(current_fetch_guids.count(download_guid));
+  auto& request_data = current_fetch_guids.find(download_guid)->second;
+
+  // If we started receiving download bytes then the upload was complete and is
+  // accounted for in |uploaded_bytes|.
+  if (bytes_downloaded > 0u)
+    request_data.in_progress_uploaded_bytes = 0u;
+  else
+    request_data.in_progress_uploaded_bytes = bytes_uploaded;
+
+  request_data.in_progress_downloaded_bytes = bytes_downloaded;
 }
 
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
-  if (!fetch_description->total_parts_size) {
-    // total_parts_size was not set. Cannot report by size.
+  if (!fetch_description->download_total_bytes) {
+    // |download_total_bytes| was not set. Cannot report by size.
     return false;
   }
 
-  if (fetch_description->completed_parts < fetch_description->total_parts &&
-      GetProcessedDataSize() > fetch_description->total_parts_size) {
-    // total_parts_size was set too low.
+  if (fetch_description->completed_requests <
+          fetch_description->total_requests &&
+      GetProcessedBytes() > fetch_description->download_total_bytes) {
+    // |download_total_bytes| was set too low.
     return false;
   }
 
@@ -415,9 +444,15 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
                                           std::move(response));
   }
 
-  // Release the request body blob, if any.
-  DCHECK(job_details.current_fetch_guids.count(download_guid));
-  job_details.current_fetch_guids.at(download_guid).request_body_blob.reset();
+  // Release the request body blob, if any, and update the upload progress.
+  auto it = job_details.current_fetch_guids.find(download_guid);
+  DCHECK(it != job_details.current_fetch_guids.end());
+
+  if (it->second.request_body_blob) {
+    job_details.fetch_description->uploaded_bytes +=
+        it->second.request_body_blob->size;
+    it->second.request_body_blob.reset();
+  }
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
@@ -434,13 +469,14 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
 
-  // This will update the progress bar.
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.in_progress_parts_size = bytes_downloaded;
-  if (job_details.fetch_description->total_parts_size &&
-      job_details.fetch_description->total_parts_size <
-          job_details.GetProcessedDataSize()) {
+
+  job_details.UpdateInProgressBytes(download_guid, bytes_uploaded,
+                                    bytes_downloaded);
+  if (job_details.fetch_description->download_total_bytes &&
+      job_details.fetch_description->download_total_bytes <
+          job_details.GetProcessedBytes()) {
     // Fail the fetch if total download size was set too low.
     // We only do this if total download size is specified. If not specified,
     // this check is skipped. This is to allow for situations when the
@@ -471,7 +507,7 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
 
-  job_details.UpdateJobOnDownloadComplete();
+  job_details.UpdateJobOnDownloadComplete(download_guid);
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   // The client cancelled or aborted the download so no need to notify it.
@@ -485,7 +521,6 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
                                            std::move(result));
   }
 
-  job_details.current_fetch_guids.erase(download_guid);
   download_job_unique_id_map_.erase(download_guid);
 }
 
@@ -503,9 +538,9 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.UpdateJobOnDownloadComplete();
+  job_details.UpdateJobOnDownloadComplete(download_guid);
 
-  job_details.fetch_description->completed_parts_size +=
+  job_details.fetch_description->downloaded_bytes +=
       profile_->IsOffTheRecord() ? result->blob_handle->size()
                                  : result->file_size;
 
@@ -516,7 +551,6 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
                                            std::move(result));
   }
 
-  job_details.current_fetch_guids.erase(download_guid);
   download_job_unique_id_map_.erase(download_guid);
 }
 
@@ -763,7 +797,7 @@ void BackgroundFetchDelegateImpl::GetUploadData(
 
   JobDetails& job_details = job_details_map_.find(job_it->second)->second;
   if (job_details.current_fetch_guids.at(download_guid).status ==
-      JobDetails::UploadData::Status::kAbsent) {
+      JobDetails::RequestData::Status::kAbsent) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), /* request_body= */ nullptr));

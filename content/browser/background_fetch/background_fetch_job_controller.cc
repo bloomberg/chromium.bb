@@ -112,10 +112,11 @@ void BackgroundFetchJobController::InitializeRequestStatus(
     active_guids.push_back(request_info->download_guid());
 
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
-      registration_id().unique_id(), options_->title,
-      registration_id().origin(), icon_, completed_downloads, total_downloads,
-      complete_requests_downloaded_bytes_cache_, options_->download_total,
-      std::move(active_guids), start_paused);
+      registration_id().unique_id(), registration_id().origin(),
+      options_->title, icon_, completed_downloads_, total_downloads_,
+      complete_requests_downloaded_bytes_cache_,
+      complete_requests_uploaded_bytes_cache_, options_->download_total,
+      upload_total_, std::move(active_guids), start_paused);
 
   delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
                                      std::move(active_fetch_requests));
