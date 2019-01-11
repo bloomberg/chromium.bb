@@ -24,7 +24,7 @@ function mouseSelection() {
     if (window.eventSender) {
         eventSender.mouseMoveTo(xStart, yStart);
         eventSender.mouseDown();
-        for(i=0;i<ITERATIONS;i++) {
+        for(var i=0;i<ITERATIONS;i++) {
             randomCoord = randomCoordinate();
             eventSender.mouseMoveTo(randomCoord.x, randomCoord.y);
         }
