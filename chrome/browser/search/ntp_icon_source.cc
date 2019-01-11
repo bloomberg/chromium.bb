@@ -444,10 +444,12 @@ void NtpIconSource::OnServerFaviconAvailable(
 
 void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
                                                  const SkBitmap& bitmap) {
+  // Only use even pixel sizes to avoid issues when centering the fallback
+  // monogram.
   int desired_overall_size_in_pixel =
-      std::ceil(kIconSizeDip * request.device_scale_factor);
+      std::round(kIconSizeDip * request.device_scale_factor * 0.5) * 2.0;
   int desired_fallback_size_in_pixel =
-      std::ceil(kFallbackSizeDip * request.device_scale_factor);
+      std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
   std::vector<unsigned char> bitmap_data =
       RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
                        desired_fallback_size_in_pixel);
