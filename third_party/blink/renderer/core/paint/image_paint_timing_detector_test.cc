@@ -70,6 +70,10 @@ class ImagePaintTimingDetectorTest
         .id_record_map_.size();
   }
 
+  void Analyze() {
+    return GetPaintTimingDetector().GetImagePaintTimingDetector().Analyze();
+  }
+
   TimeTicks LargestPaintStoredResult() {
     ImageRecord* record = GetPaintTimingDetector()
                               .GetImagePaintTimingDetector()
@@ -687,6 +691,15 @@ TEST_F(ImagePaintTimingDetectorTest, DeactivateAfterUserInput) {
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountRecords(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, NullTimeNoCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesForTest();
+  Analyze();
 }
 
 }  // namespace blink
