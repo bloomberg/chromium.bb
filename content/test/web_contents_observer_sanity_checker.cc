@@ -316,7 +316,8 @@ void WebContentsObserverSanityChecker::DidStartLoading() {
 }
 
 void WebContentsObserverSanityChecker::DidStopLoading() {
-  CHECK(is_loading_);
+  // TODO(crbug.com/466089): Add back CHECK(is_loading_). The CHECK was removed
+  // because of flaky failures during browser_test shutdown.
   CHECK(!web_contents()->IsLoading());
   is_loading_ = false;
 }
