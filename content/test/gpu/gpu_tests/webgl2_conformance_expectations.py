@@ -138,6 +138,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVIDIA Quadro P400 / D3D11 flaky failures
     self.Fail('deqp/data/gles3/shaders/functions.html',
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Flaky('deqp/functional/gles3/framebufferblit/depth_stencil.html',
+        ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=921052)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
@@ -183,6 +185,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=781668)
+    self.Flaky('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-2d-rgb9_e5-rgb-float.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=921055)
     self.Flaky('conformance2/vertex_arrays/vertex-array-object.html',
         ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=920265)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
