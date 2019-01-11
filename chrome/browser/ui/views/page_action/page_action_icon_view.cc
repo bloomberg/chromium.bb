@@ -221,6 +221,10 @@ void PageActionIconView::ExecuteCommand(ExecuteSource source) {
     command_updater_->ExecuteCommand(command_id_);
 }
 
+const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
+  return gfx::kNoneIcon;
+}
+
 void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
@@ -250,7 +254,8 @@ void PageActionIconView::UpdateIconImage() {
                            ? theme->GetSystemColor(
                                  ui::NativeTheme::kColorId_ProminentButtonColor)
                            : icon_color_;
-  SetImage(gfx::CreateVectorIcon(GetVectorIcon(), icon_size_, icon_color));
+  SetImage(gfx::CreateVectorIconWithBadge(GetVectorIcon(), icon_size_,
+                                          icon_color, GetVectorIconBadge()));
 }
 
 void PageActionIconView::SetActiveInternal(bool active) {

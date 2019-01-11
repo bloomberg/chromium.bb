@@ -118,8 +118,11 @@ class PageActionIconView : public IconLabelBubbleView {
   // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.
   virtual void ExecuteCommand(ExecuteSource source);
 
-  // Gets the given vector icon in the correct color and size based on |active|.
+  // Gets the given vector icon.
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
+
+  // Provides the badge to be shown on top of the vector icon, if any.
+  virtual const gfx::VectorIcon& GetVectorIconBadge() const;
 
   // IconLabelBubbleView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -127,7 +130,7 @@ class PageActionIconView : public IconLabelBubbleView {
   void UpdateBorder() override;
 
   // Updates the icon image after some state has changed.
-  void UpdateIconImage();
+  virtual void UpdateIconImage();
 
   // Sets the active state of the icon. An active icon will be displayed in a
   // "call to action" color.

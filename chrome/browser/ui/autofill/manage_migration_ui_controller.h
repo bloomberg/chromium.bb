@@ -32,6 +32,9 @@ enum class LocalCardMigrationFlowStep {
   // Migration is finished. Should show the credit card icon when migration
   // is finished and the feedback dialog is ready.
   MIGRATION_FINISHED,
+  // Migration is finished and there are some cards save fails, or payments
+  // server error.
+  MIGRATION_FAILED,
   // Should show the feedback dialog containing the migration results of cards
   // that the user selected to upload after the user clicking the credit card
   // icon.
