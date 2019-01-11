@@ -77,6 +77,10 @@ class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
   bool desired_state_;
 };
 
+// Helper for setting scrypt-related feature flags.
+// NOTE: DO NOT INSTANTIATE THIS CLASS IN THE TEST BODY FOR INTEGRATION TESTS!
+// That causes data races, see crbug.com/915219. Instead, instantiate it in the
+// test fixture class.
 class ScopedScryptFeatureToggler {
  public:
   ScopedScryptFeatureToggler(bool force_disabled, bool use_for_new_passphrases);
