@@ -4,9 +4,11 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "url/mojom/url.mojom";
 
 // This enum is used in histograms, so do not change the ordering and always
 // append new types to the end.
@@ -111,6 +113,11 @@ interface CacheStorageCache {
   // Perform a batch of operations, used for PUT and DELETE operations.
   Batch(array<BatchOperation> batch_operations, bool fail_on_duplicates)
       => (CacheStorageVerboseError result);
+
+  // Sets |side_data| if there is an entry of which key is |url| and the entry
+  // has the same |response_time|.
+  SetSideData(url.mojom.Url url, mojo_base.mojom.Time response_time,
+              array<uint8> side_data) => (CacheStorageError result);
 };
 
 // Handles global CacheStorage methods, directly relates to methods available on

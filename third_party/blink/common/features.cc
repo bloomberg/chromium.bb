@@ -107,6 +107,9 @@ const base::Feature kServiceWorkerImportedScriptUpdateCheck{
 const base::Feature kServiceWorkerParallelSideDataReading{
     "ServiceWorkerParallelSideDataReading", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kServiceWorkerAggressiveCodeCache{
+    "ServiceWorkerAggressiveCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new service worker glue for NetworkService. Can be
 // enabled independently of NetworkService.
 const base::Feature kServiceWorkerServicification{
