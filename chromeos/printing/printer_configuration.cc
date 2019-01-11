@@ -118,8 +118,17 @@ bool Printer::IsIppEverywhere() const {
 }
 
 bool Printer::RequiresIpResolution() const {
-  return effective_uri_.empty() &&
-         base::StartsWith(id_, "zeroconf-", base::CompareCase::SENSITIVE);
+  if (effective_uri_.empty() &&
+      base::StartsWith(id_, "zeroconf-", base::CompareCase::SENSITIVE)) {
+    // Check to see if |uri_| is a contains a ".local" hostname. This is to
+    // catch the case where a user edits the address of an existing configured
+    // zeroconf printer to a static IP address.
+    base::Optional<UriComponents> components_optional = ParseUri(uri_);
+    UriComponents uri_components = components_optional.value();
+    return base::EndsWith(uri_components.host(), ".local",
+                          base::CompareCase::SENSITIVE);
+  }
+  return false;
 }
 
 net::HostPortPair Printer::GetHostAndPort() const {
