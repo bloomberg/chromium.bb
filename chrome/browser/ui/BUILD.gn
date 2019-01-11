@@ -1666,6 +1666,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/slow_trace_ui.h",
       "webui/chromeos/slow_ui.cc",
       "webui/chromeos/slow_ui.h",
+      "webui/chromeos/smb_shares/smb_credentials_dialog.cc",
+      "webui/chromeos/smb_shares/smb_credentials_dialog.h",
       "webui/chromeos/smb_shares/smb_handler.cc",
       "webui/chromeos/smb_shares/smb_handler.h",
       "webui/chromeos/smb_shares/smb_share_dialog.cc",

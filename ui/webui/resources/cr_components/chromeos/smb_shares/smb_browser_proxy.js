@@ -55,6 +55,14 @@ cr.define('smb_shares', function() {
      * Starts the file share discovery process.
      */
     startDiscovery() {}
+
+    /**
+     * Updates the credentials for a mounted share.
+     * @param {number} mountId
+     * @param {string} username
+     * @param {string} password
+     */
+    updateCredentials(mountId, username, password) {}
   }
 
   /** @implements {smb_shares.SmbBrowserProxy} */
@@ -72,6 +80,11 @@ cr.define('smb_shares', function() {
     /** @override */
     startDiscovery() {
       chrome.send('startDiscovery');
+    }
+
+    /** @override */
+    updateCredentials(mountId, username, password) {
+      chrome.send('updateCredentials', [mountId, username, password]);
     }
   }
 

@@ -45,6 +45,11 @@ void SmbHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "startDiscovery", base::BindRepeating(&SmbHandler::HandleStartDiscovery,
                                             base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "updateCredentials",
+      base::BindRepeating(&SmbHandler::HandleUpdateCredentials,
+                          base::Unretained(this)));
 }
 
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
@@ -120,6 +125,25 @@ void SmbHandler::HandleGatherSharesResponse(
     const std::vector<smb_client::SmbUrl>& shares_gathered) {
   AllowJavascript();
   FireWebUIListener("on-shares-found", BuildShareList(shares_gathered));
+}
+
+void SmbHandler::HandleUpdateCredentials(const base::ListValue* args) {
+  CHECK_EQ(3U, args->GetSize());
+
+  int32_t mount_id;
+  std::string username;
+  std::string password;
+
+  CHECK(args->GetInteger(0, &mount_id));
+  CHECK(args->GetString(1, &username));
+  CHECK(args->GetString(2, &password));
+
+  smb_client::SmbService* const service = GetSmbService(profile_);
+  if (!service) {
+    return;
+  }
+
+  service->UpdateCredentials(mount_id, username, password);
 }
 
 }  // namespace smb_dialog
