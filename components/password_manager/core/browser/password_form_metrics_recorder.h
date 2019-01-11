@@ -22,6 +22,10 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
+namespace autofill {
+struct FormData;
+}
+
 namespace password_manager {
 
 class FormFetcher;
@@ -239,6 +243,33 @@ class PasswordFormMetricsRecorder
     kMaxValue = kFoasOnHTTP,
   };
 
+  // This metric records the user experience with the passwords filling. The
+  // first 4 buckets are ranging from the best (automatic) to the worst (the
+  // user has to type already saved password). Next 2 buckets showed the cases
+  // when it was impossible to help because the unknown credentials were
+  // submitted. The last bucket are strange cases, that the submitted form has
+  // nor user input, nor autofilled data in password fields.
+  enum class FillingAssistance {
+    // Credential fields were filled automatically.
+    kAutomatic = 0,
+    // Credential fields were filled with involving manual filling (but none
+    // required typing).
+    kManual = 1,
+    // Password was filled (automatically or manually), known username was
+    // typed.
+    kUsernameTypedPasswordFilled = 2,
+    // Known password was typed.
+    kPasswordTyped = 3,
+    // Unknown credentials were typed (neither username nor password were known)
+    // while some credentials were stored.
+    kNewCredentialsTyped = 4,
+    // No saved credentials.
+    kNoSavedCredentials = 5,
+    // Neither user input nor filling.
+    kNoUserInputNoFillingInPasswordFields = 6,
+    kMaxValue = kNoUserInputNoFillingInPasswordFields,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -361,6 +392,14 @@ class PasswordFormMetricsRecorder
 
   void RecordFirstWaitForUsernameReason(WaitForUsernameReason reason);
 
+  // Calculates FillingAssistance metric for |submitted_form|. The result is
+  // stored in |filling_assistance_| and recorded in the destructor in case when
+  // the successful submission is detected.
+  void CalculateFillingAssistanceMetric(
+      const autofill::FormData& submitted_form,
+      const std::set<base::string16>& saved_usernames,
+      const std::set<base::string16>& saved_passwords);
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -462,6 +501,8 @@ class PasswordFormMetricsRecorder
   base::Optional<uint32_t> showed_manual_fallback_for_saving_;
 
   base::Optional<uint32_t> form_changes_bitmask_;
+
+  base::Optional<FillingAssistance> filling_assistance_;
 
   bool recorded_wait_for_username_reason_ = false;
 

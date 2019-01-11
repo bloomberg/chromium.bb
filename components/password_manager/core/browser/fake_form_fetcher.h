@@ -47,6 +47,9 @@ class FakeFormFetcher : public FormFetcher {
     stats_ = stats;
   }
 
+  const std::vector<const autofill::PasswordForm*>& GetNonFederatedMatches()
+      const override;
+
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
       const override;
 
@@ -103,6 +106,7 @@ class FakeFormFetcher : public FormFetcher {
   std::set<Consumer*> consumers_;
   State state_ = State::NOT_WAITING;
   std::vector<InteractionsStats> stats_;
+  std::vector<const autofill::PasswordForm*> non_federated_;
   std::vector<const autofill::PasswordForm*> federated_;
   std::vector<const autofill::PasswordForm*> suppressed_https_forms_;
   std::vector<const autofill::PasswordForm*> suppressed_psl_matching_forms_;

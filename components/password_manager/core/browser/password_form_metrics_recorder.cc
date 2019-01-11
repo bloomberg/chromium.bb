@@ -10,10 +10,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
+using autofill::FieldPropertiesFlags;
+using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::PasswordForm;
 
 namespace password_manager {
@@ -66,6 +70,55 @@ bool HasGeneratedPassword(
                         kPasswordAccepted ||
           status == PasswordFormMetricsRecorder::GeneratedPasswordStatus::
                         kPasswordEdited);
+}
+
+// Contains information whether saved username/password were filled or typed.
+struct UsernamePasswordsState {
+  bool saved_password_typed = false;
+  bool saved_username_typed = false;
+  bool password_manually_filled = false;
+  bool username_manually_filled = false;
+  bool password_automatically_filled = false;
+  bool username_automatically_filled = false;
+  bool unknown_password_typed = false;
+
+  bool IsPasswordFilled() {
+    return password_automatically_filled || password_manually_filled;
+  }
+};
+
+// Calculates whether saved usernames/passwords were filled or typed in
+// |submitted_form|.
+UsernamePasswordsState CalculateUsernamePasswordsState(
+    const FormData& submitted_form,
+    const std::set<base::string16>& saved_usernames,
+    const std::set<base::string16>& saved_passwords) {
+  UsernamePasswordsState result;
+
+  for (const FormFieldData& field : submitted_form.fields) {
+    const base::string16& value =
+        field.typed_value.empty() ? field.value : field.typed_value;
+
+    bool user_typed = field.properties_mask & FieldPropertiesFlags::USER_TYPED;
+    bool manually_filled = field.properties_mask &
+                           FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+    bool automatically_filled =
+        field.properties_mask & FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+
+    if (saved_usernames.count(value)) {
+      result.saved_username_typed |= user_typed;
+      result.username_manually_filled |= manually_filled;
+      result.username_automatically_filled |= automatically_filled;
+    } else if (saved_passwords.count(value)) {
+      result.saved_password_typed |= user_typed;
+      result.password_manually_filled |= manually_filled;
+      result.password_automatically_filled |= automatically_filled;
+    } else if (user_typed && field.form_control_type == "password") {
+      result.unknown_password_typed = true;
+    }
+  }
+
+  return result;
 }
 
 }  // namespace
@@ -172,6 +225,13 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.DynamicFormChanges",
                               *form_changes_bitmask_,
                               static_cast<uint32_t>(kMaxFormDifferencesValue));
+  }
+
+  if (submit_result_ == kSubmitResultPassed && filling_assistance_) {
+    // TODO(https://crbug.com/918846): record UKM.
+    FillingAssistance filling_assistance = *filling_assistance_;
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance",
+                              filling_assistance);
   }
 
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
@@ -326,6 +386,58 @@ void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstWaitForUsernameReason",
                             reason);
   recorded_wait_for_username_reason_ = true;
+}
+
+void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
+    const FormData& submitted_form,
+    const std::set<base::string16>& saved_usernames,
+    const std::set<base::string16>& saved_passwords) {
+  if (saved_passwords.empty()) {
+    filling_assistance_ = FillingAssistance::kNoSavedCredentials;
+    return;
+  }
+
+  // Saved credentials are assumed to be correct as they match stored
+  // credentials in subsequent calculations.
+
+  UsernamePasswordsState username_password_state =
+      CalculateUsernamePasswordsState(submitted_form, saved_usernames,
+                                      saved_passwords);
+
+  // Consider cases when the user typed known or unknown credentials.
+  if (username_password_state.saved_password_typed) {
+    filling_assistance_ = FillingAssistance::kPasswordTyped;
+    return;
+  }
+
+  if (!username_password_state.IsPasswordFilled()) {
+    filling_assistance_ =
+        username_password_state.unknown_password_typed
+            ? FillingAssistance::kNewCredentialsTyped
+            : FillingAssistance::kNoUserInputNoFillingInPasswordFields;
+    return;
+  }
+
+  if (username_password_state.saved_username_typed) {
+    filling_assistance_ = FillingAssistance::kUsernameTypedPasswordFilled;
+    return;
+  }
+
+  // Cases related to user typing are already considered and excluded. Only
+  // filling related cases are left.
+  if (username_password_state.username_manually_filled ||
+      username_password_state.password_manually_filled) {
+    filling_assistance_ = FillingAssistance::kManual;
+    return;
+  }
+
+  if (username_password_state.password_automatically_filled) {
+    filling_assistance_ = FillingAssistance::kAutomatic;
+    return;
+  }
+
+  filling_assistance_ =
+      FillingAssistance::kNoUserInputNoFillingInPasswordFields;
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {

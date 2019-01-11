@@ -66,6 +66,11 @@ class FormFetcher {
   virtual const std::vector<InteractionsStats>& GetInteractionsStats()
       const = 0;
 
+  // Non-federated matches obtained from the backend. Valid only if GetState()
+  // returns NOT_WAITING.
+  virtual const std::vector<const autofill::PasswordForm*>&
+  GetNonFederatedMatches() const = 0;
+
   // Federated matches obtained from the backend. Valid only if GetState()
   // returns NOT_WAITING.
   virtual const std::vector<const autofill::PasswordForm*>&
