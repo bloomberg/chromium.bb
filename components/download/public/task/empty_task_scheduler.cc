@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/internal/background_service/empty_task_scheduler.h"
+#include "components/download/public/task/empty_task_scheduler.h"
 
 namespace download {
 

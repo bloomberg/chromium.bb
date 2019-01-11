@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_MANAGER_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_MANAGER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_MANAGER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_MANAGER_H_
 
 #include <stdint.h>
 #include <map>
 
 #include "base/callback.h"
-#include "components/download/public/background_service/task_scheduler.h"
+#include "components/download/public/task/task_scheduler.h"
 
 namespace download {
 
@@ -89,4 +89,4 @@ class TaskManager {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_MANAGER_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_MANAGER_H_

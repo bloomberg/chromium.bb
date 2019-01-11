@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/download/network/network_status_listener.h"
-#include "components/download/public/background_service/task_manager.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/task/task_manager.h"
 
 namespace download {
 

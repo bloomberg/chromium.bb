@@ -14,7 +14,6 @@
 #include "components/download/internal/background_service/download_service_impl.h"
 #include "components/download/internal/background_service/download_store.h"
 #include "components/download/internal/background_service/empty_file_monitor.h"
-#include "components/download/internal/background_service/empty_task_scheduler.h"
 #include "components/download/internal/background_service/file_monitor_impl.h"
 #include "components/download/internal/background_service/in_memory_download_driver.h"
 #include "components/download/internal/background_service/logger_impl.h"
@@ -22,6 +21,7 @@
 #include "components/download/internal/background_service/noop_store.h"
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
+#include "components/download/public/task/empty_task_scheduler.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/storage_partition.h"
 
