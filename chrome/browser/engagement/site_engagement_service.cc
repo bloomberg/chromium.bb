@@ -126,14 +126,6 @@ std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
   return details;
 }
 
-// Takes a scoped_refptr to keep HostContentSettingsMap alive. See
-// crbug.com/901287.
-std::vector<mojom::SiteEngagementDetails> GetAllDetailsImplInBackground(
-    std::unique_ptr<base::Clock> clock,
-    scoped_refptr<HostContentSettingsMap> map) {
-  return GetAllDetailsImpl(clock.get(), map.get());
-}
-
 // Only accept a navigation event for engagement if it is one of:
 //  a. direct typed navigation
 //  b. clicking on an omnibox suggestion brought up by typing a keyword
@@ -179,6 +171,15 @@ double SiteEngagementService::GetScoreFromSettings(
   return SiteEngagementScore(base::DefaultClock::GetInstance(), origin,
                              settings)
       .GetTotalScore();
+}
+
+// static
+std::vector<mojom::SiteEngagementDetails>
+SiteEngagementService::GetAllDetailsInBackground(
+    base::Time now,
+    scoped_refptr<HostContentSettingsMap> map) {
+  StoppedClock clock(now);
+  return GetAllDetailsImpl(&clock, map.get());
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
@@ -481,8 +482,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &GetAllDetailsImplInBackground,
-          std::make_unique<StoppedClock>(clock_->Now()),
+          &GetAllDetailsInBackground, clock_->Now(),
           base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&SiteEngagementService::RecordMetrics,

@@ -922,6 +922,8 @@ jumbo_split_static_library("ui") {
       "omnibox/clipboard_utils.h",
       "omnibox/lookalike_url_navigation_observer.cc",
       "omnibox/lookalike_url_navigation_observer.h",
+      "omnibox/lookalike_url_service.cc",
+      "omnibox/lookalike_url_service.h",
       "omnibox/omnibox_theme.cc",
       "omnibox/omnibox_theme.h",
       "page_action/page_action_icon_container.h",

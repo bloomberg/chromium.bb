@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
 #define CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_
 
+#include <string>
+#include <vector>
+
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -12,7 +17,7 @@ namespace content {
 class NavigationHandle;
 }
 
-class SiteEngagementService;
+class Profile;
 
 // Observes navigations and shows an infobar if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
@@ -62,13 +67,17 @@ class LookalikeUrlNavigationObserver
   FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationObserverTest,
                            IsEditDistanceAtMostOne);
 
+  // Performs top domain and engaged site checks on the navigated |url|. Uses
+  // |engaged_sites| for the engaged site checks.
+  void PerformChecks(const GURL& url, const std::vector<GURL>& engaged_sites);
+
   // Returns true if a domain is visually similar to the hostname of |url|. The
   // matching domain can be a top domain or an engaged site. Similarity check
   // is made using both visual skeleton and edit distance comparison. If this
   // returns true, match details will be written into |matched_domain| and
   // |match_type|. They cannot be nullptr.
   bool GetMatchingDomain(const GURL& url,
-                         SiteEngagementService* service,
+                         const std::vector<GURL>& engaged_sites,
                          std::string* matched_domain,
                          MatchType* match_type);
 
@@ -82,6 +91,9 @@ class LookalikeUrlNavigationObserver
   // to |domain_and_registry|.
   static std::string GetSimilarDomainFromTop500(
       const std::string& domain_and_registry);
+
+  Profile* profile_;
+  base::WeakPtrFactory<LookalikeUrlNavigationObserver> weak_factory_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
