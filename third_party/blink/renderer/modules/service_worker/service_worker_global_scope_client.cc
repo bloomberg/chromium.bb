@@ -313,7 +313,8 @@ const char ServiceWorkerGlobalScopeClient::kSupplementName[] =
 
 ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
     ExecutionContext* context) {
-  // TODO(horo): Replace CHECK() to DCHECK() when crbug.com/749930 is fixed.
+  // TODO(crbug.com/920854): Replace CHECK() with DCHECK() after crashes are
+  // gone.
   CHECK(context);
   WorkerClients* worker_clients = To<WorkerGlobalScope>(context)->Clients();
   CHECK(worker_clients);
