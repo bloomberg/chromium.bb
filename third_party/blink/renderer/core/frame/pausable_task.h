@@ -33,7 +33,7 @@ class CORE_EXPORT PausableTask final
   // callback when execution is unpaused.
   static void Post(ExecutionContext*, WebLocalFrame::PausableTaskCallback);
 
-  // PausableTimer:
+  // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
  private:
