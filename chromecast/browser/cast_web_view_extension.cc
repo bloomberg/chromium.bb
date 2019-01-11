@@ -50,6 +50,10 @@ content::WebContents* CastWebViewExtension::web_contents() const {
   return extension_host_->host_contents();
 }
 
+CastWebContents* CastWebViewExtension::cast_web_contents() {
+  return &cast_web_contents_;
+}
+
 void CastWebViewExtension::LoadUrl(GURL url) {
   extension_host_->CreateRenderViewSoon();
 }

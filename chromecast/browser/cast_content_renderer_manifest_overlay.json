@@ -4,7 +4,10 @@
   "interface_provider_specs": {
     "navigation:frame": {
       "provides": {
-        "browser": ["chromecast.shell.mojom.MediaPlaybackOptions"]
+        "browser": [
+          "chromecast.shell.mojom.FeatureManager",
+          "chromecast.shell.mojom.MediaPlaybackOptions"
+        ]
       }
     }
   }

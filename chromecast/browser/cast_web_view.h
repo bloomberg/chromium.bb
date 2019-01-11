@@ -36,7 +36,6 @@ class CastWebView {
     // Returning true indicates that the delegate handled the message.
     // If false is returned the default logging mechanism will be used.
     virtual bool OnAddMessageToConsoleReceived(
-        content::WebContents* source,
         int32_t level,
         const base::string16& message,
         int32_t line_no,
@@ -101,6 +100,8 @@ class CastWebView {
   virtual shell::CastContentWindow* window() const = 0;
 
   virtual content::WebContents* web_contents() const = 0;
+
+  virtual CastWebContents* cast_web_contents() = 0;
 
   // Navigates to |url|. The loaded page will be preloaded if MakeVisible has
   // not been called on the object.

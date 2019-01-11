@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BROWSER_CAST_WEB_CONTENTS_IMPL_H_
 #define CHROMECAST_BROWSER_CAST_WEB_CONTENTS_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -36,9 +38,20 @@ class CastWebContentsImpl : public CastWebContents,
   void ClosePage() override;
   void Stop(int error_code) override;
   void SetDelegate(Delegate* delegate) override;
+  void AllowWebAndMojoWebUiBindings() override;
+  void ClearRenderWidgetHostView() override;
+
+  // Observer interface:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
  private:
   // WebContentsObserver implementation:
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* /* render_frame_host */,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -68,6 +81,8 @@ class CastWebContentsImpl : public CastWebContents,
   bool stop_notified_;
   bool notifying_;
   int last_error_;
+
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);

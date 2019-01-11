@@ -107,7 +107,6 @@ std::string CastBrowserTest::GetId() {
 }
 
 bool CastBrowserTest::OnAddMessageToConsoleReceived(
-    content::WebContents* source,
     int32_t level,
     const base::string16& message,
     int32_t line_no,
