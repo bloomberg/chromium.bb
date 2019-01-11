@@ -100,6 +100,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_METHOD0(DecoderIdForTest, int());
   MOCK_METHOD0(SetUpForRasterCHROMIUMForTest, void());
   MOCK_METHOD0(SetOOMErrorForTest, void());
+  MOCK_METHOD0(DisableFlushWorkaroundForTest, void());
   MOCK_METHOD4(DoCommands,
                error::Error(unsigned int num_commands,
                             const volatile void* buffer,

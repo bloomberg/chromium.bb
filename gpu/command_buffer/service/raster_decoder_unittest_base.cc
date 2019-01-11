@@ -268,6 +268,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
                                        &outputter_, group_.get(),
                                        raster_decoder_context_state_));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
+  decoder_->DisableFlushWorkaroundForTest();
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
   copy_texture_manager_ = new gles2::MockCopyTextureResourceManager();
