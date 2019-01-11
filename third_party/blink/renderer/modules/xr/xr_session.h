@@ -27,9 +27,9 @@ class Element;
 class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
+class XR;
 class XRCanvasInputProvider;
 class XRSpace;
-class XRDevice;
 class XRInputSourceEvent;
 class XRLayer;
 class XRPresentationContext;
@@ -49,7 +49,7 @@ class XRSession final : public EventTargetWithInlineData,
     kBlendModeAlphaBlend = 3
   };
 
-  XRSession(XRDevice*,
+  XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
             bool immersive,
             bool environment_integration,
@@ -57,7 +57,7 @@ class XRSession final : public EventTargetWithInlineData,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
-  XRDevice* device() const { return device_; }
+  XR* xr() const { return xr_; }
   bool immersive() const { return immersive_; }
   bool environmentIntegration() const { return environment_integration_; }
   XRPresentationContext* outputContext() const { return output_context_; }
@@ -185,7 +185,7 @@ class XRSession final : public EventTargetWithInlineData,
       base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
           results);
 
-  const Member<XRDevice> device_;
+  const Member<XR> xr_;
   const bool immersive_;
   const bool environment_integration_;
   const Member<XRPresentationContext> output_context_;
@@ -196,7 +196,7 @@ class XRSession final : public EventTargetWithInlineData,
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
 
-  bool has_device_focus_ = true;
+  bool has_xr_focus_ = true;
   bool is_external_ = false;
   int display_info_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;

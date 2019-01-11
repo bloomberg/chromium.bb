@@ -5,7 +5,6 @@
 
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
 
 namespace blink {
 

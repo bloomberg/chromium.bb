@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -19,6 +20,8 @@ namespace blink {
 
 class ScriptPromiseResolver;
 class XRDevice;
+class XRFrameProvider;
+class XRSession;
 
 class XR final : public EventTargetWithInlineData,
                  public ContextLifecycleObserver,
@@ -38,6 +41,21 @@ class XR final : public EventTargetWithInlineData,
 
   ScriptPromise requestDevice(ScriptState*);
 
+  ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions*);
+  ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions*);
+
+  XRFrameProvider* frameProvider();
+
+  const device::mojom::blink::XRDevicePtr& xrDevicePtr() const {
+    return device_;
+  }
+  const device::mojom::blink::XRFrameDataProviderPtr& xrMagicWindowProviderPtr()
+      const {
+    return magic_window_provider_;
+  }
+  const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
+  xrEnvironmentProviderPtr();
+
   // VRServiceClient overrides.
   void OnDeviceChanged() override;
 
@@ -56,8 +74,20 @@ class XR final : public EventTargetWithInlineData,
   int64_t GetSourceId() const { return ukm_source_id_; }
 
  private:
+  const char* checkSessionSupport(const XRSessionCreationOptions*) const;
+
   void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device);
   void ResolveRequestDevice();
+
+  void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
+                                XRPresentationContext* output_context,
+                                bool environment_integration,
+                                bool immersive,
+                                device::mojom::blink::XRSessionPtr session);
+  void OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
+                                 bool supports_session);
+
+  void EnsureDevice();
   void ReportImmersiveSupported(bool supported);
 
   void AddedEventListener(const AtomicString& event_type,
@@ -65,17 +95,28 @@ class XR final : public EventTargetWithInlineData,
 
   void Dispose();
 
-  bool pending_sync_ = false;
+  bool pending_device_ = false;
 
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_requestDevice_ = false;
   bool did_log_returned_device_ = false;
   bool did_log_supports_immersive_ = false;
+
+  // Indicates whether we've already logged a request for an immersive session.
+  bool did_log_request_immersive_session_ = false;
+
   const int64_t ukm_source_id_;
 
-  Member<XRDevice> device_;
+  Member<XRDevice> xr_device_;
   Member<ScriptPromiseResolver> pending_devices_resolver_;
+
+  Member<XRFrameProvider> frame_provider_;
+  HeapHashSet<WeakMember<XRSession>> sessions_;
   device::mojom::blink::VRServicePtr service_;
+  device::mojom::blink::XRDevicePtr device_;
+  device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
+  device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
+      environment_provider_;
   mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
 };
 

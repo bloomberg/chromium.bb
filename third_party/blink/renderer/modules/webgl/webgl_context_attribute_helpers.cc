@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/webgl/webgl_context_attribute_helpers.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
 
 #include "third_party/blink/renderer/core/frame/settings.h"
 

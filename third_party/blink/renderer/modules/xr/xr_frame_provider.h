@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class XRDevice;
+class XR;
 class XRSession;
 class XRFrameTransport;
 class XRWebGLLayer;
@@ -24,7 +24,7 @@ class XRWebGLLayer;
 class XRFrameProvider final
     : public GarbageCollectedFinalized<XRFrameProvider> {
  public:
-  explicit XRFrameProvider(XRDevice*);
+  explicit XRFrameProvider(XR*);
 
   XRSession* immersive_session() const { return immersive_session_; }
   device::mojom::blink::XRPresentationClientPtr GetSubmitFrameClient();
@@ -58,7 +58,7 @@ class XRFrameProvider final
 
   bool HasARSession();
 
-  const Member<XRDevice> device_;
+  const Member<XR> xr_;
   Member<XRSession> immersive_session_;
   Member<XRFrameTransport> frame_transport_;
 

@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -70,7 +70,7 @@ void XRCanvasInputProvider::Stop() {
 
 bool XRCanvasInputProvider::ShouldProcessEvents() {
   // Don't process canvas gestures if there's an active immersive session.
-  return !(session_->device()->frameProvider()->immersive_session());
+  return !(session_->xr()->frameProvider()->immersive_session());
 }
 
 void XRCanvasInputProvider::OnPointerDown(PointerEvent* event) {
