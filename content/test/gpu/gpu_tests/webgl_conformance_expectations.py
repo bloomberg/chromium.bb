@@ -123,10 +123,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
 
-    # Random crashes and device lost can occur with the NVIDIA Vulkan driver.
-    # TODO(jmadill): Lift this once drivers upgraded. http://crbug.com/887241
-    self.Flaky('*', ['win', 'nvidia', 'passthrough', 'vulkan'], bug=917046)
-
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
