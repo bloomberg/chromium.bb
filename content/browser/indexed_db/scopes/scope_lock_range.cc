@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/scopes/scope_lock_range.h"
 
+#include <iomanip>
 #include <ostream>
 
 namespace content {
@@ -12,8 +13,17 @@ ScopeLockRange::ScopeLockRange(std::string begin, std::string end)
     : begin(std::move(begin)), end(std::move(end)) {}
 
 std::ostream& operator<<(std::ostream& out, const ScopeLockRange& range) {
-  return out << "<ScopeLockRange>{begin: " << range.begin
-             << ", end: " << range.end << "}";
+  out << "<ScopeLockRange>{begin: 0x";
+  out << std::setfill('0');
+  for (const char c : range.begin) {
+    out << std::hex << std::setw(2) << static_cast<int>(c);
+  }
+  out << ", end: 0x";
+  for (const char c : range.end) {
+    out << std::hex << std::setw(2) << static_cast<int>(c);
+  }
+  out << "}";
+  return out;
 }
 
 bool operator<(const ScopeLockRange& x, const ScopeLockRange& y) {

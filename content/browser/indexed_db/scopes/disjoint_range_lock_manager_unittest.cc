@@ -46,7 +46,7 @@ class DisjointRangeLockManagerTest : public testing::Test {
 
 TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {
   const size_t kTotalLocks = 10;
-  DisjointRangeLockManager lock_manager(1, leveldb::BytewiseComparator());
+  DisjointRangeLockManager lock_manager(1);
 
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
@@ -109,7 +109,7 @@ TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {
 }
 
 TEST_F(DisjointRangeLockManagerTest, Shared) {
-  DisjointRangeLockManager lock_manager(1, leveldb::BytewiseComparator());
+  DisjointRangeLockManager lock_manager(1);
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
 
@@ -135,7 +135,7 @@ TEST_F(DisjointRangeLockManagerTest, Shared) {
 }
 
 TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
-  DisjointRangeLockManager lock_manager(1, leveldb::BytewiseComparator());
+  DisjointRangeLockManager lock_manager(1);
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
 
@@ -218,7 +218,7 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
 }
 
 TEST_F(DisjointRangeLockManagerTest, LevelsOperateSeparately) {
-  DisjointRangeLockManager lock_manager(2, leveldb::BytewiseComparator());
+  DisjointRangeLockManager lock_manager(2);
   base::RunLoop loop;
   std::vector<ScopeLock> l0_lock;
   std::vector<ScopeLock> l1_lock;
@@ -243,7 +243,7 @@ TEST_F(DisjointRangeLockManagerTest, LevelsOperateSeparately) {
 }
 
 TEST_F(DisjointRangeLockManagerTest, InvalidRequests) {
-  DisjointRangeLockManager lock_manager(2, leveldb::BytewiseComparator());
+  DisjointRangeLockManager lock_manager(2);
   std::vector<ScopeLock> locks;
   ScopeLockRange range1 = {IntegerKey(0), IntegerKey(2)};
   ScopeLockRange range2 = {IntegerKey(1), IntegerKey(3)};

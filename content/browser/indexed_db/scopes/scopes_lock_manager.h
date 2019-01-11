@@ -62,21 +62,6 @@ CONTENT_EXPORT bool operator==(const ScopesLockManager::ScopeLockRequest& x,
 CONTENT_EXPORT bool operator!=(const ScopesLockManager::ScopeLockRequest& x,
                                const ScopesLockManager::ScopeLockRequest& y);
 
-// This is a proxy between a LevelDB Comparator and the std::less interface.
-// It sorts using the |begin| entry of the ranges.
-struct CONTENT_EXPORT ScopesLockRangeLessThan {
-  ScopesLockRangeLessThan() = default;
-  ~ScopesLockRangeLessThan() = default;
-  explicit ScopesLockRangeLessThan(const leveldb::Comparator* comparator)
-      : comparator_(comparator) {}
-  bool operator()(const ScopeLockRange& a, const ScopeLockRange& b) const {
-    DCHECK(comparator_);
-    return comparator_->Compare(leveldb::Slice(a.begin),
-                                leveldb::Slice(b.begin)) < 0;
-  }
-  const leveldb::Comparator* comparator_ = nullptr;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_

@@ -27,6 +27,7 @@ namespace content {
 // * All lock range requests at a level must be disjoint - they cannot overlap.
 // * Lock ranges are remembered for future performance - remove them using
 //   RemoveLockRange.
+// * Lock ranges are compared using bytewise comparison.
 //
 // Additional invariants for this implementation:
 // * All calls must happen from the same sequenced task runner.
@@ -40,8 +41,7 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
   // Creates a lock manager with the given number of levels, the comparator for
   // leveldb keys, and the current task runner that we are running on. The task
   // runner will be used for the lock acquisition callbacks.
-  DisjointRangeLockManager(int level_count,
-                           const leveldb::Comparator* comparator);
+  DisjointRangeLockManager(int level_count);
   ~DisjointRangeLockManager() override;
 
   int64_t LocksHeldForTesting() const override;
@@ -96,19 +96,15 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
     DISALLOW_COPY_AND_ASSIGN(Lock);
   };
 
-  using LockLevelMap =
-      base::flat_map<ScopeLockRange, Lock, ScopesLockRangeLessThan>;
+  using LockLevelMap = base::flat_map<ScopeLockRange, Lock>;
 
   bool AcquireLock(ScopeLockRequest request, LockAquiredCallback callback);
 
   void LockReleased(int level, ScopeLockRange range);
 
-  static bool IsRangeDisjointFromNeighbors(
-      const LockLevelMap& map,
-      const ScopeLockRange& range,
-      const leveldb::Comparator* const comparator_);
+  static bool IsRangeDisjointFromNeighbors(const LockLevelMap& map,
+                                           const ScopeLockRange& range);
 
-  const leveldb::Comparator* const comparator_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // This vector should never be modified after construction.
   std::vector<LockLevelMap> locks_;
