@@ -29,12 +29,20 @@ class CORE_EXPORT NGCaretNavigator {
   ~NGCaretNavigator();
 
   // Abstraction of a caret position in |text_|.
+  enum class PositionAnchorType { kBefore, kAfter };
   struct Position {
-    unsigned offset;
-    TextAffinity affinity;
+    // |index| is character index the |text_| string.
+    unsigned index;
+    PositionAnchorType type;
+
+    bool IsBeforeCharacter() const {
+      return type == PositionAnchorType::kBefore;
+    }
+
+    bool IsAfterCharacter() const { return type == PositionAnchorType::kAfter; }
 
     bool operator==(const Position& other) const {
-      return offset == other.offset && affinity == other.affinity;
+      return index == other.index && type == other.type;
     }
   };
 
@@ -47,11 +55,12 @@ class CORE_EXPORT NGCaretNavigator {
   // exist and are at different bidi levels.
   bool OffsetIsBidiBoundary(unsigned offset) const;
 
-  // Returns the resolved direction of the anchor character of a caret position.
-  TextDirection TextDirectionAt(const Position&) const;
-
-  // Returns the logical index that a Position is anchored to.
-  unsigned AnchorCharacterIndex(const Position&) const;
+  // Converts an (offset, affinity) pair into a |Position| type of this class.
+  // Intiontionally long name to indicate the hackiness for handling legacy
+  // callers.
+  Position CaretPositionFromTextContentOffsetAndAffinity(
+      unsigned offset,
+      TextAffinity affinity) const;
 
   // Returns the visual left/right edge caret position of the character at the
   // given logical |index|.

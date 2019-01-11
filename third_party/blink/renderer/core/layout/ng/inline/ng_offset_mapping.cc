@@ -472,6 +472,16 @@ Position NGOffsetMapping::GetLastPosition(unsigned offset) const {
   return CreatePositionForOffsetMapping(node, dom_offset);
 }
 
+PositionWithAffinity NGOffsetMapping::GetPositionWithAffinity(
+    const NGCaretNavigator::Position& position) const {
+  if (position.IsBeforeCharacter()) {
+    return PositionWithAffinity(GetLastPosition(position.index),
+                                TextAffinity::kDownstream);
+  }
+  return PositionWithAffinity(GetLastPosition(position.index + 1),
+                              TextAffinity::kUpstream);
+}
+
 bool NGOffsetMapping::HasBidiControlCharactersOnly(unsigned start,
                                                    unsigned end) const {
   DCHECK_LE(start, end);

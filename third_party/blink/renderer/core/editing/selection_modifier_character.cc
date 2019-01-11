@@ -537,31 +537,17 @@ PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
       mapping->GetTextContentOffset(start_position_in_dom);
   DCHECK(start_offset.has_value());
 
-  // Legacy canonicalization sets downstream affinity when |start_offset| is
-  // at block end. Fix it to upstream in that case.
-  const TextAffinity start_affinity =
-      start_offset.value() < mapping->GetText().length()
-          ? start_position_with_affinity.Affinity()
-          : TextAffinity::kUpstream;
-
   DCHECK(mapping->GetCaretNavigator());
   const NGCaretNavigator& caret_navigator = *mapping->GetCaretNavigator();
-
-  const NGCaretNavigator::Position start_caret_position{start_offset.value(),
-                                                        start_affinity};
+  const NGCaretNavigator::Position start_caret_position =
+      caret_navigator.CaretPositionFromTextContentOffsetAndAffinity(
+          start_offset.value(), start_position_with_affinity.Affinity());
   NGCaretNavigator::VisualCaretMovementResult result_caret_position =
       Traversal::ForwardPositionOf(caret_navigator, start_caret_position);
   if (result_caret_position.IsWithinContext()) {
     DCHECK(result_caret_position.position.has_value());
-    const unsigned result_offset = result_caret_position.position->offset;
-    const TextAffinity result_affinity =
-        result_caret_position.position->affinity;
-    const Position result_position =
-        result_affinity == TextAffinity::kDownstream
-            ? mapping->GetLastPosition(result_offset)
-            : mapping->GetFirstPosition(result_offset);
-    const PositionWithAffinity result(result_position, result_affinity);
-    return FromPositionInDOMTree<Strategy>(result);
+    return FromPositionInDOMTree<Strategy>(mapping->GetPositionWithAffinity(
+        result_caret_position.position.value()));
   }
 
   // We reach here if we need to move out of the current block.
