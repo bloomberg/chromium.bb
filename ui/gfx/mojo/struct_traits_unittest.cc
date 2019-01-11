@@ -15,6 +15,7 @@
 #include "ui/gfx/mojo/presentation_feedback_struct_traits.h"
 #include "ui/gfx/mojo/traits_test_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/gfx/transform.h"
 
@@ -57,6 +58,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
       GpuMemoryBufferHandle handle,
       EchoGpuMemoryBufferHandleCallback callback) override {
     std::move(callback).Run(std::move(handle));
+  }
+
+  void EchoRRectF(const RRectF& r, EchoRRectFCallback callback) override {
+    std::move(callback).Run(r);
   }
 
   base::MessageLoop loop_;
@@ -227,6 +232,38 @@ TEST_F(StructTraitsTest, PresentationFeedback) {
   EXPECT_EQ(timestamp, output.timestamp);
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(flags, output.flags);
+}
+
+TEST_F(StructTraitsTest, RRectF) {
+  gfx::RRectF input(40, 50, 60, 70, 1, 2);
+  input.SetCornerRadii(RRectF::Corner::kUpperRight, 3, 4);
+  input.SetCornerRadii(RRectF::Corner::kLowerRight, 5, 6);
+  input.SetCornerRadii(RRectF::Corner::kLowerLeft, 7, 8);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kComplex);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::RRectF output;
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input = gfx::RRectF(40, 50, 0, 70, 0);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kEmpty);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input = RRectF(40, 50, 60, 70, 0);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kRect);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input = RRectF(40, 50, 60, 70, 5);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kSingle);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input = RRectF(40, 50, 60, 70, 6, 3);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kSimple);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input = RRectF(40, 50, 60, 70, 30, 35);
+  EXPECT_EQ(input.GetType(), RRectF::Type::kOval);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace gfx

@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,31 +52,31 @@ TEST(RRectFTest, PlusMinusOffset) {
 
 TEST(RRectFTest, RRectTypes) {
   RRectF a(40, 50, 0, 70, 0);
-  EXPECT_EQ(a.type(), RRectF::Type::kEmpty);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kEmpty);
   EXPECT_TRUE(a.IsEmpty());
   a = RRectF(40, 50, 60, 70, 0);
-  EXPECT_EQ(a.type(), RRectF::Type::kRect);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kRect);
   a = RRectF(40, 50, 60, 70, 5);
-  EXPECT_EQ(a.type(), RRectF::Type::kSingle);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kSingle);
   a = RRectF(40, 50, 60, 70, 5, 5);
-  EXPECT_EQ(a.type(), RRectF::Type::kSingle);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kSingle);
   a = RRectF(40, 50, 60, 70, 6, 3);
-  EXPECT_EQ(a.type(), RRectF::Type::kSimple);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kSimple);
   a = RRectF(40, 50, 60, 70, 30, 3);
-  EXPECT_EQ(a.type(), RRectF::Type::kSimple);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kSimple);
   a = RRectF(40, 50, 60, 70, 30, 35);
-  EXPECT_EQ(a.type(), RRectF::Type::kOval);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kOval);
   a.SetCornerRadii(RRectF::Corner::kLowerRight, gfx::Vector2dF(7, 8));
-  EXPECT_EQ(a.type(), RRectF::Type::kComplex);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kComplex);
 
   // When one radius is larger than half its dimension, both radii are scaled
   // down proportionately.
   a = RRectF(40, 50, 60, 70, 30, 70);
-  EXPECT_EQ(a.type(), RRectF::Type::kSimple);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kSimple);
   EXPECT_EQ(a, RRectF(40, 50, 60, 70, 15, 35));
   // If they stay equal to half the radius, it stays oval.
   a = RRectF(40, 50, 60, 70, 120, 140);
-  EXPECT_EQ(a.type(), RRectF::Type::kOval);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kOval);
 }
 
 void CheckRadii(RRectF val,
@@ -165,7 +165,7 @@ TEST(RRectFTest, Sizes) {
   EXPECT_TRUE(a.IsEmpty());
   // Make sure ovals can still get simple radii
   a = RRectF(40, 50, 60, 70, 30, 35);
-  EXPECT_EQ(a.type(), RRectF::Type::kOval);
+  EXPECT_EQ(a.GetType(), RRectF::Type::kOval);
   EXPECT_EQ(a.GetSimpleRadii().x(), 30);
   EXPECT_EQ(a.GetSimpleRadii().y(), 35);
 }
@@ -209,8 +209,8 @@ TEST(RRectFTest, Scale) {
     RRectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2, tests[i].r2);
 
     r1.Scale(tests[i].scale);
-    EXPECT_TRUE((r1.type() == RRectF::Type::kRect) ||
-                (r1.type() == RRectF::Type::kSingle));
+    EXPECT_TRUE((r1.GetType() == RRectF::Type::kRect) ||
+                (r1.GetType() == RRectF::Type::kSingle));
     EXPECT_EQ(r1.rect().x(), r2.rect().x());
     EXPECT_EQ(r1.rect().y(), r2.rect().y());
     EXPECT_EQ(r1.rect().width(), r2.rect().width());

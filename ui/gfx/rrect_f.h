@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <string>
 
 #include "third_party/skia/include/core/SkRRect.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
 
@@ -17,16 +16,24 @@ namespace gfx {
 
 class GEOMETRY_SKIA_EXPORT RRectF {
  public:
-  RRectF();
-  RRectF(const RRectF& rect);
-  explicit RRectF(const SkRRect& rect);
-  explicit RRectF(const gfx::RectF& rect);
+  RRectF() = default;
+  ~RRectF() = default;
+  RRectF(const RRectF& rect) = default;
+  RRectF& operator=(const RRectF& rect) = default;
+  explicit RRectF(const SkRRect& rect) : skrrect_(rect) {}
+  explicit RRectF(const gfx::RectF& rect) : RRectF(rect, 0.f) {}
+  RRectF(const gfx::RectF& rect, float radius) : RRectF(rect, radius, radius) {}
+  RRectF(const gfx::RectF& rect, float x_rad, float y_rad)
+      : RRectF(rect.x(), rect.y(), rect.width(), rect.height(), x_rad, y_rad) {}
   // Sets all x and y radii to radius.
-  RRectF(float x, float y, float width, float height, float radius);
+  RRectF(float x, float y, float width, float height, float radius)
+      : RRectF(x, y, width, height, radius, radius) {}
   // Sets all x radii to x_rad, and all y radii to y_rad. If one of x_rad or
   // y_rad are zero, sets ALL radii to zero.
-  RRectF(float x, float y, float width, float height, float x_rad, float y_rad);
-  ~RRectF();
+  RRectF(float x, float y, float width, float height, float x_rad, float y_rad)
+      : skrrect_(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, width, height),
+                                     x_rad,
+                                     y_rad)) {}
 
   // The rectangular portion of the RRectF, without the corner radii.
   gfx::RectF rect() const { return gfx::SkRectToRectF(skrrect_.rect()); }
@@ -56,9 +63,9 @@ class GEOMETRY_SKIA_EXPORT RRectF {
               // radii all equal to height/2.
     kComplex,  // Non-zero width and height, and arbitrary (non-equal) radii.
   };
-  Type type() const;
+  Type GetType() const;
 
-  bool IsEmpty() const { return type() == Type::kEmpty; }
+  bool IsEmpty() const { return GetType() == Type::kEmpty; }
 
   enum class Corner {
     kUpperLeft = SkRRect::kUpperLeft_Corner,
@@ -66,10 +73,16 @@ class GEOMETRY_SKIA_EXPORT RRectF {
     kLowerRight = SkRRect::kLowerRight_Corner,
     kLowerLeft = SkRRect::kLowerLeft_Corner,
   };
+  // GetCornerRadii may be called for any type of RRect (kRect, kOval, etc.),
+  // and it will return "correct" values. If GetType() is kOval or less, all
+  // corner values will be identical to each other. SetCornerRadii can similarly
+  // be called on any type of RRect, but GetType() may change as a result of the
+  // call.
   gfx::Vector2dF GetCornerRadii(Corner corner) const;
-  void SetCornerRadii(Corner corner, const gfx::Vector2dF& radius);
-
-  std::string ToString() const;
+  void SetCornerRadii(Corner corner, float x_rad, float y_rad);
+  void SetCornerRadii(Corner corner, const gfx::Vector2dF& radii) {
+    SetCornerRadii(corner, radii.x(), radii.y());
+  }
 
   // Returns true if |rect| is inside the bounds and corner radii of this
   // RRectF, and if both this RRectF and rect are not empty.
@@ -88,6 +101,8 @@ class GEOMETRY_SKIA_EXPORT RRectF {
   const RRectF& operator+=(const gfx::Vector2dF& offset);
   const RRectF& operator-=(const gfx::Vector2dF& offset);
 
+  std::string ToString() const;
+
   // Insets bounds by dx and dy, and adjusts radii by dx and dy. dx and dy may
   // be positive, negative, or zero. If either corner radius is zero, the corner
   // has no curvature and is unchanged. Otherwise, if adjusted radius becomes
@@ -101,7 +116,7 @@ class GEOMETRY_SKIA_EXPORT RRectF {
   void Outset(float val) { skrrect_.outset(val, val); }
   void Outset(float dx, float dy) { skrrect_.outset(dx, dy); }
 
-  const RRectF& operator=(const RRectF& rect);
+  explicit operator SkRRect() const { return skrrect_; }
 
  private:
   void GetAllRadii(SkVector radii[4]) const;
