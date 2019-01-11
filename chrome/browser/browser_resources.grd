@@ -665,6 +665,9 @@
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
       <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_browser_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
+      <if expr="chromeos">
+        <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_TEST_OVERLAY" file="chrome_content_browser_manifest_test_overlay.json" type="BINDATA" />
+      </if>
       <include name="IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_gpu_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_plugin_manifest_overlay.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_CHROME_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome\app\chrome_content_packaged_services_manifest_overlay.json" type="BINDATA" use_base_dir="false"/>

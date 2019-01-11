@@ -17634,6 +17634,8 @@ Called by update_net_error_codes.py.-->
   <int value="1307" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIESBYEXTENSION"/>
   <int value="1308"
       label="ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS"/>
+  <int value="1309"
+      label="AUTOTESTPRIVATE_ENSUREWINDOWSERVICECLIENTHASDRAWNWINDOW"/>
 </enum>
 
 <enum name="ExtensionIconState">
