@@ -18,8 +18,8 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -144,7 +144,7 @@ void SigninWithCredentialProviderIfPossible(Profile* profile) {
   if (!(first_run::IsChromeFirstRun() &&
         g_browser_process->profile_manager()->GetInitialProfileDir() ==
             profile->GetPath().BaseName() &&
-        !SigninManagerFactory::GetForProfile(profile)->IsAuthenticated())) {
+        !IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount())) {
     return;
   }
 
