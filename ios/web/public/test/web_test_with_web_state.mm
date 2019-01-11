@@ -134,8 +134,8 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     MimeTypeUpdater() = default;
 
     // WebStateObserver overrides:
-    void NavigationItemCommitted(WebState* web_state,
-                                 const LoadCommittedDetails&) override {
+    void DidFinishNavigation(WebState* web_state,
+                             NavigationContext* context) override {
       // loadHTML:forURL: does not notify web view delegate about received
       // response, so web controller does not get a chance to properly update
       // MIME type and it should be set manually after navigation is committed
