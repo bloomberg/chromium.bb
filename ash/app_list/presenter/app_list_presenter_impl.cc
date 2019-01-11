@@ -101,7 +101,6 @@ AppListPresenterImpl::AppListPresenterImpl(
 
 AppListPresenterImpl::~AppListPresenterImpl() {
   Dismiss(base::TimeTicks());
-  delegate_.reset();
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_) {
@@ -169,7 +168,6 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   delegate_->OnClosing();
   ScheduleAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
-  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
@@ -390,6 +388,8 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 // AppListPresenterImpl, ui::ImplicitAnimationObserver implementation:
 
 void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
+  NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
+
   if (is_visible_) {
     view_->GetWidget()->Activate();
   } else {
