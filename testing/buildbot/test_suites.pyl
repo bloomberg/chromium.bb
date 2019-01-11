@@ -4902,11 +4902,5 @@
       'webrtc_chromium_simple_gtests',
       'webrtc_chromium_simple_baremetal_gtests',
     ],
-
-    'webrtc_chromium_tests_with_simple_baremetal_tests': [
-      'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-    ],
   }
 }
