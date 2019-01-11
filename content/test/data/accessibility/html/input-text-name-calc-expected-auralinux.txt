@@ -8,3 +8,4 @@
 ++[entry] name='Placeholder4b' explicit-name:true
 ++[entry] name='Placeholder5' description='Title5' explicit-name:true
 ++[entry] name='LabelledBy6' description='DescribedBy6' explicit-name:true
+++[entry] name='AriaLabel7' description='DescribedBy7' explicit-name:true

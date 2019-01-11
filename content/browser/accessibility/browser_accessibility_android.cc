@@ -486,21 +486,32 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 }
 
 base::string16 BrowserAccessibilityAndroid::GetHint() const {
-  base::string16 description =
-      GetString16Attribute(ax::mojom::StringAttribute::kDescription);
+  std::vector<base::string16> strings;
 
-  // If we're returning the value as the main text, then return both the
-  // accessible name and description as the hint.
+  // If we're returning the value as the main text, the name needs to be
+  // part of the hint.
   if (ShouldExposeValueAsName()) {
     base::string16 name =
         GetString16Attribute(ax::mojom::StringAttribute::kName);
-    if (!name.empty() && !description.empty())
-      return name + base::ASCIIToUTF16(" ") + description;
-    else if (!name.empty())
-      return name;
+    if (!name.empty())
+      strings.push_back(name);
   }
 
-  return description;
+  if (GetData().GetNameFrom() != ax::mojom::NameFrom::kPlaceholder &&
+      GetData().GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom) !=
+          static_cast<int32_t>(ax::mojom::DescriptionFrom::kPlaceholder)) {
+    base::string16 placeholder =
+        GetString16Attribute(ax::mojom::StringAttribute::kPlaceholder);
+    if (!placeholder.empty())
+      strings.push_back(placeholder);
+  }
+
+  base::string16 description =
+      GetString16Attribute(ax::mojom::StringAttribute::kDescription);
+  if (!description.empty())
+    strings.push_back(description);
+
+  return base::JoinString(strings, base::ASCIIToUTF16(" "));
 }
 
 std::string BrowserAccessibilityAndroid::GetRoleString() const {
