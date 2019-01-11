@@ -2369,7 +2369,6 @@ source_set("unit_tests") {
     "power/auto_screen_brightness/metrics_reporter_unittest.cc",
     "power/auto_screen_brightness/modeller_impl_unittest.cc",
     "power/auto_screen_brightness/monotone_cubic_spline_unittest.cc",
-    "power/auto_screen_brightness/utils_unittest.cc",
     "power/cpu_data_collector_unittest.cc",
     "power/extension_event_observer_unittest.cc",
     "power/ml/adaptive_screen_brightness_manager_unittest.cc",

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_ADAPTER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_ADAPTER_H_
 
-#include "base/containers/ring_buffer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +14,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/als_samples.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
@@ -48,20 +48,6 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kLatest
   };
 
-  // TODO(jiameng): we currently use past 5 seconds of ambient values to
-  // calculate average ambient when we predict optimal brightness. This is
-  // shorter than the duration used for training data (10 seconds), because it's
-  // important that we can quickly adjust the brightness when ambient value
-  // changes. This duration should be revised.
-  static constexpr base::TimeDelta kAmbientLightShortHorizon =
-      base::TimeDelta::FromSeconds(5);
-
-  // Size of |ambient_light_values_|.
-  static constexpr int kNumberAmbientValuesToTrack =
-      (kAmbientLightShortHorizon.InMicroseconds() /
-       base::Time::kMicrosecondsPerSecond) *
-      AlsReader::kAlsPollFrequency;
-
   // The values in Params can be overridden by experiment flags.
   struct Params {
     // Average ambient value has to go up (resp. down) by
@@ -82,7 +68,7 @@ class Adapter : public AlsReader::Observer,
 
     // Whether brightness should be set to the predicted value when the first
     // ambient reading comes in. If false, we'll wait for
-    // |kAmbientLightShortHorizon| of ambient values before setting brightness
+    // |auto_brightness_als_horizon| of ambient values before setting brightness
     // for the first time.
     bool update_brightness_on_startup = true;
 
@@ -94,6 +80,12 @@ class Adapter : public AlsReader::Observer,
         base::TimeDelta::FromSeconds(10);
 
     ModelCurve model_curve = ModelCurve::kLatest;
+
+    // Average ambient value is calculated over the past
+    // |auto_brightness_als_horizon|. This is only used for brightness update,
+    // which can be different from the horizon used in model training.
+    base::TimeDelta auto_brightness_als_horizon =
+        base::TimeDelta::FromSeconds(5);
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -137,7 +129,7 @@ class Adapter : public AlsReader::Observer,
 
   // Returns the actual average over |ambient_light_values_|, which is not
   // necessarily the same as |average_ambient_lux_|.
-  double GetAverageAmbientForTesting() const;
+  base::Optional<double> GetAverageAmbientForTesting(base::TimeTicks now);
   double GetBrighteningThresholdForTesting() const;
   double GetDarkeningThresholdForTesting() const;
 
@@ -165,7 +157,7 @@ class Adapter : public AlsReader::Observer,
   // if the required curve is personal but no personal curve is available, then
   // brightness won't be changed.
   // It will call |UpdateLuxThresholds| if brightness is actually changed.
-  void MaybeAdjustBrightness();
+  void MaybeAdjustBrightness(base::TimeTicks now);
 
   // This is only called when brightness is changed.
   void UpdateLuxThresholds();
@@ -198,8 +190,8 @@ class Adapter : public AlsReader::Observer,
   // This will be replaced by a mock tick clock during tests.
   const base::TickClock* tick_clock_;
 
-  base::RingBuffer<AmbientLightSample, kNumberAmbientValuesToTrack>
-      ambient_light_values_;
+  // This buffer will be used to store the recent ambient light values.
+  std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
 
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
   base::Optional<bool> brightness_monitor_success_;
