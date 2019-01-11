@@ -384,6 +384,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   ServiceTransferCache* GetTransferCacheForTest() override;
   void SetUpForRasterCHROMIUMForTest() override;
   void SetOOMErrorForTest() override;
+  void DisableFlushWorkaroundForTest() override;
 
   // ErrorClientState implementation.
   void OnContextLostError() override;
@@ -654,6 +655,9 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;
+
+  // Workaround for https://crbug.com/906453
+  bool flush_workaround_disabled_for_test_ = false;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -1211,6 +1215,18 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
   int process_pos = 0;
   CommandId command = static_cast<CommandId>(0);
 
+#if defined(OS_MACOSX)
+  if (!flush_workaround_disabled_for_test_) {
+    // Flush before and after decoding commands.
+    // TODO(ccameron): This is to determine if this high frequency flushing
+    // affects crash rates.
+    // https://crbug.com/906453
+    if (gr_context())
+      gr_context()->flush();
+    api()->glFlushFn();
+  }
+#endif
+
   while (process_pos < num_entries && result == error::kNoError &&
          commands_to_process_--) {
     const unsigned int size = cmd_data->value_header.size;
@@ -1302,6 +1318,14 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
 
   if (supports_oop_raster_)
     client_->ScheduleGrContextCleanup();
+
+#if defined(OS_MACOSX)
+  if (!flush_workaround_disabled_for_test_) {
+    if (gr_context())
+      gr_context()->flush();
+    api()->glFlushFn();
+  }
+#endif
 
   return result;
 }
@@ -1461,6 +1485,10 @@ void RasterDecoderImpl::SetUpForRasterCHROMIUMForTest() {
 void RasterDecoderImpl::SetOOMErrorForTest() {
   LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "SetOOMErrorForTest",
                      "synthetic out of memory");
+}
+
+void RasterDecoderImpl::DisableFlushWorkaroundForTest() {
+  flush_workaround_disabled_for_test_ = true;
 }
 
 void RasterDecoderImpl::OnContextLostError() {
@@ -2309,30 +2337,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       return;
     }
 
-#if defined(OS_MACOSX)
-    // Flush before and after the raster op. Add crash instrumentation to dump
-    // the current raster op.
-    // TODO(ccameron): Harvest this data to see if there is a pattern to the ops
-    // that cause crashes.
-    // https://crbug.com/906453
-    if (gr_context())
-      gr_context()->flush();
-    api()->glFlushFn();
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "mac_paint_op_in_flush", base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(
-        crash_key, cc::PaintOpTypeToString(deserialized_op->GetType()));
-#endif
-
     deserialized_op->Raster(canvas, playback_params);
     deserialized_op->DestroyThis();
-
-#if defined(OS_MACOSX)
-    if (gr_context())
-      gr_context()->flush();
-    api()->glFlushFn();
-    base::debug::ClearCrashKeyString(crash_key);
-#endif
 
     paint_buffer_size -= skip;
     paint_buffer_memory += skip;
