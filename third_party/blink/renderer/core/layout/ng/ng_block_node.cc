@@ -890,10 +890,14 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     if (constraint_space.IsFixedSizeInline()) {
       box_->SetOverrideLogicalWidth(
           constraint_space.AvailableSize().inline_size);
+    } else {
+      box_->ClearOverrideLogicalWidth();
     }
     if (constraint_space.IsFixedSizeBlock()) {
       box_->SetOverrideLogicalHeight(
           constraint_space.AvailableSize().block_size);
+    } else {
+      box_->ClearOverrideLogicalHeight();
     }
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
