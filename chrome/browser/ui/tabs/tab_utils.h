@@ -30,6 +30,7 @@ enum class TabAlertState {
   USB_CONNECTED,        // Tab is connected to a USB device.
   PIP_PLAYING,          // Tab contains a video in Picture-in-Picture mode.
   DESKTOP_CAPTURING,    // Desktop contents being recorded, consumed by tab.
+  VR_PRESENTING_IN_HEADSET,  // VR content is being presented in a headset.
 };
 
 enum class TabMutedReason {

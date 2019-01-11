@@ -1896,6 +1896,8 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
     case TabAlertState::DESKTOP_CAPTURING:
       return l10n_util::GetStringFUTF16(
           IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_VR_PRESENTING, title);
     case TabAlertState::NONE:
       return title;
   }

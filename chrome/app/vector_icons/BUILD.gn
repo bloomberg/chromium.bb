@@ -118,6 +118,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "user_menu_guest.icon",
     "user_menu_right_arrow.icon",
     "volume_up.icon",
+    "vr_headset.icon",
     "warning_badge.icon",
     "web.icon",
     "zoom_minus.icon",
@@ -146,7 +147,7 @@ aggregate_vector_icons("chrome_vector_icons") {
   }
 
   if (enable_vr && !is_android) {
-    # Used for permission prompts on desktop VR headsets and Linux unit tests.
+    # Used on desktop VR headsets and Linux unit tests.
     icons += [ "open_in_browser.icon" ]
   }
 }
