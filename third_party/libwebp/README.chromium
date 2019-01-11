@@ -23,3 +23,4 @@ Local changes:
    (crbug.com/654974)
  * Pulled in fuzzers from OSS-Fuzz
    https://github.com/google/oss-fuzz/tree/master/projects/libwebp
+ * cherry-pick 928a75de webp: Fix VP8LBitWriterClone() bug
