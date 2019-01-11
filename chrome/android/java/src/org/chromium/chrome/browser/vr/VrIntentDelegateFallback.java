@@ -13,9 +13,12 @@ import android.content.Intent;
 public class VrIntentDelegateFallback extends VrIntentDelegate {
     @Override
     public Intent setupVrFreIntent(Context context, Intent freIntent) {
-        // TODO(tiborg): Handle first run if VR module not installed.
-        assert false;
-        return freIntent;
+        if (VrModuleProvider.getDelegate().bootsToVr()) return freIntent;
+        // Don't bother handling FRE without VR module on smartphone VR. Just request module and
+        // return to caller.
+        VrModuleProvider.installModule((success) -> {});
+        VrFallbackUtils.showFailureNotification(context);
+        return null;
     }
 
     @Override

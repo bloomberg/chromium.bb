@@ -1663,6 +1663,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr/OnExitVrRequestListener.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateFallback.java",
+  "java/src/org/chromium/chrome/browser/vr/VrFallbackUtils.java",
   "java/src/org/chromium/chrome/browser/vr/VrIntentDelegateFallback.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateProvider.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateProviderFallback.java",

@@ -402,6 +402,8 @@ public abstract class FirstRunFlowSequencer  {
             if (isVrIntent) {
                 freIntent =
                         VrModuleProvider.getIntentDelegate().setupVrFreIntent(caller, freIntent);
+                // We cannot access Chrome right now, e.g. because the VR module is not installed.
+                if (freIntent == null) return true;
             }
             IntentUtils.safeStartActivity(caller, freIntent);
         } else {
