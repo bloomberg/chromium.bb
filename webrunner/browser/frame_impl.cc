@@ -23,6 +23,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ime/input_method_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
@@ -154,6 +155,29 @@ bool IsOriginWhitelisted(const GURL& url,
   return false;
 }
 
+class ScenicWindowTreeHost : public aura::WindowTreeHostPlatform {
+ public:
+  explicit ScenicWindowTreeHost(ui::PlatformWindowInitProperties properties)
+      : aura::WindowTreeHostPlatform(std::move(properties)) {}
+
+  ~ScenicWindowTreeHost() override = default;
+
+  // Route focus & blur events to the window's focus observer and its
+  // InputMethod.
+  void OnActivationChanged(bool active) override {
+    if (active) {
+      aura::client::GetFocusClient(window())->FocusWindow(window());
+      GetInputMethod()->OnFocus();
+    } else {
+      aura::client::GetFocusClient(window())->FocusWindow(nullptr);
+      GetInputMethod()->OnBlur();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScenicWindowTreeHost);
+};
+
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
@@ -232,7 +256,7 @@ void FrameImpl::CreateView2(
   properties.view_token = std::move(view_token);
 
   window_tree_host_ =
-      std::make_unique<aura::WindowTreeHostPlatform>(std::move(properties));
+      std::make_unique<ScenicWindowTreeHost>(std::move(properties));
   window_tree_host_->InitHost();
 
   aura::client::SetFocusClient(root_window(), focus_controller_.get());

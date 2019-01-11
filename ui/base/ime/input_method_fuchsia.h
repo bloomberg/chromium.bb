@@ -6,26 +6,32 @@
 #define UI_BASE_IME_INPUT_METHOD_FUCHSIA_H_
 
 #include <fuchsia/ui/input/cpp/fidl.h>
+#include <lib/fidl/cpp/binding.h>
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/base/ime/fuchsia/input_method_keyboard_controller_fuchsia.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/events/fuchsia/input_event_dispatcher.h"
 #include "ui/events/fuchsia/input_event_dispatcher_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
-class InputMethodKeyboardControllerFuchsia;
-
-// Hnadles input from physical keyboards and the IME service.
+// Handles input from physical keyboards and the IME service.
 class UI_BASE_IME_EXPORT InputMethodFuchsia
     : public InputMethodBase,
-      public InputEventDispatcherDelegate {
+      public InputEventDispatcherDelegate,
+      public fuchsia::ui::input::InputMethodEditorClient {
  public:
   explicit InputMethodFuchsia(internal::InputMethodDelegate* delegate);
   ~InputMethodFuchsia() override;
+
+  fuchsia::ui::input::ImeService* ime_service() const {
+    return ime_service_.get();
+  }
 
   // InputMethodBase interface implementation.
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
@@ -33,13 +39,34 @@ class UI_BASE_IME_EXPORT InputMethodFuchsia
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
  private:
+  // Establishes a connection to the input service and starts receiving input
+  // events from hard and soft keyboards.
+  void ConnectInputService();
+
+  // Terminates the connection to the input services, which stops receiving
+  // input events.
+  void DisconnectInputService();
+
   // InputEventDispatcherDelegate interface implementation.
   void DispatchEvent(ui::Event* event) override;
 
-  std::unique_ptr<InputMethodKeyboardControllerFuchsia>
-      virtual_keyboard_controller_;
+  // InputMethodEditorClient interface implementation.
+  void DidUpdateState(
+      fuchsia::ui::input::TextInputState state,
+      std::unique_ptr<fuchsia::ui::input::InputEvent> input_event) override;
+  void OnAction(fuchsia::ui::input::InputMethodAction action) override;
+
+  InputEventDispatcher event_converter_;
+  fidl::Binding<fuchsia::ui::input::InputMethodEditorClient>
+      ime_client_binding_;
+  fuchsia::ui::input::ImeServicePtr ime_service_;
+  fuchsia::ui::input::InputMethodEditorPtr ime_;
+  fuchsia::ui::input::ImeVisibilityServicePtr ime_visibility_;
+  InputMethodKeyboardControllerFuchsia virtual_keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodFuchsia);
 };
