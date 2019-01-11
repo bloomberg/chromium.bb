@@ -645,9 +645,23 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 }
 
 void BackgroundTracingManagerImpl::AbortScenario() {
-  if (is_tracing_)
-    content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
+  if (is_tracing_) {
+    scoped_refptr<TracingControllerImpl::TraceDataEndpoint> trace_data_endpoint;
+    trace_data_endpoint =
+        TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+            &BackgroundTracingManagerImpl::OnAbortScenarioReceived,
+            base::Unretained(this)));
 
+    content::TracingControllerImpl::GetInstance()->StopTracing(
+        trace_data_endpoint);
+  } else {
+    OnAbortScenarioReceived(nullptr, nullptr);
+  }
+}
+
+void BackgroundTracingManagerImpl::OnAbortScenarioReceived(
+    std::unique_ptr<const base::DictionaryValue> metadata,
+    base::RefCountedString* trace_str) {
   is_tracing_ = false;
   triggered_named_event_handle_ = -1;
   config_.reset();

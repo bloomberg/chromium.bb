@@ -125,6 +125,10 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       BackgroundTracingConfigImpl::CategoryPreset,
       base::trace_event::TraceRecordMode) const;
 
+  void OnAbortScenarioReceived(
+      std::unique_ptr<const base::DictionaryValue> metadata,
+      base::RefCountedString* trace_str);
+
   class TracingTimer {
    public:
     explicit TracingTimer(StartedFinalizingCallback);
