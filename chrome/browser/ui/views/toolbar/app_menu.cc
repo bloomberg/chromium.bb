@@ -832,6 +832,9 @@ void AppMenu::RunMenu(views::MenuButton* host) {
   menu_runner_->RunMenuAt(
       host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
       views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE, alerted_commands);
+
+  for (AppMenuObserver& observer : observer_list_)
+    observer.AppMenuShown();
 }
 
 void AppMenu::CloseMenu() {

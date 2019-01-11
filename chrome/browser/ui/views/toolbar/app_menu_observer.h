@@ -12,6 +12,9 @@ class AppMenuObserver {
 
   virtual void AppMenuClosed() {}
 
+  // Called after AppMenu::RunMenu().
+  virtual void AppMenuShown() {}
+
  protected:
   virtual ~AppMenuObserver() {}
 };

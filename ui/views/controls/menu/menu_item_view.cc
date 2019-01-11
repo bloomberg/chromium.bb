@@ -31,6 +31,7 @@
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -495,6 +496,7 @@ int MenuItemView::GetHeightForWidth(int width) const {
   int height = child_at(0)->GetHeightForWidth(width);
   if (!icon_view_ && GetRootMenuItem()->has_icons())
     height = std::max(height, MenuConfig::instance().check_height);
+
   height += GetBottomMargin() + GetTopMargin();
 
   return height;
@@ -616,13 +618,22 @@ void MenuItemView::Layout() {
     return;
 
   if (IsContainer()) {
-    View* child = child_at(0);
-    gfx::Size size = child->GetPreferredSize();
-    child->SetBounds(0, GetTopMargin(), size.width(), size.height());
-    // TODO(crbug/913998): this is a hack. We should change
-    // ExtensionToolbarMenuView so that it does not move itself when laid out,
-    // and accomplish the same thing via insets or similar.
-    child->Layout();
+    View* const child = child_at(0);
+    const gfx::Size child_size = child->GetPreferredSize();
+
+    // Get child's margins or use default empty margins.
+    const gfx::Insets* margins_prop = child->GetProperty(views::kMarginsKey);
+    const gfx::Insets child_margins =
+        margins_prop ? *margins_prop
+                     : gfx::Insets(GetTopMargin(), 0, GetBottomMargin(), 0);
+
+    gfx::Rect max_bounds = GetContentsBounds();
+    max_bounds.Inset(child_margins);
+
+    gfx::Rect bounds = gfx::Rect(child_margins.left(), child_margins.top(),
+                                 child_size.width(), child_size.height());
+    bounds.Intersect(max_bounds);
+    child->SetBoundsRect(bounds);
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
@@ -1137,6 +1148,13 @@ int MenuItemView::GetTopMargin() const {
                  ? MenuConfig::instance().item_top_margin
                  : MenuConfig::instance().item_no_icon_top_margin;
   }
+
+  if (IsContainer()) {
+    const gfx::Insets* child_margins = child_at(0)->GetProperty(kMarginsKey);
+    if (child_margins)
+      margin += child_margins->top();
+  }
+
   return margin;
 }
 
@@ -1148,6 +1166,13 @@ int MenuItemView::GetBottomMargin() const {
                  ? MenuConfig::instance().item_bottom_margin
                  : MenuConfig::instance().item_no_icon_bottom_margin;
   }
+
+  if (IsContainer()) {
+    const gfx::Insets* child_margins = child_at(0)->GetProperty(kMarginsKey);
+    if (child_margins)
+      margin += child_margins->bottom();
+  }
+
   return margin;
 }
 
@@ -1155,8 +1180,18 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
   if (!has_children())
     return gfx::Size();
 
-  if (IsContainer())
-    return child_at(0)->GetPreferredSize();
+  if (IsContainer()) {
+    // Take into account both the child's preferred size and their left and
+    // right margins. The top and bottom margins are already accounted for in
+    // GetTopMargin() and GetBottomMargin().
+    const gfx::Insets* child_margins_prop =
+        child_at(0)->GetProperty(kMarginsKey);
+    const gfx::Insets child_margins =
+        child_margins_prop ? *child_margins_prop : gfx::Insets();
+    gfx::Size child_size = child_at(0)->GetPreferredSize();
+    child_size.Enlarge(child_margins.width(), 0);
+    return child_size;
+  }
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
