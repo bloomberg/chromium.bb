@@ -63,14 +63,20 @@ class ScriptsSmokeTest(unittest.TestCase):
     return_code, stdout = self.RunPerfScript(
         '../../testing/scripts/run_telemetry_benchmark_as_googletest.py '
         'run_benchmark dummy_benchmark.stable_benchmark_1 --browser=%s '
+        '--isolated-script-test-repeat=2 '
+        '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=output.json '
         '--isolated-script-test-chartjson-output=chartjson_output.json '
         '--output-format=chartjson' % browser_type)
     self.assertEquals(return_code, 0, stdout)
     try:
       with open('../../tools/perf/output.json') as f:
+        test_results = json.load(f)
         self.assertIsNotNone(
-            json.load(f), 'json_test_results should be populated: ' + stdout)
+            test_results, 'json_test_results should be populated: ' + stdout)
+        test_repeats = test_results['num_failures_by_type']['PASS']
+        self.assertEqual(
+            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
       os.remove('../../tools/perf/output.json')
     except IOError as e:
       self.fail('json_test_results should be populated: ' + stdout + str(e))
