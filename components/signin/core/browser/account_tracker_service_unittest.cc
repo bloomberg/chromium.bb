@@ -77,7 +77,6 @@ const char kTokenInfoIncompleteResponseFormat[] =
 
 enum TrackingEventType {
   UPDATED,
-  IMAGE_UPDATED,
   REMOVED,
 };
 
@@ -134,9 +133,6 @@ class TrackingEvent {
       case UPDATED:
         typestr = "UPD";
         break;
-      case IMAGE_UPDATED:
-        typestr = "IMG_UPD";
-        break;
       case REMOVED:
         typestr = "REM";
         break;
@@ -184,8 +180,6 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
  private:
   // AccountTrackerService::Observer implementation
   void OnAccountUpdated(const AccountInfo& ids) override;
-  void OnAccountImageUpdated(const std::string& account_id,
-                             const gfx::Image& image) override;
   void OnAccountRemoved(const AccountInfo& ids) override;
 
   std::vector<TrackingEvent> events_;
@@ -193,12 +187,6 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
 
 void AccountTrackerObserver::OnAccountUpdated(const AccountInfo& ids) {
   events_.push_back(TrackingEvent(UPDATED, ids.account_id, ids.gaia));
-}
-
-void AccountTrackerObserver::OnAccountImageUpdated(
-    const std::string& account_id,
-    const gfx::Image& image) {
-  events_.push_back(TrackingEvent(IMAGE_UPDATED, account_id, std::string()));
 }
 
 void AccountTrackerObserver::OnAccountRemoved(const AccountInfo& ids) {
@@ -478,7 +466,7 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
                   .IsEmpty());
   ReturnAccountImageFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
-      TrackingEvent(IMAGE_UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
+      TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
                     AccountKeyToGaiaId(kAccountKeyAlpha)),
   }));
   EXPECT_FALSE(account_tracker()
@@ -702,9 +690,9 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
   // Wait until all account images are loaded.
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer()->CheckEvents({
-      TrackingEvent(IMAGE_UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
+      TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
                     AccountKeyToGaiaId(kAccountKeyAlpha)),
-      TrackingEvent(IMAGE_UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
+      TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyBeta),
                     AccountKeyToGaiaId(kAccountKeyBeta)),
   }));
 
