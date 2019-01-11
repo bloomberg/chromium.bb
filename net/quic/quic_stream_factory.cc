@@ -157,6 +157,10 @@ void LogStaleAndFreshHostMatched(bool matched) {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleAndFreshHostMatched", matched);
 }
 
+void LogConnectionIpPooling(bool pooled) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionIpPooled", pooled);
+}
+
 void SetInitialRttEstimate(base::TimeDelta estimate,
                            enum InitialRttEstimateSource source,
                            quic::QuicConfig* config) {
@@ -562,6 +566,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
     } else if (factory_->HasMatchingIpSession(key_, address_list_)) {
       // Session with resolved IP has already existed, so close racing
       // connection, run callback, and return.
+      LogConnectionIpPooling(true);
       CloseStaleHostConnection();
       if (!callback_.is_null())
         base::ResetAndReturn(&callback_).Run(OK);
@@ -660,8 +665,10 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 
   // Inform the factory of this resolution, which will set up
   // a session alias, if possible.
-  if (factory_->HasMatchingIpSession(key_, address_list_))
+  if (factory_->HasMatchingIpSession(key_, address_list_)) {
+    LogConnectionIpPooling(true);
     return OK;
+  }
 
   io_state_ = STATE_CONNECT;
   return OK;
@@ -842,6 +849,7 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
   AddressList address(
       session_->connection()->peer_address().impl().socket_address());
   if (factory_->HasMatchingIpSession(key_, address)) {
+    LogConnectionIpPooling(true);
     session_->connection()->CloseConnection(
         quic::QUIC_CONNECTION_IP_POOLED,
         "An active session exists for the given IP.",
@@ -849,6 +857,7 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
     session_ = nullptr;
     return OK;
   }
+  LogConnectionIpPooling(false);
 
   factory_->ActivateSession(key_, session_);
 
