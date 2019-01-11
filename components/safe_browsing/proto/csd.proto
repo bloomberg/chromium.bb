@@ -1046,7 +1046,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 24
+// Next tag: 26
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -1189,6 +1189,27 @@ message ClientSafeBrowsingReportRequest {
   // order, i.e. event url comes first in this list, and landing referrer
   // comes last.
   repeated ReferrerChainEntry referrer_chain = 23;
+
+  message DownloadItemInfo {
+    // URL of the download payload.
+    optional string url = 1;
+
+    // This message contains various binary digests of the download payload.
+    message Digests { optional bytes sha256 = 1; }
+    optional Digests digests = 2;
+
+    // This is the length in bytes of the download payload.
+    optional int64 length = 3;
+
+    // Name of the file where the download would be stored if the
+    // download completes.  E.g., "bla.exe".
+    optional string file_basename = 4;
+  }
+
+  optional DownloadItemInfo download_item_info = 24;
+
+  // The SafetyNet ID of the Android device.
+  optional string safety_net_id = 25;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).
