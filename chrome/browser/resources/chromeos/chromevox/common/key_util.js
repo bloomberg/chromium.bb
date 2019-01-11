@@ -309,6 +309,8 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
     return 'F11';
   } else if (keyCode == 123) {
     return 'F12';
+  } else if (keyCode == 153) {
+    return cros ? msg('assistant_key') : '';
   } else if (keyCode == 186) {
     return 'Semicolon';
   } else if (keyCode == 187) {
