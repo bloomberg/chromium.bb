@@ -3556,6 +3556,25 @@
             ]
         }
     ],
+    "PreloadMetadataLazyLoad": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PreloadMetadataLazyLoad"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsClientLoFi": [
         {
             "platforms": [
