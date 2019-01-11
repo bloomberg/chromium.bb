@@ -28,7 +28,6 @@ component("lib") {
     "window_tree.h",
     "window_tree_binding.h",
     "window_tree_factory.h",
-    "window_utils.h",
   ]
   sources = [
     "client_change.cc",
@@ -71,7 +70,6 @@ component("lib") {
     "window_tree.cc",
     "window_tree_binding.cc",
     "window_tree_factory.cc",
-    "window_utils.cc",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
