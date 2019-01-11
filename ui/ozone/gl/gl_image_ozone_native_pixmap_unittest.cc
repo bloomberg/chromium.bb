@@ -55,9 +55,8 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
-        size, gl::GLImageNativePixmap::GetInternalFormatForTesting(format)));
-    EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
+    auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+    EXPECT_TRUE(image->Initialize(pixmap.get()));
     return image;
   }
 

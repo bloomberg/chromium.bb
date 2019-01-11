@@ -50,28 +50,6 @@ VASurfaceID VaapiPictureNativePixmap::va_surface_id() const {
   return va_surface_->id();
 }
 
-unsigned VaapiPictureNativePixmap::BufferFormatToInternalFormat(
-    gfx::BufferFormat format) const {
-  switch (format) {
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::RGBX_8888:
-      return GL_RGB;
-
-    case gfx::BufferFormat::BGRA_8888:
-      return GL_BGRA_EXT;
-
-    case gfx::BufferFormat::YVU_420:
-      return GL_RGB_YCRCB_420_CHROMIUM;
-
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return GL_RGB_YCBCR_420V_CHROMIUM;
-
-    default:
-      NOTREACHED() << gfx::BufferFormatToString(format);
-      return GL_BGRA_EXT;
-  }
-}
-
 // static
 gfx::GpuMemoryBufferHandle
 VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(

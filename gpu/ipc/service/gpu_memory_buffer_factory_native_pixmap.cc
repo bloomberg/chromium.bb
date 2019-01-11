@@ -124,13 +124,10 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
     }
   }
 
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, internalformat));
-  if (!image->Initialize(pixmap.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+  if (!image->Initialize(pixmap.get())) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format) << ", |internalformat|: "
-               << gl::GLEnums::GetStringEnum(internalformat);
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   return image;
@@ -164,13 +161,10 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
                << gfx::BufferFormatToString(format);
     return nullptr;
   }
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, internalformat));
-  if (!image->Initialize(pixmap.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+  if (!image->Initialize(pixmap.get())) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format) << ", |internalformat|: "
-               << gl::GLEnums::GetStringEnum(internalformat);
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   *is_cleared = true;

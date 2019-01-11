@@ -332,19 +332,15 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   }
 
   gfx::BufferFormat buffer_format = gfx::BufferFormat::BGRA_8888;
-  unsigned internal_format = GL_BGRA_EXT;
   switch (fourcc) {
     case DRM_FORMAT_ARGB8888:
       buffer_format = gfx::BufferFormat::BGRA_8888;
-      internal_format = GL_BGRA_EXT;
       break;
     case DRM_FORMAT_NV12:
       buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
-      internal_format = GL_RGB_YCBCR_420V_CHROMIUM;
       break;
     case DRM_FORMAT_YVU420:
       buffer_format = gfx::BufferFormat::YVU_420;
-      internal_format = GL_RGB_YCRCB_420_CHROMIUM;
       break;
     default:
       NOTREACHED();
@@ -358,9 +354,9 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
 
   DCHECK(pixmap);
 
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, internal_format));
-  bool ret = image->Initialize(pixmap.get(), buffer_format);
+  auto image =
+      base::MakeRefCounted<gl::GLImageNativePixmap>(size, buffer_format);
+  bool ret = image->Initialize(pixmap.get());
   DCHECK(ret);
   return image;
 }

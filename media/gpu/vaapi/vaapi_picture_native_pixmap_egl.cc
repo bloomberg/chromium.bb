@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap_egl.h"
 
 #include "base/file_descriptor_posix.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -76,9 +77,7 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
     return false;
 
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size_, BufferFormatToInternalFormat(format)));
-
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size_, format);
   // Create an EGLImage from a gl texture
   if (!image->InitializeFromTexture(texture_id_)) {
     DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
