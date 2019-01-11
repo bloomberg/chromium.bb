@@ -233,7 +233,7 @@ void QuicSpdyClientBase::OnRendezvousResult(QuicSpdyStream* stream) {
       std::move(push_promise_data_to_resend_);
   if (stream) {
     stream->set_visitor(this);
-    stream->OnDataAvailable();
+    stream->OnBodyAvailable();
   } else if (data_to_resend) {
     data_to_resend->Resend();
   }

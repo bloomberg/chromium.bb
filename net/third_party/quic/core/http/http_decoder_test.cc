@@ -24,7 +24,7 @@ class MockVisitor : public HttpDecoder::Visitor {
   MOCK_METHOD1(OnGoAwayFrame, void(const GoAwayFrame& frame));
   MOCK_METHOD1(OnSettingsFrame, void(const SettingsFrame& frame));
 
-  MOCK_METHOD0(OnDataFrameStart, void());
+  MOCK_METHOD1(OnDataFrameStart, void(Http3FrameLengths frame_lengths));
   MOCK_METHOD1(OnDataFramePayload, void(QuicStringPiece payload));
   MOCK_METHOD0(OnDataFrameEnd, void());
 
@@ -272,7 +272,7 @@ TEST_F(HttpDecoderTest, DataFrame) {
 
   // Process the full frame.
   InSequence s;
-  EXPECT_CALL(visitor_, OnDataFrameStart());
+  EXPECT_CALL(visitor_, OnDataFrameStart(Http3FrameLengths(2, 5)));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece("Data!")));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
   EXPECT_EQ(QUIC_ARRAYSIZE(input),
@@ -281,7 +281,7 @@ TEST_F(HttpDecoderTest, DataFrame) {
   EXPECT_EQ("", decoder_.error_detail());
 
   // Process the frame incremently.
-  EXPECT_CALL(visitor_, OnDataFrameStart());
+  EXPECT_CALL(visitor_, OnDataFrameStart(Http3FrameLengths(2, 5)));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece("D")));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece("a")));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece("t")));
@@ -315,7 +315,7 @@ TEST_F(HttpDecoderTest, FrameHeaderPartialDelivery) {
   EXPECT_EQ("", decoder_.error_detail());
 
   // Send data.
-  EXPECT_CALL(visitor_, OnDataFrameStart());
+  EXPECT_CALL(visitor_, OnDataFrameStart(Http3FrameLengths(3, 2048)));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece(input)));
   // EXPECT_CALL(visitor_,
   //            OnDataFramePayload(QuicStringPiece(QuicString(2048, 'x'))));

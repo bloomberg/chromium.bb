@@ -7,8 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "net/third_party/quic/core/http/http_encoder.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_stream_sequencer_buffer.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
@@ -162,6 +164,8 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   TestStream* stream2_;
 
   SpdyHeaderBlock headers_;
+
+  HttpEncoder encoder_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
@@ -280,29 +284,44 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBody) {
   Initialize(kShouldProcessData);
 
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+  QuicString header = QuicString(buffer.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
 
   EXPECT_EQ("", stream_->data());
   QuicHeaderList headers = ProcessHeaders(false, headers_);
   EXPECT_EQ(headers, stream_->header_list());
   stream_->ConsumeHeaderList();
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   stream_->OnStreamFrame(frame);
   EXPECT_EQ(QuicHeaderList(), stream_->header_list());
   EXPECT_EQ(body, stream_->data());
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragments) {
+  Initialize(kShouldProcessData);
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+  QuicString header = QuicString(buffer.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
 
-  for (size_t fragment_size = 1; fragment_size < body.size(); ++fragment_size) {
+  for (size_t fragment_size = 1; fragment_size < data.size(); ++fragment_size) {
     Initialize(kShouldProcessData);
     QuicHeaderList headers = ProcessHeaders(false, headers_);
     ASSERT_EQ(headers, stream_->header_list());
     stream_->ConsumeHeaderList();
-    for (size_t offset = 0; offset < body.size(); offset += fragment_size) {
-      size_t remaining_data = body.size() - offset;
-      QuicStringPiece fragment(body.data() + offset,
+    for (size_t offset = 0; offset < data.size(); offset += fragment_size) {
+      size_t remaining_data = data.size() - offset;
+      QuicStringPiece fragment(data.data() + offset,
                                std::min(fragment_size, remaining_data));
       QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false,
                             offset, QuicStringPiece(fragment));
@@ -313,21 +332,29 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragments) {
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
+  Initialize(kShouldProcessData);
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+  QuicString header = QuicString(buffer.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
 
-  for (size_t split_point = 1; split_point < body.size() - 1; ++split_point) {
+  for (size_t split_point = 1; split_point < data.size() - 1; ++split_point) {
     Initialize(kShouldProcessData);
     QuicHeaderList headers = ProcessHeaders(false, headers_);
     ASSERT_EQ(headers, stream_->header_list());
     stream_->ConsumeHeaderList();
 
-    QuicStringPiece fragment1(body.data(), split_point);
+    QuicStringPiece fragment1(data.data(), split_point);
     QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                            QuicStringPiece(fragment1));
     stream_->OnStreamFrame(frame1);
 
-    QuicStringPiece fragment2(body.data() + split_point,
-                              body.size() - split_point);
+    QuicStringPiece fragment2(data.data() + split_point,
+                              data.size() - split_point);
     QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(0), false,
                            split_point, QuicStringPiece(fragment2));
     stream_->OnStreamFrame(frame2);
@@ -340,15 +367,22 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyReadv) {
   Initialize(!kShouldProcessData);
 
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   stream_->OnStreamFrame(frame);
   stream_->ConsumeHeaderList();
 
   char buffer[2048];
-  ASSERT_LT(body.length(), QUIC_ARRAYSIZE(buffer));
+  ASSERT_LT(data.length(), QUIC_ARRAYSIZE(buffer));
   struct iovec vec;
   vec.iov_base = buffer;
   vec.iov_len = QUIC_ARRAYSIZE(buffer);
@@ -358,14 +392,49 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyReadv) {
   EXPECT_EQ(body, QuicString(buffer, bytes_read));
 }
 
+TEST_P(QuicSpdyStreamTest, ProcessHeadersAndLargeBodySmallReadv) {
+  Initialize(kShouldProcessData);
+  QuicString body(12 * 1024, 'a');
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+  ProcessHeaders(false, headers_);
+  QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
+                        QuicStringPiece(data));
+  stream_->OnStreamFrame(frame);
+  stream_->ConsumeHeaderList();
+  char buffer[2048];
+  char buffer2[2048];
+  struct iovec vec[2];
+  vec[0].iov_base = buffer;
+  vec[0].iov_len = QUIC_ARRAYSIZE(buffer);
+  vec[1].iov_base = buffer2;
+  vec[1].iov_len = QUIC_ARRAYSIZE(buffer2);
+  size_t bytes_read = stream_->Readv(vec, 2);
+  EXPECT_EQ(2048u * 2, bytes_read);
+  EXPECT_EQ(body.substr(0, 2048), QuicString(buffer, 2048));
+  EXPECT_EQ(body.substr(2048, 2048), QuicString(buffer2, 2048));
+}
+
 TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyMarkConsumed) {
   Initialize(!kShouldProcessData);
 
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   stream_->OnStreamFrame(frame);
   stream_->ConsumeHeaderList();
 
@@ -376,16 +445,54 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyMarkConsumed) {
   EXPECT_EQ(body, QuicString(static_cast<char*>(vec.iov_base), vec.iov_len));
 
   stream_->MarkConsumed(body.length());
-  EXPECT_EQ(body.length(), stream_->flow_controller()->bytes_consumed());
+  EXPECT_EQ(data.length(), stream_->flow_controller()->bytes_consumed());
+}
+
+TEST_P(QuicSpdyStreamTest, ProcessHeadersAndConsumeMultipleBody) {
+  Initialize(!kShouldProcessData);
+  QuicString body1 = "this is body 1";
+  QuicString body2 = "body 2";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body1.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data1 = connection_->transport_version() == QUIC_VERSION_99
+                         ? header + body1
+                         : body1;
+  header_length = encoder_.SerializeDataFrameHeader(body2.length(), &buf);
+  QuicString data2 = connection_->transport_version() == QUIC_VERSION_99
+                         ? header + body2
+                         : body2;
+
+  ProcessHeaders(false, headers_);
+  QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
+                         QuicStringPiece(data1));
+  QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(0), false,
+                         data1.length(), QuicStringPiece(data2));
+  stream_->OnStreamFrame(frame1);
+  stream_->OnStreamFrame(frame2);
+  stream_->ConsumeHeaderList();
+
+  stream_->MarkConsumed(body1.length() + body2.length());
+  EXPECT_EQ(data1.length() + data2.length(),
+            stream_->flow_controller()->bytes_consumed());
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   Initialize(!kShouldProcessData);
 
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   stream_->OnStreamFrame(frame);
   stream_->ConsumeHeaderList();
 
@@ -405,9 +512,17 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   Initialize(!kShouldProcessData);
 
   QuicString body = "this is the body";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   stream_->OnStreamFrame(frame);
   stream_->ConsumeHeaderList();
 
@@ -428,6 +543,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
 }
 
 TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
+  testing::InSequence seq;
   // Tests that we send a BLOCKED frame to the peer when we attempt to write,
   // but are flow control blocked.
   Initialize(kShouldProcessData);
@@ -442,10 +558,16 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   // Try to send more data than the flow control limit allows.
   const uint64_t kOverflow = 15;
   QuicString body(kWindow + kOverflow, 'a');
+  bool is_version_99 = connection_->transport_version() == QUIC_VERSION_99;
 
-  EXPECT_CALL(*connection_, SendControlFrame(_));
+  const uint64_t kHeaderLength = is_version_99 ? 2 : 0;
+  if (is_version_99) {
+    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+        .WillOnce(Return(QuicConsumedData(2, false)));
+  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillOnce(Return(QuicConsumedData(kWindow, true)));
+      .WillOnce(Return(QuicConsumedData(kWindow - kHeaderLength, true)));
+  EXPECT_CALL(*connection_, SendControlFrame(_));
   stream_->WriteOrBufferBody(body, false, nullptr);
 
   // Should have sent as much as possible, resulting in no send window left.
@@ -453,7 +575,8 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
             QuicFlowControllerPeer::SendWindowSize(stream_->flow_controller()));
 
   // And we should have queued the overflowed data.
-  EXPECT_EQ(kOverflow, QuicStreamPeer::SizeOfQueuedData(stream_));
+  EXPECT_EQ(kOverflow + kHeaderLength,
+            QuicStreamPeer::SizeOfQueuedData(stream_));
 }
 
 TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
@@ -479,22 +602,35 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
 
   // Stream receives enough data to fill a fraction of the receive window.
   QuicString body(kWindow / 3, 'a');
+  QuicByteCount header_length = 0;
+  QuicString data;
+
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    std::unique_ptr<char[]> buffer;
+    header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+    QuicString header = QuicString(buffer.get(), header_length);
+    data = header + body;
+  } else {
+    data = body;
+  }
+
   ProcessHeaders(false, headers_);
 
   QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                         QuicStringPiece(body));
+                         QuicStringPiece(data));
   stream_->OnStreamFrame(frame1);
-  EXPECT_EQ(kWindow - (kWindow / 3), QuicFlowControllerPeer::ReceiveWindowSize(
-                                         stream_->flow_controller()));
+  EXPECT_EQ(
+      kWindow - (kWindow / 3) - header_length,
+      QuicFlowControllerPeer::ReceiveWindowSize(stream_->flow_controller()));
 
   // Now receive another frame which results in the receive window being over
   // half full. This should all be buffered, decreasing the receive window but
   // not sending WINDOW_UPDATE.
   QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(0), false,
-                         kWindow / 3, QuicStringPiece(body));
+                         kWindow / 3 + header_length, QuicStringPiece(data));
   stream_->OnStreamFrame(frame2);
   EXPECT_EQ(
-      kWindow - (2 * kWindow / 3),
+      kWindow - (2 * kWindow / 3) - 2 * header_length,
       QuicFlowControllerPeer::ReceiveWindowSize(stream_->flow_controller()));
 }
 
@@ -515,21 +651,34 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlWindowUpdate) {
 
   // Stream receives enough data to fill a fraction of the receive window.
   QuicString body(kWindow / 3, 'a');
+  QuicByteCount header_length = 0;
+  QuicString data;
+
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    std::unique_ptr<char[]> buffer;
+    header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+    QuicString header = QuicString(buffer.get(), header_length);
+    data = header + body;
+  } else {
+    data = body;
+  }
+
   ProcessHeaders(false, headers_);
   stream_->ConsumeHeaderList();
 
   QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                         QuicStringPiece(body));
+                         QuicStringPiece(data));
   stream_->OnStreamFrame(frame1);
-  EXPECT_EQ(kWindow - (kWindow / 3), QuicFlowControllerPeer::ReceiveWindowSize(
-                                         stream_->flow_controller()));
+  EXPECT_EQ(
+      kWindow - (kWindow / 3) - header_length,
+      QuicFlowControllerPeer::ReceiveWindowSize(stream_->flow_controller()));
 
   // Now receive another frame which results in the receive window being over
   // half full.  This will trigger the stream to increase its receive window
   // offset and send a WINDOW_UPDATE. The result will be again an available
   // window of kWindow bytes.
   QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(0), false,
-                         kWindow / 3, QuicStringPiece(body));
+                         kWindow / 3 + header_length, QuicStringPiece(data));
   EXPECT_CALL(*connection_, SendControlFrame(_));
   stream_->OnStreamFrame(frame2);
   EXPECT_EQ(kWindow, QuicFlowControllerPeer::ReceiveWindowSize(
@@ -568,12 +717,34 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
 
   // Each stream gets a quarter window of data. This should not trigger a
   // WINDOW_UPDATE for either stream, nor for the connection.
-  QuicString body(kWindow / 4, 'a');
+  QuicByteCount header_length = 0;
+  QuicString body;
+  QuicString data;
+  QuicString data2;
+  QuicString body2(1, 'a');
+
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    body = QuicString(kWindow / 4 - 2, 'a');
+    std::unique_ptr<char[]> buffer;
+    header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
+    QuicString header = QuicString(buffer.get(), header_length);
+    data = header + body;
+    std::unique_ptr<char[]> buffer2;
+    QuicByteCount header_length2 =
+        encoder_.SerializeDataFrameHeader(body2.length(), &buffer2);
+    QuicString header2 = QuicString(buffer2.get(), header_length2);
+    data2 = header2 + body2;
+  } else {
+    body = QuicString(kWindow / 4, 'a');
+    data = body;
+    data2 = body2;
+  }
+
   QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                         QuicStringPiece(body));
+                         QuicStringPiece(data));
   stream_->OnStreamFrame(frame1);
   QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(1), false, 0,
-                         QuicStringPiece(body));
+                         QuicStringPiece(data));
   stream2_->OnStreamFrame(frame2);
 
   // Now receive a further single byte on one stream - again this does not
@@ -581,7 +752,7 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
   // is over half full and thus a connection WINDOW_UPDATE is sent.
   EXPECT_CALL(*connection_, SendControlFrame(_));
   QuicStreamFrame frame3(GetNthClientInitiatedBidirectionalId(0), false,
-                         (kWindow / 4), QuicStringPiece("a"));
+                         body.length() + header_length, QuicStringPiece(data2));
   stream_->OnStreamFrame(frame3);
 }
 
@@ -602,8 +773,15 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlViolation) {
 
   // Receive data to overflow the window, violating flow control.
   QuicString body(kWindow + 1, 'a');
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
   stream_->OnStreamFrame(frame);
@@ -640,9 +818,17 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {
 
   // Send enough data to overflow the connection level flow control window.
   QuicString body(kConnectionWindow + 1, 'a');
-  EXPECT_LT(body.size(), kStreamWindow);
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+
+  EXPECT_LT(data.size(), kStreamWindow);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece(body));
+                        QuicStringPiece(data));
 
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
@@ -725,13 +911,21 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
   stream_->ConsumeHeaderList();
 
   const QuicString body = "this is the body";
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+
   // Receive trailing headers.
   SpdyHeaderBlock trailers_block;
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
   trailers_block[kFinalOffsetHeaderKey] =
-      QuicTextUtils::Uint64ToString(body.size());
+      QuicTextUtils::Uint64ToString(data.size());
 
   QuicHeaderList trailers = ProcessHeaders(true, trailers_block);
 
@@ -749,7 +943,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
   EXPECT_FALSE(stream_->IsDoneReading());
   // Receive and consume body.
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), /*fin=*/false,
-                        0, body);
+                        0, data);
   stream_->OnStreamFrame(frame);
   EXPECT_EQ(body, stream_->data());
   EXPECT_TRUE(stream_->IsDoneReading());
@@ -763,7 +957,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutOffset) {
   ProcessHeaders(false, headers_);
   stream_->ConsumeHeaderList();
 
-  const QuicString body = "this is the body";
   // Receive trailing headers, without kFinalOffsetHeaderKey.
   SpdyHeaderBlock trailers_block;
   trailers_block["key1"] = "value1";
@@ -854,9 +1047,17 @@ TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
   stream_->ConsumeHeaderList();
 
   // Receive and consume body with FIN set, and no trailers.
-  const QuicString kBody = QuicString(1024, 'x');
+  QuicString body(1024, 'x');
+  std::unique_ptr<char[]> buf;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  QuicString header = QuicString(buf.get(), header_length);
+  QuicString data = connection_->transport_version() == QUIC_VERSION_99
+                        ? header + body
+                        : body;
+
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), /*fin=*/true,
-                        0, kBody);
+                        0, data);
   stream_->OnStreamFrame(frame);
 
   EXPECT_TRUE(stream_->IsDoneReading());
@@ -895,8 +1096,14 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data to force a non-zero final offset.
-  const int kBodySize = 1 * 1024;  // 1 MB
-  stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false, nullptr);
+  QuicString body(1024, 'x');  // 1 MB
+  QuicByteCount header_length = 0;
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    std::unique_ptr<char[]> buf;
+    header_length = encoder_.SerializeDataFrameHeader(body.length(), &buf);
+  }
+
+  stream_->WriteOrBufferBody(body, false, nullptr);
 
   // The final offset field in the trailing headers is populated with the
   // number of body bytes written (including queued bytes).
@@ -904,7 +1111,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   trailers["trailer key"] = "trailer value";
   SpdyHeaderBlock trailers_with_offset(trailers.Clone());
   trailers_with_offset[kFinalOffsetHeaderKey] =
-      QuicTextUtils::Uint64ToString(kBodySize);
+      QuicTextUtils::Uint64ToString(body.length() + header_length);
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
   stream_->WriteTrailers(std::move(trailers), nullptr);
   EXPECT_EQ(trailers_with_offset, session_->GetWriteHeaders());
@@ -937,6 +1144,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   // Test that the stream is not closed for writing when trailers are sent
   // while there are still body bytes queued.
+  testing::InSequence seq;
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
@@ -948,6 +1156,10 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
   // Write non-zero body data, but only consume partially, ensuring queueing.
   const int kBodySize = 1 * 1024;  // 1 KB
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+        .WillOnce(Return(QuicConsumedData(3, false)));
+  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
   stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false, nullptr);
@@ -1058,8 +1270,13 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrame) {
 }
 
 TEST_P(QuicSpdyStreamTest, OnPriorityFrameAfterSendingData) {
+  testing::InSequence seq;
   Initialize(kShouldProcessData);
 
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+        .WillOnce(Return(QuicConsumedData(2, false)));
+  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(4, true)));
   stream_->WriteOrBufferBody("data", true, nullptr);

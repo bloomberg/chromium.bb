@@ -206,6 +206,16 @@ class QuicTestPacketMaker {
       bool fin,
       quic::QuicStreamOffset offset,
       quic::QuicStringPiece data);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndMultipleDataFramesPacket(
+      quic::QuicPacketNumber packet_number,
+      bool include_version,
+      quic::QuicStreamId stream_id,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      bool fin,
+      quic::QuicStreamOffset offset,
+      const std::vector<std::string>& data);
 
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeRequestHeadersAndMultipleDataFramesPacket(

@@ -57,6 +57,7 @@ class TestStream : public QuicStream {
   MOCK_METHOD0(OnCanWriteNewData, void());
 
   using QuicStream::CanWriteNewData;
+  using QuicStream::CanWriteNewDataAfterData;
   using QuicStream::CloseWriteSide;
   using QuicStream::fin_buffered;
   using QuicStream::OnClose;
@@ -934,6 +935,13 @@ TEST_P(QuicStreamTest, ConnectionClosed) {
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   // Stream stops waiting for acks as connection is going to close.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+}
+
+TEST_P(QuicStreamTest, CanWriteNewDataAfterData) {
+  SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
+  Initialize();
+  EXPECT_TRUE(stream_->CanWriteNewDataAfterData(99));
+  EXPECT_FALSE(stream_->CanWriteNewDataAfterData(100));
 }
 
 TEST_P(QuicStreamTest, WriteBufferedData) {

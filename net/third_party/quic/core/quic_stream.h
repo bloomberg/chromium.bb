@@ -384,6 +384,10 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // True if buffered data in send buffer is below buffered_data_threshold_.
   bool CanWriteNewData() const;
 
+  // True if buffered data in send buffer is still below
+  // buffered_data_threshold_ even after writing |length| bytes.
+  bool CanWriteNewDataAfterData(QuicByteCount length) const;
+
   // Called when upper layer can write new data.
   virtual void OnCanWriteNewData() {}
 

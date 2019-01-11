@@ -709,7 +709,52 @@ QuicTestPacketMaker::MakeAckAndDataPacket(
 
   frames.push_back(
       quic::QuicFrame(quic::QuicStreamFrame(stream_id, fin, offset, data)));
+  DVLOG(1) << "Adding frame: " << frames.back();
 
+  return MakeMultipleFramesPacket(header_, frames);
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
+    quic::QuicPacketNumber packet_number,
+    bool include_version,
+    quic::QuicStreamId stream_id,
+    quic::QuicPacketNumber largest_received,
+    quic::QuicPacketNumber smallest_received,
+    quic::QuicPacketNumber least_unacked,
+    bool fin,
+    quic::QuicStreamOffset offset,
+    const std::vector<std::string>& data_writes) {
+  InitializeHeader(packet_number, include_version);
+
+  quic::QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
+  for (quic::QuicPacketNumber i = smallest_received; i <= largest_received;
+       ++i) {
+    ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
+  }
+  if (largest_received > 0) {
+    ack.packets.AddRange(1, largest_received + 1);
+  }
+  quic::QuicFrames frames;
+  frames.push_back(quic::QuicFrame(&ack));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  quic::QuicStopWaitingFrame stop_waiting;
+  if (version_ == quic::QUIC_VERSION_35) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(quic::QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames.back();
+  }
+
+  for (size_t i = 0; i < data_writes.size(); ++i) {
+    bool is_fin = fin && (i == data_writes.size() - 1);
+    quic::QuicFrame quic_frame(quic::QuicStreamFrame(
+        stream_id, is_fin, offset, quic::QuicStringPiece(data_writes[i])));
+    DVLOG(1) << "Adding frame: " << quic_frame;
+    frames.push_back(quic_frame);
+    offset += data_writes[i].length();
+  }
   return MakeMultipleFramesPacket(header_, frames);
 }
 

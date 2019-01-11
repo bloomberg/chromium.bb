@@ -561,7 +561,10 @@ class QuicSimpleServerSessionServerPushTest
   // them by sending PUSH_PROMISE for all and sending push responses for as much
   // as possible(limited by kMaxStreamsForTest).
   // If |num_resources| > kMaxStreamsForTest, the left over will be queued.
-  void PromisePushResources(size_t num_resources) {
+  // Returns the length of the data frame header, 0 if the version doesn't
+  // require header.
+  QuicByteCount PromisePushResources(size_t num_resources) {
+    // testing::InSequence seq;
     // To prevent push streams from being closed the response need to be larger
     // than stream flow control window so stream won't send the full body.
     size_t body_size = 2 * kStreamFlowControlWindowSize;  // 64KB.
@@ -572,6 +575,7 @@ class QuicSimpleServerSessionServerPushTest
     QuicString partial_push_resource_path = "/server_push_src";
     std::list<QuicBackendResponse::ServerPushInfo> push_resources;
     QuicString scheme = "http";
+    QuicByteCount header_length = 0;
     for (unsigned int i = 1; i <= num_resources; ++i) {
       QuicStreamId stream_id = GetNthServerInitiatedUnidirectionalId(i - 1);
       QuicString path =
@@ -579,7 +583,20 @@ class QuicSimpleServerSessionServerPushTest
       QuicString url = scheme + "://" + resource_host + path;
       QuicUrl resource_url = QuicUrl(url);
       QuicString body(body_size, 'a');
-      memory_cache_backend_.AddSimpleResponse(resource_host, path, 200, body);
+      QuicString data;
+      header_length = 0;
+      if (connection_->transport_version() == QUIC_VERSION_99) {
+        HttpEncoder encoder;
+        std::unique_ptr<char[]> buffer;
+        header_length =
+            encoder.SerializeDataFrameHeader(body.length(), &buffer);
+        QuicString header = QuicString(buffer.get(), header_length);
+        data = header + body;
+      } else {
+        data = body;
+      }
+
+      memory_cache_backend_.AddSimpleResponse(resource_host, path, 200, data);
       push_resources.push_back(QuicBackendResponse::ServerPushInfo(
           resource_url, spdy::SpdyHeaderBlock(), QuicStream::kDefaultPriority,
           body));
@@ -594,15 +611,21 @@ class QuicSimpleServerSessionServerPushTest
                                      QuicStream::kDefaultPriority, _));
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
-        EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
-            .WillOnce(
-                Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+        if (connection_->transport_version() == QUIC_VERSION_99) {
+          EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
+              .WillOnce(Return(QuicConsumedData(header_length, false)));
+        }
+        EXPECT_CALL(*connection_,
+                    SendStreamData(stream_id, _, header_length, NO_FIN))
+            .WillOnce(Return(QuicConsumedData(
+                kStreamFlowControlWindowSize - header_length, false)));
         EXPECT_CALL(*session_, SendBlocked(stream_id));
       }
     }
     session_->PromisePushResources(request_url, push_resources,
                                    GetNthClientInitiatedBidirectionalId(0),
                                    request_headers);
+    return header_length;
   }
 };
 
@@ -625,7 +648,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // Tests that after promised stream queued up, when an opened stream is marked
   // draining, a queued promised stream will become open and send push response.
   size_t num_resources = kMaxStreamsForTest + 1;
-  PromisePushResources(num_resources);
+  QuicByteCount header_length = PromisePushResources(num_resources);
   QuicStreamId next_out_going_stream_id =
       GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
 
@@ -633,9 +656,15 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // created and a response sent on the stream.
   EXPECT_CALL(*session_, WriteHeadersMock(next_out_going_stream_id, _, false,
                                           QuicStream::kDefaultPriority, _));
-  EXPECT_CALL(*connection_,
-              SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
-      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_,
+                SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
+        .WillOnce(Return(QuicConsumedData(header_length, false)));
+  }
+  EXPECT_CALL(*connection_, SendStreamData(next_out_going_stream_id, _,
+                                           header_length, NO_FIN))
+      .WillOnce(Return(QuicConsumedData(
+          kStreamFlowControlWindowSize - header_length, false)));
   EXPECT_CALL(*session_, SendBlocked(next_out_going_stream_id));
 
   if (connection_->transport_version() == QUIC_VERSION_99) {
@@ -669,7 +698,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
         .WillOnce(Invoke(
             this, &QuicSimpleServerSessionServerPushTest::ClearControlFrame));
   }
-  PromisePushResources(num_resources);
+  QuicByteCount header_length = PromisePushResources(num_resources);
 
   // Reset the last stream in the queue. It should be marked cancelled.
   QuicStreamId stream_got_reset =
@@ -692,8 +721,14 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
                                           QuicStream::kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
-      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
+        .WillOnce(Return(QuicConsumedData(header_length, false)));
+  }
+  EXPECT_CALL(*connection_,
+              SendStreamData(stream_not_reset, _, header_length, NO_FIN))
+      .WillOnce(Return(QuicConsumedData(
+          kStreamFlowControlWindowSize - header_length, false)));
   EXPECT_CALL(*session_, SendBlocked(stream_not_reset));
   EXPECT_CALL(*session_, WriteHeadersMock(stream_got_reset, _, false,
                                           QuicStream::kDefaultPriority, _))
@@ -725,7 +760,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
         .WillOnce(Invoke(
             this, &QuicSimpleServerSessionServerPushTest::ClearControlFrame));
   }
-  PromisePushResources(num_resources);
+  QuicByteCount header_length = PromisePushResources(num_resources);
   QuicStreamId stream_to_open =
       GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
 
@@ -737,8 +772,14 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
               OnStreamReset(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT));
   EXPECT_CALL(*session_, WriteHeadersMock(stream_to_open, _, false,
                                           QuicStream::kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
-      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
+        .WillOnce(Return(QuicConsumedData(header_length, false)));
+  }
+  EXPECT_CALL(*connection_,
+              SendStreamData(stream_to_open, _, header_length, NO_FIN))
+      .WillOnce(Return(QuicConsumedData(
+          kStreamFlowControlWindowSize - header_length, false)));
 
   EXPECT_CALL(*session_, SendBlocked(stream_to_open));
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
