@@ -34,7 +34,6 @@ class LoginKeyboardTestBase : public LoginTestBase {
 
   // AshTestBase:
   void SetUp() override;
-  void TearDown() override;
 
  private:
   std::vector<mojom::LoginUserInfoPtr> users_;

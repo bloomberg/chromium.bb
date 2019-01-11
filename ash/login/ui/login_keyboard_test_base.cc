@@ -33,12 +33,6 @@ void LoginKeyboardTestBase::SetUp() {
   Shell::Get()->ash_keyboard_controller()->ActivateKeyboard();
 }
 
-void LoginKeyboardTestBase::TearDown() {
-  Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
-
-  LoginTestBase::TearDown();
-}
-
 void LoginKeyboardTestBase::ShowKeyboard() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
