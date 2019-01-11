@@ -203,9 +203,7 @@ class RTCVideoDecoderTest
 TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   std::unique_ptr<RTCVideoDecoder> null_rtc_decoder(RTCVideoDecoder::Create(
-      webrtc::SdpVideoFormat(
-          webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecI420)),
-      mock_gpu_factories_.get()));
+      webrtc::SdpVideoFormat("I420"), mock_gpu_factories_.get()));
   EXPECT_EQ(nullptr, null_rtc_decoder.get());
 }
 
