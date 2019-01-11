@@ -2,25 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromeos/rules.gni")
 import("//testing/test.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
-source_set("settings") {
-  configs += [ "//chromeos:chromeos_implementation" ]
-  public_deps = [
-    ":cros_settings_names",
-  ]
+component("settings") {
+  defines = [ "IS_CHROMEOS_SETTINGS_IMPL" ]
   deps = [
     "//base",
     "//base:i18n",
     "//chromeos:chromeos_constants",
-    "//chromeos:chromeos_export",
     "//chromeos/login/login_state",
     "//third_party/icu",
   ]
   sources = [
+    "cros_settings_names.cc",
+    "cros_settings_names.h",
     "cros_settings_provider.cc",
     "cros_settings_provider.h",
     "system_settings_provider.cc",
@@ -29,17 +26,6 @@ source_set("settings") {
     "timezone_settings.h",
     "timezone_settings_helper.cc",
     "timezone_settings_helper.h",
-  ]
-}
-
-source_set("cros_settings_names") {
-  configs += [ "//chromeos:chromeos_implementation" ]
-  deps = [
-    "//chromeos:chromeos_export",
-  ]
-  sources = [
-    "cros_settings_names.cc",
-    "cros_settings_names.h",
   ]
 }
 

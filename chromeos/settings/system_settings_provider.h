@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -21,7 +21,7 @@ class Value;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT SystemSettingsProvider
+class COMPONENT_EXPORT(CHROMEOS_SETTINGS) SystemSettingsProvider
     : public CrosSettingsProvider,
       public system::TimezoneSettings::Observer {
  public:

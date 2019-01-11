@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
@@ -16,10 +16,10 @@ namespace chromeos {
 namespace system {
 
 // Canonical name of UTC timezone.
-CHROMEOS_EXPORT extern const char kUTCTimezoneName[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kUTCTimezoneName[];
 
 // This interface provides access to Chrome OS timezone settings.
-class CHROMEOS_EXPORT TimezoneSettings {
+class COMPONENT_EXPORT(CHROMEOS_SETTINGS) TimezoneSettings {
  public:
   class Observer {
    public:
