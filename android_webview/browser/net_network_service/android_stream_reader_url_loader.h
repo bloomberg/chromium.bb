@@ -6,7 +6,9 @@
 #define ANDROID_WEBVIEW_BROWSER_NET_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 
 #include "android_webview/browser/net/aw_web_resource_response.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/http/http_byte_range.h"
+#include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace android_webview {
@@ -53,9 +55,13 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
       std::unique_ptr<android_webview::InputStream> input_stream);
   void OnReaderSeekCompleted(int result);
   void HeadersComplete(int status_code, const std::string& status_text);
-  void RequestComplete(const network::URLLoaderCompletionStatus& status);
+  void RequestComplete(int status_code);
   void SendBody();
-  void OnRequestError(const network::URLLoaderCompletionStatus& status);
+
+  void OnDataPipeWritable(MojoResult result);
+  void CleanUp();
+  void DidRead(int result);
+  void ReadMore();
 
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
@@ -63,6 +69,10 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<ResponseDelegate> response_delegate_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
+
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  scoped_refptr<network::NetToMojoPendingBuffer> pending_buffer_;
+  mojo::SimpleWatcher writable_handle_watcher_;
 
   base::WeakPtrFactory<AndroidStreamReaderURLLoader> weak_factory_;
 

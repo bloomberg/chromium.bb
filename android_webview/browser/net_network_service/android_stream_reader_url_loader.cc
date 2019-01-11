@@ -86,11 +86,14 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
       client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
       response_delegate_(std::move(response_delegate)),
+      writable_handle_watcher_(FROM_HERE,
+                               mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                               base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   // If there is a client error, clean up the request.
-  client_.set_connection_error_handler(base::BindOnce(
-      &AndroidStreamReaderURLLoader::OnRequestError, weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+  client_.set_connection_error_handler(
+      base::BindOnce(&AndroidStreamReaderURLLoader::RequestComplete,
+                     weak_factory_.GetWeakPtr(), net::ERR_ABORTED));
 }
 
 AndroidStreamReaderURLLoader::~AndroidStreamReaderURLLoader() {}
@@ -107,8 +110,7 @@ void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 
 void AndroidStreamReaderURLLoader::Start() {
   if (!ParseRange(resource_request_.headers)) {
-    OnRequestError(network::URLLoaderCompletionStatus(
-        net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    RequestComplete(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
 
@@ -152,7 +154,7 @@ void AndroidStreamReaderURLLoader::OnReaderSeekCompleted(int result) {
     // we've got the expected content size here
     HeadersComplete(net::HTTP_OK, kHTTPOkText);
   } else {
-    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    RequestComplete(net::ERR_FAILED);
   }
 }
 
@@ -183,7 +185,7 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   client_->OnReceiveResponse(head);
 
   if (status_code != net::HTTP_OK) {
-    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    RequestComplete(net::ERR_FAILED);
     return;
   }
 
@@ -191,29 +193,96 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
 }
 
 void AndroidStreamReaderURLLoader::SendBody() {
-  // TODO(timvolodine): implement IOBuffer stream -> mojo pipes here
-  mojo::ScopedDataPipeConsumerHandle body_to_send;
-  client_->OnStartLoadingResponseBody(std::move(body_to_send));
-  RequestComplete(network::URLLoaderCompletionStatus(net::OK));
-}
-
-void AndroidStreamReaderURLLoader::RequestComplete(
-    const network::URLLoaderCompletionStatus& status) {
-  if (status.error_code != net::OK) {
-    OnRequestError(status);
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  if (CreateDataPipe(nullptr /*options*/, &producer_handle_,
+                     &consumer_handle) != MOJO_RESULT_OK) {
+    RequestComplete(net::ERR_FAILED);
     return;
   }
-  client_->OnComplete(status);
+  writable_handle_watcher_.Watch(
+      producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&AndroidStreamReaderURLLoader::OnDataPipeWritable,
+                          base::Unretained(this)));
+  client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
-  // Manages its own lifetime
-  delete this;
+  ReadMore();
 }
 
-void AndroidStreamReaderURLLoader::OnRequestError(
-    const network::URLLoaderCompletionStatus& status) {
-  client_->OnComplete(status);
+void AndroidStreamReaderURLLoader::ReadMore() {
+  DCHECK(!pending_buffer_.get());
+  uint32_t num_bytes;
+  MojoResult mojo_result = network::NetToMojoPendingBuffer::BeginWrite(
+      &producer_handle_, &pending_buffer_, &num_bytes);
+  if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
+    // The pipe is full. We need to wait for it to have more space.
+    writable_handle_watcher_.ArmOrNotify();
+    return;
+  } else if (mojo_result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // The data pipe consumer handle has been closed.
+    RequestComplete(net::ERR_ABORTED);
+    return;
+  } else if (mojo_result != MOJO_RESULT_OK) {
+    // The body stream is in a bad state. Bail out.
+    RequestComplete(net::ERR_UNEXPECTED);
+    return;
+  }
+  scoped_refptr<net::IOBuffer> buffer(
+      new network::NetToMojoIOBuffer(pending_buffer_.get()));
 
-  // Manages it's own lifetime
+  // TODO(timvolodine): consider using a sequenced task runner.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(
+          &InputStreamReaderWrapper::ReadRawData, input_stream_reader_wrapper_,
+          base::RetainedRef(buffer.get()), base::checked_cast<int>(num_bytes)),
+      base::BindOnce(&AndroidStreamReaderURLLoader::DidRead,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AndroidStreamReaderURLLoader::DidRead(int result) {
+  DCHECK(pending_buffer_);
+  if (result < 0) {
+    // error case
+    RequestComplete(result);
+    return;
+  }
+  if (result == 0) {
+    // eof, read completed
+    pending_buffer_->Complete(0);
+    RequestComplete(net::OK);
+    return;
+  }
+  producer_handle_ = pending_buffer_->Complete(result);
+  pending_buffer_ = nullptr;
+
+  // TODO(timvolodine): consider using a sequenced task runner.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&AndroidStreamReaderURLLoader::ReadMore,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void AndroidStreamReaderURLLoader::OnDataPipeWritable(MojoResult result) {
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    RequestComplete(net::ERR_ABORTED);
+    return;
+  }
+  DCHECK_EQ(result, MOJO_RESULT_OK) << result;
+
+  ReadMore();
+}
+
+void AndroidStreamReaderURLLoader::RequestComplete(int status_code) {
+  client_->OnComplete(network::URLLoaderCompletionStatus(status_code));
+  CleanUp();
+}
+
+void AndroidStreamReaderURLLoader::CleanUp() {
+  // Resets the watchers and pipes, so that we will never be called back.
+  writable_handle_watcher_.Cancel();
+  pending_buffer_ = nullptr;
+  producer_handle_.reset();
+
+  // Manages its own lifetime
   delete this;
 }
 
