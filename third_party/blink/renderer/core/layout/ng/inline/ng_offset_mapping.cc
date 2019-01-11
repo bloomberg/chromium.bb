@@ -6,11 +6,9 @@
 
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/platform/text/character.h"
@@ -64,24 +62,12 @@ std::pair<const Node&, unsigned> ToNodeOffsetPair(const Position& position) {
 LayoutBlockFlow* NGInlineFormattingContextOf(const Position& position) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return nullptr;
-  LayoutBlockFlow* block_flow =
-      NGOffsetMapping::GetInlineFormattingContextOf(position);
-  if (!block_flow || !block_flow->IsLayoutNGMixin())
-    return nullptr;
-  return block_flow;
-}
-
-// static
-LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
-    const Position& position) {
-  if (!AcceptsPosition(position))
+  if (!NGOffsetMapping::AcceptsPosition(position))
     return nullptr;
   const auto node_offset_pair = ToNodeOffsetPair(position);
   const LayoutObject* layout_object =
       AssociatedLayoutObjectOf(node_offset_pair.first, node_offset_pair.second);
-  if (!layout_object)
-    return nullptr;
-  return GetInlineFormattingContextOf(*layout_object);
+  return layout_object->ContainingNGBlockFlow();
 }
 
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
@@ -220,18 +206,12 @@ LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
 NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)
     : NGOffsetMapping(std::move(other.units_),
                       std::move(other.ranges_),
-                      other.text_,
-                      std::move(other.caret_navigator_)) {}
+                      other.text_) {}
 
-NGOffsetMapping::NGOffsetMapping(
-    UnitVector&& units,
-    RangeMap&& ranges,
-    String text,
-    std::unique_ptr<NGCaretNavigator> caret_navigator)
-    : units_(std::move(units)),
-      ranges_(std::move(ranges)),
-      text_(text),
-      caret_navigator_(std::move(caret_navigator)) {}
+NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
+                                 RangeMap&& ranges,
+                                 String text)
+    : units_(std::move(units)), ranges_(std::move(ranges)), text_(text) {}
 
 NGOffsetMapping::~NGOffsetMapping() = default;
 
