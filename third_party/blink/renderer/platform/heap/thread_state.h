@@ -62,7 +62,6 @@ class IncrementalMarkingScope;
 class IncrementalMarkingTestDriver;
 }  // namespace incremental_marking_test
 
-class GarbageCollectedMixinConstructorMarkerBase;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -480,29 +479,6 @@ class PLATFORM_EXPORT ThreadState final
     perform_cleanup_ = perform_cleanup;
   }
 
-  // By entering a gc-forbidden scope, conservative GCs will not
-  // be allowed while handling an out-of-line allocation request.
-  // Intended used when constructing subclasses of GC mixins, where
-  // the object being constructed cannot be safely traced & marked
-  // fully should a GC be allowed while its subclasses are being
-  // constructed.
-  void EnterGCForbiddenScopeIfNeeded(
-      GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker) {
-    DCHECK(CheckThread());
-    if (!gc_mixin_marker_) {
-      EnterMixinConstructionScope();
-      gc_mixin_marker_ = gc_mixin_marker;
-    }
-  }
-  void LeaveGCForbiddenScopeIfNeeded(
-      GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker) {
-    DCHECK(CheckThread());
-    if (gc_mixin_marker_ == gc_mixin_marker) {
-      LeaveMixinConstructionScope();
-      gc_mixin_marker_ = nullptr;
-    }
-  }
-
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
 
   using PersistentClearCallback = void (*)(void*);
@@ -706,8 +682,6 @@ class PLATFORM_EXPORT ThreadState final
 
   TimeDelta next_incremental_marking_step_duration_;
   TimeDelta previous_incremental_marking_time_left_;
-
-  GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker_;
 
   GCState gc_state_;
   GCPhase gc_phase_;

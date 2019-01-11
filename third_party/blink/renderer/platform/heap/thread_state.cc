@@ -177,7 +177,6 @@ ThreadState::ThreadState()
       mixins_being_constructed_count_(0),
       object_resurrection_forbidden_(false),
       in_atomic_pause_(false),
-      gc_mixin_marker_(nullptr),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
       reason_for_scheduled_gc_(BlinkGC::GCReason::kMaxValue),
