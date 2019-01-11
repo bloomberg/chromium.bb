@@ -453,6 +453,7 @@ cr.define('extensions', function() {
 
       const optionsDialog = this.$$('#options-dialog');
       if (optionsDialog && optionsDialog.open) {
+        optionsDialog.close();
         this.showOptionsDialog_ = false;
       }
 
@@ -529,7 +530,6 @@ cr.define('extensions', function() {
     /** @private */
     onOptionsDialogClose_: function() {
       this.showOptionsDialog_ = false;
-      this.$$('extensions-detail-view').focusOptionsButton();
     },
 
     /** @private */
