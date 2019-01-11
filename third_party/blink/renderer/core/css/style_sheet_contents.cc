@@ -124,9 +124,6 @@ bool StyleSheetContents::IsCacheableForResource() const {
   // This would require dealing with multiple clients for load callbacks.
   if (!LoadCompleted())
     return false;
-  if (has_media_queries_ &&
-      !RuntimeEnabledFeatures::CacheStyleSheetWithMediaQueriesEnabled())
-    return false;
   // FIXME: Support copying import rules.
   if (!import_rules_.IsEmpty())
     return false;

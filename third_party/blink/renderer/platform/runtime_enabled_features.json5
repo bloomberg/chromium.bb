@@ -168,10 +168,6 @@
       status: "stable",
     },
     {
-      name: "CacheStyleSheetWithMediaQueries",
-      status: "experimental",
-    },
-    {
       name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
       status: "stable",
     },
