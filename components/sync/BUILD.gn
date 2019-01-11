@@ -8,6 +8,11 @@ import("//build/config/jumbo.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # Controls the product part of the user agent calculated in sync_util.cc.
+  sync_user_agent_product = "Chrome"
+}
+
 jumbo_static_library("sync") {
   sources = [
     "base/bind_to_task_runner.h",
@@ -621,6 +626,8 @@ jumbo_static_library("sync") {
       "//components/policy/core/browser",
     ]
   }
+
+  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
