@@ -16,6 +16,8 @@ cr.define('extensions', function() {
   let ApiGroup;
 
   /**
+   * A struct used to describe each url and its associated counts. The id is
+   * unique for each item in the list of URLs and is used for the tooltip.
    * @typedef {{
    *   page: string,
    *   count: number
@@ -33,27 +35,26 @@ cr.define('extensions', function() {
        * @type {!extensions.ApiGroup}
        */
       data: Object,
+
+      /** @private */
+      isExpandable_: {
+        type: Boolean,
+        computed: 'computeIsExpandable_(data.countsByUrl)',
+      },
+
+      /** @private */
+      isExpanded_: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     /**
-     * Show page URLs if there is at least one non-empty page URL. We are
-     * guaranteed to have at least one based on how the data in this component
-     * is generated from activity_log.js.
      * @private
      * @return {boolean}
      */
-    shouldShowPageUrls_: function() {
+    computeIsExpandable_: function() {
       return this.data.countsByUrl.size > 0;
-    },
-
-    /**
-     * Show the API call count for a particular page URL if more than one page
-     * URL is associated with this API call.
-     * @private
-     * @return {boolean}
-     */
-    shouldShowPageUrlCount_: function() {
-      return this.data.countsByUrl.size > 1;
     },
 
     /**
@@ -71,6 +72,23 @@ cr.define('extensions', function() {
             }
             return a.page < b.page ? -1 : (a.page > b.page ? 1 : 0);
           });
+    },
+
+    /** @private */
+    onExpandTap_: function() {
+      if (this.isExpandable_) {
+        this.isExpanded_ = !this.isExpanded_;
+      }
+    },
+
+    /**
+     * Show the API call count for a particular page URL if more than one page
+     * URL is associated with this API call.
+     * @private
+     * @return {boolean}
+     */
+    shouldShowPageUrlCount_: function() {
+      return this.data.countsByUrl.size > 1;
     },
   });
 

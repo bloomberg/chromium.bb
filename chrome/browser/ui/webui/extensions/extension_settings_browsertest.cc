@@ -245,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
   ASSERT_TRUE(activity_log_contents);
   EXPECT_EQ(activity_log_url, activity_log_contents->GetLastCommittedURL());
 
-  // We are looking for the 'tabs.query' entry in the activity log as that is
-  // the only API call the simple_call.crx extension does.
+  // We are looking for the 'test.sendMessage' entry in the activity log as
+  // that is the only API call the simple_call.crx extension does.
   // The querySelectors and shadowRoots are used here in order to penetrate
   // multiple nested shadow DOMs created by Polymer components
   // in the chrome://extensions page.
