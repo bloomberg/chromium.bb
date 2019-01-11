@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import android.webkit.WebViewClient;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.components.safe_browsing.SBThreatType;
 
 /**
@@ -26,12 +27,16 @@ public final class AwSafeBrowsingConversionHelper {
     public static final int SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE =
             WebViewClient.SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE;
     /** The resource was blocked because it may trick the user into a billing agreement. */
-    // TODO(ntfschr): add a new int to the SDK.
-    public static final int SAFE_BROWSING_THREAT_BILLING =
-            WebViewClient.SAFE_BROWSING_THREAT_UNKNOWN;
+    // TODO(ntfschr): replace this with the named constant when we roll the Q SDK
+    // (http://crbug.com/887186).
+    public static final int SAFE_BROWSING_THREAT_BILLING = 4;
 
     /**
      * Converts the threat type value from SafeBrowsing code to the WebViewClient constant.
+     *
+     * <p class="note"><b>Note:</b> this output may depend upon the embedding application's {@code
+     * targetSdk} value if {@code chromiumThreatType} refers to a threat type added after {@link
+     * Build.VERSION_CODES#O_MR1} (when we added the original Safe Browisng threat type constants).
      */
     public static int convertThreatType(int chromiumThreatType) {
         switch (chromiumThreatType) {
@@ -42,7 +47,8 @@ public final class AwSafeBrowsingConversionHelper {
             case SBThreatType.URL_UNWANTED:
                 return SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE;
             case SBThreatType.BILLING:
-                return SAFE_BROWSING_THREAT_BILLING;
+                return BuildInfo.targetsAtLeastQ() ? SAFE_BROWSING_THREAT_BILLING
+                                                   : SAFE_BROWSING_THREAT_UNKNOWN;
             default:
                 return SAFE_BROWSING_THREAT_UNKNOWN;
         }
