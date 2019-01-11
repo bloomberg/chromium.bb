@@ -22,16 +22,10 @@ DisjointRangeLockManager::Lock::~Lock() = default;
 DisjointRangeLockManager::Lock& DisjointRangeLockManager::Lock::operator=(
     DisjointRangeLockManager::Lock&&) noexcept = default;
 
-DisjointRangeLockManager::DisjointRangeLockManager(
-    int level_count,
-    const leveldb::Comparator* comparator)
-    : comparator_(comparator),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+DisjointRangeLockManager::DisjointRangeLockManager(int level_count)
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
-  locks_.reserve(level_count);
-  for (int level = 0; level < level_count; ++level) {
-    locks_.emplace_back(ScopesLockRangeLessThan(comparator_));
-  }
+  locks_.resize(level_count);
 }
 
 DisjointRangeLockManager::~DisjointRangeLockManager() = default;
@@ -110,10 +104,8 @@ bool DisjointRangeLockManager::AcquireLock(
     LockAquiredCallback acquired_callback) {
   if (request.level < 0 || static_cast<size_t>(request.level) >= locks_.size())
     return false;
-  if (comparator_->Compare(leveldb::Slice(request.range.begin),
-                           leveldb::Slice(request.range.end)) >= 0) {
+  if (request.range.begin >= request.range.end)
     return false;
-  }
 
   auto& level_locks = locks_[request.level];
 
@@ -126,7 +118,7 @@ bool DisjointRangeLockManager::AcquireLock(
              .first;
   }
 
-  if (!IsRangeDisjointFromNeighbors(level_locks, request.range, comparator_))
+  if (!IsRangeDisjointFromNeighbors(level_locks, request.range))
     return false;
 
   Lock& lock = it->second;
@@ -185,21 +177,18 @@ void DisjointRangeLockManager::LockReleased(int level, ScopeLockRange range) {
 // static
 bool DisjointRangeLockManager::IsRangeDisjointFromNeighbors(
     const LockLevelMap& map,
-    const ScopeLockRange& range,
-    const leveldb::Comparator* const comparator) {
+    const ScopeLockRange& range) {
   DCHECK_EQ(map.count(range), 1ull);
   auto it = map.find(range);
   auto next_it = it;
   ++next_it;
   if (next_it != map.end()) {
-    return comparator->Compare(leveldb::Slice(range.end),
-                               leveldb::Slice(next_it->first.begin)) <= 0;
+    return range.end <= next_it->first.begin;
   }
   auto last_it = it;
   if (last_it != map.begin()) {
     --last_it;
-    return comparator->Compare(leveldb::Slice(last_it->first.end),
-                               leveldb::Slice(range.begin)) <= 0;
+    return last_it->first.end <= range.begin;
   }
   return true;
 }
