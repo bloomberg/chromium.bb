@@ -992,6 +992,13 @@ static void ptrmapPut(BtShared *pBt, Pgno key, u8 eType, Pgno parent, int *pRC){
     *pRC = rc;
     return;
   }
+  if( ((char*)sqlite3PagerGetExtra(pDbPage))[0]!=0 ){
+    /* The first byte of the extra data is the MemPage.isInit byte.
+    ** If that byte is set, it means this page is also being used
+    ** as a btree page. */
+    *pRC = SQLITE_CORRUPT_BKPT;
+    goto ptrmap_exit;
+  }
   offset = PTRMAP_PTROFFSET(iPtrmap, key);
   if( offset<0 ){
     *pRC = SQLITE_CORRUPT_BKPT;
@@ -1357,7 +1364,12 @@ static void ptrmapPutOvflPtr(MemPage *pPage, u8 *pCell, int *pRC){
   assert( pCell!=0 );
   pPage->xParseCell(pPage, pCell, &info);
   if( info.nLocal<info.nPayload ){
-    Pgno ovfl = get4byte(&pCell[info.nSize-4]);
+    Pgno ovfl;
+    if( SQLITE_WITHIN(pPage->aDataEnd, pCell, pCell+info.nLocal) ){
+      *pRC = SQLITE_CORRUPT_BKPT;
+      return;
+    }
+    ovfl = get4byte(&pCell[info.nSize-4]);
     ptrmapPut(pPage->pBt, ovfl, PTRMAP_OVERFLOW1, pPage->pgno, pRC);
   }
 }
