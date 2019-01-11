@@ -54,6 +54,7 @@ class ClientHintsPreferences;
 class CoreProbeSink;
 class Document;
 class DocumentLoader;
+class FrameOrImportedDocument;
 class LocalFrame;
 class LocalFrameClient;
 class ResourceError;
@@ -73,7 +74,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   explicit FrameFetchContext(DocumentLoader*);
   explicit FrameFetchContext(Document*);
-  ~FrameFetchContext() override;
+  ~FrameFetchContext() override = default;
 
   bool IsFrameFetchContext() const override { return true; }
 
@@ -182,10 +183,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // relevant document loader or frame in either cases without null-checks.
   //
   // TODO(kinuko): Remove constness, these return non-const members.
+  DocumentLoader* GetDocumentLoader() const;
   DocumentLoader* MasterDocumentLoader() const;
   LocalFrame* GetFrame() const;
   LocalFrameClient* GetLocalFrameClient() const;
-  LocalFrame* FrameOfImportsController() const;
 
   // FetchContext overrides:
   FrameScheduler* GetFrameScheduler() const override;
@@ -254,8 +255,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   CoreProbeSink* Probe() const;
 
-  Member<DocumentLoader> document_loader_;
-  Member<Document> document_;
+  Member<FrameOrImportedDocument> frame_or_imported_document_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally
