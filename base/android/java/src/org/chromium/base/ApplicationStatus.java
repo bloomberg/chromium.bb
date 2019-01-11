@@ -21,9 +21,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides information about the current activity's status, and a way
@@ -87,7 +88,8 @@ public class ApplicationStatus {
     /**
      * A map of which observers listen to state changes from which {@link Activity}.
      */
-    private static final Map<Activity, ActivityInfo> sActivityInfo = new ConcurrentHashMap<>();
+    private static final Map<Activity, ActivityInfo> sActivityInfo =
+            Collections.synchronizedMap(new HashMap<Activity, ActivityInfo>());
 
     /**
      * A list of observers to be notified when any {@link Activity} has a state change.
