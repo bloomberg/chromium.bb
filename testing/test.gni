@@ -10,6 +10,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/extract_unwind_tables.gni")
   import("//build/config/android/rules.gni")
+  import("//build/config/c++/c++.gni")
   import("//build/config/sanitizers/sanitizers.gni")
 }
 
@@ -68,10 +69,10 @@ template("test") {
 
         # Thanks to the set_defaults() for test(), configs are initialized with
         # the default shared_library configs rather than executable configs.
-        configs -= [
-          "//build/config:shared_library_config",
-          "//build/config/android:hide_all_but_jni",
-        ]
+        configs -= [ "//build/config:shared_library_config" ]
+        if (!export_libcxxabi_from_executables) {
+          configs -= [ "//build/config/android:hide_all_but_jni" ]
+        }
         configs += [ "//build/config:executable_config" ]
 
         # Don't output to the root or else conflict with the group() below.
@@ -135,6 +136,11 @@ template("test") {
         if (!defined(invoker.use_default_launcher) ||
             invoker.use_default_launcher) {
           deps += [ "//testing/android/native_test:native_test_native_code" ]
+        }
+        if (export_libcxxabi_from_executables) {
+          # In this configuration, the executable is really the JRE.  This
+          # library is the "main DSO" that should export libc++abi.
+          deps += [ "//build/config:executable_deps" ]
         }
       }
       unittest_apk(_apk_target) {
@@ -433,7 +439,12 @@ set_defaults("test") {
   if (is_android) {
     configs = default_shared_library_configs
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
+
+    # If libc++abi needs to be exported, omit any linker version scripts that
+    # would hide its symbols.
+    if (!export_libcxxabi_from_executables) {
+      configs += [ "//build/config/android:hide_all_but_jni" ]
+    }
   } else {
     configs = default_executable_configs
   }
