@@ -402,6 +402,13 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
     return;
 
   if (suspend_type == SuspendType::kUI) {
+    // If the site has registered an action handler for play then we should
+    // pass it to the site and let them handle it.
+    if (IsActionSupported(media_session::mojom::MediaSessionAction::kPlay)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay);
+      return;
+    }
+
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
         MediaSessionUmaHelper::MediaSessionUserAction::PlayDefault);
   }
@@ -431,6 +438,13 @@ void MediaSessionImpl::Suspend(SuspendType suspend_type) {
     return;
 
   if (suspend_type == SuspendType::kUI) {
+    // If the site has registered an action handler for pause then we should
+    // pass it to the site and let them handle it.
+    if (IsActionSupported(media_session::mojom::MediaSessionAction::kPause)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
+      return;
+    }
+
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
         MediaSessionUserAction::PauseDefault);
   }

@@ -51,6 +51,10 @@ void MediaSessionServiceImpl::DidFinishNavigation() {
   ClearActions();
 }
 
+void MediaSessionServiceImpl::FlushForTesting() {
+  client_.FlushForTesting();
+}
+
 void MediaSessionServiceImpl::SetClient(
     blink::mojom::MediaSessionClientPtr client) {
   client_ = std::move(client);

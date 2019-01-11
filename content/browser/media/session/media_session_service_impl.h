@@ -42,6 +42,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   }
 
   void DidFinishNavigation();
+  void FlushForTesting();
 
   // blink::mojom::MediaSessionService implementation.
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;

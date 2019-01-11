@@ -16,9 +16,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
-#include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
+#include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
@@ -94,13 +94,6 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
   std::list<AudioFocusType> requests_;
   base::Optional<AudioFocusType> audio_focus_type_;
-};
-
-class MockMediaSessionServiceImpl : public content::MediaSessionServiceImpl {
- public:
-  explicit MockMediaSessionServiceImpl(content::RenderFrameHost* rfh)
-      : MediaSessionServiceImpl(rfh) {}
-  ~MockMediaSessionServiceImpl() override = default;
 };
 
 }  // namespace
@@ -197,8 +190,9 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   void SystemStopDucking() { media_session_->StopDucking(); }
 
   void EnsureMediaSessionService() {
-    mock_media_session_service_.reset(new NiceMock<MockMediaSessionServiceImpl>(
-        shell()->web_contents()->GetMainFrame()));
+    mock_media_session_service_.reset(
+        new NiceMock<content::MockMediaSessionServiceImpl>(
+            shell()->web_contents()->GetMainFrame()));
   }
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) {
@@ -246,7 +240,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   std::unique_ptr<content::MockMediaSessionObserver>
       mock_media_session_observer_;
   MockAudioFocusDelegate* mock_audio_focus_delegate_;
-  std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
+  std::unique_ptr<content::MockMediaSessionServiceImpl>
+      mock_media_session_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImplBrowserTest);
 };

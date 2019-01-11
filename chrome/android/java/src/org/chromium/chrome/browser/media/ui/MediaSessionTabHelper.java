@@ -94,15 +94,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             MediaSessionUMA.recordPlay(
                     MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
-            if (mMediaSessionObserver.getMediaSession() != null) {
-                if (mMediaSessionActions != null
-                        && mMediaSessionActions.contains(MediaSessionAction.PLAY)) {
-                    mMediaSessionObserver.getMediaSession()
-                            .didReceiveAction(MediaSessionAction.PLAY);
-                } else {
-                    mMediaSessionObserver.getMediaSession().resume();
-                }
-            }
+            if (mMediaSessionObserver.getMediaSession() == null) return;
+
+            mMediaSessionObserver.getMediaSession().resume();
         }
 
         @Override
@@ -112,15 +106,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             MediaSessionUMA.recordPause(
                     MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
-            if (mMediaSessionObserver.getMediaSession() != null) {
-                if (mMediaSessionActions != null
-                        && mMediaSessionActions.contains(MediaSessionAction.PAUSE)) {
-                    mMediaSessionObserver.getMediaSession()
-                            .didReceiveAction(MediaSessionAction.PAUSE);
-                } else {
-                    mMediaSessionObserver.getMediaSession().suspend();
-                }
-            }
+            if (mMediaSessionObserver.getMediaSession() == null) return;
+
+            mMediaSessionObserver.getMediaSession().suspend();
         }
 
         @Override

@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
-#include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/media/session/mock_media_session_observer.h"
+#include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -36,32 +36,6 @@ constexpr base::TimeDelta kDefaultSeekTime =
     base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 static const int kPlayerId = 0;
-
-class MockMediaSessionServiceImpl : public MediaSessionServiceImpl {
- public:
-  explicit MockMediaSessionServiceImpl(RenderFrameHost* rfh)
-      : MediaSessionServiceImpl(rfh) {}
-  ~MockMediaSessionServiceImpl() override = default;
-};
-
-class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
- public:
-  MockMediaSessionClient() : binding_(this) {}
-
-  blink::mojom::MediaSessionClientPtr CreateInterfacePtrAndBind() {
-    blink::mojom::MediaSessionClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    return client;
-  }
-
-  MOCK_METHOD1(DidReceiveAction,
-               void(media_session::mojom::MediaSessionAction action));
-
- private:
-  mojo::Binding<blink::mojom::MediaSessionClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMediaSessionClient);
-};
 
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
@@ -109,7 +83,6 @@ class MediaSessionImplServiceRoutingTest
   void TearDown() override {
     mock_media_session_observer_.reset();
     services_.clear();
-    clients_.clear();
 
     test_service_manager_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
@@ -123,18 +96,16 @@ class MediaSessionImplServiceRoutingTest
   void CreateServiceForFrame(TestRenderFrameHost* frame) {
     services_[frame] =
         std::make_unique<NiceMock<MockMediaSessionServiceImpl>>(frame);
-    clients_[frame] = std::make_unique<NiceMock<MockMediaSessionClient>>();
-    services_[frame]->SetClient(clients_[frame]->CreateInterfacePtrAndBind());
   }
 
   void DestroyServiceForFrame(TestRenderFrameHost* frame) {
     services_.erase(frame);
-    clients_.erase(frame);
   }
 
   MockMediaSessionClient* GetClientForFrame(TestRenderFrameHost* frame) {
-    auto iter = clients_.find(frame);
-    return (iter != clients_.end()) ? iter->second.get() : nullptr;
+    auto iter = services_.find(frame);
+    return (iter != services_.end()) ? &iter->second.get()->mock_client()
+                                     : nullptr;
   }
 
   void StartPlayerForFrame(TestRenderFrameHost* frame) {
@@ -175,10 +146,6 @@ class MediaSessionImplServiceRoutingTest
   using ServiceMap = std::map<TestRenderFrameHost*,
                               std::unique_ptr<MockMediaSessionServiceImpl>>;
   ServiceMap services_;
-
-  using ClientMap =
-      std::map<TestRenderFrameHost*, std::unique_ptr<MockMediaSessionClient>>;
-  ClientMap clients_;
 
   using PlayerMap = std::map<TestRenderFrameHost*,
                              std::unique_ptr<MockMediaSessionPlayerObserver>>;
