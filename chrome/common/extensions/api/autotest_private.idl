@@ -107,7 +107,8 @@ namespace autotestPrivate {
     DOMString? htmlResponse;
     DOMString? htmlFallback;
   };
-  callback AssistantQueryResponseCallback = void (AssistantQueryResponse response);
+  callback AssistantQueryResponseCallback =
+      void(AssistantQueryResponse response);
 
   callback IsAppShownCallback = void (boolean appShown);
 
@@ -145,6 +146,9 @@ namespace autotestPrivate {
   callback LaunchArcAppCallback = void (boolean appLaunched);
 
   callback TakeScreenshotCallback = void (DOMString base64Png);
+
+  callback EnsureWindowServiceClientHasDrawnWindowCallback =
+      void(boolean success);
 
   callback VoidCallback = void ();
 
@@ -278,7 +282,8 @@ namespace autotestPrivate {
 
     // Enable/disable the Google Assistant
     // |callback|: Called when the operation has completed.
-    static void setAssistantEnabled(boolean enabled, long timeout_ms, VoidCallback callback);
+    static void setAssistantEnabled(boolean enabled, long timeout_ms,
+                                    VoidCallback callback);
 
     // Send a text query via Google Assistant.
     // |callback|: Called when response has been received.
@@ -287,8 +292,19 @@ namespace autotestPrivate {
 
     // Enable/disable a Crostini app's "scaled" property.
     // |appId|: The Crostini application ID.
-    // |scaled|: The app is "scaled" when shown, which means it uses low display density.
+    // |scaled|: The app is "scaled" when shown, which means it uses low display
+    //           density.
     // |callback|: Called when the operation has completed.
-    static void setCrostiniAppScaled(DOMString appId, boolean scaled, VoidCallback callback);
+    static void setCrostiniAppScaled(DOMString appId, boolean scaled,
+                                     VoidCallback callback);
+
+    // Ensure that the Window Service client identified by |clientName| has
+    // drawn any window. |callback| is invoked with true if the client has drawn
+    // anything or when it does so before the time out. Otherwise, an error
+    // is raised when timeout happens.
+    static void ensureWindowServiceClientHasDrawnWindow(
+        DOMString clientName,
+        long timeout_ms,
+        EnsureWindowServiceClientHasDrawnWindowCallback callback);
   };
 };

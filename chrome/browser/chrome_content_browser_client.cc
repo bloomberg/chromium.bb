@@ -371,6 +371,7 @@
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
+#include "services/ws/common/switches.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -3937,8 +3938,23 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return service_manager::Manifest::FromValueDeprecated(
-      base::JSONReader::Read(manifest_contents));
+  service_manager::Manifest manifest =
+      service_manager::Manifest::FromValueDeprecated(
+          base::JSONReader::Read(manifest_contents));
+
+#if defined(OS_CHROMEOS)
+  if (id == IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ws::switches::kUseTestConfig)) {
+    base::StringPiece manifest_test_overlay = rb.GetRawDataResourceForScale(
+        IDR_CHROME_CONTENT_BROWSER_MANIFEST_TEST_OVERLAY,
+        ui::ScaleFactor::SCALE_FACTOR_NONE);
+    manifest.Amend(service_manager::Manifest::FromValueDeprecated(
+        base::JSONReader::Read(manifest_test_overlay)));
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  return manifest;
 }
 
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>

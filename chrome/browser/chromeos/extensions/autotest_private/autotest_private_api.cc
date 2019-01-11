@@ -69,6 +69,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -1310,6 +1311,63 @@ AutotestPrivateSetCrostiniAppScaledFunction::Run() {
 
   registry_service->SetAppScaled(params->app_id, params->scaled);
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+    AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction() = default;
+AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+    ~AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::Run() {
+  auto params = api::autotest_private::EnsureWindowServiceClientHasDrawnWindow::
+      Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(
+      service_manager::ServiceFilter::ByName(ws::mojom::kServiceName),
+      mojo::MakeRequest(&window_server_test_ptr_));
+  window_server_test_ptr_->EnsureClientHasDrawnWindow(
+      params->client_name,
+      base::BindOnce(
+          &AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+              OnEnsureClientHasDrawnWindowCallback,
+          this));
+
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      base::BindOnce(
+          &AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+              OnTimeout,
+          this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+    OnEnsureClientHasDrawnWindowCallback(bool success) {
+  if (did_respond()) {
+    LOG(ERROR) << "EnsureClientHasDrawnWindow returned after timeout: "
+               << success;
+    return;
+  }
+
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
+    OnTimeout() {
+  if (did_respond())
+    return;
+
+  Respond(Error("EnsureWindowServiceClientHasDrawnWindowFunction timeout."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

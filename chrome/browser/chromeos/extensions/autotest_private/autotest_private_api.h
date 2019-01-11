@@ -19,6 +19,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "services/ws/public/mojom/window_server_test.mojom.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
@@ -502,6 +503,26 @@ class AutotestPrivateSetCrostiniAppScaledFunction
  private:
   ~AutotestPrivateSetCrostiniAppScaledFunction() override;
   ResponseAction Run() override;
+};
+
+// Ensure a Window Service client has drawn windows with a timeout.
+class AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction();
+  DECLARE_EXTENSION_FUNCTION(
+      "autotestPrivate.ensureWindowServiceClientHasDrawnWindow",
+      AUTOTESTPRIVATE_ENSUREWINDOWSERVICECLIENTHASDRAWNWINDOW)
+
+ private:
+  ~AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction() override;
+  ResponseAction Run() override;
+
+  void OnEnsureClientHasDrawnWindowCallback(bool success);
+  void OnTimeout();
+
+  ws::mojom::WindowServerTestPtr window_server_test_ptr_;
+  base::OneShotTimer timeout_timer_;
 };
 
 // The profile-keyed service that manages the autotestPrivate extension API.
