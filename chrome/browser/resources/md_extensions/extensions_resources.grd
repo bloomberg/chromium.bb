@@ -180,6 +180,9 @@
       <structure name="IDR_MD_EXTENSIONS_SHARED_STYLE_HTML"
                  file="shared_style.html"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_SHARED_VARS_HTML"
+                 file="shared_vars.html"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SHORTCUT_INPUT_HTML"
                  file="shortcut_input.html"
                  type="chrome_html" />
