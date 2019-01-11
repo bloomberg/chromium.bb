@@ -96,6 +96,8 @@ blink_platform_sources("loader") {
     "link_header.cc",
     "link_header.h",
     "mixed_content_autoupgrade_status.h",
+    "static_data_navigation_body_loader.cc",
+    "static_data_navigation_body_loader.h",
     "subresource_integrity.cc",
     "subresource_integrity.h",
   ]
@@ -135,6 +137,7 @@ jumbo_source_set("unit_tests") {
     "fetch/source_keyed_cached_metadata_handler_test.cc",
     "ftp_directory_listing_test.cc",
     "link_header_test.cc",
+    "static_data_navigation_body_loader_test.cc",
     "subresource_integrity_test.cc",
   ]
 

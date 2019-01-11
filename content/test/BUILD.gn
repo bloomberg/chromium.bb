@@ -1730,6 +1730,7 @@ test("content_unittests") {
     "../renderer/ico_image_decoder_unittest.cc",
     "../renderer/input/input_event_prediction_unittest.cc",
     "../renderer/input/main_thread_event_queue_unittest.cc",
+    "../renderer/loader/navigation_body_loader_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
     "../renderer/loader/shared_memory_data_consumer_handle_unittest.cc",
     "../renderer/loader/sync_load_context_unittest.cc",
