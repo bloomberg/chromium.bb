@@ -94,10 +94,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool GetClientAreaInsets(gfx::Insets* insets,
                                    HMONITOR monitor) const = 0;
 
-  // Returns true if DWM frame should be extended into client area by |insets|.
-  // Insets are specified in screen pixels not DIP because that's what DWM uses.
-  virtual bool GetDwmFrameInsetsInPixels(gfx::Insets* insets) const = 0;
-
   // Returns the minimum and maximum size the window can be resized to by the
   // user.
   virtual void GetMinMaxSize(gfx::Size* min_size,

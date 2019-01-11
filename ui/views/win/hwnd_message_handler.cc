@@ -1689,18 +1689,6 @@ void HWNDMessageHandler::OnEnterSizeMove() {
 }
 
 LRESULT HWNDMessageHandler::OnEraseBkgnd(HDC dc) {
-  gfx::Insets insets;
-  if (ui::win::IsAeroGlassEnabled() &&
-      delegate_->GetDwmFrameInsetsInPixels(&insets) && !insets.IsEmpty()) {
-    // This is necessary to avoid white flashing in the titlebar area around the
-    // minimize/maximize/close buttons.
-    RECT client_rect;
-    GetClientRect(hwnd(), &client_rect);
-    base::win::ScopedGDIObject<HBRUSH> brush(CreateSolidBrush(0));
-    // The DC and GetClientRect operate in client area coordinates.
-    RECT rect = {0, 0, client_rect.right, insets.top()};
-    FillRect(dc, &rect, brush.get());
-  }
   // Needed to prevent resize flicker.
   return 1;
 }
@@ -2755,7 +2743,7 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   } else if (window_pos->flags & SWP_HIDEWINDOW) {
     delegate_->HandleVisibilityChanged(false);
   }
-  UpdateDwmFrame();
+
   SetMsgHandled(FALSE);
 }
 
@@ -3113,9 +3101,6 @@ void HWNDMessageHandler::PerformDwmTransition() {
   ResetWindowRegion(true, false);
   // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
-  // This calls DwmExtendFrameIntoClientArea which must be called when DWM
-  // composition state changes.
-  UpdateDwmFrame();
 
   if (IsVisible() && IsFrameSystemDrawn()) {
     // For some reason, we need to hide the window after we change from a custom
@@ -3135,16 +3120,6 @@ void HWNDMessageHandler::PerformDwmTransition() {
   // to notify our children too, since we can have MDI child windows who need to
   // update their appearance.
   EnumChildWindows(hwnd(), &SendDwmCompositionChanged, NULL);
-}
-
-void HWNDMessageHandler::UpdateDwmFrame() {
-  gfx::Insets insets;
-  if (ui::win::IsAeroGlassEnabled() &&
-      delegate_->GetDwmFrameInsetsInPixels(&insets)) {
-    MARGINS margins = {insets.left(), insets.right(), insets.top(),
-                       insets.bottom()};
-    DwmExtendFrameIntoClientArea(hwnd(), &margins);
-  }
 }
 
 void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,

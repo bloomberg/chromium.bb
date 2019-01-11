@@ -172,7 +172,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void GetWindowMask(const gfx::Size& size, gfx::Path* path) override;
   bool GetClientAreaInsets(gfx::Insets* insets,
                            HMONITOR monitor) const override;
-  bool GetDwmFrameInsetsInPixels(gfx::Insets* insets) const override;
   void GetMinMaxSize(gfx::Size* min_size, gfx::Size* max_size) const override;
   gfx::Size GetRootViewSize() const override;
   gfx::Size DIPToScreenSize(const gfx::Size& dip_size) const override;
