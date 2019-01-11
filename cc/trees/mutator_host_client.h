@@ -44,7 +44,7 @@ class MutatorHostClient {
 
   // Allows to change IsAnimating value for a set of properties.
   virtual void ElementIsAnimatingChanged(
-      ElementId element_id,
+      const PropertyToElementIdMap& element_id_map,
       ElementListType list_type,
       const PropertyAnimationState& mask,
       const PropertyAnimationState& state) = 0;
