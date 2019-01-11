@@ -62,19 +62,32 @@ class ParseKeyValueTest(cros_test_lib.TestCase):
         kernel_cmdline.KeyValue('a', '', ''),
         kernel_cmdline.KeyValue('b', '=', ''),
         kernel_cmdline.KeyValue('c', '=', 'd'),
-        kernel_cmdline.KeyValue('e.f', '=', 'd'),
+        kernel_cmdline.KeyValue('e.f', '=', '"d e"'),
         kernel_cmdline.KeyValue('a', '', ''),
         kernel_cmdline.KeyValue('--', '', ''),
         kernel_cmdline.KeyValue('x', '', ''),
         kernel_cmdline.KeyValue('y', '=', ''),
         kernel_cmdline.KeyValue('z', '=', 'zz'),
         kernel_cmdline.KeyValue('y', '', '')]
-    args = kernel_cmdline._ParseKeyValue('a b= c=d e.f=d a -- x y= z=zz y')
+    args = kernel_cmdline._ParseKeyValue('a b= c=d e.f="d e" a -- x y= z=zz y')
     self.assertEqual(args, expected)
 
   def testReturnsEmptyList(self):
     """Test that strings with no arguments return an emtpy list."""
     self.assertEqual([], kernel_cmdline._ParseKeyValue('  '))
+
+  def testRejectsInvalidCmdline(self):
+    """Test that invalid command line strings are rejected."""
+    # First and non-First are different in the re.
+    with self.assertRaises(ValueError):
+      kernel_cmdline._ParseKeyValue('=3')
+    with self.assertRaises(ValueError):
+      kernel_cmdline._ParseKeyValue('a =3')
+    # Various bad quote usages.
+    with self.assertRaises(ValueError):
+      kernel_cmdline._ParseKeyValue('a b="foo"3 c')
+    with self.assertRaises(ValueError):
+      kernel_cmdline._ParseKeyValue('a b=" c')
 
 
 class CommandLineTest(cros_test_lib.TestCase):

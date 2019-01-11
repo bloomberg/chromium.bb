@@ -40,9 +40,18 @@ class KeyValue(object):
     return '%s%s%s' % (self.key, self.separator, value)
 
 
-_KEYVALUE_RE = r'(?:(--|[^\s=]+)(?:(=)("[^"]*"|\S*))?)'
+_KEYVALUE_RE = r'(?:(--|[^\s=]+)(?:(=)("[^"]*"|[^\s"]*))?)'
+_VALID_CMDLINE_RE = (r'\s*'
+                     r'%s?'
+                     r'(\s+%s)*'
+                     r'\s*$') % (_KEYVALUE_RE, _KEYVALUE_RE)
 def _ParseKeyValue(cmd_string):
   """Tokenize a string of key(=value) pairs.
+
+  key(=value):
+    key: One or more characters excluding whitespace and '='.
+    value: If present, is zero or more non-whitespace characters, or an
+        arbitrary string surrounded by double-quote (").
 
   Args:
     cmd_string: Whitespace separated collection of 'key', 'key=', and/or
@@ -50,7 +59,15 @@ def _ParseKeyValue(cmd_string):
 
   Returns:
     List of KeyValue objects.
+
+  Raises:
+    ValueError: One or more tokens is invalid.
   """
+  # We use lookbehind to validate tokens, so we need a leading space on
+  # |cmd_string| to match the leading argument.
+  valid = re.match(_VALID_CMDLINE_RE, cmd_string)
+  if not valid:
+    raise ValueError(cmd_string)
   args = re.findall(_KEYVALUE_RE, cmd_string)
   if args:
     return [KeyValue(*x) for x in args]
