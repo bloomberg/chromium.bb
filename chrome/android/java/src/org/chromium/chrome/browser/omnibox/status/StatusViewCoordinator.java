@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
@@ -18,25 +17,11 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
 public class StatusViewCoordinator implements View.OnClickListener {
-    /**
-     * Specifies the types of buttons shown to signify different types of navigation elements.
-     */
-    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface NavigationButtonType {
-        int PAGE = 0;
-        int MAGNIFIER = 1;
-        int EMPTY = 2;
-    }
-
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
@@ -135,7 +120,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mMediator.testIsSecurityButtonShown();
+        return mMediator.isSecurityButtonShown();
     }
 
     /**
@@ -145,28 +130,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
     @DrawableRes
     public int getSecurityIconResourceId() {
         return mModel.get(StatusProperties.STATUS_ICON_RES);
-    }
-
-    /**
-     * Sets the type of the current navigation type and updates the UI to match it.
-     * @param buttonType The type of navigation button to be shown.
-     */
-    public void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        @DrawableRes
-        int imageRes = 0;
-        switch (buttonType) {
-            case NavigationButtonType.PAGE:
-                imageRes = R.drawable.ic_omnibox_page;
-                break;
-            case NavigationButtonType.MAGNIFIER:
-                imageRes = R.drawable.omnibox_search;
-                break;
-            case NavigationButtonType.EMPTY:
-                break;
-            default:
-                assert false : "Invalid navigation button type";
-        }
-        mMediator.setNavigationButtonType(imageRes);
     }
 
     /**
@@ -213,5 +176,19 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setShouldAnimateIconChanges(boolean shouldAnimate) {
         mMediator.setAnimationsEnabled(shouldAnimate);
+    }
+
+    /**
+     * Specify whether URL should present icons when focused.
+     */
+    public void setShowIconsWhenUrlFocused(boolean showIconsWithUrlFocused) {
+        mMediator.setShowIconsWhenUrlFocused(showIconsWithUrlFocused);
+    }
+
+    /**
+     * Specify whether suggestion for URL bar is a search action.
+     */
+    public void setFirstSuggestionIsSearchType(boolean firstSuggestionIsSearchQuery) {
+        mMediator.setFirstSuggestionIsSearchType(firstSuggestionIsSearchQuery);
     }
 }
