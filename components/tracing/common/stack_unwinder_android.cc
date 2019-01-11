@@ -85,204 +85,302 @@ class ScopedEventSignaller {
   AsyncSafeWaitableEvent* event_;
 };
 
-// Unwinds from the given context using libunwind.
-size_t UnwindWithLibunwind(unw_cursor_t* cursor,
-                           const tracing::StackUnwinderAndroid* unwinder,
-                           const uintptr_t stack_segment_base,
-                           const void** out_trace,
-                           const size_t max_depth,
-                           uintptr_t* sp,
-                           uintptr_t* ip) {
-  uintptr_t previous_sp = 0;
-  uintptr_t depth = 0;
-  const uintptr_t initial_sp = *sp;
-  do {
-    unw_get_reg(cursor, UNW_REG_IP, ip);
-    unw_get_reg(cursor, UNW_REG_SP, sp);
-    DCHECK_GE(*sp, initial_sp);
-    if (stack_segment_base > 0)
-      DCHECK_LT(*sp, stack_segment_base);
+// Helper class to unwind stack. See Unwind() method for details.
+class UnwindHelper {
+ public:
+  UnwindHelper(bool use_libunwind,
+               const tracing::StackUnwinderAndroid* unwinder,
+               uintptr_t original_sp,
+               size_t stack_size,
+               base::NativeStackSampler::StackBuffer* stack_buffer,
+               const void** out_trace,
+               size_t max_depth)
+      : use_libunwind_(use_libunwind),
+        cfi_unwinder_(CFIBacktraceAndroid::GetInitializedInstance()),
+        unwinder_(unwinder),
+        initial_sp_(stack_buffer
+                        ? reinterpret_cast<uintptr_t>(stack_buffer->buffer())
+                        : original_sp),
+        stack_segment_base_(initial_sp_ + stack_size),
+        stack_size_(stack_size),
+        max_depth_(max_depth),
+        cursor_({}),
+        current_sp_(0),
+        current_ip_(0),
+        out_trace_(out_trace),
+        depth_(0) {}
 
-    // If SP and IP did not change from previous frame, then unwinding failed.
-    if (previous_sp == *sp &&
-        *ip == reinterpret_cast<uintptr_t>(out_trace[depth - 1])) {
-      break;
+  // Unwinds from given |cursor| readable by libunwind, and returns
+  // the number of frames added to the output. This function can unwind through
+  // android framework and then chrome functions. It cannot handle the cases
+  // when the chrome functions are called by android framework again, since we
+  // cannot create the right context for libunwind from chrome functions.
+  // TODO(ssid): This function should support unwinding from chrome to android
+  // libraries also.
+  size_t Unwind(uintptr_t original_sp,
+                unw_context_t* context,
+                const ucontext_t& signal_context,
+                base::NativeStackSampler::StackBuffer* stack_buffer) {
+    const uintptr_t new_stack_top = initial_sp_;
+    // Set the frame to the return frame from signal handler.
+    current_ip_ = signal_context.uc_mcontext.arm_pc;
+    current_sp_ =
+        signal_context.uc_mcontext.arm_sp - original_sp + new_stack_top;
+
+    // Do not use libunwind if we stopped at chrome frame.
+    if (CFIBacktraceAndroid::is_chrome_address(current_ip_)) {
+      return cfi_unwinder_->Unwind(current_ip_, current_sp_,
+                                   signal_context.uc_mcontext.arm_lr,
+                                   out_trace_, max_depth_);
     }
-    previous_sp = *sp;
 
-    // If address is in chrome library, then use CFI unwinder since chrome might
-    // not have EHABI unwind tables.
-    if (CFIBacktraceAndroid::is_chrome_address(*ip))
-      break;
+    if (stack_buffer)
+      RewritePointersAndGetMarkers(stack_buffer, original_sp, stack_size_);
 
-    // Break if pc is not from any mapped region. Something went wrong while
-    // unwinding.
-    if (!unwinder->IsAddressMapped(*ip))
-      break;
+    if (!GetUnwindCursorForStack(original_sp, signal_context, context)) {
+      RecordUnwindResult(SamplingProfilerUnwindResult::kUnwindInitFailed);
+      return 0;
+    }
 
-    // If it is chrome address, the cfi unwinder will include it.
-    out_trace[depth++] = reinterpret_cast<void*>(*ip);
-  } while (unw_step(cursor) && depth < max_depth - 1);
-  return depth;
-}
+    bool try_stack_search = true;
 
-// Unwinds from given |cursor| readable by libunwind, and returns
-// the number of frames added to the output. This function can unwind through
-// android framework and then chrome functions. It cannot handle the cases when
-// the chrome functions are called by android framework again, since we cannot
-// create the right context for libunwind from chrome functions.
-// TODO(ssid): This function should support unwinding from chrome to android
-// libraries also.
-size_t TraceStackWithContext(
-    unw_cursor_t* cursor,
-    CFIBacktraceAndroid* cfi_unwinder,
-    const tracing::StackUnwinderAndroid* unwinder,
-    const uintptr_t stack_segment_base,
-    const std::vector<const tracing::StackUnwinderAndroid::JniMarker*>&
-        jni_markers,
-    const void** out_trace,
-    const size_t max_depth) {
-  size_t depth = 0;
-  unw_word_t ip = 0, sp = 0;
-  bool try_stack_search = true;
-  unw_get_reg(cursor, UNW_REG_SP, &sp);
-  unw_get_reg(cursor, UNW_REG_IP, &ip);
-  const uintptr_t initial_sp = sp;
+    if (use_libunwind_)
+      UnwindWithLibunwind();
 
-  if (tracing::StackUnwinderAndroid::kUseLibunwind) {
-    depth += UnwindWithLibunwind(cursor, unwinder, stack_segment_base,
-                                 out_trace, max_depth, &sp, &ip);
+    if (CFIBacktraceAndroid::is_chrome_address(current_ip_)) {
+      // Continue unwinding CFI unwinder if we found stack frame from chrome
+      // library.
+      uintptr_t lr = 0;
+      unw_get_reg(&cursor_, UNW_ARM_LR, &lr);
+      depth_ += cfi_unwinder_->Unwind(current_ip_, current_sp_, lr,
+                                      out_trace_ + depth_, max_depth_ - depth_);
+      try_stack_search = false;
+    }
+
+    if (depth_ >= max_depth_)
+      return depth_;
+
+    // Try unwinding the rest of frames from Jni markers on stack if present.
+    // This is to skip trying to unwind art frames which do not have unwind
+    // information.
+    for (const auto* const marker : jni_markers_) {
+      // Skip if we already walked past this marker.
+      if (current_sp_ > marker->sp)
+        continue;
+      depth_ += cfi_unwinder_->Unwind(marker->pc, marker->sp, /*lr=*/0,
+                                      out_trace_ + depth_, max_depth_ - depth_);
+      try_stack_search = false;
+      if (depth_ >= max_depth_)
+        break;
+    }
+
+    // We tried all possible ways to unwind and failed. So, scan the stack to
+    // find all chrome addresses and add them to stack trace. This would give us
+    // a lot of false frames on the trace. The idea is to try to sanitize the
+    // trace on server side or try unwinding after each search. The current
+    // version just sends back all PCs until we figure out what is the best way
+    // to sanitize the stack trace.
+    if (try_stack_search)
+      ScanStackAndFillFrames();
+
+    if (depth_ == 0)
+      RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
+    return depth_;
   }
 
-  if (CFIBacktraceAndroid::is_chrome_address(ip)) {
-    // Continue unwinding CFI unwinder if we found stack frame from chrome
-    // library.
-    uintptr_t lr = 0;
-    unw_get_reg(cursor, UNW_ARM_LR, &lr);
-    depth +=
-        cfi_unwinder->Unwind(ip, sp, lr, out_trace + depth, max_depth - depth);
-    try_stack_search = false;
-  }
-  if (depth >= max_depth)
-    return depth;
+ private:
+  // Unwinds from the given context using libunwind.
+  void UnwindWithLibunwind() {
+    uintptr_t previous_sp = 0;
+    do {
+      unw_get_reg(&cursor_, UNW_REG_IP, &current_ip_);
+      unw_get_reg(&cursor_, UNW_REG_SP, &current_sp_);
+      DCHECK_GE(current_sp_, initial_sp_);
+      if (stack_segment_base_ > 0)
+        DCHECK_LT(current_sp_, stack_segment_base_);
 
-  // Try unwinding the rest of frames from Jni markers on stack if present. This
-  // is to skip trying to unwind art frames which do not have unwind
-  // information.
-  for (const auto* marker : jni_markers) {
-    // Skip if we already walked past this marker.
-    if (sp > marker->sp)
-      continue;
-    depth += cfi_unwinder->Unwind(marker->pc, marker->sp, /*lr=*/0,
-                                  out_trace + depth, max_depth - depth);
-    try_stack_search = false;
-    if (depth >= max_depth)
-      break;
+      // If SP and IP did not change from previous frame, then unwinding failed.
+      if (previous_sp == current_sp_ &&
+          current_ip_ == reinterpret_cast<uintptr_t>(out_trace_[depth_ - 1])) {
+        break;
+      }
+      previous_sp = current_sp_;
+
+      // If address is in chrome library, then use CFI unwinder since chrome
+      // might not have EHABI unwind tables.
+      if (CFIBacktraceAndroid::is_chrome_address(current_ip_))
+        break;
+
+      // Break if pc is not from any mapped region. Something went wrong while
+      // unwinding.
+      if (!unwinder_->IsAddressMapped(current_ip_))
+        break;
+
+      // If it is chrome address, the cfi unwinder will include it.
+      out_trace_[depth_++] = reinterpret_cast<void*>(current_ip_);
+    } while (unw_step(&cursor_) && depth_ < max_depth_ - 1);
   }
 
-  // We tried all possible ways to unwind and failed. So, scan the stack to find
-  // all chrome addresses and add them to stack trace. This would give us a lot
-  // of false frames on the trace. The idea is to try to sanitize the trace on
-  // server side or try unwinding after each search. The current version just
-  // sends back all PCs until we figure out what is the best way to sanitize
-  // the stack trace.
-  if (try_stack_search) {
+  void ScanStackAndFillFrames() {
     // Search from beginning of stack, in case unwinding obtained bad offsets.
-    uintptr_t* stack = reinterpret_cast<uintptr_t*>(initial_sp);
+    uintptr_t* stack = reinterpret_cast<uintptr_t*>(initial_sp_);
     // Add a nullptr to differentiate addresses found by unwinding and scanning.
-    out_trace[depth++] = nullptr;
-    while (depth < max_depth &&
-           reinterpret_cast<uintptr_t>(stack) < stack_segment_base) {
+    out_trace_[depth_++] = nullptr;
+    while (depth_ < max_depth_ &&
+           reinterpret_cast<uintptr_t>(stack) < stack_segment_base_) {
       if (CFIBacktraceAndroid::is_chrome_address(
               reinterpret_cast<uintptr_t>(*stack))) {
-        out_trace[depth++] = reinterpret_cast<void*>(*stack);
+        out_trace_[depth_++] = reinterpret_cast<void*>(*stack);
       }
       ++stack;
     }
   }
 
-  if (depth == 0)
-    RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
-  return depth;
-}
+  // Creates unwind cursor for the copied stack, which points to the function
+  // frame in which the sampled thread was stopped. We get information about
+  // this frame from signal context. Replaces registers in the context and
+  // cursor to point to the new stack's top function frame.
+  bool GetUnwindCursorForStack(uintptr_t original_sp,
+                               const ucontext_t& signal_context,
+                               unw_context_t* context) {
+    // Initialize an unwind cursor on copied stack.
+    if (unw_init_local(&cursor_, context) != 0)
+      return false;
 
-uintptr_t RewritePointerIfInOriginalStack(uintptr_t addr,
-                                          uintptr_t sp,
-                                          uintptr_t stack_size,
-                                          uintptr_t new_stack_top) {
-  if (addr >= sp && addr < sp + stack_size)
-    return addr - sp + new_stack_top;
-  return addr;
-}
+    // If we never copied stack, then no need to replace all the registers.
+    if (original_sp == initial_sp_)
+      return true;
 
-// Creates unwind cursor for the copied stack, which points to the function
-// frame in which the sampled thread was stopped. We get information about this
-// frame from signal context. Replaces registers in the context and cursor to
-// point to the new stack's top function frame.
-bool GetUnwindCursorForStack(uintptr_t sp,
-                             size_t stack_size,
-                             uintptr_t new_stack_top,
-                             const ucontext_t& signal_context,
-                             unw_context_t* context,
-                             unw_cursor_t* cursor) {
-  // Initialize an unwind cursor on copied stack.
-  if (unw_init_local(cursor, context) != 0)
-    return false;
+    // Reset the unwind cursor to previous function and continue with libunwind.
+    unw_set_reg(&cursor_, UNW_REG_SP, current_sp_);  // 13
+    unw_set_reg(&cursor_, UNW_ARM_R0,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r0, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R1,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r1, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R3,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r2, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R3,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r3, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R4,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r4, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R5,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r5, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R6,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r6, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R7,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r7, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R8,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r8, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R9,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r9, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R10,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_r10, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R11,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_fp, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_R12,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_ip, original_sp));
+    unw_set_reg(&cursor_, UNW_ARM_LR,
+                RewritePointerIfInOriginalStack(
+                    signal_context.uc_mcontext.arm_lr, original_sp));
 
-  uintptr_t return_sp = signal_context.uc_mcontext.arm_sp - sp + new_stack_top;
+    // Setting the IP register might cause adjustments in SP register. So, this
+    // must be set after setting SP to the right value.
+    unw_set_reg(&cursor_, UNW_REG_IP, current_ip_);  // 15
 
-  // Reset the unwind cursor to previous function and continue with libunwind.
-  unw_set_reg(cursor, UNW_REG_SP, return_sp);  // 13
-  unw_set_reg(cursor, UNW_ARM_R0,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r0,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R1,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r1,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R3,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r2,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R3,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r3,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R4,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r4,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R5,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r5,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R6,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r6,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R7,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r7,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R8,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r8,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R9,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r9,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(
-      cursor, UNW_ARM_R10,
-      RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_r10, sp,
-                                      stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R11,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_fp,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_R12,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_ip,
-                                              sp, stack_size, new_stack_top));
-  unw_set_reg(cursor, UNW_ARM_LR,
-              RewritePointerIfInOriginalStack(signal_context.uc_mcontext.arm_lr,
-                                              sp, stack_size, new_stack_top));
+    return true;
+  }
 
-  // Setting the IP register might cause adjustments in SP register. So, this
-  // must be set after setting SP to the right value.
-  unw_set_reg(cursor, UNW_REG_IP, signal_context.uc_mcontext.arm_pc);  // 15
+  uintptr_t RewritePointerIfInOriginalStack(uintptr_t ptr_address,
+                                            uintptr_t sp) {
+    const uintptr_t new_stack_top = initial_sp_;
+    if (ptr_address >= sp && ptr_address < sp + stack_size_)
+      return ptr_address - sp + new_stack_top;
+    return ptr_address;
+  }
 
-  return true;
-}
+  void RewritePointersAndGetMarkers(
+      base::NativeStackSampler::StackBuffer* stack_buffer,
+      uintptr_t original_sp,
+      size_t stack_size) {
+    jni_markers_.clear();
+    uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_buffer->buffer());
+    constexpr uint32_t marker_l =
+        jni_generator::kJniStackMarkerValue & 0xFFFFFFFF;
+    constexpr uint32_t marker_r = jni_generator::kJniStackMarkerValue >> 32;
+    const uintptr_t new_stack_top =
+        reinterpret_cast<uintptr_t>(stack_buffer->buffer());
+    const size_t ptrs_to_rewrite = stack_size / sizeof(uintptr_t);
+    for (size_t i = 0; i < ptrs_to_rewrite; ++i) {
+      // Scanning needs to be fixed for 64 bit version.
+      DCHECK_EQ(4u, sizeof(uintptr_t));
+      if (i < ptrs_to_rewrite - 1 && new_stack[i] == marker_l &&
+          new_stack[i + 1] == marker_r) {
+        // Note: JniJavaCallContext::sp will be replaced with offset below.
+        const tracing::StackUnwinderAndroid::JniMarker* marker =
+            reinterpret_cast<const tracing::StackUnwinderAndroid::JniMarker*>(
+                new_stack + i);
+        DCHECK_EQ(jni_generator::kJniStackMarkerValue, marker->marker);
+        if (marker->sp >= original_sp &&
+            marker->sp < original_sp + stack_size &&
+            CFIBacktraceAndroid::is_chrome_address(marker->pc)) {
+          jni_markers_.push_back(marker);
+        } else {
+          NOTREACHED();
+        }
+      }
+
+      // Unwind can use address on the stack. So, replace them as well. See
+      // EHABI #7.5.4 table 3.
+      if (new_stack[i] >= original_sp &&
+          new_stack[i] < original_sp + stack_size) {
+        new_stack[i] = new_stack[i] - original_sp + new_stack_top;
+      }
+    }
+  }
+
+  // If false then only chrome unwinder and stack scanning are used to unwind.
+  const bool use_libunwind_;
+  CFIBacktraceAndroid* cfi_unwinder_;  // not const because of cache
+  const tracing::StackUnwinderAndroid* unwinder_;
+
+  // Set to the stack pointer of the copied stack in case of unwinding other
+  // thread. Otherwise stack pointer of the unwind method.
+  const uintptr_t initial_sp_;
+  // The end of stack segment, till which we scan for frames.
+  const uintptr_t stack_segment_base_;
+  // The size of the stack segment copied, |stack_segment_base_| -
+  // |initial_sp_|.
+  const size_t stack_size_;
+  // Maximum depth of frames to unwind.
+  const size_t max_depth_;
+
+  // Current libunwind cursor.
+  unw_cursor_t cursor_;
+
+  // The current value of stack pointer and instruction pointer while unwinding.
+  uintptr_t current_sp_;
+  uintptr_t current_ip_;
+
+  // A list of JNI markers on stack found by scanning.
+  std::vector<const tracing::StackUnwinderAndroid::JniMarker*> jni_markers_;
+
+  // Output stack trace and depth:
+  const void** out_trace_;
+  size_t depth_ = 0;
+};
 
 // Struct to store the arguments to the signal handler.
 struct HandlerParams {
@@ -421,17 +519,19 @@ void StackUnwinderAndroid::Initialize() {
 size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
                                         size_t max_depth) const {
   DCHECK(is_initialized_);
-  unw_cursor_t cursor;
+  uintptr_t sp = 0;
+  ucontext_t sigcontext = {};
   unw_context_t context;
 
   if (unw_getcontext(&context) != 0)
     return 0;
-  if (unw_init_local(&cursor, &context) != 0)
-    return 0;
-  return TraceStackWithContext(
-      &cursor, CFIBacktraceAndroid::GetInitializedInstance(), this,
-      /* stack_segment_base=*/0, std::vector<const JniMarker*>(), out_trace,
-      max_depth);
+
+  asm volatile("mov %0, sp" : "=r"(sp));
+  // If unwind goes beyond 4MB from top of stack, we stop.
+  const size_t kMaxStackSize = 4 * 1024 * 1024;
+  UnwindHelper helper(/*use_libunwind=*/true, this, sp, kMaxStackSize, nullptr,
+                      out_trace, max_depth);
+  return helper.Unwind(sp, &context, sigcontext, nullptr);
 }
 
 size_t StackUnwinderAndroid::TraceStack(
@@ -453,32 +553,9 @@ size_t StackUnwinderAndroid::TraceStack(
     return 0;
   }
 
-  const uintptr_t new_stack_top =
-      reinterpret_cast<uintptr_t>(stack_buffer->buffer());
-  uintptr_t ip = signal_context.uc_mcontext.arm_pc;
-  uintptr_t return_sp = signal_context.uc_mcontext.arm_sp - sp + new_stack_top;
-
-  auto* cfi_unwinder = CFIBacktraceAndroid::GetInitializedInstance();
-  // Do not use libunwind if we stopped at chrome frame.
-  if (CFIBacktraceAndroid::is_chrome_address(ip)) {
-    return cfi_unwinder->Unwind(
-        ip, return_sp, signal_context.uc_mcontext.arm_lr, out_trace, max_depth);
-  }
-
-  std::vector<const JniMarker*> jni_markers =
-      RewritePointersAndGetMarkers(stack_buffer, sp, stack_size);
-
-  unw_cursor_t cursor;
-  if (!GetUnwindCursorForStack(sp, stack_size, new_stack_top, signal_context,
-                               &context, &cursor)) {
-    RecordUnwindResult(SamplingProfilerUnwindResult::kUnwindInitFailed);
-    return 0;
-  }
-
-  return TraceStackWithContext(
-      &cursor, cfi_unwinder, this,
-      reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + stack_size,
-      jni_markers, out_trace, max_depth);
+  UnwindHelper helper(kUseLibunwind, this, sp, stack_size, stack_buffer,
+                      out_trace, max_depth);
+  return helper.Unwind(sp, &context, signal_context, stack_buffer);
 }
 
 uintptr_t StackUnwinderAndroid::GetEndAddressOfRegion(uintptr_t addr) const {
@@ -544,44 +621,6 @@ bool StackUnwinderAndroid::SuspendThreadAndRecordStack(
   }
   base::subtle::Release_Store(&g_handler_params, 0);
   return copied;
-}
-
-std::vector<const StackUnwinderAndroid::JniMarker*>
-StackUnwinderAndroid::RewritePointersAndGetMarkers(
-    base::NativeStackSampler::StackBuffer* stack_buffer,
-    uintptr_t sp,
-    size_t stack_size) const {
-  std::vector<const JniMarker*> jni_markers;
-  uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_buffer->buffer());
-  constexpr uint32_t marker_l =
-                         jni_generator::kJniStackMarkerValue & 0xFFFFFFFF;
-  constexpr uint32_t marker_r = jni_generator::kJniStackMarkerValue >> 32;
-  const uintptr_t new_stack_top =
-      reinterpret_cast<uintptr_t>(stack_buffer->buffer());
-  const size_t ptrs_to_rewrite = stack_size / sizeof(uintptr_t);
-  for (size_t i = 0; i < ptrs_to_rewrite; ++i) {
-    // Scanning needs to be fixed for 64 bit version.
-    DCHECK_EQ(4u, sizeof(uintptr_t));
-    if (i < ptrs_to_rewrite - 1 && new_stack[i] == marker_l &&
-        new_stack[i + 1] == marker_r) {
-      // Note: JniJavaCallContext::sp will be replaced with offset below.
-      const JniMarker* marker =
-          reinterpret_cast<const JniMarker*>(new_stack + i);
-      DCHECK_EQ(jni_generator::kJniStackMarkerValue, marker->marker);
-      if (marker->sp >= sp && marker->sp < sp + stack_size &&
-          CFIBacktraceAndroid::is_chrome_address(marker->pc)) {
-        jni_markers.push_back(marker);
-      } else {
-        NOTREACHED();
-      }
-    }
-
-    // Unwind can use address on the stack. So, replace them as well. See EHABI
-    // #7.5.4 table 3.
-    if (new_stack[i] >= sp && new_stack[i] < sp + stack_size)
-      new_stack[i] = new_stack[i] - sp + new_stack_top;
-  }
-  return jni_markers;
 }
 
 }  // namespace tracing
