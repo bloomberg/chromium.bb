@@ -1222,9 +1222,6 @@
       status: "experimental",
     },
     {
-      name: "SignedHTTPExchange",
-    },
-    {
       name: "SmoothScrollJSIntervention",
       status: "stable",
     },

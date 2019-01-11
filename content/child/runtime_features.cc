@@ -448,11 +448,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableWasmCodeCache(
       base::FeatureList::IsEnabled(blink::features::kWasmCodeCache));
 
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
-    WebRuntimeFeatures::EnableSignedHTTPExchange(true);
-    // Make srcset on link rel=preload work with SignedHTTPExchange flag too.
+  // Make imagesrcset on link rel=preload work with SignedHTTPExchange flag too.
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
-  }
 
   if (base::FeatureList::IsEnabled(
           features::kExperimentalProductivityFeatures)) {
