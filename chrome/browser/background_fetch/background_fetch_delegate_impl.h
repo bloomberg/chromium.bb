@@ -160,20 +160,24 @@ class BackgroundFetchDelegateImpl
 
     void UpdateOfflineItem();
     void MarkJobAsStarted();
-    void UpdateJobOnDownloadComplete();
+    void UpdateJobOnDownloadComplete(const std::string& download_guid);
 
     // Returns how many bytes have been processed by the Download Service so
     // far.
-    uint64_t GetProcessedDataSize() const;
+    uint64_t GetProcessedBytes() const;
 
-    struct UploadData {
+    void UpdateInProgressBytes(const std::string& download_guid,
+                               uint64_t bytes_uploaded,
+                               uint64_t bytes_downloaded);
+
+    struct RequestData {
       enum class Status {
         kAbsent,
         kIncluded,
       };
 
-      explicit UploadData(bool has_upload_data);
-      ~UploadData();
+      explicit RequestData(bool has_upload_data);
+      ~RequestData();
 
       Status status = Status::kAbsent;
 
@@ -181,6 +185,9 @@ class BackgroundFetchDelegateImpl
       // queries the upload data. The blob handle needs to be kept alive
       // while the request is sent out, and will be cleared after.
       blink::mojom::SerializedBlobPtr request_body_blob = nullptr;
+
+      uint64_t in_progress_uploaded_bytes = 0u;
+      uint64_t in_progress_downloaded_bytes = 0u;
     };
 
     // The client to report the Background Fetch updates to.
@@ -188,13 +195,12 @@ class BackgroundFetchDelegateImpl
 
     // Set of DownloadService GUIDs that are currently processed. They are
     // added by DownloadUrl and are removed when the fetch completes, fails,
-    // or is cancelled. The GUID maps to whether the fetch has upload data.
-    std::map<std::string, UploadData> current_fetch_guids;
+    // or is cancelled.
+    std::map<std::string, RequestData> current_fetch_guids;
 
     offline_items_collection::OfflineItem offline_item;
     State job_state;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
-    uint64_t in_progress_parts_size = 0u;
 
     base::OnceClosure on_resume;
 
@@ -202,6 +208,9 @@ class BackgroundFetchDelegateImpl
     // Whether we should report progress of the job in terms of size of
     // downloads or in terms of the number of files being downloaded.
     bool ShouldReportProgressBySize();
+
+    // Returns the number of bytes processed by in-progress requests.
+    uint64_t GetInProgressBytes() const;
 
     DISALLOW_COPY_AND_ASSIGN(JobDetails);
   };
