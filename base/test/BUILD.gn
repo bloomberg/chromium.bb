@@ -396,7 +396,10 @@ if (is_linux) {
     compiled_action("do_generate_fontconfig_caches") {
       testonly = true
       tool = ":generate_fontconfig_caches"
-      data_deps = [
+
+      # The copied test fonts are inputs to generate_fontconfig_caches, so must
+      # be listed in deps, not data_deps (https://crbug.com/919422).
+      deps = [
         "//third_party/test_fonts",
       ]
       args = []
