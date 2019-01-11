@@ -297,9 +297,6 @@
       'Chromium Linux Goma Staging': 'release_bot',
       'Chromium Mac Goma Staging': 'release_bot',
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
-      'Chromium Linux Goma GCE Staging': 'release_bot',
-      'Chromium Mac Goma GCE Staging': 'release_bot',
-      'CrWinClangGomaGCEStaging': 'win_clang_release_bot_disable_nacl',
       'Chromium Linux Goma RBE ToT': 'release_bot',
       'Chromium Linux Goma RBE Staging (clobber)': 'release_bot',
       'Chromium Linux Goma RBE Staging': 'release_bot',
@@ -1786,11 +1783,6 @@
 
     'win_msvc_release_bot': [
       'no_clang', 'release_bot',
-    ],
-
-    # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
-    'win_clang_release_bot_disable_nacl': [
-      'clang', 'release_bot', 'minimal_symbols', 'disable_nacl',
     ],
 
     'clang_tot_win_release_cross': [
