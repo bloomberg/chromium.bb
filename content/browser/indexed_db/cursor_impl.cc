@@ -19,7 +19,9 @@ class CursorImpl::IDBSequenceHelper {
   explicit IDBSequenceHelper(std::unique_ptr<IndexedDBCursor> cursor);
   ~IDBSequenceHelper();
 
-  void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
+  void Advance(uint32_t count,
+               base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+               blink::mojom::IDBCursor::AdvanceCallback callback);
   void Continue(const IndexedDBKey& key,
                 const IndexedDBKey& primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -45,15 +47,13 @@ CursorImpl::~CursorImpl() {
   idb_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
-void CursorImpl::Advance(
-    uint32_t count,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Advance,
-                                                  base::Unretained(helper_),
-                                                  count, std::move(callbacks)));
+void CursorImpl::Advance(uint32_t count,
+                         blink::mojom::IDBCursor::AdvanceCallback callback) {
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::Advance, base::Unretained(helper_),
+                     count, dispatcher_host_->AsWeakPtr(),
+                     std::move(callback)));
 }
 
 void CursorImpl::CursorContinue(
@@ -96,8 +96,9 @@ CursorImpl::IDBSequenceHelper::~IDBSequenceHelper() {}
 
 void CursorImpl::IDBSequenceHelper::Advance(
     uint32_t count,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
-  cursor_->Advance(count, std::move(callbacks));
+    base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
+    blink::mojom::IDBCursor::AdvanceCallback callback) {
+  cursor_->Advance(count, std::move(dispatcher_host), std::move(callback));
 }
 
 void CursorImpl::IDBSequenceHelper::Continue(

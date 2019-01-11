@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::blink::IDBCursorAssociatedPtrInfo;
@@ -49,7 +50,31 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   ResetPrefetchCache();
 
   callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
-  cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks)));
+  cursor_->Advance(count,
+                   WTF::Bind(&WebIDBCursorImpl::AdvanceCallback,
+                             WTF::Unretained(this), std::move(callbacks)));
+}
+
+void WebIDBCursorImpl::AdvanceCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBErrorPtr error,
+    mojom::blink::IDBCursorValuePtr cursor_value) {
+  if (error) {
+    callbacks->Error(error->error_code, error->error_message);
+    callbacks.reset();
+    return;
+  }
+
+  if (!cursor_value) {
+    callbacks->SuccessValue(nullptr);
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(cursor_value->key),
+                                   std::move(cursor_value->primary_key),
+                                   std::move(cursor_value->value));
+  callbacks.reset();
 }
 
 void WebIDBCursorImpl::CursorContinue(const IDBKey* key,

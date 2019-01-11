@@ -31,7 +31,7 @@ class CursorImpl : public blink::mojom::IDBCursor {
 
   // blink::mojom::IDBCursor implementation
   void Advance(uint32_t count,
-               blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+               blink::mojom::IDBCursor::AdvanceCallback callback) override;
   void CursorContinue(
       const blink::IndexedDBKey& key,
       const blink::IndexedDBKey& primary_key,

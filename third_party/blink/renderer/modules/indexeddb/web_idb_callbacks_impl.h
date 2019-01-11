@@ -93,11 +93,11 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                      const IDBDatabaseMetadata&) override;
   void DetachRequestFromCallback() override;
 
-  void Detach();
-  void DetachCallbackFromRequest();
-
  private:
   explicit WebIDBCallbacksImpl(IDBRequest*);
+
+  void Detach();
+  void DetachCallbackFromRequest();
 
   Persistent<IDBRequest> request_;
   base::WeakPtr<WebIDBCursorImpl> cursor_;

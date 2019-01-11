@@ -29,7 +29,9 @@ class CONTENT_EXPORT IndexedDBCursor {
                   IndexedDBTransaction* transaction);
   ~IndexedDBCursor();
 
-  void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
+  void Advance(uint32_t count,
+               base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+               blink::mojom::IDBCursor::AdvanceCallback callback);
   void Continue(std::unique_ptr<blink::IndexedDBKey> key,
                 std::unique_ptr<blink::IndexedDBKey> primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -55,7 +57,8 @@ class CONTENT_EXPORT IndexedDBCursor {
       IndexedDBTransaction* transaction);
   leveldb::Status CursorAdvanceOperation(
       uint32_t count,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+      blink::mojom::IDBCursor::AdvanceCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorPrefetchIterationOperation(
       int number_to_fetch,
