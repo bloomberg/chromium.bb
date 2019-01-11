@@ -66,6 +66,7 @@ class CastSessionIdMap {
   // This must be called on the |task_runner_|.
   std::string GetSessionIdInternal(std::string group_id);
 
+  const bool supports_group_id_;
   base::flat_map<
       std::string,
       std::pair<std::string /* group_id */, std::unique_ptr<GroupObserver>>>

@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 
 namespace chromecast {
 namespace shell {
@@ -60,7 +61,10 @@ std::string CastSessionIdMap::GetSessionId(std::string group_id) {
 }
 
 CastSessionIdMap::CastSessionIdMap(base::SequencedTaskRunner* task_runner)
-    : task_runner_(task_runner), weak_factory_(this) {
+    : supports_group_id_(
+          base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)),
+      task_runner_(task_runner),
+      weak_factory_(this) {
   DCHECK(task_runner_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -71,6 +75,9 @@ void CastSessionIdMap::SetSessionIdInternal(
     std::string session_id,
     base::UnguessableToken group_id,
     content::WebContents* web_contents) {
+  if (!supports_group_id_)
+    return;
+
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -83,6 +90,7 @@ void CastSessionIdMap::SetSessionIdInternal(
   // This check is required to bind to the current sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(web_contents);
+  DCHECK(GetSessionIdInternal(group_id.ToString()).empty());
 
   VLOG(1) << "Mapping session_id=" << session_id
           << " to group_id=" << group_id.ToString();
@@ -98,6 +106,8 @@ void CastSessionIdMap::SetSessionIdInternal(
 
 std::string CastSessionIdMap::GetSessionIdInternal(std::string group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!supports_group_id_)
+    return std::string();
 
   auto it = mapping_.find(group_id);
   if (it != mapping_.end())

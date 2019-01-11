@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/unguessable_token.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
@@ -161,6 +162,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
 
+  base::UnguessableToken GetAudioGroupId() override;
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);
@@ -208,6 +211,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   GURL last_committed_url_;
   base::Optional<base::string16> title_;
   bool pause_subresource_loading_called_;
+  base::UnguessableToken audio_group_id_;
 };
 
 }  // namespace content
