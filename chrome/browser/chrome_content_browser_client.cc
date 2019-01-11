@@ -16,7 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
-#include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -31,6 +31,12 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_content_browser_overlay_manifest.h"
+#include "chrome/app/chrome_content_gpu_overlay_manifest.h"
+#include "chrome/app/chrome_content_renderer_overlay_manifest.h"
+#include "chrome/app/chrome_content_utility_overlay_manifest.h"
+#include "chrome/app/chrome_packaged_service_manifests.h"
+#include "chrome/app/chrome_renderer_manifest.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -3919,42 +3925,21 @@ bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
 
 base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int id = -1;
-  if (name == content::mojom::kBrowserServiceName)
-    id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
-  else if (name == content::mojom::kGpuServiceName)
-    id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
-  else if (name == content::mojom::kPackagedServicesServiceName)
-    id = IDR_CHROME_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-  else if (name == content::mojom::kPluginServiceName)
-    id = IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY;
-  else if (name == content::mojom::kRendererServiceName)
-    id = IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY;
-  else if (name == content::mojom::kUtilityServiceName)
-    id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
-  if (id == -1)
-    return base::nullopt;
-
-  base::StringPiece manifest_contents =
-      rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  service_manager::Manifest manifest =
-      service_manager::Manifest::FromValueDeprecated(
-          base::JSONReader::Read(manifest_contents));
-
-#if defined(OS_CHROMEOS)
-  if (id == IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ws::switches::kUseTestConfig)) {
-    base::StringPiece manifest_test_overlay = rb.GetRawDataResourceForScale(
-        IDR_CHROME_CONTENT_BROWSER_MANIFEST_TEST_OVERLAY,
-        ui::ScaleFactor::SCALE_FACTOR_NONE);
-    manifest.Amend(service_manager::Manifest::FromValueDeprecated(
-        base::JSONReader::Read(manifest_test_overlay)));
+  if (name == content::mojom::kBrowserServiceName) {
+    return GetChromeContentBrowserOverlayManifest();
+  } else if (name == content::mojom::kGpuServiceName) {
+    return GetChromeContentGpuOverlayManifest();
+  } else if (name == content::mojom::kPackagedServicesServiceName) {
+    service_manager::Manifest overlay;
+    overlay.packaged_services = GetChromePackagedServiceManifests();
+    return overlay;
+  } else if (name == content::mojom::kRendererServiceName) {
+    return GetChromeContentRendererOverlayManifest();
+  } else if (name == content::mojom::kUtilityServiceName) {
+    return GetChromeContentUtilityOverlayManifest();
   }
-#endif  // defined(OS_CHROMEOS)
 
-  return manifest;
+  return base::nullopt;
 }
 
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>
@@ -3966,11 +3951,7 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
         {nacl::kNaClBrokerServiceName, IDR_NACL_BROKER_MANIFEST},
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_NACL)
-#if BUILDFLAG(ENABLE_PRINTING)
-        {printing::mojom::kServiceName, IDR_PDF_COMPOSITOR_MANIFEST},
-#endif
-        {chrome::mojom::kRendererServiceName,
-         IDR_CHROME_RENDERER_SERVICE_MANIFEST},
+        {chrome::mojom::kRendererServiceName, -1, GetChromeRendererManifest()},
   });
 }
 
