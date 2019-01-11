@@ -49,6 +49,7 @@ using sync_pb::EntityMetadata;
 using sync_pb::ModelTypeState;
 using syncer::EntityMetadataMap;
 using syncer::MetadataBatch;
+using testing::ElementsAre;
 
 namespace autofill {
 
@@ -170,7 +171,7 @@ TEST_F(AutofillTableTest, Autofill) {
   base::Time now = base::Time::Now();
   base::TimeDelta two_seconds = base::TimeDelta::FromSeconds(2);
   EXPECT_TRUE(table_->AddFormFieldValue(field, &changes));
-  std::vector<base::string16> v;
+  std::vector<AutofillEntry> v;
   for (int i = 0; i < 5; ++i) {
     field.value = ASCIIToUTF16("Clark Kent");
     EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes,
@@ -208,9 +209,9 @@ TEST_F(AutofillTableTest, Autofill) {
       ASCIIToUTF16("Name"), base::string16(), &v, 6));
   EXPECT_EQ(3U, v.size());
   if (v.size() == 3) {
-    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0]);
-    EXPECT_EQ(ASCIIToUTF16("Clark Sutter"), v[1]);
-    EXPECT_EQ(ASCIIToUTF16("Superman"), v[2]);
+    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0].key().value());
+    EXPECT_EQ(ASCIIToUTF16("Clark Sutter"), v[1].key().value());
+    EXPECT_EQ(ASCIIToUTF16("Superman"), v[2].key().value());
   }
 
   // If we query again limiting the list size to 1, we should only get the most
@@ -219,7 +220,7 @@ TEST_F(AutofillTableTest, Autofill) {
       ASCIIToUTF16("Name"), base::string16(), &v, 1));
   EXPECT_EQ(1U, v.size());
   if (v.size() == 1) {
-    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0]);
+    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0].key().value());
   }
 
   // Querying for suggestions given a prefix is case-insensitive, so the prefix
@@ -228,8 +229,8 @@ TEST_F(AutofillTableTest, Autofill) {
       ASCIIToUTF16("Name"), ASCIIToUTF16("cLa"), &v, 6));
   EXPECT_EQ(2U, v.size());
   if (v.size() == 2) {
-    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0]);
-    EXPECT_EQ(ASCIIToUTF16("Clark Sutter"), v[1]);
+    EXPECT_EQ(ASCIIToUTF16("Clark Kent"), v[0].key().value());
+    EXPECT_EQ(ASCIIToUTF16("Clark Sutter"), v[1].key().value());
   }
 
   // Removing all elements since the beginning of this function should remove
@@ -284,6 +285,43 @@ TEST_F(AutofillTableTest, Autofill) {
   EXPECT_TRUE(table_->GetFormValuesForElementName(
       ASCIIToUTF16("blank"), base::string16(), &v, 10));
   EXPECT_EQ(4U, v.size());
+}
+
+TEST_F(AutofillTableTest, Autofill_GetEntry_Populated) {
+  AutofillChangeList changes;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  base::Time now = base::Time::FromDoubleT(1546889367);
+
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, now));
+
+  std::vector<AutofillEntry> prefix_v;
+  EXPECT_TRUE(table_->GetFormValuesForElementName(
+      field.name, ASCIIToUTF16("Super"), &prefix_v, 10));
+
+  std::vector<AutofillEntry> no_prefix_v;
+  EXPECT_TRUE(table_->GetFormValuesForElementName(field.name, ASCIIToUTF16(""),
+                                                  &no_prefix_v, 10));
+
+  AutofillEntry expected_entry(AutofillKey(field.name, field.value), now, now);
+
+  EXPECT_THAT(prefix_v, ElementsAre(expected_entry));
+  EXPECT_THAT(no_prefix_v, ElementsAre(expected_entry));
+
+  // Update date_last_used.
+  base::Time new_time = now + base::TimeDelta::FromSeconds(1000);
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, new_time));
+  EXPECT_TRUE(table_->GetFormValuesForElementName(
+      field.name, ASCIIToUTF16("Super"), &prefix_v, 10));
+  EXPECT_TRUE(table_->GetFormValuesForElementName(field.name, ASCIIToUTF16(""),
+                                                  &no_prefix_v, 10));
+
+  expected_entry =
+      AutofillEntry(AutofillKey(field.name, field.value), now, new_time);
+
+  EXPECT_THAT(prefix_v, ElementsAre(expected_entry));
+  EXPECT_THAT(no_prefix_v, ElementsAre(expected_entry));
 }
 
 TEST_F(AutofillTableTest, Autofill_GetCountOfValuesContainedBetween) {
@@ -2778,13 +2816,14 @@ TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
     table_->AddFormFieldValue(field, &changes);
   }
 
-  std::vector<base::string16> v;
+  std::vector<AutofillEntry> v;
   table_->GetFormValuesForElementName(
       ASCIIToUTF16("Name"), ASCIIToUTF16(test_case.field_contents), &v, 6);
 
   EXPECT_EQ(test_case.expected_suggestion_count, v.size());
   for (size_t j = 0; j < test_case.expected_suggestion_count; ++j) {
-    EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]), v[j]);
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_suggestion[j]),
+              v[j].key().value());
   }
 
   changes.clear();

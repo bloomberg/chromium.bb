@@ -999,6 +999,10 @@ void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
   autocomplete_history_manager_->OnRemoveAutocompleteEntry(name, value);
 }
 
+void AutofillManager::OnAutocompleteEntrySelected(const base::string16& value) {
+  autocomplete_history_manager_->OnAutocompleteEntrySelected(value);
+}
+
 bool AutofillManager::IsShowingUnmaskPrompt() {
   return full_card_request_ && full_card_request_->IsGettingFullCard();
 }

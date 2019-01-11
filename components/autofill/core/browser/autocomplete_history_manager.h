@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -99,6 +100,11 @@ class AutocompleteHistoryManager : public KeyedService,
   virtual void OnRemoveAutocompleteEntry(const base::string16& name,
                                          const base::string16& value);
 
+  // Invoked when the user selected |value| in the Autocomplete drop-down. This
+  // function logs the DaysSinceLastUse of the Autocomplete entry associated
+  // with |value|.
+  virtual void OnAutocompleteEntrySelected(const base::string16& value);
+
  private:
   friend class AutocompleteHistoryManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteHistoryManagerTest,
@@ -158,10 +164,10 @@ class AutocompleteHistoryManager : public KeyedService,
     base::WeakPtr<SuggestionsHandler> handler_;
   };
 
-  // Sends the stored suggestions plus the autocomplete |new_results| to the
-  // |query_handler|'s handler for display in the associated Autofill popup. The
-  // parameter may be empty if there are no new autocomplete additions.
-  void SendSuggestions(const std::vector<base::string16>& new_results,
+  // Sends the autocomplete |suggestions| to the |query_handler|'s handler for
+  // display in the associated Autofill popup. The parameter may be empty if
+  // there are no new autocomplete additions.
+  void SendSuggestions(const std::vector<AutofillEntry>& entries,
                        const QueryHandler& query_handler);
 
   // Cancels all outstanding queries and clears out the |pending_queries_| map.
@@ -206,6 +212,11 @@ class AutocompleteHistoryManager : public KeyedService,
   // called back. Then we update the initial requestor, and deleting the
   // no-longer-pending query from this map.
   std::map<WebDataServiceBase::Handle, QueryHandler> pending_queries_;
+
+  // Cached results of the last batch of autocomplete suggestions.
+  // Key are the suggestions' values, and values are the associated
+  // AutofillEntry.
+  std::map<base::string16, AutofillEntry> last_entries_;
 
   // Whether the service is associated with an off-the-record browser context.
   bool is_off_the_record_ = false;

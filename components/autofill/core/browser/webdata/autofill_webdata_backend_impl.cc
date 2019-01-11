@@ -166,11 +166,11 @@ AutofillWebDataBackendImpl::GetFormValuesForElementName(
     int limit,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<base::string16> values;
+  std::vector<AutofillEntry> entries;
   AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
-      name, prefix, &values, limit);
-  return std::unique_ptr<WDTypedResult>(
-      new WDResult<std::vector<base::string16>>(AUTOFILL_VALUE_RESULT, values));
+      name, prefix, &entries, limit);
+  return std::make_unique<WDResult<std::vector<AutofillEntry>>>(
+      AUTOFILL_VALUE_RESULT, entries);
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(

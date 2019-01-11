@@ -508,22 +508,28 @@ bool AutofillTable::AddFormFieldValue(const FormFieldData& element,
 bool AutofillTable::GetFormValuesForElementName(
     const base::string16& name,
     const base::string16& prefix,
-    std::vector<base::string16>* values,
+    std::vector<AutofillEntry>* entries,
     int limit) {
-  DCHECK(values);
+  DCHECK(entries);
   bool succeeded = false;
 
   if (prefix.empty()) {
     sql::Statement s;
-    s.Assign(
-        db_->GetUniqueStatement("SELECT value FROM autofill WHERE name = ? "
-                                "ORDER BY count DESC LIMIT ?"));
+    s.Assign(db_->GetUniqueStatement(
+        "SELECT name, value, date_created, date_last_used FROM autofill "
+        "WHERE name = ? "
+        "ORDER BY count DESC LIMIT ?"));
     s.BindString16(0, name);
     s.BindInt(1, limit);
 
-    values->clear();
-    while (s.Step())
-      values->push_back(s.ColumnString16(0));
+    entries->clear();
+    while (s.Step()) {
+      entries->push_back(AutofillEntry(
+          AutofillKey(/*name=*/s.ColumnString16(0),
+                      /*value=*/s.ColumnString16(1)),
+          /*date_created=*/base::Time::FromTimeT(s.ColumnInt64(2)),
+          /*date_last_used=*/base::Time::FromTimeT(s.ColumnInt64(3))));
+    }
 
     succeeded = s.Succeeded();
   } else {
@@ -532,28 +538,33 @@ bool AutofillTable::GetFormValuesForElementName(
     next_prefix.back()++;
 
     sql::Statement s1;
-    s1.Assign(
-        db_->GetUniqueStatement("SELECT value FROM autofill "
-                                "WHERE name = ? AND "
-                                "value_lower >= ? AND "
-                                "value_lower < ? "
-                                "ORDER BY count DESC "
-                                "LIMIT ?"));
+    s1.Assign(db_->GetUniqueStatement(
+        "SELECT name, value, date_created, date_last_used FROM autofill "
+        "WHERE name = ? AND "
+        "value_lower >= ? AND "
+        "value_lower < ? "
+        "ORDER BY count DESC "
+        "LIMIT ?"));
     s1.BindString16(0, name);
     s1.BindString16(1, prefix_lower);
     s1.BindString16(2, next_prefix);
     s1.BindInt(3, limit);
 
-    values->clear();
-    while (s1.Step())
-      values->push_back(s1.ColumnString16(0));
+    entries->clear();
+    while (s1.Step()) {
+      entries->push_back(AutofillEntry(
+          AutofillKey(/*name=*/s1.ColumnString16(0),
+                      /*value=*/s1.ColumnString16(1)),
+          /*date_created=*/base::Time::FromTimeT(s1.ColumnInt64(2)),
+          /*date_last_used=*/base::Time::FromTimeT(s1.ColumnInt64(3))));
+    }
 
     succeeded = s1.Succeeded();
 
     if (IsFeatureSubstringMatchEnabled()) {
       sql::Statement s2;
       s2.Assign(db_->GetUniqueStatement(
-          "SELECT value FROM autofill "
+          "SELECT name, value, date_created, date_last_used FROM autofill "
           "WHERE name = ? AND ("
           " value LIKE '% ' || :prefix || '%' ESCAPE '!' OR "
           " value LIKE '%.' || :prefix || '%' ESCAPE '!' OR "
@@ -569,8 +580,13 @@ bool AutofillTable::GetFormValuesForElementName(
       s2.BindString16(1,
                       Substitute(prefix_lower, base::ASCIIToUTF16("_%"), 0x21));
       s2.BindInt(2, limit);
-      while (s2.Step())
-        values->push_back(s2.ColumnString16(0));
+      while (s2.Step()) {
+        entries->push_back(AutofillEntry(
+            AutofillKey(/*name=*/s2.ColumnString16(0),
+                        /*value=*/s2.ColumnString16(1)),
+            /*date_created=*/base::Time::FromTimeT(s2.ColumnInt64(2)),
+            /*date_last_used=*/base::Time::FromTimeT(s2.ColumnInt64(3))));
+      }
 
       succeeded &= s2.Succeeded();
     }

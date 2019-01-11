@@ -19,6 +19,8 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
@@ -145,6 +147,12 @@ void CheckField(const FormStructure& form,
   FAIL() << "Missing field " << name;
 }
 
+AutofillEntry CreateAutofillEntry(const base::string16& value) {
+  const base::Time kNow = AutofillClock::Now();
+  return AutofillEntry(AutofillKey(base::ASCIIToUTF16("Name"), value), kNow,
+                       kNow);
+}
+
 // Forces rendering of a UIView. This is used in tests to make sure that UIKit
 // optimizations don't have the views return the previous values (such as
 // zoomScale).
@@ -170,10 +178,10 @@ class TestConsumer : public WebDataServiceConsumer {
       WebDataServiceBase::Handle handle,
       std::unique_ptr<WDTypedResult> result) override {
     DCHECK_EQ(result->GetType(), AUTOFILL_VALUE_RESULT);
-    result_ = static_cast<WDResult<std::vector<base::string16>>*>(result.get())
+    result_ = static_cast<WDResult<std::vector<AutofillEntry>>*>(result.get())
                   ->GetValue();
   }
-  std::vector<base::string16> result_;
+  std::vector<AutofillEntry> result_;
 };
 
 // Text fixture to test autofill.
@@ -492,8 +500,9 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
           chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   __block TestConsumer consumer;
   const int limit = 1;
-  consumer.result_ = {base::ASCIIToUTF16("Should"), base::ASCIIToUTF16("get"),
-                      base::ASCIIToUTF16("overwritten")};
+  consumer.result_ = {CreateAutofillEntry(base::ASCIIToUTF16("Should")),
+                      CreateAutofillEntry(base::ASCIIToUTF16("get")),
+                      CreateAutofillEntry(base::ASCIIToUTF16("overwritten"))};
   web_data_service->GetFormValuesForElementName(
       base::UTF8ToUTF16("greeting"), base::string16(), limit, &consumer);
   base::TaskScheduler::GetInstance()->FlushForTesting();
@@ -510,7 +519,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
   WaitForBackgroundTasks();
   // One result should be returned, matching the filled value.
   ASSERT_EQ(1U, consumer.result_.size());
-  EXPECT_EQ(base::UTF8ToUTF16("Hello"), consumer.result_[0]);
+  EXPECT_EQ(base::UTF8ToUTF16("Hello"), consumer.result_[0].key().value());
 };
 
 void AutofillControllerTest::SetUpKeyValueData() {

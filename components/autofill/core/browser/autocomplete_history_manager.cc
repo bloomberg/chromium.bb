@@ -16,6 +16,8 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
@@ -211,6 +213,24 @@ void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     profile_database_->RemoveFormValueForElementName(name, value);
 }
 
+void AutocompleteHistoryManager::OnAutocompleteEntrySelected(
+    const base::string16& value) {
+  // Try to find the AutofillEntry associated with the given suggestion.
+  auto last_entries_iter = last_entries_.find(value);
+  if (last_entries_iter == last_entries_.end()) {
+    // Not found, therefore nothing to do. Most likely there was a race
+    // condition, but it's not that big of a deal in the current scenario
+    // (logging metrics).
+    NOTREACHED();
+    return;
+  }
+
+  // The AutofillEntry was found, use it to log the DaysSinceLastUsed.
+  const AutofillEntry& entry = last_entries_iter->second;
+  base::TimeDelta time_delta = AutofillClock::Now() - entry.date_last_used();
+  AutofillMetrics::LogAutocompleteDaysSinceLastUse(time_delta.InDays());
+}
+
 void AutocompleteHistoryManager::CancelPendingQueries(
     const SuggestionsHandler* handler) {
   if (handler && profile_database_) {
@@ -246,7 +266,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
 }
 
 void AutocompleteHistoryManager::SendSuggestions(
-    const std::vector<base::string16>& autocomplete_results,
+    const std::vector<AutofillEntry>& entries,
     const QueryHandler& query_handler) {
   if (!query_handler.handler_) {
     // Either the handler has been destroyed, or it is invalid.
@@ -255,16 +275,17 @@ void AutocompleteHistoryManager::SendSuggestions(
 
   // If there is only one suggestion that is the exact same string as
   // what is in the input box, then don't show the suggestion.
-  bool hide_suggestions = autocomplete_results.size() == 1 &&
-                          query_handler.prefix_ == autocomplete_results[0];
+  bool hide_suggestions =
+      entries.size() == 1 && query_handler.prefix_ == entries[0].key().value();
 
   std::vector<Suggestion> suggestions;
+  last_entries_.clear();
 
   if (!hide_suggestions) {
-    std::transform(
-        autocomplete_results.begin(), autocomplete_results.end(),
-        std::back_inserter(suggestions),
-        [](const base::string16& result) { return Suggestion(result); });
+    for (const AutofillEntry& entry : entries) {
+      suggestions.push_back(Suggestion(entry.key().value()));
+      last_entries_.insert({entry.key().value(), AutofillEntry(entry)});
+    }
   }
 
   query_handler.handler_->OnSuggestionsReturned(
@@ -299,12 +320,12 @@ void AutocompleteHistoryManager::OnAutofillValuesReturned(
     return;
   }
 
-  const WDResult<std::vector<base::string16>>* autofill_result =
-      static_cast<const WDResult<std::vector<base::string16>>*>(result.get());
-  std::vector<base::string16> suggestions = autofill_result->GetValue();
-  SendSuggestions(suggestions, query_handler);
+  const WDResult<std::vector<AutofillEntry>>* autofill_result =
+      static_cast<const WDResult<std::vector<AutofillEntry>>*>(result.get());
+  std::vector<AutofillEntry> entries = autofill_result->GetValue();
+  SendSuggestions(entries, query_handler);
   uma_recorder_.OnWebDataServiceRequestDone(
-      current_handle, !suggestions.empty() /* has_suggestion */);
+      current_handle, !entries.empty() /* has_suggestion */);
 }
 
 void AutocompleteHistoryManager::OnAutofillCleanupReturned(
