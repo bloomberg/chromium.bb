@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
@@ -27,7 +28,9 @@
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -36,6 +39,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -67,6 +71,10 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
     }
     case AutofillChange::REMOVE: {
       os << "REMOVE";
+      break;
+    }
+    case AutofillChange::EXPIRE: {
+      os << "EXPIRED";
       break;
     }
   }
@@ -144,6 +152,7 @@ class AutofillTableTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<AutofillTable> table_;
   std::unique_ptr<WebDatabase> db_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillTableTest);
@@ -769,6 +778,69 @@ TEST_F(AutofillTableTest,
   EXPECT_EQ(1, GetAutofillEntryCount(ASCIIToUTF16("Name"),
                                      ASCIIToUTF16("Clark Kent"), db_.get()));
   changes.clear();
+}
+
+// Tests that we set the change type to REMOVE for expired elements when the
+// Autocomplete Retention Policy feature flag is off.
+TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOff_Removes) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  auto kNow = AutofillClock::Now();
+  auto k4MonthsOld = kNow - base::TimeDelta::FromDays(4 * 30);
+
+  AutofillChangeList changes;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k4MonthsOld));
+  changes.clear();
+
+  EXPECT_TRUE(table_->RemoveExpiredFormElements(&changes));
+
+  EXPECT_EQ(AutofillChange(AutofillChange::REMOVE,
+                           AutofillKey(field.name, field.value)),
+            changes[0]);
+}
+
+// Tests that we set the change type to EXPIRE for expired elements when the
+// Autocomplete Retention Policy feature flag is on.
+TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  auto kNow = AutofillClock::Now();
+  auto k2YearsOld = kNow - base::TimeDelta::FromDays(2 * 365);
+
+  AutofillChangeList changes;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k2YearsOld));
+  changes.clear();
+
+  EXPECT_TRUE(table_->RemoveExpiredFormElements(&changes));
+
+  EXPECT_EQ(AutofillChange(AutofillChange::EXPIRE,
+                           AutofillKey(field.name, field.value)),
+            changes[0]);
+}
+
+// Tests that, with the Autocomplete Retention Policy feature flag on, we don't
+// delete non-expired entries' data from the SQLite table.
+TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_NotOldEnough) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  auto kNow = AutofillClock::Now();
+  auto k2DaysOld = kNow - base::TimeDelta::FromDays(2);
+
+  AutofillChangeList changes;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k2DaysOld));
+  changes.clear();
+
+  EXPECT_TRUE(table_->RemoveExpiredFormElements(&changes));
+  EXPECT_TRUE(changes.empty());
 }
 
 TEST_F(AutofillTableTest, AutofillProfile) {

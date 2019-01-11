@@ -44,7 +44,7 @@ KeyedService* AutocompleteHistoryManagerFactory::BuildServiceInstanceFor(
   auto local_storage = WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
 
-  service->Init(local_storage, profile->IsOffTheRecord());
+  service->Init(local_storage, profile->GetPrefs(), profile->IsOffTheRecord());
 
   return service;
 }

@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor.h"
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor_factory.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -52,6 +53,10 @@ namespace {
 
 // The period after which autocomplete entries should expire in days.
 const int64_t kExpirationPeriodInDays = 60;
+
+// The period after which autocomplete entries should be cleaned-up in days.
+// Equivalent to roughly 14 months.
+const int64_t kAutocompleteRetentionPolicyPeriodInDays = 14 * 31;
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
@@ -681,8 +686,17 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
+  int64_t period = kExpirationPeriodInDays;
+  auto change_type = AutofillChange::REMOVE;
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutocompleteRententionPolicyEnabled)) {
+    period = kAutocompleteRetentionPolicyPeriodInDays;
+    change_type = AutofillChange::EXPIRE;
+  }
+
   base::Time expiration_time =
-      AutofillClock::Now() - base::TimeDelta::FromDays(kExpirationPeriodInDays);
+      AutofillClock::Now() - base::TimeDelta::FromDays(period);
 
   // Query for the name and value of all form elements that were last used
   // before the |expiration_time|.
@@ -694,7 +708,7 @@ bool AutofillTable::RemoveExpiredFormElements(
     base::string16 name = select_for_delete.ColumnString16(0);
     base::string16 value = select_for_delete.ColumnString16(1);
     tentative_changes.push_back(
-        AutofillChange(AutofillChange::REMOVE, AutofillKey(name, value)));
+        AutofillChange(change_type, AutofillKey(name, value)));
   }
 
   if (!select_for_delete.Succeeded())

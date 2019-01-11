@@ -126,6 +126,11 @@ const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
 const char kAutofillWalletImportStorageCheckboxState[] =
     "autofill.wallet_import_storage_checkbox_state";
 
+// Integer that is set to the last major version where the Autocomplete
+// retention policy was run.
+const char kAutocompleteLastVersionRetentionPolicy[] =
+    "autocomplete.retention_policy_last_version";
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Synced prefs. Used for cross-device choices, e.g., credit card Autofill.
   registry->RegisterDoublePref(
@@ -166,6 +171,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
+  registry->RegisterIntegerPref(prefs::kAutocompleteLastVersionRetentionPolicy,
+                                0);
   registry->RegisterBooleanPref(
       prefs::kAutofillMigrateLocalCardsCancelledPrompt, false);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);

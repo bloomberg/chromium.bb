@@ -20,8 +20,10 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/version_info/version_info.h"
 #include "components/webdata_services/web_data_service_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +53,8 @@ class MockWebDataService : public AutofillWebDataService {
                                           const base::string16& prefix,
                                           int limit,
                                           WebDataServiceConsumer* consumer));
+  MOCK_METHOD1(RemoveExpiredAutocompleteEntries,
+               WebDataServiceBase::Handle(WebDataServiceConsumer* consumer));
 
  protected:
   ~MockWebDataService() override {}
@@ -88,6 +92,10 @@ class MockSuggestionsHandler
   DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };
 
+int GetCurrentMajorVersion() {
+  return atoi(version_info::GetVersionNumber().c_str());
+}
+
 }  // namespace
 
 class AutocompleteHistoryManagerTest : public testing::Test {
@@ -95,10 +103,15 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   AutocompleteHistoryManagerTest() {}
 
   void SetUp() override {
+    prefs_ = test::PrefServiceForTesting();
+
+    // Mock such that we don't trigger the cleanup.
+    prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                       GetCurrentMajorVersion());
+
     web_data_service_ = base::MakeRefCounted<MockWebDataService>();
-    autofill_client_ = std::make_unique<MockAutofillClient>();
     autocomplete_manager_ = std::make_unique<AutocompleteHistoryManager>();
-    autocomplete_manager_->Init(web_data_service_, false);
+    autocomplete_manager_->Init(web_data_service_, prefs_.get(), false);
   }
 
   void TearDown() override {
@@ -126,7 +139,9 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<MockWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
-  std::unique_ptr<MockAutofillClient> autofill_client_;
+  MockAutofillClient autofill_client_;
+  std::unique_ptr<PrefService> prefs_;
+  base::test::ScopedFeatureList scoped_features;
 };
 
 // Tests that credit card numbers are not sent to the WebDatabase to be saved.
@@ -255,7 +270,8 @@ TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
 
 // Shouldn't save entries when in Incognito mode.
 TEST_F(AutocompleteHistoryManagerTest, Incognito) {
-  autocomplete_manager_->Init(web_data_service_, /*is_off_the_record_=*/true);
+  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record_=*/true);
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
@@ -316,6 +332,73 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitForm(form,
                                           /*is_autocomplete_enabled=*/true);
+}
+
+// Tests that the Init function will trigger the Autocomplete Retention Policy
+// cleanup if the flag is enabled, we're not in OTR and it hadn't run in the
+// current major version.
+TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
+  // Enable the feature, and set the major version.
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     GetCurrentMajorVersion() - 1);
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(1);
+  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record=*/false);
+}
+
+// Tests that the Init function will not trigger the Autocomplete Retention
+// Policy when running in OTR.
+TEST_F(AutocompleteHistoryManagerTest, Init_OTR_Not_TriggersCleanup) {
+  // Enable the feature, and set the major version.
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     GetCurrentMajorVersion() - 1);
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(0);
+  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record=*/true);
+}
+
+// Tests that the Init function will not trigger the Autocomplete Retention
+// Policy when the feature is disabled.
+TEST_F(AutocompleteHistoryManagerTest,
+       Init_FeatureDisabled_Not_TriggersCleanup) {
+  // Disable the feature, and set the major version.
+  scoped_features.InitAndDisableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     GetCurrentMajorVersion() - 1);
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(0);
+  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record=*/false);
+}
+
+// Tests that the Init function will not trigger the Autocomplete Retention
+// Policy when running in a major version that was already cleaned.
+TEST_F(AutocompleteHistoryManagerTest,
+       Init_SameMajorVersion_Not_TriggersCleanup) {
+  // Enable the feature, and set the major version.
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     GetCurrentMajorVersion());
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(0);
+  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record=*/false);
 }
 
 // Make sure our handler is called at the right time.
@@ -851,6 +934,28 @@ TEST_F(AutocompleteHistoryManagerTest, DestructorCancelsRequests) {
   autocomplete_manager_.reset();
 
   EXPECT_TRUE(PendingQueriesEmpty());
+}
+
+// Tests that a successful Autocomplete Retention Policy cleanup will
+// overwrite the last cleaned major version preference, and will also
+// log a Autocomplete.Cleanup metric.
+TEST_F(AutocompleteHistoryManagerTest, EntriesCleanup_Success) {
+  // Set Pref major version to some impossible number.
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy, -1);
+
+  EXPECT_EQ(-1,
+            prefs_->GetInteger(prefs::kAutocompleteLastVersionRetentionPolicy));
+
+  size_t cleanup_result = 10;
+  base::HistogramTester histogram_tester;
+
+  autocomplete_manager_->OnWebDataServiceRequestDone(
+      1, std::make_unique<WDResult<size_t>>(AUTOFILL_CLEANUP_RESULT,
+                                            cleanup_result));
+
+  EXPECT_EQ(GetCurrentMajorVersion(),
+            prefs_->GetInteger(prefs::kAutocompleteLastVersionRetentionPolicy));
+  histogram_tester.ExpectBucketCount("Autocomplete.Cleanup", cleanup_result, 1);
 }
 
 }  // namespace autofill
