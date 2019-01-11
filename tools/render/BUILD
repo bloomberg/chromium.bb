@@ -78,6 +78,8 @@ cc_library(
         "//lib:quic_trace_cc_proto",
         "//lib/analysis:numbering",
         "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
         "@com_google_glog//:glog",

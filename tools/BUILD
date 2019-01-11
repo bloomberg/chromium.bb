@@ -31,6 +31,7 @@ cc_binary(
     deps = [
         "//lib:quic_trace_cc_proto",
         "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
