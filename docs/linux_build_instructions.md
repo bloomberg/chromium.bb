@@ -84,6 +84,10 @@ $ cd src
 Once you have checked out the code, and assuming you're using Ubuntu, run
 [build/install-build-deps.sh](/build/install-build-deps.sh)
 
+```shell
+$ ./build/install-build-deps.sh
+```
+
 You may need to adjust the build dependencies for other distros. There are
 some [notes](#notes) at the end of this document, but we make no guarantees
 for their accuracy.
