@@ -83,9 +83,6 @@ MediaKeysListenerImpl::~MediaKeysListenerImpl() {
 void MediaKeysListenerImpl::StartWatchingMediaKey(KeyboardCode key_code) {
   key_codes_.insert(key_code);
   StartEventTapIfNecessary();
-
-  // Notify the delegate that we're ready to receive events for that key.
-  delegate_->OnStartedWatchingMediaKeys();
 }
 
 void MediaKeysListenerImpl::StopWatchingMediaKey(KeyboardCode key_code) {

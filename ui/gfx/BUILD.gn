@@ -180,6 +180,8 @@ jumbo_component("gfx") {
     "win/scoped_set_map_mode.h",
     "win/singleton_hwnd.cc",
     "win/singleton_hwnd.h",
+    "win/singleton_hwnd_hot_key_observer.cc",
+    "win/singleton_hwnd_hot_key_observer.h",
     "win/singleton_hwnd_observer.cc",
     "win/singleton_hwnd_observer.h",
     "win/text_analysis_source.cc",

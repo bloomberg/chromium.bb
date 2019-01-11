@@ -30,13 +30,6 @@ class UI_BASE_EXPORT MediaKeysListener {
 
     // Called on media key event.
     virtual void OnMediaKeysAccelerator(const Accelerator& accelerator) = 0;
-
-    // Called after a call to StartWatchingMediaKey(), once the listener is
-    // ready to receive key input. This will not be called after a call to
-    // StartWatchingMediaKey() if the listener was already listening for any
-    // media key. This may be called synchronously or asynchronously depending
-    // on the underlying implementation.
-    virtual void OnStartedWatchingMediaKeys() {}
   };
 
   // Can return nullptr if media keys listening is not implemented.
