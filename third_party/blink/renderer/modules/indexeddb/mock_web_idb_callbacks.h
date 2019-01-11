@@ -85,7 +85,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
                     const String& dataLossMessage,
                     const IDBDatabaseMetadata&));
 
-  MOCK_METHOD0(Detach, void());
+  MOCK_METHOD0(DetachRequestFromCallback, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebIDBCallbacks);

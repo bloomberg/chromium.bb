@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
-class IndexedDBCallbacksImpl;
 class WebIDBCallbacks;
 
 class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
@@ -122,7 +121,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+      std::unique_ptr<WebIDBCallbacks> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, KeyAndValueSizeTest);

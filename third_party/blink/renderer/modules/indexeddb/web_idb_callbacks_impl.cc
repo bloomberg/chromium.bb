@@ -77,6 +77,15 @@ WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {
+  Detach();
+}
+
+void WebIDBCallbacksImpl::Detach() {
+  DetachCallbackFromRequest();
+  DetachRequestFromCallback();
+}
+
+void WebIDBCallbacksImpl::DetachCallbackFromRequest() {
   if (request_) {
     probe::AsyncTaskCanceled(request_->GetExecutionContext(), this);
 #if DCHECK_IS_ON()
@@ -84,6 +93,10 @@ WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {
 #endif  // DCHECK_IS_ON()
     request_->WebCallbacksDestroyed();
   }
+}
+
+void WebIDBCallbacksImpl::DetachRequestFromCallback() {
+  request_.Clear();
 }
 
 void WebIDBCallbacksImpl::SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
@@ -99,6 +112,7 @@ void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
   request_->HandleResponse(
       DOMException::Create(static_cast<DOMExceptionCode>(code), message));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessNamesAndVersionsList(
@@ -116,6 +130,7 @@ void WebIDBCallbacksImpl::SuccessStringList(const Vector<String>& string_list) {
   DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
   request_->EnqueueResponse(std::move(string_list));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessCursor(
@@ -141,6 +156,7 @@ void WebIDBCallbacksImpl::SuccessCursor(
   value->SetIsolate(request_->GetIsolate());
   request_->HandleResponse(std::move(cursor), std::move(key),
                            std::move(primary_key), std::move(value));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessCursorPrefetch(
@@ -152,6 +168,7 @@ void WebIDBCallbacksImpl::SuccessCursorPrefetch(
                              std::move(values));
     cursor_->CachedContinue(this);
   }
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessDatabase(
@@ -167,6 +184,7 @@ void WebIDBCallbacksImpl::SuccessDatabase(
     DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
     request_->EnqueueResponse(std::move(db), IDBDatabaseMetadata(metadata));
+    Detach();
   } else if (db) {
     db->Close();
   }
@@ -178,6 +196,7 @@ void WebIDBCallbacksImpl::SuccessKey(std::unique_ptr<IDBKey> key) {
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   request_->HandleResponse(std::move(key));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessValue(
@@ -189,6 +208,7 @@ void WebIDBCallbacksImpl::SuccessValue(
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   value->SetIsolate(request_->GetIsolate());
   request_->HandleResponse(std::move(value));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessArray(
@@ -205,6 +225,7 @@ void WebIDBCallbacksImpl::SuccessArray(
     idb_values.emplace_back(std::move(idb_value));
   }
   request_->HandleResponse(std::move(idb_values));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessInteger(int64_t value) {
@@ -213,6 +234,7 @@ void WebIDBCallbacksImpl::SuccessInteger(int64_t value) {
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   request_->HandleResponse(value);
+  Detach();
 }
 
 void WebIDBCallbacksImpl::Success() {
@@ -221,6 +243,7 @@ void WebIDBCallbacksImpl::Success() {
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   request_->HandleResponse();
+  Detach();
 }
 
 void WebIDBCallbacksImpl::SuccessCursorContinue(
@@ -242,6 +265,7 @@ void WebIDBCallbacksImpl::SuccessCursorContinue(
   value->SetIsolate(request_->GetIsolate());
   request_->HandleResponse(std::move(key), std::move(primary_key),
                            std::move(value));
+  Detach();
 }
 
 void WebIDBCallbacksImpl::Blocked(int64_t old_version) {
@@ -253,6 +277,9 @@ void WebIDBCallbacksImpl::Blocked(int64_t old_version) {
   DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
   request_->EnqueueBlocked(old_version);
+  // Not resetting |request_|.  In this instance we will have to forward at
+  // least one other call in the set UpgradeNeeded() / Success() /
+  // Error().
 }
 
 void WebIDBCallbacksImpl::UpgradeNeeded(
@@ -273,13 +300,12 @@ void WebIDBCallbacksImpl::UpgradeNeeded(
     request_->EnqueueUpgradeNeeded(old_version, std::move(db),
                                    IDBDatabaseMetadata(metadata), data_loss,
                                    data_loss_message);
+    // Not resetting |request_|.  In this instance we will have to forward at
+    // least one other call in the set UpgradeNeeded() / Success() /
+    // Error().
   } else if (db) {
     db->Close();
   }
-}
-
-void WebIDBCallbacksImpl::Detach() {
-  request_.Clear();
 }
 
 }  // namespace blink

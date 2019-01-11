@@ -91,7 +91,10 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                      mojom::IDBDataLoss data_loss,
                      const String& data_loss_message,
                      const IDBDatabaseMetadata&) override;
-  void Detach() override;
+  void DetachRequestFromCallback() override;
+
+  void Detach();
+  void DetachCallbackFromRequest();
 
  private:
   explicit WebIDBCallbacksImpl(IDBRequest*);

@@ -616,7 +616,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
   if (pending_cursor_)
     pending_cursor_->ContextWillBeDestroyed();
   if (web_callbacks_) {
-    web_callbacks_->Detach();
+    web_callbacks_->DetachRequestFromCallback();
     web_callbacks_ = nullptr;
   }
 }
