@@ -421,7 +421,6 @@ public class LocationBarLayout extends FrameLayout
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
         updateButtonVisibility();
-        updateNavigationButton();
         updateShouldAnimateIconChanges();
 
         if (hasFocus) {
@@ -495,7 +494,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void onUrlTextChanged() {
         updateButtonVisibility();
-        updateNavigationButton();
     }
 
     @Override
@@ -570,14 +568,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public final ToolbarDataProvider getToolbarDataProvider() {
         return mToolbarDataProvider;
-    }
-
-    /**
-     * Updates the navigation button based on the URL string.
-     */
-    protected void updateNavigationButton() {
-        mStatusViewCoordinator.setNavigationButtonType(
-                StatusViewCoordinator.NavigationButtonType.EMPTY);
     }
 
     /**
@@ -692,14 +682,12 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void onSuggestionsHidden() {
-        updateNavigationButton();
-    }
-
-    @Override
     public void hideKeyboard() {
         getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
     }
+
+    @Override
+    public void onSuggestionsHidden() {}
 
     @Override
     public void onSuggestionsChanged(String autocompleteText) {
@@ -713,9 +701,6 @@ public class LocationBarLayout extends FrameLayout
         if (mUrlFocusedWithoutAnimations && mUrlHasFocus) {
             handleUrlFocusAnimation(mUrlHasFocus);
         }
-
-        // Update the navigation button to show the default suggestion's icon.
-        updateNavigationButton();
 
         if (mNativeInitialized
                 && !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_INSTANT)
@@ -948,7 +933,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void updateLoadingState(boolean updateUrl) {
         if (updateUrl) setUrlToPageUrl();
-        updateNavigationButton();
         mStatusViewCoordinator.updateStatusIcon();
     }
 

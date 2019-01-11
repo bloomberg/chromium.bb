@@ -9,6 +9,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -19,10 +20,13 @@ class StatusMediator {
     private final PropertyModel mModel;
     private boolean mDarkTheme;
     private boolean mUrlHasFocus;
+    private boolean mFirstSuggestionIsSearchQuery;
     private boolean mVerboseStatusAllowed;
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
+
+    private boolean mShowStatusIconWhenUrlFocused;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -31,10 +35,9 @@ class StatusMediator {
     private @DrawableRes int mSecurityIconRes;
     private @DrawableRes int mSecurityIconTintRes;
     private @StringRes int mSecurityIconDescriptionRes;
-    private @DrawableRes int mNavigationIconRes;
     private @DrawableRes int mNavigationIconTintRes;
 
-    private boolean mTestingIsSecurityButtonShown;
+    private boolean mIsSecurityButtonShown;
 
     StatusMediator(PropertyModel model) {
         mModel = model;
@@ -45,14 +48,6 @@ class StatusMediator {
      */
     void setAnimationsEnabled(boolean enabled) {
         mModel.set(StatusProperties.ANIMATIONS_ENABLED, enabled);
-    }
-
-    /**
-     * Specify navigation button image type.
-     */
-    void setNavigationButtonType(@DrawableRes int imageRes) {
-        mNavigationIconRes = imageRes;
-        updateLocationBarIcon();
     }
 
     /**
@@ -109,6 +104,14 @@ class StatusMediator {
     }
 
     /**
+     * Specify whether status icon should be shown when URL is focused.
+     */
+    void setShowIconsWhenUrlFocused(boolean showIconWhenFocused) {
+        mShowStatusIconWhenUrlFocused = showIconWhenFocused;
+        updateLocationBarIcon();
+    }
+
+    /**
      * Specify object to receive status click events.
      *
      * @param listener Specifies target object to receive events.
@@ -147,6 +150,14 @@ class StatusMediator {
 
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
+        updateLocationBarIcon();
+    }
+
+    /**
+     * Reports whether the first omnibox suggestion is a search query.
+     */
+    void setFirstSuggestionIsSearchType(boolean firstSuggestionIsSearchQuery) {
+        mFirstSuggestionIsSearchQuery = firstSuggestionIsSearchQuery;
         updateLocationBarIcon();
     }
 
@@ -241,8 +252,9 @@ class StatusMediator {
     /**
      * Reports whether security icon is shown.
      */
-    boolean testIsSecurityButtonShown() {
-        return mTestingIsSecurityButtonShown;
+    @VisibleForTesting
+    boolean isSecurityButtonShown() {
+        return mIsSecurityButtonShown;
     }
 
     /**
@@ -257,27 +269,31 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
+        int icon = 0;
+        int tint = 0;
+        int description = 0;
+        int toast = 0;
+
+        mIsSecurityButtonShown = false;
+
         if (mUrlHasFocus) {
-            mModel.set(StatusProperties.STATUS_ICON_RES, mNavigationIconRes);
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, mNavigationIconTintRes);
-            mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES,
-                    R.string.accessibility_toolbar_btn_site_info);
-            mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, 0);
-            mTestingIsSecurityButtonShown = false;
-            return;
+            if (mShowStatusIconWhenUrlFocused) {
+                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
+                                                     : R.drawable.ic_omnibox_page;
+                tint = mNavigationIconTintRes;
+                description = R.string.accessibility_toolbar_btn_site_info;
+            }
+        } else if (mSecurityIconRes != 0) {
+            mIsSecurityButtonShown = true;
+            icon = mSecurityIconRes;
+            tint = mSecurityIconTintRes;
+            description = mSecurityIconDescriptionRes;
+            toast = R.string.menu_page_info;
         }
 
-        if (!mUrlHasFocus && mSecurityIconRes != 0) {
-            mModel.set(StatusProperties.STATUS_ICON_RES, mSecurityIconRes);
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, mSecurityIconTintRes);
-            mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, mSecurityIconDescriptionRes);
-            mModel.set(
-                    StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, R.string.menu_page_info);
-            mTestingIsSecurityButtonShown = true;
-            return;
-        }
-
-        mTestingIsSecurityButtonShown = false;
-        mModel.set(StatusProperties.STATUS_ICON_RES, 0);
+        mModel.set(StatusProperties.STATUS_ICON_RES, icon);
+        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
+        mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, description);
+        mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
     }
 }

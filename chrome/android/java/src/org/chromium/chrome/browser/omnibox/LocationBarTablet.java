@@ -19,8 +19,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
@@ -34,7 +32,6 @@ import java.util.List;
  * Location bar for tablet form factors.
  */
 public class LocationBarTablet extends LocationBarLayout {
-
     private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
     private static final long MAX_NTP_KEYBOARD_FOCUS_DURATION_MS = 200;
 
@@ -117,7 +114,8 @@ public class LocationBarTablet extends LocationBarLayout {
         mBookmarkButton = findViewById(R.id.bookmark_button);
         mSaveOfflineButton = findViewById(R.id.save_offline_button);
 
-        mTargets = new View[] { mUrlBar, mDeleteButton };
+        mTargets = new View[] {mUrlBar, mDeleteButton};
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(true);
     }
 
     @Override
@@ -136,10 +134,8 @@ public class LocationBarTablet extends LocationBarLayout {
             offsetDescendantRectToMyCoords(target, mCachedTargetBounds);
             float x = event.getX();
             float y = event.getY();
-            float dx = distanceToRange(
-                    mCachedTargetBounds.left, mCachedTargetBounds.right, x);
-            float dy = distanceToRange(
-                    mCachedTargetBounds.top, mCachedTargetBounds.bottom, y);
+            float dx = distanceToRange(mCachedTargetBounds.left, mCachedTargetBounds.right, x);
+            float dy = distanceToRange(mCachedTargetBounds.top, mCachedTargetBounds.bottom, y);
             float distance = Math.abs(dx) + Math.abs(dy);
             if (selectedTarget == null || distance < selectedDistance) {
                 selectedTarget = target;
@@ -263,26 +259,17 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     @Override
-    protected void updateNavigationButton() {
-        @StatusViewCoordinator.NavigationButtonType
-        int type = StatusViewCoordinator.NavigationButtonType.PAGE;
-
-        if (mAutocompleteCoordinator.getSuggestionCount() > 0) {
-            // If there are suggestions showing, show the icon for the default suggestion.
-            type = suggestionTypeToNavigationButtonType(
-                    mAutocompleteCoordinator.getSuggestionAt(0));
-        }
-
-        mStatusViewCoordinator.setNavigationButtonType(type);
+    public void onSuggestionsHidden() {
+        super.onSuggestionsHidden();
+        mStatusViewCoordinator.setFirstSuggestionIsSearchType(false);
     }
 
-    private static @StatusViewCoordinator.NavigationButtonType
-    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
-        if (suggestion.isUrlSuggestion()) {
-            return StatusViewCoordinator.NavigationButtonType.PAGE;
-        } else {
-            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
-        }
+    @Override
+    public void onSuggestionsChanged(String autocompleteText) {
+        super.onSuggestionsChanged(autocompleteText);
+        mStatusViewCoordinator.setFirstSuggestionIsSearchType(
+                mAutocompleteCoordinator.getSuggestionCount() > 0
+                && !mAutocompleteCoordinator.getSuggestionAt(0).isUrlSuggestion());
     }
 
     @Override
@@ -350,8 +337,8 @@ public class LocationBarTablet extends LocationBarLayout {
 
         ArrayList<Animator> animators = new ArrayList<>();
 
-        Animator widthChangeAnimator = ObjectAnimator.ofFloat(
-                this, mWidthChangePercentProperty, 0f);
+        Animator widthChangeAnimator =
+                ObjectAnimator.ofFloat(this, mWidthChangePercentProperty, 0f);
         widthChangeAnimator.setDuration(WIDTH_CHANGE_ANIMATION_DURATION_MS);
         widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         widthChangeAnimator.addListener(new AnimatorListenerAdapter() {
@@ -382,8 +369,8 @@ public class LocationBarTablet extends LocationBarLayout {
 
         if (shouldShowSaveOfflineButton()) {
             animators.add(createShowButtonAnimator(mSaveOfflineButton));
-        // If the microphone button is already fully visible, don't animate its appearance.
         } else if (mMicButton.getVisibility() != View.VISIBLE || mMicButton.getAlpha() != 1.f) {
+            // If the microphone button is already fully visible, don't animate its appearance.
             animators.add(createShowButtonAnimator(mMicButton));
         }
 
