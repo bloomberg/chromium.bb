@@ -19,6 +19,21 @@ various tools available to help with conversion of legacy IPC messages to Mojo.
 It assumes familiarity with [Mojom](/mojo/public/tools/bindings) syntax and
 general use of Mojo [C++ bindings](/mojo/public/cpp/bindings).
 
+The existing messages that still need to be converted are tracked in two
+spreadsheets:
+
+[Chrome IPC to Mojo migration](
+https://docs.google.com/spreadsheets/d/1pGWX_wxGdjAVtQOmlDDfhuIc3Pbwg9FtvFXAXYu7b7c/edit#gid=0) -
+for non-web platform messages
+
+[Mojoifying Platform Features](
+https://docs.google.com/spreadsheets/d/1VIINt17Dg2cJjPpoJ_HY3HI0uLpidql-1u8pBJtpbGk/edit#gid=1603373208) -
+for web platform messages
+
+Ownership of items is claimed by specifying a username in the 'Owner' field to
+prevent duplication of effort. If you are not very familiar with the messages
+you plan to convert, it might be worth asking the owner first.
+
 In traditional Chrome IPC, we have One Big Pipe (the `IPC::Channel`) between
 each connected process. Sending an IPC from one process to another means knowing
 how to get a handle to the Channel interface (*e.g.,*
@@ -48,7 +63,7 @@ of life?
 ### Moving Messages to Services
 
 We have a small but growing number of services defined in
-[`//services`](https://cs.chromium.org/chromium/src/services), each of which has
+[`//services`](https://cs.chromium.org/chromium/src/services/), each of which has
 some set of public interfaces defined in their `public/interfaces` subdirectory.
 In the limit, this is the preferred destination for any message conversions
 pertaining to foundational system services (more info at
@@ -128,7 +143,7 @@ others still on the Channel.
 If ordering really matters with respect to other legacy messages in the system,
 as is often the case for *e.g.* frame and navigation-related messages, you
 almost certainly want to take advantage of
-[Channel-associated interfaces](#Using-Channel-associated-Interfaces) to
+[Channel-associated interfaces](#Using-Channel_associated-Interfaces) to
 eliminate any risk of introducing subtle behavioral changes.
 
 Even if ordering only matters among a small set of messages which you intend to
@@ -166,7 +181,12 @@ interface PngDecoder {
 };
 ```
 
-and you'll also want to define the implementation within
+You will need to update the relevant BUILD.gn target with the newly added mojom
+file. See [this section](
+https://chromium.googlesource.com/chromium/src/+/master/mojo/public/cpp/bindings/README.md#getting-started)
+for details.
+
+You'll also want to define the implementation within
 `//services/data_decoder`, plugging in some appropriate binder so the service
 knows how to bind incoming interface requests to your implementation:
 
@@ -195,6 +215,8 @@ lots of ugly code which sets up a `UtilityProcessHost` and replacing it with
 something like:
 
 ``` cpp
+#include "services/data_decoder/public/mojom/png_decoder.mojom.h"
+...
 void OnDecodedPng(const std::vector<uint8_t>& rgba_data) { /* ... */ }
 
 data_decoder::mojom::PngDecoderPtr png_decoder;
@@ -301,11 +323,11 @@ directly.
 
 For convenience the Service Manager's
 [client library](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/)
-exposes two useful types: `InterfaceRegistry` and `InterfaceProvider`. These
-objects generally exist as an intertwined pair with an `InterfaceRegistry` in
+exposes two useful types: `BinderRegistry` and `InterfaceProvider`. These
+objects generally exist as an intertwined pair with a `BinderRegistry` in
 one process and a corresponding `InterfaceProvider` in another process.
 
-The `InterfaceRegistry` is essentially just a mapping from interface name
+The `BinderRegistry` is essentially just a mapping from interface name
 to binder function:
 
 ``` cpp
@@ -320,7 +342,7 @@ registry->AddInterface(base::Bind(&BindFrobinator));
 ```
 
 while an `InterfaceProvider` exposes a means of requesting interfaces from a
-remote `InterfaceRegistry`:
+remote `BinderRegistry`:
 
 ``` cpp
 mojom::FrobinatorPtr frob;
@@ -333,16 +355,14 @@ provider->GetInterface(mojo::MakeRequest(&frob));
 frob->DoTheFrobinator();
 ```
 
-For convenience, we stick an `InterfaceRegistry` and corresponding
-`InterfaceProvider` in several places at the Content layer to facilitate
-interface connection between browser and renderer processes:
+`RenderFrameHostImpl`'s binder registry corresponds to the `InterfaceProvider`
+returned by `RenderFrameImpl::GetRemoteInterfaces()`, and `RenderFrameImpl`'s
+binder registry corresponds to the `InterfaceProvider` returned by
+`RenderFrameHostImpl::GetRemoteInterfaces()`.
 
-| `InterfaceRegistry`                         | `InterfaceProvider`                        |
-|---------------------------------------------|--------------------------------------------|
-| `RenderProcessHost::GetInterfaceRegistry()` | `RenderThreadImpl::GetRemoteInterfaces()`  |
-| `RenderThreadImpl::GetInterfaceRegistry()`  | `RenderProcessHost::GetRemoteInterfaces()` |
-| `RenderFrameHost::GetInterfaceRegistry()`   | `RenderFrame::GetRemoteInterfaces()`       |
-| `RenderFrame::GetInterfaceRegistry()`       | `RenderFrameHost::GetRemoteInterfaces()`   |
+**NOTE:** this mechanism is being replaced with explicit interface factory
+approach described in [this document](
+https://docs.google.com/document/d/1e0qqv3ZGQYskE4XhtuGrYJeThjYXu8xozl7zIlwjSD0).
 
 As noted above, use of these registries is generally discouraged.
 
@@ -359,7 +379,7 @@ on the correct registry, passing a method that takes the Mojo Request object
 `mojo::MakeStrongBinding()`, `bindings_.AddBinding()`, etc). Then the class that
 needs this API can call `BindInterface()` on the connector for that process,
 e.g.
-`RenderThread::Get()->GetConnector()->BindInterface(mojom::kBrowserServiceName, std::move(&mojo_interface_))`.
+`ChildThreadImpl::current()->GetConnector()->BindInterface(mojom::kBrowserServiceName, std::move(&mojo_interface_))`.
 
 **NOTE:** `content::ServiceManagerConnection::GetForProcess()` must be called in
 the browser process on the main thread, and its connector can only be used on
@@ -371,8 +391,8 @@ Depending on what resources you need access to, the main classes are:
 
 | Renderer Class  | Corresponding Browser Class |  Explanation                                                                                                       |
 |-----------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------|
-| `RenderFrame`   | `RenderFrameHost`           |  A single frame. Use this for frame-to-frame messages.                                                             |
-| `RenderView`    | `RenderViewHost`            | A view (conceptually a 'tab'). You cannot send Mojo messages to a `RenderView` directly, since frames in a tab can be in multiple processes (and the classes are deprecated). Migrate these to `RenderFrame` instead, or see section [Migrating IPC calls to `RenderView` or `RenderViewHost`](#UMigrating-IPC-calls-to-RenderView-or-RenderViewHost).  |
+| `RenderFrame`   | `RenderFrameHost`           | A single frame. Use this for frame-to-frame messages.                                                             |
+| `RenderView`    | `RenderViewHost`            | A view (conceptually a 'tab'). You cannot send Mojo messages to a `RenderView` directly, since frames in a tab can be in multiple processes (and the classes are deprecated). Migrate these to `RenderFrame` instead, or see section [Migrating IPC calls to `RenderView` or `RenderViewHost`](#other-routed-messages-to-the-browser).  |
 | `RenderProcess` | `RenderProcessHost`         | A process, containing multiple frames (probably from the same origin, but not always).                             |
 
 **NOTE:** Previously, classes that ended with `Host` were implemented on the
@@ -446,6 +466,21 @@ void Logger::BindRequest(mojom::LoggerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 ```
+
+As you can see above, `MakeStrongBinding()` is used to lazily create an
+interface implementation when a connection is created. The lifetime of this
+implementation spans the lifetime of the connection. This is done to not
+unnecessarily create instances that might not be used.
+
+Because strong binding lifetime is not tracked or easily observable, any
+implementation bound with a strong binding must be very careful to avoid
+dependencies on things which it might outlive. As a general rule, if your
+implementation depends on any state outside of itself, please consider avoiding
+strong bindings in favor of explicit object ownership.
+
+Alternatively, the relevant registry owner class can own the implementation
+instance and dispatch the connection requests that the implementation will
+bind.
 
 #### Setting up Capabilities
 
@@ -607,7 +642,9 @@ existing `BrowserMessageFilter` is to define a similiarly named Mojom interface
 in an inner `mojom` namespace (*e.g.,* a `content::FooMessageFilter` would have
 a corresponding `content::mojom::FooMessageFilter` interface), and have the
 `BrowserMessageFilter` implementation also implement
-`BrowserAssociatedInterface<T>`.
+`BrowserAssociatedInterface<T>` (optionally overriding methods such as
+`BrowserMessageFilter::OnDestruct()` if it needs to be deleted on a certain
+thread).
 
 Real code is probably the most useful explanation, so here are some example
 conversion CLs which demonstrate practical `BrowserAssociatedInterface` usage.
@@ -650,6 +687,10 @@ When a message is received by an interface implementation using a
 `WebContentsFrameBindingSet`, that object's `dispatch_context()` can be used
 to retrieve the `RenderFrameHostImpl` targeted by the message. See the above CL
 for additional clarity.
+
+**NOTE:** When the ordering of messages doesn't matter, the `InterfaceProvider`
+of the relevant `RenderFrameHost` should be used to replace the routing ID. It
+can be obtained by calling `RenderFrame::GetRemoteInterfaces()`.
 
 ### Other Routed Messages To the Browser
 
@@ -816,9 +857,4 @@ with ideas, questions, suggestions, etc.
 :    A slightly dated but still valuable document covering some details
      regarding the conceptual mapping between legacy IPC and Mojo.
 
-[Mojo Migration Guide](https://www.chromium.org/developers/design-documents/mojo/mojo-migration-guide)
-:    Another slightly (more) data document covering the basics of IPC conversion
-     to Mojo.
-
-     TODO: The migration guide above should probably be deleted and the good
-     parts merged into this document.
+[Additional example CLs](https://docs.google.com/document/d/1GCi08AVMV96cD-tI8kW3xfRir3aNMb5U2yJFU3iAFSU)
