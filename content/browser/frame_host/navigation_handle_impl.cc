@@ -408,6 +408,18 @@ const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
   return request_headers_;
 }
 
+void NavigationHandleImpl::RemoveRequestHeader(const std::string& header_name) {
+  DCHECK(state_ == WILL_REDIRECT_REQUEST);
+  removed_request_headers_.push_back(header_name);
+}
+
+void NavigationHandleImpl::SetRequestHeader(const std::string& header_name,
+                                            const std::string& header_value) {
+  DCHECK(state_ == INITIAL || state_ == WILL_SEND_REQUEST ||
+         state_ == WILL_REDIRECT_REQUEST);
+  modified_request_headers_.SetHeader(header_name, header_value);
+}
+
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
   if (response_headers_for_testing_)
     return response_headers_for_testing_.get();

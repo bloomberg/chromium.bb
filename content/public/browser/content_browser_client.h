@@ -550,6 +550,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       RendererPreferences* out_prefs);
 
+  // DEPRECATED, Please use the NavigationHandle to modify headers.
+  // See https://crbug.com/919432.
+  //
   // Allow the embedder to return additional headers that should be sent when
   // fetching |url| as well as add extra load flags.
   virtual void NavigationRequestStarted(int frame_tree_node_id,
@@ -557,6 +560,9 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         net::HttpRequestHeaders* extra_headers,
                                         int* extra_load_flags) {}
 
+  // DEPRECATED. Please use the NavigationHandle to modify headers.
+  // See https://crbug.com/919432.
+  //
   // Allow the embedder to modify headers for a redirect. If non-nullopt,
   // |*modified_headers| is applied to the request headers after updating them
   // for the redirect.

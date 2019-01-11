@@ -1639,4 +1639,130 @@ IN_PROC_BROWSER_TEST_F(NavigationDownloadBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 }
 
+// Add header on redirect.
+IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest, AddRequestHeaderOnRedirect) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindLambdaForTesting(
+          [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
+            auto throttle = std::make_unique<TestNavigationThrottle>(handle);
+            NavigationHandleImpl* handle_impl =
+                static_cast<NavigationHandleImpl*>(handle);
+            throttle->SetCallback(TestNavigationThrottle::WILL_REDIRECT_REQUEST,
+                                  base::BindLambdaForTesting([handle_impl]() {
+                                    handle_impl->SetRequestHeader(
+                                        "header_name", "header_value");
+                                  }));
+            return throttle;
+          }));
+
+  // 1) There is no "header_name" header in the initial request.
+  shell()->LoadURL(embedded_test_server()->GetURL("/doc"));
+  response_1.WaitForRequest();
+  EXPECT_FALSE(
+      base::ContainsKey(response_1.http_request()->headers, "header_name"));
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+
+  // 2) The header is added to the second request after the redirect.
+  response_2.WaitForRequest();
+  EXPECT_EQ("header_value",
+            response_2.http_request()->headers.at("header_name"));
+}
+
+// Add header on request start, modify it on redirect.
+IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
+                       AddRequestHeaderModifyOnRedirect) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindLambdaForTesting(
+          [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
+            auto throttle = std::make_unique<TestNavigationThrottle>(handle);
+            NavigationHandleImpl* handle_impl =
+                static_cast<NavigationHandleImpl*>(handle);
+            throttle->SetCallback(TestNavigationThrottle::WILL_START_REQUEST,
+                                  base::BindLambdaForTesting([handle_impl]() {
+                                    handle_impl->SetRequestHeader(
+                                        "header_name", "header_value");
+                                  }));
+            throttle->SetCallback(TestNavigationThrottle::WILL_REDIRECT_REQUEST,
+                                  base::BindLambdaForTesting([handle_impl]() {
+                                    handle_impl->SetRequestHeader(
+                                        "header_name", "other_value");
+                                  }));
+            return throttle;
+          }));
+
+  // 1) The header is added to the initial request.
+  shell()->LoadURL(embedded_test_server()->GetURL("/doc"));
+  response_1.WaitForRequest();
+  EXPECT_EQ("header_value",
+            response_1.http_request()->headers.at("header_name"));
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+
+  // 2) The header is modified in the second request after the redirect.
+  response_2.WaitForRequest();
+  EXPECT_EQ("other_value",
+            response_2.http_request()->headers.at("header_name"));
+}
+
+// Add header on request start, remove it on redirect.
+IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
+                       AddRequestHeaderRemoveOnRedirect) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindLambdaForTesting(
+          [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
+            NavigationHandleImpl* handle_impl =
+                static_cast<NavigationHandleImpl*>(handle);
+            auto throttle = std::make_unique<TestNavigationThrottle>(handle);
+            throttle->SetCallback(TestNavigationThrottle::WILL_START_REQUEST,
+                                  base::BindLambdaForTesting([handle_impl]() {
+                                    handle_impl->SetRequestHeader(
+                                        "header_name", "header_value");
+                                  }));
+            throttle->SetCallback(
+                TestNavigationThrottle::WILL_REDIRECT_REQUEST,
+                base::BindLambdaForTesting([handle_impl]() {
+                  handle_impl->RemoveRequestHeader("header_name");
+                }));
+            return throttle;
+          }));
+
+  // 1) The header is added to the initial request.
+  shell()->LoadURL(embedded_test_server()->GetURL("/doc"));
+  response_1.WaitForRequest();
+  EXPECT_EQ("header_value",
+            response_1.http_request()->headers.at("header_name"));
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+
+  // 2) The header is removed from the second request after the redirect.
+  response_2.WaitForRequest();
+  EXPECT_FALSE(
+      base::ContainsKey(response_2.http_request()->headers, "header_name"));
+}
+
 }  // namespace content

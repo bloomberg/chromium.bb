@@ -541,6 +541,7 @@ NavigationRequest::NavigationRequest(
   if (!is_for_commit) {
     int additional_load_flags = 0;
     net::HttpRequestHeaders embedder_additional_headers;
+    // TODO(https://crbug.com/919432): Remove this method.
     GetContentClient()->browser()->NavigationRequestStarted(
         frame_tree_node->frame_tree_node_id(), common_params_.url,
         &embedder_additional_headers, &additional_load_flags);
@@ -1528,6 +1529,12 @@ void NavigationRequest::OnStartChecksComplete(
           : frame_tree_node_->frame_tree()->root()->current_url();
   url::Origin top_frame_origin = url::Origin::Create(top_frame_url);
 
+  // Merge headers with embedder's headers.
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(begin_params_->headers);
+  headers.MergeFrom(navigation_handle_->TakeModifiedRequestHeaders());
+  begin_params_->headers = headers.ToString();
+
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
@@ -1585,11 +1592,10 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  net::HttpRequestHeaders additional_headers;
-  std::vector<std::string> embedder_removed_headers;
-  GetContentClient()->browser()->NavigationRequestRedirected(
-      frame_tree_node_->frame_tree_node_id(), common_params_.url,
-      &additional_headers);
+  net::HttpRequestHeaders modified_headers =
+      navigation_handle_->TakeModifiedRequestHeaders();
+  std::vector<std::string> removed_headers =
+      navigation_handle_->TakeRemovedRequestHeaders();
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
@@ -1598,11 +1604,16 @@ void NavigationRequest::OnRedirectChecksComplete(
     browser_context->GetClientHintsControllerDelegate()
         ->GetAdditionalNavigationRequestClientHintsHeaders(
             common_params_.url, &client_hints_extra_headers);
-    additional_headers.MergeFrom(client_hints_extra_headers);
+    modified_headers.MergeFrom(client_hints_extra_headers);
   }
 
-  loader_->FollowRedirect(std::move(embedder_removed_headers),
-                          std::move(additional_headers));
+  // TODO(https://crbug.com/919432): Remove this method.
+  GetContentClient()->browser()->NavigationRequestRedirected(
+      frame_tree_node_->frame_tree_node_id(), common_params_.url,
+      &modified_headers);
+
+  loader_->FollowRedirect(std::move(removed_headers),
+                          std::move(modified_headers));
 }
 
 void NavigationRequest::OnFailureChecksComplete(
