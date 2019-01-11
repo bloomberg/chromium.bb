@@ -170,10 +170,6 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
     "FramebustingNeedsSameOriginOrUserGesture",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables extended Gamepad API features like motion tracking and haptics.
-const base::Feature kGamepadExtensions{"GamepadExtensions",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables haptic vibration effects on supported gamepads.
 const base::Feature kGamepadVibration{"GamepadVibration",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

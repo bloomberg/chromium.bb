@@ -2183,9 +2183,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
-    {"enable-gamepad-extensions", flag_descriptions::kGamepadExtensionsName,
-     flag_descriptions::kGamepadExtensionsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kGamepadExtensions)},
     {"enable-gamepad-vibration", flag_descriptions::kGamepadVibrationName,
      flag_descriptions::kGamepadVibrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGamepadVibration)},
