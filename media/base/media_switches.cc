@@ -238,7 +238,7 @@ const base::Feature kUseAndroidOverlayAggressively{
 
 // Let video track be unselected when video is playing in the background.
 const base::Feature kBackgroundSrcVideoTrackOptimization{
-    "BackgroundSrcVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BackgroundSrcVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let video without audio be paused when it is playing in the background.
 const base::Feature kBackgroundVideoPauseOptimization{
