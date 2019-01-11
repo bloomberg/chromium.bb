@@ -379,6 +379,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   using DynamicStreamMap =
       QuicSmallMap<QuicStreamId, std::unique_ptr<QuicStream>, 10>;
 
+  using PendingStreamMap =
+      QuicSmallMap<QuicStreamId, std::unique_ptr<PendingStream>, 10>;
+
   using ClosedStreams = std::vector<std::unique_ptr<QuicStream>>;
 
   using ZombieStreamMap =
@@ -430,6 +433,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // controller.
   virtual void OnFinalByteOffsetReceived(QuicStreamId id,
                                          QuicStreamOffset final_byte_offset);
+
+  // Returns true if incoming streams should be buffered until the first
+  // byte of the stream arrives.
+  virtual bool ShouldBufferIncomingStream(QuicStreamId id) const {
+    return false;
+  }
 
   // Register (|id|, |stream|) with the static stream map. Override previous
   // registrations with the same id.
@@ -489,6 +498,31 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     return stream_id_manager_;
   }
 
+  // A StreamHandler represents an object which can receive a STREAM or
+  // or RST_STREAM frame.
+  struct StreamHandler {
+    StreamHandler() : is_pending(false), stream(nullptr) {}
+
+    // Creates a StreamHandler wrapping a QuicStream.
+    explicit StreamHandler(QuicStream* stream)
+        : is_pending(false), stream(stream) {}
+
+    // Creates a StreamHandler wrapping a PendingStream.
+    explicit StreamHandler(PendingStream* pending)
+        : is_pending(true), pending(pending) {
+      DCHECK(pending != nullptr);
+    }
+
+    // True if this handler contains a non-null PendingStream, false otherwise.
+    bool is_pending;
+    union {
+      QuicStream* stream;
+      PendingStream* pending;
+    };
+  };
+
+  StreamHandler GetOrCreateStreamImpl(QuicStreamId stream_id, bool may_buffer);
+
  private:
   friend class test::QuicSessionPeer;
 
@@ -519,9 +553,15 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // closed.
   QuicStream* GetStream(QuicStreamId id) const;
 
+  StreamHandler GetOrCreateDynamicStreamImpl(QuicStreamId stream_id,
+                                             bool may_buffer);
+
   // Let streams and control frame managers retransmit lost data, returns true
   // if all lost data is retransmitted. Returns false otherwise.
   bool RetransmitLostData();
+
+  // Closes the pending stream |stream_id| before it has been created.
+  void ClosePendingStream(QuicStreamId stream_id);
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
@@ -551,6 +591,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Map from StreamId to pointers to streams. Owns the streams.
   DynamicStreamMap dynamic_stream_map_;
+
+  // Map from StreamId to PendingStreams for peer-created unidirectional streams
+  // which are waiting for the first byte of payload to arrive.
+  PendingStreamMap pending_stream_map_;
 
   // Set of stream ids that are "draining" -- a FIN has been sent and received,
   // but the stream object still exists because not all the received data has
