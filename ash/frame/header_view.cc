@@ -72,8 +72,7 @@ HeaderView::HeaderView(views::Widget* target_widget)
 
   UpdateBackButton();
 
-  frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
-                                window->GetProperty(kFrameInactiveColorKey));
+  frame_header_->UpdateFrameColors();
   window_observer_.Add(window);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -197,8 +196,7 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
         window->GetProperty(aura::client::kAvatarIconKey);
     SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
   } else if (key == kFrameActiveColorKey || key == kFrameInactiveColorKey) {
-    frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
-                                  window->GetProperty(kFrameInactiveColorKey));
+    frame_header_->UpdateFrameColors();
   } else if (key == aura::client::kShowStateKey) {
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));

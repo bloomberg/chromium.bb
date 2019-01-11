@@ -9,9 +9,11 @@
 #include "ash/public/cpp/caption_buttons/frame_back_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
 #include "base/i18n/rtl.h"
 #include "base/test/icu_test_util.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
@@ -92,7 +94,9 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   // Check frame color is sensitive to mode.
   SkColor active = SkColorSetRGB(70, 70, 70);
   SkColor inactive = SkColorSetRGB(200, 200, 200);
-  frame_header.SetFrameColors(active, inactive);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, active);
+  widget->GetNativeWindow()->SetProperty(kFrameInactiveColorKey, inactive);
+  frame_header.UpdateFrameColors();
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;
   EXPECT_EQ(active, frame_header.GetCurrentFrameColor());
   frame_header.mode_ = FrameHeader::MODE_INACTIVE;
@@ -102,7 +106,8 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   // Update to the new value which has no blue, which should animate.
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;
   SkColor new_active = SkColorSetRGB(70, 70, 0);
-  frame_header.SetFrameColors(new_active, SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_active);
+  frame_header.UpdateFrameColors();
 
   gfx::SlideAnimation* animation =
       frame_header.GetAnimationForActiveFrameColorForTest();
@@ -124,7 +129,8 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
 
   // Now update to the new value which is full blue.
   SkColor new_new_active = SkColorSetRGB(70, 70, 255);
-  frame_header.SetFrameColors(new_new_active, SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_new_active);
+  frame_header.UpdateFrameColors();
 
   now = base::TimeTicks::Now();
   test_api.SetStartTime(now);

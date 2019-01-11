@@ -34,7 +34,6 @@ class TabIconView;
 
 namespace ash {
 class AshFrameCaptionController;
-class DefaultFrameHeader;
 class FrameCaptionButtonContainerView;
 }  // namespace ash
 
@@ -194,8 +193,7 @@ class BrowserNonClientFrameViewAsh
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
   // Creates views and does other setup for a hosted app.
-  // TODO(estade): remove the parameter as it's unused in Mash.
-  void SetUpForHostedApp(ash::DefaultFrameHeader* header);
+  void SetUpForHostedApp();
 
   // Triggers the hosted app origin and icon animations, assumes the hosted
   // app UI elements exist.
