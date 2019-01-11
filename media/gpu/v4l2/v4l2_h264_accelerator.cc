@@ -77,7 +77,7 @@ void V4L2H264Accelerator::H264DPBToV4L2DPB(
     if (!pic->nonexisting) {
       scoped_refptr<V4L2DecodeSurface> dec_surface =
           H264PictureToV4L2DecodeSurface(pic);
-      index = dec_surface->output_record();
+      index = dec_surface->GetReferenceID();
       ref_surfaces->push_back(dec_surface);
     }
 
@@ -257,7 +257,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
   ext_ctrls.count = ctrls.size();
   ext_ctrls.controls = &ctrls[0];
-  ext_ctrls.config_store = dec_surface->config_store();
+  dec_surface->PrepareSetCtrls(&ext_ctrls);
   if (device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(1) << "ioctl() failed: VIDIOC_S_EXT_CTRLS";
     return Status::kFail;
@@ -430,7 +430,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
   ext_ctrls.count = ctrls.size();
   ext_ctrls.controls = &ctrls[0];
-  ext_ctrls.config_store = dec_surface->config_store();
+  dec_surface->PrepareSetCtrls(&ext_ctrls);
   if (device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(1) << "ioctl() failed: VIDIOC_S_EXT_CTRLS";
     return Status::kFail;

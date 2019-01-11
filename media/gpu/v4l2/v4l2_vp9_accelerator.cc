@@ -282,7 +282,7 @@ bool V4L2VP9Accelerator::SubmitDecode(
       scoped_refptr<V4L2DecodeSurface> ref_surface =
           VP9PictureToV4L2DecodeSurface(ref_pictures[i]);
 
-      v4l2_decode_param.ref_frames[i] = ref_surface->output_record();
+      v4l2_decode_param.ref_frames[i] = ref_surface->GetReferenceID();
       ref_surfaces.push_back(ref_surface);
     } else {
       v4l2_decode_param.ref_frames[i] = VIDEO_MAX_FRAME;
@@ -305,7 +305,7 @@ bool V4L2VP9Accelerator::SubmitDecode(
     if (ref_pic) {
       scoped_refptr<V4L2DecodeSurface> ref_surface =
           VP9PictureToV4L2DecodeSurface(ref_pic);
-      v4l2_ref_frame->buf_index = ref_surface->output_record();
+      v4l2_ref_frame->buf_index = ref_surface->GetReferenceID();
 #define REF_TO_V4L2_REF(a) v4l2_ref_frame->a = ref_pic->frame_hdr->a
       REF_TO_V4L2_REF(frame_width);
       REF_TO_V4L2_REF(frame_height);
@@ -350,7 +350,7 @@ bool V4L2VP9Accelerator::SubmitDecode(
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
   ext_ctrls.count = ctrls.size();
   ext_ctrls.controls = &ctrls[0];
-  ext_ctrls.config_store = dec_surface->config_store();
+  dec_surface->PrepareSetCtrls(&ext_ctrls);
   if (device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(1) << "ioctl() failed: VIDIOC_S_EXT_CTRLS";
     return false;
@@ -394,7 +394,7 @@ bool V4L2VP9Accelerator::GetFrameContext(const scoped_refptr<VP9Picture>& pic,
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
   ext_ctrls.count = 1;
   ext_ctrls.controls = &ctrl;
-  ext_ctrls.config_store = dec_surface->config_store();
+  dec_surface->PrepareSetCtrls(&ext_ctrls);
   if (device_->Ioctl(VIDIOC_G_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(1) << "ioctl() failed: VIDIOC_G_EXT_CTRLS";
     return false;
