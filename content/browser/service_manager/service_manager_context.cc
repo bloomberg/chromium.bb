@@ -567,10 +567,12 @@ ServiceManagerContext::ServiceManagerContext(
       manifests.push_back(
           LoadServiceManifest(manifest_info.name, manifest_info.resource_id));
     }
-    for (const auto& manifest :
+    for (const auto& info :
          GetContentClient()->browser()->GetExtraServiceManifests()) {
-      manifests.push_back(
-          LoadServiceManifest(manifest.name, manifest.resource_id));
+      if (info.resource_id != -1)
+        manifests.push_back(LoadServiceManifest(info.name, info.resource_id));
+      else
+        manifests.push_back(info.manifest);
     }
     in_process_context_ =
         new InProcessServiceManagerContext(service_manager_thread_task_runner_);

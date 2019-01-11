@@ -1031,8 +1031,11 @@ class CONTENT_EXPORT ContentBrowserClient {
     // The name of the service.
     std::string name;
 
-    // The resource ID of the manifest.
+    // The resource ID of a blob of manifest JSON. Used if not -1.
     int resource_id;
+
+    // A Manifest value to use if |resource_id| is -1.
+    service_manager::Manifest manifest;
   };
 
   // Allows the embedder to provide extra service manifests to be registered
