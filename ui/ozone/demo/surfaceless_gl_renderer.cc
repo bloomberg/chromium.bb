@@ -85,9 +85,8 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, format, gfx::BufferUsage::SCANOUT);
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, GL_BGRA_EXT));
-  if (!image->Initialize(pixmap.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+  if (!image->Initialize(pixmap.get())) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }

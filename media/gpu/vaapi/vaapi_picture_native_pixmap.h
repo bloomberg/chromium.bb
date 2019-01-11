@@ -49,8 +49,6 @@ class VaapiPictureNativePixmap : public VaapiPicture {
   bool AllowOverlay() const override;
   VASurfaceID va_surface_id() const override;
 
-  unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) const;
-
  protected:
   // Ozone buffer, the storage of the EGLImage and the VASurface.
   scoped_refptr<gfx::NativePixmap> pixmap_;

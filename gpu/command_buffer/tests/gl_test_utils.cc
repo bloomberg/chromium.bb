@@ -451,8 +451,7 @@ GpuCommandBufferTestEGL::CreateGLImageNativePixmap(gfx::BufferFormat format,
   EXPECT_NE(0u, tex_service_id);
 
   // Create an EGLImage from the real texture id.
-  scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
-      size, gl::GLImageNativePixmap::GetInternalFormatForTesting(format)));
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
   bool result = image->InitializeFromTexture(tex_service_id);
   DCHECK(result);
 

@@ -71,9 +71,8 @@ bool VaapiPictureNativePixmapOzone::Initialize() {
 
   const gfx::BufferFormat format = pixmap_->GetBufferFormat();
 
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size_, BufferFormatToInternalFormat(format)));
-  if (!image->Initialize(pixmap_.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size_, format);
+  if (!image->Initialize(pixmap_.get())) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
