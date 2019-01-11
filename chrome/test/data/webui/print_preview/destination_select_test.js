@@ -32,6 +32,9 @@ cr.define('destination_select_test', function() {
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
 
+    /** @type {number} */
+    let numPrintersSelected = 0;
+
     /** @override */
     setup(function() {
       initialSettings = print_preview_test_utils.getDefaultInitialSettings();
@@ -57,11 +60,16 @@ cr.define('destination_select_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
 
-      const promises = [nativeLayer.whenCalled('getInitialSettings')];
-      if (!opt_expectPrinterFailure) {
-        promises.push(nativeLayer.whenCalled('getPrinterCapabilities'));
-      }
-      return Promise.all(promises);
+      return nativeLayer.whenCalled('getInitialSettings').then(() => {
+        page.destinationStore_.addEventListener(
+            print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+            function() {
+              numPrintersSelected++;
+            });
+        return opt_expectPrinterFailure ?
+            Promise.resolve() :
+            nativeLayer.whenCalled('getPrinterCapabilities');
+      });
     }
 
     /**
@@ -93,9 +101,9 @@ cr.define('destination_select_test', function() {
         recentDestinations: [recentDestination],
       });
 
-      return setInitialSettings().then(function(argsArray) {
-        assertEquals('ID1', argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+      return setInitialSettings().then(function(args) {
+        assertEquals('ID1', args.destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID1', page.destination_.id);
         assertPrinterDisplay('One');
       });
@@ -116,11 +124,11 @@ cr.define('destination_select_test', function() {
       });
 
       return setInitialSettings()
-          .then(function(argsArray) {
+          .then(function(args) {
             // Should have loaded ID1 as the selected printer, since it was most
             // recent.
-            assertEquals('ID1', argsArray[1].destinationId);
-            assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+            assertEquals('ID1', args.destinationId);
+            assertEquals(print_preview.PrinterType.LOCAL, args.type);
             assertEquals('ID1', page.destination_.id);
             assertPrinterDisplay('One');
 
@@ -158,11 +166,11 @@ cr.define('destination_select_test', function() {
       });
 
       return setInitialSettings()
-          .then(function(argsArray) {
+          .then(function(args) {
             // Should have loaded ID1 as the selected printer, since it was most
             // recent.
-            assertEquals('ID1', argsArray[1].destinationId);
-            assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+            assertEquals('ID1', args.destinationId);
+            assertEquals(print_preview.PrinterType.LOCAL, args.type);
             assertEquals('ID1', page.destination_.id);
 
             return nativeLayer.whenCalled('getPreview');
@@ -172,18 +180,16 @@ cr.define('destination_select_test', function() {
             assertEquals(0, ticket.requestID);
             assertEquals('ID1', ticket.deviceName);
 
-            // None of the other printers should have been loaded. Should only
-            // have ID1 and Save as PDF. They will be loaded when the dialog is
-            // opened and startLoadDestinations() is called.
+            // The other recent destinations should be prefetched, but only one
+            // should have been selected so there was only one preview request.
             const reportedPrinters = page.destinationStore_.destinations();
-            assertEquals(2, reportedPrinters.length);
+            assertEquals(4, reportedPrinters.length);
             destinations.forEach((destination, index) => {
-              if (destination.id == 'ID1') {
-                return;
-              }
-
-              assertFalse(reportedPrinters.some(p => p.id == destination.id));
+              assertEquals(
+                  index < 3,
+                  reportedPrinters.some(p => p.id == destination.id));
             });
+            assertEquals(1, numPrintersSelected);
           });
     });
 
@@ -195,11 +201,11 @@ cr.define('destination_select_test', function() {
       initialSettings.serializedDefaultDestinationSelectionRulesStr =
           JSON.stringify({namePattern: '.*Four.*'});
       initialSettings.serializedAppStateStr = '';
-      return setInitialSettings().then(function(argsArray) {
+      return setInitialSettings().then(function(args) {
         // Should have loaded ID4 as the selected printer, since it matches
         // the rules.
-        assertEquals('ID4', argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+        assertEquals('ID4', args.destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID4', page.destination_.id);
         assertPrinterDisplay('Four');
       });
@@ -223,14 +229,20 @@ cr.define('destination_select_test', function() {
         recentDestinations: recentDestinations,
       });
 
-      return setInitialSettings().then(function(argsArray) {
-        // Need to load FooDevice as the printer, since it is the system
-        // default.
-        assertEquals('FooDevice', argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
-        assertEquals('FooDevice', page.destination_.id);
-        assertPrinterDisplay('FooName');
-      });
+      return Promise
+          .all([
+            setInitialSettings(),
+            test_util.eventToPromise(
+                print_preview.DestinationStore.EventType
+                    .SELECTED_DESTINATION_CAPABILITIES_READY,
+                page.destinationStore_),
+          ])
+          .then(function(argsArray) {
+            // Need to load FooDevice as the printer, since it is the system
+            // default.
+            assertEquals('FooDevice', page.destination_.id);
+            assertPrinterDisplay('FooName');
+          });
     });
 
     /**
@@ -245,10 +257,10 @@ cr.define('destination_select_test', function() {
       initialSettings.isInAppKioskMode = true;
       initialSettings.printerName = '';
 
-      return setInitialSettings().then(function(argsArray) {
+      return setInitialSettings().then(function(args) {
         // Should have loaded the first destination as the selected printer.
-        assertEquals(destinations[0].id, argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+        assertEquals(destinations[0].id, args.destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals(destinations[0].id, page.destination_.id);
         assertPrinterDisplay(destinations[0].displayName);
       });
