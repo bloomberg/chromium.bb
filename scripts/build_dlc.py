@@ -48,6 +48,9 @@ class DLCGenerator(object):
   # Version of manifest file.
   _MANIFEST_VERSION = 1
 
+  # The DLC root path inside the DLC module.
+  _DLC_ROOT_DIR = 'root'
+
   def __init__(self, img_dir, meta_dir, src_dir, fs_type, pre_allocated_blocks,
                version, dlc_id, name):
     """Object initializer.
@@ -99,9 +102,12 @@ class DLCGenerator(object):
       osutils.SafeMakedirs(mount_point)
       # Mount the ext4 image.
       osutils.MountDir(self.dest_image, mount_point, mount_opts=('loop', 'rw'))
+
+      dlc_root_dir = os.path.join(mount_point, self._DLC_ROOT_DIR)
+      osutils.SafeMakedirs(dlc_root_dir)
       try:
         # Copy DLC files over to the image.
-        cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, mount_point])
+        cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, dlc_root_dir])
         self.SquashOwnerships(mount_point)
       finally:
         # Unmount the ext4 image.
@@ -116,8 +122,10 @@ class DLCGenerator(object):
     """Create a squashfs image."""
     with osutils.TempDir(prefix='dlc_') as temp_dir:
       squashfs_root = os.path.join(temp_dir, 'squashfs-root')
-      osutils.SafeMakedirs(squashfs_root)
-      cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, squashfs_root])
+      dlc_root_dir = os.path.join(squashfs_root, self._DLC_ROOT_DIR)
+      osutils.SafeMakedirs(dlc_root_dir)
+
+      cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, dlc_root_dir])
       self.SquashOwnerships(squashfs_root)
 
       cros_build_lib.RunCommand(['mksquashfs', squashfs_root, self.dest_image,
