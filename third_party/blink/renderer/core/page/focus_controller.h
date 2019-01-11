@@ -36,7 +36,6 @@
 
 namespace blink {
 
-struct FocusCandidate;
 struct FocusParams;
 class ContainerNode;
 class Document;
@@ -46,7 +45,6 @@ class Frame;
 class HTMLFrameOwnerElement;
 class InputDeviceCapabilities;
 class LocalFrame;
-class Node;
 class Page;
 class RemoteFrame;
 
@@ -114,23 +112,12 @@ class CORE_EXPORT FocusController final
   bool AdvanceFocus(WebFocusType,
                     bool initial_focus,
                     InputDeviceCapabilities* source_capabilities = nullptr);
-  bool AdvanceFocusDirectionally(WebFocusType);
   bool AdvanceFocusInDocumentOrder(
       LocalFrame*,
       Element* start,
       WebFocusType,
       bool initial_focus,
       InputDeviceCapabilities* source_capabilities);
-
-  bool AdvanceFocusDirectionallyInContainer(Node* const container,
-                                            const LayoutRect& starting_rect,
-                                            WebFocusType,
-                                            Node* focused_element);
-  void FindFocusCandidateInContainer(Node& container,
-                                     const LayoutRect& starting_rect,
-                                     WebFocusType,
-                                     FocusCandidate& closest,
-                                     Node* focused_element);
 
   void NotifyFocusChangedObservers() const;
 

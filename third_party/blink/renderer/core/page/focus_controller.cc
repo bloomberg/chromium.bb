@@ -899,12 +899,12 @@ void FocusController::FocusHasChanged() {
     ToLocalFrame(FocusedOrMainFrame())->GetEventHandler().StopAutoscroll();
 
   // Do not set a focused frame when being unfocused. This might reset
-  // m_isFocused to true.
+  // is_focused_ to true.
   if (!focused_frame_ && focused)
     SetFocusedFrame(page_->MainFrame());
 
-  // setFocusedFrame above might reject to update m_focusedFrame, or
-  // m_focusedFrame might be changed by blur/focus event handlers.
+  // SetFocusedFrame above might reject to update focused_frame_, or
+  // focused_frame_ might be changed by blur/focus event handlers.
   if (focused_frame_ && focused_frame_->IsLocalFrame() &&
       ToLocalFrame(focused_frame_.Get())->View()) {
     ToLocalFrame(focused_frame_.Get())->Selection().SetFrameIsFocused(focused);
@@ -970,7 +970,6 @@ bool FocusController::AdvanceFocus(
     case kWebFocusTypeRight:
     case kWebFocusTypeUp:
     case kWebFocusTypeDown:
-      return AdvanceFocusDirectionally(type);
     default:
       NOTREACHED();
   }
@@ -1274,207 +1273,6 @@ void FocusController::SetActive(bool active) {
   is_active_ = active;
   if (!is_emulating_focus_)
     ActiveHasChanged();
-}
-
-static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
-                                         const FocusCandidate& current,
-                                         FocusCandidate& candidate,
-                                         FocusCandidate& closest) {
-  DCHECK(candidate.visible_node->IsElementNode());
-  DCHECK(candidate.visible_node->GetLayoutObject());
-
-  // Ignore iframes that don't have a src attribute
-  if (FrameOwnerElement(candidate) &&
-      (!FrameOwnerElement(candidate)->ContentFrame() ||
-       candidate.rect_in_root_frame.IsEmpty()))
-    return;
-
-  // Ignore off-screen focusables that are not exposed after one "scroll step"
-  // in the direction.
-  if (candidate.is_offscreen && candidate.is_offscreen_after_scrolling)
-    return;
-
-  DistanceDataForNode(direction, current, candidate);
-  if (candidate.distance == MaxDistance())
-    return;
-
-  if (closest.IsNull()) {
-    closest = candidate;
-    return;
-  }
-
-  LayoutRect intersection_rect =
-      Intersection(candidate.rect_in_root_frame, closest.rect_in_root_frame);
-  if (!intersection_rect.IsEmpty() &&
-      !AreElementsOnSameLine(closest, candidate) &&
-      intersection_rect == candidate.rect_in_root_frame) {
-    // If 2 nodes are intersecting, do hit test to find which node in on top.
-    LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
-    LayoutUnit y = intersection_rect.Y() + intersection_rect.Height() / 2;
-    if (!candidate.visible_node->GetDocument()
-             .GetPage()
-             ->MainFrame()
-             ->IsLocalFrame())
-      return;
-    HitTestLocation location(IntPoint(x.ToInt(), y.ToInt()));
-    HitTestResult result =
-        candidate.visible_node->GetDocument()
-            .GetPage()
-            ->DeprecatedLocalMainFrame()
-            ->GetEventHandler()
-            .HitTestResultAtLocation(
-                location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                              HitTestRequest::kIgnoreClipping);
-    if (candidate.visible_node->contains(result.InnerNode())) {
-      closest = candidate;
-      return;
-    }
-    if (closest.visible_node->contains(result.InnerNode()))
-      return;
-  }
-
-  if (candidate.distance < closest.distance)
-    closest = candidate;
-}
-
-void FocusController::FindFocusCandidateInContainer(
-    Node& container,
-    const LayoutRect& starting_rect,
-    WebFocusType direction,
-    FocusCandidate& closest,
-    Node* focused_element) {
-  Element* element = ElementTraversal::FirstWithin(container);
-  FocusCandidate current;
-  current.rect_in_root_frame = starting_rect;
-  current.focusable_node = focused_element;
-  current.visible_node = focused_element;
-
-  for (; element;
-       element =
-           IsScrollableAreaOrDocument(element)
-               ? ElementTraversal::NextSkippingChildren(*element, &container)
-               : ElementTraversal::Next(*element, &container)) {
-    if (element == focused_element)
-      continue;
-
-    if (!element->IsKeyboardFocusable())
-      continue;
-
-    if (HasRemoteFrame(element))
-      continue;
-
-    FocusCandidate candidate = FocusCandidate(element, direction);
-    if (candidate.IsNull())
-      continue;
-
-    candidate.enclosing_scrollable_box = &container;
-    UpdateFocusCandidateIfNeeded(direction, current, candidate, closest);
-  }
-}
-
-void ClearFocusInExitedFrames(LocalFrame* old_frame,
-                              const LocalFrame* const new_frame) {
-  while (old_frame && new_frame != old_frame) {
-    // Focus is going away from this document, so clear the focused element.
-    old_frame->GetDocument()->ClearFocusedElement();
-    old_frame->GetDocument()->SetSequentialFocusNavigationStartingPoint(
-        nullptr);
-    Frame* parent = old_frame->Tree().Parent();
-    old_frame = parent->IsLocalFrame() ? ToLocalFrame(parent) : nullptr;
-  }
-}
-
-bool FocusController::AdvanceFocusDirectionallyInContainer(
-    Node* const container,
-    const LayoutRect& starting_rect,
-    WebFocusType direction,
-    Node* focused_element) {
-  DCHECK(container);
-
-  FocusCandidate candidate;
-  FindFocusCandidateInContainer(*container, starting_rect, direction, candidate,
-                                focused_element);
-
-  if (candidate.IsNull()) {
-    // Nothing to focus in this container, scroll if possible.
-    // NOTE: If no scrolling is performed (i.e. ScrollInDirection returns
-    // false), the spatial navigation algorithm will skip this container.
-    return ScrollInDirection(container, direction);
-  }
-
-  Element* element = ToElement(candidate.focusable_node);
-  DCHECK(element);
-
-  // Before focusing the new element, check if we're leaving an iframe (= moving
-  // focus out of an iframe). In this case, we want the exited [nested] iframes
-  // to loose focus. This is tested in snav-iframe-nested.html.
-  LocalFrame* old_frame = (focused_frame_ && focused_frame_->IsLocalFrame())
-                              ? ToLocalFrame(focused_frame_.Get())
-                              : nullptr;
-  ClearFocusInExitedFrames(old_frame, element->GetDocument().GetFrame());
-
-  element->focus(
-      FocusParams(SelectionBehaviorOnFocus::kReset, direction, nullptr));
-  return true;
-}
-
-bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
-  // FIXME: Directional focus changes don't yet work with RemoteFrames.
-  if (!FocusedOrMainFrame()->IsLocalFrame())
-    return false;
-  const LocalFrame* current_frame = ToLocalFrame(FocusedOrMainFrame());
-  DCHECK(current_frame);
-
-  Document* focused_document = current_frame->GetDocument();
-  if (!focused_document)
-    return false;
-
-  focused_document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  Node* focused_element = focused_document->FocusedElement();
-  if (!focused_element)  // An iframe's document is focused.
-    focused_element = focused_document;
-
-  Node* container = focused_document;
-  if (focused_element)
-    container = ScrollableAreaOrDocumentOf(focused_element);
-
-  const LayoutRect visible_rect = RootViewport(current_frame);
-  const LayoutRect start_box =
-      SearchOrigin(visible_rect, focused_element, direction);
-  bool consumed = false;
-
-  if (IsScrollableAreaOrDocument(focused_element) &&
-      !IsOffscreen(focused_element)) {
-    // A visible scroller is focused. Search inside of it from one of its edges.
-    LayoutRect edge = OppositeEdge(direction, start_box);
-    consumed = AdvanceFocusDirectionallyInContainer(focused_element, edge,
-                                                    direction, nullptr);
-    if (consumed)
-      return true;
-    // The focused scroller had nothing. Let's search outside of it.
-  }
-
-  Node* skipped_tree = focused_element;
-  while (container) {
-    consumed = AdvanceFocusDirectionallyInContainer(container, start_box,
-                                                    direction, skipped_tree);
-    if (consumed)
-      break;
-
-    // Containers are not focused “on the way out”. This prevents containers
-    // from acting as “focus traps”. Take <c> <a> </c> <b>. Focus can move from
-    // <a> to <b> but not from <a> to the scroll container <c>. If we'd allow
-    // focus to move from <a> to <c>, the user would never be able to exit <c>.
-    // When the scroll container <c> is focused, we move focus back to <a>...
-    skipped_tree = container;
-    // Nothing found in |container| so search the parent container.
-    container = ScrollableAreaOrDocumentOf(container);
-    if (auto* document = DynamicTo<Document>(container))
-      document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  }
-
-  return consumed;
 }
 
 void FocusController::RegisterFocusChangedObserver(

@@ -4,11 +4,22 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
@@ -34,6 +45,79 @@ WebFocusType FocusDirectionForKey(KeyboardEvent* event) {
   return ret_val;
 }
 
+void ClearFocusInExitedFrames(LocalFrame* old_frame,
+                              const LocalFrame* const new_frame) {
+  while (old_frame && new_frame != old_frame) {
+    // Focus is going away from this document, so clear the focused element.
+    old_frame->GetDocument()->ClearFocusedElement();
+    old_frame->GetDocument()->SetSequentialFocusNavigationStartingPoint(
+        nullptr);
+    Frame* parent = old_frame->Tree().Parent();
+    old_frame = parent->IsLocalFrame() ? ToLocalFrame(parent) : nullptr;
+  }
+}
+
+static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
+                                         const FocusCandidate& current,
+                                         FocusCandidate& candidate,
+                                         FocusCandidate& closest) {
+  DCHECK(candidate.visible_node->IsElementNode());
+  DCHECK(candidate.visible_node->GetLayoutObject());
+
+  // Ignore iframes that don't have a src attribute
+  if (FrameOwnerElement(candidate) &&
+      (!FrameOwnerElement(candidate)->ContentFrame() ||
+       candidate.rect_in_root_frame.IsEmpty()))
+    return;
+
+  // Ignore off-screen focusables that are not exposed after one "scroll step"
+  // in the direction.
+  if (candidate.is_offscreen && candidate.is_offscreen_after_scrolling)
+    return;
+
+  DistanceDataForNode(direction, current, candidate);
+  if (candidate.distance == MaxDistance())
+    return;
+
+  if (closest.IsNull()) {
+    closest = candidate;
+    return;
+  }
+
+  LayoutRect intersection_rect =
+      Intersection(candidate.rect_in_root_frame, closest.rect_in_root_frame);
+  if (!intersection_rect.IsEmpty() &&
+      !AreElementsOnSameLine(closest, candidate) &&
+      intersection_rect == candidate.rect_in_root_frame) {
+    // If 2 nodes are intersecting, do hit test to find which node in on top.
+    LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
+    LayoutUnit y = intersection_rect.Y() + intersection_rect.Height() / 2;
+    if (!candidate.visible_node->GetDocument()
+             .GetPage()
+             ->MainFrame()
+             ->IsLocalFrame())
+      return;
+    HitTestLocation location(IntPoint(x.ToInt(), y.ToInt()));
+    HitTestResult result =
+        candidate.visible_node->GetDocument()
+            .GetPage()
+            ->DeprecatedLocalMainFrame()
+            ->GetEventHandler()
+            .HitTestResultAtLocation(
+                location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                              HitTestRequest::kIgnoreClipping);
+    if (candidate.visible_node->contains(result.InnerNode())) {
+      closest = candidate;
+      return;
+    }
+    if (closest.visible_node->contains(result.InnerNode()))
+      return;
+  }
+
+  if (candidate.distance < closest.distance)
+    closest = candidate;
+}
+
 }  // namespace
 
 // static
@@ -48,15 +132,144 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  WebFocusType type = FocusDirectionForKey(event);
-  if (type == kWebFocusTypeNone)
+  WebFocusType direction = FocusDirectionForKey(event);
+  if (direction == kWebFocusTypeNone)
     return false;
 
-  return page_->GetFocusController().AdvanceFocus(type);
+  return Advance(direction);
 }
 
 void SpatialNavigationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
+}
+
+bool SpatialNavigationController::Advance(WebFocusType direction) {
+  // FIXME: Directional focus changes don't yet work with RemoteFrames.
+  Frame* focused_frame = page_->GetFocusController().FocusedOrMainFrame();
+  if (!focused_frame->IsLocalFrame())
+    return false;
+  const LocalFrame* current_frame = ToLocalFrame(focused_frame);
+  DCHECK(current_frame);
+
+  Document* focused_document = current_frame->GetDocument();
+  if (!focused_document)
+    return false;
+
+  // TODO(bokan): Why do we only update the current document? We could move
+  // from an iframe to its parent so presumably we want to update the parent
+  // too? We update in the while loop below if we pop-out to a Document but if
+  // we pop-out to a container we won't.
+  focused_document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  Node* focused_element = focused_document->FocusedElement();
+  if (!focused_element)  // An iframe's document is focused.
+    focused_element = focused_document;
+
+  Node* container = focused_document;
+  if (focused_element)
+    container = ScrollableAreaOrDocumentOf(focused_element);
+
+  const LayoutRect visible_rect(page_->GetVisualViewport().VisibleRect());
+  const LayoutRect start_box =
+      SearchOrigin(visible_rect, focused_element, direction);
+
+  if (IsScrollableAreaOrDocument(focused_element) &&
+      !IsOffscreen(focused_element)) {
+    // A visible scroller is focused. Search inside of it from one of its edges.
+    LayoutRect edge = OppositeEdge(direction, start_box);
+    if (AdvanceInContainer(focused_element, edge, direction, nullptr))
+      return true;
+  }
+
+  // The focused scroller had nothing. Let's search outside of it.
+  Node* skipped_tree = focused_element;
+  bool consumed = false;
+  while (container) {
+    consumed =
+        AdvanceInContainer(container, start_box, direction, skipped_tree);
+    if (consumed)
+      break;
+
+    // Containers are not focused “on the way out”. This prevents containers
+    // from acting as “focus traps”. Take <c> <a> </c> <b>. Focus can move from
+    // <a> to <b> but not from <a> to the scroll container <c>. If we'd allow
+    // focus to move from <a> to <c>, the user would never be able to exit <c>.
+    // When the scroll container <c> is focused, we move focus back to <a>...
+    skipped_tree = container;
+    // Nothing found in |container| so search the parent container.
+    container = ScrollableAreaOrDocumentOf(container);
+    if (auto* document = DynamicTo<Document>(container))
+      document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  }
+
+  return consumed;
+}
+
+void SpatialNavigationController::FindCandidateInContainer(
+    Node& container,
+    const LayoutRect& starting_rect,
+    WebFocusType direction,
+    FocusCandidate& closest,
+    Node* focused_element) {
+  Element* element = ElementTraversal::FirstWithin(container);
+  FocusCandidate current;
+  current.rect_in_root_frame = starting_rect;
+  current.focusable_node = focused_element;
+  current.visible_node = focused_element;
+
+  for (; element;
+       element =
+           IsScrollableAreaOrDocument(element)
+               ? ElementTraversal::NextSkippingChildren(*element, &container)
+               : ElementTraversal::Next(*element, &container)) {
+    if (element == focused_element)
+      continue;
+
+    if (!element->IsKeyboardFocusable())
+      continue;
+
+    if (HasRemoteFrame(element))
+      continue;
+
+    FocusCandidate candidate = FocusCandidate(element, direction);
+    if (candidate.IsNull())
+      continue;
+
+    candidate.enclosing_scrollable_box = &container;
+    UpdateFocusCandidateIfNeeded(direction, current, candidate, closest);
+  }
+}
+
+bool SpatialNavigationController::AdvanceInContainer(
+    Node* const container,
+    const LayoutRect& starting_rect,
+    WebFocusType direction,
+    Node* focused_element) {
+  DCHECK(container);
+
+  FocusCandidate candidate;
+  FindCandidateInContainer(*container, starting_rect, direction, candidate,
+                           focused_element);
+
+  if (candidate.IsNull()) {
+    // Nothing to focus in this container, scroll if possible.
+    // NOTE: If no scrolling is performed (i.e. ScrollInDirection returns
+    // false), the spatial navigation algorithm will skip this container.
+    return ScrollInDirection(container, direction);
+  }
+
+  Element* element = ToElement(candidate.focusable_node);
+  DCHECK(element);
+
+  // Before focusing the new element, check if we're leaving an iframe (= moving
+  // focus out of an iframe). In this case, we want the exited [nested] iframes
+  // to loose focus. This is tested in snav-iframe-nested.html.
+  LocalFrame* old_frame = page_->GetFocusController().FocusedFrame();
+  ClearFocusInExitedFrames(old_frame, element->GetDocument().GetFrame());
+
+  element->focus(
+      FocusParams(SelectionBehaviorOnFocus::kReset, direction, nullptr));
+  return true;
 }
 
 }  // namespace blink
