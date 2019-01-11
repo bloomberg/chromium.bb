@@ -64,11 +64,10 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   if (!header || header->IsMarked())
     return;
 
-  // Simple case for fully constructed objects or those that have no vtable
-  // which make dispatching to member fields trivial.
+  // Simple case for fully constructed objects.
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-  if (!gc_info->HasVTable() || !header->IsInConstruction()) {
+  if (!header->IsInConstruction()) {
     MarkHeader(header, gc_info->trace_);
     return;
   }
