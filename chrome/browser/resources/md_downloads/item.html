@@ -50,7 +50,6 @@
       }
 
       #content {
-        background: var(--cr-card-background-color);
         border-radius: var(--cr-card-border-radius);
         display: flex;
         flex: none;
@@ -62,6 +61,10 @@
 
       #content.is-active {
         @apply --cr-card-elevation;
+      }
+
+      :host-context(html:not([dark])) #content.is-active {
+        background: var(--cr-card-background-color);
       }
 
       #content:not(.is-active) {
