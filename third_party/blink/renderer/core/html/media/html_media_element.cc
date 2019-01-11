@@ -3455,7 +3455,9 @@ bool HTMLMediaElement::CouldPlayIfEnoughData() const {
 
 bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
   double dur = duration();
-  if (std::isnan(dur))
+  // If we have infinite duration, we'll never have played for long enough to
+  // have ended playback.
+  if (std::isnan(dur) || dur == std::numeric_limits<double>::infinity())
     return false;
 
   // 4.8.12.8 Playing the media resource
@@ -3469,16 +3471,6 @@ bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
   // direction of playback is forwards, Either the media element does not have a
   // loop attribute specified,
   double now = CurrentPlaybackPosition();
-
-  // Log whether we get a playback position of infinity().
-  // TODO(ossu): Once this stat expires, the duration check, below, can be moved
-  //             up to the top of the function.
-  UMA_HISTOGRAM_BOOLEAN("Media.MediaElement.PlaybackPositionIsInfinity",
-                        now == std::numeric_limits<double>::infinity());
-  // If we have infinite duration, we'll never have played for long enough to
-  // have ended playback.
-  if (dur == std::numeric_limits<double>::infinity())
-    return false;
 
   if (GetDirectionOfPlayback() == kForward) {
     return dur > 0 && now >= dur &&
