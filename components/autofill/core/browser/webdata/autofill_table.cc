@@ -1342,6 +1342,24 @@ bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   return db_->GetLastChangeCount() > 0;
 }
 
+bool AutofillTable::UpdateServerCardMetadata(
+    const AutofillMetadata& card_metadata) {
+  // Do not check if there was a record that got deleted. Inserting a new one is
+  // also fine.
+  RemoveServerCardMetadata(card_metadata.id);
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_card_metadata(use_count, "
+                              "use_date, billing_address_id, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, card_metadata.use_count);
+  s.BindInt64(1, card_metadata.use_date.ToInternalValue());
+  s.BindString(2, card_metadata.billing_address_id);
+  s.BindString(3, card_metadata.id);
+  s.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
 bool AutofillTable::RemoveServerCardMetadata(const std::string& id) {
   sql::Statement remove(
       db_->GetUniqueStatement("DELETE FROM server_card_metadata WHERE id = ?"));
@@ -1414,6 +1432,24 @@ bool AutofillTable::UpdateServerAddressMetadata(
   s.Run();
 
   transaction.Commit();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::UpdateServerAddressMetadata(
+    const AutofillMetadata& address_metadata) {
+  // Do not check if there was a record that got deleted. Inserting a new one is
+  // also fine.
+  RemoveServerAddressMetadata(address_metadata.id);
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_address_metadata(use_count, "
+                              "use_date, has_converted, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, address_metadata.use_count);
+  s.BindInt64(1, address_metadata.use_date.ToInternalValue());
+  s.BindBool(2, address_metadata.has_converted);
+  s.BindString(3, address_metadata.id);
+  s.Run();
 
   return db_->GetLastChangeCount() > 0;
 }

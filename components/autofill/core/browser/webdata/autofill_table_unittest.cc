@@ -1978,6 +1978,133 @@ TEST_F(AutofillTableTest, SetGetRemoveServerAddressMetadata) {
   EXPECT_EQ(0U, outputs.size());
 }
 
+TEST_F(AutofillTableTest, AddUpdateServerAddressMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  ASSERT_TRUE(table_->AddServerAddressMetadata(input));
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  ASSERT_EQ(input, outputs[input.id]);
+
+  // Update the metadata in the table.
+  input.use_count = 51;
+  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input));
+
+  // Make sure it was updated correctly.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Insert a new entry using update - that should also be legal.
+  input.id = "another server id";
+  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input));
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(2U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, AddUpdateServerCardMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  ASSERT_TRUE(table_->AddServerCardMetadata(input));
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  ASSERT_EQ(input, outputs[input.id]);
+
+  // Update the metadata in the table.
+  input.use_count = 51;
+  EXPECT_TRUE(table_->UpdateServerCardMetadata(input));
+
+  // Make sure it was updated correctly.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Insert a new entry using update - that should also be legal.
+  input.id = "another server id";
+  EXPECT_TRUE(table_->UpdateServerCardMetadata(input));
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(2U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, UpdateServerAddressMetadataDoesNotChangeData) {
+  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
+  std::vector<AutofillProfile> inputs;
+  inputs.push_back(one);
+  table_->SetServerProfiles(inputs);
+
+  std::vector<std::unique_ptr<AutofillProfile>> outputs;
+  table_->GetServerProfiles(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+
+  // Update metadata in the profile.
+  ASSERT_NE(outputs[0]->use_count(), 51u);
+  outputs[0]->set_use_count(51);
+
+  AutofillMetadata input_metadata = outputs[0]->GetMetadata();
+  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input_metadata));
+
+  // Make sure it was updated correctly.
+  std::map<std::string, AutofillMetadata> output_metadata;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&output_metadata));
+  ASSERT_EQ(1U, output_metadata.size());
+  EXPECT_EQ(input_metadata, output_metadata[input_metadata.id]);
+
+  // Make sure nothing else got updated.
+  std::vector<std::unique_ptr<AutofillProfile>> outputs2;
+  table_->GetServerProfiles(&outputs2);
+  ASSERT_EQ(1u, outputs2.size());
+  EXPECT_TRUE(outputs[0]->EqualsForSyncPurposes(*outputs2[0]));
+}
+
+TEST_F(AutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
+  std::vector<CreditCard> inputs;
+  inputs.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "a123"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Paul F. Tompkins"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  test::SetServerCreditCards(table_.get(), inputs);
+
+  std::vector<std::unique_ptr<CreditCard>> outputs;
+  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(inputs[0].server_id(), outputs[0]->server_id());
+
+  // Update metadata in the profile.
+  ASSERT_NE(outputs[0]->use_count(), 51u);
+  outputs[0]->set_use_count(51);
+
+  AutofillMetadata input_metadata = outputs[0]->GetMetadata();
+  EXPECT_TRUE(table_->UpdateServerCardMetadata(input_metadata));
+
+  // Make sure it was updated correctly.
+  std::map<std::string, AutofillMetadata> output_metadata;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&output_metadata));
+  ASSERT_EQ(1U, output_metadata.size());
+  EXPECT_EQ(input_metadata, output_metadata[input_metadata.id]);
+
+  // Make sure nothing else got updated.
+  std::vector<std::unique_ptr<CreditCard>> outputs2;
+  table_->GetServerCreditCards(&outputs2);
+  ASSERT_EQ(1u, outputs2.size());
+  EXPECT_EQ(0, outputs[0]->Compare(*outputs2[0]));
+}
+
 TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
   // Crete and set some metadata.
   AutofillMetadata input;
