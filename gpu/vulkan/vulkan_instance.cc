@@ -61,7 +61,7 @@ bool VulkanInstance::Initialize(
   VkApplicationInfo app_info = {};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   app_info.pApplicationName = "Chromium";
-  app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
+  app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
 
   std::vector<const char*> enabled_extensions;
   enabled_extensions.insert(std::end(enabled_extensions),

@@ -44,21 +44,23 @@ bool VulkanInProcessContextProvider::Initialize() {
   }
 
   device_queue_ = std::move(device_queue);
-  const uint32_t feature_flags = kGeometryShader_GrVkFeatureFlag |
-                                 kDualSrcBlend_GrVkFeatureFlag |
-                                 kSampleRateShading_GrVkFeatureFlag;
-  const uint32_t extension_flags =
-      kEXT_debug_report_GrVkExtensionFlag | kKHR_surface_GrVkExtensionFlag |
-      kKHR_swapchain_GrVkExtensionFlag | kKHR_xcb_surface_GrVkExtensionFlag;
   GrVkBackendContext backend_context;
   backend_context.fInstance = device_queue_->GetVulkanInstance();
   backend_context.fPhysicalDevice = device_queue_->GetVulkanPhysicalDevice();
   backend_context.fDevice = device_queue_->GetVulkanDevice();
   backend_context.fQueue = device_queue_->GetVulkanQueue();
   backend_context.fGraphicsQueueIndex = device_queue_->GetVulkanQueueIndex();
-  backend_context.fMinAPIVersion = VK_MAKE_VERSION(1, 0, 8);
-  backend_context.fExtensions = extension_flags;
-  backend_context.fFeatures = feature_flags;
+
+  // gpu::VulkanInstance always initializes apiVersion=1.1.
+  // TODO(sergeyu): Extend VulkanImplementation interface to provide apiVersion
+  // and list of enabled extensions instead of hardcoding them here.
+  backend_context.fInstanceVersion = VK_MAKE_VERSION(1, 1, 0);
+  backend_context.fExtensions =
+      kEXT_debug_report_GrVkExtensionFlag | kKHR_surface_GrVkExtensionFlag |
+      kKHR_swapchain_GrVkExtensionFlag | kKHR_xcb_surface_GrVkExtensionFlag;
+  backend_context.fFeatures = kGeometryShader_GrVkFeatureFlag |
+                              kDualSrcBlend_GrVkFeatureFlag |
+                              kSampleRateShading_GrVkFeatureFlag;
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
