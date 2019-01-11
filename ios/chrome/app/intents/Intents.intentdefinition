@@ -17,8 +17,6 @@
 		<dict>
 			<key>INIntentCategory</key>
 			<string>information</string>
-			<key>INIntentDefaultImageName</key>
-			<string>AppIcon</string>
 			<key>INIntentDescriptionID</key>
 			<string>k0Ho6W</string>
 			<key>INIntentLastParameterTag</key>
