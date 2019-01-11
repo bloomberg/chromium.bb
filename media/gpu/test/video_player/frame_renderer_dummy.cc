@@ -80,34 +80,8 @@ gl::GLContext* FrameRendererDummy::GetGLContext() {
   return nullptr;
 }
 
-void FrameRendererDummy::CreatePictureBuffers(size_t requested_num_of_buffers,
-                                              VideoPixelFormat pixel_format,
-                                              const gfx::Size& size,
-                                              uint32_t texture_target,
-                                              PictureBuffersCreatedCB cb) {
+void FrameRendererDummy::RenderFrame(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::vector<PictureBuffer> buffers;
-  for (size_t i = 0; i < requested_num_of_buffers; ++i) {
-    buffers.emplace_back(GetNextPictureBufferId(), size);
-  }
-
-  std::move(cb).Run(std::move(buffers));
-}
-
-void FrameRendererDummy::RenderPicture(const Picture& picture,
-                                       PictureRenderedCB cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(cb).Run();
-}
-
-int32_t FrameRendererDummy::GetNextPictureBufferId() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The picture buffer ID should always be positive, negative values are
-  // reserved for uninitialized buffers.
-  next_picture_buffer_id_ = (next_picture_buffer_id_ + 1) & 0x7FFFFFFF;
-  return next_picture_buffer_id_;
 }
 
 }  // namespace test

@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
-
+#include "base/test/test_timeouts.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
@@ -46,20 +46,21 @@ void VideoDecoderTestEnvironment::SetUp() {
   // Setting up a task environment will create a task runner for the current
   // thread and allow posting tasks to other threads. This is required for the
   // test video player to function correctly.
+  TestTimeouts::Initialize();
   task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>(
       base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
   // Set the default test data path.
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
-  dummy_frame_renderer_ = FrameRendererDummy::Create();
-  ASSERT_NE(dummy_frame_renderer_, nullptr);
-
   // Perform all static initialization that is required when running video
   // decoders in a test environment.
 #if BUILDFLAG(USE_VAAPI)
   media::VaapiWrapper::PreSandboxInitialization();
 #endif
+
+  dummy_frame_renderer_ = FrameRendererDummy::Create();
+  ASSERT_NE(dummy_frame_renderer_, nullptr);
 }
 
 void VideoDecoderTestEnvironment::TearDown() {

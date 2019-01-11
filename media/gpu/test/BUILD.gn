@@ -22,6 +22,8 @@ source_set("render_helpers") {
     "rendering_helper.h",
     "texture_ref.cc",
     "texture_ref.h",
+    "video_frame_helpers.cc",
+    "video_frame_helpers.h",
   ]
   deps = [
     "//media/gpu",

@@ -7,13 +7,12 @@
 #include <utility>
 #include <vector>
 
-#include "media/gpu/platform_video_frame.h"
+#include "media/gpu/test/video_frame_helpers.h"
 
 #if defined(OS_CHROMEOS)
 #include <libdrm/drm_fourcc.h>
 
 #include "base/logging.h"
-#include "media/base/scopedfd_helper.h"
 #endif
 
 namespace media {
@@ -48,40 +47,17 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 #if defined(OS_CHROMEOS)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
-
-  // We pass coded_size as visible_rect here. The actual visible rect is given
-  // in ExportVideoFrame().
-  gfx::Rect visible_rect(size.width(), size.height());
-  texture_ref->frame_ = media::CreatePlatformVideoFrame(
-      pixel_format, size, visible_rect, visible_rect.size(), buffer_usage,
-      base::TimeDelta());
-  if (!texture_ref->frame_) {
-    LOG(ERROR) << "Failed to create Dmabuf-backed VideoFrame";
-    return nullptr;
-  }
+  texture_ref->frame_ = CreateVideoFrame(pixel_format, size, buffer_usage);
 #endif
   return texture_ref;
 }
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
-  gfx::GpuMemoryBufferHandle handle;
 #if defined(OS_CHROMEOS)
-  LOG_ASSERT(frame_);
-  handle.type = gfx::NATIVE_PIXMAP;
-
-  const size_t num_planes = VideoFrame::NumPlanes(frame_->format());
-  for (size_t i = 0; i < num_planes; ++i) {
-    const auto& plane = frame_->layout().planes()[i];
-    handle.native_pixmap_handle.planes.emplace_back(plane.stride, plane.offset,
-                                                    i, plane.modifier);
-  }
-
-  std::vector<base::ScopedFD> duped_fds = DuplicateFDs(frame_->DmabufFds());
-  for (auto& duped_fd : duped_fds) {
-    handle.native_pixmap_handle.fds.emplace_back(std::move(duped_fd));
-  }
+  return CreateGpuMemoryBufferHandle(frame_);
+#else
+  return gfx::GpuMemoryBufferHandle();
 #endif
-  return handle;
 }
 
 scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(

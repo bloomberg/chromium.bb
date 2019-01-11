@@ -19,6 +19,7 @@
 namespace media {
 
 class GpuVideoDecodeAcceleratorFactory;
+class VideoFrame;
 
 namespace test {
 
@@ -109,13 +110,13 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // Instruct the decoder to perform a Reset.
   void ResetTask();
 
-  // Called by the renderer in response to a CreatePictureBuffers request.
-  void OnPictureBuffersCreatedTask(std::vector<PictureBuffer> buffers);
-  // Called by the renderer in response to a RenderPicture request.
-  void OnPictureRenderedTask(int32_t picture_buffer_id);
+  // Called when a picture buffer is ready to be re-used.
+  void ReusePictureBufferTask(int32_t picture_buffer_id);
 
   // Get the next bitstream buffer id to be used.
   int32_t GetNextBitstreamBufferId();
+  // Get the next picture buffer id to be used.
+  int32_t GetNextPictureBufferId();
 
   VideoPlayer::EventCallback event_cb_;
   FrameRenderer* const frame_renderer_;
@@ -127,7 +128,12 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // Decoder client state, should only be accessed on the decoder client thread.
   VideoDecoderClientState decoder_client_state_;
 
+  // Map of video frames the decoder uses as output, keyed on picture buffer id.
+  std::map<int32_t, scoped_refptr<VideoFrame>> video_frames_;
+
   int32_t next_bitstream_buffer_id_ = 0;
+  int32_t next_picture_buffer_id_ = 0;
+
   // TODO(dstaessens@) Replace with StreamParser.
   std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
 
