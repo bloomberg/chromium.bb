@@ -180,6 +180,7 @@ class CORE_EXPORT DocumentLoader
 
   void StartLoading();
   void StopLoading();
+  void SetDefersLoading(bool defers);
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
   const DocumentLoadTiming& GetTiming() const { return document_load_timing_; }

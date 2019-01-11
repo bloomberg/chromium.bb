@@ -257,9 +257,6 @@ LocalFrameClient* FrameLoader::Client() const {
 }
 
 void FrameLoader::SetDefersLoading(bool defers) {
-  if (provisional_document_loader_)
-    provisional_document_loader_->Fetcher()->SetDefersLoading(defers);
-
   if (Document* document = frame_->GetDocument()) {
     document->Fetcher()->SetDefersLoading(defers);
     if (defers)
@@ -267,6 +264,11 @@ void FrameLoader::SetDefersLoading(bool defers) {
     else
       document->UnpauseScheduledTasks();
   }
+
+  if (document_loader_)
+    document_loader_->SetDefersLoading(defers);
+  if (provisional_document_loader_)
+    provisional_document_loader_->SetDefersLoading(defers);
 
   if (!defers)
     frame_->GetNavigationScheduler().StartTimer();
@@ -647,7 +649,8 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
 }
 
 WebFrameLoadType FrameLoader::DetermineFrameLoadType(
-    const ResourceRequest& resource_request,
+    const KURL& url,
+    const AtomicString& http_method,
     Document* origin_document,
     const KURL& failing_url,
     WebFrameLoadType frame_load_type) {
@@ -663,17 +666,13 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
         !state_machine_.CommittedFirstRealDocumentLoad())
       return WebFrameLoadType::kReplaceCurrentItem;
     if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
-      if (Opener() && resource_request.Url().IsEmpty())
+      if (Opener() && url.IsEmpty())
         return WebFrameLoadType::kReplaceCurrentItem;
       return WebFrameLoadType::kStandard;
     }
   }
   if (frame_load_type != WebFrameLoadType::kStandard)
     return frame_load_type;
-  CHECK_NE(mojom::FetchCacheMode::kValidateCache,
-           resource_request.GetCacheMode());
-  CHECK_NE(mojom::FetchCacheMode::kBypassCache,
-           resource_request.GetCacheMode());
   // From the HTML5 spec for location.assign():
   // "If the browsing context's session history contains only one Document,
   // and that was the about:blank Document created when the browsing context
@@ -682,8 +681,8 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
        DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
     return WebFrameLoadType::kReplaceCurrentItem;
 
-  if (resource_request.Url() == document_loader_->UrlForHistory()) {
-    if (resource_request.HttpMethod() == http_names::kPOST)
+  if (url == document_loader_->UrlForHistory()) {
+    if (http_method == http_names::kPOST)
       return WebFrameLoadType::kStandard;
     if (!origin_document)
       return WebFrameLoadType::kReload;
@@ -694,7 +693,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
       document_loader_->LoadType() == WebFrameLoadType::kReload)
     return WebFrameLoadType::kReload;
 
-  if (resource_request.Url().IsEmpty() && failing_url.IsEmpty()) {
+  if (url.IsEmpty() && failing_url.IsEmpty()) {
     return WebFrameLoadType::kReplaceCurrentItem;
   }
 
@@ -882,8 +881,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
-  frame_load_type = DetermineFrameLoadType(resource_request, origin_document,
-                                           KURL(), frame_load_type);
+  frame_load_type = DetermineFrameLoadType(
+      resource_request.Url(), resource_request.HttpMethod(), origin_document,
+      KURL(), frame_load_type);
 
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
@@ -1013,8 +1013,9 @@ void FrameLoader::CommitNavigation(
       network::mojom::FetchRedirectMode::kManual);
 
   navigation_params->frame_load_type = DetermineFrameLoadType(
-      resource_request, nullptr /* origin_document */,
-      navigation_params->unreachable_url, navigation_params->frame_load_type);
+      resource_request.Url(), resource_request.HttpMethod(),
+      nullptr /* origin_document */, navigation_params->unreachable_url,
+      navigation_params->frame_load_type);
 
   // Note: we might actually classify this navigation as same document
   // right here in the following circumstances:

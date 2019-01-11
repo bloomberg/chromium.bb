@@ -381,7 +381,16 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(
       request_.GetReferrerPolicy(), history_item_->Url(),
       request_.HttpReferrer()));
-  history_item_->SetFormInfoFromRequest(request_);
+  if (DeprecatedEqualIgnoringCase(request_.HttpMethod(), "POST")) {
+    // FIXME: Eventually we have to make this smart enough to handle the case
+    // where we have a stream for the body to handle the "data interspersed with
+    // files" feature.
+    history_item_->SetFormData(request_.HttpBody());
+    history_item_->SetFormContentType(request_.HttpContentType());
+  } else {
+    history_item_->SetFormData(nullptr);
+    history_item_->SetFormContentType(g_null_atom);
+  }
 
   // Don't propagate state from the old item to the new item if there isn't an
   // old item (obviously), or if this is a back/forward navigation, since we
@@ -909,6 +918,12 @@ void DocumentLoader::StopLoading() {
   fetcher_->StopFetching();
   if (frame_ && !SentDidFinishLoad())
     LoadFailed(ResourceError::CancelledError(Url()));
+}
+
+void DocumentLoader::SetDefersLoading(bool defers) {
+  // TODO(dgozman): defer body loader once we don't use Fetcher()
+  // for the main resource.
+  Fetcher()->SetDefersLoading(defers);
 }
 
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
