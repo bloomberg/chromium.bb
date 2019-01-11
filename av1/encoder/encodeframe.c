@@ -4068,7 +4068,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (cpi->sf.full_pixel_motion_search_based_split && bsize >= BLOCK_8X8 &&
       do_square_split && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
       mi_col + mi_size_wide[bsize] <= cm->mi_cols && !frame_is_intra_only(cm) &&
-      !cm->seq_params.enable_superres) {
+      !av1_superres_scaled(cm)) {
     const NN_CONFIG *nn_config = NULL;
     float split_only_thresh = 0.0f;
     if (bsize == BLOCK_128X128) {
