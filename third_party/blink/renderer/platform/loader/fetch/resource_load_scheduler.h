@@ -148,9 +148,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   static constexpr size_t kOutstandingUnlimited =
       std::numeric_limits<size_t>::max();
 
-  static ResourceLoadScheduler* Create(FetchContext*);
-
-  ResourceLoadScheduler(FetchContext*);
+  ResourceLoadScheduler(ThrottlingPolicy initial_throttling_poilcy,
+                        FetchContext*);
   ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);

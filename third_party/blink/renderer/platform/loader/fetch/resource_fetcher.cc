@@ -251,6 +251,13 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
 
 }  // namespace
 
+ResourceFetcherInit::ResourceFetcherInit(
+    const ResourceFetcherProperties& properties,
+    FetchContext* context)
+    : ResourceFetcherInit(properties,
+                          context,
+                          *MakeGarbageCollected<NullConsoleLogger>()) {}
+
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
     const ResourceRequest& resource_request,
@@ -403,18 +410,12 @@ class ResourceFetcher::DetachableProperties final
   bool is_main_frame_ = false;
 };
 
-ResourceFetcher::ResourceFetcher(const ResourceFetcherProperties& properties,
-                                 FetchContext* new_context)
-    : ResourceFetcher(properties,
-                      new_context,
-                      MakeGarbageCollected<NullConsoleLogger>()) {}
-
-ResourceFetcher::ResourceFetcher(const ResourceFetcherProperties& properties,
-                                 FetchContext* new_context,
-                                 ConsoleLogger* console_logger)
-    : properties_(*MakeGarbageCollected<DetachableProperties>(properties)),
-      context_(new_context),
-      console_logger_(console_logger),
+ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
+    : properties_(
+          *MakeGarbageCollected<DetachableProperties>(*init.properties)),
+      context_(init.context),
+      console_logger_(init.console_logger),
+      archive_(init.archive),
       resource_timing_report_timer_(
           Context().GetLoadingTaskRunner(),
           this,
@@ -424,13 +425,13 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherProperties& properties,
       allow_stale_resources_(false),
       image_fetched_(false),
       stale_while_revalidate_enabled_(false) {
-  DCHECK(console_logger);
+  DCHECK(console_logger_);
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
   context_->Bind(this);
-  archive_ = properties_->IsMainFrame() ? nullptr : Context().Archive();
-  scheduler_ = ResourceLoadScheduler::Create(&Context());
+  scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
+      init.initial_throttling_policy, context_);
 }
 
 ResourceFetcher::~ResourceFetcher() {

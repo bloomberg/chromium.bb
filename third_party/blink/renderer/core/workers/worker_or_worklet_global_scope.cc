@@ -134,17 +134,15 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   DCHECK(IsContextThread());
   DCHECK(fetch_client_settings_object);
   InitializeWebFetchContextIfNeeded();
-  FetchContext* fetch_context =
+  ResourceFetcherInit init(
+      *MakeGarbageCollected<WorkerResourceFetcherProperties>(),
       web_worker_fetch_context_
           ? MakeGarbageCollected<WorkerFetchContext>(
                 *this, web_worker_fetch_context_, subresource_filter_,
                 *fetch_client_settings_object)
-          : &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking));
-  ConsoleLogger* console_logger = this;
-  ResourceFetcherProperties* properties =
-      MakeGarbageCollected<WorkerResourceFetcherProperties>();
-  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(
-      *properties, fetch_context, console_logger);
+          : &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking)),
+      *this);
+  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);

@@ -120,11 +120,6 @@ class MockFetchContext : public FetchContext {
             GetLoadingTaskRunner()));
   }
 
-  ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
-      const override {
-    return ResourceLoadScheduler::ThrottlingPolicy::kTight;
-  }
-
   FrameScheduler* GetFrameScheduler() const override {
     return frame_scheduler_.get();
   }

@@ -1871,7 +1871,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest));
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
-  ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create(context);
+  auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal, context);
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 
   // Ensure that |image_resource| has a loader.

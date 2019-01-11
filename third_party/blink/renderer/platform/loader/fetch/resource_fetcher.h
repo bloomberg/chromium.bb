@@ -58,6 +58,35 @@ class ResourceFetcherProperties;
 class ResourceTimingInfo;
 enum class ResourceType : uint8_t;
 
+// Used for ResourceFetcher construction.
+// Creators of ResourceFetcherInit are responsible for setting consistent
+// members to ensure the correctness of ResourceFetcher.
+struct PLATFORM_EXPORT ResourceFetcherInit final {
+  STACK_ALLOCATED();
+
+ public:
+  // |context| must not be null.
+  // The given ResourceFetcherProperties is kept until ClearContext() is called.
+  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+                      FetchContext* context);
+  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+                      FetchContext* context,
+                      ConsoleLogger& console_logger)
+      : properties(properties),
+        context(context),
+        console_logger(console_logger) {
+    DCHECK(context);
+  }
+  const Member<const ResourceFetcherProperties> properties;
+  const Member<FetchContext> context;
+  ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal;
+  const Member<ConsoleLogger> console_logger;
+  Member<MHTMLArchive> archive;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
+};
+
 // The ResourceFetcher provides a per-context interface to the MemoryCache and
 // enforces a bunch of security checks and rules for resource revalidation. Its
 // lifetime is roughly per-DocumentLoader, in that it is generally created in
@@ -76,11 +105,13 @@ class PLATFORM_EXPORT ResourceFetcher
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
-  // The given ResourceFetcherProperties is kept until ClearContext() is called.
-  ResourceFetcher(const ResourceFetcherProperties&, FetchContext*);
-  ResourceFetcher(const ResourceFetcherProperties&,
-                  FetchContext*,
-                  ConsoleLogger*);
+  // ResourceFetcher creators are responsible for setting consistent objects
+  // in ResourceFetcherInit or ResourceFetcher arguments to ensure correctness
+  // of this ResourceFetcher.
+  explicit ResourceFetcher(const ResourceFetcherInit&);
+  ResourceFetcher(const ResourceFetcherProperties& properties,
+                  FetchContext* context)
+      : ResourceFetcher(ResourceFetcherInit(properties, context)) {}
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
 

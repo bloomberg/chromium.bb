@@ -67,7 +67,8 @@ class ResourceLoadSchedulerTest : public testing::Test {
     auto* context = MakeGarbageCollected<MockFetchContext>(
         MockFetchContext::kShouldNotLoadNewResource);
     MakeGarbageCollected<ResourceFetcher>(*properties, context);
-    scheduler_ = ResourceLoadScheduler::Create(context);
+    scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
+        ResourceLoadScheduler::ThrottlingPolicy::kTight, context);
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }

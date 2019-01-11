@@ -304,25 +304,39 @@ struct FrameFetchContext::FrozenState final
 
 ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
   DCHECK(loader);
-  FrameFetchContext* context = MakeGarbageCollected<FrameFetchContext>(loader);
-  ConsoleLogger* logger = &context->GetFrame()->Console();
-  ResourceFetcherProperties* properties =
-      MakeGarbageCollected<FrameResourceFetcherProperties>(loader->GetFrame());
-  return MakeGarbageCollected<ResourceFetcher>(*properties, context, logger);
+  LocalFrame* frame = loader->GetFrame();
+  ResourceFetcherInit init(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(frame),
+      MakeGarbageCollected<FrameFetchContext>(loader), frame->Console());
+  // Frame loading should normally start with |kTight| throttling, as the
+  // frame will be in layout-blocking state until the <body> tag is inserted
+  init.initial_throttling_policy =
+      ResourceLoadScheduler::ThrottlingPolicy::kTight;
+  // TODO(nasko): How should this work with OOPIF?
+  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
+  // in multiple processes. In that case, which process should parse it and how
+  // should the output be spread back across multiple processes?
+  if (!init.properties->IsMainFrame() &&
+      frame->Tree().Parent()->IsLocalFrame()) {
+    init.archive = ToLocalFrame(frame->Tree().Parent())
+                       ->Loader()
+                       .GetDocumentLoader()
+                       ->Fetcher()
+                       ->Archive();
+  }
+  return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
 ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
     Document* document) {
   DCHECK(document);
-  FrameFetchContext* context =
-      MakeGarbageCollected<FrameFetchContext>(document);
   // |document| is detached.
   DCHECK(!document->GetFrame());
-  ConsoleLogger* logger = &context->GetFrame()->Console();
   LocalFrame* frame = document->ImportsController()->Master()->GetFrame();
-  ResourceFetcherProperties* properties =
-      MakeGarbageCollected<FrameResourceFetcherProperties>(frame);
-  return MakeGarbageCollected<ResourceFetcher>(*properties, context, logger);
+  ResourceFetcherInit init(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(frame),
+      MakeGarbageCollected<FrameFetchContext>(document), frame->Console());
+  return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
@@ -1064,21 +1078,6 @@ void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
       request.SetSiteForCookies(GetSiteForCookies());
     }
   }
-}
-
-MHTMLArchive* FrameFetchContext::Archive() const {
-  DCHECK(!IsMainFrame());
-  // TODO(nasko): How should this work with OOPIF?
-  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
-  // in multiple processes. In that case, which process should parse it and how
-  // should the output be spread back across multiple processes?
-  if (IsDetached() || !GetFrame()->Tree().Parent()->IsLocalFrame())
-    return nullptr;
-  return ToLocalFrame(GetFrame()->Tree().Parent())
-      ->Loader()
-      .GetDocumentLoader()
-      ->Fetcher()
-      ->Archive();
 }
 
 bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {

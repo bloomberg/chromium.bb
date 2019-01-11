@@ -150,18 +150,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                  const FetchParameters::ResourceWidth&,
                                  ResourceRequest&);
 
-  MHTMLArchive* Archive() const override;
-
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
       const ResourceLoaderOptions&) override;
-
-  ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
-      const override {
-    // Frame loading should normally start with |kTight| throttling, as the
-    // frame will be in layout-blocking state until the <body> tag is inserted.
-    return ResourceLoadScheduler::ThrottlingPolicy::kTight;
-  }
 
   bool IsDetached() const override { return frozen_state_; }
 
