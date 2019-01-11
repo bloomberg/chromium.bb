@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -51,7 +53,8 @@ class ProfileShortcutManager {
   // background that's rarely important to unit tests.
   static void DisableForUnitTests();
   static bool IsFeatureEnabled();
-  static ProfileShortcutManager* Create(ProfileManager* manager);
+  static std::unique_ptr<ProfileShortcutManager> Create(
+      ProfileManager* manager);
 
  protected:
   ProfileShortcutManager();

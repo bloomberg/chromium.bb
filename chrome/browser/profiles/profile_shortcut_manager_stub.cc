@@ -12,7 +12,7 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 }
 
 // static
-ProfileShortcutManager* ProfileShortcutManager::Create(
+std::unique_ptr<ProfileShortcutManager> ProfileShortcutManager::Create(
     ProfileManager* manager) {
-  return NULL;
+  return nullptr;
 }
