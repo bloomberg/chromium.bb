@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/grit/generated_resources.h"
@@ -73,10 +74,21 @@ size_t SerialChooserController::NumOptions() const {
 
 base::string16 SerialChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, ports_.size());
-
   const device::mojom::SerialPortInfo& port = *ports_[index];
-  return port.display_name ? base::UTF8ToUTF16(*port.display_name)
-                           : port.path.LossyDisplayName();
+
+  // Get the last component of the device path i.e. COM1 or ttyS0 to show the
+  // user something similar to other applications that ask them to choose a
+  // serial port and to differentiate between ports with similar display names.
+  base::string16 display_path = port.path.BaseName().LossyDisplayName();
+
+  if (port.display_name) {
+    return l10n_util::GetStringFUTF16(IDS_SERIAL_PORT_CHOOSER_NAME_WITH_PATH,
+                                      base::UTF8ToUTF16(*port.display_name),
+                                      display_path);
+  }
+
+  return l10n_util::GetStringFUTF16(IDS_SERIAL_PORT_CHOOSER_PATH_ONLY,
+                                    display_path);
 }
 
 bool SerialChooserController::IsPaired(size_t index) const {
