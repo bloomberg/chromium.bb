@@ -20,11 +20,10 @@ struct MediaSinkWithCastModes {
   explicit MediaSinkWithCastModes(const MediaSink& sink);
   MediaSinkWithCastModes(const MediaSinkWithCastModes& other);
   ~MediaSinkWithCastModes();
+  bool operator==(const MediaSinkWithCastModes& other) const;
 
   MediaSink sink;
   CastModeSet cast_modes;
-
-  bool Equals(const MediaSinkWithCastModes& other) const;
 };
 
 }  // namespace media_router

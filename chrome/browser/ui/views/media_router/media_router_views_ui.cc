@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
@@ -88,6 +89,18 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
     return base::StartsWith(sink.sink.id(),
                             "pseudo:", base::CompareCase::SENSITIVE);
   });
+
+  // Filter out cloud sinks if the window is incognito. Casting to cloud sinks
+  // from incognito is not currently supported by the Cloud MRP.  This is not
+  // the best place to do this, but the Media Router browser service and
+  // extension process are shared between normal and incognito, so incognito
+  // behaviors around sink availability have to be handled at the UI layer.
+  if (initiator()->GetBrowserContext()->IsOffTheRecord()) {
+    base::EraseIf(sinks, [](const MediaSinkWithCastModes& sink) {
+      return sink.sink.IsMaybeCloudSink();
+    });
+  }
+
   return sinks;
 }
 
