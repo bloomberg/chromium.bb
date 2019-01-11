@@ -140,9 +140,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ConnectionType connection_type() const { return connection_type_; }
 
-  // Returns true if at a compositor frame sink has been created for at least
-  // one of the roots.
-  bool HasAtLeastOneRootWithCompositorFrameSink();
+  // Returns the first ClientRoot that has its compositor frame sink created.
+  ClientRoot* GetFirstRootWithCompositorFrameSink();
 
   // Returns true if |window| has been exposed to this client. A client
   // typically only sees a limited set of windows that may exist. The set of

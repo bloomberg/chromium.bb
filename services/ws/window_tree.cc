@@ -309,14 +309,14 @@ void WindowTree::CompleteScheduleEmbedForExistingClient(
   client_root->RegisterVizEmbeddingSupport();
 }
 
-bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
+ClientRoot* WindowTree::GetFirstRootWithCompositorFrameSink() {
   for (auto& client_root : client_roots_) {
     if (ProxyWindow::GetMayBeNull(client_root->window())
             ->attached_compositor_frame_sink()) {
-      return true;
+      return client_root.get();
     }
   }
-  return false;
+  return nullptr;
 }
 
 bool WindowTree::IsWindowKnown(aura::Window* window) const {
