@@ -5,11 +5,8 @@
 """Generate c++ structure containing serialized ULP language quad tree"""
 
 import argparse
-import csv
 import os.path
-import string
 import sys
-import array
 
 sys.path.insert(1,
     os.path.join(os.path.dirname(__file__),
@@ -24,15 +21,21 @@ import jinja2 # pylint: disable=F0401
 
 def ReadSerializedData(input_path):
   """Read serialized ULP language quad tree"""
-  with open(input_path) as input_file:
+
+  with open(input_path, 'rb') as input_file:
     data = input_file.read()
+
   linebreak = data.index('\n')
   # First line is comma-separated list of languages.
   language_codes = data[:linebreak].strip().split(',')
-  # Rest of the file is the serialized tree. We read the bits as 32 bits,
-  # unsigned int words.
-  tree_serialized = array.array('I', data[linebreak+1:])
-  assert tree_serialized.itemsize == 4, "Items must be 4 bytes ints."
+  # Rest of the file is the serialized tree.
+  tree_bytes = data[linebreak+1:]
+  # We group the bytes in the string into 32 bits integers.
+  tree_serialized = [
+    sum((ord(tree_bytes[i+b]) << (8*b)) if i+b < len(tree_bytes) else 0
+    for b in xrange(4))
+    for i in xrange(0, len(tree_bytes), 4)
+  ]
   return tree_serialized, language_codes
 
 
