@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_binding.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
@@ -207,8 +208,9 @@ TEST_F(InterfaceInvalidatorTest, PassInterfaceOfInvalidatedPtr) {
   ASSERT_TRUE(error_handler_called);
   ASSERT_TRUE(impl.error_handler_called());
 
-  mojo::test::blink::RevocablePingServicePtr wptr2(wptr.PassInterface(),
-                                                   invalidator.get());
+  mojo::test::blink::RevocablePingServicePtr wptr2(
+      wptr.PassInterface(), invalidator.get(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   wptr2->Ping(base::BindRepeating([] { FAIL(); }));
   base::RunLoop().RunUntilIdle();
 }
@@ -224,8 +226,9 @@ TEST_F(InterfaceInvalidatorTest,
 
   // This also destroys the original invalidator.
   invalidator = std::make_unique<InterfaceInvalidator>();
-  mojo::test::blink::RevocablePingServicePtr wptr2(wptr.PassInterface(),
-                                                   invalidator.get());
+  mojo::test::blink::RevocablePingServicePtr wptr2(
+      wptr.PassInterface(), invalidator.get(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   wptr2->Ping(base::BindRepeating([] { FAIL(); }));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(impl.error_handler_called());
