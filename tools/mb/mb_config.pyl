@@ -634,7 +634,9 @@
     },
 
     'tryserver.chromium.chromiumos': {
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
+      # TODO(crbug.com/913750): Enable DCHECKS on this bot when the PFQ has it
+      # enabled.
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-daisy-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
