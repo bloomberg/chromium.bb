@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
@@ -315,6 +316,7 @@ public class TextSuggestionMenuTest {
     // done with composing.
     @Test
     @LargeTest
+    @DisabledTest
     public void testSetComposingTextRemovesAutoCorrectionSuggestionSpan()
             throws InterruptedException, Throwable {
         WebContents webContents = mRule.getWebContents();
