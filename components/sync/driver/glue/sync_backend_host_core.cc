@@ -262,10 +262,6 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
       DLOG(WARNING) << "Notification has invalid id: "
                     << ObjectIdToString(object_id);
     } else {
-      UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
-                                ModelTypeToHistogramInt(type),
-                                static_cast<int>(MODEL_TYPE_COUNT));
-
       bool is_grouped = (ids.size() != 1);
       RecordPerModelTypeInvalidation(ModelTypeToHistogramInt(type), is_grouped);
       SingleObjectInvalidationSet invalidation_set =
