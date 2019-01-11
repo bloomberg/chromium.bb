@@ -8,7 +8,7 @@ var startTime = 0;
 function testRanges(expectedStartTimes, expectedEndTimes) {
     assert_equals(video.played.length, timeRangeCount);
 
-    for (i = 0; i < timeRangeCount; i++) {
+    for (var i = 0; i < timeRangeCount; i++) {
         assert_equals(video.played.start(i).toFixed(2), expectedStartTimes[i]);
         assert_equals(video.played.end(i).toFixed(2), expectedEndTimes[i]);
     }

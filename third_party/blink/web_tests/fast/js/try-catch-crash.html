@@ -23,7 +23,7 @@ function Test_Error() {
     }
 }
 function Test_Error_isPrime(PrimeTest) {
-    for(i=2;i<=Math.sqrt(147457)+1;i++) {
+    for(var i=2;i<=Math.sqrt(147457)+1;i++) {
         if (PrimeTest % i == 0) {
             return false;
         }
