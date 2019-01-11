@@ -53,16 +53,22 @@ class NGCaretNavigatorTest : public RenderingTest,
     return caret_navigator_->RightCharacterOf(index);
   }
 
+  NGCaretNavigator::Position CaretBefore(unsigned index) const {
+    return {index, NGCaretNavigator::PositionAnchorType::kBefore};
+  }
+
+  NGCaretNavigator::Position CaretAfter(unsigned index) const {
+    return {index, NGCaretNavigator::PositionAnchorType::kAfter};
+  }
+
   NGCaretNavigator::VisualCaretMovementResult LeftPositionOf(
-      unsigned offset,
-      TextAffinity affinity) const {
-    return caret_navigator_->LeftPositionOf({offset, affinity});
+      const NGCaretNavigator::Position& position) const {
+    return caret_navigator_->LeftPositionOf(position);
   }
 
   NGCaretNavigator::VisualCaretMovementResult RightPositionOf(
-      unsigned offset,
-      TextAffinity affinity) const {
-    return caret_navigator_->RightPositionOf({offset, affinity});
+      const NGCaretNavigator::Position& position) const {
+    return caret_navigator_->RightPositionOf(position);
   }
 
  protected:
@@ -153,154 +159,116 @@ TEST_P(NGCaretNavigatorTest, LeftPositionOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
-  using Position = NGCaretNavigator::Position;
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(0)).IsBeforeContext());
 
-  EXPECT_TRUE(LeftPositionOf(0u, TextAffinity::kDownstream).IsBeforeContext());
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(0)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(0), *LeftPositionOf(CaretAfter(0)).position);
 
-  EXPECT_TRUE(LeftPositionOf(1u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({0u, TextAffinity::kDownstream}),
-            *LeftPositionOf(1u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(1)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(0), *LeftPositionOf(CaretBefore(1)).position);
 
-  EXPECT_TRUE(LeftPositionOf(1u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({0u, TextAffinity::kDownstream}),
-            *LeftPositionOf(1u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(1)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(1), *LeftPositionOf(CaretAfter(1)).position);
 
-  EXPECT_TRUE(LeftPositionOf(2u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({1u, TextAffinity::kDownstream}),
-            *LeftPositionOf(2u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(2)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(1), *LeftPositionOf(CaretBefore(2)).position);
 
-  EXPECT_TRUE(LeftPositionOf(2u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({1u, TextAffinity::kDownstream}),
-            *LeftPositionOf(2u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(2), *LeftPositionOf(CaretAfter(2)).position);
 
-  EXPECT_TRUE(LeftPositionOf(3u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({2u, TextAffinity::kDownstream}),
-            *LeftPositionOf(3u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(3)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(3), *LeftPositionOf(CaretBefore(3)).position);
 
-  EXPECT_TRUE(LeftPositionOf(3u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({4u, TextAffinity::kUpstream}),
-            *LeftPositionOf(3u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(3)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(4), *LeftPositionOf(CaretAfter(3)).position);
 
-  EXPECT_TRUE(LeftPositionOf(4u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({5u, TextAffinity::kUpstream}),
-            *LeftPositionOf(4u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(4), *LeftPositionOf(CaretBefore(4)).position);
 
-  EXPECT_TRUE(LeftPositionOf(4u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({5u, TextAffinity::kUpstream}),
-            *LeftPositionOf(4u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(4)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(5), *LeftPositionOf(CaretAfter(4)).position);
 
-  EXPECT_TRUE(LeftPositionOf(5u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({6u, TextAffinity::kUpstream}),
-            *LeftPositionOf(5u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(5)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(5), *LeftPositionOf(CaretBefore(5)).position);
 
-  EXPECT_TRUE(LeftPositionOf(5u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({6u, TextAffinity::kUpstream}),
-            *LeftPositionOf(5u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(8), *LeftPositionOf(CaretAfter(5)).position);
 
-  EXPECT_TRUE(LeftPositionOf(6u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({8u, TextAffinity::kDownstream}),
-            *LeftPositionOf(6u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(6)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(2), *LeftPositionOf(CaretBefore(6)).position);
 
-  EXPECT_TRUE(LeftPositionOf(6u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({2u, TextAffinity::kDownstream}),
-            *LeftPositionOf(6u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(6)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(6), *LeftPositionOf(CaretAfter(6)).position);
 
-  EXPECT_TRUE(LeftPositionOf(7u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({6u, TextAffinity::kDownstream}),
-            *LeftPositionOf(7u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(7)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(6), *LeftPositionOf(CaretBefore(7)).position);
 
-  EXPECT_TRUE(LeftPositionOf(7u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({6u, TextAffinity::kDownstream}),
-            *LeftPositionOf(7u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(7)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(7), *LeftPositionOf(CaretAfter(7)).position);
 
-  EXPECT_TRUE(LeftPositionOf(8u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({7u, TextAffinity::kDownstream}),
-            *LeftPositionOf(8u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(8)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(7), *LeftPositionOf(CaretBefore(8)).position);
 
-  EXPECT_TRUE(LeftPositionOf(8u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({7u, TextAffinity::kDownstream}),
-            *LeftPositionOf(8u, TextAffinity::kDownstream).position);
-
-  EXPECT_TRUE(LeftPositionOf(9u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({8u, TextAffinity::kDownstream}),
-            *LeftPositionOf(9u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(8)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(8), *LeftPositionOf(CaretAfter(8)).position);
 }
 
 TEST_P(NGCaretNavigatorTest, RightPositionOfBasic) {
   SetupHtml("container",
             "<div id=container>abc&#x05D0;&#x05D1;&#x05D2;123</div>");
 
-  using Position = NGCaretNavigator::Position;
+  EXPECT_TRUE(RightPositionOf(CaretBefore(0)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(0), *RightPositionOf(CaretBefore(0)).position);
 
-  EXPECT_TRUE(RightPositionOf(0u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({1u, TextAffinity::kUpstream}),
-            *RightPositionOf(0u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(0)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(1), *RightPositionOf(CaretAfter(0)).position);
 
-  EXPECT_TRUE(RightPositionOf(1u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({2u, TextAffinity::kUpstream}),
-            *RightPositionOf(1u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(1)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(1), *RightPositionOf(CaretBefore(1)).position);
 
-  EXPECT_TRUE(RightPositionOf(1u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({2u, TextAffinity::kUpstream}),
-            *RightPositionOf(1u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(1)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(2), *RightPositionOf(CaretAfter(1)).position);
 
-  EXPECT_TRUE(RightPositionOf(2u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({3u, TextAffinity::kUpstream}),
-            *RightPositionOf(2u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(2)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(2), *RightPositionOf(CaretBefore(2)).position);
 
-  EXPECT_TRUE(RightPositionOf(2u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({3u, TextAffinity::kUpstream}),
-            *RightPositionOf(2u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(6), *RightPositionOf(CaretAfter(2)).position);
 
-  EXPECT_TRUE(RightPositionOf(3u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({7u, TextAffinity::kUpstream}),
-            *RightPositionOf(3u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).IsAfterContext());
 
-  EXPECT_TRUE(RightPositionOf(3u, TextAffinity::kDownstream).IsAfterContext());
+  EXPECT_TRUE(RightPositionOf(CaretAfter(3)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *RightPositionOf(CaretAfter(3)).position);
 
-  EXPECT_TRUE(RightPositionOf(4u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({3u, TextAffinity::kDownstream}),
-            *RightPositionOf(4u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *RightPositionOf(CaretBefore(4)).position);
 
-  EXPECT_TRUE(RightPositionOf(4u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({3u, TextAffinity::kDownstream}),
-            *RightPositionOf(4u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretAfter(4)).position);
 
-  EXPECT_TRUE(RightPositionOf(5u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({4u, TextAffinity::kDownstream}),
-            *RightPositionOf(5u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretBefore(5)).position);
 
-  EXPECT_TRUE(RightPositionOf(5u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({4u, TextAffinity::kDownstream}),
-            *RightPositionOf(5u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(5), *RightPositionOf(CaretAfter(5)).position);
 
-  EXPECT_TRUE(RightPositionOf(6u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({5u, TextAffinity::kDownstream}),
-            *RightPositionOf(6u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(6)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(6), *RightPositionOf(CaretBefore(6)).position);
 
-  EXPECT_TRUE(RightPositionOf(6u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({7u, TextAffinity::kUpstream}),
-            *RightPositionOf(6u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(7), *RightPositionOf(CaretAfter(6)).position);
 
-  EXPECT_TRUE(RightPositionOf(7u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({8u, TextAffinity::kUpstream}),
-            *RightPositionOf(7u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(7)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(7), *RightPositionOf(CaretBefore(7)).position);
 
-  EXPECT_TRUE(RightPositionOf(7u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({8u, TextAffinity::kUpstream}),
-            *RightPositionOf(7u, TextAffinity::kDownstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(7)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(8), *RightPositionOf(CaretAfter(7)).position);
 
-  EXPECT_TRUE(RightPositionOf(8u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({9u, TextAffinity::kUpstream}),
-            *RightPositionOf(8u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(8)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(8), *RightPositionOf(CaretBefore(8)).position);
 
-  EXPECT_TRUE(RightPositionOf(8u, TextAffinity::kDownstream).IsWithinContext());
-  EXPECT_EQ(Position({9u, TextAffinity::kUpstream}),
-            *RightPositionOf(8u, TextAffinity::kDownstream).position);
-
-  EXPECT_TRUE(RightPositionOf(9u, TextAffinity::kUpstream).IsWithinContext());
-  EXPECT_EQ(Position({5u, TextAffinity::kDownstream}),
-            *RightPositionOf(9u, TextAffinity::kUpstream).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(8)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(5), *RightPositionOf(CaretAfter(8)).position);
 }
 
 }  // namespace blink

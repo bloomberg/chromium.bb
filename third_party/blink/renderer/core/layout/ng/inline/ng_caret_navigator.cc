@@ -67,35 +67,36 @@ bool NGCaretNavigator::OffsetIsBidiBoundary(unsigned offset) const {
   return BidiLevelAt(offset - 1) != BidiLevelAt(offset);
 }
 
-TextDirection NGCaretNavigator::TextDirectionAt(
-    const Position& caret_position) const {
-  return TextDirectionAt(AnchorCharacterIndex(caret_position));
-}
-
-unsigned NGCaretNavigator::AnchorCharacterIndex(
-    const Position& caret_position) const {
-  if (caret_position.affinity == TextAffinity::kDownstream) {
-    DCHECK_LT(caret_position.offset, text_.length());
-    return caret_position.offset;
+NGCaretNavigator::Position
+NGCaretNavigator::CaretPositionFromTextContentOffsetAndAffinity(
+    unsigned offset,
+    TextAffinity affinity) const {
+  // Callers sometimes pass in (0, upstream) or (length, downstream), which
+  // originate from legacy callers. Make sure they are fixed up.
+  // TODO(xiaochengh): Catch and eliminate such callers.
+  if (affinity == TextAffinity::kUpstream) {
+    if (offset)
+      return {offset - 1, PositionAnchorType::kAfter};
+    return {0, PositionAnchorType::kBefore};
   }
-  DCHECK_GT(caret_position.offset, 0u);
-  return caret_position.offset - 1;
+
+  if (offset < text_.length())
+    return {offset, PositionAnchorType::kBefore};
+  return {text_.length() - 1, PositionAnchorType::kAfter};
 }
 
 NGCaretNavigator::Position NGCaretNavigator::LeftEdgeOf(unsigned index) const {
   DCHECK_LT(index, text_.length());
   const TextDirection direction = TextDirectionAt(index);
-  if (IsLtr(direction))
-    return {index, TextAffinity::kDownstream};
-  return {index + 1, TextAffinity::kUpstream};
+  return {index, IsLtr(direction) ? PositionAnchorType::kBefore
+                                  : PositionAnchorType::kAfter};
 }
 
 NGCaretNavigator::Position NGCaretNavigator::RightEdgeOf(unsigned index) const {
   DCHECK_LT(index, text_.length());
   const TextDirection direction = TextDirectionAt(index);
-  if (IsRtl(direction))
-    return {index, TextAffinity::kDownstream};
-  return {index + 1, TextAffinity::kUpstream};
+  return {index, IsRtl(direction) ? PositionAnchorType::kBefore
+                                  : PositionAnchorType::kAfter};
 }
 
 NGCaretNavigator::VisualCharacterMovementResult
@@ -140,7 +141,7 @@ NGCaretNavigator::RightCharacterOf(unsigned index) const {
 
 NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::LeftPositionOf(
     const Position& caret_position) const {
-  const unsigned index = AnchorCharacterIndex(caret_position);
+  const unsigned index = caret_position.index;
   if (caret_position == RightEdgeOf(index)) {
     // TODO(xiaochengh): Consider grapheme cluster
     return {VisualMovementResultType::kWithinContext, LeftEdgeOf(index)};
@@ -157,7 +158,7 @@ NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::LeftPositionOf(
 
 NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::RightPositionOf(
     const Position& caret_position) const {
-  const unsigned index = AnchorCharacterIndex(caret_position);
+  const unsigned index = caret_position.index;
   if (caret_position == LeftEdgeOf(index)) {
     // TODO(xiaochengh): Consider grapheme cluster
     return {VisualMovementResultType::kWithinContext, RightEdgeOf(index)};
