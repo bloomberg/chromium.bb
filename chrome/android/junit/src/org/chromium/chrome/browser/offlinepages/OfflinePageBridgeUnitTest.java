@@ -118,6 +118,80 @@ public class OfflinePageBridgeUnitTest {
     }
 
     /**
+     * Tests OfflinePageBridge#GetAllPages() callback when there are no pages.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetAllPages_listOfPagesEmpty() {
+        final int itemCount = 0;
+
+        answerNativeGetAllPages(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
+        mBridge.getAllPages(callback);
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        verify(callback, times(1)).onResult(itemList);
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetAllPages() callback when there are pages.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetAllPages_listOfPagesNonEmpty() {
+        final int itemCount = 2;
+
+        answerNativeGetAllPages(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
+        mBridge.getAllPages(callback);
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        verify(callback, times(1)).onResult(itemList);
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetPagesByClientIds() callback when there are no pages.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetPagesByClientIds_listOfClientIdsEmpty() {
+        final int itemCount = 0;
+
+        answerGetPagesByClientIds(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
+        ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
+        List<ClientId> list = new ArrayList<>();
+        mBridge.getPagesByClientIds(list, callback);
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        verify(callback, times(1)).onResult(itemList);
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetPagesByClientIds() callback when there are pages.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetPagesByClientIds() {
+        final int itemCount = 2;
+
+        answerGetPagesByClientIds(itemCount);
+        Callback<List<OfflinePageItem>> callback = createMultipleItemCallback(itemCount);
+        ClientId secondClientId = new ClientId(TEST_NAMESPACE, "id number two");
+        List<ClientId> list = new ArrayList<>();
+        list.add(TEST_CLIENT_ID);
+        list.add(secondClientId);
+        mBridge.getPagesByClientIds(list, callback);
+
+        List<OfflinePageItem> itemList = new ArrayList<OfflinePageItem>();
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        itemList.add(TEST_OFFLINE_PAGE_ITEM);
+        verify(callback, times(1)).onResult(itemList);
+    }
+
+    /**
      * Tests OfflinePageBridge#DeletePagesByClientIds() callback when there are no pages.
      */
     @Test
@@ -220,6 +294,50 @@ public class OfflinePageBridgeUnitTest {
             @Override
             public void onResult(Integer result) {}
         });
+    }
+
+    private void answerNativeGetAllPages(final int itemCount) {
+        Answer<Void> answer = new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                List<OfflinePageItem> result = mResultArgument.getValue();
+                for (int i = 0; i < itemCount; i++) {
+                    result.add(TEST_OFFLINE_PAGE_ITEM);
+                }
+
+                mCallbackArgument.getValue().onResult(result);
+
+                return null;
+            }
+        };
+        doAnswer(answer).when(mBridge).nativeGetAllPages(
+                anyLong(), mResultArgument.capture(), mCallbackArgument.capture());
+    }
+
+    private void answerGetPagesByClientIds(final int itemCount) {
+        Answer<Void> answer = new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                List<OfflinePageItem> result = mResultArgument.getValue();
+                String[] namespaces = mNamespacesArgument.getValue();
+                String[] ids = mIdsArgument.getValue();
+
+                assertEquals(namespaces.length, itemCount);
+                assertEquals(ids.length, itemCount);
+
+                for (int i = 0; i < itemCount; i++) {
+                    result.add(TEST_OFFLINE_PAGE_ITEM);
+                }
+
+                mCallbackArgument.getValue().onResult(result);
+
+                return null;
+            }
+        };
+
+        doAnswer(answer).when(mBridge).nativeGetPagesByClientId(anyLong(),
+                mResultArgument.capture(), mNamespacesArgument.capture(), mIdsArgument.capture(),
+                mCallbackArgument.capture());
     }
 
     private void answerDeletePagesByOfflineIds(final int itemCount) {

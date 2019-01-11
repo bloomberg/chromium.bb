@@ -448,6 +448,24 @@ void OfflinePageBridge::OfflinePageDeleted(
       JNI_SavePageRequest_ToJavaDeletedPageInfo(env, page_info));
 }
 
+void OfflinePageBridge::GetAllPages(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  DCHECK(j_result_obj);
+  DCHECK(j_callback_obj);
+
+  ScopedJavaGlobalRef<jobject> j_result_ref;
+  j_result_ref.Reset(env, j_result_obj);
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
+  offline_page_model_->GetAllPages(base::BindOnce(
+      &MultipleOfflinePageItemCallback, j_result_ref, j_callback_ref));
+}
+
 void OfflinePageBridge::GetPageByOfflineId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

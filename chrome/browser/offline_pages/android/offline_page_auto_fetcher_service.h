@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_AUTO_FETCHER_SERVICE_H_
 
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
@@ -147,7 +146,6 @@ class OfflinePageAutoFetcherService : public KeyedService,
 
   void AutoFetchComplete(const OfflinePageItem* page);
 
-  std::unique_ptr<AutoFetchNotifier> notifier_;
   AutoFetchPageLoadWatcher page_load_watcher_;
   RequestCoordinator* request_coordinator_;
   OfflinePageModel* offline_page_model_;
