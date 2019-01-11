@@ -50,6 +50,7 @@ Polymer({
     pointermove: 'onPointerMove_',
     pointercancel: 'onPointerUpOrCancel_',
     pointerleave: 'onPointerLeave_',
+    touchstart: 'onTouchStart_',
   },
 
   /** @param {AnnotationTool} tool */
@@ -82,6 +83,13 @@ Polymer({
     });
   },
 
+  /** @param {TouchEvent} e */
+  onTouchStart_: function(e) {
+    // TODO(dstockwell): prevent this conditionally when in "pen mode"
+    e.preventDefault();
+  },
+
+  /** @param {PointerEvent} e */
   onPointerDown_: function(e) {
     if (e.pointerType == 'mouse' && e.buttons != 1 || this.pointerGesture_) {
       return;
