@@ -482,9 +482,10 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
   Element& target = *GetDocument().getElementById("target");
   target.remove();
   const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  EXPECT_TRUE(container.FirstChild()->IsDirty());
-  EXPECT_TRUE(ToList(container.Children())[1]->IsDirty());
-  EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
+  auto lines = ToList(container.Children());
+  EXPECT_TRUE(lines[0]->IsDirty());
+  EXPECT_FALSE(lines[1]->IsDirty());
+  EXPECT_FALSE(lines[2]->IsDirty());
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
