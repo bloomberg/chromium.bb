@@ -638,23 +638,22 @@ TEST_F(WebFrameTest, CallingPostPausableTaskWhilePaused)
   ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
 
   // Suspend scheduled tasks so the script doesn't run.
-  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
 
   ScriptNotPausedCallbackHelper callback_helper;
   main_frame->PostPausableTask(callback_helper.GetCallback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.result());
 
-  main_frame->GetFrame()->GetDocument()->UnpauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(false);
   RunPendingTasks();
   ASSERT_TRUE(callback_helper.result());
   EXPECT_EQ(WebLocalFrame::PausableTaskResult::kReady,
             *callback_helper.result());
 }
 
-TEST_F(WebFrameTest, CallingPostPausableTaskAndNavigating) {
+TEST_F(WebFrameTest, CallingPostPausableTaskAndDestroying) {
   RegisterMockedHttpURLLoad("foo.html");
-  RegisterMockedHttpURLLoad("bar.html");
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
@@ -663,17 +662,14 @@ TEST_F(WebFrameTest, CallingPostPausableTaskAndNavigating) {
   ScriptState::Scope scope(ToScriptStateForMainWorld(main_frame->GetFrame()));
 
   // Suspend scheduled tasks so the script doesn't run.
-  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
+  web_view_helper.GetWebView()->GetPage()->SetPaused(true);
 
   ScriptNotPausedCallbackHelper callback_helper;
   main_frame->PostPausableTask(callback_helper.GetCallback());
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.result());
 
-  // If the frame navigates, pending scripts should be removed, but the callback
-  // should always be ran.
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "bar.html");
+  web_view_helper.Reset();
   ASSERT_TRUE(callback_helper.result());
   EXPECT_EQ(WebLocalFrame::PausableTaskResult::kContextInvalidOrDestroyed,
             *callback_helper.result());
