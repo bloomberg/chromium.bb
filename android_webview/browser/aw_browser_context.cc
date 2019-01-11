@@ -217,7 +217,7 @@ AwBrowserContext::GetAutocompleteHistoryManager() {
         std::make_unique<autofill::AutocompleteHistoryManager>();
     autocomplete_history_manager_->Init(
         form_database_service_->get_autofill_webdata_service(),
-        IsOffTheRecord());
+        user_pref_service_.get(), IsOffTheRecord());
   }
 
   return autocomplete_history_manager_.get();

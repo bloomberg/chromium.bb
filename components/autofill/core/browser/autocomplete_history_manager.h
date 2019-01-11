@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 namespace autofill {
@@ -51,6 +52,7 @@ class AutocompleteHistoryManager : public KeyedService,
   // |is_off_the_record| indicates wheter the user is currently operating in an
   // off-the-record context (i.e. incognito).
   void Init(scoped_refptr<AutofillWebDataService> profile_database,
+            PrefService* pref_service,
             bool is_off_the_record);
 
   // Returns a weak pointer to the current AutocompleteHistoryManager instance.
@@ -93,7 +95,7 @@ class AutocompleteHistoryManager : public KeyedService,
   // given |handler|.
   virtual void CancelPendingQueries(const SuggestionsHandler* handler);
 
-  // Must be public for the external delegate to use.
+  // Must be public for the autofill manager to use.
   virtual void OnRemoveAutocompleteEntry(const base::string16& name,
                                          const base::string16& value);
 
@@ -170,8 +172,33 @@ class AutocompleteHistoryManager : public KeyedService,
   // - If the given |handler| pointer is associated with a query.
   void CleanupEntries(const SuggestionsHandler* handler);
 
+  // Function handling WebDataService responses of type AUTOFILL_VALUE_RESULT.
+  // |current_handle| is the DB query handle, and is used to retrieve the
+  // handler associated with that query.
+  // |result| contains the Autocomplete suggestions retrieved from the DB that,
+  // if valid and if the handler exists, are to be returned to the handler.
+  void OnAutofillValuesReturned(WebDataServiceBase::Handle current_handle,
+                                std::unique_ptr<WDTypedResult> result);
+
+  // Function handling WebDataService responses of type AUTOFILL_CLEANUP_RESULT.
+  // |current_handle| is the DB query handle, and is used to retrieve the
+  // handler associated with that query.
+  // |result| contains the number of entries that were cleaned-up.
+  void OnAutofillCleanupReturned(WebDataServiceBase::Handle current_handle,
+                                 std::unique_ptr<WDTypedResult> result);
+
   // Must outlive this object.
   scoped_refptr<AutofillWebDataService> profile_database_;
+
+  // Map used to store WebDataService response callbacks, associating a
+  // response's WDResultType to the appropriate callback.
+  std::map<WDResultType,
+           base::RepeatingCallback<void(WebDataServiceBase::Handle,
+                                        std::unique_ptr<WDTypedResult>)>>
+      request_callbacks_;
+
+  // The PrefService that this instance uses. Must outlive this instance.
+  PrefService* pref_service_;
 
   // When the manager makes a request from WebDataServiceBase, the database is
   // queried asynchronously. We associate the query handle to the requestor

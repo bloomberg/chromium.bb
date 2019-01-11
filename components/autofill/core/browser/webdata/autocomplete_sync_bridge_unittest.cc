@@ -17,12 +17,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -445,6 +447,34 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
   VerifyAllData({specifics2});
 }
 
+// Tests that the function RemoveExpiredFormElements is called when the
+// Autocomplete Retention Policy feature flag is disabled.
+TEST_F(AutocompleteSyncBridgeTest,
+       ApplySyncChangesSimple_FlagOff_Calls_RemoveExpiredFormElements) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+
+  EXPECT_CALL(*backend(), RemoveExpiredFormElements);
+
+  AutofillSpecifics specifics1 = CreateSpecifics(1);
+  ApplyAdds({specifics1});
+}
+
+// Tests that the function RemoveExpiredFormElements is not called when the
+// Autocomplete Retention Policy feature flag is enabled.
+TEST_F(AutocompleteSyncBridgeTest,
+       ApplySyncChangesSimple_FlagOn_Not_Calls_RemoveExpiredFormElements) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRententionPolicyEnabled);
+
+  EXPECT_CALL(*backend(), RemoveExpiredFormElements).Times(0);
+
+  AutofillSpecifics specifics1 = CreateSpecifics(1);
+  ApplyAdds({specifics1});
+}
+
 // Should be resilient to deleting and updating non-existent things, and adding
 // existing ones.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesWrongChangeType) {
@@ -590,6 +620,33 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
   EXPECT_CALL(mock_processor(), Delete(storage_key, _));
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::REMOVE, deleted_entry.key())});
+}
+
+// Tests that AutofillEntry marked with AutofillChange::EXPIRE are unlinked from
+// sync, and their sync metadata is deleted in this client.
+TEST_F(AutocompleteSyncBridgeTest, LocalEntryExpired) {
+  StartSyncing();
+  const AutofillSpecifics expired_specifics = CreateSpecifics(1, {2, 3});
+  const AutofillEntry expired_entry = CreateAutofillEntry(expired_specifics);
+  const std::string storage_key = GetStorageKey(expired_specifics);
+
+  // Let's add the sync metadata
+  ASSERT_TRUE(table()->UpdateSyncMetadata(syncer::AUTOFILL, storage_key,
+                                          EntityMetadata()));
+
+  // Validate that it was added.
+  syncer::MetadataBatch batch;
+  ASSERT_TRUE(table()->GetAllSyncMetadata(syncer::AUTOFILL, &batch));
+  ASSERT_EQ(1U, batch.TakeAllMetadata().size());
+
+  EXPECT_CALL(mock_processor(), UntrackEntityForStorageKey(storage_key));
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::EXPIRE, expired_entry.key())});
+
+  // Expect metadata to have been cleaned up.
+  EXPECT_TRUE(table()->GetAllSyncMetadata(syncer::AUTOFILL, &batch));
+  EXPECT_EQ(0U, batch.TakeAllMetadata().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {

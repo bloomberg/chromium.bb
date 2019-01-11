@@ -57,7 +57,8 @@ WebViewAutocompleteHistoryManagerFactory::BuildServiceInstanceFor(
   auto profile_db =
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  service->Init(profile_db, browser_state->IsOffTheRecord());
+  service->Init(profile_db, browser_state->GetPrefs(),
+                browser_state->IsOffTheRecord());
   return service;
 }
 

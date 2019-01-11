@@ -1583,6 +1583,10 @@ void AutofillMetrics::OnAutocompleteSuggestionsShown() {
   AutofillMetrics::Log(AutocompleteEvent::AUTOCOMPLETE_SUGGESTIONS_SHOWN);
 }
 
+void AutofillMetrics::LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries) {
+  UMA_HISTOGRAM_COUNTS_1000("Autocomplete.Cleanup", nb_entries);
+}
+
 // static
 void AutofillMetrics::Log(AutocompleteEvent event) {
   DCHECK_LT(event, AutocompleteEvent::NUM_AUTOCOMPLETE_EVENTS);

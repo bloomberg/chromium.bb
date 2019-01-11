@@ -232,6 +232,10 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
       // here.
       change_processor()->Delete(change.key(), metadata_change_list.get());
       break;
+    case AutofillProfileChange::EXPIRE:
+      // EXPIRE changes are not being issued for profiles.
+      NOTREACHED();
+      break;
   }
 
   if (Optional<ModelError> error = metadata_change_list->TakeError()) {

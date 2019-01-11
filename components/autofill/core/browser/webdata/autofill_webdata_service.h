@@ -142,6 +142,11 @@ class AutofillWebDataService : public AutofillWebData,
   // sequence.
   base::SingleThreadTaskRunner* GetDBTaskRunner();
 
+  // Triggers an Autocomplete retention policy run which will cleanup data that
+  // hasn't been used since over the retention threshold.
+  virtual WebDataServiceBase::Handle RemoveExpiredAutocompleteEntries(
+      WebDataServiceConsumer* consumer);
+
  protected:
   ~AutofillWebDataService() override;
 

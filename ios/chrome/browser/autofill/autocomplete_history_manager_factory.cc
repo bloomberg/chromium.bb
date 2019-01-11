@@ -55,7 +55,8 @@ AutocompleteHistoryManagerFactory::BuildServiceInstanceFor(
   auto autofill_db =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  service->Init(autofill_db, chrome_browser_state->IsOffTheRecord());
+  service->Init(autofill_db, chrome_browser_state->GetPrefs(),
+                chrome_browser_state->IsOffTheRecord());
   return service;
 }
 

@@ -1183,8 +1183,12 @@ class AutofillMetrics {
   // Log the index of the selected Autocomplete suggestion in the popup.
   static void LogAutocompleteSuggestionAcceptedIndex(int index);
 
-  // Log the fact that a autocomplete popup was shown.
+  // Log the fact that an autocomplete popup was shown.
   static void OnAutocompleteSuggestionsShown();
+
+  // Log the number of autocomplete entries that were cleaned-up as a result
+  // of the Autocomplete Retention Policy.
+  static void LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries);
 
   // Log how many autofilled fields in a given form were edited before the
   // submission or when the user unfocused the form (depending on
