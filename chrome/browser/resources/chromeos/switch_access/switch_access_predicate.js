@@ -15,6 +15,7 @@ const GROUP_INTERESTING_CHILD_THRESHOLD = 2;
  *    - isGroup
  *    - isInteresting
  *    - isInterestingSubtree
+ *    - isTextInput
  *    - isNotContainer
  *    - isContextMenu
  *
@@ -62,7 +63,7 @@ const SwitchAccessPredicate = {
     if (role === RoleType.BUTTON)
       return true;
 
-    if (node.inputType && node.inputType !== 'full-page')
+    if (SwitchAccessPredicate.isTextInput(node))
       return true;
 
     if (defaultActionVerb &&
@@ -144,6 +145,13 @@ const SwitchAccessPredicate = {
    */
   isInterestingSubtree: (node) => SwitchAccessPredicate.isActionable(node) ||
       node.children.some(SwitchAccessPredicate.isInterestingSubtree),
+
+  /**
+   * Returns true if |node| is an element that contains editable text.
+   * @param {!chrome.automation.AutomationNode} node
+   * @return {boolean}
+   */
+  isTextInput: (node) => !!node.state[StateType.EDITABLE],
 
   /**
    * Returns true if |node| does not have a role of desktop, window, web view,

@@ -190,15 +190,29 @@ class ContextMenuManager {
   /**
    * Determines which menu actions are relevant, given the current node.
    * @param {!chrome.automation.AutomationNode} node
+   * @return {!Array<ContextMenuManager.Action>}
    * @private
    */
   getActionsForNode_(node) {
-    // TODO(crbug/881080): determine relevant actions programmatically.
-    let actions = [
-      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.DICTATION,
-      ContextMenuManager.Action.OPTIONS, ContextMenuManager.Action.SCROLL_UP,
-      ContextMenuManager.Action.SCROLL_DOWN
-    ];
+    let actions =
+        [ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS];
+
+    if (SwitchAccessPredicate.isTextInput(node))
+      actions.push(ContextMenuManager.Action.DICTATION);
+
+    if (node.scrollable) {
+      // TODO(crbug/920659) This does not work for ARC++. Implement scroll
+      // directions via standardActions.
+      if (node.scrollX > node.scrollXMin)
+        actions.push(ContextMenuManager.Action.SCROLL_LEFT);
+      if (node.scrollX < node.scrollXMax)
+        actions.push(ContextMenuManager.Action.SCROLL_RIGHT);
+      if (node.scrollY > node.scrollYMin)
+        actions.push(ContextMenuManager.Action.SCROLL_UP);
+      if (node.scrollY < node.scrollYMax)
+        actions.push(ContextMenuManager.Action.SCROLL_DOWN);
+    }
+
     return actions;
   }
 
