@@ -28,12 +28,12 @@
         font-weight: 500;
         margin: 0;
         margin-bottom: 48px;
+        outline: none;
       }
     </style>
-
     <div class="apps-ask">
       <div class="chrome-logo" alt=""></div>
-      <h1>$i18n{googleAppsDescription}</h1>
+      <h1 tabindex="-1">$i18n{googleAppsDescription}</h1>
       <app-chooser id="appChooser" indicator-model="[[indicatorModel]]">
       </app-chooser>
     </div>
