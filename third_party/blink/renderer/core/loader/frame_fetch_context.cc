@@ -225,7 +225,15 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
                             MainResourceType::kIsNotMainResource, load_type);
 }
 
-FetchClientSettingsObject& CreateFetchClientSettingsObjectForNavigation() {
+FetchClientSettingsObject& CreateFetchClientSettingsObject(
+    FrameOrImportedDocument& frame_or_imported_document) {
+  if (frame_or_imported_document.GetDocument()) {
+    // HTML imports case
+    DCHECK(!frame_or_imported_document.GetDocumentLoader());
+    return *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+        *frame_or_imported_document.GetDocument());
+  }
+
   // This FetchClientSettingsObject can be used only for navigation, as
   // at the creation of the corresponding Document a new
   // FetchClientSettingsObject is set.
@@ -305,10 +313,16 @@ struct FrameFetchContext::FrozenState final
 
 ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
   DCHECK(loader);
-  LocalFrame* frame = loader->GetFrame();
+  auto* frame_or_imported_document =
+      MakeGarbageCollected<FrameOrImportedDocument>(*loader);
+  LocalFrame& frame = frame_or_imported_document->GetFrame();
   ResourceFetcherInit init(
-      *MakeGarbageCollected<FrameResourceFetcherProperties>(frame),
-      MakeGarbageCollected<FrameFetchContext>(loader), frame->Console());
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          *frame_or_imported_document),
+      MakeGarbageCollected<FrameFetchContext>(
+          frame.GetTaskRunner(TaskType::kNetworking),
+          *frame_or_imported_document),
+      frame.Console());
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -318,8 +332,8 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
   // in multiple processes. In that case, which process should parse it and how
   // should the output be spread back across multiple processes?
   if (!init.properties->IsMainFrame() &&
-      frame->Tree().Parent()->IsLocalFrame()) {
-    init.archive = ToLocalFrame(frame->Tree().Parent())
+      frame.Tree().Parent()->IsLocalFrame()) {
+    init.archive = ToLocalFrame(frame.Tree().Parent())
                        ->Loader()
                        .GetDocumentLoader()
                        ->Fetcher()
@@ -333,31 +347,27 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   DCHECK(document);
   // |document| is detached.
   DCHECK(!document->GetFrame());
-  LocalFrame* frame = document->ImportsController()->Master()->GetFrame();
+  auto* frame_or_imported_document =
+      MakeGarbageCollected<FrameOrImportedDocument>(*document);
   ResourceFetcherInit init(
-      *MakeGarbageCollected<FrameResourceFetcherProperties>(frame),
-      MakeGarbageCollected<FrameFetchContext>(document), frame->Console());
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          *frame_or_imported_document),
+      MakeGarbageCollected<FrameFetchContext>(
+          document->GetTaskRunner(blink::TaskType::kNetworking),
+          *frame_or_imported_document),
+      frame_or_imported_document->GetFrame().Console());
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
-FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
+FrameFetchContext::FrameFetchContext(
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+    FrameOrImportedDocument& frame_or_imported_document)
     : BaseFetchContext(
-          loader->GetFrame()->GetTaskRunner(blink::TaskType::kNetworking),
-          CreateFetchClientSettingsObjectForNavigation()),
-      frame_or_imported_document_(
-          *MakeGarbageCollected<FrameOrImportedDocument>(*loader)),
+          loading_task_runner,
+          CreateFetchClientSettingsObject(frame_or_imported_document)),
+      frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {}
-
-FrameFetchContext::FrameFetchContext(Document* document)
-    : BaseFetchContext(
-          document->GetTaskRunner(blink::TaskType::kNetworking),
-          *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document)),
-      frame_or_imported_document_(
-          *MakeGarbageCollected<FrameOrImportedDocument>(*document)),
-      save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
-                         !GetSettings()->GetDataSaverHoldbackWebApi()) {}
-
 void FrameFetchContext::ProvideDocumentToContext(Document* document) {
   DCHECK(document);
   frame_or_imported_document_->UpdateDocument(*document);

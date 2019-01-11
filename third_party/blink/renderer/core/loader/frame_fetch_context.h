@@ -72,8 +72,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void ProvideDocumentToContext(Document*);
 
-  explicit FrameFetchContext(DocumentLoader*);
-  explicit FrameFetchContext(Document*);
+  FrameFetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      FrameOrImportedDocument&);
   ~FrameFetchContext() override = default;
 
   bool IsFrameFetchContext() const override { return true; }

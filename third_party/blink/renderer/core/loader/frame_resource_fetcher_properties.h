@@ -10,14 +10,13 @@
 
 namespace blink {
 
-class LocalFrame;
+class FrameOrImportedDocument;
 
 // FrameResourceFetcherProperties is a ResourceFetcherProperties implementation
 // for Frame.
 class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
  public:
-  // |frame| must not be null.
-  explicit FrameResourceFetcherProperties(LocalFrame* frame);
+  explicit FrameResourceFetcherProperties(FrameOrImportedDocument&);
   ~FrameResourceFetcherProperties() override = default;
 
   void Trace(Visitor*) override;
@@ -26,7 +25,7 @@ class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
   bool IsMainFrame() const override;
 
  private:
-  const Member<LocalFrame> frame_;
+  const Member<FrameOrImportedDocument> frame_or_imported_document_;
 };
 
 }  // namespace blink

@@ -5,22 +5,21 @@
 #include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
 
 namespace blink {
 
 FrameResourceFetcherProperties::FrameResourceFetcherProperties(
-    LocalFrame* frame)
-    : frame_(frame) {
-  DCHECK(frame);
-}
+    FrameOrImportedDocument& frame_or_imported_document)
+    : frame_or_imported_document_(frame_or_imported_document) {}
 
 void FrameResourceFetcherProperties::Trace(Visitor* visitor) {
-  visitor->Trace(frame_);
+  visitor->Trace(frame_or_imported_document_);
   ResourceFetcherProperties::Trace(visitor);
 }
 
 bool FrameResourceFetcherProperties::IsMainFrame() const {
-  return frame_->IsMainFrame();
+  return frame_or_imported_document_->GetFrame().IsMainFrame();
 }
 
 }  // namespace blink
