@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace web_app {
@@ -42,6 +43,12 @@ KeyedService* WebAppMetricsFactory::BuildServiceInstanceFor(
 
 bool WebAppMetricsFactory::ServiceIsCreatedWithBrowserContext() const {
   return false;
+}
+
+content::BrowserContext* WebAppMetricsFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return AllowWebAppInstallation(profile) ? context : nullptr;
 }
 
 }  //  namespace web_app
