@@ -49,8 +49,7 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
                      int error_code) override;
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
-  bool OnAddMessageToConsoleReceived(content::WebContents* source,
-                                     int32_t level,
+  bool OnAddMessageToConsoleReceived(int32_t level,
                                      const base::string16& message,
                                      int32_t line_no,
                                      const base::string16& source_id) override;

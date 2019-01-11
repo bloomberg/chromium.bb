@@ -374,6 +374,7 @@ cast_source_set("public") {
   sources = [
     "cast_content_window.cc",
     "cast_content_window.h",
+    "cast_web_contents.cc",
     "cast_web_contents.h",
     "cast_web_view.cc",
     "cast_web_view.h",
@@ -381,6 +382,7 @@ cast_source_set("public") {
 
   # Need to expose this so that internal public_configs are propagated.
   public_deps = [
+    "//chromecast/common/mojom",
     "//content/public/browser",
   ]
 

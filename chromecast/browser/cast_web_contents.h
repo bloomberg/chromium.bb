@@ -5,6 +5,11 @@
 #ifndef CHROMECAST_BROWSER_CAST_WEB_CONTENTS_H_
 #define CHROMECAST_BROWSER_CAST_WEB_CONTENTS_H_
 
+#include <string>
+#include <vector>
+
+#include "base/observer_list.h"
+#include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -35,8 +40,40 @@ class CastWebContents {
     virtual void OnPageStopped(CastWebContents* cast_web_contents,
                                int error_code) = 0;
 
+    // Collects the set of delegate-specific renderer features that needs to be
+    // configured when `CastWebContents::RenderFrameCreated` is invoked.
+    virtual std::vector<chromecast::shell::mojom::FeaturePtr>
+    GetRendererFeatures();
+
    protected:
     virtual ~Delegate() {}
+  };
+
+  class Observer {
+   public:
+    Observer();
+
+    virtual void RenderFrameCreated(int render_process_id,
+                                    int render_frame_id) {}
+    virtual void OnInterfaceRequestFromFrame(
+        const std::string& interface_name,
+        mojo::ScopedMessagePipeHandle* interface_pipe) {}
+
+    // Adds |this| to the ObserverList in the implementation of
+    // |cast_web_contents|.
+    void Observe(CastWebContents* cast_web_contents);
+
+    // Removes |this| from the ObserverList in the implementation of
+    // |cast_web_contents_|. This is only invoked by CastWebContents and is used
+    // to ensure that once the observed CastWebContents object is destructed the
+    // CastWebContents::Observer does not invoke any additional function calls
+    // on it.
+    void ResetCastWebContents();
+
+   protected:
+    virtual ~Observer();
+
+    CastWebContents* cast_web_contents_;
   };
 
   // Page state for the main frame.
@@ -71,6 +108,15 @@ class CastWebContents {
 
   // Set the delegate. SetDelegate(nullptr) can be used to stop notifications.
   virtual void SetDelegate(Delegate* delegate) = 0;
+
+  virtual void AllowWebAndMojoWebUiBindings() = 0;
+  virtual void ClearRenderWidgetHostView() = 0;
+
+  // Used to add or remove |observer| to the ObserverList in the implementation.
+  // These functions should only be invoked by CastWebContents::Observer in a
+  // valid sequence, enforced via SequenceChecker.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastWebContents);

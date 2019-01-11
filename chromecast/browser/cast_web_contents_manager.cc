@@ -18,6 +18,7 @@
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -48,6 +49,17 @@ std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return web_view_factory_->CreateWebView(
       params, this, std::move(site_instance), extension, initial_url);
+}
+
+std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
+    const CastWebView::CreateParams& params,
+    const extensions::Extension* extension,
+    const GURL& initial_url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return web_view_factory_->CreateWebView(
+      params, this,
+      content::SiteInstance::CreateForURL(browser_context_, initial_url),
+      extension, initial_url);
 }
 
 void CastWebContentsManager::DelayWebContentsDeletion(

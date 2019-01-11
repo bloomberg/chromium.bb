@@ -10,7 +10,12 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/bindings_policy.h"
 #include "net/base/net_errors.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -47,6 +52,10 @@ CastWebContentsImpl::CastWebContentsImpl(
 CastWebContentsImpl::~CastWebContentsImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DisableDebugging();
+
+  for (auto& observer : observer_list_) {
+    observer.ResetCastWebContents();
+  }
 }
 
 content::WebContents* CastWebContentsImpl::web_contents() const {
@@ -119,6 +128,41 @@ void CastWebContentsImpl::SetDelegate(CastWebContents::Delegate* delegate) {
   delegate_ = delegate;
 }
 
+void CastWebContentsImpl::AllowWebAndMojoWebUiBindings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  DCHECK(rvh);
+  rvh->GetMainFrame()->AllowBindings(content::BINDINGS_POLICY_WEB_UI |
+                                     content::BINDINGS_POLICY_MOJO_WEB_UI);
+}
+
+// Set background to transparent before making the view visible. This is in
+// case Chrome dev tools was opened and caused background color to be reset.
+// Note: we also have to set color to black first, because
+// RenderWidgetHostViewBase::SetBackgroundColor ignores setting color to
+// current color, and it isn't aware that dev tools has changed the color.
+void CastWebContentsImpl::ClearRenderWidgetHostView() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  content::RenderWidgetHostView* view =
+      web_contents_->GetRenderWidgetHostView();
+  if (view) {
+    view->SetBackgroundColor(SK_ColorBLACK);
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  }
+}
+
+void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(observer);
+  observer_list_.AddObserver(observer);
+}
+
+void CastWebContentsImpl::RemoveObserver(CastWebContents::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(observer);
+  observer_list_.RemoveObserver(observer);
+}
+
 void CastWebContentsImpl::OnClosePageTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!closing_ || stopped_) {
@@ -126,6 +170,43 @@ void CastWebContentsImpl::OnClosePageTimeout() {
   }
   closing_ = false;
   Stop(net::OK);
+}
+
+void CastWebContentsImpl::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(render_frame_host);
+
+  // New render frame has been created, we need to add it to the app
+  // whitelisting session so URL requests are handled correctly. This must be
+  // done before URL requests are executed within render frame.
+  auto* process = render_frame_host->GetProcess();
+  const int render_process_id = process->GetID();
+  const int render_frame_id = render_frame_host->GetRoutingID();
+
+  for (Observer& observer : observer_list_) {
+    observer.RenderFrameCreated(render_process_id, render_frame_id);
+  }
+
+  // Only the root frame should receive feature configuration messages.
+  if (render_frame_host->GetParent()) {
+    return;
+  }
+
+  chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(&feature_manager_ptr);
+  feature_manager_ptr->ConfigureFeatures(delegate_->GetRendererFeatures());
+}
+
+void CastWebContentsImpl::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* /* render_frame_host */,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (Observer& observer : observer_list_) {
+    observer.OnInterfaceRequestFromFrame(interface_name, interface_pipe);
+  }
 }
 
 void CastWebContentsImpl::RenderProcessGone(base::TerminationStatus status) {

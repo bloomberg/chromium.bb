@@ -107,6 +107,10 @@ content::WebContents* CastWebViewDefault::web_contents() const {
   return web_contents_.get();
 }
 
+CastWebContents* CastWebViewDefault::cast_web_contents() {
+  return &cast_web_contents_;
+}
+
 void CastWebViewDefault::LoadUrl(GURL url) {
   web_contents_->GetController().LoadURL(url, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED, "");
@@ -191,8 +195,8 @@ bool CastWebViewDefault::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  return delegate_->OnAddMessageToConsoleReceived(source, level, message,
-                                                  line_no, source_id);
+  return delegate_->OnAddMessageToConsoleReceived(level, message, line_no,
+                                                  source_id);
 }
 
 const content::MediaStreamDevice* GetRequestedDeviceOrDefault(

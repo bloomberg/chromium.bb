@@ -44,6 +44,7 @@ class CastWebViewExtension : public CastWebView,
   shell::CastContentWindow* window() const override;
 
   content::WebContents* web_contents() const override;
+  CastWebContents* cast_web_contents() override;
 
   // CastWebView implementation:
   void LoadUrl(GURL url) override;

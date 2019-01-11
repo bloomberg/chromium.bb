@@ -83,8 +83,8 @@ bool CastExtensionHost::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  return delegate_->OnAddMessageToConsoleReceived(source, level, message,
-                                                  line_no, source_id);
+  return delegate_->OnAddMessageToConsoleReceived(level, message, line_no,
+                                                  source_id);
 }
 
 void CastExtensionHost::Observe(int type,

@@ -44,6 +44,7 @@ class CastWebViewDefault : public CastWebView,
   // CastWebView implementation:
   shell::CastContentWindow* window() const override;
   content::WebContents* web_contents() const override;
+  CastWebContents* cast_web_contents() override;
   void LoadUrl(GURL url) override;
   void ClosePage(const base::TimeDelta& shutdown_delay) override;
   void InitializeWindow(CastWindowManager* window_manager,
