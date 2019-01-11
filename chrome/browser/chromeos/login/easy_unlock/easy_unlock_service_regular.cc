@@ -138,17 +138,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  // TODO(crbug.com/894585): Remove this legacy special case after M71.
-  bool is_in_legacy_host_mode = IsInLegacyHostMode();
-  pref_manager_->SetIsInLegacyHostMode(is_in_legacy_host_mode);
-
-  bool is_in_valid_legacy_host_state =
-      is_in_legacy_host_mode &&
-      feature_state_ ==
-          multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
   if (feature_state_ !=
-          multidevice_setup::mojom::FeatureState::kEnabledByUser &&
-      !is_in_valid_legacy_host_state) {
+      multidevice_setup::mojom::FeatureState::kEnabledByUser) {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
     PA_LOG(VERBOSE) << "Smart Lock is disabled; aborting.";
@@ -420,51 +411,12 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
-  // TODO(crbug.com/894585): Remove the legacy special case after M71.
-  if (!IsInLegacyHostMode()) {
-    return feature_state_ ==
-           multidevice_setup::mojom::FeatureState::kEnabledByUser;
-  }
-
-  return pref_manager_ && pref_manager_->IsEasyUnlockEnabled();
+  return feature_state_ ==
+         multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
 bool EasyUnlockServiceRegular::IsChromeOSLoginEnabled() const {
   return pref_manager_ && pref_manager_->IsChromeOSLoginEnabled();
-}
-
-bool EasyUnlockServiceRegular::IsInLegacyHostMode() const {
-  if (!device_sync_client_->is_ready()) {
-    PA_LOG(WARNING) << "EasyUnlockServiceRegular::IsInLegacyHostMode: "
-                    << "DeviceSyncClient not ready. Returning false.";
-    return false;
-  }
-
-  bool has_supported_easy_unlock_host = false;
-  for (const multidevice::RemoteDeviceRef& remote_device_ref :
-       device_sync_client_->GetSyncedDevices()) {
-    multidevice::SoftwareFeatureState better_together_host_state =
-        remote_device_ref.GetSoftwareFeatureState(
-            multidevice::SoftwareFeature::kBetterTogetherHost);
-    // If there's any valid Better Together host, don't support legacy mode.
-    if (better_together_host_state ==
-            multidevice::SoftwareFeatureState::kSupported ||
-        better_together_host_state ==
-            multidevice::SoftwareFeatureState::kEnabled) {
-      return false;
-    }
-
-    multidevice::SoftwareFeatureState easy_unlock_host_state =
-        remote_device_ref.GetSoftwareFeatureState(
-            multidevice::SoftwareFeature::kSmartLockHost);
-    if (easy_unlock_host_state ==
-            multidevice::SoftwareFeatureState::kSupported ||
-        easy_unlock_host_state == multidevice::SoftwareFeatureState::kEnabled) {
-      has_supported_easy_unlock_host = true;
-    }
-  }
-
-  return has_supported_easy_unlock_host;
 }
 
 void EasyUnlockServiceRegular::OnSuspendDoneInternal() {
@@ -509,29 +461,15 @@ void EasyUnlockServiceRegular::OnNewDevicesSynced() {
 void EasyUnlockServiceRegular::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
-  // TODO(crbug.com/894585): Remove after M71.
-  bool is_in_legacy_host_mode = IsInLegacyHostMode();
-  if (pref_manager_)
-    pref_manager_->SetIsInLegacyHostMode(is_in_legacy_host_mode);
-
   const auto it =
       feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
   if (it == feature_states_map.end()) {
     feature_state_ =
         multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
-    if (!is_in_legacy_host_mode)
-      return;
-  } else {
-    feature_state_ = it->second;
+    return;
   }
 
-  // Note: In order to properly start the EasyUnlock app when MultiDeviceSetup
-  // is enabled, we must ensure that UpdateAppState() gets called when the
-  // EasyUnlock feature-state changes from kProhibitedByPolicy to
-  // kUnavailableNoVerifiedHost.
-  if (is_in_legacy_host_mode)
-    UpdateAppState();
-
+  feature_state_ = it->second;
   LoadRemoteDevices();
 }
 

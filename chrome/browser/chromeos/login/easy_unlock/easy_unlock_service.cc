@@ -272,10 +272,6 @@ bool EasyUnlockService::IsChromeOSLoginEnabled() const {
   return false;
 }
 
-bool EasyUnlockService::IsInLegacyHostMode() const {
-  return false;
-}
-
 void EasyUnlockService::SetHardlockState(
     EasyUnlockScreenlockStateHandler::HardlockState state) {
   const AccountId& account_id = GetAccountId();
