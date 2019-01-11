@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.support.annotation.StringDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,6 +23,11 @@ public final class ModuleMetrics {
     private ModuleMetrics() {}
 
     private static final String TAG = "ModuleMetrics";
+
+    /**
+     * The name of the synthetic field trial for registering the module lifecycle state.
+     */
+    private static final String LIFECYCLE_STATE_TRIAL_NAME = "CCTModuleLifecycleState";
 
     /**
      * Possible results when loading a dynamic module. Keep in sync with the
@@ -136,5 +143,26 @@ public final class ModuleMetrics {
         RecordHistogram.recordMediumTimesHistogram(
                 "CustomTabs.DynamicModule.EntryPointInitTime", now() - startTime,
                 TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Possible lifecycle states for a dynamic module.
+     */
+    @StringDef({LifecycleState.NOT_LOADED, LifecycleState.INSTANTIATED, LifecycleState.DESTROYED})
+    public @interface LifecycleState {
+        /** The module has not yet been loaded. */
+        String NOT_LOADED = "NotLoaded";
+        /** The module has been loaded and instantiated. */
+        String INSTANTIATED = "Instantiated";
+        /** The module instance has been destroyed. */
+        String DESTROYED = "Destroyed";
+    }
+
+    /**
+     * Registers the module lifecycle state in a synthetic field trial.
+     * @param state The module lifecycle state.
+     */
+    public static void registerLifecycleState(@LifecycleState String state) {
+        UmaSessionStats.registerSyntheticFieldTrial(LIFECYCLE_STATE_TRIAL_NAME, state);
     }
 }
