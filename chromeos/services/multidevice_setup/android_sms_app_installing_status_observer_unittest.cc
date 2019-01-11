@@ -45,7 +45,7 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
     SetMessagesFeatureState(mojom::FeatureState::kEnabledByUser);
     SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
     fake_app_helper_delegate()->Reset();
-    EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+    EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   }
 
   void SetHostWithStatus(
@@ -85,112 +85,112 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        InstallsAfterHostPending) {
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(
       mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation,
       GetFakePhone());
-  EXPECT_TRUE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_TRUE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        InstallsAfterHostVerified) {
   SetHostWithStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
-  EXPECT_TRUE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_TRUE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallsAfterHostVerifiedIfNotAllowed) {
   SetMessagesFeatureState(mojom::FeatureState::kProhibitedByPolicy);
   fake_app_helper_delegate()->Reset();
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallsAfterHostVerifiedIfNotSupportedByPhone) {
   SetMessagesFeatureState(mojom::FeatureState::kNotSupportedByPhone);
   fake_app_helper_delegate()->Reset();
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallsAfterHostVerifiedIfNotSupportedByChromebook) {
   SetMessagesFeatureState(mojom::FeatureState::kNotSupportedByChromebook);
   fake_app_helper_delegate()->Reset();
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 
   SetHostWithStatus(mojom::HostStatus::kHostVerified, GetFakePhone());
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        InstallsWhenFeatureBecomesEnabled) {
   SetMessagesFeatureState(mojom::FeatureState::kNotSupportedByChromebook);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   SetMessagesFeatureState(mojom::FeatureState::kEnabledByUser);
-  EXPECT_TRUE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_TRUE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        CleansUpPwaInstallationWhenDisabled) {
   SetMessagesFeatureState(mojom::FeatureState::kNotSupportedByChromebook);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   SetMessagesFeatureState(mojom::FeatureState::kEnabledByUser);
-  EXPECT_TRUE(fake_app_helper_delegate()->HasInstalledApp());
-  EXPECT_TRUE(fake_app_helper_delegate()->IsDefaultToPersistCookieSet());
+  EXPECT_TRUE(fake_app_helper_delegate()->has_installed_app());
+  EXPECT_TRUE(fake_app_helper_delegate()->is_default_to_persist_cookie_set());
 
   SetMessagesFeatureState(mojom::FeatureState::kDisabledByUser);
-  EXPECT_TRUE(fake_app_helper_delegate()->HasInstalledApp());
-  EXPECT_FALSE(fake_app_helper_delegate()->IsDefaultToPersistCookieSet());
+  EXPECT_TRUE(fake_app_helper_delegate()->has_installed_app());
+  EXPECT_FALSE(fake_app_helper_delegate()->is_default_to_persist_cookie_set());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallWhenFeatureIsDisabledByUser) {
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   SetMessagesFeatureState(mojom::FeatureState::kDisabledByUser);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallWhenSuiteIsDisabledByUser) {
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   SetMessagesFeatureState(mojom::FeatureState::kUnavailableSuiteDisabled);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 TEST_F(MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest,
        DoesNotInstallIfNotVerified) {
   SetHostWithStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* host_device */);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
   SetMessagesFeatureState(mojom::FeatureState::kUnavailableNoVerifiedHost);
-  EXPECT_FALSE(fake_app_helper_delegate()->HasInstalledApp());
+  EXPECT_FALSE(fake_app_helper_delegate()->has_installed_app());
 }
 
 }  // namespace multidevice_setup

@@ -328,11 +328,11 @@ TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
 }
 
 TEST_F(MultideviceHandlerTest, SetUpAndroidSms) {
-  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->HasInstalledApp());
-  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
+  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->has_installed_app());
+  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->has_launched_app());
   CallSetUpAndroidSms();
-  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasInstalledApp());
-  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
+  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->has_installed_app());
+  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->has_launched_app());
 }
 
 TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {
