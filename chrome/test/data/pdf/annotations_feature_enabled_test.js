@@ -233,6 +233,19 @@ chrome.test.runTests([
       ]);
     });
   },
+  function testPreventDefaultTouchStart() {
+    testAsync(async () => {
+      chrome.test.assertTrue(isAnnotationMode());
+      const inkHost = contentElement();
+      let called = false;
+      inkHost.onTouchStart_({
+        preventDefault() {
+          called = true;
+        }
+      });
+      chrome.test.assertTrue(called);
+    });
+  },
   function testExitAnnotationMode() {
     testAsync(async () => {
       chrome.test.assertTrue(isAnnotationMode());
