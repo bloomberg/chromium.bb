@@ -52,6 +52,10 @@
 
 namespace {
 
+// The color of the letter drawn for a fallback icon.  Changing this may require
+// changing the algorithm in RenderIconBitmap() that guarantees contrast.
+constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
+
 // Delimiter in the url that looks for the size specification.
 const char kSizeParameter[] = "size/";
 
@@ -168,7 +172,7 @@ void DrawFallbackIconLetter(const GURL& icon_url,
       icon_text,
       gfx::FontList({l10n_util::GetStringUTF8(IDS_NTP_FONT_FAMILY)},
                     gfx::Font::NORMAL, font_size, font_weight),
-      SK_ColorWHITE, gfx::Rect(0, 0, size, size),
+      kFallbackIconLetterColor, gfx::Rect(0, 0, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
 
@@ -214,12 +218,8 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
 
   // If necessary, draw the colored fallback monogram.
   if (favicon.empty()) {
-    SkColor fallback_color = GetBackgroundColorForUrl(icon_url);
-    // If luminance is too high, the white text will become unreadable. Invert
-    // the background color to achieve better contrast. The constant comes from
-    // W3C Accessibility standards.
-    if (color_utils::GetRelativeLuminance(fallback_color) > 0.179f)
-      fallback_color = color_utils::InvertColor(fallback_color);
+    SkColor fallback_color = color_utils::GetColorWithMinimumContrast(
+        GetBackgroundColorForUrl(icon_url), kFallbackIconLetterColor);
 
     int offset = (icon_size - fallback_size) / 2;
     DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
