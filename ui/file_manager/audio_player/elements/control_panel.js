@@ -64,7 +64,6 @@ var AriaLabels;
       time: {
         type: Number,
         value: 0,
-        notify: true,
       },
 
       /**
@@ -140,7 +139,7 @@ var AriaLabels;
     ready: function() {
       var timeSlider = /** @type {!CrSliderElement} */ (this.$.timeSlider);
       timeSlider.addEventListener('cr-slider-value-changed', () => {
-        this.time = timeSlider.value;
+        this.fire('update-time', timeSlider.value);
       });
 
       var volumeSlider = /** @type {!CrSliderElement} */ (this.$.volumeSlider);
@@ -208,7 +207,9 @@ var AriaLabels;
       var percentOfDuration = (small ? .1 : .2) * this.duration;
       var update = (forward ? 1 : -1) * Math.min(maxSkip, percentOfDuration);
       if (this.duration > 0) {
-        this.time = Math.max(Math.min(this.time + update, this.duration), 0);
+        this.fire(
+            'update-time',
+            Math.max(Math.min(this.time + update, this.duration), 0));
       }
     },
 
