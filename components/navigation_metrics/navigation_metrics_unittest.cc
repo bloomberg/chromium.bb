@@ -5,6 +5,7 @@
 #include "components/navigation_metrics/navigation_metrics.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -16,7 +17,7 @@ const char* const kMainFrameSchemeDifferentPage =
 const char* const kMainFrameSchemeOTR = "Navigation.MainFrameSchemeOTR";
 const char* const kMainFrameSchemeDifferentPageOTR =
     "Navigation.MainFrameSchemeDifferentPageOTR";
-
+const char* const kPageLoadInIncognito = "PageLoadInIncognito";
 }  // namespace
 
 namespace navigation_metrics {
@@ -48,6 +49,7 @@ TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
 
 TEST(NavigationMetrics, MainFrameSchemeDifferentDocumentOTR) {
   base::HistogramTester test;
+  base::UserActionTester user_action_tester;
 
   RecordMainFrameNavigation(GURL(kTestUrl), false, true);
 
@@ -59,6 +61,7 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentDocumentOTR) {
   test.ExpectUniqueSample(kMainFrameSchemeOTR, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 1);
   test.ExpectUniqueSample(kMainFrameSchemeDifferentPageOTR, 1 /* http */, 1);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPageLoadInIncognito));
 }
 
 TEST(NavigationMetrics, MainFrameSchemeSameDocumentOTR) {
