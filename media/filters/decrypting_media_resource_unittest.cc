@@ -123,8 +123,7 @@ class DecryptingMediaResourceTest : public testing::Test {
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
 };
 
-TEST_F(DecryptingMediaResourceTest,
-       CreatesDecryptingDemuxerStreamForClearStreams) {
+TEST_F(DecryptingMediaResourceTest, ClearStreams) {
   AddStream(DemuxerStream::AUDIO, /* encrypted = */ false);
   AddStream(DemuxerStream::VIDEO, /* encrypted = */ false);
 
@@ -139,8 +138,7 @@ TEST_F(DecryptingMediaResourceTest,
   EXPECT_FALSE(HasEncryptedStream());
 }
 
-TEST_F(DecryptingMediaResourceTest,
-       CreatesDecryptingDemuxerStreamForEncryptedStreams) {
+TEST_F(DecryptingMediaResourceTest, EncryptedStreams) {
   AddStream(DemuxerStream::AUDIO, /* encrypted = */ true);
   AddStream(DemuxerStream::VIDEO, /* encrypted = */ true);
 
@@ -161,8 +159,7 @@ TEST_F(DecryptingMediaResourceTest,
   EXPECT_FALSE(HasEncryptedStream());
 }
 
-TEST_F(DecryptingMediaResourceTest,
-       CreatesDecryptingDemuxerStreamForMixedStreams) {
+TEST_F(DecryptingMediaResourceTest, MixedStreams) {
   AddStream(DemuxerStream::AUDIO, /* encrypted = */ false);
   AddStream(DemuxerStream::VIDEO, /* encrypted = */ true);
 
@@ -210,8 +207,7 @@ TEST_F(DecryptingMediaResourceTest,
   scoped_task_environment_.RunUntilIdle();
 }
 
-TEST_F(DecryptingMediaResourceTest,
-       DecryptingDemuxerStreamInvokesWaitingCallback) {
+TEST_F(DecryptingMediaResourceTest, WaitingCallback) {
   AddStream(DemuxerStream::VIDEO, /* encrypted = */ true);
 
   EXPECT_CALL(*streams_.front(), Read(_))
