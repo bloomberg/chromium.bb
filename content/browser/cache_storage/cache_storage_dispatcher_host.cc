@@ -170,6 +170,23 @@ class CacheStorageDispatcherHost::CacheImpl
                        mojo::GetBadMessageCallback()));
   }
 
+  void SetSideData(const GURL& url,
+                   base::Time response_time,
+                   const std::vector<uint8_t>& side_data,
+                   SetSideDataCallback callback) override {
+    content::CacheStorageCache* cache = cache_handle_.value();
+    if (!cache) {
+      std::move(callback).Run(blink::mojom::CacheStorageError::kErrorNotFound);
+      return;
+    }
+    scoped_refptr<net::IOBuffer> buffer =
+        base::MakeRefCounted<net::IOBuffer>(side_data.size());
+    if (!side_data.empty())
+      memcpy(buffer->data(), &side_data.front(), side_data.size());
+    cache->WriteSideData(std::move(callback), url, response_time,
+                         std::move(buffer), side_data.size());
+  }
+
   void OnCacheBatchCallback(
       blink::mojom::CacheStorageCache::BatchCallback callback,
       blink::mojom::CacheStorageVerboseErrorPtr error) {

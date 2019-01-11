@@ -6,9 +6,12 @@
 
 #include <memory>
 #include <utility>
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -38,6 +41,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
 
@@ -61,21 +65,40 @@ bool VaryHeaderContainsAsterisk(const Response* response) {
   return false;
 }
 
-bool ShouldGenerateV8CodeCache(ScriptState* script_state,
-                               const Response* response) {
+enum class CodeCacheGenerateTiming {
+  kDontGenerate,
+  kGenerateNow,
+  kGenerateWhenIdle,
+};
+
+CodeCacheGenerateTiming ShouldGenerateV8CodeCache(ScriptState* script_state,
+                                                  const Response* response) {
+  EagerCodeCacheStrategy strategy =
+      ServiceWorkerUtils::GetEagerCodeCacheStrategy();
+  if (strategy == EagerCodeCacheStrategy::kDontGenerate)
+    return CodeCacheGenerateTiming::kDontGenerate;
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
   if (!global_scope)
-    return false;
-  if (!global_scope->IsInstalling())
-    return false;
+    return CodeCacheGenerateTiming::kDontGenerate;
+
   if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           response->InternalMIMEType())) {
-    return false;
+    return CodeCacheGenerateTiming::kDontGenerate;
   }
+
   if (!response->InternalBodyBuffer())
-    return false;
-  return true;
+    return CodeCacheGenerateTiming::kDontGenerate;
+
+  if (global_scope->IsInstalling())
+    return CodeCacheGenerateTiming::kGenerateNow;
+
+  if (strategy == EagerCodeCacheStrategy::kOnIdleTask) {
+    return CodeCacheGenerateTiming::kGenerateWhenIdle;
+  }
+
+  return CodeCacheGenerateTiming::kDontGenerate;
 }
 
 }  // namespace
@@ -362,20 +385,30 @@ class Cache::CodeCacheHandleCallbackForPut final
 
  public:
   CodeCacheHandleCallbackForPut(ScriptState* script_state,
+                                Cache* cache,
                                 wtf_size_t index,
                                 BarrierCallbackForPut* barrier_callback,
                                 Request* request,
-                                Response* response)
+                                Response* response,
+                                CodeCacheGenerateTiming timing)
       : script_state_(script_state),
+        cache_(cache),
         index_(index),
         barrier_callback_(barrier_callback),
-        mime_type_(response->InternalMIMEType()) {
+        mime_type_(response->InternalMIMEType()),
+        timing_(timing) {
     fetch_api_request_ = request->CreateFetchAPIRequest();
     fetch_api_response_ = response->PopulateFetchAPIResponse();
+    url_ = fetch_api_request_->url;
+    opaque_mode_ = fetch_api_response_->response_type ==
+                           network::mojom::FetchResponseType::kOpaque
+                       ? V8CodeCache::OpaqueMode::kOpaque
+                       : V8CodeCache::OpaqueMode::kNotOpaque;
   }
   ~CodeCacheHandleCallbackForPut() override = default;
 
   void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
+    base::Time response_time = fetch_api_response_->response_time;
     mojom::blink::BatchOperationPtr batch_operation =
         mojom::blink::BatchOperation::New();
     batch_operation->operation_type = mojom::blink::OperationType::kPut;
@@ -388,34 +421,33 @@ class Cache::CodeCacheHandleCallbackForPut final
     batch_operation->response->blob = BlobDataHandle::Create(
         std::move(blob_data), array_buffer->ByteLength());
 
-    // Currently we only support UTF8 encoding.
-    // TODO(horo): Use the charset in Content-type header of the response.
-    // See crbug.com/743311.
-    std::unique_ptr<TextResourceDecoder> text_decoder =
-        TextResourceDecoder::Create(
-            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+    if (timing_ == CodeCacheGenerateTiming::kGenerateNow) {
+      scoped_refptr<CachedMetadata> cached_metadata =
+          GenerateFullCodeCache(array_buffer);
+      if (cached_metadata) {
+        const Vector<uint8_t>& serialized_data =
+            cached_metadata->SerializedData();
+        std::unique_ptr<BlobData> side_data_blob_data = BlobData::Create();
+        side_data_blob_data->AppendBytes(serialized_data.data(),
+                                         serialized_data.size());
 
-    scoped_refptr<CachedMetadata> cached_metadata =
-        V8CodeCache::GenerateFullCodeCache(
-            script_state_,
-            text_decoder->Decode(static_cast<const char*>(array_buffer->Data()),
-                                 array_buffer->ByteLength()),
-            batch_operation->request->url.GetString(), text_decoder->Encoding(),
-            batch_operation->response->response_type ==
-                    network::mojom::FetchResponseType::kOpaque
-                ? V8CodeCache::OpaqueMode::kOpaque
-                : V8CodeCache::OpaqueMode::kNotOpaque);
-    if (!cached_metadata) {
-      barrier_callback_->OnSuccess(index_, std::move(batch_operation));
-      return;
+        batch_operation->response->side_data_blob = BlobDataHandle::Create(
+            std::move(side_data_blob_data), serialized_data.size());
+      }
+    } else {
+      // Schedule an idle task to generate code cache later.
+      ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
+      auto* thread_scheduler =
+          global_scope->GetScheduler()->GetWorkerThreadScheduler();
+      DCHECK(thread_scheduler);
+      int task_id = global_scope->WillStartTask();
+      thread_scheduler->IdleTaskRunner()->PostIdleTask(
+          FROM_HERE, WTF::Bind(&Cache::CodeCacheHandleCallbackForPut::
+                                   GenerateCodeCacheOnIdleTask,
+                               WrapPersistent(this), task_id,
+                               WrapPersistent(array_buffer), response_time));
     }
-    const Vector<uint8_t>& serialized_data = cached_metadata->SerializedData();
-    std::unique_ptr<BlobData> side_data_blob_data = BlobData::Create();
-    side_data_blob_data->AppendBytes(serialized_data.data(),
-                                     serialized_data.size());
 
-    batch_operation->response->side_data_blob = BlobDataHandle::Create(
-        std::move(side_data_blob_data), serialized_data.size());
     barrier_callback_->OnSuccess(index_, std::move(batch_operation));
   }
 
@@ -427,15 +459,63 @@ class Cache::CodeCacheHandleCallbackForPut final
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(script_state_);
+    visitor->Trace(cache_);
     visitor->Trace(barrier_callback_);
     FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
+  ServiceWorkerGlobalScope* GetServiceWorkerGlobalScope() {
+    // Currently |this| is only created for triggering V8 code caching after
+    // Cache#put() is used by a service worker so |script_state_| should be
+    // ServiceWorkerGlobalScope.
+    ExecutionContext* context = ExecutionContext::From(script_state_);
+    auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
+    DCHECK(global_scope);
+    return global_scope;
+  }
+
+  scoped_refptr<CachedMetadata> GenerateFullCodeCache(
+      DOMArrayBuffer* array_buffer) {
+    // Currently we only support UTF8 encoding.
+    // TODO(horo): Use the charset in Content-type header of the response.
+    // See crbug.com/743311.
+    std::unique_ptr<TextResourceDecoder> text_decoder =
+        TextResourceDecoder::Create(
+            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+
+    return V8CodeCache::GenerateFullCodeCache(
+        script_state_,
+        text_decoder->Decode(static_cast<const char*>(array_buffer->Data()),
+                             array_buffer->ByteLength()),
+        url_, text_decoder->Encoding(), opaque_mode_);
+  }
+
+  void GenerateCodeCacheOnIdleTask(int task_id,
+                                   DOMArrayBuffer* array_buffer,
+                                   base::Time response_time,
+                                   base::TimeTicks) {
+    ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
+    scoped_refptr<CachedMetadata> cached_metadata =
+        GenerateFullCodeCache(array_buffer);
+    cache_->cache_ptr_->SetSideData(
+        url_, response_time, cached_metadata->SerializedData(),
+        WTF::Bind(
+            [](ServiceWorkerGlobalScope* global_scope, int task_id,
+               mojom::blink::CacheStorageError error) {
+              global_scope->DidEndTask(task_id);
+            },
+            WrapPersistent(global_scope), task_id));
+  }
+
   const Member<ScriptState> script_state_;
+  const Member<Cache> cache_;
   const wtf_size_t index_;
   Member<BarrierCallbackForPut> barrier_callback_;
   const String mime_type_;
+  KURL url_;
+  V8CodeCache::OpaqueMode opaque_mode_;
+  CodeCacheGenerateTiming timing_;
 
   mojom::blink::FetchAPIRequestPtr fetch_api_request_;
   mojom::blink::FetchAPIResponsePtr fetch_api_response_;
@@ -865,12 +945,15 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 
     BodyStreamBuffer* buffer = responses[i]->InternalBodyBuffer();
 
-    if (ShouldGenerateV8CodeCache(script_state, responses[i])) {
+    CodeCacheGenerateTiming cache_generate_timing =
+        ShouldGenerateV8CodeCache(script_state, responses[i]);
+    if (cache_generate_timing != CodeCacheGenerateTiming::kDontGenerate) {
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsArrayBuffer();
       buffer->StartLoading(
           loader,
           MakeGarbageCollected<CodeCacheHandleCallbackForPut>(
-              script_state, i, barrier_callback, requests[i], responses[i]),
+              script_state, this, i, barrier_callback, requests[i],
+              responses[i], cache_generate_timing),
           exception_state);
       if (exception_state.HadException()) {
         barrier_callback->OnError("Could not inspect response body state");
