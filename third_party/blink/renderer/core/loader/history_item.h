@@ -119,7 +119,6 @@ class CORE_EXPORT HistoryItem final
 
   void SetScrollAnchorData(const ScrollAnchorData&);
 
-  void SetFormInfoFromRequest(const ResourceRequest&);
   void SetFormData(scoped_refptr<EncodedFormData>);
   void SetFormContentType(const AtomicString&);
 
