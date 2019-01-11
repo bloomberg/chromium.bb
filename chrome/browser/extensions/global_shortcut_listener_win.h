@@ -11,7 +11,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
-#include "ui/gfx/win/singleton_hwnd_observer.h"
+
+namespace gfx {
+
+class SingletonHwndHotKeyObserver;
+
+}  // namespace gfx
 
 namespace extensions {
 
@@ -37,10 +42,9 @@ class GlobalShortcutListenerWin : public GlobalShortcutListener {
   bool is_listening_;
 
   // A map of registered accelerators and their registration ids.
-  typedef std::map<ui::Accelerator, int> HotkeyIdMap;
-  HotkeyIdMap hotkey_ids_;
-
-  std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+  using HotKeyMap = std::map<ui::Accelerator,
+                             std::unique_ptr<gfx::SingletonHwndHotKeyObserver>>;
+  HotKeyMap hotkeys_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalShortcutListenerWin);
 };
