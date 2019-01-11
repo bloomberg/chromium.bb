@@ -51,6 +51,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_SEARCH_RESULTS_SINGULAR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
 
+  source->AddLocalizedString("actionMenuDescription",
+                             IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
   source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
   source->AddLocalizedString("openDownloadsFolder",

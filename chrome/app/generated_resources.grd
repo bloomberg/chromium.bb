@@ -1675,6 +1675,9 @@ are declared in tools/grit/grit_rule.gni.
                desc="Tooltip of a button on the downloads page that shows a menu with actions like 'Open downloads folder' or 'Clear all'">
         More actions
       </message>
+      <message name="IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION" desc="Text used to identify the drop-down menu with actions like 'Open downloads folder' or 'Clear all'">
+        Actions
+      </message>
       <message name="IDS_DOWNLOAD_BY_EXTENSION_URL"
                desc="Indicates which extension downloaded this file by name and URL.">
         Downloaded by &lt;a href=&quot;<ph name="URL">$1<ex>adblock.com</ex></ph>&quot;&gt;<ph name="EXTENSION">$2<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
