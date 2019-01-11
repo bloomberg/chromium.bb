@@ -168,8 +168,7 @@ SkColor BrowserFrameHeaderAsh::GetCurrentFrameColor() const {
   return appearance_provider_->GetFrameHeaderColor(mode() == MODE_ACTIVE);
 }
 
-void BrowserFrameHeaderAsh::DoSetFrameColors(SkColor active_frame_color,
-                                             SkColor inactive_frame_color) {
+void BrowserFrameHeaderAsh::UpdateFrameColors() {
   UpdateCaptionButtonColors();
   view()->SchedulePaint();
 }

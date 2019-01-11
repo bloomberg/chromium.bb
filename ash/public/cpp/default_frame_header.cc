@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/logging.h"  // DCHECK
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -103,6 +104,28 @@ void DefaultFrameHeader::SetWidthInPixels(int width_in_pixels) {
   SchedulePaintForTitle();
 }
 
+void DefaultFrameHeader::UpdateFrameColors() {
+  const SkColor active_frame_color =
+      target_widget()->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
+  const SkColor inactive_frame_color =
+      target_widget()->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
+
+  bool updated = false;
+  if (active_frame_color_.target_color() != active_frame_color) {
+    active_frame_color_.SetTargetColor(active_frame_color);
+    updated = true;
+  }
+  if (inactive_frame_color_.target_color() != inactive_frame_color) {
+    inactive_frame_color_.SetTargetColor(inactive_frame_color);
+    updated = true;
+  }
+
+  if (updated) {
+    UpdateCaptionButtonColors();
+    view()->SchedulePaint();
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultFrameHeader, protected:
 
@@ -133,24 +156,6 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
     TileRoundRect(canvas, flags, GetPaintedBounds(), corner_radius);
   }
   PaintTitleBar(canvas);
-}
-
-void DefaultFrameHeader::DoSetFrameColors(SkColor active_frame_color,
-                                          SkColor inactive_frame_color) {
-  bool updated = false;
-  if (active_frame_color_.target_color() != active_frame_color) {
-    active_frame_color_.SetTargetColor(active_frame_color);
-    updated = true;
-  }
-  if (inactive_frame_color_.target_color() != inactive_frame_color) {
-    inactive_frame_color_.SetTargetColor(inactive_frame_color);
-    updated = true;
-  }
-
-  if (updated) {
-    UpdateCaptionButtonColors();
-    view()->SchedulePaint();
-  }
 }
 
 views::CaptionButtonLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {

@@ -177,11 +177,6 @@ views::FrameCaptionButton* FrameHeader::GetBackButton() const {
   return back_button_;
 }
 
-void FrameHeader::SetFrameColors(SkColor active_frame_color,
-                                 SkColor inactive_frame_color) {
-  DoSetFrameColors(active_frame_color, inactive_frame_color);
-}
-
 void FrameHeader::SetFrameTextOverride(
     const base::string16& frame_text_override) {
   frame_text_override_ = frame_text_override;

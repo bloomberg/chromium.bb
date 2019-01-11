@@ -204,6 +204,9 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   frame_header_ = CreateFrameHeader();
 
+  if (browser_view()->IsBrowserTypeHostedApp())
+    SetUpForHostedApp();
+
   browser_view()->immersive_mode_controller()->AddObserver(this);
 
   UpdateFrameColors();
@@ -798,15 +801,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     header = std::make_unique<BrowserFrameHeaderAsh>(frame(), this, this,
                                                      caption_button_container_);
   } else {
-    auto default_frame_header = std::make_unique<ash::DefaultFrameHeader>(
+    header = std::make_unique<ash::DefaultFrameHeader>(
         frame(), this, caption_button_container_);
-    if (browser_view()->IsBrowserTypeHostedApp()) {
-      SetUpForHostedApp(default_frame_header.get());
-    } else if (!browser->is_app()) {
-      default_frame_header->SetFrameColors(kMdWebUiFrameColor,
-                                           kMdWebUiFrameColor);
-    }
-    header = std::move(default_frame_header);
   }
 
   header->SetBackButton(back_button_);
@@ -814,18 +810,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   return header;
 }
 
-void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
-    ash::DefaultFrameHeader* header) {
-  // Hosted apps apply a theme color if specified by the extension.
+void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
   Browser* browser = browser_view()->browser();
-  base::Optional<SkColor> theme_color =
-      browser->hosted_app_controller()->GetThemeColor();
-  if (theme_color) {
-    header->set_button_color_mode(
-        views::FrameCaptionButton::ColorMode::kThemed);
-    header->SetFrameColors(*theme_color, *theme_color);
-  }
-
   if (!browser->hosted_app_controller()->ShouldShowHostedAppButtonContainer())
     return;
 
@@ -857,13 +843,12 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     window->SetProperty(ash::kFrameActiveColorKey, *active_color);
     window->SetProperty(ash::kFrameInactiveColorKey,
                         inactive_color.value_or(*active_color));
-    frame_header_->SetFrameColors(
-        window->GetProperty(ash::kFrameActiveColorKey),
-        window->GetProperty(ash::kFrameInactiveColorKey));
   } else {
     window->ClearProperty(ash::kFrameActiveColorKey);
     window->ClearProperty(ash::kFrameInactiveColorKey);
   }
+
+  frame_header_->UpdateFrameColors();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {
