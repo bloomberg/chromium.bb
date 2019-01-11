@@ -47,6 +47,7 @@
   recentTabsTableViewController.loader = self.loader;
   recentTabsTableViewController.dispatcher = self.dispatcher;
   recentTabsTableViewController.presentationDelegate = self;
+  recentTabsTableViewController.webStateList = self.webStateList;
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
