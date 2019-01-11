@@ -946,6 +946,16 @@ TEST_F(AutofillManagerTest,
                    Suggestion("Presley", "Elvis Aaron Presley", "", 2));
 }
 
+// Test that the call is properly forwarded to AutocompleteHistoryManager.
+TEST_F(AutofillManagerTest, OnAutocompleteEntrySelected) {
+  base::string16 test_value = ASCIIToUTF16("TestValue");
+  EXPECT_CALL(*autocomplete_history_manager_.get(),
+              OnAutocompleteEntrySelected(test_value))
+      .Times(1);
+
+  autofill_manager_->OnAutocompleteEntrySelected(test_value);
+}
+
 // Test that we return all address profile suggestions when all form fields are
 // empty.
 TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {

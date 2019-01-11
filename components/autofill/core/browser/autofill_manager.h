@@ -141,6 +141,9 @@ class AutofillManager : public AutofillHandler,
   void RemoveAutocompleteEntry(const base::string16& name,
                                const base::string16& value);
 
+  // Invoked when the user selected |value| in the Autocomplete drop-down.
+  void OnAutocompleteEntrySelected(const base::string16& value);
+
   // Returns true when the Payments card unmask prompt is being displayed.
   bool IsShowingUnmaskPrompt();
 

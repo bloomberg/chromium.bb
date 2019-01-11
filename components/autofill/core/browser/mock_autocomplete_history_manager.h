@@ -36,6 +36,7 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
                void(const AutocompleteHistoryManager::SuggestionsHandler*));
   MOCK_METHOD2(OnRemoveAutocompleteEntry,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD1(OnAutocompleteEntrySelected, void(const base::string16&));
 };
 
 }  // namespace autofill

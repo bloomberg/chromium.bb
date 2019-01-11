@@ -306,7 +306,7 @@ class AutofillTable : public WebDatabaseTable,
   // |prefix|.  The comparison of the prefix is case insensitive.
   bool GetFormValuesForElementName(const base::string16& name,
                                    const base::string16& prefix,
-                                   std::vector<base::string16>* values,
+                                   std::vector<AutofillEntry>* entries,
                                    int limit);
 
   // Removes rows from the autofill table if they were created on or after
@@ -581,6 +581,7 @@ class AutofillTable : public WebDatabaseTable,
                            Autofill_GetAllAutofillEntries_TwoDistinct);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            Autofill_GetAllAutofillEntries_TwoSame);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_GetEntry_Populated);
 
   // Methods for adding autofill entries at a specified time.  For
   // testing only.

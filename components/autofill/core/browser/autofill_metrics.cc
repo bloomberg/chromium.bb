@@ -1562,6 +1562,11 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
+void AutofillMetrics::LogAutocompleteDaysSinceLastUse(size_t days) {
+  UMA_HISTOGRAM_COUNTS_1000("Autocomplete.DaysSinceLastUse", days);
+}
+
+// static
 void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
   base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Autocomplete",
                            std::min(index, kMaxBucketsCount));

@@ -160,6 +160,10 @@ class TestAutofillClient : public AutofillClient {
     return offer_to_save_credit_card_bubble_was_shown_.value();
   }
 
+  MockAutocompleteHistoryManager* GetMockAutocompleteHistoryManager() {
+    return &mock_autocomplete_history_manager_;
+  }
+
   void set_migration_card_selections(
       const std::vector<std::string>& migration_card_selection) {
     migration_card_selection_ = migration_card_selection;
