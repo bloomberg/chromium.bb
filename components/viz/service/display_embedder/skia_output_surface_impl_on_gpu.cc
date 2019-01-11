@@ -627,6 +627,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
         gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
         kBGRA_8888_SkColorType, nullptr, &surface_props);
+    DCHECK(sk_surface);
   } else {
     auto backend = sk_surface->getBackendRenderTarget(
         SkSurface::kFlushRead_BackendHandleAccess);
