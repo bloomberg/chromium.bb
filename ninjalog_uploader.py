@@ -26,6 +26,7 @@ import platform
 import socket
 import subprocess
 import sys
+import time
 
 from third_party import httplib2
 
@@ -191,6 +192,12 @@ def main():
     if not os.path.isfile(ninjalog):
         logging.warn("ninjalog is not found in %s", ninjalog)
         return 1
+
+    # We assume that each ninja invocation interval takes at least 2 seconds.
+    # This is not to have duplicate entry in server when current build is no-op.
+    if os.stat(ninjalog).st_mtime < time.time() - 2:
+        logging.info("ninjalog is not updated recently %s", ninjalog)
+        return 0
 
     output = cStringIO.StringIO()
 
