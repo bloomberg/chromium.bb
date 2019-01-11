@@ -14,8 +14,8 @@
 
       .email-logo {
         content: -webkit-image-set(
-          url(../images/email_provider_1x.png) 1x,
-          url(../images/email_provider_2x.png) 2x);
+            url(../images/email_provider_1x.png) 1x,
+            url(../images/email_provider_2x.png) 2x);
         height: 38px;
         margin: auto;
         margin-bottom: 16px;
@@ -28,11 +28,12 @@
         font-weight: 500;
         margin: 0;
         margin-bottom: 48px;
+        outline: none;
       }
     </style>
     <div class="email-ask">
       <div class="email-logo" alt=""></div>
-      <h1>$i18n{emailProviderTitle}</h1>
+      <h1 tabindex="-1">$i18n{emailProviderTitle}</h1>
       <app-chooser id="emailChooser" indicator-model="[[indicatorModel]]"
           single-select>
       </app-chooser>
