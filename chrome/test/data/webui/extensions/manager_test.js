@@ -14,6 +14,7 @@ cr.define('extension_manager_tests', function() {
         'url navigation to activity log without flag set',
     UrlNavigationToActivityLogSuccess:
         'url navigation to activity log with flag set',
+    ShowOptionsDialog: 'show options dialog',
   };
 
   function getDataByName(list, name) {
@@ -167,6 +168,50 @@ cr.define('extension_manager_tests', function() {
       Polymer.dom.flush();
       // Should be re-routed to the main page.
       assertViewActive('extensions-item-list');
+    });
+
+    test(assert(TestNames.ShowOptionsDialog), function() {
+      function waitForOptionsDialogToOpen() {
+        return new Promise(resolve => {
+          const dialogOpenListener = () => {
+            const dialog = manager.$$('#options-dialog');
+            assert(dialog);
+            manager.removeEventListener('cr-dialog-open', dialogOpenListener);
+            resolve(dialog);
+          };
+          manager.addEventListener('cr-dialog-open', dialogOpenListener);
+        });
+      }
+
+      function waitForDialogToClose(dialog) {
+        return new Promise(resolve => {
+          // No need to unlisten b/c dialog is removed from DOM after closing.
+          dialog.addEventListener('close', () => {
+            // Allow other events to be handled.
+            window.setTimeout(resolve, 0);
+          });
+        });
+      }
+
+      const extensionDetailView = manager.$$('extensions-detail-view');
+      assertTrue(!!extensionDetailView);
+
+      const optionsButton = extensionDetailView.$$('#extensions-options');
+
+      // Click the options button.
+      optionsButton.click();
+
+      // Wait for dialog to open.
+      return waitForOptionsDialogToOpen()
+          .then(dialog => {
+            // Close dialog and wait.
+            dialog.$.dialog.cancel();
+            return waitForDialogToClose(dialog);
+          })
+          .then(() => {
+            // Validate that this button is focused after dialog closes.
+            assertEquals(optionsButton.$$('button'), getDeepActiveElement());
+          });
     });
   });
 
