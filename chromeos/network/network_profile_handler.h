@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/network/network_handler.h"
@@ -27,7 +27,7 @@ namespace chromeos {
 
 class NetworkProfileObserver;
 
-class CHROMEOS_EXPORT NetworkProfileHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
     : public ShillPropertyChangedObserver {
  public:
   typedef std::vector<NetworkProfile> ProfileList;

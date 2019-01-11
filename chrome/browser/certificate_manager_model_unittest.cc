@@ -18,7 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #endif
 
 namespace {

@@ -2,21 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromeos/rules.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
-source_set("network") {
-  configs += [ "//chromeos:chromeos_implementation" ]
+component("network") {
+  defines = [ "IS_CHROMEOS_NETWORK_IMPL" ]
   deps = [
     "//base",
     "//base:i18n",
     "//chromeos:chromeos_constants",
-    "//chromeos:chromeos_export",
-    "//chromeos:policy_certificate_provider",
-    "//chromeos:tools",
     "//chromeos/dbus",
     "//chromeos/login/login_state",
     "//components/account_id",
@@ -133,8 +130,11 @@ source_set("network") {
     "onc/onc_utils.h",
     "onc/onc_validator.cc",
     "onc/onc_validator.h",
+    "onc/variable_expander.cc",
+    "onc/variable_expander.h",
     "policy_applicator.cc",
     "policy_applicator.h",
+    "policy_certificate_provider.h",
     "policy_util.cc",
     "policy_util.h",
     "portal_detector/network_portal_detector.cc",
@@ -162,16 +162,48 @@ source_set("network") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  public_deps = [
+    ":network",
+  ]
+  deps = [
+    "//base",
+    "//chromeos:test_utils",
+    "//chromeos/dbus:test_support",
+    "//dbus",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  sources = [
+    "fake_network_device_handler.cc",
+    "fake_network_device_handler.h",
+    "mock_managed_network_configuration_handler.cc",
+    "mock_managed_network_configuration_handler.h",
+    "mock_network_device_handler.cc",
+    "mock_network_device_handler.h",
+    "mock_network_state_handler.cc",
+    "mock_network_state_handler.h",
+    "network_state_test.cc",
+    "network_state_test.h",
+    "onc/onc_test_utils.cc",
+    "onc/onc_test_utils.h",
+    "portal_detector/mock_network_portal_detector.cc",
+    "portal_detector/mock_network_portal_detector.h",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   deps = [
     ":network",
+    ":test_support",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
     "//chromeos:chromeos_constants",
-    "//chromeos:policy_certificate_provider",
-    "//chromeos:test_support_source_set",
+    "//chromeos:test_utils",
     "//chromeos/dbus:test_support",
     "//chromeos/login/login_state",
     "//components/onc",
@@ -213,8 +245,21 @@ source_set("unit_tests") {
     "onc/onc_translator_unittest.cc",
     "onc/onc_utils_unittest.cc",
     "onc/onc_validator_unittest.cc",
+    "onc/variable_expander_unittest.cc",
     "prohibited_technologies_handler_unittest.cc",
     "proxy/proxy_config_service_impl_unittest.cc",
     "shill_property_handler_unittest.cc",
+  ]
+}
+
+fuzzer_test("variable_expander_fuzzer") {
+  sources = [
+    "onc/variable_expander_fuzzer.cc",
+  ]
+  seed_corpus = "//chromeos/test/data/variable_expander/fuzzer_corpus"
+  dict = "//chromeos/test/data/variable_expander/fuzzer.dict"
+  deps = [
+    ":network",
+    "//base/test:test_support",
   ]
 }

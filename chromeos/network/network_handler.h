@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_export.h"
 
 class PrefService;
 
@@ -37,7 +37,7 @@ class UIProxyConfigService;
 // Class for handling initialization and access to chromeos network handlers.
 // This class should NOT be used in unit tests. Instead, construct individual
 // classes independently.
-class CHROMEOS_EXPORT NetworkHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
  public:
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();

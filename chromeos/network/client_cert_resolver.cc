@@ -25,7 +25,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/tools/variable_expander.h"
+#include "chromeos/network/onc/variable_expander.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"

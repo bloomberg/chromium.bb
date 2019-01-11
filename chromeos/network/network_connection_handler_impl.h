@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CONNECTION_HANDLER_IMPL_H_
 #define CHROMEOS_NETWORK_NETWORK_CONNECTION_HANDLER_IMPL_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_cert_loader.h"
@@ -15,7 +15,7 @@
 namespace chromeos {
 
 // Implementation of NetworkConnectionHandler.
-class CHROMEOS_EXPORT NetworkConnectionHandlerImpl
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
     : public NetworkConnectionHandler,
       public LoginState::Observer,
       public NetworkCertLoader::Observer,

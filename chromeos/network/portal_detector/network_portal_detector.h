@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
 #define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -17,7 +17,7 @@ class NetworkState;
 // This is an interface for a chromeos portal detector that allows for
 // observation of captive portal state. It supports retries based on a portal
 // detector strategy.
-class CHROMEOS_EXPORT NetworkPortalDetector {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
  public:
   enum CaptivePortalStatus {
     CAPTIVE_PORTAL_STATUS_UNKNOWN = 0,
@@ -122,26 +122,26 @@ namespace network_portal_detector {
 // Gets the instance of the NetworkPortalDetector. Return value should
 // be used carefully in tests, because it can be changed "on the fly"
 // by calls to InitializeForTesting().
-CHROMEOS_EXPORT NetworkPortalDetector* GetInstance();
+COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector* GetInstance();
 
 // Returns |true| if NetworkPortalDetector was Initialized and it is safe to
 // call GetInstance.
-CHROMEOS_EXPORT bool IsInitialized();
+COMPONENT_EXPORT(CHROMEOS_NETWORK) bool IsInitialized();
 
 // Deletes the instance of the NetworkPortalDetector.
-CHROMEOS_EXPORT void Shutdown();
+COMPONENT_EXPORT(CHROMEOS_NETWORK) void Shutdown();
 
-CHROMEOS_EXPORT void SetNetworkPortalDetector(
-    NetworkPortalDetector* network_portal_detector);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void SetNetworkPortalDetector(NetworkPortalDetector* network_portal_detector);
 
 // Initializes network portal detector for testing. The
 // |network_portal_detector| will be owned by the internal pointer
 // and deleted by Shutdown().
-CHROMEOS_EXPORT void InitializeForTesting(
-    NetworkPortalDetector* network_portal_detector);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void InitializeForTesting(NetworkPortalDetector* network_portal_detector);
 
 // Returns true if the network portal detector has been set for testing.
-CHROMEOS_EXPORT bool SetForTesting();
+COMPONENT_EXPORT(CHROMEOS_NETWORK) bool SetForTesting();
 
 }  // namespace network_portal_detector
 

@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "net/cert/scoped_nss_types.h"
 
 namespace net {
@@ -35,7 +35,7 @@ namespace chromeos {
 // token before user sign-in, and additionally with a user-specific
 // NSSCertDatabase after user sign-in. When both NSSCertDatabase are used,
 // NetworkCertLoader combines certificates from both into |all_certs()|.
-class CHROMEOS_EXPORT NetworkCertLoader
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
     : public PolicyCertificateProvider::Observer {
  public:
   class Observer {

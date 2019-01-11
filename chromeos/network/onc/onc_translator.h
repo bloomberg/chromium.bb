@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {
@@ -29,7 +29,7 @@ struct OncValueSignature;
 //
 // This function is used to translate network settings from ONC to Shill's
 // format before sending them to Shill.
-CHROMEOS_EXPORT
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
 std::unique_ptr<base::DictionaryValue> TranslateONCObjectToShill(
     const OncValueSignature* signature,
     const base::DictionaryValue& onc_object);
@@ -46,7 +46,7 @@ std::unique_ptr<base::DictionaryValue> TranslateONCObjectToShill(
 // is treated the same as ONC_SOURCE_NONE. If |network_state| is provided it
 // will be used to set the ErrorState property. Otherwise ErrorState will not
 // be set.
-CHROMEOS_EXPORT
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
 std::unique_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
     ::onc::ONCSource onc_source,

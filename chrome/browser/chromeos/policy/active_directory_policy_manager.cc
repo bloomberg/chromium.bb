@@ -16,7 +16,7 @@
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
-#include "chromeos/tools/variable_expander.h"
+#include "chromeos/network/onc/variable_expander.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
 #include "components/policy/core/common/policy_bundle.h"

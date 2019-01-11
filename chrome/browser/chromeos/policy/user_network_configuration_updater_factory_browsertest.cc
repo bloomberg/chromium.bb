@@ -33,7 +33,7 @@
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"

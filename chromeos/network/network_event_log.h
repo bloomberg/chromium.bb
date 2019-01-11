@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace base {
@@ -29,16 +29,18 @@ namespace internal {
 // deleted if more than least half of the entries are errors (at which point
 // the oldest error entry will be replaced). Does nothing unless Initialize()
 // has been called. NOTE: Generally use NET_LOG instead.
-CHROMEOS_EXPORT void AddEntry(const char* file,
-                              int file_line,
-                              device_event_log::LogLevel log_level,
-                              const std::string& event,
-                              const std::string& description);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void AddEntry(const char* file,
+              int file_line,
+              device_event_log::LogLevel log_level,
+              const std::string& event,
+              const std::string& description);
 
 }  // namespace internal
 
 // Helper function for displaying a value as a string.
-CHROMEOS_EXPORT std::string ValueAsString(const base::Value& value);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string ValueAsString(const base::Value& value);
 
 // Errors
 #define NET_LOG_ERROR(event, desc) \

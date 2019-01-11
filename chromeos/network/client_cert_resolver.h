@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_policy_observer.h"
@@ -39,9 +39,10 @@ struct MatchingCertAndResolveStatus;
 // Observes the known networks. If a network is configured with a client
 // certificate pattern, this class searches for a matching client certificate.
 // Each time it finds a match, it configures the network accordingly.
-class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
-                                           public NetworkCertLoader::Observer,
-                                           public NetworkPolicyObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertResolver
+    : public NetworkStateHandlerObserver,
+      public NetworkCertLoader::Observer,
+      public NetworkPolicyObserver {
  public:
   class Observer {
    public:

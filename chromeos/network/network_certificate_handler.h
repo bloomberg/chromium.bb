@@ -7,15 +7,15 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_cert_loader.h"
 
 namespace chromeos {
 
 // This class maintains user and server CA certificate lists for network
 // configuration UI.
-class CHROMEOS_EXPORT NetworkCertificateHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertificateHandler
     : public NetworkCertLoader::Observer {
  public:
   class Observer {

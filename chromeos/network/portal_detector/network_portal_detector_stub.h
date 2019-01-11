@@ -10,7 +10,8 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT NetworkPortalDetectorStub : public NetworkPortalDetector {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetectorStub
+    : public NetworkPortalDetector {
  public:
   NetworkPortalDetectorStub();
   ~NetworkPortalDetectorStub() override;

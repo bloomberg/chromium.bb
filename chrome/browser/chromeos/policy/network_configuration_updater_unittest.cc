@@ -25,7 +25,7 @@
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"

@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_handler.h"
@@ -53,7 +53,7 @@ namespace chromeos {
 // that is suitable for logging. None of the error message text is meant for
 // user consumption.  Both |callback| and |error_callback| are permitted to be
 // null callbacks.
-class CHROMEOS_EXPORT NetworkConfigurationHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
     : public NetworkStateHandlerObserver {
  public:
   ~NetworkConfigurationHandler() override;

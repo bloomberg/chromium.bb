@@ -7,16 +7,16 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_policy_observer.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT ProhibitedTechnologiesHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProhibitedTechnologiesHandler
     : public LoginState::Observer,
       public NetworkPolicyObserver {
  public:

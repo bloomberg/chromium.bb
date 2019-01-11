@@ -6,7 +6,7 @@ import("//testing/test.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
-source_set("geolocation") {
+component("geolocation") {
   defines = [ "IS_CHROMEOS_GEOLOCATION_IMPL" ]
   deps = [
     "//base",
@@ -33,7 +33,7 @@ source_set("unit_tests") {
     ":geolocation",
     "//base",
     "//chromeos/dbus",
-    "//chromeos/network",
+    "//chromeos/network:test_support",
     "//net",
     "//services/network:test_support",
     "//services/network/public/cpp",

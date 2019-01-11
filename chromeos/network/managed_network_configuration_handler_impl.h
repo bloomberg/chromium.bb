@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile_observer.h"
@@ -31,7 +31,7 @@ struct NetworkProfile;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 
-class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
     : public ManagedNetworkConfigurationHandler,
       public NetworkProfileObserver,
       public PolicyApplicator::ConfigurationHandler {

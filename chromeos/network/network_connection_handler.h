@@ -10,11 +10,11 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -39,7 +39,7 @@ namespace chromeos {
 
 enum class ConnectCallbackMode { ON_STARTED, ON_COMPLETED };
 
-class CHROMEOS_EXPORT NetworkConnectionHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
 
@@ -104,7 +104,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   // delegate present.
   static const char kErrorTetherAttemptWithNoDelegate[];
 
-  class CHROMEOS_EXPORT TetherDelegate {
+  class COMPONENT_EXPORT(CHROMEOS_NETWORK) TetherDelegate {
    public:
     // Connects to the Tether network with GUID |tether_network_guid|. On
     // success, invokes |success_callback|, and on failure, invokes

@@ -7,16 +7,16 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace chromeos {
 
 // The NetworkActivationHandler class allows making service specific
 // calls required for activation on mobile networks.
-class CHROMEOS_EXPORT NetworkActivationHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandler
     : public base::SupportsWeakPtr<NetworkActivationHandler> {
  public:
   // Constants for |error_name| from |error_callback|.

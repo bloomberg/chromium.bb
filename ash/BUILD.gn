@@ -1372,6 +1372,9 @@ component("ash") {
     "//chromeos/dbus",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus/services:services",
+
+    # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
+    "//chromeos/network",
     "//chromeos/services/assistant/public:feature_flags",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
@@ -1934,6 +1937,9 @@ test("ash_unittests") {
     "//chromeos/audio",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus:test_support",
+
+    # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
+    "//chromeos/network:test_support",
     "//chromeos/services/assistant:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
@@ -2207,6 +2213,9 @@ static_library("test_support") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/dbus:test_support",
+
+    # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
+    "//chromeos/network:test_support",
     "//components/account_id",
     "//components/prefs:test_support",
     "//components/user_manager:user_manager",

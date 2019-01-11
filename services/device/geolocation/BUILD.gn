@@ -106,7 +106,10 @@ source_set("geolocation") {
     ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos/dbus",
+      "//chromeos/network",
+    ]
   }
 
   if (is_mac) {

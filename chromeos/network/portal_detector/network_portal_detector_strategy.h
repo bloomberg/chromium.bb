@@ -8,15 +8,15 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "net/base/backoff_entry.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT PortalDetectorStrategy {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) PortalDetectorStrategy {
  public:
   enum StrategyId {
     STRATEGY_ID_LOGIN_SCREEN,

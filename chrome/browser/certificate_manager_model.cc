@@ -36,7 +36,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #endif
 
 using content::BrowserThread;

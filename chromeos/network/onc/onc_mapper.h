@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -35,7 +35,7 @@ struct OncValueSignature;
 //
 // The ONC validator and normalizer derive from this class and adapt the default
 // copy behavior.
-class CHROMEOS_EXPORT Mapper {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) Mapper {
  public:
   Mapper();
   virtual ~Mapper();

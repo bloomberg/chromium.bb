@@ -2417,6 +2417,7 @@ jumbo_source_set("browser") {
       "//chromeos/audio",
       "//chromeos/dbus",
       "//chromeos/dbus:power_manager_proto",
+      "//chromeos/network",
       "//components/session_manager/core",
     ]
   }

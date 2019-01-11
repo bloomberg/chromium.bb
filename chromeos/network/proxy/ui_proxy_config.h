@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
@@ -32,7 +32,7 @@ namespace chromeos {
 // This is then converted to the common net::ProxyConfig before being pushed
 // to PrefProxyConfigTrackerImpl::OnProxyConfigChanged and then to the network
 // stack.
-struct CHROMEOS_EXPORT UIProxyConfig {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfig {
   // Specifies if proxy config is direct, auto-detect, using pac script,
   // single-proxy, or proxy-per-scheme.
   enum Mode {

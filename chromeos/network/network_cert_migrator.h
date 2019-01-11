@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CERT_MIGRATOR_H_
 #define CHROMEOS_NETWORK_NETWORK_CERT_MIGRATOR_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
@@ -17,8 +17,9 @@ class NetworkStateHandler;
 
 // Migrates network configurations with incorrect or missing slot IDs of client
 // certificates.
-class CHROMEOS_EXPORT NetworkCertMigrator : public NetworkStateHandlerObserver,
-                                            public NetworkCertLoader::Observer {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertMigrator
+    : public NetworkStateHandlerObserver,
+      public NetworkCertLoader::Observer {
  public:
   ~NetworkCertMigrator() override;
 

@@ -12,11 +12,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -60,7 +60,7 @@ class NetworkStateHandlerTest;
 //   the initial properties are received. The GUID will be consistent for
 //   the duration of a session, even if the network drops out and returns.
 
-class CHROMEOS_EXPORT NetworkStateHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
     : public internal::ShillPropertyHandler::Listener {
  public:
   typedef std::vector<std::unique_ptr<ManagedState>> ManagedStateList;

@@ -218,7 +218,7 @@ jumbo_static_library("net") {
       "net/wifi_access_point_info_provider_chromeos.cc",
       "net/wifi_access_point_info_provider_chromeos.h",
     ]
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/network" ]
   }
 }
 
@@ -424,8 +424,8 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos",
       "//chromeos/dbus",
+      "//chromeos/network:test_support",
     ]
   }
 

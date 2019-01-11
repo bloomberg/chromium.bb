@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/tools/variable_expander.h"
+#include "chromeos/network/onc/variable_expander.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
