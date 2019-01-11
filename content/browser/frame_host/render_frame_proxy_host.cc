@@ -347,6 +347,29 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
 
+  // |targetOrigin| argument of postMessage is already checked by
+  // blink::LocalDOMWindow::DispatchMessageEventWithOriginCheck (needed for
+  // messages sent within the same process - e.g. same-site, cross-origin),
+  // but this check needs to be duplicated below in case the recipient renderer
+  // process got compromised (i.e. in case the renderer-side check may be
+  // bypassed).
+  if (!params.target_origin.empty()) {
+    url::Origin target_origin =
+        url::Origin::Create(GURL(base::UTF16ToUTF8(params.target_origin)));
+
+    // Renderer should send either an empty string (this is how "*" is expressed
+    // in the IPC) or a valid, non-opaque origin.  OTOH, there are no security
+    // implications here - the message payload needs to be protected from an
+    // unintended recipient, not from the sender.
+    DCHECK(!target_origin.opaque());
+
+    // While the postMessage was in flight, the target might have navigated away
+    // to another origin.  In this case, the postMessage should be silently
+    // dropped.
+    if (target_origin != target_rfh->GetLastCommittedOrigin())
+      return;
+  }
+
   // TODO(lukasza): Move opaque-ness check into ChildProcessSecurityPolicyImpl.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (params.source_origin != base::UTF8ToUTF16("null") &&
