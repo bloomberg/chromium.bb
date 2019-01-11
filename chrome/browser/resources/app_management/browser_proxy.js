@@ -8,14 +8,15 @@ cr.define('app_management', function() {
       /** @type {appManagement.mojom.PageCallbackRouter} */
       this.callbackRouter = new appManagement.mojom.PageCallbackRouter();
 
-      /** @type {PageHandlerInterface} */
+      /** @type {appManagement.mojom.PageHandlerInterface} */
       this.handler = null;
 
       const urlParams = new URLSearchParams(window.location.search);
       const useFake = urlParams.get('fakeBackend');
 
       if (useFake) {
-        this.handler = new app_management.FakePageHandler(this.callbackRouter);
+        this.handler = new app_management.FakePageHandler(
+            this.callbackRouter.createProxy());
 
         const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(

@@ -13,7 +13,7 @@ Polymer({
 
     /**
      * A string version of the permission type, corresponding to a value of
-     * the TestPermissionType enum.
+     * the PwaPermissionType enum.
      * @type {string}
      */
     permissionType: String,
@@ -24,35 +24,135 @@ Polymer({
     app: Object,
 
     /**
-     * @private {PermissionValue}
+     * @private {PermissionValueType}
+     */
+    permissionValueType_: {
+      type: Number,
+      computed: 'getPermissionValueType_(app)',
+    },
+
+    /**
+     * The semantics of permissionValue_ depend on permissionValueType_,
+     * see chrome/services/app_service/public/mojom/types.mojom
+     * @private {?number}
      */
     permissionValue_: {
-      type: Boolean,
+      type: Number,
       computed: 'getPermissionValue_(app, permissionType)',
     },
   },
 
   /**
    * @param {App} app
+   * @return {number}
+   * @private
+   */
+  getPermissionValueType_: function(app) {
+    // TODO(rekanorman): Change to a suitable conditional statement once the
+    // PermissionValueType corresponding to each AppType is known.
+    return PermissionValueType.kTriState;
+  },
+
+  /**
+   * @param {App} app
    * @param {string} permissionType
-   * @return {PermissionValue}
+   * @return {?number}
    * @private
    */
   getPermissionValue_: function(app, permissionType) {
     if (!app) {
-      return false;
+      return null;
     }
-    return app.permissions[TestPermissionTypeEnum[permissionType]];
+
+    return /** @type Object<number, Permission> */ (
+               app.permissions)[PwaPermissionType[permissionType]]
+        .value;
+  },
+
+  /**
+   * Returns a boolean representation of the permission value, which used to
+   * determine the position of the permission toggle.
+   * @param {PermissionValueType} permissionValueType
+   * @param {number} permissionValue
+   * @return {boolean}
+   * @private
+   */
+  permissionValueBool_: function(permissionValueType, permissionValue) {
+    return (permissionValueType === PermissionValueType.kBool &&
+            permissionValue === Bool.kTrue) ||
+        (permissionValueType === PermissionValueType.kTriState &&
+         permissionValue === TriState.kAllow);
   },
 
   /**
    * @private
    */
-  togglePermission_: function(e) {
-    const newPermissionValue = !this.permissionValue_;
-    const permissionType = TestPermissionTypeEnum[this.permissionType];
+  togglePermission_: function() {
+    /** @type {!Permission} */
+    let newPermission;
+
+    switch (this.permissionValueType_) {
+      case PermissionValueType.kBool:
+        newPermission = this.getNewPermissionBoolean_();
+        break;
+      case PermissionValueType.kTriState:
+        newPermission = this.getNewPermissionTriState_();
+        break;
+      default:
+        assertNotReached();
+    }
 
     app_management.BrowserProxy.getInstance().handler.setPermission(
-        this.app.id, permissionType, newPermissionValue);
+        this.app.id, newPermission);
+  },
+
+  /**
+   * @private
+   * @return {!Permission}
+   */
+  getNewPermissionBoolean_: function() {
+    /** @type {number} */
+    let newPermissionValue;
+
+    switch (this.permissionValue_) {
+      case Bool.kFalse:
+        newPermissionValue = Bool.kTrue;
+        break;
+      case Bool.kTrue:
+        newPermissionValue = Bool.kFalse;
+        break;
+      default:
+        assertNotReached();
+    }
+
+    return app_management.util.createPermission(
+        PwaPermissionType[this.permissionType], PermissionValueType.kBool,
+        newPermissionValue);
+  },
+
+  /**
+   * @private
+   * @return {!Permission}
+   */
+  getNewPermissionTriState_: function() {
+    let newPermissionValue;
+
+    switch (this.permissionValue_) {
+      case TriState.kBlock:
+        newPermissionValue = TriState.kAllow;
+        break;
+      case TriState.kAsk:
+        newPermissionValue = TriState.kAllow;
+        break;
+      case TriState.kAllow:
+        newPermissionValue = TriState.kAsk;
+        break;
+      default:
+        assertNotReached();
+    }
+
+    return app_management.util.createPermission(
+        PwaPermissionType[this.permissionType], PermissionValueType.kTriState,
+        newPermissionValue);
   },
 });

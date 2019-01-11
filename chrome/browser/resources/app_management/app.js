@@ -33,11 +33,14 @@ Polymer({
     });
 
     this.watch('pwaPermissionViewSelected_', (state) => {
-      return this.appTypeSelected(state, apps.mojom.AppType.kWeb);
+      // TODO(rekanorman): Remove AppType.kExtension case once PWA's are sent
+      // thorough with the correct app type.
+      return this.appTypeSelected(state, AppType.kWeb) ||
+             this.appTypeSelected(state, AppType.kExtension);
     });
 
     this.watch('chromeAppPermissionViewSelected_', (state) => {
-      return this.appTypeSelected(state, apps.mojom.AppType.kExtension);
+      return this.appTypeSelected(state, AppType.kExtension);
     });
 
     this.updateFromStore();
@@ -47,7 +50,7 @@ Polymer({
    * Returns true if the current page is the detail page of an app of the
    * given type.
    * @param {AppManagementPageState} state
-   * @param {apps.mojom.AppType} type
+   * @param {AppType} type
    * @return {boolean}
    */
   appTypeSelected: function(state, type) {

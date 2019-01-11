@@ -35,6 +35,20 @@ cr.define('app_management.util', function() {
   }
 
   /**
+   * @param {number} permissionId
+   * @param {!PermissionValueType} valueType
+   * @param {number} value
+   * @return {!Permission}
+   */
+  function createPermission(permissionId, valueType, value) {
+    return {
+      permissionId: permissionId,
+      valueType: valueType,
+      value: value,
+    };
+  }
+
+  /**
    * @param {App} app
    * @return {string}
    */
@@ -45,6 +59,7 @@ cr.define('app_management.util', function() {
   return {
     createEmptyState: createEmptyState,
     createInitialState: createInitialState,
+    createPermission: createPermission,
     getAppIcon: getAppIcon,
   };
 });

@@ -111,6 +111,6 @@ enum TriState {
 };
 
 enum PermissionValueType {
-  kBool,                       // Permission.value is a Bool.
+  kBool,                       // Permission.value is a Bool (either 0 or 1).
   kTriState,                   // Permission.value is a TriState.
 };

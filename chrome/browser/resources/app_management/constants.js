@@ -24,4 +24,21 @@ const PageType = {
   DETAIL: 1,
 };
 
-const TestPermissionTypeEnum = appManagement.mojom.TestPermissionType;
+/**
+ * A number representation of a Bool. Permission values should be of this type
+ * for permissions with value type PermissionValueType.kBool.
+ * @enum {number}
+ * @const
+ */
+const Bool = {
+  kFalse: 0,
+  kTrue: 1,
+};
+
+const PwaPermissionType = appManagement.mojom.PwaPermissionType;
+
+const AppType = apps.mojom.AppType;
+
+const PermissionValueType = apps.mojom.PermissionValueType;
+
+const TriState = apps.mojom.TriState;

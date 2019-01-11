@@ -12,7 +12,9 @@
     </style>
     <div class="permission-row">
       <div class="header-text">[[permissionLabel]]</div>
-      <cr-toggle checked="[[permissionValue_]]" on-change="togglePermission_">
+      <cr-toggle
+      checked="[[permissionValueBool_(permissionValueType_, permissionValue_)]]"
+      on-change="togglePermission_">
       </cr-toggle>
     </div>
   </template>
