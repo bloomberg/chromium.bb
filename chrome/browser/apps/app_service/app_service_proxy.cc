@@ -41,10 +41,6 @@ AppServiceProxy::AppServiceProxy(Profile* profile) {
 
 AppServiceProxy::~AppServiceProxy() = default;
 
-apps::mojom::AppServicePtr& AppServiceProxy::AppService() {
-  return app_service_;
-}
-
 AppRegistryCache& AppServiceProxy::Cache() {
   return cache_;
 }

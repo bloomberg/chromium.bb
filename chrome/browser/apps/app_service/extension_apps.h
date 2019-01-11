@@ -67,13 +67,12 @@ class ExtensionApps : public apps::mojom::Publisher,
                      std::vector<apps::mojom::AppPtr>* apps_out);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
+  Profile* profile_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* profile_;
-
   // |next_u_key_| is incremented every time Convert returns a valid AppPtr, so
-  // that when an app's icon has changed, this apps::mojom::Publisher sends a
-  // different IconKey even though the IconKey's s_key hasn't changed.
+  // that when an extension's icon has changed, this apps::mojom::Publisher
+  // sends a different IconKey even though the IconKey's s_key hasn't changed.
   uint64_t next_u_key_;
 
   ScopedObserver<extensions::ExtensionRegistry,
