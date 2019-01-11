@@ -16,22 +16,6 @@
 
 namespace viz {
 
-namespace {
-
-struct HitTestAsyncQueriedDebugRegion {
-  HitTestAsyncQueriedDebugRegion();
-  explicit HitTestAsyncQueriedDebugRegion(base::flat_set<FrameSinkId> regions);
-  ~HitTestAsyncQueriedDebugRegion();
-
-  HitTestAsyncQueriedDebugRegion(HitTestAsyncQueriedDebugRegion&&);
-  HitTestAsyncQueriedDebugRegion& operator=(HitTestAsyncQueriedDebugRegion&&);
-
-  base::flat_set<FrameSinkId> regions;
-  base::ElapsedTimer timer;
-};
-
-}  // namespace
-
 class LatestLocalSurfaceIdLookupDelegate;
 
 // HitTestManager manages the collection of HitTestRegionList objects
@@ -90,6 +74,19 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
 
   std::map<SurfaceId, base::flat_map<uint64_t, HitTestRegionList>>
       hit_test_region_lists_;
+
+  struct HitTestAsyncQueriedDebugRegion {
+    HitTestAsyncQueriedDebugRegion();
+    explicit HitTestAsyncQueriedDebugRegion(
+        base::flat_set<FrameSinkId> regions);
+    ~HitTestAsyncQueriedDebugRegion();
+
+    HitTestAsyncQueriedDebugRegion(HitTestAsyncQueriedDebugRegion&&);
+    HitTestAsyncQueriedDebugRegion& operator=(HitTestAsyncQueriedDebugRegion&&);
+
+    base::flat_set<FrameSinkId> regions;
+    base::ElapsedTimer timer;
+  };
 
   // We store the async queried regions for each |root_frame_sink_id|. If viz
   // hit-test debug is enabled, We will highlight the regions red in

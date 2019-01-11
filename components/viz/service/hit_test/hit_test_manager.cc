@@ -13,19 +13,21 @@ namespace {
 // TODO(gklassen): Review and select appropriate sizes based on
 // telemetry / UMA.
 constexpr uint32_t kMaxRegionsPerSurface = 1024;
+}  // namespace
 
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion() = default;
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+HitTestManager::HitTestAsyncQueriedDebugRegion::
+    HitTestAsyncQueriedDebugRegion() = default;
+HitTestManager::HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
     base::flat_set<FrameSinkId> regions)
     : regions(std::move(regions)) {}
-HitTestAsyncQueriedDebugRegion::~HitTestAsyncQueriedDebugRegion() = default;
+HitTestManager::HitTestAsyncQueriedDebugRegion::
+    ~HitTestAsyncQueriedDebugRegion() = default;
 
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+HitTestManager::HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
     HitTestAsyncQueriedDebugRegion&&) = default;
-HitTestAsyncQueriedDebugRegion& HitTestAsyncQueriedDebugRegion::operator=(
+HitTestManager::HitTestAsyncQueriedDebugRegion&
+HitTestManager::HitTestAsyncQueriedDebugRegion::operator=(
     HitTestAsyncQueriedDebugRegion&&) = default;
-
-}  // namespace
 
 HitTestManager::HitTestManager(SurfaceManager* surface_manager)
     : surface_manager_(surface_manager) {}
