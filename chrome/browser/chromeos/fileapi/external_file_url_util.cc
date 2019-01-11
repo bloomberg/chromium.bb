@@ -46,17 +46,19 @@ void ExtractHostedFileUrl(base::OnceCallback<void(GURL)> callback,
 
 }  // namespace
 
-bool IsExternalFileURLType(storage::FileSystemType type) {
+bool IsExternalFileURLType(storage::FileSystemType type, bool allow_drivefs) {
   return type == storage::kFileSystemTypeDrive ||
          type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          type == storage::kFileSystemTypeProvided ||
-         type == storage::kFileSystemTypeArcContent;
+         type == storage::kFileSystemTypeArcContent ||
+         (allow_drivefs && type == storage::kFileSystemTypeDriveFs);
 }
 
 GURL FileSystemURLToExternalFileURL(
-    const storage::FileSystemURL& file_system_url) {
+    const storage::FileSystemURL& file_system_url,
+    bool allow_drivefs) {
   if (file_system_url.mount_type() != storage::kFileSystemTypeExternal ||
-      !IsExternalFileURLType(file_system_url.type())) {
+      !IsExternalFileURLType(file_system_url.type(), allow_drivefs)) {
     return GURL();
   }
 
@@ -78,7 +80,8 @@ GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path) {
 }
 
 GURL CreateExternalFileURLFromPath(Profile* profile,
-                                   const base::FilePath& path) {
+                                   const base::FilePath& path,
+                                   bool allow_drivefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL raw_file_system_url;
@@ -97,7 +100,7 @@ GURL CreateExternalFileURLFromPath(Profile* profile,
   if (!file_system_url.is_valid())
     return GURL();
 
-  return FileSystemURLToExternalFileURL(file_system_url);
+  return FileSystemURLToExternalFileURL(file_system_url, allow_drivefs);
 }
 
 void ResolveExternalFileUrlFromPath(Profile* profile,
