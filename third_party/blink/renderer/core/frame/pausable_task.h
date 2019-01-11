@@ -9,8 +9,9 @@
 
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/pausable_timer.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace blink {
 
@@ -19,13 +20,13 @@ namespace blink {
 // invalidated.
 class CORE_EXPORT PausableTask final
     : public GarbageCollectedFinalized<PausableTask>,
-      public PausableTimer {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PausableTask);
 
  public:
   // Note: This asserts that the context is currently suspended.
   PausableTask(ExecutionContext*, WebLocalFrame::PausableTaskCallback);
-  ~PausableTask() override;
+  virtual ~PausableTask();
 
   // Checks if the context is paused, and, if not, executes the callback
   // immediately. Otherwise constructs a PausableTask that will run the
@@ -34,12 +35,13 @@ class CORE_EXPORT PausableTask final
 
   // PausableTimer:
   void ContextDestroyed(ExecutionContext*) override;
-  void Fired() override;
 
  private:
+  void Run();
   void Dispose();
 
   WebLocalFrame::PausableTaskCallback callback_;
+  TaskHandle task_handle_;
 
   SelfKeepAlive<PausableTask> keep_alive_;
 };
