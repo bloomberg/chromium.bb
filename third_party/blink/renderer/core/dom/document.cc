@@ -2474,7 +2474,7 @@ void Document::LayoutUpdated() {
 
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
-  View()->ScrollAndFocusFragmentAnchor();
+  View()->InvokeFragmentAnchor();
 
   // Script run in the call above may detach the document.
   if (GetFrame() && View()) {
@@ -3503,7 +3503,7 @@ void Document::ImplicitClose() {
   }
 
   if (View())
-    View()->ScrollAndFocusFragmentAnchor();
+    View()->InvokeFragmentAnchor();
 
   load_event_progress_ = kLoadEventCompleted;
 
@@ -4807,7 +4807,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     CancelFocusAppearanceUpdate();
     EnsurePaintLocationDataValidForNode(focused_element_);
     // UpdateStyleAndLayout can call SetFocusedElement (through
-    // ScrollAndFocusFragmentAnchor called in Document::LayoutUpdated) and clear
+    // InvokeFragmentAnchor called in Document::LayoutUpdated) and clear
     // focused_element_.
     if (focused_element_ != new_focused_element) {
       focus_change_blocked = true;

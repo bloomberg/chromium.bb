@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
+#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -56,9 +57,7 @@ class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class Cursor;
 class DisplayItemClient;
-class Document;
 class DocumentLifecycle;
-class Element;
 class ElementVisibilityObserver;
 class FloatRect;
 class FloatSize;
@@ -75,7 +74,6 @@ class LayoutRect;
 class LayoutSVGRoot;
 class LayoutView;
 class LocalFrame;
-class Node;
 class Page;
 class PaintArtifactCompositor;
 class PaintController;
@@ -384,15 +382,17 @@ class CORE_EXPORT LocalFrameView final
                                 const FloatSize& original_page_size,
                                 float maximum_shrink_factor);
 
-  enum UrlFragmentBehavior { kUrlFragmentScroll, kUrlFragmentDontScroll };
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
-  // If |UrlFragmentScroll| is passed it sets the anchor element so that it
-  // will be focused and scrolled into view during layout. The scroll offset is
-  // maintained during the frame loading process.
-  void ProcessUrlFragment(const KURL&,
-                          UrlFragmentBehavior = kUrlFragmentScroll);
-  void ClearFragmentAnchor();
+  // If |Behavior| is passed it can be used to prevent scrolling/focusing while
+  // still performing all related side-effects like setting :target (used for
+  // e.g. in history restoration to override the scroll offset). The scroll
+  // offset is maintained during the frame loading process.
+  void ProcessUrlFragment(
+      const KURL&,
+      FragmentAnchor::Behavior = FragmentAnchor::kBehaviorScroll);
+  FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
+  void InvokeFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
   // layoutObject, and this view.
@@ -695,7 +695,6 @@ class CORE_EXPORT LocalFrameView final
   CompositorAnimationHost* GetCompositorAnimationHost() const;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
-  void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
     return *paint_timing_detector_;
@@ -825,10 +824,6 @@ class CORE_EXPORT LocalFrameView final
   void UpdatePluginsTimerFired(TimerBase*);
   bool UpdatePlugins();
 
-  bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
-  bool ParseCSSFragmentIdentifier(const String&, String*);
-  Element* FindCSSFragmentAnchor(const AtomicString&, Document*);
-
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
@@ -908,7 +903,7 @@ class CORE_EXPORT LocalFrameView final
   bool is_visually_non_empty_;
   LayoutObjectCounter layout_object_counter_;
 
-  Member<Node> fragment_anchor_;
+  Member<FragmentAnchor> fragment_anchor_;
 
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;

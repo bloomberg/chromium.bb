@@ -96,6 +96,7 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
+#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
@@ -165,10 +166,6 @@ constexpr int kA4PortraitPageHeight = 842;
 constexpr int kLetterPortraitPageWidth = 612;
 constexpr int kLetterPortraitPageHeight = 792;
 
-constexpr char kCssFragmentIdentifierPrefix[] = "targetElement=";
-constexpr size_t kCssFragmentIdentifierPrefixLength =
-    base::size(kCssFragmentIdentifierPrefix);
-
 // Logs a UseCounter for the size of the cursor that will be set. This will be
 // used for compatibility analysis to determine whether the maximum size can be
 // reduced.
@@ -220,7 +217,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       visually_non_empty_character_count_(0),
       visually_non_empty_pixel_count_(0),
       is_visually_non_empty_(false),
-      fragment_anchor_(nullptr),
       sticky_position_object_count_(0),
       layout_size_fixed_to_frame_size_(true),
       needs_update_geometries_(false),
@@ -1345,88 +1341,12 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
 }
 
 void LocalFrameView::ProcessUrlFragment(const KURL& url,
-                                        UrlFragmentBehavior behavior) {
-  // If our URL has no ref, then we have no place we need to jump to.
-  // OTOH If CSS target was set previously, we want to set it to 0, recalc
-  // and possibly paint invalidation because :target pseudo class may have been
-  // set (see bug 11321).
-  // Similarly for svg, if we had a previous svgView() then we need to reset
-  // the initial view if we don't have a fragment.
-  if (!url.HasFragmentIdentifier() && !frame_->GetDocument()->CssTarget() &&
-      !frame_->GetDocument()->IsSVGDocument())
-    return;
+                                        FragmentAnchor::Behavior behavior) {
+  fragment_anchor_ = FragmentAnchor::TryCreate(url, behavior, *frame_);
 
-  // Try the raw fragment for HTML documents, but skip it for `svgView()`:
-  String fragment_identifier = url.FragmentIdentifier();
-  if (!frame_->GetDocument()->IsSVGDocument() &&
-      ProcessUrlFragmentHelper(fragment_identifier, behavior)) {
-    return;
-  }
-
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#the-indicated-part-of-the-document
-  // 5. Let decodedFragment be the result of running UTF-8 decode without BOM on
-  // fragmentBytes.
-  String decoded_fragment =
-      DecodeURLEscapeSequences(fragment_identifier, DecodeURLMode::kUTF8);
-  // 6. If find a potential indicated element with decodedFragment
-  // returns non-null, then the return value is the indicated part of
-  // the document; return.
-  ProcessUrlFragmentHelper(decoded_fragment, behavior);
-}
-
-bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
-                                              UrlFragmentBehavior behavior) {
-  DCHECK(frame_->GetDocument());
-
-  Element* anchor_node;
-  String selector;
-  if (RuntimeEnabledFeatures::CSSFragmentIdentifiersEnabled() &&
-      ParseCSSFragmentIdentifier(name, &selector)) {
-    anchor_node =
-        FindCSSFragmentAnchor(AtomicString(selector), frame_->GetDocument());
-  } else {
-    anchor_node = frame_->GetDocument()->FindAnchor(name);
-  }
-
-  // Setting to null will clear the current target.
-  frame_->GetDocument()->SetCSSTarget(anchor_node);
-
-  if (frame_->GetDocument()->IsSVGDocument()) {
-    if (SVGSVGElement* svg =
-            ToSVGSVGElementOrNull(frame_->GetDocument()->documentElement())) {
-      svg->SetupInitialView(name, anchor_node);
-      if (!anchor_node)
-        return false;
-    }
-    // If this is not the top-level frame, then don't scroll to the
-    // anchor position.
-    if (!frame_->IsMainFrame())
-      return false;
-  }
-
-  // Implement the rule that "" and "top" both mean top of page as in other
-  // browsers.
-  if (!anchor_node &&
-      !(name.IsEmpty() || DeprecatedEqualIgnoringCase(name, "top")))
-    return false;
-
-  if (anchor_node)
-    anchor_node->DispatchActivateInvisibleEventIfNeeded();
-
-  if (behavior == kUrlFragmentDontScroll)
-    return true;
-
-  if (!anchor_node) {
-    fragment_anchor_ = frame_->GetDocument();
-    needs_focus_on_fragment_ = false;
-  } else {
-    fragment_anchor_ = anchor_node;
-    needs_focus_on_fragment_ = true;
-  }
-
-  // If rendering is blocked, we'll necessarily have a layout to kick off the
-  // scroll and focus.
-  if (frame_->GetDocument()->IsRenderingReady()) {
+  // If rendering is blocked, we'll necessarily have a layout to invoke the
+  // anchor.
+  if (fragment_anchor_ && frame_->GetDocument()->IsRenderingReady()) {
     frame_->GetDocument()->UpdateStyleAndLayoutTree();
 
     // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise,
@@ -1434,31 +1354,8 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
     if (NeedsLayout())
       UpdateLayout();
     else
-      ScrollAndFocusFragmentAnchor();
+      InvokeFragmentAnchor();
   }
-
-  return true;
-}
-
-Element* LocalFrameView::FindCSSFragmentAnchor(const AtomicString& selector,
-                                               Document* document) {
-  DummyExceptionStateForTesting exception_state;
-  return document->QuerySelector(selector, exception_state);
-}
-
-bool LocalFrameView::ParseCSSFragmentIdentifier(const String& fragment,
-                                                String* selector) {
-  size_t pos = fragment.Find(kCssFragmentIdentifierPrefix);
-  if (pos == 0) {
-    *selector = fragment.Substring(kCssFragmentIdentifierPrefixLength - 1);
-    return true;
-  }
-
-  return false;
-}
-
-void LocalFrameView::ClearFragmentAnchor() {
-  fragment_anchor_ = nullptr;
 }
 
 void LocalFrameView::SetLayoutSize(const IntSize& size) {
@@ -1544,10 +1441,8 @@ void LocalFrameView::HandleLoadCompleted() {
   if (auto_size_info_)
     auto_size_info_->AutoSizeIfNeeded();
 
-  // If there is a pending layout, the fragment anchor will be cleared when it
-  // finishes.
-  if (!NeedsLayout())
-    ClearFragmentAnchor();
+  if (fragment_anchor_)
+    fragment_anchor_->DidCompleteLoad();
 }
 
 void LocalFrameView::ClearLayoutSubtreeRoot(const LayoutObject& root) {
@@ -1776,73 +1671,13 @@ void LocalFrameView::UpdateBaseBackgroundColorRecursively(
       });
 }
 
-void LocalFrameView::ScrollAndFocusFragmentAnchor() {
-  Node* anchor_node = fragment_anchor_;
-  if (!anchor_node)
+void LocalFrameView::InvokeFragmentAnchor() {
+  FragmentAnchor* fragment_anchor = fragment_anchor_;
+  if (!fragment_anchor)
     return;
 
-  if (!frame_->GetDocument()->IsRenderingReady())
-    return;
-
-  if (anchor_node->GetLayoutObject()) {
-    LayoutRect rect;
-    if (anchor_node != frame_->GetDocument()) {
-      rect = anchor_node->BoundingBoxForScrollIntoView();
-    } else {
-      if (Element* document_element = frame_->GetDocument()->documentElement())
-        rect = document_element->BoundingBoxForScrollIntoView();
-    }
-
-    Frame* boundary_frame = frame_->FindUnsafeParentScrollPropagationBoundary();
-
-    // FIXME: Handle RemoteFrames
-    if (boundary_frame && boundary_frame->IsLocalFrame()) {
-      ToLocalFrame(boundary_frame)
-          ->View()
-          ->SetSafeToPropagateScrollToParent(false);
-    }
-
-    Element* anchor_element = anchor_node->IsElementNode()
-                                  ? ToElement(anchor_node)
-                                  : frame_->GetDocument()->documentElement();
-    if (anchor_element) {
-      ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
-      options->setBlock("start");
-      options->setInlinePosition("nearest");
-      anchor_element->ScrollIntoViewNoVisualUpdate(options);
-    }
-
-    if (boundary_frame && boundary_frame->IsLocalFrame()) {
-      ToLocalFrame(boundary_frame)
-          ->View()
-          ->SetSafeToPropagateScrollToParent(true);
-    }
-
-    if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
-      cache->HandleScrolledToAnchor(anchor_node);
-
-    // If the anchor accepts keyboard focus and fragment scrolling is allowed,
-    // move focus there to aid users relying on keyboard navigation.
-    // If anchorNode is not focusable or fragment scrolling is not allowed,
-    // clear focus, which matches the behavior of other browsers.
-    if (needs_focus_on_fragment_) {
-      if (anchor_node->IsElementNode() &&
-          ToElement(anchor_node)->IsFocusable()) {
-        ToElement(anchor_node)->focus();
-      } else {
-        frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
-            anchor_node);
-        frame_->GetDocument()->ClearFocusedElement();
-      }
-      needs_focus_on_fragment_ = false;
-    }
-  }
-
-  // The fragment anchor should only be maintained while the frame is still
-  // loading.  If the frame is done loading, clear the anchor now. Otherwise,
-  // restore it since it may have been cleared during scrollRectToVisible.
-  fragment_anchor_ =
-      frame_->GetDocument()->IsLoadCompleted() ? nullptr : anchor_node;
+  if (!fragment_anchor_->Invoke())
+    fragment_anchor_ = nullptr;
 }
 
 bool LocalFrameView::UpdatePlugins() {
