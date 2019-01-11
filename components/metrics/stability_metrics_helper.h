@@ -41,7 +41,7 @@ class StabilityMetricsHelper {
   void BrowserChildProcessCrashed();
 
   // Logs the initiation of a page load.
-  void LogLoadStarted(bool is_incognito);
+  void LogLoadStarted();
 
   // Records a renderer process crash.
   void LogRendererCrash(bool was_extension_process,
