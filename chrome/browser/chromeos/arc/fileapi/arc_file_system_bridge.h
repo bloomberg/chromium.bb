@@ -89,6 +89,10 @@ class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
                       OpenFileToReadCallback callback) override;
   void SelectFiles(mojom::SelectFilesRequestPtr request,
                    SelectFilesCallback callback) override;
+  void OnFileSelectorEvent(mojom::FileSelectorEventPtr event,
+                           OnFileSelectorEventCallback callback) override;
+  void GetFileSelectorElements(
+      GetFileSelectorElementsCallback callback) override;
 
  private:
   // Used to implement OpenFileToRead().

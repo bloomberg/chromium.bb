@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -140,7 +140,40 @@ struct SelectFilesResult {
   array<url.mojom.Url> urls;
 };
 
-// Next method ID: 7
+// UI event to be dispatched to ChromeOS file selector.
+struct FileSelectorEvent {
+  // Type of the UI event.
+  FileSelectorEventType type;
+
+  // Specifies the target directory/file for CLICK_DIRECTORY/CLICK_FILE.
+  FileSelectorElement click_target;
+};
+
+// Types of UI events for FileSelectorEvent.
+[Extensible]
+enum FileSelectorEventType {
+  CLICK_OK,         // Clicks OK button.
+  CLICK_DIRECTORY,  // Clicks a directory in the left pane.
+  CLICK_FILE,       // Clicks a file in the right pane.
+};
+
+// Represents a clickable UI element shown on ChromeOS file selector.
+struct FileSelectorElement {
+  // User-visible label of the element (e.g. button text).
+  // This is usually equivalent to accessibility label of the element.
+  string name;
+};
+
+// A subset of clickable UI elements shown on ChromeOS file selector.
+struct FileSelectorElements {
+  // List of directories in the left pane.
+  array<FileSelectorElement> directory_elements;
+
+  // List of files in the right pane.
+  array<FileSelectorElement> file_elements;
+};
+
+// Next method ID: 9
 interface FileSystemHost {
   // Returns the name of the file specified by the URL.
   // When an error occurs, returns null value.
@@ -168,6 +201,17 @@ interface FileSystemHost {
   // Asks the user to select files using ChromeOS file selector.
   [MinVersion=9] SelectFiles@5(SelectFilesRequest request) =>
       (SelectFilesResult result);
+
+  // Dispatches a UI event to the ChromeOS file selector previously opened by
+  // SelectFiles@5. This exists for running Android UI tests (CTS) on ChromeOS
+  // file selector, and thus it is only allowed under test conditions.
+  [MinVersion=11] OnFileSelectorEvent@7(FileSelectorEvent event) => ();
+
+  // Returns UI elements shown on the ChromeOS file selector previously opened
+  // by SelectFiles@5. This exists for running Android UI tests (CTS) on
+  // ChromeOS file selector, and thus it is only allowed under test conditions.
+  [MinVersion=11] GetFileSelectorElements@8() =>
+      (FileSelectorElements elements);
 };
 
 // Next method ID: 13
