@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1112,7 +1113,11 @@ bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
-  return os << profile.guid() << " " << profile.origin() << " "
+  return os << (profile.record_type() == AutofillProfile::LOCAL_PROFILE
+                    ? profile.guid()
+                    : base::HexEncode(profile.server_id().data(),
+                                      profile.server_id().size()))
+            << " " << profile.origin() << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_FULL)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE)) << " "
