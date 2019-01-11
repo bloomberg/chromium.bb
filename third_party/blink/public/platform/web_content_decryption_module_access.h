@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -17,7 +18,8 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleAccess {
  public:
   virtual ~WebContentDecryptionModuleAccess();
   virtual void CreateContentDecryptionModule(
-      WebContentDecryptionModuleResult) = 0;
+      WebContentDecryptionModuleResult,
+      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual WebMediaKeySystemConfiguration GetConfiguration() = 0;
   virtual WebString GetKeySystem() = 0;
 };

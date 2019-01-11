@@ -33,7 +33,8 @@ class WebContentDecryptionModuleAccessImpl
   blink::WebString GetKeySystem() override;
   blink::WebMediaKeySystemConfiguration GetConfiguration() override;
   void CreateContentDecryptionModule(
-      blink::WebContentDecryptionModuleResult result) override;
+      blink::WebContentDecryptionModuleResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   WebContentDecryptionModuleAccessImpl(

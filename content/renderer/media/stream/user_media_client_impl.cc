@@ -126,7 +126,8 @@ UserMediaClientImpl::UserMediaClientImpl(
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  base::Unretained(this))),
+                  base::Unretained(this)),
+              render_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {

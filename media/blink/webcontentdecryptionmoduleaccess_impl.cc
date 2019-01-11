@@ -71,14 +71,15 @@ WebContentDecryptionModuleAccessImpl::GetConfiguration() {
 }
 
 void WebContentDecryptionModuleAccessImpl::CreateContentDecryptionModule(
-    blink::WebContentDecryptionModuleResult result) {
+    blink::WebContentDecryptionModuleResult result,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // This method needs to run asynchronously, as it may need to load the CDM.
   // As this object's lifetime is controlled by MediaKeySystemAccess on the
   // blink side, copy all values needed by CreateCdm() in case the blink object
   // gets garbage-collected.
   std::unique_ptr<blink::WebContentDecryptionModuleResult> result_copy(
       new blink::WebContentDecryptionModuleResult(result));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateCdm, client_, key_system_, security_origin_,
                      cdm_config_, base::Passed(&result_copy)));

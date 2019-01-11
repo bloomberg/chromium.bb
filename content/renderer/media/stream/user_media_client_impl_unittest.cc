@@ -302,7 +302,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
             std::move(media_stream_device_observer),
             base::BindRepeating(
                 &UserMediaProcessorUnderTest::media_devices_dispatcher,
-                base::Unretained(this))),
+                base::Unretained(this)),
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         factory_(dependency_factory),
         media_devices_dispatcher_(std::move(media_devices_dispatcher)),
         state_(state) {}
