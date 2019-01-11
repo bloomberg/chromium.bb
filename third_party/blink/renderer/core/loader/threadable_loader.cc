@@ -219,10 +219,11 @@ ThreadableLoader::ThreadableLoader(
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
   DCHECK(client);
-  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
-    scope->EnsureFetcher();
-  if (!resource_fetcher_)
+  if (!resource_fetcher_) {
+    if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
+      scope->EnsureFetcher();
     resource_fetcher_ = execution_context_->Fetcher();
+  }
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
