@@ -247,12 +247,11 @@ void LoginBaseBubbleView::ScheduleAnimation(bool visible) {
 
   float opacity_start = 0.0f;
   float opacity_end = 1.0f;
-  if (!visible)
+  if (!visible) {
     std::swap(opacity_start, opacity_end);
-
-  // We only need to handle animation ending if we're hiding the bubble.
-  if (!visible)
+    // We only need to handle animation ending if we're hiding the bubble.
     layer()->GetAnimator()->AddObserver(this);
+  }
 
   layer()->SetOpacity(opacity_start);
   {

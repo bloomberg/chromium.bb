@@ -65,6 +65,7 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView,
   void EnsureInScreen();
 
   std::unique_ptr<LoginBubbleHandler> bubble_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginBaseBubbleView);
 };
 
