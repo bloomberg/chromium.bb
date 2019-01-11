@@ -190,6 +190,15 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // - Possible next states: kFrameIsDetached, kGlobalObjectIsDetached,
   // kForciblyPurgeV8Memory
   //
+  // * kForciblyPurgeV8Memory
+  // The context is initialized and its frame is still attached to the DOM, but
+  // the global object is detached from the global proxy in order to drop all
+  // references to v8, hopefully causing all JS objects to be collected for
+  // memory reduction.
+  // - Possible next states: kGlobalObjectIsDetached
+  // Navigation can occur after V8 memory purge, and the state will transition
+  // to kGlobalObjectIsDetached in that case.
+  //
   // * kGlobalObjectIsDetached
   // The context is initialized and its frame is still attached to the DOM, but
   // the global object(inner global)'s Document is no longer the active Document
@@ -216,28 +225,19 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // weak reference so that it's collectable when author script has no
   // reference.
   // - Possible next states: n/a
-  //
-  // * kForciblyPurgeV8Memory
-  // The context is initialized and its frame is still attached to the DOM, but
-  // the global object is detached from the global proxy in order to drop all
-  // references to v8, hopefully causing all JS objects to be collected for
-  // memory reduction.
-  // There is no possible next state and the renderer process is going to be
-  // shut down soon.
-  // - Possible next states: n/a
   enum class Lifecycle {
     // v8::Context is not yet initialized.
     kContextIsUninitialized,
     // v8::Context is initialized.
     kContextIsInitialized,
     // The global object (inner global) is detached from the global proxy (outer
+    // global). Could transition to kGlobalObjectIsDetached.
+    kForciblyPurgeV8Memory,
+    // The global object (inner global) is detached from the global proxy (outer
     // global).
     kGlobalObjectIsDetached,
     // The context's frame is detached from the DOM.
     kFrameIsDetached,
-    // The global object (inner global) is detached from the global proxy (outer
-    // global), and there is no next state after this.
-    kForciblyPurgeV8Memory,
   };
 
   WindowProxy(v8::Isolate*, Frame&, scoped_refptr<DOMWrapperWorld>);

@@ -1728,7 +1728,8 @@ void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
 }
 
 void LocalFrame::ForciblyPurgeV8Memory() {
-  // TODO(yuzus): Implement ContextMummified callback and call from here.
+  GetDocument()->NotifyContextDestroyed();
+
   WindowProxyManager* window_proxy_manager = GetWindowProxyManager();
   window_proxy_manager->ClearForV8MemoryPurge();
   Loader().StopAllLoaders();

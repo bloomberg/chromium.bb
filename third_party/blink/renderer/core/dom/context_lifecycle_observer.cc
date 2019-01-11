@@ -22,8 +22,15 @@ ExecutionContext* ContextClient::GetExecutionContext() const {
              : nullptr;
 }
 
+Document* ContextClient::GetDocument() const {
+  return execution_context_
+             ? DynamicTo<Document>(
+                   static_cast<ExecutionContext*>(execution_context_))
+             : nullptr;
+}
+
 LocalFrame* ContextClient::GetFrame() const {
-  auto* document = DynamicTo<Document>(GetExecutionContext());
+  auto* document = GetDocument();
   return document ? document->GetFrame() : nullptr;
 }
 
