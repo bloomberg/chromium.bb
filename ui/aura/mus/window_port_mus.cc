@@ -17,6 +17,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -694,6 +695,11 @@ void WindowPortMus::OnPropertyChanged(const void* key,
   // See comment in OnWillChangeProperty() as to why |window_| may be null.
   if (!window_)
     return;
+
+  if (key == client::kDragDropDelegateKey) {
+    SetCanAcceptDrops(window_->GetProperty(client::kDragDropDelegateKey) !=
+                      nullptr);
+  }
 
   ServerChangeData change_data;
   change_data.property_name =

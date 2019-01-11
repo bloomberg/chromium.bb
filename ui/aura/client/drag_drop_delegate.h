@@ -6,6 +6,7 @@
 #define UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_
 
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -44,6 +45,9 @@ class AURA_EXPORT DragDropDelegate {
 AURA_EXPORT void SetDragDropDelegate(Window* window,
                                      DragDropDelegate* delegate);
 AURA_EXPORT DragDropDelegate* GetDragDropDelegate(Window* window);
+
+AURA_EXPORT extern const WindowProperty<DragDropDelegate*>* const
+    kDragDropDelegateKey;
 
 }  // namespace client
 }  // namespace aura

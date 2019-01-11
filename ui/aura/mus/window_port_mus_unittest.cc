@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -212,6 +213,44 @@ TEST_F(WindowPortMusTest, PrepareForEmbed) {
   auto* window_mus = WindowPortMus::Get(&window);
   ASSERT_TRUE(window_mus->client_surface_embedder());
   EXPECT_TRUE(window_mus->client_surface_embedder()->HasPrimarySurfaceId());
+}
+
+class TestDragDropDelegate : public client::DragDropDelegate {
+ public:
+  TestDragDropDelegate() = default;
+  ~TestDragDropDelegate() override = default;
+
+  // client::DragDropDelegate:
+  void OnDragEntered(const ui::DropTargetEvent& event) override {}
+  int OnDragUpdated(const ui::DropTargetEvent& event) override { return 0; }
+  void OnDragExited() override {}
+  int OnPerformDrop(const ui::DropTargetEvent& event) override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDragDropDelegate);
+};
+
+TEST_F(WindowPortMusTest, CanAcceptDrops) {
+  TestDragDropDelegate test_delegate;
+
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  EXPECT_EQ(0u, window_tree()->get_and_clear_accepts_drops_count());
+
+  // Setting the DragDropDelegate should implicitly call
+  // SetCanAcceptDrops(true).
+  client::SetDragDropDelegate(&window, &test_delegate);
+  EXPECT_EQ(1u, window_tree()->get_and_clear_accepts_drops_count());
+  EXPECT_TRUE(window_tree()->last_accepts_drops());
+
+  // And removing the DragDropDelegate should implicitly call
+  // SetCanAcceptDrops(false).
+  client::SetDragDropDelegate(&window, nullptr);
+  EXPECT_EQ(1u, window_tree()->get_and_clear_accepts_drops_count());
+  EXPECT_FALSE(window_tree()->last_accepts_drops());
 }
 
 }  // namespace aura

@@ -484,8 +484,6 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
   if (!params.accept_events)
     window()->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
-  else
-    aura::WindowPortMus::Get(content_window())->SetCanAcceptDrops(true);
 
   // Sets the has-content info for the occlusion tracker that runs on the Window
   // Service side.

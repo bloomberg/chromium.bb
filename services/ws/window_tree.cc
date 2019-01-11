@@ -1640,6 +1640,9 @@ void WindowTree::UnattachFrameSinkId(Id transport_window_id) {
 }
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
+  DVLOG(3) << "SetCanAcceptDrops id="
+           << MakeClientWindowId(window_id).ToString()
+           << " value=" << accepts_drops;
   aura::Window* window = GetWindowByTransportId(window_id);
   if (!window) {
     DVLOG(1) << "SetCanAcceptDrops failed (no window)";
