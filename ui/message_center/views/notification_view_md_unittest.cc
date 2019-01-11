@@ -228,7 +228,6 @@ const SkBitmap NotificationViewMDTest::CreateBitmap(int width,
 
 std::vector<ButtonInfo> NotificationViewMDTest::CreateButtons(int number) {
   ButtonInfo info(base::ASCIIToUTF16("Test button."));
-  info.icon = CreateTestImage(4, 4);
   return std::vector<ButtonInfo>(number, info);
 }
 

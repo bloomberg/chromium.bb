@@ -65,9 +65,6 @@ class MessageCenterImpl : public MessageCenter,
                            const gfx::Image& image) override;
   void SetNotificationImage(const std::string& notification_id,
                             const gfx::Image& image) override;
-  void SetNotificationButtonIcon(const std::string& notification_id,
-                                 int button_index,
-                                 const gfx::Image& image) override;
   void ClickOnNotification(const std::string& id) override;
   void ClickOnNotificationButton(const std::string& id,
                                  int button_index) override;

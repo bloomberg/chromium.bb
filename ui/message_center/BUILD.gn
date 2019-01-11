@@ -113,8 +113,6 @@ jumbo_component("message_center") {
         "views/notification_control_buttons_view.h",
         "views/notification_header_view.cc",
         "views/notification_header_view.h",
-        "views/notification_view.cc",
-        "views/notification_view.h",
         "views/notification_view_md.cc",
         "views/notification_view_md.h",
         "views/padded_button.cc",
@@ -132,6 +130,8 @@ jumbo_component("message_center") {
           "views/message_view_context_menu_controller.h",
           "views/notification_menu_model.cc",
           "views/notification_menu_model.h",
+          "views/notification_view.cc",
+          "views/notification_view.h",
         ]
       }
       deps += [
@@ -224,11 +224,13 @@ if (enable_message_center) {
         "views/bounded_label_unittest.cc",
         "views/message_popup_collection_unittest.cc",
         "views/notification_view_md_unittest.cc",
-        "views/notification_view_unittest.cc",
         "views/slide_out_controller_unittest.cc",
       ]
       if (!is_chromeos) {
-        sources += [ "views/notification_menu_model_unittest.cc" ]
+        sources += [
+          "views/notification_menu_model_unittest.cc",
+          "views/notification_view_unittest.cc",
+        ]
       }
       deps += [
         # Compositor is needed by message_center_view_unittest.cc and for the
