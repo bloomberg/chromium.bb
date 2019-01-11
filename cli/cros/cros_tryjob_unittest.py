@@ -638,9 +638,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
 
     # Default buildroot changes.
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--debug',
         '--buildroot', mock.ANY,
         '--git-cache-dir', mock.ANY,
+        '--no-buildbot-tags', '--debug',
         '-b', 'master',
         '-g', '123',
     ])
@@ -698,9 +698,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--debug',
         '--buildroot', '/buildroot',
         '--git-cache-dir', '/buildroot/.git_cache',
+        '--no-buildbot-tags', '--debug',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
@@ -733,10 +733,11 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
     self.assertEqual(args_out, [
+        '--buildroot', '/buildroot/repository',
+        '--workspace', '/buildroot/workspace',
+        '--git-cache-dir', '/buildroot/.git_cache',
         '--debug', '--nobootstrap', '--noreexec',
         '--no-buildbot-tags',
-        '--buildroot', '/buildroot',
-        '--git-cache-dir', '/buildroot/.git_cache',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
@@ -768,9 +769,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
 
     # Default buildroot changes.
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--buildbot',
         '--buildroot', mock.ANY,
         '--git-cache-dir', mock.ANY,
+        '--no-buildbot-tags', '--buildbot',
         '-b', 'master',
     ])
 

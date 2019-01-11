@@ -102,7 +102,10 @@ def CbuildbotArgs(options):
       args.append('--remote-trybot')
 
   elif options.where == LOCAL:
-    args.append('--no-buildbot-tags')
+    args.extend(('--buildroot', options.buildroot,
+                 '--git-cache-dir', options.git_cache_dir,
+                 '--no-buildbot-tags'))
+
     if options.production:
       # This is expected to fail on workstations without an explicit --debug,
       # or running 'branch-util'.
@@ -110,9 +113,14 @@ def CbuildbotArgs(options):
     else:
       args.append('--debug')
 
+
   elif options.where == CBUILDBOT:
-    args.extend(('--debug', '--nobootstrap', '--noreexec',
+    args.extend(('--buildroot', os.path.join(options.buildroot, 'repository'),
+                 '--workspace', os.path.join(options.buildroot, 'workspace'),
+                 '--git-cache-dir', options.git_cache_dir,
+                 '--debug', '--nobootstrap', '--noreexec',
                  '--no-buildbot-tags'))
+
     if options.production:
       # This is expected to fail on workstations without an explicit --debug,
       # or running 'branch-util'.
@@ -121,9 +129,6 @@ def CbuildbotArgs(options):
   else:
     raise Exception('Unknown options.where: %s', options.where)
 
-  if options.buildroot:
-    args.extend(('--buildroot', options.buildroot,
-                 '--git-cache-dir', options.git_cache_dir))
 
   if options.branch:
     args.extend(('-b', options.branch))
