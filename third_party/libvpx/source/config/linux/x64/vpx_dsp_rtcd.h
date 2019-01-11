@@ -1023,7 +1023,13 @@ void vpx_highbd_10_get16x16var_c(const uint8_t* src_ptr,
                                  int ref_stride,
                                  unsigned int* sse,
                                  int* sum);
-#define vpx_highbd_10_get16x16var vpx_highbd_10_get16x16var_c
+void vpx_highbd_10_get16x16var_sse2(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* ref_ptr,
+                                    int ref_stride,
+                                    unsigned int* sse,
+                                    int* sum);
+#define vpx_highbd_10_get16x16var vpx_highbd_10_get16x16var_sse2
 
 void vpx_highbd_10_get8x8var_c(const uint8_t* src_ptr,
                                int src_stride,
@@ -1031,7 +1037,13 @@ void vpx_highbd_10_get8x8var_c(const uint8_t* src_ptr,
                                int ref_stride,
                                unsigned int* sse,
                                int* sum);
-#define vpx_highbd_10_get8x8var vpx_highbd_10_get8x8var_c
+void vpx_highbd_10_get8x8var_sse2(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride,
+                                  unsigned int* sse,
+                                  int* sum);
+#define vpx_highbd_10_get8x8var vpx_highbd_10_get8x8var_sse2
 
 unsigned int vpx_highbd_10_mse16x16_c(const uint8_t* src_ptr,
                                       int src_stride,
@@ -1674,7 +1686,13 @@ void vpx_highbd_12_get16x16var_c(const uint8_t* src_ptr,
                                  int ref_stride,
                                  unsigned int* sse,
                                  int* sum);
-#define vpx_highbd_12_get16x16var vpx_highbd_12_get16x16var_c
+void vpx_highbd_12_get16x16var_sse2(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* ref_ptr,
+                                    int ref_stride,
+                                    unsigned int* sse,
+                                    int* sum);
+#define vpx_highbd_12_get16x16var vpx_highbd_12_get16x16var_sse2
 
 void vpx_highbd_12_get8x8var_c(const uint8_t* src_ptr,
                                int src_stride,
@@ -1682,7 +1700,13 @@ void vpx_highbd_12_get8x8var_c(const uint8_t* src_ptr,
                                int ref_stride,
                                unsigned int* sse,
                                int* sum);
-#define vpx_highbd_12_get8x8var vpx_highbd_12_get8x8var_c
+void vpx_highbd_12_get8x8var_sse2(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride,
+                                  unsigned int* sse,
+                                  int* sum);
+#define vpx_highbd_12_get8x8var vpx_highbd_12_get8x8var_sse2
 
 unsigned int vpx_highbd_12_mse16x16_c(const uint8_t* src_ptr,
                                       int src_stride,
@@ -2325,7 +2349,13 @@ void vpx_highbd_8_get16x16var_c(const uint8_t* src_ptr,
                                 int ref_stride,
                                 unsigned int* sse,
                                 int* sum);
-#define vpx_highbd_8_get16x16var vpx_highbd_8_get16x16var_c
+void vpx_highbd_8_get16x16var_sse2(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* ref_ptr,
+                                   int ref_stride,
+                                   unsigned int* sse,
+                                   int* sum);
+#define vpx_highbd_8_get16x16var vpx_highbd_8_get16x16var_sse2
 
 void vpx_highbd_8_get8x8var_c(const uint8_t* src_ptr,
                               int src_stride,
@@ -2333,7 +2363,13 @@ void vpx_highbd_8_get8x8var_c(const uint8_t* src_ptr,
                               int ref_stride,
                               unsigned int* sse,
                               int* sum);
-#define vpx_highbd_8_get8x8var vpx_highbd_8_get8x8var_c
+void vpx_highbd_8_get8x8var_sse2(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride,
+                                 unsigned int* sse,
+                                 int* sum);
+#define vpx_highbd_8_get8x8var vpx_highbd_8_get8x8var_sse2
 
 unsigned int vpx_highbd_8_mse16x16_c(const uint8_t* src_ptr,
                                      int src_stride,
