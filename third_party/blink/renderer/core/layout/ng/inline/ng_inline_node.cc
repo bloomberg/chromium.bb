@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
@@ -344,13 +343,6 @@ void TruncateOrPadText(String* text, unsigned length) {
   }
 }
 
-template <typename OffsetMappingBuilder>
-bool MayBeBidiEnabled(
-    const String& text_content,
-    const NGInlineItemsBuilderTemplate<OffsetMappingBuilder>& builder) {
-  return !text_content.Is8Bit() || builder.HasBidiControls();
-}
-
 }  // namespace
 
 NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
@@ -436,41 +428,19 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr,
                          update_layout);
 
-  // For non-NG object, we need the text, and also the inline items to resolve
-  // bidi levels. Otherwise |data| already has the text from the pre-layout
-  // phase, check they match.
-  if (data->text_content.IsNull()) {
-    DCHECK(!layout_block_flow->IsLayoutNGMixin());
+  // We need the text for non-NG object. Otherwise |data| already has the text
+  // from the pre-layout phase, check they match.
+  if (data->text_content.IsNull())
     data->text_content = builder.ToString();
-    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
-      // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
-      // point the string may or may not contain RTL characters.
-      // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if
-      // it doesn't contain any RTL characters.
-      data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
-      if (data->is_bidi_enabled_) {
-        // |builder| performs some validity checks with |items|, so we can't
-        // simply move them to |data|, but have to copy.
-        // TODO(xiaochengh): Change it into a move.
-        data->items = items;
-        SegmentBidiRunsInternal(data, layout_block_flow->StyleRef());
-      }
-    }
-  } else {
-    DCHECK(layout_block_flow->IsLayoutNGMixin());
+  else
     DCHECK_EQ(data->text_content, builder.ToString());
-  }
-
-  std::unique_ptr<NGCaretNavigator> caret_navigator;
-  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-    caret_navigator = std::make_unique<NGCaretNavigator>(*data);
 
   // TODO(xiaochengh): This doesn't compute offset mapping correctly when
   // text-transform CSS property changes text length.
   NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
   mapping_builder.SetDestinationString(data->text_content);
-  data->offset_mapping = std::make_unique<NGOffsetMapping>(
-      mapping_builder.Build(std::move(caret_navigator)));
+  data->offset_mapping =
+      std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   DCHECK(data->offset_mapping);
 }
 
@@ -530,7 +500,8 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   // point the string may or may not contain RTL characters.
   // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
   // doesn't contain any RTL characters.
-  data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
+  data->is_bidi_enabled_ =
+      !data->text_content.Is8Bit() || builder.HasBidiControls();
   data->is_empty_inline_ = builder.IsEmptyInline();
 }
 
@@ -618,11 +589,9 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
   }
 }
 
-// static
 // Segment bidi runs by resolving bidi embedding levels.
 // http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
-void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
-                                           const ComputedStyle& style) {
+void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
   if (!data->is_bidi_enabled_) {
     data->SetBaseDirection(TextDirection::kLtr);
     return;
@@ -630,7 +599,7 @@ void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
 
   NGBidiParagraph bidi;
   data->text_content.Ensure16Bit();
-  if (!bidi.SetParagraph(data->text_content, style)) {
+  if (!bidi.SetParagraph(data->text_content, Style())) {
     // On failure, give up bidi resolving and reordering.
     data->is_bidi_enabled_ = false;
     data->SetBaseDirection(TextDirection::kLtr);
@@ -663,10 +632,6 @@ void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
     item_index++;
   DCHECK_EQ(item_index, items.size());
 #endif
-}
-
-void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
-  SegmentBidiRunsInternal(data, Style());
 }
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,

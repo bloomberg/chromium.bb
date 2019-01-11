@@ -142,11 +142,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                    NGInlineNodeData* data);
 
-  // This function shares bidi segmentation code between inline layout algorithm
-  // and |NGCaretNavigator| building, which may run on legacy layout.
-  // TODO(layout-dev): Merge with |SegmentBidiRuns| when we remove legacy layout
-  static void SegmentBidiRunsInternal(NGInlineNodeData*, const ComputedStyle&);
-
   friend class NGLineBreakerTest;
   friend class NGInlineNodeLegacy;
 };
