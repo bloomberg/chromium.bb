@@ -28,6 +28,9 @@ const char kErrorUnknown[] = "Unknown";
 
 const char kDefaultCellularNetworkPath[] = "/cellular";
 
+// TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
+constexpr char kPaymentPortalMethodPost[] = "POST";
+
 std::string GetStringFromDictionary(const base::Value* dict, const char* key) {
   const base::Value* v = dict ? dict->FindKey(key) : nullptr;
   return v ? v->GetString() : std::string();
@@ -127,6 +130,17 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (!portal_url_value)
       return false;
     payment_url_ = portal_url_value->GetString();
+    // If payment portal uses post method, set up post data.
+    const base::Value* portal_method_value = value.FindKeyOfType(
+        shill::kPaymentPortalMethod, base::Value::Type::STRING);
+    const base::Value* portal_post_data_value = value.FindKeyOfType(
+        shill::kPaymentPortalPostData, base::Value::Type::STRING);
+    if (portal_method_value &&
+        portal_method_value->GetString() == kPaymentPortalMethodPost &&
+        portal_post_data_value) {
+      payment_post_data_ = portal_post_data_value->GetString();
+    }
+    return true;
   } else if (key == shill::kSecurityClassProperty) {
     return GetStringValue(key, value, &security_class_);
   } else if (key == shill::kEapMethodProperty) {

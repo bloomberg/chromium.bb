@@ -312,4 +312,68 @@ TEST_F(NetworkStateTest, TetherProperties) {
   EXPECT_EQ("Project Fi", carrier);
 }
 
+TEST_F(NetworkStateTest, CelularPaymentPortalPost) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeCellular));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "Test Cellular"));
+  EXPECT_TRUE(SetStringProperty(shill::kNetworkTechnologyProperty,
+                                shill::kNetworkTechnologyLteAdvanced));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationTypeProperty,
+                                shill::kActivationTypeOTA));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivated));
+
+  base::Value payment_portal(base::Value::Type::DICTIONARY);
+  payment_portal.SetKey(shill::kPaymentPortalURL,
+                        base::Value("http://test-portal.com"));
+  payment_portal.SetKey(shill::kPaymentPortalMethod, base::Value("POST"));
+  payment_portal.SetKey(shill::kPaymentPortalPostData,
+                        base::Value("fake_data"));
+
+  EXPECT_TRUE(
+      SetProperty(shill::kPaymentPortalProperty,
+                  base::Value::ToUniquePtrValue(std::move(payment_portal))));
+
+  SignalInitialPropertiesReceived();
+  EXPECT_EQ("Test Cellular", network_state_.name());
+  EXPECT_EQ(shill::kNetworkTechnologyLteAdvanced,
+            network_state_.network_technology());
+  EXPECT_EQ(shill::kActivationTypeOTA, network_state_.activation_type());
+  EXPECT_EQ(shill::kActivationStateActivated,
+            network_state_.activation_state());
+  EXPECT_EQ("http://test-portal.com", network_state_.payment_url());
+  EXPECT_EQ("fake_data", network_state_.payment_post_data());
+}
+
+TEST_F(NetworkStateTest, CelularPaymentPortalGet) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeCellular));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "Test Cellular"));
+  EXPECT_TRUE(SetStringProperty(shill::kNetworkTechnologyProperty,
+                                shill::kNetworkTechnologyLteAdvanced));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationTypeProperty,
+                                shill::kActivationTypeOTA));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivated));
+
+  base::Value payment_portal(base::Value::Type::DICTIONARY);
+  payment_portal.SetKey(shill::kPaymentPortalURL,
+                        base::Value("http://test-portal.com"));
+  payment_portal.SetKey(shill::kPaymentPortalMethod, base::Value("GET"));
+  payment_portal.SetKey(shill::kPaymentPortalPostData, base::Value("ignored"));
+
+  EXPECT_TRUE(
+      SetProperty(shill::kPaymentPortalProperty,
+                  base::Value::ToUniquePtrValue(std::move(payment_portal))));
+
+  SignalInitialPropertiesReceived();
+
+  EXPECT_EQ("Test Cellular", network_state_.name());
+  EXPECT_EQ(shill::kNetworkTechnologyLteAdvanced,
+            network_state_.network_technology());
+  EXPECT_EQ(shill::kActivationTypeOTA, network_state_.activation_type());
+  EXPECT_EQ(shill::kActivationStateActivated,
+            network_state_.activation_state());
+  EXPECT_EQ("http://test-portal.com", network_state_.payment_url());
+  EXPECT_EQ("", network_state_.payment_post_data());
+}
+
 }  // namespace chromeos
