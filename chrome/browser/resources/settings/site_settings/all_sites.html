@@ -14,6 +14,7 @@
     <style include="settings-shared md-select">
       /* Align the search box search icon with the site-entry icons. */
       #searchAndSort {
+        align-items: center;
         display: flex;
         justify-content: space-between;
         margin: 0 var(--cr-icon-button-margin-start);
@@ -32,9 +33,11 @@
       }
     </style>
     <div id="searchAndSort">
-      <cr-search-field label="$i18n{siteSettingsAllSitesSearch}"
-          on-search-changed="onSearchChanged_">
-      </cr-search-field>
+      <div>
+        <cr-search-field label="$i18n{siteSettingsAllSitesSearch}"
+            on-search-changed="onSearchChanged_">
+        </cr-search-field>
+      </div>
 
       <div>
         <label id="sortLabel">$i18n{siteSettingsAllSitesSort}</label>
