@@ -14,7 +14,6 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"
 #import "ios/web/public/web_client.h"
@@ -55,19 +54,9 @@ void LegacyNavigationManagerImpl::OnNavigationItemsPruned(
 }
 
 void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
-  LoadCommittedDetails details;
-  details.item = GetLastCommittedItemInCurrentOrRestoredSession();
-  DCHECK(details.item);
-  details.previous_item_index = [session_controller_ previousItemIndex];
-  if (details.previous_item_index >= 0) {
-    DCHECK([session_controller_ previousItem]);
-    details.is_in_page = IsFragmentChangeNavigationBetweenUrls(
-        [session_controller_ previousItem]->GetURL(), details.item->GetURL());
-  } else {
-    details.is_in_page = NO;
-  }
-
-  delegate_->OnNavigationItemCommitted(details);
+  web::NavigationItem* item = GetLastCommittedItemInCurrentOrRestoredSession();
+  DCHECK(item);
+  delegate_->OnNavigationItemCommitted(item);
 }
 
 CRWSessionController* LegacyNavigationManagerImpl::GetSessionController()

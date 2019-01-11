@@ -16,7 +16,6 @@ namespace web {
 
 struct FaviconURL;
 class NavigationContext;
-struct LoadCommittedDetails;
 class WebFrame;
 class WebState;
 
@@ -41,17 +40,6 @@ class WebStateObserver {
   // TODO(crbug.com/910894): Remove this method.
   virtual void NavigationItemsPruned(WebState* web_state,
                                      size_t pruned_item_count) {}
-
-  // This method is invoked when a new non-pending navigation item is created.
-  // This corresponds to one NavigationManager item being created
-  // (in the case of new navigations) or renavigated to (for back/forward
-  // navigations).
-  // DEPRECATED. Use |DidFinishNavigation| to listen for
-  // "navigation item committed" signals.
-  // TODO(crbug.com/781534): Remove this method.
-  virtual void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) {}
 
   // Called when a navigation started in the WebState for the main frame.
   // |navigation_context| is unique to a specific navigation. The same

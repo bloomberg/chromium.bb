@@ -45,7 +45,6 @@ namespace web {
 class BrowserState;
 struct ContextMenuParams;
 struct FaviconURL;
-struct LoadCommittedDetails;
 class NavigationContextImpl;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
@@ -282,8 +281,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void LoadIfNecessary() override;
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
-  void OnNavigationItemCommitted(
-      const LoadCommittedDetails& load_details) override;
+  void OnNavigationItemCommitted(NavigationItem* item) override;
 
   // Updates the HTTP response headers for the main page using the headers
   // passed to the OnHttpResponseHeadersReceived() function below.

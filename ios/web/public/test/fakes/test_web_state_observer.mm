@@ -42,15 +42,6 @@ void TestWebStateObserver::WasHidden(WebState* web_state) {
   was_hidden_info_->web_state = web_state;
 }
 
-void TestWebStateObserver::NavigationItemCommitted(
-    WebState* web_state,
-    const LoadCommittedDetails& load_details) {
-  ASSERT_EQ(web_state_, web_state);
-  commit_navigation_info_ = std::make_unique<web::TestCommitNavigationInfo>();
-  commit_navigation_info_->web_state = web_state;
-  commit_navigation_info_->load_details = load_details;
-}
-
 void TestWebStateObserver::PageLoaded(
     WebState* web_state,
     PageLoadCompletionStatus load_completion_status) {

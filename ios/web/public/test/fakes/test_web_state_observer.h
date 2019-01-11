@@ -34,10 +34,6 @@ class TestWebStateObserver : public WebStateObserver {
   web::TestDidFinishNavigationInfo* did_finish_navigation_info() {
     return did_finish_navigation_info_.get();
   }
-  // Arguments passed to |NavigationItemCommitted|.
-  web::TestCommitNavigationInfo* commit_navigation_info() {
-    return commit_navigation_info_.get();
-  }
   // Arguments passed to |PageLoaded|.
   web::TestLoadPageInfo* load_page_info() { return load_page_info_.get(); }
   // Arguments passed to |LoadProgressChanged|.
@@ -91,8 +87,6 @@ class TestWebStateObserver : public WebStateObserver {
   // WebStateObserver implementation:
   void WasShown(WebState* web_state) override;
   void WasHidden(WebState* web_state) override;
-  void NavigationItemCommitted(WebState* web_state,
-                               const LoadCommittedDetails&) override;
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status) override;
   void LoadProgressChanged(WebState* web_state, double progress) override;
@@ -121,7 +115,6 @@ class TestWebStateObserver : public WebStateObserver {
 
   std::unique_ptr<web::TestWasShownInfo> was_shown_info_;
   std::unique_ptr<web::TestWasHiddenInfo> was_hidden_info_;
-  std::unique_ptr<web::TestCommitNavigationInfo> commit_navigation_info_;
   std::unique_ptr<web::TestLoadPageInfo> load_page_info_;
   std::unique_ptr<web::TestChangeLoadingProgressInfo>
       change_loading_progress_info_;

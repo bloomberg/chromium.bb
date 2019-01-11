@@ -20,7 +20,6 @@
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -85,11 +84,8 @@ void WKBasedNavigationManagerImpl::DetachFromWebView() {
 }
 
 void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
-  LoadCommittedDetails details;
-  details.item = GetLastCommittedItemInCurrentOrRestoredSession();
-  DCHECK(details.item);
-
-  if (!wk_navigation_util::IsRestoreSessionUrl(details.item->GetURL()) &&
+  NavigationItem* item = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!wk_navigation_util::IsRestoreSessionUrl(item->GetURL()) &&
       is_restore_session_in_progress_) {
     is_restore_session_in_progress_ = false;
     restored_visible_item_.reset();
@@ -105,14 +101,7 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
     LoadIfNecessary();
   }
 
-  details.previous_item_index = GetPreviousItemIndex();
-  NavigationItem* previous_item = GetItemAtIndex(details.previous_item_index);
-  details.is_in_page =
-      previous_item ? IsFragmentChangeNavigationBetweenUrls(
-                          previous_item->GetURL(), details.item->GetURL())
-                    : NO;
-
-  delegate_->OnNavigationItemCommitted(details);
+  delegate_->OnNavigationItemCommitted(item);
 }
 
 CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()

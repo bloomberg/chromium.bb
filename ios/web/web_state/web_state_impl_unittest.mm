@@ -23,7 +23,6 @@
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -417,20 +416,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   ASSERT_TRUE(observer->navigation_items_pruned_info());
   EXPECT_EQ(web_state_.get(),
             observer->navigation_items_pruned_info()->web_state);
-
-  // Test that NavigationItemCommitted() is called.
-  ASSERT_FALSE(observer->commit_navigation_info());
-  LoadCommittedDetails details;
-  auto item = std::make_unique<NavigationItemImpl>();
-  details.item = item.get();
-  web_state_->OnNavigationItemCommitted(details);
-  ASSERT_TRUE(observer->commit_navigation_info());
-  EXPECT_EQ(web_state_.get(), observer->commit_navigation_info()->web_state);
-  LoadCommittedDetails actual_details =
-      observer->commit_navigation_info()->load_details;
-  EXPECT_EQ(details.item, actual_details.item);
-  EXPECT_EQ(details.previous_item_index, actual_details.previous_item_index);
-  EXPECT_EQ(details.is_in_page, actual_details.is_in_page);
 
   // Test that OnPageLoaded() is called with success when there is no error.
   ASSERT_FALSE(observer->load_page_info());
