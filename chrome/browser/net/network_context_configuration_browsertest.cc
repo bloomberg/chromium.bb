@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     "permissions": ["<all_urls>"]
    })");
   extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
-  extensions::ChromeTestExtensionLoader loader(browser()->profile());
+  extensions::ChromeTestExtensionLoader loader(GetProfile());
   loader.set_allow_incognito_access(true);
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_dir.UnpackedPath());
