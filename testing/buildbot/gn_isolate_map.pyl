@@ -2695,7 +2695,6 @@
   },
   "webkit_layout_tests": {
     "args": [
-      "--xvfb",
       "../../third_party/blink/tools/run_web_tests.py",
       "--clobber-old-results",
       "--debug-rwt-logging",
@@ -2709,7 +2708,6 @@
   },
   "webkit_layout_tests_exparchive": {
     "args": [
-      "--xvfb",
       "../../third_party/blink/tools/run_web_tests.py",
       "--seed",
       "4",
