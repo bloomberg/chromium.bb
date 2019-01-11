@@ -66,6 +66,8 @@ class InstallableManager
   void RecordAddToHomescreenManifestAndIconTimeout();
   void RecordAddToHomescreenInstallabilityTimeout();
 
+  bool IsContentSecureForTesting();
+
  protected:
   // For mocking in tests.
   virtual void OnWaitingForServiceWorker() {}

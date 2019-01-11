@@ -17,10 +17,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/shortcut_helper.h"
@@ -72,13 +74,17 @@ bool IsContentSecure(content::WebContents* web_contents) {
     return false;
 
   // chrome:// URLs are considered secure.
-  if (web_contents->GetVisibleURL().scheme() == content::kChromeUIScheme)
+  const GURL& url = web_contents->GetVisibleURL();
+  if (url.scheme() == content::kChromeUIScheme)
     return true;
 
-  // Whitelist localhost. Check the VisibleURL to match what the
+  // SecurityStateTabHelper ignores origins that are manually listed as secure.
+  // Check those explicitly, using the VisibleURL to match what
   // SecurityStateTabHelper looks at.
-  if (net::IsLocalhost(web_contents->GetVisibleURL()))
+  if (net::IsLocalhost(url) ||
+      content::IsWhitelistedAsSecureOrigin(url::Origin::Create(url))) {
     return true;
+  }
 
   security_state::SecurityInfo security_info;
   SecurityStateTabHelper::FromWebContents(web_contents)
@@ -216,6 +222,10 @@ void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
 
 void InstallableManager::RecordAddToHomescreenInstallabilityTimeout() {
   metrics_->RecordAddToHomescreenInstallabilityTimeout();
+}
+
+bool InstallableManager::IsContentSecureForTesting() {
+  return IsContentSecure(web_contents());
 }
 
 bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {

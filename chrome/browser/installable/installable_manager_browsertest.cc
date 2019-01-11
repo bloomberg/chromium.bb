@@ -22,6 +22,11 @@ using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
 namespace {
 
+const char kInsecureOrigin[] = "http://www.google.com";
+const char kOtherInsecureOrigin[] = "http://maps.google.com";
+const char kUnsafeSecureOriginFlag[] =
+    "unsafely-treat-insecure-origin-as-secure";
+
 InstallableParams GetManifestParams() {
   InstallableParams params;
   params.check_eligibility = true;
@@ -250,6 +255,13 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
     CHECK(manager);
 
     return manager;
+  }
+};
+
+class InstallableManagerWhitelistOriginBrowserTest
+    : public InstallableManagerBrowserTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(kUnsafeSecureOriginFlag, kInsecureOrigin);
   }
 };
 
@@ -1512,4 +1524,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
               tester->manifest().short_name.string());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerWhitelistOriginBrowserTest,
+                       SecureOriginCheckRespectsUnsafeFlag) {
+  // The whitelisted origin should be regarded as secure.
+  ui_test_utils::NavigateToURL(browser(), GURL(kInsecureOrigin));
+  EXPECT_TRUE(GetManager(browser())->IsContentSecureForTesting());
+
+  // While a non-whitelisted origin should not.
+  ui_test_utils::NavigateToURL(browser(), GURL(kOtherInsecureOrigin));
+  EXPECT_FALSE(GetManager(browser())->IsContentSecureForTesting());
 }

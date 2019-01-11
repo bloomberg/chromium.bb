@@ -12,12 +12,20 @@ class GURL;
 
 namespace content {
 
-// Returns true if the origin is trustworthy: that is, if its contents can be
-// said to have been transferred to the browser in a way that a network attacker
-// cannot tamper with or observe.
+// Returns true if |url|'s origin is trustworthy. There are two cases:
+// a) it can be said that |url|'s contents were transferred to the browser in a
+//    way that a network attacker cannot tamper with or observe. (see
+//    https://www.w3.org/TR/powerful-features/#is-origin-trustworthy).
+// b) IsWhitelistedAsSecureOrigin(url::Origin::Create(url)) returns true.
 //
-// See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+// Note that this is not equivalent to checking if an entire site is secure
+// (i.e. no degraded security state UI is displayed to the user), since there
+// may be insecure iframes present even if this method returns true.
 bool CONTENT_EXPORT IsOriginSecure(const GURL& url);
+
+// Returns true if |origin| is whitelisted as secure, e.g. it was specified via
+// the --unsafely-treat-insecure-origin-as-secure flag, and false otherwise.
+bool CONTENT_EXPORT IsWhitelistedAsSecureOrigin(const url::Origin& origin);
 
 // Returns true if the origin can register a service worker.  Scheme must be
 // http (localhost only), https, or a custom-set secure scheme.
