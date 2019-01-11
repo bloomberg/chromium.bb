@@ -236,6 +236,17 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToLastTextPaint(
         timing.paint_timing->last_text_paint.value().InMilliseconds());
   }
+  base::Optional<base::TimeDelta> largest_content_paint_time;
+  uint64_t largest_content_paint_size;
+  AssignTimeAndSizeForLargestContentfulPaint(largest_content_paint_time,
+                                             largest_content_paint_size,
+                                             timing.paint_timing);
+  if (largest_content_paint_size > 0 &&
+      WasStartedInForegroundOptionalEventInForeground(
+          largest_content_paint_time, info)) {
+    builder.SetExperimental_PaintTiming_NavigationToLargestContentPaint(
+        largest_content_paint_time.value().InMilliseconds());
+  }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =
         timing.interactive_timing->interactive.value();

@@ -29,6 +29,7 @@ extern const char kHistogramLargestImagePaint[];
 extern const char kHistogramLastImagePaint[];
 extern const char kHistogramLargestTextPaint[];
 extern const char kHistogramLastTextPaint[];
+extern const char kHistogramLargestContentPaint[];
 extern const char kHistogramTimeToInteractive[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];

@@ -3316,6 +3316,13 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="Experimental.PaintTiming.NavigationToLargestContentPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport. See http://bit.ly/fcp_plus_plus for more details.
+    </summary>
+  </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestImagePaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation

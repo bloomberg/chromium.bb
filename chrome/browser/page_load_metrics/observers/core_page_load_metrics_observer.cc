@@ -17,7 +17,6 @@
 #include "ui/base/page_transition_types.h"
 
 namespace {
-
 // TODO(bmcquade): If other observers want to log histograms based on load type,
 // promote this enum to page_load_metrics_observer.h.
 enum PageLoadType {
@@ -93,6 +92,8 @@ const char kHistogramLargestTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
 const char kHistogramLastTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
+const char kHistogramLargestContentPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
 const char kHistogramInteractiveToInteractiveDetection[] =
@@ -766,6 +767,17 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
           timing.paint_timing->last_text_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
                         timing.paint_timing->last_text_paint.value());
+  }
+  base::Optional<base::TimeDelta> largest_content_paint_time;
+  uint64_t largest_content_paint_size;
+  AssignTimeAndSizeForLargestContentfulPaint(largest_content_paint_time,
+                                             largest_content_paint_size,
+                                             timing.paint_timing);
+  if (largest_content_paint_size > 0 &&
+      WasStartedInForegroundOptionalEventInForeground(
+          largest_content_paint_time, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentPaint,
+                        largest_content_paint_time.value());
   }
 
   if (timing.paint_timing->first_paint &&
