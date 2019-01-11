@@ -221,6 +221,8 @@ extern const char kChromeUISetTimeURL[];
 extern const char kChromeUISlowHost[];
 extern const char kChromeUISlowTraceHost[];
 extern const char kChromeUISlowURL[];
+extern const char kChromeUISmbCredentialsHost[];
+extern const char kChromeUISmbCredentialsURL[];
 extern const char kChromeUISmbShareHost[];
 extern const char kChromeUISmbShareURL[];
 extern const char kChromeUISysInternalsHost[];

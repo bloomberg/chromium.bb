@@ -691,6 +691,9 @@
         <include name="IDR_SMB_SHARES_DIALOG_CONTAINER_HTML" file="resources\chromeos\smb_shares\smb_share_dialog_container.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <include name="IDR_SMB_SHARES_DIALOG_HTML" file="resources\chromeos\smb_shares\smb_share_dialog.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <include name="IDR_SMB_SHARES_DIALOG_JS" file="resources\chromeos\smb_shares\smb_share_dialog.js" type="chrome_html" />
+        <include name="IDR_SMB_CREDENTIALS_DIALOG_CONTAINER_HTML" file="resources\chromeos\smb_shares\smb_credentials_dialog_container.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <include name="IDR_SMB_CREDENTIALS_DIALOG_HTML" file="resources\chromeos\smb_shares\smb_credentials_dialog.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <include name="IDR_SMB_CREDENTIALS_DIALOG_JS" file="resources\chromeos\smb_shares\smb_credentials_dialog.js" type="chrome_html" />
         <include name="IDR_SYS_INTERNALS_HTML" file="resources\chromeos\sys_internals\index.html" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_CSS" file="resources\chromeos\sys_internals\index.css" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_JS" file="resources\chromeos\sys_internals\index.js" type="BINDATA" />

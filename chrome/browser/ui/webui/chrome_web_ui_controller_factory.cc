@@ -158,6 +158,7 @@
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
@@ -511,6 +512,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowUI>;
   if (url.host_piece() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
+  if (url.host_piece() == chrome::kChromeUISmbCredentialsHost)
+    return &NewWebUI<chromeos::smb_dialog::SmbCredentialsDialogUI>;
   if (url.host_piece() == chrome::kChromeUISmbShareHost)
     return &NewWebUI<chromeos::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost &&
