@@ -181,10 +181,10 @@ VideoDecoderConfig TestVideoConfig::NormalCodecProfile(
 }
 
 // static
-VideoDecoderConfig TestVideoConfig::NormalEncrypted(VideoCodec codec) {
-  return GetTestConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-                       VideoColorSpace::JPEG(), VIDEO_ROTATION_0, kNormalSize,
-                       true);
+VideoDecoderConfig TestVideoConfig::NormalEncrypted(VideoCodec codec,
+                                                    VideoCodecProfile profile) {
+  return GetTestConfig(codec, profile, VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, kNormalSize, true);
 }
 
 // static

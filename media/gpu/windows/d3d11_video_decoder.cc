@@ -121,7 +121,8 @@ D3D11VideoDecoder::D3D11VideoDecoder(
       impl_task_runner_(std::move(gpu_task_runner)),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
-      create_device_func_(base::BindRepeating(D3D11CreateDevice)),
+      get_d3d11_device_cb_(base::BindRepeating(
+          []() { return gl::QueryD3D11DeviceObjectFromANGLE(); })),
       get_helper_cb_(std::move(get_helper_cb)),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -234,12 +235,19 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Initialize the video decoder.
 
-  // Use the ANGLE device, rather than create our own.  It would be nice if we
-  // could use our own device, and run on the mojo thread, but texture sharing
-  // seems to be difficult.
-  // TODO(liberato): take |device_| as input.
+  // Note that we assume that this is the ANGLE device, since we don't implement
+  // texture sharing properly.  That also implies that this is the GPU main
+  // thread, since we use non-threadsafe properties of the device (e.g., we get
+  // the immediate context).
+  //
+  // Also note that we don't technically have a guarantee that the ANGLE device
+  // will use the most recent version of D3D11; it might be configured to use
+  // D3D9.  In practice, though, it seems to use 11.1 if it's available, unless
+  // it's been specifically configured via switch to avoid d3d11.
+  //
   // TODO(liberato): On re-init, we can probably re-use the device.
-  device_ = gl::QueryD3D11DeviceObjectFromANGLE();
+  device_ = get_d3d11_device_cb_.Run();
+
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
     // D3D9 for ANGLE.
@@ -272,7 +280,10 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     NotifyError("Failed to query ID3D11Multithread");
     return;
   }
-  multi_threaded->SetMultithreadProtected(TRUE);
+  // TODO(liberato): This is a hack, since the unittest returns
+  // success without providing |multi_threaded|.
+  if (multi_threaded)
+    multi_threaded->SetMultithreadProtected(TRUE);
 
   D3D11_VIDEO_DECODER_DESC desc = {};
   desc.Guid = decoder_guid;
@@ -712,8 +723,8 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 }
 
 void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
-    D3D11CreateDeviceCB callback) {
-  create_device_func_ = std::move(callback);
+    GetD3D11DeviceCB callback) {
+  get_d3d11_device_cb_ = std::move(callback);
 }
 
 void D3D11VideoDecoder::ReportNotSupportedReason(
@@ -744,6 +755,9 @@ void D3D11VideoDecoder::ReportNotSupportedReason(
       break;
     case NotSupportedReason::kEncryptedMedia:
       reason = "Encrypted media is not enabled for D3D11VideoDecoder";
+      break;
+    case NotSupportedReason::kCouldNotGetD3D11Device:
+      reason = "Could not get D3D11 device";
       break;
   }
 
@@ -801,23 +815,20 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     return false;
   }
 
-  // TODO(liberato): It would be nice to QueryD3D11DeviceObjectFromANGLE, but
-  // we don't know what thread we're on.
-  D3D_FEATURE_LEVEL levels[] = {
-      D3D_FEATURE_LEVEL_11_1,  // We need 11.1 for encrypted playback,
-      D3D_FEATURE_LEVEL_11_0,  // but make sure we have at least 11.0 for clear.
-  };
-
-  // This is also the most expensive check, so make sure it is last.
-  HRESULT hr = create_device_func_.Run(
-      nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, levels, ARRAYSIZE(levels),
-      D3D11_SDK_VERSION, nullptr, &usable_feature_level_, nullptr);
-
-  if (FAILED(hr)) {
-    ReportNotSupportedReason(
-        NotSupportedReason::kInsufficientD3D11FeatureLevel);
+  // Remember that this might query the angle device, so this won't work if
+  // we're not on the GPU main thread.  Also remember that devices are thread
+  // safe (contexts are not), so we could use the angle device from any thread
+  // as long as we're not calling into possible not-thread-safe things to get
+  // it.  I.e., if this cached it, then it'd be fine.
+  //
+  // Note also that, currently, we are called from the GPU main thread only.
+  auto d3d11_device = get_d3d11_device_cb_.Run();
+  if (!d3d11_device) {
+    ReportNotSupportedReason(NotSupportedReason::kCouldNotGetD3D11Device);
     return false;
   }
+
+  usable_feature_level_ = d3d11_device->GetFeatureLevel();
 
   if (encrypted_stream && usable_feature_level_ == D3D_FEATURE_LEVEL_11_0) {
     ReportNotSupportedReason(
