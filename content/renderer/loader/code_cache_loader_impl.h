@@ -13,6 +13,10 @@
 
 namespace content {
 
+// This class is loading V8 compilation code cache for scripts
+// (either separate script resources, or inline scripts in html file).
+// It is talking to the browser process and uses per-site isolated
+// cache backend to avoid cross-origin contamination.
 class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
  public:
   CodeCacheLoaderImpl();

@@ -167,6 +167,8 @@ target(link_target_type, "renderer") {
     "loader/code_cache_loader_impl.h",
     "loader/frame_request_blocker.cc",
     "loader/frame_request_blocker.h",
+    "loader/navigation_body_loader.cc",
+    "loader/navigation_body_loader.h",
     "loader/navigation_response_override_parameters.cc",
     "loader/navigation_response_override_parameters.h",
     "loader/request_extra_data.cc",
