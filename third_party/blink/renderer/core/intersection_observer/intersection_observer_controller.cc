@@ -18,15 +18,12 @@ namespace blink {
 
 IntersectionObserverController* IntersectionObserverController::Create(
     Document* document) {
-  IntersectionObserverController* result =
-      MakeGarbageCollected<IntersectionObserverController>(document);
-  result->PauseIfNeeded();
-  return result;
+  return MakeGarbageCollected<IntersectionObserverController>(document);
 }
 
 IntersectionObserverController::IntersectionObserverController(
     Document* document)
-    : PausableObject(document), callback_fired_while_suspended_(false) {}
+    : ContextClient(document) {}
 
 IntersectionObserverController::~IntersectionObserverController() = default;
 
@@ -50,15 +47,6 @@ void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
   PostTaskToDeliverObservations();
 }
 
-void IntersectionObserverController::Unpause() {
-  // If the callback fired while DOM objects were suspended, notifications might
-  // be late, so deliver them right away (rather than waiting to fire again).
-  if (callback_fired_while_suspended_) {
-    callback_fired_while_suspended_ = false;
-    PostTaskToDeliverObservations();
-  }
-}
-
 void IntersectionObserverController::DeliverIntersectionObservations() {
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
@@ -68,10 +56,6 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
   // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
   // resolved.
   CHECK(!context->IsContextDestroyed());
-  if (context->IsContextPaused()) {
-    callback_fired_while_suspended_ = true;
-    return;
-  }
   pending_intersection_observers_.swap(intersection_observers_being_invoked_);
   for (auto& observer : intersection_observers_being_invoked_)
     observer->Deliver();
@@ -104,7 +88,7 @@ void IntersectionObserverController::Trace(blink::Visitor* visitor) {
   visitor->Trace(tracked_observation_targets_);
   visitor->Trace(pending_intersection_observers_);
   visitor->Trace(intersection_observers_being_invoked_);
-  PausableObject::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink
