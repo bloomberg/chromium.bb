@@ -2663,6 +2663,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
 
   cm->current_frame.frame_number = 0;
+  cm->current_frame_id = -1;
   cpi->seq_params_locked = 0;
   cpi->partition_search_skippable_frame = 0;
   cpi->tile_data = NULL;
@@ -5370,6 +5371,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       current_frame->frame_type != KEY_FRAME) {
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
+      release_scaled_references(cpi);
       return AOM_CODEC_OK;
     }
   }
@@ -5537,6 +5539,21 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     *cm->fc = cpi->tile_data[largest_tile_id].tctx;
     av1_reset_cdf_symbol_counters(cm->fc);
   }
+  if (!cm->large_scale_tile) {
+    cm->cur_frame->frame_context = *cm->fc;
+  }
+#define EXT_TILE_DEBUG 0
+#if EXT_TILE_DEBUG
+  if (cm->large_scale_tile && oxcf->pass == 2) {
+    char fn[20] = "./fc";
+    fn[4] = current_frame->frame_number / 100 + '0';
+    fn[5] = (current_frame->frame_number % 100) / 10 + '0';
+    fn[6] = (current_frame->frame_number % 10) + '0';
+    fn[7] = '\0';
+    av1_print_frame_contexts(cm->fc, fn);
+  }
+#endif  // EXT_TILE_DEBUG
+#undef EXT_TILE_DEBUG
 
   if (cpi->refresh_golden_frame == 1)
     cpi->frame_flags |= FRAMEFLAGS_GOLDEN;
@@ -6704,7 +6721,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct lookahead_entry *source = NULL;
   int arf_src_index;
   int brf_src_index;
-  int i;
 
 #if CONFIG_BITSTREAM_DEBUG
   assert(cpi->oxcf.max_threads == 0 &&
@@ -6902,17 +6918,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     setup_frame_size(cpi);
   }
 
-  if (cpi->oxcf.pass != 0 || frame_is_intra_only(cm) == 1) {
-    for (i = 0; i < INTER_REFS_PER_FRAME; ++i) cpi->scaled_ref_buf[i] = NULL;
-  }
-
   cm->using_qmatrix = cpi->oxcf.using_qm;
   cm->min_qmlevel = cpi->oxcf.qm_minlevel;
   cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-
-  if (cm->seq_params.frame_id_numbers_present_flag && *time_stamp == 0) {
-    cpi->common.current_frame_id = -1;
-  }
 
   if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
     set_frame_size(cpi, cm->width, cm->height);
@@ -6929,30 +6937,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // One pass encode
     if (Pass0Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
-  }
-
-  if (!cm->large_scale_tile) {
-    cm->cur_frame->frame_context = *cm->fc;
-  }
-
-#define EXT_TILE_DEBUG 0
-#if EXT_TILE_DEBUG
-  if (cm->large_scale_tile && oxcf->pass == 2) {
-    char fn[20] = "./fc";
-    fn[4] = current_frame->frame_number / 100 + '0';
-    fn[5] = (current_frame->frame_number % 100) / 10 + '0';
-    fn[6] = (current_frame->frame_number % 10) + '0';
-    fn[7] = '\0';
-    av1_print_frame_contexts(cm->fc, fn);
-  }
-#endif  // EXT_TILE_DEBUG
-#undef EXT_TILE_DEBUG
-
-  cm->showable_frame = !cm->show_frame && cm->showable_frame;
-
-  // No frame encoded, or frame was dropped, release scaled references.
-  if ((*size == 0) && (frame_is_intra_only(cm) == 0)) {
-    release_scaled_references(cpi);
   }
 
   if (*size > 0) {
