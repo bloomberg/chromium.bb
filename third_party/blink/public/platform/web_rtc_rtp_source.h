@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SOURCE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SOURCE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
@@ -24,6 +25,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSource {
   virtual Type SourceType() const = 0;
   virtual double TimestampMs() const = 0;
   virtual uint32_t Source() const = 0;
+  virtual base::Optional<double> AudioLevel() const = 0;
 };
 
 }  // namespace blink
