@@ -43,14 +43,16 @@ RasterDecoderContextState::RasterDecoderContextState(
       gr_context(vk_context_provider ? vk_context_provider->GetGrContext()
                                      : nullptr),
 #endif
-      use_vulkan_gr_context(!!gr_context),
+      use_vulkan_gr_context(!!vk_context_provider),
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       weak_ptr_factory_(this) {
-  if (use_vulkan_gr_context)
+  if (use_vulkan_gr_context) {
+    DCHECK(gr_context);
     use_virtualized_gl_contexts = false;
+  }
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
