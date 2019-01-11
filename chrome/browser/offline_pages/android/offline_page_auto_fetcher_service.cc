@@ -7,12 +7,9 @@
 #include <string>
 #include <utility>
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/auto_fetch.h"
@@ -77,7 +74,11 @@ OfflinePageAutoFetcherService::OfflinePageAutoFetcherService(
     RequestCoordinator* request_coordinator,
     OfflinePageModel* offline_page_model,
     Delegate* delegate)
-    : page_load_watcher_(request_coordinator),
+    : notifier_(std::make_unique<AutoFetchNotifier>()),
+      page_load_watcher_(
+          notifier_.get(),
+          request_coordinator,
+          std::make_unique<AutoFetchPageLoadWatcher::AndroidTabFinder>()),
       request_coordinator_(request_coordinator),
       offline_page_model_(offline_page_model),
       delegate_(delegate) {
@@ -159,6 +160,7 @@ void OfflinePageAutoFetcherService::TryScheduleStep2(
       return;
     }
   }
+
   // Finally, schedule a new request, and proceed to step 3.
   RequestCoordinator::SavePageLaterParams params;
   params.url = url;
