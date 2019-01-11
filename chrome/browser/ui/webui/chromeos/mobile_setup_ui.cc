@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,6 +21,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -48,6 +50,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -67,6 +70,54 @@ const char kJsGetDeviceInfoCallback[] =
     "mobile.MobileSetupPortal.onGotDeviceInfo";
 const char kJsConnectivityChangedCallback[] =
     "mobile.MobileSetupPortal.onConnectivityChanged";
+
+// TODO(tbarzic): Localize these strings.
+const char kDefaultActivationError[] =
+    "$1 is unable to connect to $2 at this time. Please try again later.";
+const char kCellularDisabledError[] =
+    "Mobile network connections are not currently enabled on this device.";
+const char kNoCellularDeviceError[] = "Mobile network modem is not present.";
+const char kNoCellularServiceError[] =
+    "$1 is unable to connect at this time due to insufficient coverage.";
+
+bool ActivationErrorRequiresCarrier(MobileActivator::ActivationError error) {
+  return error == MobileActivator::ActivationError::kActivationFailed;
+}
+
+base::string16 GetActivationErrorMessage(MobileActivator::ActivationError error,
+                                         const std::string& carrier) {
+  // If the activation error message requires the carrier name, and none was
+  // provider, fallback to kNoCellularServiceError.
+  if (carrier.empty() && ActivationErrorRequiresCarrier(error)) {
+    CHECK(!ActivationErrorRequiresCarrier(
+        MobileActivator::ActivationError::kNoCellularService));
+    return GetActivationErrorMessage(
+        MobileActivator::ActivationError::kNoCellularService, carrier);
+  }
+
+  switch (error) {
+    case MobileActivator::ActivationError::kNone:
+      return base::string16();
+    case MobileActivator::ActivationError::kActivationFailed: {
+      return base::ReplaceStringPlaceholders(
+          base::UTF8ToUTF16(kDefaultActivationError),
+          std::vector<base::string16>(
+              {ui::GetChromeOSDeviceName(), base::UTF8ToUTF16(carrier)}),
+          nullptr);
+    }
+    case MobileActivator::ActivationError::kCellularDisabled:
+      return base::UTF8ToUTF16(kCellularDisabledError);
+    case MobileActivator::ActivationError::kNoCellularDevice:
+      return base::UTF8ToUTF16(kNoCellularDeviceError);
+    case MobileActivator::ActivationError::kNoCellularService:
+      return base::ReplaceStringPlaceholders(
+          base::UTF8ToUTF16(kNoCellularServiceError),
+          ui::GetChromeOSDeviceName(), nullptr);
+  }
+  NOTREACHED() << "Unexpected activation error";
+  return GetActivationErrorMessage(
+      MobileActivator::ActivationError::kActivationFailed, carrier);
+}
 
 void DataRequestFailed(
     const std::string& service_path,
@@ -98,11 +149,34 @@ bool HasDictionaryProperty(const base::Value& properties,
   return !!result;
 }
 
+// Keys for the dictionary that is set to activation UI and that contains the
+// cellular network information.
+namespace keys {
+
+// The current activation state:
+constexpr char kActivationState[] = "state";
+constexpr char kActivationErrorMessage[] = "error";
+
+// The cellular service properties:
+constexpr char kCellularActivationType[] = "activation_type";
+constexpr char kCarrier[] = "carrier";
+constexpr char kPaymentPortalUrl[] = "payment_url";
+constexpr char kPaymentPortalPostData[] = "post_data";
+
+// Cellular device properties:
+constexpr char kMeid[] = "MEID";
+constexpr char kImei[] = "IMEI";
+constexpr char kMdn[] = "MDN";
+
+}  // namespace keys
+
+constexpr char kPaymentPortalPostMethod[] = "post";
+
 // Converts the network properties into a JS object.
 void GetDeviceInfo(const base::DictionaryValue& properties,
-                   base::DictionaryValue* value) {
-  std::string name;
-  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
+                   base::DictionaryValue* value,
+                   std::string* carrier) {
+  properties.GetStringWithoutPathExpansion(shill::kNameProperty, carrier);
   std::string activation_type;
   properties.GetStringWithoutPathExpansion(shill::kActivationTypeProperty,
                                            &activation_type);
@@ -114,17 +188,19 @@ void GetDeviceInfo(const base::DictionaryValue& properties,
                                                 &payment_url);
     payment_dict->GetStringWithoutPathExpansion(shill::kPaymentPortalMethod,
                                                 &post_method);
-    payment_dict->GetStringWithoutPathExpansion(shill::kPaymentPortalPostData,
-                                                &post_data);
+    if (base::LowerCaseEqualsASCII(post_method, kPaymentPortalPostMethod)) {
+      payment_dict->GetStringWithoutPathExpansion(shill::kPaymentPortalPostData,
+                                                  &post_data);
+    }
   }
   NET_LOG(EVENT) << "MobileSetupUI: Payment URL = " << payment_url
                  << " Post Data = " << post_data;
 
-  value->SetString("activation_type", activation_type);
-  value->SetString("carrier", name);
-  value->SetString("payment_url", payment_url);
-  if (base::LowerCaseEqualsASCII(post_method, "post") && !post_data.empty())
-    value->SetString("post_data", post_data);
+  value->SetString(keys::kCarrier, *carrier);
+  value->SetString(keys::kCellularActivationType, activation_type);
+  value->SetString(keys::kPaymentPortalUrl, payment_url);
+  if (!post_data.empty())
+    value->SetString(keys::kPaymentPortalPostData, post_data);
 
   // Use the cached DeviceState properties.
   std::string device_path;
@@ -139,17 +215,18 @@ void GetDeviceInfo(const base::DictionaryValue& properties,
   if (!device)
     return;
 
-  value->SetString("MEID", device->meid());
-  value->SetString("IMEI", device->imei());
-  value->SetString("MDN", device->mdn());
+  value->SetString(keys::kMeid, device->meid());
+  value->SetString(keys::kImei, device->imei());
+  value->SetString(keys::kMdn, device->mdn());
 }
 
 void SetActivationStateAndError(MobileActivator::PlanActivationState state,
-                                const std::string& error_description,
+                                MobileActivator::ActivationError error,
+                                const std::string& carrier,
                                 base::DictionaryValue* value) {
-  value->SetInteger("state", state);
-  if (!error_description.empty())
-    value->SetString("error", error_description);
+  value->SetInteger(keys::kActivationState, state);
+  value->SetString(keys::kActivationErrorMessage,
+                   GetActivationErrorMessage(error, carrier));
 }
 
 }  // namespace
@@ -216,14 +293,15 @@ class MobileSetupHandler : public content::WebUIMessageHandler,
   };
 
   // MobileActivator::Observer.
-  void OnActivationStateChanged(const NetworkState* network,
-                                MobileActivator::PlanActivationState new_state,
-                                const std::string& error_description) override;
+  void OnActivationStateChanged(
+      const NetworkState* network,
+      MobileActivator::PlanActivationState new_state,
+      MobileActivator::ActivationError error) override;
 
   // Callbacks for NetworkConfigurationHandler::GetProperties.
   void GetPropertiesAndCallStatusChanged(
       MobileActivator::PlanActivationState state,
-      const std::string& error_description,
+      MobileActivator::ActivationError error,
       const std::string& service_path,
       const base::DictionaryValue& properties);
   void GetPropertiesAndCallGetDeviceInfo(
@@ -390,23 +468,25 @@ MobileSetupHandler::~MobileSetupHandler() {
 void MobileSetupHandler::OnActivationStateChanged(
     const NetworkState* network,
     MobileActivator::PlanActivationState state,
-    const std::string& error_description) {
+    MobileActivator::ActivationError error) {
   DCHECK_EQ(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;
 
   if (!network) {
     base::DictionaryValue device_dict;
-    SetActivationStateAndError(state, error_description, &device_dict);
+    SetActivationStateAndError(state, error, "" /*carrier*/, &device_dict);
     web_ui()->CallJavascriptFunctionUnsafe(kJsDeviceStatusChangedCallback,
                                            device_dict);
     return;
   }
 
+  // TODO(tbarzic): Create the device info dict from info cached in NetworkState
+  // and DeviceState.
   NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       network->path(),
       base::Bind(&MobileSetupHandler::GetPropertiesAndCallStatusChanged,
-                 weak_ptr_factory_.GetWeakPtr(), state, error_description),
+                 weak_ptr_factory_.GetWeakPtr(), state, error),
       base::Bind(&MobileSetupHandler::GetPropertiesFailure,
                  weak_ptr_factory_.GetWeakPtr(), network->path(),
                  kJsDeviceStatusChangedCallback));
@@ -414,12 +494,13 @@ void MobileSetupHandler::OnActivationStateChanged(
 
 void MobileSetupHandler::GetPropertiesAndCallStatusChanged(
     MobileActivator::PlanActivationState state,
-    const std::string& error_description,
+    MobileActivator::ActivationError error,
     const std::string& service_path,
     const base::DictionaryValue& properties) {
   base::DictionaryValue device_dict;
-  GetDeviceInfo(properties, &device_dict);
-  SetActivationStateAndError(state, error_description, &device_dict);
+  std::string carrier;
+  GetDeviceInfo(properties, &device_dict, &carrier);
+  SetActivationStateAndError(state, error, carrier, &device_dict);
   web_ui()->CallJavascriptFunctionUnsafe(kJsDeviceStatusChangedCallback,
                                          device_dict);
 }
@@ -546,7 +627,8 @@ void MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo(
     const std::string& service_path,
     const base::DictionaryValue& properties) {
   base::DictionaryValue device_info;
-  GetDeviceInfo(properties, &device_info);
+  std::string carrier;
+  GetDeviceInfo(properties, &device_info, &carrier);
   web_ui()->CallJavascriptFunctionUnsafe(kJsGetDeviceInfoCallback, device_info);
 }
 
