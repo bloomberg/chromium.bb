@@ -764,8 +764,8 @@ gfx::RectF GM2TabStyle::ScaleAndAlignBounds(const gfx::Rect& bounds,
 TabStyle::~TabStyle() = default;
 
 // static
-TabStyle* TabStyle::CreateForTab(const Tab* tab) {
-  return new GM2TabStyle(tab);
+std::unique_ptr<TabStyle> TabStyle::CreateForTab(const Tab* tab) {
+  return std::make_unique<GM2TabStyle>(tab);
 }
 
 // static
