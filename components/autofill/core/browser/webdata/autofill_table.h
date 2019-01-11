@@ -409,11 +409,13 @@ class AutofillTable : public WebDatabaseTable,
   // addresses.
   bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
+  bool UpdateServerCardMetadata(const AutofillMetadata& card_metadata);
   bool RemoveServerCardMetadata(const std::string& id);
   bool GetServerCardsMetadata(
       std::map<std::string, AutofillMetadata>* cards_metadata) const;
   bool AddServerAddressMetadata(const AutofillMetadata& address_metadata);
   bool UpdateServerAddressMetadata(const AutofillProfile& profile);
+  bool UpdateServerAddressMetadata(const AutofillMetadata& address_metadata);
   bool RemoveServerAddressMetadata(const std::string& id);
   bool GetServerAddressesMetadata(
       std::map<std::string, AutofillMetadata>* addresses_metadata) const;
