@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
@@ -15,9 +16,9 @@
 namespace {
 
 app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update) {
-  std::vector<apps::mojom::PermissionPtr> permissions;
+  base::flat_map<uint32_t, apps::mojom::PermissionPtr> permissions;
   for (const auto& permission : update.Permissions()) {
-    permissions.push_back(permission->Clone());
+    permissions[permission->permission_id] = permission->Clone();
   }
 
   return app_management::mojom::App::New(
@@ -75,11 +76,9 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
     page_->OnAppRemoved(update.AppId());
-    return;
-  }
 
-  if (update.ReadinessChanged() &&
-      update.Readiness() == apps::mojom::Readiness::kReady) {
+  } else if (update.ReadinessChanged() &&
+             update.Readiness() == apps::mojom::Readiness::kReady) {
     page_->OnAppAdded(CreateUIAppPtr(update));
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));

@@ -26,7 +26,8 @@ Polymer({
    * @private
    */
   onClickUninstallButton_: function() {
-    app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
+    // TODO(rekanorman): Uncomment once backend uninstall implemented.
+    // app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
   },
 
   /**

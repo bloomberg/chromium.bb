@@ -19,7 +19,7 @@ struct App {
   apps.mojom.OptionalBool is_pinned;
   string? version;
   string? size;
-  array<apps.mojom.Permission> permissions;
+  map<uint32, apps.mojom.Permission> permissions;
 };
 
 interface PageHandlerFactory {
@@ -38,13 +38,6 @@ interface Page {
   OnAppAdded(App app);
   OnAppChanged(App update);
   OnAppRemoved(string app_id);
-};
-
-enum TestPermissionType {
-  NOTIFICATIONS = 0,
-  LOCATION,
-  CAMERA,
-  MICROPHONE,
 };
 
 // This enum takes the important permission values from the

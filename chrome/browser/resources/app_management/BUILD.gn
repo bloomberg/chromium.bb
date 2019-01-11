@@ -82,7 +82,9 @@ if (!is_android) {
 
   js_library("fake_page_handler") {
     deps = [
+      ":constants",
       ":types",
+      ":util",
       "//chrome/browser/ui/webui/app_management:mojo_bindings_js_externs",
       "//ui/webui/resources/js:cr",
     ]
@@ -179,6 +181,7 @@ if (!is_android) {
 
   js_library("util") {
     deps = [
+      ":constants",
       ":types",
       "//ui/webui/resources/js:cr",
     ]

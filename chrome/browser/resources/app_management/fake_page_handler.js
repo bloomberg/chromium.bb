@@ -2,26 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.dispatch_ = {};
-
 cr.define('app_management', function() {
-  /*
-   * TODO(rekanorman): Should implement appManagement.mojom.PageHandlerInterface
-   * once backend permissions are implemented.
+  /**
+   * @implements {appManagement.mojom.PageHandlerInterface}
    */
   class FakePageHandler {
+    /**
+     * @param {number} permissionId
+     * @param {Object=} config
+     * @return {!Permission}
+     */
+    static createPermission(permissionId, config) {
+      const permission = app_management.util.createPermission(
+          permissionId, PermissionValueType.kTriState, TriState.kBlock);
+
+      if (config) {
+        Object.assign(permission, config);
+      }
+
+      return permission;
+    }
+
     /**
      * @param {string} id
      * @param {Object=} config
      * @return {!App}
      */
     static createApp(id, config) {
-      const permissionMap = {
-        [TestPermissionTypeEnum.NOTIFICATIONS]: false,
-        [TestPermissionTypeEnum.LOCATION]: false,
-        [TestPermissionTypeEnum.CAMERA]: false,
-        [TestPermissionTypeEnum.MICROPHONE]: false,
-      };
+      const permissionIds = [
+        PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
+        PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+        PwaPermissionType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        PwaPermissionType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+      ];
+
+      const permissions = {};
+
+      for (const type of permissionIds) {
+        permissions[type] = FakePageHandler.createPermission(type);
+      }
 
       const app = {
         id: id,
@@ -30,7 +49,7 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kUnknown,
-        permissions: permissionMap,
+        permissions: permissions,
       };
 
       if (config) {
@@ -41,16 +60,10 @@ cr.define('app_management', function() {
     }
 
     /**
-     * TODO(rekanorman): Change type to appManagement.mojom.PageProxy once
-     *   the App struct has a permissions field.
-     * @param {appManagement.mojom.PageCallbackRouter} page
+     * @param {appManagement.mojom.PageInterface} page
      */
     constructor(page) {
-      /**
-       * TODO(rekanorman): Change type to appManagement.mojom.PageProxy once
-       *   the App struct has a permissions field.
-       * @type {Object}
-       */
+      /** @type {appManagement.mojom.PageInterface} */
       this.page = page;
 
       /** @type {!Array<App>} */
@@ -70,22 +83,26 @@ cr.define('app_management', function() {
 
     /**
      * @param {string} appId
-     * @param {TestPermissionType} permissionType
-     * @param {PermissionValue} newPermissionValue
+     * @param {Permission} permission
      */
-    setPermission(appId, permissionType, newPermissionValue) {
+    setPermission(appId, permission) {
       const app = app_management.Store.getInstance().data.apps[appId];
+
+      // Check that the app had a previous value for the given permission
+      assert(app.permissions[permission.permissionId]);
+
       const newPermissions = Object.assign({}, app.permissions);
-      newPermissions[permissionType] = newPermissionValue;
-      const newApp = Object.assign({}, app, {permissions: newPermissions});
-      this.page.onAppChanged.dispatch_(newApp);
+      newPermissions[permission.permissionId] = permission;
+      const newApp = /** @type {App} */ (
+          Object.assign({}, app, {permissions: newPermissions}));
+      this.page.onAppChanged(newApp);
     }
 
     /**
      * @param {string} appId
      */
     uninstall(appId) {
-      this.page.onAppRemoved.dispatch_(appId);
+      this.page.onAppRemoved(appId);
     }
   }
 
