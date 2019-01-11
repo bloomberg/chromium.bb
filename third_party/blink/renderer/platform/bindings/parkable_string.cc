@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -85,6 +86,32 @@ void AsanUnpoisonString(const String& string) {
   ASAN_UNPOISON_MEMORY_REGION(string.Bytes(), string.CharactersSizeInBytes());
 #endif  // defined(ADDRESS_SANITIZER)
 }
+
+// Char buffer allocated using PartitionAlloc, may be nullptr.
+class NullableCharBuffer final {
+ public:
+  explicit NullableCharBuffer(size_t size) {
+    data_ =
+        reinterpret_cast<char*>(WTF::Partitions::BufferPartition()->AllocFlags(
+            base::PartitionAllocReturnNull, size, "NullableCharBuffer"));
+    size_ = size;
+  }
+
+  ~NullableCharBuffer() {
+    if (data_)
+      WTF::Partitions::BufferPartition()->Free(data_);
+  }
+
+  // May return nullptr.
+  char* data() const { return data_; }
+  size_t size() const { return size_; }
+
+ private:
+  char* data_;
+  size_t size_;
+
+  DISALLOW_COPY_AND_ASSIGN(NullableCharBuffer);
+};
 
 }  // namespace
 
@@ -344,21 +371,42 @@ void ParkableStringImpl::CompressInBackground(
 #endif  // defined(ADDRESS_SANITIZER)
   // Compression touches the string.
   AsanUnpoisonString(params->string->string_);
+  bool ok;
   base::StringPiece data(reinterpret_cast<const char*>(params->data),
                          params->size);
-  std::string compressed_string;
-  bool ok = compression::GzipCompress(data, &compressed_string);
-
   std::unique_ptr<Vector<uint8_t>> compressed = nullptr;
-  if (ok && compressed_string.size() < params->size) {
-    compressed = std::make_unique<Vector<uint8_t>>();
-    compressed->Append(
-        reinterpret_cast<const uint8_t*>(compressed_string.c_str()),
-        compressed_string.size());
-  }
+
+  {
+    // Temporary vector. As we don't want to waste memory, the temporary buffer
+    // has the same size as the initial data. Compression will fail if this is
+    // not large enough.
+    //
+    // This is not using:
+    // - malloc() or any STL container: this is discouraged in blink, and there
+    //   is a suspected memory regression caused by using it (crbug.com/920194).
+    // - WTF::Vector<> as allocation failures result in an OOM crash, whereas
+    //   we can fail gracefully. See crbug.com/905777 for an example of OOM
+    //   triggered from there.
+    NullableCharBuffer buffer(params->size);
+    ok = buffer.data();
+    size_t compressed_size;
+    if (ok) {
+      ok = compression::GzipCompress(data, buffer.data(), buffer.size(),
+                                     &compressed_size);
+    }
+
 #if defined(ADDRESS_SANITIZER)
-  params->string->Unlock();
+    params->string->Unlock();
 #endif  // defined(ADDRESS_SANITIZER)
+
+    if (ok) {
+      compressed = std::make_unique<Vector<uint8_t>>();
+      // Not using realloc() as we want the compressed data to be a regular
+      // WTF::Vector.
+      compressed->Append(reinterpret_cast<const uint8_t*>(buffer.data()),
+                         compressed_size);
+    }
+  }
 
   auto* task_runner = params->callback_task_runner.get();
   size_t size = params->size;

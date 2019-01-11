@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+#include <random>
 #include <thread>
 #include <vector>
 
@@ -25,7 +27,7 @@ constexpr size_t kCompressedSize = 55;
 
 String MakeLargeString() {
   std::vector<char> data(kSizeKb * 1000, 'a');
-  return String(String(data.data(), data.size()).ReleaseImpl());
+  return String(data.data(), data.size()).ReleaseImpl();
 }
 
 }  // namespace
@@ -99,6 +101,37 @@ TEST_F(ParkableStringTest, CheckCompressedSize) {
   RunPostedTasks();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   EXPECT_EQ(kCompressedSize, parkable.Impl()->compressed_size());
+}
+
+TEST_F(ParkableStringTest, DontCompressRandomString) {
+  // Make a large random string. Large to make sure it's parkable, and random to
+  // ensure its compressed size is larger than the initial size (at least from
+  // gzip's header). Mersenne-Twister implementation is specified, making the
+  // test deterministic.
+  std::vector<unsigned char> data(kSizeKb * 1000);
+  std::mt19937 engine(42);
+  // uniform_int_distribution<T> is undefined behavior for T = unsigned char.
+  std::uniform_int_distribution<int> dist(
+      0, std::numeric_limits<unsigned char>::max());
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    data[i] = static_cast<unsigned char>(dist(engine));
+  }
+  ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
+
+  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  RunPostedTasks();
+  // Not parked because the temporary buffer wasn't large enough.
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+}
+
+TEST_F(ParkableStringTest, ParkUnparkIdenticalContent) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  RunPostedTasks();
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+
+  EXPECT_EQ(MakeLargeString(), parkable.ToString());
 }
 
 TEST_F(ParkableStringTest, Simple) {
