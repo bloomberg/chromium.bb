@@ -21,7 +21,7 @@ class CC_BASE_EXPORT DelayedUniqueNotifier {
   // Configure this notifier to issue the |closure| notification in |delay| time
   // from Schedule() call.
   DelayedUniqueNotifier(base::SequencedTaskRunner* task_runner,
-                        const base::Closure& closure,
+                        base::RepeatingClosure closure,
                         const base::TimeDelta& delay);
 
   // Destroying the notifier will ensure that no further notifications will
@@ -56,7 +56,7 @@ class CC_BASE_EXPORT DelayedUniqueNotifier {
   void NotifyIfTime();
 
   base::SequencedTaskRunner* const task_runner_;
-  const base::Closure closure_;
+  const base::RepeatingClosure closure_;
   const base::TimeDelta delay_;
 
   // Lock should be held before modifying |next_notification_time_| or

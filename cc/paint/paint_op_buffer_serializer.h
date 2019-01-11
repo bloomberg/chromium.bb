@@ -17,7 +17,8 @@ class TransferCacheSerializeHelper;
 class CC_PAINT_EXPORT PaintOpBufferSerializer {
  public:
   using SerializeCallback =
-      base::Callback<size_t(const PaintOp*, const PaintOp::SerializeOptions&)>;
+      base::RepeatingCallback<size_t(const PaintOp*,
+                                     const PaintOp::SerializeOptions&)>;
 
   PaintOpBufferSerializer(SerializeCallback serialize_cb,
                           ImageProvider* image_provider,

@@ -1687,9 +1687,9 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 }
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
-    const base::Closure& callback) {
+    base::RepeatingClosure callback) {
   DCHECK(task_runner_provider_->IsImplThread());
-  tree_activation_callback_ = callback;
+  tree_activation_callback_ = std::move(callback);
 }
 
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
@@ -3165,8 +3165,8 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
   tile_manager_.decoded_image_tracker().QueueImageDecode(
-      image, base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
-                        base::Unretained(this), request_id));
+      image, base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,
+                            base::Unretained(this), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 

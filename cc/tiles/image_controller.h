@@ -30,7 +30,7 @@ class CC_EXPORT ImageController {
 
   using ImageDecodeRequestId = uint64_t;
   using ImageDecodedCallback =
-      base::Callback<void(ImageDecodeRequestId, ImageDecodeResult)>;
+      base::OnceCallback<void(ImageDecodeRequestId, ImageDecodeResult)>;
   explicit ImageController(
       base::SequencedTaskRunner* origin_task_runner,
       scoped_refptr<base::SequencedTaskRunner> worker_task_runner);
@@ -77,9 +77,8 @@ class CC_EXPORT ImageController {
   // unlock this image. It is up to the caller to ensure that the image is later
   // unlocked using UnlockImageDecode.
   // Virtual for testing.
-  virtual ImageDecodeRequestId QueueImageDecode(
-      const DrawImage& draw_image,
-      const ImageDecodedCallback& callback);
+  virtual ImageDecodeRequestId QueueImageDecode(const DrawImage& draw_image,
+                                                ImageDecodedCallback callback);
   size_t image_cache_max_limit_bytes() const {
     return image_cache_max_limit_bytes_;
   }
@@ -98,15 +97,13 @@ class CC_EXPORT ImageController {
     ImageDecodeRequest();
     ImageDecodeRequest(ImageDecodeRequestId id,
                        const DrawImage& draw_image,
-                       const ImageDecodedCallback& callback,
+                       ImageDecodedCallback callback,
                        scoped_refptr<TileTask> task,
                        bool need_unref);
     ImageDecodeRequest(ImageDecodeRequest&& other);
-    ImageDecodeRequest(const ImageDecodeRequest& other);
     ~ImageDecodeRequest();
 
     ImageDecodeRequest& operator=(ImageDecodeRequest&& other);
-    ImageDecodeRequest& operator=(const ImageDecodeRequest& other);
 
     ImageDecodeRequestId id;
     DrawImage draw_image;

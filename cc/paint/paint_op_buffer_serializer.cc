@@ -405,8 +405,8 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     int max_texture_size,
     size_t max_texture_bytes)
     : PaintOpBufferSerializer(
-          base::Bind(&SimpleBufferSerializer::SerializeToMemory,
-                     base::Unretained(this)),
+          base::BindRepeating(&SimpleBufferSerializer::SerializeToMemory,
+                              base::Unretained(this)),
           image_provider,
           transfer_cache,
           paint_cache,

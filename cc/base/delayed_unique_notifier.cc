@@ -13,14 +13,13 @@ namespace cc {
 
 DelayedUniqueNotifier::DelayedUniqueNotifier(
     base::SequencedTaskRunner* task_runner,
-    const base::Closure& closure,
+    base::RepeatingClosure closure,
     const base::TimeDelta& delay)
     : task_runner_(task_runner),
-      closure_(closure),
+      closure_(std::move(closure)),
       delay_(delay),
       notification_pending_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 DelayedUniqueNotifier::~DelayedUniqueNotifier() = default;
 

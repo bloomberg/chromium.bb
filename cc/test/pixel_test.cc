@@ -149,13 +149,13 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   return comparator.Compare(*result_bitmap_, ref_pixels_bitmap);
 }
 
-void PixelTest::ReadbackResult(base::Closure quit_run_loop,
+void PixelTest::ReadbackResult(base::OnceClosure quit_run_loop,
                                std::unique_ptr<viz::CopyOutputResult> result) {
   ASSERT_FALSE(result->IsEmpty());
   EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
   result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
   EXPECT_TRUE(result_bitmap_->readyToDraw());
-  quit_run_loop.Run();
+  std::move(quit_run_loop).Run();
 }
 
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,

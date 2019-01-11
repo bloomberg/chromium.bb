@@ -51,7 +51,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void DidReceiveCompositorFrameAck() override;
   void DidPresentCompositorFrame(
       uint32_t presentation_token,

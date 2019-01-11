@@ -227,19 +227,20 @@ class FakeSchedulerClient : public SchedulerClient,
 
   bool IsInsideBeginImplFrame() const { return inside_begin_impl_frame_; }
 
-  base::Callback<bool(void)> InsideBeginImplFrame(bool state) {
-    return base::Bind(&FakeSchedulerClient::InsideBeginImplFrameCallback,
-                      base::Unretained(this), state);
+  base::RepeatingCallback<bool(void)> InsideBeginImplFrame(bool state) {
+    return base::BindRepeating(
+        &FakeSchedulerClient::InsideBeginImplFrameCallback,
+        base::Unretained(this), state);
   }
 
   bool IsCurrentFrame(int last_frame_number) const {
     return scheduler_->current_frame_number() == last_frame_number;
   }
 
-  base::Callback<bool(void)> FrameHasNotAdvancedCallback() {
-    return base::Bind(&FakeSchedulerClient::IsCurrentFrame,
-                      base::Unretained(this),
-                      scheduler_->current_frame_number());
+  base::RepeatingCallback<bool(void)> FrameHasNotAdvancedCallback() {
+    return base::BindRepeating(&FakeSchedulerClient::IsCurrentFrame,
+                               base::Unretained(this),
+                               scheduler_->current_frame_number());
   }
 
   void PushAction(const char* description) {

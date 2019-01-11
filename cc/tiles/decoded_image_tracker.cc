@@ -38,7 +38,7 @@ DecodedImageTracker::~DecodedImageTracker() {
 
 void DecodedImageTracker::QueueImageDecode(
     const PaintImage& image,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   size_t frame_index = PaintImage::kDefaultFrameIndex;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "DecodedImageTracker::QueueImageDecode", "frame_key",
@@ -50,9 +50,9 @@ void DecodedImageTracker::QueueImageDecode(
   DrawImage draw_image(image, image_bounds, kNone_SkFilterQuality,
                        SkMatrix::I(), frame_index);
   image_controller_->QueueImageDecode(
-      draw_image,
-      base::Bind(&DecodedImageTracker::ImageDecodeFinished,
-                 base::Unretained(this), callback, image.stable_id()));
+      draw_image, base::BindOnce(&DecodedImageTracker::ImageDecodeFinished,
+                                 base::Unretained(this), std::move(callback),
+                                 image.stable_id()));
 }
 
 void DecodedImageTracker::UnlockAllImages() {
@@ -66,7 +66,7 @@ void DecodedImageTracker::OnImagesUsedInDraw(
 }
 
 void DecodedImageTracker::ImageDecodeFinished(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     PaintImage::Id image_id,
     ImageController::ImageDecodeRequestId request_id,
     ImageController::ImageDecodeResult result) {
@@ -84,7 +84,7 @@ void DecodedImageTracker::ImageDecodeFinished(
   bool decode_succeeded =
       result == ImageController::ImageDecodeResult::SUCCESS ||
       result == ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED;
-  callback.Run(decode_succeeded);
+  std::move(callback).Run(decode_succeeded);
 }
 
 void DecodedImageTracker::OnTimeoutImages() {
@@ -115,8 +115,8 @@ void DecodedImageTracker::EnqueueTimeout() {
   timeout_pending_ = true;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DecodedImageTracker::OnTimeoutImages,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DecodedImageTracker::OnTimeoutImages,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kTimeoutDurationMs));
 }
 

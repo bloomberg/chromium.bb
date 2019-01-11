@@ -13,7 +13,6 @@ int main(int argc, char** argv) {
   mojo::core::Init();
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&cc::CCTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&cc::CCTestSuite::Run, base::Unretained(&test_suite)));
 }

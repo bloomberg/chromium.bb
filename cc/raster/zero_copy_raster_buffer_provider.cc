@@ -225,7 +225,7 @@ bool ZeroCopyRasterBufferProvider::IsResourceReadyToDraw(
 
 uint64_t ZeroCopyRasterBufferProvider::SetReadyToDrawCallback(
     const std::vector<const ResourcePool::InUsePoolResource*>& resources,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     uint64_t pending_callback_id) const {
   // Zero-copy resources are immediately ready to draw.
   return 0;

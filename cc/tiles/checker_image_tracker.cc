@@ -444,8 +444,8 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
                            image_id);
   ImageController::ImageDecodeRequestId request_id =
       image_controller_->QueueImageDecode(
-          draw_image, base::Bind(&CheckerImageTracker::DidFinishImageDecode,
-                                 weak_factory_.GetWeakPtr(), image_id));
+          draw_image, base::BindOnce(&CheckerImageTracker::DidFinishImageDecode,
+                                     weak_factory_.GetWeakPtr(), image_id));
 
   image_id_to_decode_.emplace(image_id, std::make_unique<ScopedDecodeHolder>(
                                             image_controller_, request_id));

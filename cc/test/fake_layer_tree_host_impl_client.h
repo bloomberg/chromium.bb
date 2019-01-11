@@ -28,7 +28,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       std::unique_ptr<MutatorEvents> events) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override {}
-  void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
+  void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                             base::TimeDelta delay) override {}
   void DidActivateSyncTree() override {}
   void WillPrepareTiles() override {}

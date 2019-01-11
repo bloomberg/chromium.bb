@@ -145,8 +145,8 @@ class RasterBufferProviderTest
   RasterBufferProviderTest()
       : all_tile_tasks_finished_(
             base::ThreadTaskRunnerHandle::Get().get(),
-            base::Bind(&RasterBufferProviderTest::AllTileTasksFinished,
-                       base::Unretained(this))),
+            base::BindRepeating(&RasterBufferProviderTest::AllTileTasksFinished,
+                                base::Unretained(this))),
         timeout_seconds_(5),
         timed_out_(false) {}
 
@@ -410,9 +410,7 @@ TEST_P(RasterBufferProviderTest, ReadyToDrawCallback) {
 
   base::RunLoop run_loop;
   uint64_t callback_id = raster_buffer_provider_->SetReadyToDrawCallback(
-      array,
-      base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); }, &run_loop),
-      0);
+      array, run_loop.QuitClosure(), 0);
 
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_GPU ||
       GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY)
@@ -503,9 +501,7 @@ TEST_P(RasterBufferProviderTest, MeasureGpuRasterDuration) {
   for (const auto& resource : resources_)
     array.push_back(&resource);
   uint64_t callback_id = raster_buffer_provider_->SetReadyToDrawCallback(
-      array,
-      base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); }, &run_loop),
-      0);
+      array, run_loop.QuitClosure(), 0);
   ASSERT_TRUE(callback_id);
   run_loop.Run();
 

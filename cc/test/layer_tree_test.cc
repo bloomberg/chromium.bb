@@ -108,8 +108,8 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
       return;
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SynchronousLayerTreeFrameSink::DispatchInvalidation,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&SynchronousLayerTreeFrameSink::DispatchInvalidation,
+                       weak_factory_.GetWeakPtr()));
   }
   void DispatchInvalidation() {
     frame_request_pending_ = false;

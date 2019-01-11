@@ -49,9 +49,9 @@ class UniqueNotifierTest : public testing::Test {
 // 50000 can be any number bigger than 1. The bigger the easier to more runs.
 TEST_F(UniqueNotifierTest, Schedule) {
   {
-    UniqueNotifier notifier(
-        base::ThreadTaskRunnerHandle::Get().get(),
-        base::Bind(&UniqueNotifierTest::Notify, base::Unretained(this)));
+    UniqueNotifier notifier(base::ThreadTaskRunnerHandle::Get().get(),
+                            base::BindRepeating(&UniqueNotifierTest::Notify,
+                                                base::Unretained(this)));
 
     EXPECT_EQ(0, NotificationCount());
 
