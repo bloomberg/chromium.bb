@@ -10387,7 +10387,6 @@ interface XRSession : EventTarget
     getter baseLayer
     getter depthFar
     getter depthNear
-    getter device
     getter environmentBlendMode
     getter immersive
     getter onblur

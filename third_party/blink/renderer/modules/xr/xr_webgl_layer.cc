@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_framebuffer.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -209,7 +209,7 @@ void XRWebGLLayer::UpdateViewports() {
         framebuffer_width * 0.5 * viewport_scale_,
         framebuffer_height * viewport_scale_);
 
-    session()->device()->frameProvider()->UpdateWebGLLayerViewports(this);
+    session()->xr()->frameProvider()->UpdateWebGLLayerViewports(this);
 
     // When mirroring make sure to also update the mirrored canvas UVs so it
     // only shows a single eye's data, cropped to display proportionally.
@@ -289,7 +289,7 @@ void XRWebGLLayer::OnFrameEnd() {
   // Submit the frame to the XR compositor.
   if (session()->immersive()) {
     // Always call submit, but notify if the contents were changed or not.
-    session()->device()->frameProvider()->SubmitWebGLLayer(
+    session()->xr()->frameProvider()->SubmitWebGLLayer(
         this, framebuffer_->HaveContentsChanged());
   } else if (session()->outputContext()) {
     // Nothing to do if the framebuffer contents have not changed.
