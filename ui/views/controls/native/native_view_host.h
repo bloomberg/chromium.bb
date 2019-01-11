@@ -72,6 +72,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // if there's no attached native view or it has no container.
   gfx::NativeView GetNativeViewContainer() const;
 
+  // Pass the parent accessible object to this host's native view so that
+  // it can return this value when querying its parent accessible.
+  void SetParentAccessible(gfx::NativeViewAccessible);
+
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this

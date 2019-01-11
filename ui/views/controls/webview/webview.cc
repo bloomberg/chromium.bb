@@ -366,6 +366,10 @@ void WebView::AttachWebContents() {
 
   holder_->Attach(view_to_attach);
 
+  // We set the parent accessible of the native view to be our parent.
+  if (parent())
+    holder_->SetParentAccessible(parent()->GetNativeViewAccessible());
+
   // The WebContents is not focused automatically when attached, so we need to
   // tell the WebContents it has focus if this has focus.
   if (HasFocus())
@@ -375,8 +379,9 @@ void WebView::AttachWebContents() {
 }
 
 void WebView::DetachWebContents() {
-  if (web_contents())
+  if (web_contents()) {
     holder_->Detach();
+  }
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {

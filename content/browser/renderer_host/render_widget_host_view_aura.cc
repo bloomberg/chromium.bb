@@ -1186,6 +1186,12 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
   if (legacy_render_widget_host_HWND_)
     return legacy_render_widget_host_HWND_->window_accessible();
 #endif
+
+  if (window_->parent()) {
+    return window_->parent()->GetProperty(
+        aura::client::kParentNativeViewAccessibleKey);
+  }
+
   return nullptr;
 }
 
