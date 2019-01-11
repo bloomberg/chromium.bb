@@ -14,6 +14,7 @@ mojom("mojo") {
     "gpu_fence_handle.mojom",
     "overlay_transform.mojom",
     "presentation_feedback.mojom",
+    "rrect_f.mojom",
     "selection_bound.mojom",
     "swap_result.mojom",
     "transform.mojom",
