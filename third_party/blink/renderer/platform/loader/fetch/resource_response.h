@@ -179,6 +179,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   // responded to the request. See the comments for that function.
   KURL ResponseUrl() const;
 
+  // Returns true if this response is the result of a service worker
+  // effectively calling `evt.respondWith(fetch(evt.request))`.  Specifically,
+  // it returns false for synthetic constructed responses, responses fetched
+  // from different URLs, and responses produced by cache_storage.
+  bool IsServiceWorkerPassThrough() const;
+
   const AtomicString& MimeType() const;
   void SetMimeType(const AtomicString&);
 

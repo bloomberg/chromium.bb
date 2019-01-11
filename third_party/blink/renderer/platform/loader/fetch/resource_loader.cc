@@ -348,23 +348,21 @@ bool ResourceLoader::ShouldFetchCodeCache() {
   // with the resource from the cache storage.
   if (request.GetRequestContext() == mojom::RequestContextType::SERVICE_WORKER)
     return false;
-  // These requests are serviced by the service worker. It is possible that the
-  // service worker may not service the request in which case it is serviced
-  // by the network. Assuming those fallback cases are not frequent, we don't
-  // fetch from code cache. We may want to have some actual data, to make an
-  // informed decision.
-  // TODO(crbug.com/895850): Get UMA data to see if this check is necessary.
-  if (ResourceLoader::Context().IsControlledByServiceWorker() ==
-      mojom::ControllerServiceWorkerMode::kControlled)
-    return false;
   if (request.DownloadToBlob())
     return false;
   // Javascript resources have type kScript or kMainResource (for inline
-  // scripts). WebAssembly module resources have type kRaw. Note that since we
-  // can't easily distinguish WebAssembly modules from other raw resources, we
-  // perform a code fetch for all raw resources. These fetches should be cheap,
-  // however, requiring one additional IPC and no browser process disk IO since
-  // the cache index is in memory and the resource key should not be present.
+  // scripts). WebAssembly module resources have type kRaw. Note that we
+  // always perform a code fetch for all of these resources because:
+  //
+  // * It is not easy to distinguish WebAssembly modules from other raw
+  //   resources
+  // * The fetch might be handled by Service Workers, but we can't still know
+  //   if the response comes from the CacheStorage (in such cases its own
+  //   code cache will be used) or not.
+  //
+  // These fetches should be cheap, however, requiring one additional IPC and
+  // no browser process disk IO since the cache index is in memory and the
+  // resource key should not be present.
   return resource_->GetType() == ResourceType::kScript ||
          resource_->GetType() == ResourceType::kMainResource ||
          resource_->GetType() == ResourceType::kRaw;
@@ -816,14 +814,20 @@ void ResourceLoader::DidReceiveResponse(
   const ResourceLoaderOptions& options = resource_->Options();
 
   const ResourceResponse& response = web_url_response.ToResourceResponse();
-  // Service worker script has its own code cache. And also, resources which
-  // are served from CacheStorage via service workers have its own code cache.
-  // We should not use cached code from site isolated GeneratedCodeCache in such
-  // cases.
+
   should_use_isolated_code_cache_ =
       RuntimeEnabledFeatures::IsolatedCodeCacheEnabled() &&
-      !(request_context == mojom::RequestContextType::SERVICE_WORKER ||
-        response.WasFetchedViaServiceWorker());
+      // Service worker script has its own code cache.
+      request_context != mojom::RequestContextType::SERVICE_WORKER &&
+      // And also, resources which are served from CacheStorage via service
+      // workers have its own code cache.
+      response.CacheStorageCacheName().IsNull() &&
+      // Also, we only support code cache for other service worker provided
+      // resources when a direct pass-through fetch handler is used.  If the
+      // service worker synthesizes a new Response or provides a Response
+      // fetched from a different URL, then do not use the code cache.
+      (!response.WasFetchedViaServiceWorker() ||
+       response.IsServiceWorkerPassThrough());
 
   // Perform 'nosniff' checks against the original response instead of the 304
   // response for a successful revalidation.
