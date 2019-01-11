@@ -31,20 +31,38 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
+
+namespace {
+
+std::unique_ptr<IDBValue> ConvertReturnValue(
+    const mojom::blink::IDBReturnValuePtr& input) {
+  if (!input) {
+    return IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                            Vector<WebBlobInfo>());
+  }
+
+  std::unique_ptr<IDBValue> output = std::move(input->value);
+  output->SetInjectedPrimaryKey(std::move(input->primary_key), input->key_path);
+  return output;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::Create(
@@ -68,22 +86,28 @@ WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {
   }
 }
 
-void WebIDBCallbacksImpl::OnError(const IDBDatabaseError& error) {
+void WebIDBCallbacksImpl::SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                                   int64_t transaction_id) {
+  cursor_ = cursor;
+  transaction_id_ = transaction_id;
+}
+
+void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
   if (!request_)
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
-  request_->HandleResponse(DOMException::Create(
-      static_cast<DOMExceptionCode>(error.Code()), error.Message()));
+  request_->HandleResponse(
+      DOMException::Create(static_cast<DOMExceptionCode>(code), message));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(
-    const Vector<IDBNameAndVersion>& name_and_version_list) {
+void WebIDBCallbacksImpl::SuccessNamesAndVersionsList(
+    Vector<mojom::blink::IDBNameAndVersionPtr> name_and_version_list) {
   // Only implemented in idb_factory.cc for the promise-based databases() call.
   NOTREACHED();
 }
 
-void WebIDBCallbacksImpl::OnSuccess(const Vector<String>& string_list) {
+void WebIDBCallbacksImpl::SuccessStringList(const Vector<String>& string_list) {
   if (!request_)
     return;
 
@@ -91,25 +115,51 @@ void WebIDBCallbacksImpl::OnSuccess(const Vector<String>& string_list) {
 #if DCHECK_IS_ON()
   DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
-  request_->EnqueueResponse(string_list);
+  request_->EnqueueResponse(std::move(string_list));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(WebIDBCursor* cursor,
-                                    std::unique_ptr<IDBKey> key,
-                                    std::unique_ptr<IDBKey> primary_key,
-                                    std::unique_ptr<IDBValue> value) {
+void WebIDBCallbacksImpl::SuccessCursor(
+    mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
+    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
   if (!request_)
     return;
 
+  std::unique_ptr<WebIDBCursorImpl> cursor = std::make_unique<WebIDBCursorImpl>(
+      std::move(cursor_info), transaction_id_);
+  std::unique_ptr<IDBValue> value;
+  if (optional_value.has_value()) {
+    value = std::move(optional_value.value());
+  } else {
+    value =
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
+  }
+  DCHECK(value);
+
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   value->SetIsolate(request_->GetIsolate());
-  request_->HandleResponse(base::WrapUnique(cursor), std::move(key),
+  request_->HandleResponse(std::move(cursor), std::move(key),
                            std::move(primary_key), std::move(value));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(WebIDBDatabase* backend,
-                                    const IDBDatabaseMetadata& metadata) {
-  std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(backend);
+void WebIDBCallbacksImpl::SuccessCursorPrefetch(
+    Vector<std::unique_ptr<IDBKey>> keys,
+    Vector<std::unique_ptr<IDBKey>> primary_keys,
+    Vector<std::unique_ptr<IDBValue>> values) {
+  if (cursor_) {
+    cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
+                             std::move(values));
+    cursor_->CachedContinue(this);
+  }
+}
+
+void WebIDBCallbacksImpl::SuccessDatabase(
+    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    const IDBDatabaseMetadata& metadata) {
+  std::unique_ptr<WebIDBDatabase> db;
+  if (database_info.is_valid())
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info));
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,
                                 "success");
@@ -122,7 +172,7 @@ void WebIDBCallbacksImpl::OnSuccess(WebIDBDatabase* backend,
   }
 }
 
-void WebIDBCallbacksImpl::OnSuccess(std::unique_ptr<IDBKey> key) {
+void WebIDBCallbacksImpl::SuccessKey(std::unique_ptr<IDBKey> key) {
   if (!request_)
     return;
 
@@ -130,27 +180,34 @@ void WebIDBCallbacksImpl::OnSuccess(std::unique_ptr<IDBKey> key) {
   request_->HandleResponse(std::move(key));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(std::unique_ptr<IDBValue> value) {
+void WebIDBCallbacksImpl::SuccessValue(
+    mojom::blink::IDBReturnValuePtr return_value) {
   if (!request_)
     return;
 
+  std::unique_ptr<IDBValue> value = ConvertReturnValue(return_value);
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   value->SetIsolate(request_->GetIsolate());
   request_->HandleResponse(std::move(value));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(Vector<std::unique_ptr<IDBValue>> values) {
+void WebIDBCallbacksImpl::SuccessArray(
+    Vector<mojom::blink::IDBReturnValuePtr> values) {
   if (!request_)
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
-  for (const std::unique_ptr<IDBValue>& value : values) {
-    value->SetIsolate(request_->GetIsolate());
+  Vector<std::unique_ptr<IDBValue>> idb_values;
+  idb_values.ReserveInitialCapacity(values.size());
+  for (const mojom::blink::IDBReturnValuePtr& value : values) {
+    std::unique_ptr<IDBValue> idb_value = ConvertReturnValue(value);
+    idb_value->SetIsolate(request_->GetIsolate());
+    idb_values.emplace_back(std::move(idb_value));
   }
-  request_->HandleResponse(std::move(values));
+  request_->HandleResponse(std::move(idb_values));
 }
 
-void WebIDBCallbacksImpl::OnSuccess(long long value) {
+void WebIDBCallbacksImpl::SuccessInteger(int64_t value) {
   if (!request_)
     return;
 
@@ -158,7 +215,7 @@ void WebIDBCallbacksImpl::OnSuccess(long long value) {
   request_->HandleResponse(value);
 }
 
-void WebIDBCallbacksImpl::OnSuccess() {
+void WebIDBCallbacksImpl::Success() {
   if (!request_)
     return;
 
@@ -166,19 +223,28 @@ void WebIDBCallbacksImpl::OnSuccess() {
   request_->HandleResponse();
 }
 
-void WebIDBCallbacksImpl::OnSuccess(std::unique_ptr<IDBKey> key,
-                                    std::unique_ptr<IDBKey> primary_key,
-                                    std::unique_ptr<IDBValue> value) {
+void WebIDBCallbacksImpl::SuccessCursorContinue(
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
+    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
   if (!request_)
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
+  std::unique_ptr<IDBValue> value;
+  if (optional_value.has_value()) {
+    value = std::move(optional_value.value());
+  } else {
+    value =
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
+  }
+  DCHECK(value);
   value->SetIsolate(request_->GetIsolate());
   request_->HandleResponse(std::move(key), std::move(primary_key),
                            std::move(value));
 }
 
-void WebIDBCallbacksImpl::OnBlocked(long long old_version) {
+void WebIDBCallbacksImpl::Blocked(int64_t old_version) {
   if (!request_)
     return;
 
@@ -189,12 +255,15 @@ void WebIDBCallbacksImpl::OnBlocked(long long old_version) {
   request_->EnqueueBlocked(old_version);
 }
 
-void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
-                                          WebIDBDatabase* database,
-                                          const IDBDatabaseMetadata& metadata,
-                                          mojom::IDBDataLoss data_loss,
-                                          String data_loss_message) {
-  std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(database);
+void WebIDBCallbacksImpl::UpgradeNeeded(
+    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    int64_t old_version,
+    mojom::IDBDataLoss data_loss,
+    const String& data_loss_message,
+    const IDBDatabaseMetadata& metadata) {
+  std::unique_ptr<WebIDBDatabase> db;
+  if (database_info.is_valid())
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info));
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,
                                 "upgradeNeeded");
@@ -204,7 +273,7 @@ void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
     request_->EnqueueUpgradeNeeded(old_version, std::move(db),
                                    IDBDatabaseMetadata(metadata), data_loss,
                                    data_loss_message);
-  } else {
+  } else if (db) {
     db->Close();
   }
 }

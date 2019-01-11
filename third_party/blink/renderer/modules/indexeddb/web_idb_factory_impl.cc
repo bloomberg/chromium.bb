@@ -21,18 +21,18 @@ WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 void WebIDBFactoryImpl::GetDatabaseInfo(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr);
+  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   factory_->GetDatabaseInfo(GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
 void WebIDBFactoryImpl::GetDatabaseNames(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr);
+  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
@@ -43,8 +43,9 @@ void WebIDBFactoryImpl::Open(
     WebIDBCallbacks* callbacks,
     WebIDBDatabaseCallbacks* database_callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
           base::WrapUnique(database_callbacks));
@@ -59,9 +60,9 @@ void WebIDBFactoryImpl::DeleteDatabase(
     WebIDBCallbacks* callbacks,
     bool force_close,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr);
+  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   DCHECK(!name.IsNull());
   factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks_impl)), name,
                            force_close);

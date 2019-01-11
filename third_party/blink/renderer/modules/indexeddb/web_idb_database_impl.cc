@@ -4,13 +4,7 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 
-#include <stddef.h>
-
-#include <string>
-#include <vector>
-
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
@@ -91,8 +85,9 @@ void WebIDBDatabaseImpl::Get(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->Get(transaction_id, object_store_id, index_id,
                  std::move(key_range_ptr), key_only,
                  GetCallbacksProxy(std::move(callbacks_impl)));
@@ -109,8 +104,9 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->GetAll(transaction_id, object_store_id, index_id,
                     std::move(key_range_ptr), key_only, max_count,
                     GetCallbacksProxy(std::move(callbacks_impl)));
@@ -136,16 +132,17 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   size_t arg_size =
       value->DataSize() + primary_key->SizeEstimate() + index_keys_size;
   if (arg_size >= max_put_value_size_) {
-    callbacks->OnError(IDBDatabaseError(
+    callbacks->Error(
         blink::kWebIDBDatabaseExceptionUnknownError,
         String::Format("The serialized keys and/or value are too large"
                        " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
-                       arg_size, max_put_value_size_)));
+                       arg_size, max_put_value_size_));
     return;
   }
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->Put(transaction_id, object_store_id, std::move(value),
                  std::move(primary_key), put_mode, std::move(index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
@@ -178,8 +175,9 @@ void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->OpenCursor(transaction_id, object_store_id, index_id,
                         std::move(key_range_ptr), direction, key_only,
                         task_type,
@@ -195,8 +193,9 @@ void WebIDBDatabaseImpl::Count(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->Count(transaction_id, object_store_id, index_id,
                    std::move(key_range_ptr),
                    GetCallbacksProxy(std::move(callbacks_impl)));
@@ -210,8 +209,9 @@ void WebIDBDatabaseImpl::Delete(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(IDBKeyRange::Create(primary_key));
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->DeleteRange(transaction_id, object_store_id,
                          std::move(key_range_ptr),
                          GetCallbacksProxy(std::move(callbacks_impl)));
@@ -225,8 +225,9 @@ void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->DeleteRange(transaction_id, object_store_id,
                          std::move(key_range_ptr),
                          GetCallbacksProxy(std::move(callbacks_impl)));
@@ -237,8 +238,9 @@ void WebIDBDatabaseImpl::Clear(long long transaction_id,
                                WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   database_->Clear(transaction_id, object_store_id,
                    GetCallbacksProxy(std::move(callbacks_impl)));
 }

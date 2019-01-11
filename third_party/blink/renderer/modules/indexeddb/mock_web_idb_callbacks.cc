@@ -13,29 +13,35 @@ MockWebIDBCallbacks::MockWebIDBCallbacks() {}
 
 MockWebIDBCallbacks::~MockWebIDBCallbacks() {}
 
-void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key,
-                                    std::unique_ptr<IDBKey> primaryKey,
-                                    std::unique_ptr<IDBValue> value) {
-  DoOnSuccess(key, primaryKey, value);
+void MockWebIDBCallbacks::SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                                   int64_t transaction_id) {}
+
+void MockWebIDBCallbacks::SuccessCursorContinue(
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
+    base::Optional<std::unique_ptr<IDBValue>> value) {
+  DoSuccessCursorContinue(key, primary_key, value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(WebIDBCursor* cursor,
-                                    std::unique_ptr<IDBKey> key,
-                                    std::unique_ptr<IDBKey> primaryKey,
-                                    std::unique_ptr<IDBValue> value) {
-  DoOnSuccess(cursor, key, primaryKey, value);
+void MockWebIDBCallbacks::SuccessCursor(
+    mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
+    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
+  DoSuccessCursor(cursor_info, key, primary_key, optional_value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key) {
-  DoOnSuccess(key);
+void MockWebIDBCallbacks::SuccessKey(std::unique_ptr<IDBKey> key) {
+  DoSuccessKey(key);
 }
 
-void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBValue> value) {
-  DoOnSuccess(value);
+void MockWebIDBCallbacks::SuccessValue(mojom::blink::IDBReturnValuePtr value) {
+  DoSuccessValue(value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(Vector<std::unique_ptr<IDBValue>> values) {
-  DoOnSuccess(values);
+void MockWebIDBCallbacks::SuccessArray(
+    Vector<mojom::blink::IDBReturnValuePtr> values) {
+  DoSuccessArray(values);
 }
 
 }  // namespace blink

@@ -26,51 +26,57 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
+#include "base/memory/weak_ptr.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace WTF {
-class String;
-}
-
 namespace blink {
 
-class IDBDatabaseError;
 class IDBKey;
 class IDBValue;
-class WebIDBCursor;
-class WebIDBDatabase;
+class WebIDBCursorImpl;
 struct IDBDatabaseMetadata;
-struct IDBNameAndVersion;
 
 class WebIDBCallbacks {
  public:
   virtual ~WebIDBCallbacks() = default;
 
+  virtual void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                        int64_t transaction_id) = 0;
+
   // Pointers transfer ownership.
-  virtual void OnError(const IDBDatabaseError&) = 0;
-  virtual void OnSuccess(const Vector<IDBNameAndVersion>&) = 0;
-  virtual void OnSuccess(const Vector<WTF::String>&) = 0;
-  virtual void OnSuccess(WebIDBCursor*,
-                         std::unique_ptr<IDBKey>,
-                         std::unique_ptr<IDBKey> primary_key,
-                         std::unique_ptr<IDBValue>) = 0;
-  virtual void OnSuccess(WebIDBDatabase*, const IDBDatabaseMetadata&) = 0;
-  virtual void OnSuccess(std::unique_ptr<IDBKey>) = 0;
-  virtual void OnSuccess(std::unique_ptr<IDBValue>) = 0;
-  virtual void OnSuccess(Vector<std::unique_ptr<IDBValue>>) = 0;
-  virtual void OnSuccess(long long) = 0;
-  virtual void OnSuccess() = 0;
-  virtual void OnSuccess(std::unique_ptr<IDBKey>,
-                         std::unique_ptr<IDBKey> primary_key,
-                         std::unique_ptr<IDBValue>) = 0;
-  virtual void OnBlocked(long long old_version) = 0;
-  virtual void OnUpgradeNeeded(long long old_version,
-                               WebIDBDatabase*,
-                               const IDBDatabaseMetadata&,
-                               mojom::IDBDataLoss data_loss,
-                               WTF::String data_loss_message) = 0;
+  virtual void Error(int32_t code, const String& message) = 0;
+  virtual void SuccessNamesAndVersionsList(
+      Vector<mojom::blink::IDBNameAndVersionPtr>) = 0;
+  virtual void SuccessStringList(const Vector<String>&) = 0;
+  virtual void SuccessCursor(
+      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> optional_value) = 0;
+  virtual void SuccessCursorPrefetch(
+      Vector<std::unique_ptr<IDBKey>> keys,
+      Vector<std::unique_ptr<IDBKey>> primary_keys,
+      Vector<std::unique_ptr<IDBValue>> values) = 0;
+  virtual void SuccessDatabase(
+      mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+      const IDBDatabaseMetadata& metadata) = 0;
+  virtual void SuccessKey(std::unique_ptr<IDBKey>) = 0;
+  virtual void SuccessValue(mojom::blink::IDBReturnValuePtr) = 0;
+  virtual void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr>) = 0;
+  virtual void SuccessInteger(int64_t) = 0;
+  virtual void Success() = 0;
+  virtual void SuccessCursorContinue(
+      std::unique_ptr<IDBKey>,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>>) = 0;
+  virtual void Blocked(int64_t old_version) = 0;
+  virtual void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo,
+                             int64_t old_version,
+                             mojom::IDBDataLoss data_loss,
+                             const String& data_loss_message,
+                             const IDBDatabaseMetadata&) = 0;
   virtual void Detach() = 0;
 };
 
