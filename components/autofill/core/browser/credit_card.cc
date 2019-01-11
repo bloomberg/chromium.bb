@@ -1029,7 +1029,11 @@ bool CreditCard::ShouldUpdateExpiration(const base::Time& current_time) const {
 // So we can compare CreditCards with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
   return os << base::UTF16ToUTF8(credit_card.Label()) << " "
-            << credit_card.guid() << " " << credit_card.origin() << " "
+            << (credit_card.record_type() == CreditCard::LOCAL_CARD
+                    ? credit_card.guid()
+                    : base::HexEncode(credit_card.server_id().data(),
+                                      credit_card.server_id().size()))
+            << " " << credit_card.origin() << " "
             << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NAME_FULL))
             << " "
             << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_TYPE))
@@ -1040,7 +1044,10 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << " "
             << base::UTF16ToUTF8(
                    credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR))
-            << " " << credit_card.use_count() << " " << credit_card.use_date();
+            << " " << credit_card.bank_name() << " "
+            << " " << credit_card.record_type() << " "
+            << credit_card.use_count() << " " << credit_card.use_date() << " "
+            << credit_card.billing_address_id();
 }
 
 void CreditCard::SetNameOnCardFromSeparateParts() {

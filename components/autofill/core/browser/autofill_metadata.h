@@ -39,6 +39,9 @@ struct AutofillMetadata {
   std::string billing_address_id;
 };
 
+// So we can compare AutofillMetadata with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillMetadata& metadata);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METADATA_H_
