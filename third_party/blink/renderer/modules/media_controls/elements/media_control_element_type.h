@@ -9,12 +9,10 @@
 // from this list. It is used by code that need to know what type of media
 // control element it is interacting with.
 enum MediaControlElementType {
-  kMediaMuteButton = 0,
   kMediaPlayButton,
   kMediaSlider,
   kMediaSliderThumb,
   kMediaTextTrackList,
-  kMediaUnMuteButton,
   kMediaPauseButton,
   kMediaTimelineContainer,
   kMediaCurrentTimeDisplay,
