@@ -516,6 +516,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 ShareMenuActionHandler.getInstance().onShareMenuItemSelected(CustomTabActivity.this,
                         getActivityTab(), false /* shareDirectly */, false /* isIncognito */);
             }
+
+            @Override
+            public int getTaskId() {
+                return CustomTabActivity.this.getTaskId();
+            }
         };
 
         recordClientPackageName();

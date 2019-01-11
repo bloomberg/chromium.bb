@@ -30,6 +30,7 @@ import android.widget.RemoteViews;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -200,6 +201,9 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
 
+    @Nullable
+    private Callback<CustomTabsSessionToken> mDisconnectCallback;
+
     // Conversion between native TimeTicks and SystemClock.uptimeMillis().
     private long mNativeTickOffsetUs;
     private boolean mNativeTickOffsetUsComputed;
@@ -304,6 +308,11 @@ public class CustomTabsConnection {
                 "extraCallback(" + PAGE_LOAD_METRICS_CALLBACK + ")", bundleToJson(args).toString());
     }
 
+    /** Sets a callback to be triggered when a service connection is terminated. */
+    public void setDisconnectCallback(@Nullable Callback<CustomTabsSessionToken> callback) {
+        mDisconnectCallback = callback;
+    }
+
     public boolean newSession(CustomTabsSessionToken session) {
         boolean success = newSessionInternal(session);
         logCall("newSession()", success);
@@ -316,6 +325,9 @@ public class CustomTabsConnection {
             @Override
             public void run(CustomTabsSessionToken session) {
                 cancelSpeculation(session);
+                if (mDisconnectCallback != null) {
+                    mDisconnectCallback.onResult(session);
+                }
             }
         };
         PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(session);
