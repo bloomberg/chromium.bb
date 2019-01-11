@@ -296,15 +296,14 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
     EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
   } else {
-    // Resets to kLayoutClean due to a call to SetNeedsCompositingInputsUpdate.
     // TODO(chrishtr): fix this test by manually resetting to
     // kVisualUpdatePending before call to CompositeFrame.
-    EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
 
     // A hit test will not force a complete lifecycle update.
     WebView().HitTestResultAt(gfx::Point());
-    EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
               frame_document->Lifecycle().GetState());
   }
 }

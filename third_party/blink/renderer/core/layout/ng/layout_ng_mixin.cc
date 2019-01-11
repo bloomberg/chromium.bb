@@ -113,10 +113,6 @@ void LayoutNGMixin<Base>::ComputeVisualOverflow(bool recompute_floats) {
   AddVisualOverflowFromChildren();
 
   if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Base::Layer()) {
-      Base::Layer()->SetNeedsCompositingInputsUpdate(
-          PaintLayer::DoesNotNeedDescendantDependentUpdate);
-    }
     Base::SetShouldCheckForPaintInvalidation();
     Base::GetFrameView()->SetIntersectionObservationState(
         LocalFrameView::kDesired);

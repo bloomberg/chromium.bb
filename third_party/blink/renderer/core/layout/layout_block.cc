@@ -531,10 +531,6 @@ void LayoutBlock::ComputeVisualOverflow(bool) {
   AddVisualOverflowFromTheme();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer()) {
-      Layer()->SetNeedsCompositingInputsUpdate(
-          PaintLayer::DoesNotNeedDescendantDependentUpdate);
-    }
     SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }

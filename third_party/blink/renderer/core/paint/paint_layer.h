@@ -754,16 +754,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
     bool is_under_video = false;
   };
-
-  // Indicates whether the descendant-dependent tree walk bit should also
-  // be set.
-  enum DescendantDependentFlagsUpdateFlag {
-    NeedsDescendantDependentUpdate,
-    DoesNotNeedDescendantDependentUpdate
-  };
   void SetNeedsVisualOverflowRecalc();
-  void SetNeedsCompositingInputsUpdate(
-      DescendantDependentFlagsUpdateFlag = NeedsDescendantDependentUpdate);
+  void SetNeedsCompositingInputsUpdate();
+
   // Use this internal method only for cases during the descendant-dependent
   // tree walk.
   bool ChildNeedsCompositingInputsUpdate() const {
@@ -1181,6 +1174,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool RequiresScrollableArea() const;
   void UpdateScrollableArea();
+
+  // Indicates whether the descendant-dependent tree walk bit should also
+  // be set.
+  enum DescendantDependentFlagsUpdateFlag {
+    NeedsDescendantDependentUpdate,
+    DoesNotNeedDescendantDependentUpdate
+  };
 
   // Marks the ancestor chain for paint property update, and if
   // the flag is set, the descendant-dependent tree walk as well.
