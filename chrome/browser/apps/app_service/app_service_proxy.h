@@ -35,7 +35,6 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 
   ~AppServiceProxy() override;
 
-  apps::mojom::AppServicePtr& AppService();
   AppRegistryCache& Cache();
 
   void LoadIcon(const std::string& app_id,

@@ -3146,10 +3146,6 @@ jumbo_split_static_library("browser") {
 
   if (is_chromeos) {
     sources += [
-      "apps/app_service/arc_apps.cc",
-      "apps/app_service/arc_apps.h",
-      "apps/app_service/arc_apps_factory.cc",
-      "apps/app_service/arc_apps_factory.h",
       "apps/app_service/built_in_chromeos_apps.cc",
       "apps/app_service/built_in_chromeos_apps.h",
       "apps/app_service/extension_apps.cc",
