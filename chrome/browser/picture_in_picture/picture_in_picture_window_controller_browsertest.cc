@@ -1720,3 +1720,48 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+// Check that page visibility API events are fired even when video is in
+// Picture-in-Picture.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PageVisibilityEventsFired) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  // Enter Picture-in-Picture manually.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "addVisibilityChangeEventListener();"));
+
+  // Hide page and check that the document visibility is hidden.
+  active_web_contents->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  // Check that the video is still in Picture-in-Picture.
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  // Show page and check that the document visibility is visible.
+  active_web_contents->WasShown();
+  expected_title = base::ASCIIToUTF16("visible");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  // Check that the video is still in Picture-in-Picture.
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+}
