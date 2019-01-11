@@ -107,7 +107,7 @@ DemoModeApp GetAppFromWindow(const aura::Window* window) {
     return DemoModeApp::kBrowser;
 
   auto is_default = [](const std::string& app_id) {
-    if (!features::IsUsingWindowService())
+    if (!features::IsMultiProcessMash())
       return app_id.empty();
 
     return base::StartsWith(app_id, ShelfWindowWatcher::kDefaultShelfIdPrefix,
