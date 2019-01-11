@@ -237,6 +237,7 @@ enum BadMessageReason {
   OBSOLETE_RFH_INVALID_WEB_REPORTING_CRASH_ID = 209,
   RFH_DETACH_MAIN_FRAME = 210,
   RFH_DOCUMENT_INTERFACE_BROKER_MISSING = 211,
+  RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN = 212,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

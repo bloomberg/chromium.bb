@@ -347,6 +347,16 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
 
+  // TODO(lukasza): Move opaque-ness check into ChildProcessSecurityPolicyImpl.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (params.source_origin != base::UTF8ToUTF16("null") &&
+      !policy->CanAccessDataForOrigin(GetProcess()->GetID(),
+                                      GURL(params.source_origin))) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN);
+    return;
+  }
+
   // Only deliver the message if the request came from a RenderFrameHost in the
   // same BrowsingInstance or if this WebContents is dedicated to a browser
   // plugin guest.
