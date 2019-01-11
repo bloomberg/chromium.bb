@@ -185,7 +185,7 @@ bool V4L2VP8Accelerator::SubmitDecode(
   if (last_frame) {
     scoped_refptr<V4L2DecodeSurface> last_frame_surface =
         VP8PictureToV4L2DecodeSurface(last_frame);
-    v4l2_frame_hdr.last_frame = last_frame_surface->output_record();
+    v4l2_frame_hdr.last_frame = last_frame_surface->GetReferenceID();
     ref_surfaces.push_back(last_frame_surface);
   } else {
     v4l2_frame_hdr.last_frame = VIDEO_MAX_FRAME;
@@ -196,7 +196,7 @@ bool V4L2VP8Accelerator::SubmitDecode(
   if (golden_frame) {
     scoped_refptr<V4L2DecodeSurface> golden_frame_surface =
         VP8PictureToV4L2DecodeSurface(golden_frame);
-    v4l2_frame_hdr.golden_frame = golden_frame_surface->output_record();
+    v4l2_frame_hdr.golden_frame = golden_frame_surface->GetReferenceID();
     ref_surfaces.push_back(golden_frame_surface);
   } else {
     v4l2_frame_hdr.golden_frame = VIDEO_MAX_FRAME;
@@ -207,7 +207,7 @@ bool V4L2VP8Accelerator::SubmitDecode(
   if (alt_frame) {
     scoped_refptr<V4L2DecodeSurface> alt_frame_surface =
         VP8PictureToV4L2DecodeSurface(alt_frame);
-    v4l2_frame_hdr.alt_frame = alt_frame_surface->output_record();
+    v4l2_frame_hdr.alt_frame = alt_frame_surface->GetReferenceID();
     ref_surfaces.push_back(alt_frame_surface);
   } else {
     v4l2_frame_hdr.alt_frame = VIDEO_MAX_FRAME;
@@ -223,7 +223,7 @@ bool V4L2VP8Accelerator::SubmitDecode(
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
   ext_ctrls.count = 1;
   ext_ctrls.controls = &ctrl;
-  ext_ctrls.config_store = dec_surface->config_store();
+  dec_surface->PrepareSetCtrls(&ext_ctrls);
   if (device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(1) << "ioctl() failed: VIDIOC_S_EXT_CTRLS";
     return false;

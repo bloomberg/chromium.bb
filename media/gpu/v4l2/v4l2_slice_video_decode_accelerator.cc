@@ -657,8 +657,7 @@ void V4L2SliceVideoDecodeAccelerator::Enqueue(
   const int old_inputs_queued = input_buffer_queued_count_;
   const int old_outputs_queued = output_buffer_queued_count_;
 
-  if (!EnqueueInputRecord(dec_surface->input_record(),
-                          dec_surface->config_store())) {
+  if (!EnqueueInputRecord(dec_surface.get())) {
     VLOGF(1) << "Failed queueing an input buffer";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
@@ -835,11 +834,11 @@ void V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer(int index) {
 }
 
 bool V4L2SliceVideoDecodeAccelerator::EnqueueInputRecord(
-    int index,
-    uint32_t config_store) {
+    const V4L2DecodeSurface* dec_surface) {
   DVLOGF(4);
+  DCHECK_NE(dec_surface, nullptr);
+  const int index = dec_surface->input_record();
   DCHECK_LT(index, static_cast<int>(input_buffer_map_.size()));
-  DCHECK_GT(config_store, 0u);
 
   // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
   InputRecord& input_record = input_buffer_map_[index];
@@ -854,7 +853,7 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueInputRecord(
   qbuf.m.planes = qbuf_planes;
   qbuf.m.planes[0].bytesused = input_record.bytes_used;
   qbuf.length = input_planes_count_;
-  qbuf.config_store = config_store;
+  dec_surface->PrepareQueueBuffer(&qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
   input_buffer_queued_count_++;
@@ -1844,6 +1843,11 @@ void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
 
   DVLOGF(3) << "Submitting decode for surface: " << dec_surface->ToString();
   Enqueue(dec_surface);
+
+  if (!dec_surface->Submit()) {
+    VLOGF(1) << "Error while submitting frame for decoding!";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+  }
 }
 
 void V4L2SliceVideoDecodeAccelerator::SurfaceReady(
@@ -1934,10 +1938,11 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_current_bitstream_buffer_ != nullptr);
   input_record.input_id = decoder_current_bitstream_buffer_->input_id;
 
-  scoped_refptr<V4L2DecodeSurface> dec_surface = new V4L2DecodeSurface(
-      input, output,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
-                 base::Unretained(this)));
+  scoped_refptr<V4L2DecodeSurface> dec_surface =
+      new V4L2ConfigStoreDecodeSurface(
+          input, output,
+          base::Bind(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                     base::Unretained(this)));
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
   return dec_surface;
