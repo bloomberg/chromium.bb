@@ -853,20 +853,18 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
                                         display::Display::RotationSource::USER);
 
   // Open up 270 degrees to trigger tablet mode
-  scoped_refptr<chromeos::AccelerometerUpdate> update(
-      new chromeos::AccelerometerUpdate());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
-              kMeanGravity);
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
+  scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f, kMeanGravity);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::TabletModeController* controller =
       ash::Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->IsTabletModeWindowManagerEnabled());
 
   // Trigger 90 degree rotation
-  update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, -kMeanGravity,
-              0.0f, 0.0f);
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.0f, 0.0f);
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, -kMeanGravity, 0.0f,
+              0.0f);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
   shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -1003,11 +1001,9 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
   EXPECT_EQ(display::Display::ROTATE_0, before_tablet_mode_rotation);
 
   // Open up 270 degrees to trigger tablet mode
-  scoped_refptr<chromeos::AccelerometerUpdate> update(
-      new chromeos::AccelerometerUpdate());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
-              kMeanGravity);
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
+  scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f, kMeanGravity);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::TabletModeController* tablet_mode_controller =
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->OnAccelerometerUpdated(update);

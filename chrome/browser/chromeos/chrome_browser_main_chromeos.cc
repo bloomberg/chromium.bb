@@ -118,7 +118,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
@@ -749,14 +748,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
           ::switches::kDisableZeroBrowsersOpenForTests)) {
     g_browser_process->platform_part()->RegisterKeepAlive();
   }
-
-  // AccelerometerReader is used by ash and content (via DeviceSensor).
-  // TODO(mash): Initialize this for Mash or use owned instances in src/ash and
-  // src/device. http://crbug.com/525658.
-  chromeos::AccelerometerReader::GetInstance()->Initialize(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   // NOTE: Calls ChromeBrowserMainParts::PreProfileInit() which calls
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes

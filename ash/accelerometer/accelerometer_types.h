@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
-#define CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#ifndef ASH_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#define ASH_ACCELEROMETER_ACCELEROMETER_TYPES_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 
 namespace gfx {
 class Vector3dF;
 }
 
-namespace chromeos {
+namespace ash {
 
 enum AccelerometerSource {
   // Accelerometer is located in the device's screen. In the screen's natural
@@ -34,7 +34,7 @@ enum AccelerometerSource {
   ACCELEROMETER_SOURCE_COUNT
 };
 
-struct CHROMEOS_EXPORT AccelerometerReading {
+struct ASH_EXPORT AccelerometerReading {
   AccelerometerReading();
   ~AccelerometerReading();
 
@@ -49,7 +49,7 @@ struct CHROMEOS_EXPORT AccelerometerReading {
 
 // An accelerometer update contains the last known value for each of the
 // accelerometers present on the device.
-class CHROMEOS_EXPORT AccelerometerUpdate
+class ASH_EXPORT AccelerometerUpdate
     : public base::RefCountedThreadSafe<AccelerometerUpdate> {
  public:
   AccelerometerUpdate();
@@ -88,6 +88,6 @@ class CHROMEOS_EXPORT AccelerometerUpdate
   DISALLOW_COPY_AND_ASSIGN(AccelerometerUpdate);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#endif  // ASH_ACCELEROMETER_ACCELEROMETER_TYPES_H_

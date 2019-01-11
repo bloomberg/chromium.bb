@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/accelerometer/accelerometer_types.h"
+#include "ash/accelerometer/accelerometer_types.h"
 
 #include "ui/gfx/geometry/vector3d_f.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // The maximum deviation from the acceleration expected due to gravity for which
@@ -18,8 +18,7 @@ constexpr float kMeanGravity = 9.80665f;
 
 }  // namespace
 
-AccelerometerReading::AccelerometerReading() : present(false) {
-}
+AccelerometerReading::AccelerometerReading() : present(false) {}
 
 AccelerometerReading::~AccelerometerReading() = default;
 
@@ -41,4 +40,4 @@ bool AccelerometerUpdate::IsReadingStable(AccelerometerSource source) const {
          kDeviationFromGravityThreshold;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -80,16 +80,15 @@ const float kNoisyMagnitudeDeviation = 1.0f;
 constexpr base::TimeDelta kRecordLidAngleInterval =
     base::TimeDelta::FromHours(1);
 
-// The angle between chromeos::AccelerometerReadings are considered stable if
+// The angle between AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
 // between the screen and keyboard accelerometers is too high.
 bool IsAngleBetweenAccelerometerReadingsStable(
-    const chromeos::AccelerometerUpdate& update) {
+    const AccelerometerUpdate& update) {
   return std::abs(
-             update.GetVector(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
-                 .Length() -
-             update.GetVector(chromeos::ACCELEROMETER_SOURCE_SCREEN)
-                 .Length()) <= kNoisyMagnitudeDeviation;
+             update.GetVector(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD).Length() -
+             update.GetVector(ACCELEROMETER_SOURCE_SCREEN).Length()) <=
+         kNoisyMagnitudeDeviation;
 }
 
 bool IsEnabled() {
@@ -133,7 +132,7 @@ TabletModeController::TabletModeController()
   // controller.
   if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
-    chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+    AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
     bluetooth_devices_observer_ =
         std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
@@ -156,7 +155,7 @@ TabletModeController::~TabletModeController() {
 
   if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-    chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+    AccelerometerReader::GetInstance()->RemoveObserver(this);
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
@@ -302,14 +301,13 @@ void TabletModeController::OnChromeTerminating() {
 }
 
 void TabletModeController::OnAccelerometerUpdated(
-    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
+    scoped_refptr<const AccelerometerUpdate> update) {
   if (!AllowUiModeChange())
     return;
 
   have_seen_accelerometer_data_ = true;
-  can_detect_lid_angle_ =
-      update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
-      update->has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
+  can_detect_lid_angle_ = update->has(ACCELEROMETER_SOURCE_SCREEN) &&
+                          update->has(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
   if (!can_detect_lid_angle_) {
     if (record_lid_angle_timer_.IsRunning())
       record_lid_angle_timer_.Stop();
@@ -326,11 +324,10 @@ void TabletModeController::OnAccelerometerUpdated(
 
   // Whether or not we enter tablet mode affects whether we handle screen
   // rotation, so determine whether to enter tablet mode first.
-  if (update->IsReadingStable(chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
-      update->IsReadingStable(
-          chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
+  if (update->IsReadingStable(ACCELEROMETER_SOURCE_SCREEN) &&
+      update->IsReadingStable(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
       IsAngleBetweenAccelerometerReadingsStable(*update)) {
-    // update.has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
+    // update.has(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
     // Ignore the reading if it appears unstable. The reading is considered
     // unstable if it deviates too much from gravity and/or the magnitude of the
     // reading from the lid differs too much from the reading from the base.
@@ -412,12 +409,11 @@ void TabletModeController::OnDeviceListsComplete() {
 }
 
 void TabletModeController::HandleHingeRotation(
-    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
+    scoped_refptr<const AccelerometerUpdate> update) {
   static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
   gfx::Vector3dF base_reading =
-      update->GetVector(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
-  gfx::Vector3dF lid_reading =
-      update->GetVector(chromeos::ACCELEROMETER_SOURCE_SCREEN);
+      update->GetVector(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
+  gfx::Vector3dF lid_reading = update->GetVector(ACCELEROMETER_SOURCE_SCREEN);
 
   // As the hinge approaches a vertical angle, the base and lid accelerometers
   // approach the same values making any angle calculations highly inaccurate.
