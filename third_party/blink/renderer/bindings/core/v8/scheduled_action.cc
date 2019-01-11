@@ -112,11 +112,6 @@ void ScheduledAction::Dispose() {
   code_ = String();
 }
 
-void ScheduledAction::Trace(blink::Visitor* visitor) {
-  visitor->Trace(script_state_);
-  visitor->Trace(function_);
-}
-
 void ScheduledAction::Execute(ExecutionContext* context) {
   if (!script_state_->ContextIsValid()) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
@@ -142,6 +137,11 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";
     Execute(To<WorkerGlobalScope>(context));
   }
+}
+
+void ScheduledAction::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
+  visitor->Trace(function_);
 }
 
 void ScheduledAction::Execute(LocalFrame* frame) {
