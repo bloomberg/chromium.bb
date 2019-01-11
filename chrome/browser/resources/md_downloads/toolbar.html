@@ -46,14 +46,14 @@
         spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
       <paper-icon-button-light id="moreActionsContainer"
           class="dropdown-trigger">
-        <button id="moreActions"
-            title="$i18n{moreActions}"
-            on-click="onMoreActionsTap_">
+        <button id="moreActions" title="$i18n{moreActions}"
+            on-click="onMoreActionsTap_" aria-haspopup="menu">
           <iron-icon icon="cr:more-vert"></iron-icon>
         </button>
       </paper-icon-button-light>
     </cr-toolbar>
-    <cr-action-menu id="moreActionsMenu">
+    <cr-action-menu id="moreActionsMenu"
+        aria-label="$i18n{actionMenuDescription}">
       <button class="dropdown-item clear-all"
           on-click="onClearAllTap_">
         $i18n{clearAll}
