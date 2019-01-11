@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromeos/rules.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
-source_set("dbus") {
+component("dbus") {
+  output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   public_deps = [
     ":constants",
@@ -237,7 +237,7 @@ source_set("dbus") {
 }
 
 source_set("constants") {
-  configs += [ "//chromeos:chromeos_implementation" ]
+  defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   deps = [
     "//base",
   ]
@@ -252,12 +252,14 @@ source_set("constants") {
 source_set("test_support") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
-  deps = [
-    ":biod_proto",
+  public_deps = [
     ":dbus",
-    "//base",
     "//dbus",
     "//dbus:test_support",
+  ]
+  deps = [
+    ":biod_proto",
+    "//base",
     "//testing/gmock",
     "//testing/gtest",
   ]

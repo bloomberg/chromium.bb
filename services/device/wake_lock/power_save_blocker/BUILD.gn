@@ -70,7 +70,7 @@ source_set("power_save_blocker") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos",
+      "//chromeos/dbus",
       "//chromeos/dbus:power_manager_proto",
     ]
   }

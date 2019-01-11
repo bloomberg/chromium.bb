@@ -515,7 +515,10 @@ jumbo_component("base") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos/dbus",
+    ]
     sources -= [ "idle/idle_linux.cc" ]
   }
 

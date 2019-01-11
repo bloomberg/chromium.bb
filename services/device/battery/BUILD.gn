@@ -42,7 +42,7 @@ if (!is_android) {
     if (is_chromeos) {
       configs += [ "//build/config/linux/dbus" ]
       deps += [
-        "//chromeos:chromeos",
+        "//chromeos/dbus",
         "//chromeos/dbus:power_manager_proto",
       ]
       sources -= [
