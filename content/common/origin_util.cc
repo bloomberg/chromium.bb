@@ -24,17 +24,6 @@ bool IsOriginUnique(const url::Origin& origin) {
          base::ContainsValue(url::GetNoAccessSchemes(), origin.scheme());
 }
 
-bool IsWhitelistedSecureOrigin(const url::Origin& origin) {
-  if (base::ContainsValue(content::GetSecureOriginsAndPatterns(),
-                          origin.Serialize()))
-    return true;
-  for (const auto& origin_or_pattern : content::GetSecureOriginsAndPatterns()) {
-    if (base::MatchPattern(origin.host(), origin_or_pattern))
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 namespace content {
@@ -54,7 +43,18 @@ bool IsOriginSecure(const GURL& url) {
   if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
     return true;
 
-  return IsWhitelistedSecureOrigin(url::Origin::Create(url));
+  return IsWhitelistedAsSecureOrigin(url::Origin::Create(url));
+}
+
+bool IsWhitelistedAsSecureOrigin(const url::Origin& origin) {
+  if (base::ContainsValue(content::GetSecureOriginsAndPatterns(),
+                          origin.Serialize()))
+    return true;
+  for (const auto& origin_or_pattern : content::GetSecureOriginsAndPatterns()) {
+    if (base::MatchPattern(origin.host(), origin_or_pattern))
+      return true;
+  }
+  return false;
 }
 
 bool OriginCanAccessServiceWorkers(const GURL& url) {
@@ -83,7 +83,7 @@ bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
     return true;
   }
 
-  return IsWhitelistedSecureOrigin(origin);
+  return IsWhitelistedAsSecureOrigin(origin);
 }
 
 }  // namespace content
