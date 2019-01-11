@@ -9,7 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "net/base/network_change_notifier.h"
@@ -24,7 +23,7 @@ namespace chromeos {
 // This class listens to Shill for network change events and notifies both
 // the local NetworkChangeNotifierChromeos, and the network service via
 // the NetworkChangeManager if the network service is enabled.
-class CHROMEOS_EXPORT NetworkChangeManagerClient
+class NetworkChangeManagerClient
     : public chromeos::PowerManagerClient::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:

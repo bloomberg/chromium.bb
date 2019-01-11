@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
-#include "chromeos/chromeos_export.h"
 
 namespace drivefs {
 

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_LOADER_FACTORY_H_
 
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -14,8 +13,7 @@ namespace chromeos {
 
 // URLLoaderFactory that creates URLLoader instances for URLs with the
 // externalfile scheme.
-class CHROMEOS_EXPORT ExternalFileURLLoaderFactory
-    : public network::mojom::URLLoaderFactory {
+class ExternalFileURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   explicit ExternalFileURLLoaderFactory(void* profile_id);
   ~ExternalFileURLLoaderFactory() override;

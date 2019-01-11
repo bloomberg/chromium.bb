@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,10 +31,9 @@ class ScreenLocker;
 // them after the system fully resumes.  This class registers itself as a
 // PowerManagerClient::Observer on creation and unregisters itself on
 // destruction.
-class CHROMEOS_EXPORT RendererFreezer
-    : public PowerManagerClient::RenderProcessManagerDelegate,
-      public content::NotificationObserver,
-      public content::RenderProcessHostObserver {
+class RendererFreezer : public PowerManagerClient::RenderProcessManagerDelegate,
+                        public content::NotificationObserver,
+                        public content::RenderProcessHostObserver {
  public:
   class Delegate {
    public:
