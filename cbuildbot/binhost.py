@@ -262,9 +262,9 @@ def GenConfigsForBoard(board, regen, error_code_ok):
   """
   assert cros_build_lib.IsInsideChroot()
   if regen or not os.path.exists('/build/%s' % board):
-    cmd = ['%s/src/scripts/setup_board' % constants.CHROOT_SOURCE_ROOT,
-           '--board=%s' % board, '--regen_configs', '--skip_toolchain_update',
-           '--skip_chroot_upgrade', '--skip_board_pkg_init', '--quiet']
+    cmd = ['%s/setup_board' % constants.CHROMITE_BIN_DIR,
+           '--board=%s' % board, '--regen-configs', '--skip-toolchain-update',
+           '--skip-chroot-upgrade', '--skip-board-pkg-init', '--quiet']
     cros_build_lib.RunCommand(cmd, error_code_ok=error_code_ok)
 
 

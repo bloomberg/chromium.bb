@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import portage_util
 
 # pylint: disable=too-many-ancestors
@@ -507,6 +508,14 @@ class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
 class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
   """Test the WorkspaceSetupBoardStage."""
 
+  def setUp(self):
+    # Prevent the setup_board tempdir path from being translated because it
+    # ends up raising an error when that path can't be found in the chroot.
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
+    self.setup_board = os.path.join(self.workspace,
+                                    constants.CHROMITE_BIN_SUBDIR,
+                                    'setup_board')
+
   def ConstructStage(self):
     return workspace_stages.WorkspaceSetupBoardStage(
         self._run, self.buildstore, build_root=self.workspace, board='board')
@@ -523,9 +532,9 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
     self.assertEqual(self.rc.call_count, 1)
     self.rc.assertCommandCalled(
         [
-            './setup_board',
+            self.setup_board,
             '--board=board',
-            '--accept_licenses=@CHROMEOS',
+            '--accept-licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
         ],
@@ -550,9 +559,9 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
     self.assertEqual(self.rc.call_count, 1)
     self.rc.assertCommandCalled(
         [
-            './setup_board',
+            self.setup_board,
             '--board=board',
-            '--accept_licenses=@CHROMEOS',
+            '--accept-licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
         ],

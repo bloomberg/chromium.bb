@@ -266,8 +266,6 @@ For this, instead of downloading a moblab image from a builder, build the image
 yourself.
 ```
 pprabhu@pprabhu:chromiumos$ cros_sdk
-(cr) ((8e3381b52...)) pprabhu@pprabhu ~/trunk/src/scripts $ ./setup_board --board moblab-generic-vm
-...
 (cr) ((8e3381b52...)) pprabhu@pprabhu ~/trunk/src/scripts $ ./build_packages --board moblab-generic-vm
 ...
 (cr) ((8e3381b52...)) pprabhu@pprabhu ~/trunk/src/scripts $ ./build_image --board moblab-generic-vm --noenable_rootfs_verification test

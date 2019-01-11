@@ -301,14 +301,14 @@ def SetupBoard(buildroot, board, usepkg,
       date, you can specify chroot_upgrade=False.
     chroot_args: The args to the chroot.
   """
-  cmd = ['./setup_board', '--board=%s' % board,
-         '--accept_licenses=@CHROMEOS']
+  cmd = ['setup_board', '--board=%s' % board,
+         '--accept-licenses=@CHROMEOS']
 
   # This isn't the greatest thing, but emerge's dependency calculation
   # isn't the speediest thing, so let callers skip this step when they
   # know the system is up-to-date already.
   if not chroot_upgrade:
-    cmd.append('--skip_chroot_upgrade')
+    cmd.append('--skip-chroot-upgrade')
 
   if profile:
     cmd.append('--profile=%s' % profile)
@@ -321,8 +321,8 @@ def SetupBoard(buildroot, board, usepkg,
   if force:
     cmd.append('--force')
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True,
-                 chroot_args=chroot_args)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env,
+                 enter_chroot=True, chroot_args=chroot_args)
 
 
 def BuildSDKBoard(buildroot, board, force=False, extra_env=None,

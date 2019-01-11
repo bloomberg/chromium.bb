@@ -205,7 +205,7 @@ class AutotestEvaluator(evaluator.Evaluator):
       return True
 
     try:
-      self.RunCommandInsideCrosSdk(['./setup_board', '--board', self.board])
+      self.RunCommandInsideCrosSdk(['setup_board', '--board', self.board])
     except cros_build_lib.RunCommandError as e:
       logging.error('Failed to setup_board for %s: %s', self.board, e)
       return False
