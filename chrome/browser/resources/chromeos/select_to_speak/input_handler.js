@@ -257,11 +257,13 @@ InputHandler.prototype = {
    * @public
    */
   onKeyDown_: function(evt) {
-    if (this.keysPressedTogether_.size == 0 &&
+    this.keysCurrentlyDown_.add(evt.keyCode);
+    this.keysPressedTogether_.add(evt.keyCode);
+    if (this.keysPressedTogether_.size == 1 &&
         evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
       this.isSearchKeyDown_ = true;
     } else if (
-        this.keysCurrentlyDown_.size == 1 &&
+        this.keysCurrentlyDown_.size == 2 &&
         evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE &&
         !this.trackingMouse_) {
       // Only go into selection mode if we aren't already tracking the mouse.
@@ -270,9 +272,6 @@ InputHandler.prototype = {
       // Some other key was pressed.
       this.isSearchKeyDown_ = false;
     }
-
-    this.keysCurrentlyDown_.add(evt.keyCode);
-    this.keysPressedTogether_.add(evt.keyCode);
   },
 
   /**
