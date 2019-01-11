@@ -610,21 +610,15 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   // ourselves, we can make the client surface fully opaque and avoid the
   // power consumption needed for DWM to blend the window contents.
   //
-  // So the accent border also has to be opaque, but native inactive borders
-  // are #494949 with 47% alpha. Against white (the most visible case) this is
-  // #AAAAAA, so we color with that normally. However, when the titlebar is dark
-  // that color sometimes stands out badly. In that case we lighten the titlebar
-  // color slightly, which creates a subtle highlight effect. This isn't exactly
-  // native but it looks good given our constraints.
+  // So the accent border also has to be opaque. Native inactive borders are
+  // #555555 with 50% alpha. We can blend the titlebar color with this to
+  // approximate the native effect.
   const SkColor titlebar_color = GetTitlebarColor();
-  const SkColor inactive_border_color =
-      color_utils::IsDark(titlebar_color)
-          ? color_utils::BlendTowardMaxContrast(titlebar_color, 0x0F)
-          : SkColorSetRGB(0xAA, 0xAA, 0xAA);
   flags.setColor(
       ShouldPaintAsActive()
           ? GetThemeProvider()->GetColor(ThemeProperties::COLOR_ACCENT_BORDER)
-          : inactive_border_color);
+          : color_utils::AlphaBlend(SkColorSetRGB(0x55, 0x55, 0x55),
+                                    titlebar_color, 0.5f));
   canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), flags);
 
   const int titlebar_height =
