@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
-class LoginButton;
 class LoginMenuView;
 
 // A wrapper for the bubble view in the login screen.
@@ -32,26 +31,8 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver {
     LoginBaseBubbleView* bubble_view_;
   };
 
-  static const int kUserMenuRemoveUserButtonIdForTest;
-
   LoginBubble();
   ~LoginBubble() override;
-
-
-  // Shows a user menu bubble.
-  // |anchor_view| is the anchor for placing the bubble view.
-  // |bubble_opener| is a view that could open/close the bubble.
-  // |show_remove_user| indicate whether or not we show the
-  // "Remove this user" action.
-  void ShowUserMenu(const base::string16& username,
-                    const base::string16& email,
-                    user_manager::UserType type,
-                    bool is_owner,
-                    views::View* anchor_view,
-                    LoginButton* bubble_opener,
-                    bool show_remove_user,
-                    base::OnceClosure on_remove_user_warning_shown,
-                    base::OnceClosure on_remove_user_requested);
 
   // Shows a selection menu.
   void ShowSelectionMenu(LoginMenuView* menu);

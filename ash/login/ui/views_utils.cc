@@ -63,6 +63,7 @@ bool HasFocusInAnyChildView(views::View* view) {
 views::Label* CreateBubbleLabel(const base::string16& message, SkColor color) {
   views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
                                          views::style::STYLE_PRIMARY);
+  label->SetLineHeight(20);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(color);

@@ -323,8 +323,8 @@ views::View* LoginUserView::TestApi::dropdown() const {
   return view_->dropdown_;
 }
 
-LoginBubble* LoginUserView::TestApi::menu() const {
-  return view_->menu_.get();
+LoginBaseBubbleView* LoginUserView::TestApi::menu() const {
+  return view_->menu_;
 }
 
 views::View* LoginUserView::TestApi::user_domain() const {
@@ -420,10 +420,14 @@ LoginUserView::LoginUserView(
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
-  menu_ = std::make_unique<LoginBubble>();
 }
 
-LoginUserView::~LoginUserView() = default;
+LoginUserView::~LoginUserView() {
+  if (menu_) {
+    menu_->GetWidget()->Close();
+    menu_ = nullptr;
+  }
+}
 
 void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
                                   bool animate) {
@@ -525,17 +529,37 @@ void LoginUserView::ButtonPressed(views::Button* sender,
   // Handle click on the dropdown arrow.
   if (sender == dropdown_) {
     DCHECK(dropdown_);
-    if (!menu_->IsVisible()) {
-      menu_->ShowUserMenu(
-          base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
-          base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
-          current_user_->basic_user_info->type, current_user_->is_device_owner,
-          dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
-          current_user_->can_remove /*show_remove_user*/,
-          on_remove_warning_shown_, on_remove_);
-    } else {
-      menu_->Close();
+
+    // If menu is showing, just close it
+    if (menu_ && menu_->IsVisible()) {
+      menu_->Hide();
+      return;
     }
+
+    // If the menu exists but is hidden, delete it and create a new menu.
+    if (menu_) {
+      menu_->GetWidget()->Close();
+      menu_ = nullptr;
+    }
+
+    menu_ = new LoginUserMenuView(
+        base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
+        base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
+        current_user_->basic_user_info->type, current_user_->is_device_owner,
+        dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
+        current_user_->can_remove /*show_remove_user*/,
+        on_remove_warning_shown_, on_remove_);
+
+    bool opener_focused =
+        menu_->GetBubbleOpener() && menu_->GetBubbleOpener()->HasFocus();
+
+    menu_->Show();
+
+    // If the menu was opened by pressing Enter on the focused dropdown, focus
+    // should automatically go to the remove-user button (for keyboard
+    // accessibility).
+    if (opener_focused)
+      menu_->RequestFocus();
 
     return;
   }

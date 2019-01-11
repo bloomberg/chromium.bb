@@ -6,7 +6,9 @@
 #define ASH_LOGIN_UI_LOGIN_USER_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/login_base_bubble_view.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_user_menu_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -15,7 +17,6 @@
 namespace ash {
 
 class HoverNotifier;
-class LoginBubble;
 class LoginButton;
 
 // Display the user's profile icon, name, and a menu icon in various layout
@@ -36,7 +37,7 @@ class ASH_EXPORT LoginUserView : public views::View,
     views::View* user_label() const;
     views::View* tap_button() const;
     views::View* dropdown() const;
-    LoginBubble* menu() const;
+    LoginBaseBubbleView* menu() const;
     views::View* user_domain() const;
 
     bool is_opaque() const;
@@ -119,7 +120,10 @@ class ASH_EXPORT LoginUserView : public views::View,
   LoginButton* dropdown_ = nullptr;
   TapButton* tap_button_ = nullptr;
 
-  std::unique_ptr<LoginBubble> menu_;
+  // Bubble used for displaying the user dropdown menu. Owned by its widget,
+  // which is owned by LoginUserView. This widget is closed in
+  // LoginUserMenuView's d'tor.
+  LoginBaseBubbleView* menu_ = nullptr;
 
   // Show the domain information for public account user.
   UserDomainInfoView* user_domain_ = nullptr;
