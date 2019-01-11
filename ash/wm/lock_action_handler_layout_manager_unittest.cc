@@ -98,7 +98,6 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
     lock_window_.reset();
     AshTestBase::TearDown();
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(nullptr);

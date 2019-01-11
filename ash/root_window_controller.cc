@@ -554,13 +554,9 @@ void RootWindowController::CloseChildWindows() {
     return;
   did_close_child_windows_ = true;
 
-  // Deactivate keyboard container before closing child windows and shutting
+  // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
-  auto* ash_keyboard_controller = Shell::Get()->ash_keyboard_controller();
-  if (ash_keyboard_controller->keyboard_controller()->GetRootWindow() ==
-      GetRootWindow()) {
-    ash_keyboard_controller->DeactivateKeyboard();
-  }
+  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(GetRootWindow());
 
   shelf_->ShutdownShelfWidget();
 

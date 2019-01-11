@@ -110,6 +110,11 @@ class ASH_EXPORT AshKeyboardController
   // Deactivates the keyboard controller.
   void DeactivateKeyboard();
 
+  // Called whenever a root window is closing.
+  // If the root window contains the virtual keyboard window, deactivates
+  // the keyboard so that its window doesn't get destroyed as well.
+  void OnRootWindowClosing(aura::Window* root_window);
+
  private:
   // Called whenever the enable flags may have changed the enabled state from
   // |was_enabled|. If changed, enables or disables the keyboard.

@@ -63,13 +63,9 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
   // Install test layout manager.
   TestLayoutManager* manager = new TestLayoutManager(always_on_top_container);
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-  // Deactivates keyboard to unregister existing listeners.
-  Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
   AlwaysOnTopController* always_on_top_controller =
       controller->always_on_top_controller();
   always_on_top_controller->SetLayoutManagerForTest(base::WrapUnique(manager));
-  // Activate keyboard. This triggers keyboard listeners to be registered.
-  Shell::Get()->ash_keyboard_controller()->ActivateKeyboard();
 
   // Show the keyboard.
   auto* keyboard_controller = keyboard::KeyboardController::Get();

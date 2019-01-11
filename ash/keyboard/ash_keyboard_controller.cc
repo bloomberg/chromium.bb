@@ -47,11 +47,9 @@ void AshKeyboardController::EnableKeyboard() {
   if (!keyboard_controller_->IsKeyboardEnableRequested())
     return;
 
-  // De-activate the keyboard, as some callers expect the keyboard to be
-  // reloaded. TODO(https://crbug.com/731537): Add a separate function for
+  // KeyboardController::EnableKeyboard will reload the keyboard if it's already
+  // enabled. TODO(https://crbug.com/731537): Add a separate function for
   // reloading the keyboard.
-  DeactivateKeyboard();
-
   keyboard_controller_->EnableKeyboard(
       keyboard_ui_factory_ ? keyboard_ui_factory_->CreateKeyboardUI()
                            : std::make_unique<AshKeyboardUI>(this),
@@ -60,7 +58,6 @@ void AshKeyboardController::EnableKeyboard() {
 }
 
 void AshKeyboardController::DisableKeyboard() {
-  DeactivateKeyboard();
   keyboard_controller_->DisableKeyboard();
 }
 
@@ -272,6 +269,11 @@ void AshKeyboardController::DeactivateKeyboard() {
     return;
   }
   keyboard_controller_->DeactivateKeyboard();
+}
+
+void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
+  if (keyboard_controller_->GetRootWindow() == root_window)
+    DeactivateKeyboard();
 }
 
 void AshKeyboardController::UpdateEnableFlag(bool was_enabled) {
