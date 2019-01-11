@@ -119,8 +119,6 @@ blink_core_sources("frame") {
     "pausable_script_executor.h",
     "pausable_task.cc",
     "pausable_task.h",
-    "pausable_timer.cc",
-    "pausable_timer.h",
     "performance_monitor.cc",
     "performance_monitor.h",
     "picture_in_picture_controller.cc",
