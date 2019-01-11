@@ -180,10 +180,6 @@ void WebRuntimeFeatures::EnableForceTallerSelectPopup(bool enable) {
   RuntimeEnabledFeatures::SetForceTallerSelectPopupEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableGamepadExtensions(bool enable) {
-  RuntimeEnabledFeatures::SetGamepadExtensionsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableGamepadVibration(bool enable) {
   RuntimeEnabledFeatures::SetGamepadVibrationEnabled(enable);
 }

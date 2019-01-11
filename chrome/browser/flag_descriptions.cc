@@ -1066,9 +1066,6 @@ const char kFramebustingDescription[] =
     "Don't permit an iframe to navigate the top level browsing context unless "
     "they are same-origin or the iframe is processing a user gesture.";
 
-const char kGamepadExtensionsName[] = "Gamepad Extensions";
-const char kGamepadExtensionsDescription[] =
-    "Enables experimental extensions to the Gamepad APIs.";
 const char kGamepadVibrationName[] = "Gamepad Vibration";
 const char kGamepadVibrationDescription[] =
     "Enables haptic vibration effects on supported gamepads.";
@@ -2124,7 +2121,8 @@ const char kWebvrDescription[] =
     "WebVR 1.1 API. This feature will eventually be replaced by the WebXR "
     "Device API. Warning: Enabling this will also allow WebVR content on "
     "insecure origins to access these powerful APIs, and may pose a security "
-    "risk. Controllers are exposed as Gamepads.";
+    "risk. Controllers are exposed as Gamepads, and WebVR-specific attributes "
+    "are exposed.";
 
 const char kWebXrName[] = "WebXR Device API";
 const char kWebXrDescription[] =
