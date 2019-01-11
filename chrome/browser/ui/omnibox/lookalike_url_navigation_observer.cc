@@ -12,6 +12,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#include "chrome/browser/ui/omnibox/lookalike_url_service.h"
 #include "chrome/common/chrome_features.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -62,7 +63,7 @@ std::string GetETLDPlusOne(const GURL& url) {
 // |domain_and_registry| may be attempting to spoof, based on skeleton
 // comparison.
 std::string GetMatchingSiteEngagementDomain(
-    SiteEngagementService* service,
+    const std::vector<GURL>& engaged_sites,
     const std::string& domain_and_registry) {
   // Compute skeletons using eTLD+1.
   // eTLD+1 can be empty for private domains.
@@ -77,21 +78,16 @@ std::string GetMatchingSiteEngagementDomain(
 
   std::map<std::string, url_formatter::Skeletons>
       domain_and_registry_to_skeleton;
-  std::vector<mojom::SiteEngagementDetails> engagement_details =
-      service->GetAllDetails();
-  for (const auto& detail : engagement_details) {
-    // Ignore sites with an engagement score lower than LOW.
-    if (!service->IsEngagementAtLeast(detail.origin,
-                                      blink::mojom::EngagementLevel::MEDIUM))
-      continue;
 
-    // Site engagement service should only return HTTP or HTTPS domains.
-    DCHECK(detail.origin.SchemeIsHTTPOrHTTPS());
-
+  for (const GURL& engaged_site : engaged_sites) {
+    DCHECK(engaged_site.SchemeIsHTTPOrHTTPS());
     // If the user has engaged with eTLD+1 of this site, don't show any
-    // lookalike navigation suggestions.
+    // lookalike navigation suggestions. This ignores the scheme. That's okay as
+    // it's the more conservative option: If the user is engaged with
+    // http://domain.test, not showing the warning on https://domain.test is
+    // acceptable.
     const std::string engaged_domain_and_registry =
-        GetETLDPlusOne(detail.origin);
+        GetETLDPlusOne(engaged_site);
     // eTLD+1 can be empty for private domains (e.g. http://test).
     if (engaged_domain_and_registry.empty())
       continue;
@@ -119,7 +115,7 @@ std::string GetMatchingSiteEngagementDomain(
     }
 
     if (SkeletonsMatch(navigated_skeletons, skeletons))
-      return detail.origin.host();
+      return engaged_site.host();
   }
   return std::string();
 }
@@ -132,7 +128,9 @@ const char LookalikeUrlNavigationObserver::kHistogramName[] =
 
 LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      weak_factory_(this) {}
 
 LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
 
@@ -155,16 +153,23 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
 
   // If the user has engaged with this site, don't show any lookalike
   // navigation suggestions.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  SiteEngagementService* service = SiteEngagementService::Get(profile);
-  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::MEDIUM))
+  if (SiteEngagementService::Get(profile_)->IsEngagementAtLeast(
+          url, blink::mojom::EngagementLevel::MEDIUM))
     return;
 
+  LookalikeUrlService::Get(profile_)->GetEngagedSites(
+      base::BindOnce(&LookalikeUrlNavigationObserver::PerformChecks,
+                     weak_factory_.GetWeakPtr(), url));
+}
+
+void LookalikeUrlNavigationObserver::PerformChecks(
+    const GURL& url,
+    const std::vector<GURL>& engaged_sites) {
   std::string matched_domain;
   MatchType match_type;
-  if (!GetMatchingDomain(url, service, &matched_domain, &match_type))
+  if (!GetMatchingDomain(url, engaged_sites, &matched_domain, &match_type)) {
     return;
+  }
 
   DCHECK(!matched_domain.empty());
 
@@ -191,7 +196,7 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
 
 bool LookalikeUrlNavigationObserver::GetMatchingDomain(
     const GURL& url,
-    SiteEngagementService* service,
+    const std::vector<GURL>& engaged_sites,
     std::string* matched_domain,
     MatchType* match_type) {
   // Perform all computations on eTLD+1.
@@ -218,7 +223,7 @@ bool LookalikeUrlNavigationObserver::GetMatchingDomain(
     }
 
     const std::string matched_engaged_domain =
-        GetMatchingSiteEngagementDomain(service, domain_and_registry);
+        GetMatchingSiteEngagementDomain(engaged_sites, domain_and_registry);
     if (!matched_engaged_domain.empty()) {
       RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
       *matched_domain = matched_engaged_domain;

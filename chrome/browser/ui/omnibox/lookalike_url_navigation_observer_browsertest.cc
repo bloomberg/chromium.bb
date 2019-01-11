@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/lookalike_url_navigation_observer.h"
+#include "chrome/browser/ui/omnibox/lookalike_url_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,6 +83,14 @@ class LookalikeUrlNavigationObserverBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+
+    const base::Time kNow = base::Time::FromDoubleT(1000);
+    test_clock_.SetNow(kNow);
+
+    LookalikeUrlService* lookalike_service =
+        LookalikeUrlService::Get(browser()->profile());
+    lookalike_service->SetClockForTesting(&test_clock_);
+    lookalike_service->ClearEngagedSitesForTesting();
   }
 
   // Sets the absolute Site Engagement |score| for the testing origin.
@@ -126,11 +136,21 @@ class LookalikeUrlNavigationObserverBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents();
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
-
-    content::TestNavigationObserver navigation_observer(web_contents, 1);
-    NavigateToURL(navigated_url);
-    navigation_observer.Wait();
-    EXPECT_EQ(0u, infobar_service->infobar_count());
+    {
+      content::TestNavigationObserver navigation_observer(web_contents, 1);
+      NavigateToURL(navigated_url);
+      navigation_observer.Wait();
+      EXPECT_EQ(0u, infobar_service->infobar_count());
+    }
+    {
+      // Navigate to an empty page. This will happen after any
+      // LookalikeUrlService tasks, so will effectively wait for those tasks to
+      // finish.
+      content::TestNavigationObserver navigation_observer(web_contents, 1);
+      NavigateToURL(GURL("about:blank"));
+      navigation_observer.Wait();
+      EXPECT_EQ(0u, infobar_service->infobar_count());
+    }
   }
 
   void TestInfobarShown(const GURL& navigated_url,
@@ -177,9 +197,12 @@ class LookalikeUrlNavigationObserverBrowserTest
 
   ukm::TestUkmRecorder* test_ukm_recorder() { return test_ukm_recorder_.get(); }
 
+  base::SimpleTestClock* test_clock() { return &test_clock_; }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
+  base::SimpleTestClock test_clock_;
 };
 
 INSTANTIATE_TEST_CASE_P(,
@@ -371,6 +394,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
     // Even if the navigated site has a low engagement score, it should be
     // considered for lookalike suggestions.
     SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
+    // Advance the clock to force LookalikeUrlService to fetch a new engaged
+    // site list.
+    test_clock()->Advance(base::TimeDelta::FromHours(1));
 
     if (GetParam() == FeatureTestState::kEnabled) {
       // If the feature is enabled, the UI will be displayed. Expect extra
@@ -406,9 +432,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
     }
 
     ukm_urls.push_back(kNavigatedUrl);
+    CheckUkm(ukm_urls,
+             LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
   }
-  CheckUkm(ukm_urls,
-           LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
 }
 
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
