@@ -232,6 +232,7 @@ static void ConvertRequestLEScanOptions(
   }
 
   result->accept_all_advertisements = options->acceptAllAdvertisements();
+  result->keep_repeated_devices = options->keepRepeatedDevices();
 
   if (options->hasFilters()) {
     if (options->filters().IsEmpty()) {
@@ -258,20 +259,21 @@ static void ConvertRequestLEScanOptions(
 void Bluetooth::RequestScanningCallback(
     ScriptPromiseResolver* resolver,
     mojo::BindingId id,
-    mojom::blink::WebBluetoothResult result) {
+    mojom::blink::RequestScanningStartResultPtr result) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
 
-  if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
-    auto* scan = BluetoothLEScan::Create(id, this,
-                                         /*keep_repeated_device=*/true,
-                                         /*accept_all_advertisements=*/true);
-    resolver->Resolve(scan);
-  } else {
-    resolver->Reject(BluetoothError::CreateDOMException(result));
+  if (result->is_error_result()) {
+    resolver->Reject(
+        BluetoothError::CreateDOMException(result->get_error_result()));
+    return;
   }
+
+  auto* scan =
+      BluetoothLEScan::Create(id, this, std::move(result->get_options()));
+  resolver->Resolve(scan);
 }
 
 // https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetooth-requestlescan

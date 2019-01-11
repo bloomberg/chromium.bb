@@ -73,7 +73,7 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   void RequestScanningCallback(ScriptPromiseResolver*,
                                mojo::BindingId id,
-                               mojom::blink::WebBluetoothResult);
+                               mojom::blink::RequestScanningStartResultPtr);
 
   // Map of device ids to BluetoothDevice objects.
   // Ensures only one BluetoothDevice instance represents each
