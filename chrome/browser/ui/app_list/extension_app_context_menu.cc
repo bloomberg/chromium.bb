@@ -36,12 +36,12 @@ ExtensionAppContextMenu::ExtensionAppContextMenu(
     AppContextMenuDelegate* delegate,
     Profile* profile,
     const std::string& app_id,
-    AppListControllerDelegate* controller)
-    : AppContextMenu(delegate, profile, app_id, controller) {
-}
+    AppListControllerDelegate* controller,
+    bool is_platform_app)
+    : AppContextMenu(delegate, profile, app_id, controller),
+      is_platform_app_(is_platform_app) {}
 
-ExtensionAppContextMenu::~ExtensionAppContextMenu() {
-}
+ExtensionAppContextMenu::~ExtensionAppContextMenu() {}
 
 // static
 void ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(

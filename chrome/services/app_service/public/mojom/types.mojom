@@ -97,9 +97,11 @@ struct IconValue {
 
 enum LaunchSource {
   kUnknown,
-  kFromAppListGrid,            // Grid of apps, not the search box.
-  kFromAppListRecommendation,  // Query-less recommendations (smaller icons).
-  kFromAppListQueryResult,     // Query-dependent results (larger icons).
+  kFromAppListGrid,              // Grid of apps, not the search box.
+  kFromAppListGridContextMenu,   // Grid of apps; context menu.
+  kFromAppListQuery,             // Query-dependent results (larger icons).
+  kFromAppListQueryContextMenu,  // Query-dependent results; context menu.
+  kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
 };
 
 enum TriState {

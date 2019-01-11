@@ -8,6 +8,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "extensions/common/extension.h"
 
@@ -18,12 +19,17 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
                                          AppListControllerDelegate* controller,
                                          bool is_recommendation)
     : AppResult(profile, app_id, controller, is_recommendation),
+      app_type_(apps::mojom::AppType::kUnknown),
+      show_in_launcher_(false),
       weak_ptr_factory_(this) {
-  auto app_type = apps::mojom::AppType::kUnknown;
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
 
   if (proxy) {
-    app_type = proxy->Cache().GetAppType(app_id);
+    proxy->Cache().ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+      app_type_ = update.AppType();
+      show_in_launcher_ =
+          update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+    });
 
     proxy->LoadIcon(
         app_id, apps::mojom::IconCompression::kUncompressed,
@@ -40,7 +46,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
     }
   }
 
-  switch (app_type) {
+  switch (app_type_) {
     case apps::mojom::AppType::kBuiltIn:
       set_id(app_id);
       // TODO(crbug.com/826982): Is this SetResultType call necessary?? Does
@@ -66,20 +72,44 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
 AppServiceAppResult::~AppServiceAppResult() = default;
 
 void AppServiceAppResult::Open(int event_flags) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
-  if (proxy) {
-    auto launch_source =
-        (display_type() == ash::SearchResultDisplayType::kRecommendation)
-            ? apps::mojom::LaunchSource::kFromAppListRecommendation
-            : apps::mojom::LaunchSource::kFromAppListQueryResult;
+  Launch(event_flags,
+         (display_type() == ash::SearchResultDisplayType::kRecommendation)
+             ? apps::mojom::LaunchSource::kFromAppListRecommendation
+             : apps::mojom::LaunchSource::kFromAppListQuery);
+}
 
-    proxy->Launch(app_id(), event_flags, launch_source,
-                  controller()->GetAppListDisplayId());
+void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
+  // TODO(crbug.com/826982): don't hard-code false. The App Service should
+  // probably provide this.
+  const bool is_platform_app = false;
+
+  // TODO(crbug.com/826982): drop the (app_type_ == etc), and check
+  // show_in_launcher_ for all app types?
+  if ((app_type_ == apps::mojom::AppType::kBuiltIn) && !show_in_launcher_) {
+    std::move(callback).Run(nullptr);
+    return;
   }
+
+  context_menu_ = AppServiceAppItem::MakeAppContextMenu(
+      app_type_, this, profile(), app_id(), controller(), is_platform_app);
+  context_menu_->GetMenuModel(std::move(callback));
+}
+
+AppContextMenu* AppServiceAppResult::GetAppContextMenu() {
+  return context_menu_.get();
 }
 
 void AppServiceAppResult::ExecuteLaunchCommand(int event_flags) {
-  Open(event_flags);
+  Launch(event_flags, apps::mojom::LaunchSource::kFromAppListQueryContextMenu);
+}
+
+void AppServiceAppResult::Launch(int event_flags,
+                                 apps::mojom::LaunchSource launch_source) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  if (proxy) {
+    proxy->Launch(app_id(), event_flags, launch_source,
+                  controller()->GetAppListDisplayId());
+  }
 }
 
 void AppServiceAppResult::OnLoadIcon(bool chip,

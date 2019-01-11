@@ -56,9 +56,11 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kUnknown:
       return ash::LAUNCH_FROM_UNKNOWN;
     case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
       return ash::LAUNCH_FROM_APP_LIST;
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
-    case apps::mojom::LaunchSource::kFromAppListQueryResult:
       return ash::LAUNCH_FROM_APP_LIST_SEARCH;
   }
 }
@@ -140,13 +142,15 @@ void ExtensionApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kUnknown:
       break;
     case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
       extensions::RecordAppListMainLaunch(extension);
       break;
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      break;
-    case apps::mojom::LaunchSource::kFromAppListQueryResult:
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
       app_list::RecordHistogram(app_list::APP_SEARCH_RESULT);
       extensions::RecordAppListSearchLaunch(extension);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
       break;
   }
 

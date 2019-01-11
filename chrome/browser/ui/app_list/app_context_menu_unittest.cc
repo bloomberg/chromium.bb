@@ -215,8 +215,7 @@ class AppContextMenuTest : public AppListTestBase {
     controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
     app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(), app_id,
-                                           controller());
-    menu.set_is_platform_app(platform_app);
+                                           controller(), platform_app);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -244,7 +243,8 @@ class AppContextMenuTest : public AppListTestBase {
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     controller_->SetCanShowAppInfo(can_show_app_info);
     app_list::ExtensionAppContextMenu menu(
-        menu_delegate(), profile(), extension_misc::kChromeAppId, controller());
+        menu_delegate(), profile(), extension_misc::kChromeAppId, controller(),
+        false /* is_platform_app */);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -304,9 +304,9 @@ TEST_F(AppContextMenuTest, ChromeApp) {
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       false);
-  app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(),
-                                         "some_non_existing_extension_app",
-                                         controller());
+  app_list::ExtensionAppContextMenu menu(
+      menu_delegate(), profile(), "some_non_existing_extension_app",
+      controller(), false /* is_platform_app */);
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   EXPECT_EQ(nullptr, menu_model);
 }
