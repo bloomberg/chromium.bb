@@ -209,9 +209,6 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
   // Overridden from views::BubbleFrameView:
   bool ExtendClientIntoTitle() const override { return true; }
 
-  // Overridden from views::View:
-  gfx::Insets GetInsets() const override { return gfx::Insets(); }
-
   DISALLOW_COPY_AND_ASSIGN(FullSizeBubbleFrameView);
 };
 
