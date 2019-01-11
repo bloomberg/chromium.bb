@@ -19,6 +19,11 @@ import org.chromium.net.NetError;
 public class WebappOfflineDialog {
     private Dialog mDialog;
 
+    /** Returns whether the dialog is showing. */
+    public boolean isShowing() {
+        return mDialog != null && mDialog.isShowing();
+    }
+
     /**
      * Shows the dialog that notifies users that the WebAPK or TWA is offline.
      * @param activity Activity that will be used for {@link Dialog#show()}.
