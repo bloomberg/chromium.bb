@@ -125,6 +125,13 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
   // |QuicChromiumClientSession| based on whether there are large
   // upload stream(s) active.
   virtual void SetWriteBatchingActive(bool active) = 0;
+
+  // Set interface to use for data sent to multicast groups. If
+  // |interface_index| set to 0, default interface is used.
+  // Must be called before Connect(), ConnectUsingNetwork() or
+  // ConnectUsingDefaultNetwork().
+  // Returns a network error code.
+  virtual int SetMulticastInterface(uint32_t interface_index) = 0;
 };
 
 }  // namespace net

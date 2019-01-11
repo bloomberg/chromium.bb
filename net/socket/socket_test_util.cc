@@ -1808,6 +1808,9 @@ void MockUDPClientSocket::SetMaxPacketSize(size_t max_packet_size) {}
 void MockUDPClientSocket::SetWriteMultiCoreEnabled(bool enabled) {}
 void MockUDPClientSocket::SetSendmmsgEnabled(bool enabled) {}
 void MockUDPClientSocket::SetWriteBatchingActive(bool active) {}
+int MockUDPClientSocket::SetMulticastInterface(uint32_t interface_index) {
+  return OK;
+}
 
 const NetLogWithSource& MockUDPClientSocket::NetLog() const {
   return net_log_;

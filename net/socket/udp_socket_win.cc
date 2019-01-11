@@ -448,7 +448,10 @@ int UDPSocketWin::Connect(const IPEndPoint& address) {
       NetLogEventType::UDP_CONNECT,
       CreateNetLogUDPConnectCallback(
           &address, NetworkChangeNotifier::kInvalidNetworkHandle));
-  int rv = InternalConnect(address);
+  int rv = SetMulticastOptions();
+  if (rv != OK)
+    return rv;
+  rv = InternalConnect(address);
   net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
   is_connected_ = (rv == OK);
   return rv;
