@@ -109,6 +109,11 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // Sets the layer mask's corner radius and insets in background.
   void UpdateBackgroundMask(int corner_radius, const gfx::Insets& insets);
 
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started) {
+    folder_header_view()->set_tablet_mode(started);
+  }
+
  private:
   void CalculateIdealBounds();
 

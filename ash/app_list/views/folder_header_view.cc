@@ -13,6 +13,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -44,7 +45,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   void OnFocus() override {
     SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
-    folder_header_view_->previous_folder_name_ = text();
+    starting_name_ = text();
+    folder_header_view_->previous_folder_name_ = starting_name_;
     SelectAll(false);
     Textfield::OnFocus();
   }
@@ -53,12 +55,28 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     // Collapse whitespace when FolderNameView loses focus.
     SetText(base::CollapseWhitespace(text(), false));
     folder_header_view_->ContentsChanged(this, text());
+
+    // Record metric each time a folder is renamed.
+    if (text() != starting_name_) {
+      if (folder_header_view_->is_tablet_mode()) {
+        UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.TabletMode",
+                                 text().length());
+      } else {
+        UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.ClamshellMode",
+                                 text().length());
+      }
+    }
+
     Textfield::OnBlur();
   }
 
  private:
   // The parent FolderHeaderView, owns this.
   FolderHeaderView* folder_header_view_;
+
+  // Name of the folder when FolderNameView is focused, used to track folder
+  // rename metric.
+  base::string16 starting_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
@@ -70,7 +88,8 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
-      folder_name_visible_(true) {
+      folder_name_visible_(true),
+      is_tablet_mode_(false) {
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::NullBorder());
