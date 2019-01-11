@@ -2801,6 +2801,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "pdf-annotations",
+    "owners": [ "dstockwell@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "pdf-form-save",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

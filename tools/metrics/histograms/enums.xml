@@ -30263,6 +30263,7 @@ from previous Chrome versions.
   <int value="-2001869199" label="ShillSandboxing:enabled"/>
   <int value="-2000567059" label="SimplifyHttpsIndicator:enabled"/>
   <int value="-1999892428" label="force-ui-direction"/>
+  <int value="-1999617045" label="PDFAnnotations:disabled"/>
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
@@ -31374,6 +31375,7 @@ from previous Chrome versions.
   <int value="-68877684" label="BackgroundVideoTrackOptimization:enabled"/>
   <int value="-68619312" label="PassiveDocumentWheelEventListeners:disabled"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
+  <int value="-67616014" label="PDFAnnotations:enabled"/>
   <int value="-67297229" label="OfflinePagesDescriptivePendingStatus:disabled"/>
   <int value="-64839201" label="SyncUSSAutofillWalletData:disabled"/>
   <int value="-59530055" label="ChromeVoxArcSupport:enabled"/>
