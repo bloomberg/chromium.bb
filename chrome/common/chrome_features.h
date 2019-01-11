@@ -24,8 +24,6 @@ namespace features {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAdsFeature;
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowAutoplayUnmutedInWebappManifestScope;

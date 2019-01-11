@@ -14,9 +14,6 @@ namespace features {
 
 // All features in alphabetical order.
 
-// Enables Ads Metrics.
-const base::Feature kAdsFeature{"AdsMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
     "AllowAutoplayUnmutedInWebappManifestScope",

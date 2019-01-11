@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/common/chrome_features.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -85,7 +85,7 @@ AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
 AdsPageLoadMetricsObserver::CreateIfNeeded() {
-  if (!base::FeatureList::IsEnabled(features::kAdsFeature))
+  if (!base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
     return nullptr;
   return std::make_unique<AdsPageLoadMetricsObserver>();
 }

@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -313,7 +312,7 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
   AdsPageLoadMetricsObserverResourceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kAdsFeature);
+    scoped_feature_list_.InitAndEnableFeature(subresource_filter::kAdTagging);
   }
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
