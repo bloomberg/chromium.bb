@@ -162,6 +162,20 @@ ALWAYS_INLINE void* ShimCppNew(size_t size) {
   return ptr;
 }
 
+ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
+  const allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  void* ptr;
+  do {
+    void* context = nullptr;
+#if defined(OS_MACOSX)
+    context = malloc_default_zone();
+#endif
+    ptr = chain_head->alloc_aligned_function(chain_head, size, alignment,
+                                             context);
+  } while (!ptr && CallNewHandler(size));
+  return ptr;
+}
+
 ALWAYS_INLINE void ShimCppDelete(void* address) {
   void* context = nullptr;
 #if defined(OS_MACOSX)
