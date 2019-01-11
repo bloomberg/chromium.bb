@@ -10027,6 +10027,9 @@ Called by update_net_error_codes.py.-->
     Video is using an unsupported codec.
   </int>
   <int value="6" label="kEncryptedMedia">Video is encrypted.</int>
+  <int value="7" label="kCouldNotGetD3D11Device">
+    Could not get D3D11 device.
+  </int>
 </enum>
 
 <enum name="D3D12FeatureLevel">

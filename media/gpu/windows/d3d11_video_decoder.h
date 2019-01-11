@@ -41,6 +41,10 @@ class MediaLog;
 class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
                                            public D3D11VideoDecoderClient {
  public:
+  // Callback to get a D3D11 device.
+  using GetD3D11DeviceCB =
+      base::RepeatingCallback<Microsoft::WRL::ComPtr<ID3D11Device>()>;
+
   // |helper| must be called from |gpu_task_runner|.
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -74,7 +78,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   bool IsPotentiallySupported(const VideoDecoderConfig& config);
 
   // Override how we create D3D11 devices, to inject mocks.
-  void SetCreateDeviceCallbackForTesting(D3D11CreateDeviceCB callback);
+  void SetCreateDeviceCallbackForTesting(GetD3D11DeviceCB cb);
 
  protected:
   // Owners should call Destroy(). This is automatic via
@@ -141,10 +145,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     // The media was encrypted.
     kEncryptedMedia = 6,
 
+    // Call to get the D3D11 device failed.
+    kCouldNotGetD3D11Device = 7,
+
     // For UMA. Must be the last entry. It should be initialized to the
     // numerically largest value above; if you add more entries, then please
     // update this to the last one.
-    kMaxValue = kEncryptedMedia
+    kMaxValue = kCouldNotGetD3D11Device
   };
 
   std::unique_ptr<MediaLog> media_log_;
@@ -204,7 +211,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
 
-  D3D11CreateDeviceCB create_device_func_;
+  // Right now, this is used both for the video decoder and for display.  In
+  // the future, this should only be for the video decoder.  We should use
+  // the ANGLE device for display (plus texture sharing, if needed).
+  GetD3D11DeviceCB get_d3d11_device_cb_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> device_;
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
