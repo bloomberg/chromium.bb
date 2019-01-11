@@ -88,8 +88,6 @@ blink_modules_sources("webaudio") {
     "delay_node.h",
     "delay_processor.cc",
     "delay_processor.h",
-    "delete_soon_with_graph_lock.cc",
-    "delete_soon_with_graph_lock.h",
     "dynamics_compressor_node.cc",
     "dynamics_compressor_node.h",
     "gain_node.cc",

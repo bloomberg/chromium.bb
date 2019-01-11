@@ -1,5 +1,4 @@
 include_rules = [
-    "+base/atomic_ref_count.h",
     "+base/auto_reset.h",
     "+base/bit_cast.h",
     "+base/callback.h",
