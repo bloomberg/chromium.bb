@@ -44,8 +44,10 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
   }
 
   void Advance(uint32_t count,
-               mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {
+               mojom::blink::IDBCursor::AdvanceCallback callback) override {
     ++advance_calls_;
+    std::move(callback).Run(mojom::blink::IDBErrorPtr(),
+                            mojom::blink::IDBCursorValuePtr());
   }
 
   void CursorContinue(
@@ -82,6 +84,10 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
   MockContinueCallbacks(std::unique_ptr<IDBKey>* key = nullptr,
                         Vector<WebBlobInfo>* blobs = nullptr)
       : key_(key), blobs_(blobs) {}
+
+  void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                int64_t transaction_id) override {}
+  void SuccessValue(mojom::blink::IDBReturnValuePtr return_value) override {}
 
   void SuccessCursorContinue(
       std::unique_ptr<IDBKey> key,
