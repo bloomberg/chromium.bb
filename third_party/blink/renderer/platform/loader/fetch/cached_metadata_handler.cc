@@ -33,8 +33,6 @@ CachedMetadataSenderImpl::CachedMetadataSenderImpl(
       response_time_(response.ResponseTime()),
       code_cache_type_(code_cache_type) {
   DCHECK(response.CacheStorageCacheName().IsNull());
-  DCHECK(!response.WasFetchedViaServiceWorker() ||
-         response.IsServiceWorkerPassThrough());
 }
 
 void CachedMetadataSenderImpl::Send(const uint8_t* data, size_t size) {
@@ -91,32 +89,14 @@ std::unique_ptr<CachedMetadataSender> CachedMetadataSender::Create(
     const ResourceResponse& response,
     blink::mojom::CodeCacheType code_cache_type,
     scoped_refptr<const SecurityOrigin> requestor_origin) {
-  if (!response.WasFetchedViaServiceWorker()) {
-    return std::make_unique<CachedMetadataSenderImpl>(response,
-                                                      code_cache_type);
-  }
-
-  // If the service worker provided a Response produced from cache_storage,
-  // then we need to use a different code cache sender.
-  if (!response.CacheStorageCacheName().IsNull()) {
-    // TODO(leszeks): Check whether it's correct that |origin| can be nullptr.
-    if (!requestor_origin) {
+  if (response.WasFetchedViaServiceWorker()) {
+    // TODO(leszeks): Check whether it's correct that |requestor_origin| can be
+    // nullptr.
+    if (!requestor_origin || response.CacheStorageCacheName().IsNull())
       return std::make_unique<NullCachedMetadataSender>();
-    }
     return std::make_unique<ServiceWorkerCachedMetadataSender>(
         response, std::move(requestor_origin));
   }
-
-  // If the service worker provides a synthetic `new Response()` or a
-  // Response with a different URL then we disable code caching.  In the
-  // synthetic case there is no actual backing storage.  In the case where
-  // the service worker uses a Response with a different URL we don't
-  // currently have a way to read the code cache since the we begin
-  // loading it based on the request URL before the response is available.
-  if (!response.IsServiceWorkerPassThrough()) {
-    return std::make_unique<NullCachedMetadataSender>();
-  }
-
   return std::make_unique<CachedMetadataSenderImpl>(response, code_cache_type);
 }
 

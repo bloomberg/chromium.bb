@@ -126,12 +126,6 @@ KURL ResourceResponse::ResponseUrl() const {
   return CurrentRequestUrl();
 }
 
-bool ResourceResponse::IsServiceWorkerPassThrough() const {
-  return cache_storage_cache_name_.IsEmpty() &&
-         !url_list_via_service_worker_.IsEmpty() &&
-         ResponseUrl() == CurrentRequestUrl();
-}
-
 const AtomicString& ResourceResponse::MimeType() const {
   return mime_type_;
 }
