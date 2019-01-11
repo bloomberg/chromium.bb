@@ -1028,9 +1028,15 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
     return;
 
   if (have_background_parser_) {
+    // If we paused in the middle of processing a token chunk,
+    // deal with that before starting to pump.
     if (last_chunk_before_pause_) {
       ValidateSpeculations(std::move(last_chunk_before_pause_));
       DCHECK(!last_chunk_before_pause_);
+      PumpPendingSpeculations();
+    } else if (!IsScheduledForUnpause()) {
+      // Otherwise, start pumping if we're not already scheduled to unpause
+      // already.
       PumpPendingSpeculations();
     }
     return;
