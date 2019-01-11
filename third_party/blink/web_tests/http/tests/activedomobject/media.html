@@ -10,13 +10,13 @@
         window.iframe = document.querySelector('iframe').contentDocument;
 
         log('Before Reparenting');
-        shouldBe('internals.pausableObjectCount(document)', 1);
+        shouldBe('internals.pausableObjectCount(document)', 0);
         shouldBe('internals.pausableObjectCount(iframe)', 1);
 
         document.body.appendChild(window.iframe.querySelector('video'));
 
         log('After Reparenting');
-        shouldBe('internals.pausableObjectCount(document)', 2);
+        shouldBe('internals.pausableObjectCount(document)', 1);
         shouldBe('internals.pausableObjectCount(iframe)', 0);
     }
 </script>

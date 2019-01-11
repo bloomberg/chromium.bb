@@ -243,7 +243,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   // When a document is suspended, beginFrame() will generate a notification,
   // but it will not be delivered.  The notification will, however, be
   // available via takeRecords();
-  GetDocument().PauseScheduledTasks();
+  WebView().GetPage()->SetPaused(true);
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
                                                           kProgrammaticScroll);
   Compositor().BeginFrame();
@@ -259,7 +259,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
-  GetDocument().UnpauseScheduledTasks();
+  WebView().GetPage()->SetPaused(false);
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 3);
