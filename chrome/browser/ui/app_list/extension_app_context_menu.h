@@ -27,7 +27,8 @@ class ExtensionAppContextMenu : public AppContextMenu {
   ExtensionAppContextMenu(AppContextMenuDelegate* delegate,
                           Profile* profile,
                           const std::string& app_id,
-                          AppListControllerDelegate* controller);
+                          AppListControllerDelegate* controller,
+                          bool is_platform_app);
   ~ExtensionAppContextMenu() override;
 
   static void DisableInstalledExtensionCheckForTesting(bool disable);
@@ -47,15 +48,11 @@ class ExtensionAppContextMenu : public AppContextMenu {
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
-  void set_is_platform_app(bool is_platform_app) {
-    is_platform_app_ = is_platform_app;
-  }
-
  private:
   // Creates the actionable submenu for LAUNCH_NEW.
   void CreateOpenNewSubmenu(ui::SimpleMenuModel* menu_model);
 
-  bool is_platform_app_ = false;
+  bool is_platform_app_;
 
   // The MenuModel used to control LAUNCH_NEW's icon, label, and
   // execution when touchable app context menus are enabled.

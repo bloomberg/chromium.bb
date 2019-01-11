@@ -182,8 +182,9 @@ void ChromeSearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
 
 void ChromeSearchResult::ContextMenuItemSelected(int command_id,
                                                  int event_flags) {
-  if (GetAppContextMenu())
-    GetAppContextMenu()->ExecuteCommand(command_id, event_flags);
+  app_list::AppContextMenu* menu = GetAppContextMenu();
+  if (menu)
+    menu->ExecuteCommand(command_id, event_flags);
 }
 
 // static

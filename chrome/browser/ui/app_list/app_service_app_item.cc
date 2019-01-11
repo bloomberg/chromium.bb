@@ -8,16 +8,51 @@
 #include "base/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
+#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
+
+// static
+std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
+    apps::mojom::AppType app_type,
+    AppContextMenuDelegate* delegate,
+    Profile* profile,
+    const std::string& app_id,
+    AppListControllerDelegate* controller,
+    bool is_platform_app) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+    case apps::mojom::AppType::kBuiltIn:
+      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
+                                                        app_id, controller);
+
+    case apps::mojom::AppType::kArc:
+      return std::make_unique<ArcAppContextMenu>(delegate, profile, app_id,
+                                                 controller);
+
+    case apps::mojom::AppType::kCrostini:
+      return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
+                                                      controller);
+
+    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kWeb:
+      return std::make_unique<app_list::ExtensionAppContextMenu>(
+          delegate, profile, app_id, controller, is_platform_app);
+  }
+
+  return nullptr;
+}
 
 AppServiceAppItem::AppServiceAppItem(
     Profile* profile,
     AppListModelUpdater* model_updater,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const apps::AppUpdate& app_update)
-    : ChromeAppListItem(profile, app_update.AppId()) {
+    : ChromeAppListItem(profile, app_update.AppId()),
+      app_type_(app_update.AppType()) {
   SetName(app_update.Name());
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
   if (proxy) {
@@ -45,16 +80,44 @@ AppServiceAppItem::AppServiceAppItem(
 AppServiceAppItem::~AppServiceAppItem() = default;
 
 void AppServiceAppItem::Activate(int event_flags) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
-  if (proxy) {
-    proxy->Launch(id(), event_flags,
-                  apps::mojom::LaunchSource::kFromAppListGrid,
-                  GetController()->GetAppListDisplayId());
-  }
+  Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGrid);
 }
 
 const char* AppServiceAppItem::GetItemType() const {
   return AppServiceAppItem::kItemType;
+}
+
+void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  // TODO(crbug.com/826982): don't hard-code false. The App Service should
+  // probably provide this.
+  const bool is_platform_app = false;
+
+  context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
+                                     GetController(), is_platform_app);
+  context_menu_->GetMenuModel(std::move(callback));
+}
+
+app_list::AppContextMenu* AppServiceAppItem::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
+void AppServiceAppItem::ExecuteLaunchCommand(int event_flags) {
+  Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGridContextMenu);
+
+  // TODO(crbug.com/826982): drop the if, and call MaybeDismissAppList
+  // unconditionally?
+  if (app_type_ == apps::mojom::AppType::kArc) {
+    MaybeDismissAppList();
+  }
+}
+
+void AppServiceAppItem::Launch(int event_flags,
+                               apps::mojom::LaunchSource launch_source) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  if (proxy) {
+    proxy->Launch(id(), event_flags, launch_source,
+                  GetController()->GetAppListDisplayId());
+  }
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {

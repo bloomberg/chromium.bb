@@ -5,15 +5,27 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_ITEM_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_ITEM_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
-class AppServiceAppItem : public ChromeAppListItem {
+class AppServiceAppItem : public ChromeAppListItem,
+                          public app_list::AppContextMenuDelegate {
  public:
   static const char kItemType[];
+
+  static std::unique_ptr<app_list::AppContextMenu> MakeAppContextMenu(
+      apps::mojom::AppType app_type,
+      AppContextMenuDelegate* delegate,
+      Profile* profile,
+      const std::string& app_id,
+      AppListControllerDelegate* controller,
+      bool is_platform_app);
 
   AppServiceAppItem(Profile* profile,
                     AppListModelUpdater* model_updater,
@@ -25,9 +37,18 @@ class AppServiceAppItem : public ChromeAppListItem {
   // ChromeAppListItem overrides:
   void Activate(int event_flags) override;
   const char* GetItemType() const override;
-  // TODO(crbug.com/826982): GetContextMenuModel, etc.
+  void GetContextMenuModel(GetMenuModelCallback callback) override;
+  app_list::AppContextMenu* GetAppContextMenu() override;
 
+  // app_list::AppContextMenuDelegate overrides:
+  void ExecuteLaunchCommand(int event_flags) override;
+
+  void Launch(int event_flags, apps::mojom::LaunchSource launch_source);
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
+  apps::mojom::AppType app_type_;
+
+  std::unique_ptr<app_list::AppContextMenu> context_menu_;
 
   base::WeakPtrFactory<AppServiceAppItem> weak_ptr_factory_{this};
 
