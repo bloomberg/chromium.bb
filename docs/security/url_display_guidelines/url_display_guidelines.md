@@ -32,7 +32,7 @@ As the web platform becomes more capable (introducing new features like device a
 
 **Where possible, avoid displaying URLs**, especially when the user is likely to be making a trust decision. Instead, display only the **[origin](#simplify)**. Additionally, if the connection is **not secure**, add an indicator to that effect:
 
-![image alt text](not_secure.png)
+![Chrome showing Not Secure indicator](not_secure.png)
 
 If the URL display only applies to secure URLs (for example, a permission prompt that can only be requested by HTTPS pages), omit the scheme and non-default ports (443 for HTTPS).
 
@@ -262,7 +262,11 @@ Space and other invisible characters should be displayed in encoded form.
 
 Example URL with space and emoji:
 
-     https://bayden.com/test/🍌/fragment#space    🍌
+     https://example.com/ 🍌/? 🍌# 🍌
+
+Renders as:
+
+![Rendering of Emojis and spaces in Chrome's omnibox](encode_for_display.png)
 
 ## Glossary
 
