@@ -734,8 +734,14 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
     needs_descendant_dependent_flags_update_ = false;
 
-    if (IsSelfPaintingLayer() && needs_visual_overflow_recalc_)
+    if (IsSelfPaintingLayer() && needs_visual_overflow_recalc_) {
+      LayoutRect old_visual_rect = GetLayoutObject().VisualOverflowRect();
       GetLayoutObject().RecalcVisualOverflow();
+      if (old_visual_rect != GetLayoutObject().VisualOverflowRect()) {
+        SetNeedsCompositingInputsUpdateInternal();
+        MarkAncestorChainForFlagsUpdate(DoesNotNeedDescendantDependentUpdate);
+      }
+    }
     needs_visual_overflow_recalc_ = false;
   }
 
@@ -1065,21 +1071,20 @@ PaintLayer* PaintLayer::EnclosingLayerForPaintInvalidation() const {
   return nullptr;
 }
 
-void PaintLayer::SetNeedsCompositingInputsUpdate(
-    DescendantDependentFlagsUpdateFlag flag) {
+void PaintLayer::SetNeedsCompositingInputsUpdate() {
   SetNeedsCompositingInputsUpdateInternal();
 
   // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
   // dependent flags update. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
-  MarkAncestorChainForFlagsUpdate(flag);
+  MarkAncestorChainForFlagsUpdate(NeedsDescendantDependentUpdate);
 }
 
 void PaintLayer::SetNeedsVisualOverflowRecalc() {
   DCHECK(IsSelfPaintingLayer());
   needs_visual_overflow_recalc_ = true;
-  SetNeedsCompositingInputsUpdate();
+  MarkAncestorChainForFlagsUpdate();
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
