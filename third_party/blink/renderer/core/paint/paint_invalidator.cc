@@ -162,8 +162,7 @@ LayoutRect PaintInvalidator::ComputeVisualRect(
 
 static LayoutRect ComputeFragmentLocalSelectionRect(
     const NGPaintFragment& fragment) {
-  if (!fragment.PhysicalFragment().IsText())
-    return LayoutRect();
+  DCHECK(fragment.PhysicalFragment().IsText());
   const FrameSelection& frame_selection =
       fragment.GetLayoutObject()->GetFrame()->Selection();
   const LayoutSelectionStatus status =
@@ -342,26 +341,46 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
     // VisualRect for each fragment from |new_visual_rect|.
     auto fragments = NGPaintFragment::InlineFragmentsFor(&object);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      for (NGPaintFragment* fragment : fragments) {
-        LayoutRect local_selection_rect =
-            ComputeFragmentLocalSelectionRect(*fragment);
-        LayoutRect local_visual_rect =
-            UnionRect(fragment->SelfInkOverflow(), local_selection_rect);
-        fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
-            local_visual_rect, object, *fragment, context));
+      bool has_selection_in_this_object =
+          object.IsText() && ToLayoutText(object).IsSelected();
+      if (!has_selection_in_this_object) {
+        for (NGPaintFragment* fragment : fragments) {
+          LayoutRect local_visual_rect = fragment->SelfInkOverflow();
+          fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
+              local_visual_rect, object, *fragment, context));
 
-        LayoutRect selection_visual_rect = MapFragmentLocalRectToVisualRect(
-            local_selection_rect, object, *fragment, context);
-        const bool should_invalidate =
-            object.ShouldInvalidateSelection() ||
-            selection_visual_rect != fragment->SelectionVisualRect();
-        const bool rect_exists = !selection_visual_rect.IsEmpty() ||
-                                 !fragment->SelectionVisualRect().IsEmpty();
-        if (should_invalidate && rect_exists) {
-          context.painting_layer->SetNeedsRepaint();
-          ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
-              *fragment, PaintInvalidationReason::kSelection);
-          fragment->SetSelectionVisualRect(selection_visual_rect);
+          if (UNLIKELY(!fragment->SelectionVisualRect().IsEmpty())) {
+            context.painting_layer->SetNeedsRepaint();
+            ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+                *fragment, PaintInvalidationReason::kSelection);
+            fragment->SetSelectionVisualRect(LayoutRect());
+          }
+        }
+      } else {
+        // TODO(kojii): It's not clear why we need to pre-compute selection rect
+        // for all fragments when legacy can handle it as needed. yoichio will
+        // look into this.
+        for (NGPaintFragment* fragment : fragments) {
+          LayoutRect local_selection_rect =
+              ComputeFragmentLocalSelectionRect(*fragment);
+          LayoutRect local_visual_rect =
+              UnionRect(fragment->SelfInkOverflow(), local_selection_rect);
+          fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
+              local_visual_rect, object, *fragment, context));
+
+          LayoutRect selection_visual_rect = MapFragmentLocalRectToVisualRect(
+              local_selection_rect, object, *fragment, context);
+          const bool should_invalidate =
+              object.ShouldInvalidateSelection() ||
+              selection_visual_rect != fragment->SelectionVisualRect();
+          const bool rect_exists = !selection_visual_rect.IsEmpty() ||
+                                   !fragment->SelectionVisualRect().IsEmpty();
+          if (should_invalidate && rect_exists) {
+            context.painting_layer->SetNeedsRepaint();
+            ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+                *fragment, PaintInvalidationReason::kSelection);
+            fragment->SetSelectionVisualRect(selection_visual_rect);
+          }
         }
       }
     }
