@@ -9,6 +9,7 @@ include_rules = [
   "+third_party/blink/public/common/messaging",
   "+third_party/blink/public/mojom/messaging",
   "+ui/aura",
+  "+ui/base/ime",
   "+ui/display",
   "+ui/ozone/public",
   "+ui/platform_window",
