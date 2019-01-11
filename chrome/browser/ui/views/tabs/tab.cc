@@ -809,6 +809,10 @@ base::string16 Tab::GetTooltipText(const base::string16& title,
       result.append(l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING));
       break;
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING));
+      break;
     case TabAlertState::NONE:
       NOTREACHED();
       break;

@@ -106,6 +106,9 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::PIP_PLAYING:
       icon = &kPictureInPictureAltIcon;
       break;
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
+      icon = &kVrHeadsetIcon;
+      break;
     case TabAlertState::NONE:
       return gfx::Image();
   }
