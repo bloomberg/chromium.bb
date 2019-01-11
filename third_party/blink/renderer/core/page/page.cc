@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -296,6 +297,13 @@ bool Page::OpenedByDOM() const {
 
 void Page::SetOpenedByDOM() {
   opened_by_dom_ = true;
+}
+
+SpatialNavigationController& Page::GetSpatialNavigationController() {
+  DCHECK(GetSettings().GetSpatialNavigationEnabled());
+  if (!spatial_navigation_controller_)
+    spatial_navigation_controller_ = SpatialNavigationController::Create(*this);
+  return *spatial_navigation_controller_;
 }
 
 void Page::PlatformColorsChanged() {
@@ -715,6 +723,7 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);
   visitor->Trace(link_highlights_);
+  visitor->Trace(spatial_navigation_controller_);
   visitor->Trace(main_frame_);
   visitor->Trace(plugin_data_);
   visitor->Trace(validation_message_client_);

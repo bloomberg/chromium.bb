@@ -85,6 +85,8 @@ blink_core_sources("page") {
     "slot_scoped_traversal.h",
     "spatial_navigation.cc",
     "spatial_navigation.h",
+    "spatial_navigation_controller.cc",
+    "spatial_navigation_controller.h",
     "touch_adjustment.cc",
     "touch_adjustment.h",
     "validation_message_client.h",
