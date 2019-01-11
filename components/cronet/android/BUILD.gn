@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/c++/c++.gni")
 import("//build/config/zip.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
@@ -225,7 +226,14 @@ shared_library("cronet") {
     "//net:net",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-  configs += [ ":hide_all_but_jni_onload_and_cronet" ]
+  if (export_libcxxabi_from_executables) {
+    # In this configuration, the executable is really the JRE, but this library
+    # is the "main DSO" that should export libc++abi, so include executable_deps
+    # and omit any linker version scripts that would hide libc++abi.
+    deps += [ "//build/config:executable_deps" ]
+  } else {
+    configs += [ ":hide_all_but_jni_onload_and_cronet" ]
+  }
 }
 
 # cronet_api_java.jar defines Cronet API.
