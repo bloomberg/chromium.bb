@@ -26,7 +26,9 @@ const base::Feature kEnableSurfaceSynchronization{
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
 // (OOP-D).
-#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+// TODO(dnicoara): Look at enabling Chromecast support when ChromeOS support is
+// ready.
+#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #else
