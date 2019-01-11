@@ -5893,6 +5893,9 @@ crbug.com/919504 paint/invalidation/window-resize/window-resize-vertical-writing
 crbug.com/919559 [ Win ] virtual/outofblink-cors/http/tests/fetch/window/thorough/redirect-loop.html [ Timeout Pass ]
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
 
+# Sheriff 2019-01-11
+crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]
+
 # Fails because javascript: urls should execute in the document that is being
 # navigated, but we currently execute them in the source document.
 crbug.com/638435 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Timeout ]
