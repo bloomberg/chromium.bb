@@ -210,6 +210,7 @@ DataUseMeasurement::GetContentTypeForRequest(const net::URLRequest& request) {
 
 void DataUseMeasurement::RecordTrafficSizeMetric(bool is_user_traffic,
                                                  bool is_downstream,
+                                                 bool is_tab_visible,
                                                  int64_t bytes) {
   RecordUMAHistogramCount(
       GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
@@ -217,6 +218,9 @@ void DataUseMeasurement::RecordTrafficSizeMetric(bool is_user_traffic,
                        is_downstream ? DOWNSTREAM : UPSTREAM, CurrentAppState(),
                        IsCurrentNetworkCellular()),
       bytes);
+  if (is_user_traffic)
+    RecordTabStateHistogram(is_downstream ? DOWNSTREAM : UPSTREAM,
+                            CurrentAppState(), is_tab_visible, bytes);
 }
 
 void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
@@ -238,8 +242,6 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
 
   if (attached_service_data && old_app_state != new_app_state)
     attached_service_data->set_app_state(CurrentAppState());
-
-  RecordTrafficSizeMetric(is_user_traffic, dir == DOWNSTREAM, bytes);
 
 #if defined(OS_ANDROID)
   if (dir == DOWNSTREAM && CurrentAppState() == DataUseUserData::BACKGROUND) {
@@ -264,13 +266,12 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
   bool is_tab_visible = false;
 
   if (is_user_traffic) {
-    const DataUseRecorder* recorder = ascriber_->GetDataUseRecorder(request);
-    if (recorder) {
+    if (const auto* recorder = ascriber_->GetDataUseRecorder(request))
       is_tab_visible = recorder->is_visible();
-      RecordTabStateHistogram(dir, new_app_state, recorder->is_visible(),
-                              bytes);
-    }
   }
+  RecordTrafficSizeMetric(is_user_traffic, dir == DOWNSTREAM, is_tab_visible,
+                          bytes);
+
   if (attached_service_data && dir == DOWNSTREAM &&
       new_app_state != DataUseUserData::UNKNOWN) {
     RecordContentTypeHistogram(attached_service_data->content_type(),
