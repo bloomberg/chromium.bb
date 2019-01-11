@@ -90,6 +90,7 @@ class BytesConsumerTestUtil {
       kDone,
       kError,
       kWait,
+      kDataAndDone,
     };
 
     explicit Command(Name name) : name_(name) {}

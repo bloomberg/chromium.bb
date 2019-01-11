@@ -25,14 +25,9 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
   class Context;
 
  public:
-  enum BackpressureMode {
-    kApplyBackpressure,
-    kDoNotApplyBackpressure,
-  };
-
   class CONTENT_EXPORT Writer final {
    public:
-    Writer(const scoped_refptr<Context>& context, BackpressureMode mode);
+    explicit Writer(const scoped_refptr<Context>& context);
     ~Writer();
     // Note: Writer assumes |AddData| is not called in a client's didGetReadable
     // callback. There isn't such assumption for |Close| and |Fail|.
@@ -43,7 +38,6 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
 
    private:
     scoped_refptr<Context> context_;
-    BackpressureMode mode_;
 
     DISALLOW_COPY_AND_ASSIGN(Writer);
   };
@@ -71,15 +65,13 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
 
   // Creates a handle and a writer associated with the handle. The created
   // writer should be used on the calling thread.
-  SharedMemoryDataConsumerHandle(BackpressureMode mode,
-                                 std::unique_ptr<Writer>* writer);
+  explicit SharedMemoryDataConsumerHandle(std::unique_ptr<Writer>* writer);
   // |on_reader_detached| will be called aynchronously on the calling thread
   // when the reader (including the handle) is detached (i.e. both the handle
   // and the reader are destructed). The callback will be reset in the internal
   // context when the writer is detached, i.e. |Close| or |Fail| is called,
   // and the callback will never be called.
-  SharedMemoryDataConsumerHandle(BackpressureMode mode,
-                                 base::OnceClosure on_reader_detached,
+  SharedMemoryDataConsumerHandle(base::OnceClosure on_reader_detached,
                                  std::unique_ptr<Writer>* writer);
   ~SharedMemoryDataConsumerHandle() override;
 

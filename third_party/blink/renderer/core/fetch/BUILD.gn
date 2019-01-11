@@ -12,6 +12,8 @@ blink_core_sources("fetch") {
     "body.h",
     "body_stream_buffer.cc",
     "body_stream_buffer.h",
+    "buffering_bytes_consumer.cc",
+    "buffering_bytes_consumer.h",
     "bytes_consumer.cc",
     "bytes_consumer.h",
     "bytes_consumer_for_data_consumer_handle.cc",

@@ -80,6 +80,10 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
           NOTREACHED();
           return;
         case Result::kDone:
+          if (chunk) {
+            destination1_->Enqueue(chunk);
+            destination2_->Enqueue(chunk);
+          }
           if (destination1_was_empty)
             destination1_->Notify();
           if (destination2_was_empty)

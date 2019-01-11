@@ -154,6 +154,42 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
   EXPECT_FALSE(src->IsCancelled());
 }
 
+TEST_F(BytesConsumerTeeTest, TwoPhaseReadWithDataAndDone) {
+  ReplayingBytesConsumer* src =
+      MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
+
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDataAndDone, "world"));
+
+  BytesConsumer* dest1 = nullptr;
+  BytesConsumer* dest2 = nullptr;
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
+
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
+
+  auto result1 =
+      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest1))
+          ->Run();
+  auto result2 =
+      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(dest2))
+          ->Run();
+
+  EXPECT_EQ(Result::kDone, result1.first);
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result1.second));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(Result::kDone, result2.first);
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result2.second));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
+}
+
 TEST_F(BytesConsumerTeeTest, Error) {
   ReplayingBytesConsumer* src =
       MakeGarbageCollected<ReplayingBytesConsumer>(&GetDocument());
