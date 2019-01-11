@@ -75,6 +75,7 @@ because the spec prioritizes the simple description than being accurate.
 [CSS Text Processing Order of Operations]: https://drafts.csswg.org/css-text-3/#order
 
 ### Pre-layout ###
+[Pre-layout]: #pre-layout
 
 For inline layout there is a pre-layout pass that prepares the internal data
 structures needed to perform line layout.
@@ -302,6 +303,16 @@ In a bird's‐eye view, it consists of two parts:
 
    This is part of the Line Box Construction phase above.
 
+### Interface for Editing ###
+
+[NGOffsetMapping] provides functions for converting between offsets in the text
+content of an inline formatting context (computed in [pre-layout]) and DOM
+positions in the context. See [design doc](https://goo.gl/CJbxky) for details.
+
+[NGCaretNavigator] provides functions for inspecting bidi levels and visual
+ordering of text content, and supports visual left/right caret movements in the
+text. See [design doc](http://bit.ly/2QVAwGq) for details.
+
 
 [ICU BiDi]: http://userguide.icu-project.org/transforms/bidi
 [UAX#9 Unicode Bidirectional Algorithm]: http://unicode.org/reports/tr9/
@@ -311,6 +322,7 @@ In a bird's‐eye view, it consists of two parts:
 [FontBaseline]: ../../../platform/fonts/FontBaseline.h
 [NGBaselineAlgorithmType]: ng_baseline.h
 [NGBaselineRequest]: ng_baseline.h
+[NGCaretNavigator]: ng_caret_navigator.h
 [NGBidiParagraph]: ng_bidi_paragraph.h
 [NGBlockNode]: ../ng_block_node.h
 [NGBoxFragment]: ../ng_box_fragment.h
@@ -324,6 +336,7 @@ In a bird's‐eye view, it consists of two parts:
 [NGInlineLayoutAlgorithm]: ng_inline_layout_algorithm.h
 [NGLayoutInputNode]: ../ng_layout_input_node.h
 [NGLineBreaker]: ng_line_breaker.h
+[NGOffsetMapping]: ng_offset_mapping.h
 [NGPhysicalBoxFragment]: ../ng_physical_box_fragment.h
 [NGPhysicalFragment]: ../ng_physical_fragment.h
 [NGPhysicalLineBoxFragment]: ng_physical_line_box_fragment.h
