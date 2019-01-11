@@ -340,6 +340,13 @@ NSString* const kTabUrlKey = @"url";
 }
 
 - (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  if (navigation->HasCommitted() && !navigation->IsSameDocument()) {
+    [self.dialogDelegate cancelDialogForTab:self];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
   DCHECK([self loadFinished]);
 
