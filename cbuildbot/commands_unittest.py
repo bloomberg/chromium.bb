@@ -747,6 +747,9 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
+    self._dropfile = os.path.join(
+        self._buildroot, 'src', 'scripts', 'cbuildbot_package.list')
+
   def testGenerateStackTraces(self):
     """Test if we can generate stack traces for minidumps."""
     os.makedirs(os.path.join(self._chroot, 'tmp'))
@@ -766,6 +769,7 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([
         'commit', '--all',
         '--boards=%s' % self._board,
+        '--drop_file=%s' % self._dropfile,
         '--buildroot', self._buildroot,
         '--overlay-type', 'public',
     ])
@@ -778,6 +782,7 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([
         'commit', '--all',
         '--boards=%s' % self._board,
+        '--drop_file=%s' % self._dropfile,
         '--buildroot', '/workspace',
         '--overlay-type', 'public',
     ])

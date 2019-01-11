@@ -208,6 +208,8 @@ def GetParser():
                       help='Mark all packages as stable.')
   parser.add_argument('-b', '--boards', default='',
                       help='Colon-separated list of boards.')
+  parser.add_argument('--drop_file',
+                      help='File to list packages that were revved.')
   parser.add_argument('--dryrun', action='store_true',
                       help='Passes dry-run to git push if pushing a change.')
   parser.add_argument('--force', action='store_true',
@@ -368,6 +370,8 @@ def _WorkOnCommit(options, overlays, overlay_tracking_branch,
     if os.path.exists(chroot_path):
       CleanStalePackages(options.buildroot, options.boards.split(':'),
                          new_package_atoms)
+    if options.drop_file:
+      osutils.WriteFile(options.drop_file, ' '.join(revved_packages))
 
 
 def _GetOverlayToEbuildsMap(options, overlays, package_list):
