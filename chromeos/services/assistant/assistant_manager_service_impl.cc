@@ -243,6 +243,8 @@ void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
       [](auto) {});
 }
 
+// TODO(eyor): Add a method that can be called to clear the cached interaction
+// when the UI is hidden/closed.
 void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
   if (!IsScreenContextAllowed(service_->assistant_state()))
     return;
@@ -253,8 +255,8 @@ void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
   DCHECK(assistant_tree_);
   DCHECK(!assistant_screenshot_.empty());
 
-  SendScreenContextRequest(std::move(assistant_extra_),
-                           std::move(assistant_tree_), assistant_screenshot_);
+  SendScreenContextRequest(assistant_extra_.get(), assistant_tree_.get(),
+                           assistant_screenshot_);
 }
 
 void AssistantManagerServiceImpl::StartMetalayerInteraction(
@@ -279,9 +281,23 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
         assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
   }
 
-  std::string interaction = CreateTextQueryInteraction(query);
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction, /*description=*/"text_query", options, [](auto) {});
+  if (base::FeatureList::IsEnabled(
+          assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
+      assistant_extra_ && assistant_tree_) {
+    // TODO(eyor): Replace hardcoded true with logic that is set to true
+    // if this is the first query after the UI is launched, or false if
+    // it is a query sent after the first query.
+    assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
+        query,
+        CreateContextProto(
+            AssistantBundle{assistant_extra_.get(), assistant_tree_.get()},
+            /*is_first_query=*/true),
+        options);
+  } else {
+    std::string interaction = CreateTextQueryInteraction(query);
+    assistant_manager_internal_->SendVoicelessInteraction(
+        interaction, /*description=*/"text_query", options, [](auto) {});
+  }
 }
 
 void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
@@ -1094,8 +1110,8 @@ void AssistantManagerServiceImpl::CacheAssistantScreenshot(
 }
 
 void AssistantManagerServiceImpl::SendScreenContextRequest(
-    ax::mojom::AssistantExtraPtr assistant_extra,
-    std::unique_ptr<ui::AssistantTree> assistant_tree,
+    ax::mojom::AssistantExtra* assistant_extra,
+    ui::AssistantTree* assistant_tree,
     const std::vector<uint8_t>& assistant_screenshot) {
   std::vector<std::string> context_protos;
 
@@ -1104,13 +1120,20 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
   // the metalayer. For this scenario, we don't create a context proto for the
   // AssistantBundle that consists of the assistant_extra and assistant_tree.
   if (assistant_extra && assistant_tree) {
-    context_protos.emplace_back(CreateContextProto(AssistantBundle{
-        std::move(assistant_extra), std::move(assistant_tree)}));
+    // TODO(eyor): Replace hardcoded true with logic that is set to true
+    // if this is the first query after the UI is launched, or false if
+    // it is a query sent after the first query.
+    context_protos.emplace_back(
+        CreateContextProto(AssistantBundle{assistant_extra, assistant_tree},
+                           /*is_first_query=*/true));
   }
 
-  context_protos.emplace_back(CreateContextProto(assistant_screenshot));
+  // TODO(eyor): Replace hardcoded true with logic that is set to true
+  // if this is the first query after the UI is launched, or false if
+  // it is a query sent after the first query.
+  context_protos.emplace_back(
+      CreateContextProto(assistant_screenshot, /*is_first_query=*/true));
   assistant_manager_internal_->SendScreenContextRequest(context_protos);
-  assistant_screenshot_.clear();
 }
 
 std::string AssistantManagerServiceImpl::GetLastSearchSource() {
