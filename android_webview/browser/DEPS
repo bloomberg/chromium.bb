@@ -58,6 +58,7 @@ include_rules = [
   # network service related unit tests
   "+services/network/test",
   "+mojo/core/embedder/embedder.h",
+  "+mojo/public/cpp/system",
 
   "+storage/browser/quota",
   "+storage/common/quota",
