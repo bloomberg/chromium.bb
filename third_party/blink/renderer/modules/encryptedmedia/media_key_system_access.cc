@@ -171,7 +171,9 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {
   // 2.3 If cdm fails to load or initialize, reject promise with a new
   //     DOMException whose name is the appropriate error name.
   //     (Done if completeWithException() called).
-  access_->CreateContentDecryptionModule(helper->Result());
+  access_->CreateContentDecryptionModule(
+      helper->Result(), ExecutionContext::From(script_state)
+                            ->GetTaskRunner(TaskType::kInternalMedia));
 
   // 3. Return promise.
   return promise;

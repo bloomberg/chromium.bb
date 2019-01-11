@@ -420,11 +420,13 @@ UserMediaProcessor::UserMediaProcessor(
     RenderFrameImpl* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
     std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-    MediaDevicesDispatcherCallback media_devices_dispatcher_cb)
+    MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : dependency_factory_(dependency_factory),
       media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       render_frame_(render_frame),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_device_observer_.get());
@@ -940,9 +942,9 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   // See OnAudioSourceStarted for more details.
   pending_local_sources_.push_back(source);
 
-  MediaStreamSource::ConstraintsCallback source_ready = base::Bind(
-      &UserMediaProcessor::OnAudioSourceStartedOnAudioThread,
-      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
+  MediaStreamSource::ConstraintsCallback source_ready = base::BindRepeating(
+      &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
+      weak_factory_.GetWeakPtr());
 
   MediaStreamAudioSource* const audio_source =
       CreateAudioSource(device, std::move(source_ready));
@@ -1131,7 +1133,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
   // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
                      weak_factory_.GetWeakPtr(), stream, web_request));
@@ -1158,7 +1160,7 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
   // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&UserMediaProcessor::DelayedGetUserMediaRequestFailed,
                      weak_factory_.GetWeakPtr(),

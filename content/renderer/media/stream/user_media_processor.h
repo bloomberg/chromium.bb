@@ -72,7 +72,8 @@ class CONTENT_EXPORT UserMediaProcessor
       RenderFrameImpl* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
       std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-      MediaDevicesDispatcherCallback media_devices_dispatcher_cb);
+      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserMediaProcessor() override;
 
   // It can be assumed that the output of CurrentRequest() remains the same
@@ -303,6 +304,7 @@ class CONTENT_EXPORT UserMediaProcessor
   base::OnceClosure request_completed_cb_;
 
   RenderFrameImpl* const render_frame_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
