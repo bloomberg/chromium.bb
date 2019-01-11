@@ -308,17 +308,6 @@ void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
   }
 }
 
-void MessageCenterImpl::SetNotificationButtonIcon(
-    const std::string& notification_id, int button_index,
-    const gfx::Image& image) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (notification_list_->SetNotificationButtonIcon(notification_id,
-                                                    button_index, image)) {
-    for (auto& observer : observer_list_)
-      observer.OnNotificationUpdated(notification_id);
-  }
-}
-
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (FindVisibleNotificationById(id) == NULL)

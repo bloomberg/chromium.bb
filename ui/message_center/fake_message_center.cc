@@ -89,12 +89,6 @@ void FakeMessageCenter::SetNotificationImage(const std::string& notification_id,
                                              const gfx::Image& image) {
 }
 
-void FakeMessageCenter::SetNotificationButtonIcon(
-    const std::string& notification_id,
-    int button_index,
-    const gfx::Image& image) {
-}
-
 void FakeMessageCenter::ClickOnNotification(const std::string& id) {
 }
 

@@ -147,7 +147,6 @@ struct StructTraits<message_center::mojom::ButtonInfoDataView,
   static const base::string16& title(const message_center::ButtonInfo& b) {
     return b.title;
   }
-  static gfx::ImageSkia icon(const message_center::ButtonInfo& b);
   static const base::Optional<base::string16>& placeholder(
       const message_center::ButtonInfo& b) {
     return b.placeholder;

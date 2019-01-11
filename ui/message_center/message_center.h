@@ -122,11 +122,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void SetNotificationImage(const std::string& notification_id,
                                     const gfx::Image& image) = 0;
 
-  // Sets the image for the icon of the specific action button.
-  virtual void SetNotificationButtonIcon(const std::string& notification_id,
-                                         int button_index,
-                                         const gfx::Image& image) = 0;
-
   // This should be called by UI classes when a notification is clicked to
   // trigger the notification's delegate callback and also update the message
   // center observers.
