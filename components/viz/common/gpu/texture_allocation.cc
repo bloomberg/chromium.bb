@@ -87,27 +87,4 @@ void TextureAllocation::AllocateStorage(gpu::gles2::GLES2Interface* gl,
   }
 }
 
-void TextureAllocation::UploadStorage(gpu::gles2::GLES2Interface* gl,
-                                      const gpu::Capabilities& caps,
-                                      ResourceFormat format,
-                                      const gfx::Size& size,
-                                      const TextureAllocation& alloc,
-                                      const gfx::ColorSpace& color_space,
-                                      const void* pixels) {
-  if (format == ETC1) {
-    DCHECK_EQ(alloc.texture_target, static_cast<GLenum>(GL_TEXTURE_2D));
-    int num_bytes = ResourceSizes::CheckedSizeInBytes<int>(size, ETC1);
-
-    gl->BindTexture(alloc.texture_target, alloc.texture_id);
-    gl->CompressedTexImage2D(alloc.texture_target, 0, GLInternalFormat(ETC1),
-                             size.width(), size.height(), 0, num_bytes,
-                             const_cast<void*>(pixels));
-  } else {
-    AllocateStorage(gl, caps, format, size, alloc, color_space);
-    gl->TexSubImage2D(alloc.texture_target, 0, 0, 0, size.width(),
-                      size.height(), GLDataFormat(format), GLDataType(format),
-                      const_cast<void*>(pixels));
-  }
-}
-
 }  // namespace viz
