@@ -1,59 +1,47 @@
 <!DOCTYPE html>
-<script src="../../resources/gc.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script>
-function soon() { return new Promise(resolve => setTimeout(resolve, 0)); }
-async function becomesTrue(predicate) {
-  while (!predicate()) await soon();
-}
+<html>
+  <head>
+    <title>
+      cycle-connection-gc.html
+    </title>
+    <script src="../../resources/gc.js"></script>
+    <script src="../../resources/js-test.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      description('Cycles of AudioNode connections should be collected.');
+      window.jsTestIsAsync = true;
 
-function createCycle(context) {
-  let source = context.createBufferSource();
-  let delay1 = context.createDelay(1 / context.sampleRate);
-  let delay2 = context.createDelay(1 / context.sampleRate);
-  source.connect(delay1);
-  delay1.connect(delay2);
-  delay2.connect(delay1);
-  delay1.connect(context.destination);
-}
+      let context;
+      let initialCount;
 
-promise_test(async () => {
-  await asyncGC();
-  await becomesTrue(() => internals.audioHandlerCount() == 0);
+      (async () => {
+        await asyncGC();
 
-  let context = new OfflineAudioContext(2, 1024, 44100);
-  let initialCount = internals.audioHandlerCount();
-  createCycle(context);
-  assert_greater_than(internals.audioHandlerCount(), 0);
+        context = new OfflineAudioContext(2, 1024, 44100);
+        initialCount = internals.audioHandlerCount();
+        createCycle();
+        debug('A cycle was created:');
+        shouldBeTrue('internals.audioHandlerCount() > initialCount');
 
-  // Need to render to clean up a cycle on an offline context.
-  await context.startRendering();
+        // Need to render to cleanup the cycle on an offline context
+        await context.startRendering();
 
-  // Wait for the cycle and its associated handlers to be destroyed.
-  await asyncGC();
-  await becomesTrue(() => internals.audioHandlerCount() <= initialCount);
-}, "Cycles of AudioNode connections should be collected.");
+        await asyncGC();
+        debug('GC happened:');
+        shouldBe('internals.audioHandlerCount()', 'initialCount');
+        finishJSTest();
+      })();
 
-function createSelfConnectedNode(context) {
-  const gain = context.createGain();
-  gain.connect(gain);
-}
-
-promise_test(async () => {
-  await asyncGC();
-  await becomesTrue(() => internals.audioHandlerCount() == 0);
-
-  let context = new OfflineAudioContext(2, 1024, 44100);
-  let initialCount = internals.audioHandlerCount();
-  createSelfConnectedNode(context);
-  assert_greater_than(internals.audioHandlerCount(), 0);
-
-  // Need to render to clean up a cycle on an offline context.
-  await context.startRendering();
-
-  // Wait until the gain node's handler has been destroyed to declare victory.
-  await asyncGC();
-  await becomesTrue(() => internals.audioHandlerCount() <= initialCount);
-}, "No crash should occur when a node connected to itself is collected.");
-</script>
+      function createCycle() {
+        let source = context.createBufferSource();
+        let delay1 = context.createDelay(1 / context.sampleRate);
+        let delay2 = context.createDelay(1 / context.sampleRate);
+        source.connect(delay1);
+        delay1.connect(delay2);
+        delay2.connect(delay1);
+        delay1.connect(context.destination);
+      }
+    </script>
+  </body>
+</html>

@@ -105,6 +105,13 @@ BaseAudioContext::BaseAudioContext(Document* document,
       task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)) {}
 
 BaseAudioContext::~BaseAudioContext() {
+  {
+    // We may need to destroy summing junctions, which must happen while this
+    // object is still valid and with the graph lock held.
+    GraphAutoLocker locker(this);
+    destination_handler_ = nullptr;
+  }
+
   GetDeferredTaskHandler().ContextWillBeDestroyed();
 }
 

@@ -138,7 +138,6 @@ _CONFIG = [
 
             # Base atomic utilities
             'base::AtomicFlag',
-            'base::AtomicRefCount',
             'base::AtomicSequenceNumber',
 
             # Task traits
