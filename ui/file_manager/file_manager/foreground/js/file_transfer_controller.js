@@ -1471,6 +1471,11 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
   if (this.isModalDialogBeingDisplayed_()) {
     return false;
   }
+  if (!this.selectionHandler_.selection.entries.every(
+          this.shouldShowCommandFor_)) {
+    command.setHidden(true);
+    return false;
+  }
 
   return isMove ? this.canCutOrDrag_() : this.canCopyOrDrag_() ;
 };
