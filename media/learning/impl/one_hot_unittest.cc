@@ -15,7 +15,7 @@ class OneHotTest : public testing::Test {
 };
 
 TEST_F(OneHotTest, EmptyLearningTaskWorks) {
-  LearningTask empty_task("EmptyTask", LearningTask::Model::kRandomForest, {},
+  LearningTask empty_task("EmptyTask", LearningTask::Model::kExtraTrees, {},
                           LearningTask::ValueDescription({"target"}));
   TrainingData empty_training_data;
   OneHotConverter one_hot(empty_task, empty_training_data);
@@ -23,7 +23,7 @@ TEST_F(OneHotTest, EmptyLearningTaskWorks) {
 }
 
 TEST_F(OneHotTest, SimpleConversionWorks) {
-  LearningTask task("SimpleTask", LearningTask::Model::kRandomForest,
+  LearningTask task("SimpleTask", LearningTask::Model::kExtraTrees,
                     {{"feature1", LearningTask::Ordering::kUnordered}},
                     LearningTask::ValueDescription({"target"}));
   TrainingData training_data;
@@ -78,7 +78,7 @@ TEST_F(OneHotTest, SimpleConversionWorks) {
 }
 
 TEST_F(OneHotTest, NumericsAreNotConverted) {
-  LearningTask task("SimpleTask", LearningTask::Model::kRandomForest,
+  LearningTask task("SimpleTask", LearningTask::Model::kExtraTrees,
                     {{"feature1", LearningTask::Ordering::kNumeric}},
                     LearningTask::ValueDescription({"target"}));
   OneHotConverter one_hot(task, TrainingData());
@@ -97,7 +97,7 @@ TEST_F(OneHotTest, NumericsAreNotConverted) {
 }
 
 TEST_F(OneHotTest, UnknownValuesAreZeroHot) {
-  LearningTask task("SimpleTask", LearningTask::Model::kRandomForest,
+  LearningTask task("SimpleTask", LearningTask::Model::kExtraTrees,
                     {{"feature1", LearningTask::Ordering::kUnordered}},
                     LearningTask::ValueDescription({"target"}));
   TrainingData training_data;

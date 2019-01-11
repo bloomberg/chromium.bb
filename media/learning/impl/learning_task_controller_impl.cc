@@ -25,10 +25,6 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
           },
           task_);
       break;
-    case LearningTask::Model::kRandomForest:
-      // TODO(liberato): forest!
-      training_cb_ = RandomTreeTrainer::GetTrainingAlgorithmCB(task_);
-      break;
   }
 
   // TODO(liberato): Record via UMA based on the task name.
