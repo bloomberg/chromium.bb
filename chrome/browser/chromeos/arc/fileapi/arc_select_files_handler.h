@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/arc/common/file_system.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;
@@ -21,6 +22,14 @@ class BrowserContext;
 
 namespace arc {
 
+class SelectFileDialogScriptExecutor;
+
+// Exposed for testing.
+extern const char kScriptClickOk[];
+extern const char kScriptClickDirectory[];
+extern const char kScriptClickFile[];
+extern const char kScriptGetElements[];
+
 // Handler for FileSystemHost.SelectFiles.
 class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
  public:
@@ -29,6 +38,13 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
 
   void SelectFiles(const mojom::SelectFilesRequestPtr& request,
                    mojom::FileSystemHost::SelectFilesCallback callback);
+
+  void OnFileSelectorEvent(
+      mojom::FileSelectorEventPtr event,
+      mojom::FileSystemHost::OnFileSelectorEventCallback callback);
+
+  void GetFileSelectorElements(
+      mojom::FileSystemHost::GetFileSelectorElementsCallback callback);
 
   // ui::SelectFileDialog::Listener overrides:
   void FileSelected(const base::FilePath& path,
@@ -39,6 +55,8 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
   void FileSelectionCanceled(void* params) override;
 
   void SetSelectFileDialogForTesting(ui::SelectFileDialog* dialog);
+  void SetDialogScriptExecutorForTesting(
+      SelectFileDialogScriptExecutor* dialog_script_executor);
 
  private:
   friend class ArcSelectFilesHandlerTest;
@@ -50,8 +68,29 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
 
   mojom::FileSystemHost::SelectFilesCallback callback_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  scoped_refptr<SelectFileDialogScriptExecutor> dialog_script_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSelectFilesHandler);
+};
+
+// Helper class for executing JavaScript on a given SelectFileDialog.
+class SelectFileDialogScriptExecutor
+    : public base::RefCounted<SelectFileDialogScriptExecutor> {
+ public:
+  explicit SelectFileDialogScriptExecutor(
+      ui::SelectFileDialog* select_file_dialog);
+
+  virtual void ExecuteJavaScript(
+      const std::string& script,
+      const content::RenderFrameHost::JavaScriptResultCallback& callback);
+
+ protected:
+  friend class base::RefCounted<SelectFileDialogScriptExecutor>;
+
+  virtual ~SelectFileDialogScriptExecutor();
+
+ private:
+  ui::SelectFileDialog* select_file_dialog_;
 };
 
 }  // namespace arc
