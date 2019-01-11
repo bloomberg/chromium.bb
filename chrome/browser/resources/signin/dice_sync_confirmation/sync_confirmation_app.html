@@ -19,7 +19,6 @@
     <style include="signin-dialog-shared paper-button-style">
       :host {
         display: block;
-        width: 512px;
       }
 
       paper-button {
@@ -49,12 +48,14 @@
       #illustration-container {
         height: 168px;
         margin-bottom: 32px;
+        position: relative;
         width: 100%;
       }
 
       #illustration {
         background: url(./images/sync_confirmation_illustration.svg);
-        height: 168px;
+        background-size: 100% 100%;
+        height: 100%;
         position: absolute;
         top: 0;
         width: 100%;
@@ -84,6 +85,7 @@
         /* Saves space for button row. */
         padding-bottom: 96px;
         position: relative;
+        width: 100%;
       }
 
       .message-container {
