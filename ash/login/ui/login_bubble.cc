@@ -56,11 +56,11 @@ constexpr SkColor kRemoveUserConfirmColor = gfx::kGoogleRedDark500;
 
 // Margin/inset of the entries for the user menu.
 constexpr int kUserMenuMarginWidth = 14;
-constexpr int kUserMenuMarginHeight = 18;
+constexpr int kUserMenuMarginHeight = 16;
 // Distance above/below the separator.
-constexpr int kUserMenuMarginAroundSeparatorDp = 18;
+constexpr int kUserMenuMarginAroundSeparatorDp = 16;
 // Distance between labels.
-constexpr int kUserMenuVerticalDistanceBetweenLabelsDp = 18;
+constexpr int kUserMenuVerticalDistanceBetweenLabelsDp = 16;
 // Margin around remove user button.
 constexpr int kUserMenuMarginAroundRemoveUserButtonDp = 4;
 
@@ -70,9 +70,14 @@ constexpr int kAnchorViewUserMenuHorizontalSpacingDp = 98;
 // Vertical spacing between the anchor view and user menu.
 constexpr int kAnchorViewUserMenuVerticalSpacingDp = 4;
 
+// Maximum height per label line, so that the user menu dropdown will fit in the
+// screen.
+constexpr int kUserMenuLabelLineHeight = 20;
+
 views::Label* CreateLabel(const base::string16& message, SkColor color) {
   views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
                                          views::style::STYLE_PRIMARY);
+  label->SetLineHeight(kUserMenuLabelLineHeight);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(color);
@@ -140,6 +145,8 @@ class LoginUserMenuView : public LoginBaseBubbleView,
         bubble_opener_(bubble_opener_),
         on_remove_user_warning_shown_(std::move(on_remove_user_warning_shown)),
         on_remove_user_requested_(std::move(on_remove_user_requested)) {
+    set_parent_window(Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(), kShellWindowId_SettingBubbleContainer));
     // This view has content the user can interact with if the remove user
     // button is displayed.
     set_can_activate(show_remove_user);
