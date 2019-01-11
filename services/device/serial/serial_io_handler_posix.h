@@ -48,7 +48,7 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   friend class SerialIoHandlerPosixTest;
 
   SerialIoHandlerPosix(
-      const std::string& port,
+      const base::FilePath& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerPosix() override;
 

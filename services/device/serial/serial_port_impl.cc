@@ -17,7 +17,7 @@ namespace device {
 
 // static
 void SerialPortImpl::Create(
-    const std::string& path,
+    const base::FilePath& path,
     mojom::SerialPortRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   mojo::MakeStrongBinding(
@@ -26,7 +26,7 @@ void SerialPortImpl::Create(
 }
 
 SerialPortImpl::SerialPortImpl(
-    const std::string& path,
+    const base::FilePath& path,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)) {}
 

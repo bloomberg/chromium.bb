@@ -54,7 +54,7 @@ namespace {
 
 class FakeSerialPort : public device::mojom::SerialPort {
  public:
-  explicit FakeSerialPort(const std::string& path) : path_(path) {
+  explicit FakeSerialPort(const base::FilePath& path) {
     options_.bitrate = 9600;
     options_.data_bits = device::mojom::SerialDataBits::EIGHT;
     options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
@@ -161,7 +161,6 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
-  std::string path_;
   std::vector<uint8_t> buffer_;
   FakeSerialPort::ReadCallback pending_read_callback_;
   uint32_t pending_read_bytes_ = 0;
@@ -173,8 +172,10 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
  public:
   FakeSerialPortManager() {
     token_path_map_ = {
-        {base::UnguessableToken::Create(), "/dev/fakeserialmojo"},
-        {base::UnguessableToken::Create(), "\\\\COM800\\"}};
+        {base::UnguessableToken::Create(),
+         base::FilePath(FILE_PATH_LITERAL("/dev/fakeserialmojo"))},
+        {base::UnguessableToken::Create(),
+         base::FilePath(FILE_PATH_LITERAL("\\\\COM800\\"))}};
   }
 
   ~FakeSerialPortManager() override = default;
@@ -200,7 +201,7 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
                             std::move(request));
   }
 
-  std::map<base::UnguessableToken, std::string> token_path_map_;
+  std::map<base::UnguessableToken, base::FilePath> token_path_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };

@@ -39,7 +39,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
   friend class SerialIoHandler;
 
   explicit SerialIoHandlerWin(
-      const std::string& port,
+      const base::FilePath& port,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerWin() override;
 

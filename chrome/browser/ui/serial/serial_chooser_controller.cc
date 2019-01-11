@@ -75,7 +75,8 @@ base::string16 SerialChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, ports_.size());
 
   const device::mojom::SerialPortInfo& port = *ports_[index];
-  return base::UTF8ToUTF16(port.display_name.value_or(port.path));
+  return port.display_name ? base::UTF8ToUTF16(*port.display_name)
+                           : port.path.LossyDisplayName();
 }
 
 bool SerialChooserController::IsPaired(size_t index) const {

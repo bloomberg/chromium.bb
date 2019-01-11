@@ -207,7 +207,7 @@ void SerialPortManager::OnGotDevicesToGetPort(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   for (auto& device : devices) {
-    if (device->path == path) {
+    if (device->path.AsUTF8Unsafe() == path) {
       port_manager_->GetPort(device->token, std::move(request));
       return;
     }

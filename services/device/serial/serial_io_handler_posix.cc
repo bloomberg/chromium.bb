@@ -117,7 +117,7 @@ namespace device {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    const std::string& port,
+    const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
   return new SerialIoHandlerPosix(port, std::move(ui_thread_task_runner));
 }
@@ -295,7 +295,7 @@ bool SerialIoHandlerPosix::PostOpen() {
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(
-    const std::string& port,
+    const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : SerialIoHandler(port, std::move(ui_thread_task_runner)) {}
 
@@ -637,10 +637,6 @@ int SerialIoHandlerPosix::CheckReceiveError(char* buffer,
   memcpy(buffer, chars_stashed_, std::min(new_bytes_read, 2));
   memcpy(chars_stashed_, tmp, num_chars_stashed_);
   return new_bytes_read;
-}
-
-std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {
-  return port_name;
 }
 
 }  // namespace device

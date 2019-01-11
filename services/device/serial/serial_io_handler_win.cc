@@ -18,7 +18,7 @@
 #include "base/sequence_checker.h"
 #include "device/base/device_info_query_win.h"
 #include "device/base/device_monitor_win.h"
-#include "third_party/re2/src/re2/re2.h"
+#include "services/device/serial/serial_device_enumerator_win.h"
 
 namespace device {
 
@@ -144,17 +144,11 @@ mojom::SerialStopBits StopBitsConstantToEnum(int stop_bits) {
   }
 }
 
-// Searches for the COM port in the device's friendly name, assigns its value to
-// com_port, and returns whether the operation was successful.
-bool GetCOMPort(const std::string friendly_name, std::string* com_port) {
-  return RE2::PartialMatch(friendly_name, ".* \\((COM[0-9]+)\\)", com_port);
-}
-
 }  // namespace
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    const std::string& port,
+    const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
   return new SerialIoHandlerWin(port, std::move(ui_thread_task_runner));
 }
@@ -225,13 +219,14 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
     return;
   }
 
-  std::string com_port;
-  if (!GetCOMPort(friendly_name, &com_port)) {
-    DVPLOG(1) << "Failed to get port name from \"" << friendly_name << "\".";
+  base::Optional<base::FilePath> path =
+      SerialDeviceEnumeratorWin::GetPath(friendly_name);
+  if (!path) {
+    DVPLOG(1) << "Failed to get device path from \"" << friendly_name << "\".";
     return;
   }
 
-  if (port() == com_port)
+  if (port() == *path)
     CancelRead(mojom::SerialReceiveError::DEVICE_LOST);
 }
 
@@ -360,7 +355,7 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
 }
 
 SerialIoHandlerWin::SerialIoHandlerWin(
-    const std::string& port,
+    const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : SerialIoHandler(port, std::move(ui_thread_task_runner)),
       event_mask_(0),
@@ -524,15 +519,6 @@ bool SerialIoHandlerWin::ClearBreak() {
     return false;
   }
   return true;
-}
-
-std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {
-  // For COM numbers less than 9, CreateFile is called with a string such as
-  // "COM1". For numbers greater than 9, a prefix of "\\\\.\\" must be added.
-  if (port_name.length() > std::string("COM9").length())
-    return std::string("\\\\.\\").append(port_name);
-
-  return port_name;
 }
 
 }  // namespace device

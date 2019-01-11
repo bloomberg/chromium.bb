@@ -7,19 +7,22 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/optional.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "services/device/serial/serial_io_handler.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace device {
 
 // Discovers and enumerates serial devices available to the host.
 class SerialDeviceEnumerator {
  public:
-  using TokenPathMap = std::map<base::UnguessableToken, std::string>;
+  using TokenPathMap = std::map<base::UnguessableToken, base::FilePath>;
 
   static std::unique_ptr<SerialDeviceEnumerator> Create();
 
@@ -28,11 +31,11 @@ class SerialDeviceEnumerator {
 
   virtual std::vector<mojom::SerialPortInfoPtr> GetDevices() = 0;
 
-  base::Optional<std::string> GetPathFromToken(
+  base::Optional<base::FilePath> GetPathFromToken(
       const base::UnguessableToken& token);
 
  protected:
-  const base::UnguessableToken& GetTokenFromPath(const std::string& path);
+  const base::UnguessableToken& GetTokenFromPath(const base::FilePath& path);
 
  private:
   TokenPathMap token_path_map_;

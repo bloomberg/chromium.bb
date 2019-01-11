@@ -27,11 +27,11 @@ class SerialIoHandler;
 class SerialPortImpl : public mojom::SerialPort {
  public:
   static void Create(
-      const std::string& path,
+      const base::FilePath& path,
       mojom::SerialPortRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  SerialPortImpl(const std::string& path,
+  SerialPortImpl(const base::FilePath& path,
                  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
 

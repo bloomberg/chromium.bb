@@ -4,11 +4,12 @@
 
 module device.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct SerialPortInfo {
   mojo_base.mojom.UnguessableToken token;
-  string path;
+  mojo_base.mojom.FilePath path;
   uint16 vendor_id;
   bool has_vendor_id = false;
   uint16 product_id;

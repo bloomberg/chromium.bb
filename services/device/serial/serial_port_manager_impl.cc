@@ -68,7 +68,7 @@ void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
 void SerialPortManagerImpl::GetPort(const base::UnguessableToken& token,
                                     mojom::SerialPortRequest request) {
   DCHECK(enumerator_);
-  base::Optional<std::string> path = enumerator_->GetPathFromToken(token);
+  base::Optional<base::FilePath> path = enumerator_->GetPathFromToken(token);
   if (path) {
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SerialPortImpl::Create, *path,

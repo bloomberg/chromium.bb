@@ -14,7 +14,8 @@ class SerialIoHandlerPosixTest : public testing::Test {
   SerialIoHandlerPosixTest() = default;
 
   void SetUp() override {
-    serial_io_handler_posix_ = new SerialIoHandlerPosix("dummy-port", nullptr);
+    serial_io_handler_posix_ =
+        new SerialIoHandlerPosix(base::FilePath("dummy-port"), nullptr);
   }
 
   void Initialize(bool parity_check_enabled,

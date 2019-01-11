@@ -72,8 +72,8 @@ SerialDeviceEnumeratorLinux::GetDevices() {
     const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
     if (path != NULL && bus != NULL) {
       auto info = mojom::SerialPortInfo::New();
-      info->token = GetTokenFromPath(path);
-      info->path = path;
+      info->path = base::FilePath(path);
+      info->token = GetTokenFromPath(info->path);
 
       const char* vendor_id =
           udev_device_get_property_value(device.get(), kVendorIDKey);

@@ -125,7 +125,7 @@ std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
   // take the device from the new enumeration method because it's able to
   // collect more information. We do this by inserting the new devices first,
   // because insertions are ignored if the key already exists.
-  std::unordered_set<std::string> devices_seen;
+  std::unordered_set<base::FilePath> devices_seen;
   for (const auto& device : devices) {
     bool inserted = devices_seen.insert(device->path).second;
     DCHECK(inserted);
@@ -190,16 +190,16 @@ SerialDeviceEnumeratorMac::GetDevicesNew() {
     if (GetStringProperty(scoped_device.get(), CFSTR(kIODialinDeviceKey),
                           &dialinDevice)) {
       mojom::SerialPortInfoPtr dialin_info = callout_info.Clone();
-      dialin_info->token = GetTokenFromPath(dialinDevice);
-      dialin_info->path = dialinDevice;
+      dialin_info->path = base::FilePath(dialinDevice);
+      dialin_info->token = GetTokenFromPath(dialin_info->path);
       devices.push_back(std::move(dialin_info));
     }
 
     std::string calloutDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIOCalloutDeviceKey),
                           &calloutDevice)) {
-      callout_info->token = GetTokenFromPath(calloutDevice);
-      callout_info->path = calloutDevice;
+      callout_info->path = base::FilePath(calloutDevice);
+      callout_info->token = GetTokenFromPath(callout_info->path);
       devices.push_back(std::move(callout_info));
     }
   }
@@ -239,8 +239,8 @@ SerialDeviceEnumeratorMac::GetDevicesOld() {
       if (base::MatchPattern(next_device, *i)) {
         auto info = mojom::SerialPortInfo::New();
 
-        info->token = GetTokenFromPath(next_device);
-        info->path = next_device;
+        info->path = base::FilePath(next_device);
+        info->token = GetTokenFromPath(info->path);
         devices.push_back(std::move(info));
         break;
       }
