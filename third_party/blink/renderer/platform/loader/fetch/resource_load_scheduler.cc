@@ -349,10 +349,14 @@ void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
 constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
 
-ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
-    : outstanding_limit_for_throttled_frame_scheduler_(
+ResourceLoadScheduler::ResourceLoadScheduler(
+    ThrottlingPolicy initial_throttling_policy,
+    FetchContext* context)
+    : policy_(initial_throttling_policy),
+      outstanding_limit_for_throttled_frame_scheduler_(
           GetOutstandingThrottledLimit(context)),
       context_(context) {
+  DCHECK(context);
   traffic_monitor_ =
       std::make_unique<ResourceLoadScheduler::TrafficMonitor>(context_);
 
@@ -360,7 +364,6 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   if (!scheduler)
     return;
 
-  policy_ = context->InitialLoadThrottlingPolicy();
   normal_outstanding_limit_ =
       GetFieldTrialUint32Param(kRendererSideResourceScheduler,
                                kLimitForRendererSideResourceSchedulerName,
@@ -372,11 +375,6 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 
   scheduler_observer_handle_ = scheduler->AddLifecycleObserver(
       FrameScheduler::ObserverType::kLoader, this);
-}
-
-ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
-  DCHECK(context);
-  return MakeGarbageCollected<ResourceLoadScheduler>(context);
 }
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;

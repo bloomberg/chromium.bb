@@ -64,7 +64,6 @@ namespace blink {
 class ClientHintsPreferences;
 class FetchClientSettingsObject;
 class KURL;
-class MHTMLArchive;
 class PlatformProbeSink;
 class ResourceError;
 class ResourceFetcherProperties;
@@ -216,8 +215,6 @@ class PLATFORM_EXPORT FetchContext
                                        const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
 
-  virtual MHTMLArchive* Archive() const { return nullptr; }
-
   PlatformProbeSink* GetPlatformProbeSink() const {
     return platform_probe_sink_;
   }
@@ -232,13 +229,6 @@ class PLATFORM_EXPORT FetchContext
   // Create a default code cache loader to fetch data from code caches.
   virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
     return Platform::Current()->CreateCodeCacheLoader();
-  }
-
-  // Returns the initial throttling policy used by the associated
-  // ResourceLoadScheduler.
-  virtual ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
-      const {
-    return ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   }
 
   virtual bool IsDetached() const { return false; }

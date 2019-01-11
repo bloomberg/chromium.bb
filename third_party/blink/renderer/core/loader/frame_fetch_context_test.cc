@@ -1451,16 +1451,6 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
   EXPECT_EQ(document_url.GetString(), request.SiteForCookies().GetString());
 }
 
-TEST_F(FrameFetchContextTest, ArchiveWhenDetached) {
-  FetchContext* child_fetch_context = CreateChildFrame();
-
-  dummy_page_holder = nullptr;
-  child_frame->Detach(FrameDetachType::kRemove);
-  child_frame = nullptr;
-
-  EXPECT_EQ(nullptr, child_fetch_context->Archive());
-}
-
 // Tests if "Intervention" header is added for frame with Client Lo-Fi enabled.
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        ClientLoFiInterventionHeader) {
