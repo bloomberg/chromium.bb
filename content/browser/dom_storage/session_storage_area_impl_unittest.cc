@@ -47,7 +47,7 @@ void CreateStrongBindingOnTaskRunner(
       FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&mojo::MakeStrongBinding<Interface, Impl>),
-          std::move(interface), mojo::MakeRequest(interface_ptr)));
+          std::move(interface), mojo::MakeRequest(interface_ptr), runner));
 }
 
 class MockListener : public SessionStorageDataMap::Listener {
