@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param_timeline.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_summing_junction.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/delete_soon_with_graph_lock.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -44,6 +45,7 @@
 namespace blink {
 
 class AudioNodeOutput;
+struct AudioParamHandlerTraits;
 
 // Each AudioParam gets an identifier here.  This is mostly for instrospection
 // if warnings or other messages need to be printed. It's useful to know what
@@ -94,8 +96,15 @@ enum AudioParamType {
 // dies.
 //
 // Connected to AudioNodeOutput using AudioNodeWiring.
-class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
-                                public AudioSummingJunction {
+//
+// Due to AudioParamHandlerTraits, AudioParamHandler is not deleted immediately
+// upon losing its last reference. This is required since its last reference may
+// be dropped during Oilpan finalization on the main thread, but the graph lock
+// is required to perform handler teardown. See also
+// delete_soon_with_graph_lock.h.
+class AudioParamHandler final
+    : public ThreadSafeRefCounted<AudioParamHandler, AudioParamHandlerTraits>,
+      public AudioSummingJunction {
  public:
   // Automation rate of the AudioParam
   enum AutomationRate {
@@ -254,6 +263,12 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   scoped_refptr<AudioBus> summing_bus_;
 
   friend class AudioNodeWiring;
+};
+
+struct AudioParamHandlerTraits {
+  static void Destruct(const AudioParamHandler* handler) {
+    DeleteSoonWithGraphLock(handler);
+  }
 };
 
 // AudioParam class represents web-exposed AudioParam interface.

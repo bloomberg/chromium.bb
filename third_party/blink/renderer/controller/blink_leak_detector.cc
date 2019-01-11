@@ -17,10 +17,12 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/webaudio/delete_soon_with_graph_lock.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -116,7 +118,11 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
     // (crbug.com/616714)
     delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
   } else {
-    ReportResult();
+    // WebAudio has some objects which have deferred deletion since they are
+    // managed in part but not wholly by the GC heap. Wait for any of those that
+    // have been freed by the GC cycles to be cleaned up.
+    WaitForAudioHandlerDeletion(WTF::Bind(&BlinkLeakDetector::ReportResult,
+                                          weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
