@@ -603,12 +603,16 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (IsDetached())
     return;
 
-  DCHECK(resource);
+  // Note: resource can be null for navigations.
+  ResourceType resource_type =
+      resource ? resource->GetType() : ResourceType::kMainResource;
 
-  if (GetSubresourceFilter() && resource->GetResourceRequest().IsAdResource())
+  if (GetSubresourceFilter() && resource &&
+      resource->GetResourceRequest().IsAdResource()) {
     GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
+  }
 
-  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
+  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource_type,
                                           response.GetCTPolicyCompliance(),
                                           MasterDocumentLoader());
 
@@ -647,7 +651,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // Further, the navigation response should be from a top level frame (i.e.,
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
-  if ((resource->GetType() == ResourceType::kMainResource) &&
+  if (resource_type == ResourceType::kMainResource &&
       (IsMainFrame() || IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
     ParseAndPersistClientHints(response);
   }
@@ -665,13 +669,13 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
-    RecordLegacySymantecCertUseCounter(GetFrame(), resource->GetType());
+    RecordLegacySymantecCertUseCounter(GetFrame(), resource_type);
     GetLocalFrameClient()->ReportLegacySymantecCert(
         response.CurrentRequestUrl(), false /* did_fail */);
   }
 
   if (response.IsLegacyTLSVersion()) {
-    if (resource->GetType() != ResourceType::kMainResource) {
+    if (resource_type != ResourceType::kMainResource) {
       // Main resources are counted in DocumentLoader.
       UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
     }
