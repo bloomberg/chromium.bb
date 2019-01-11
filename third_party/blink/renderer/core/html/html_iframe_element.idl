@@ -46,6 +46,8 @@ interface HTMLIFrameElement : HTMLElement {
     // https://wicg.github.io/feature-policy/#the-policy-object
     [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
+    [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("on", "off", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString lazyLoad;
+
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial
     [CEReactions, Reflect] attribute DOMString align;
