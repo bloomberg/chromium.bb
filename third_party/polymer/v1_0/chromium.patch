@@ -9,6 +9,29 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
+diff --git a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+index 2edddb115d46..d3c7fbe36d63 100644
+--- a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
++++ b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+@@ -131,6 +131,18 @@
+       return null;
+     },
+
++    /**
++     * Produce installable clone of the SVG element matching `id` in this
++     * iconset, or `undefined` if there is no matching element.
++     * @param {string} iconName Name of the icon to apply.
++     * @param {boolean} targetIsRTL Whether the target element is RTL.
++     * @return {Element} Returns an installable clone of the SVG element
++     *     matching `id`.
++     */
++    createIcon: function(iconName, targetIsRTL) {
++      return this._cloneIcon(iconName, this.rtlMirroring && targetIsRTL);
++    },
++
+     /**
+      * Remove an icon from the given element by undoing the changes effected
+      * by `applyIcon`.
 diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
 index 43c59653a39b..26652936735c 100644
 --- a/components-chromium/iron-list/iron-list-extracted.js
