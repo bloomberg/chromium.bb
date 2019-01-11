@@ -265,16 +265,4 @@ TEST_F(DecryptingRendererTest, DecryptingMediaResourceInitFails) {
   InitializeDecryptingRendererWithFalse();
 }
 
-TEST_F(DecryptingRendererTest, MediaResourceHasURLType) {
-  EXPECT_CALL(*renderer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<2>(PIPELINE_OK));
-  EXPECT_CALL(renderer_init_cb_, Run(PIPELINE_OK));
-  EXPECT_CALL(media_resource_, GetType())
-      .WillRepeatedly(Return(MediaResource::URL));
-
-  decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
-                                   renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
-}
-
 }  // namespace media

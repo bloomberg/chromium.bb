@@ -17,12 +17,10 @@
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
-    media::MediaLog* media_log,
     mojom::HostedRendererType type,
     const GetGpuFactoriesCB& get_gpu_factories_cb,
     media::mojom::InterfaceFactory* interface_factory)
-    : media_log_(media_log),
-      get_gpu_factories_cb_(get_gpu_factories_cb),
+    : get_gpu_factories_cb_(get_gpu_factories_cb),
       interface_factory_(interface_factory),
       hosted_renderer_type_(type) {
   DCHECK(interface_factory_);
@@ -51,12 +49,12 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
         std::make_unique<VideoOverlayFactory>(get_gpu_factories_cb_.Run());
   }
 
-  // TODO(xhwang): use DecryptingRenderer in other renderer factories.
-  return std::make_unique<DecryptingRenderer>(
-      std::make_unique<MojoRenderer>(media_task_runner,
-                                     std::move(overlay_factory),
-                                     video_renderer_sink, GetRendererPtr()),
-      media_log_, media_task_runner);
+  // MediaPlayerRendererClientFactory depends on |this| always returning a MR,
+  // since it uses a static_cast to use some MojoRenderer specific interfaces.
+  // Therefore, |this| should never return anything else than a MojoRenderer.
+  return std::make_unique<MojoRenderer>(media_task_runner,
+                                        std::move(overlay_factory),
+                                        video_renderer_sink, GetRendererPtr());
 }
 
 mojom::RendererPtr MojoRendererFactory::GetRendererPtr() {

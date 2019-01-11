@@ -36,6 +36,7 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/filters/context_3d.h"
 #include "media/media_buildflags.h"
+#include "media/renderers/decrypting_renderer_factory.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -434,7 +435,7 @@ MediaFactory::CreateRendererFactorySelector(
   // MediaPlayerRendererClientFactory setup.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media_log, media::mojom::HostedRendererType::kMediaPlayer,
+          media::mojom::HostedRendererType::kMediaPlayer,
           media::MojoRendererFactory::GetGpuFactoriesCB(),
           GetMediaInterfaceFactory());
 
@@ -454,7 +455,7 @@ MediaFactory::CreateRendererFactorySelector(
 
   // FlingingRendererClientFactory (FRCF) setup.
   auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      media_log, media::mojom::HostedRendererType::kFlinging,
+      media::mojom::HostedRendererType::kFlinging,
       media::MojoRendererFactory::GetGpuFactoriesCB(),
       GetMediaInterfaceFactory());
 
@@ -495,13 +496,20 @@ MediaFactory::CreateRendererFactorySelector(
   use_mojo_renderer_factory = true;
 #endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
   if (use_mojo_renderer_factory) {
+    auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
+        media::mojom::HostedRendererType::kDefault,
+        base::Bind(&RenderThreadImpl::GetGpuFactories,
+                   base::Unretained(render_thread)),
+        GetMediaInterfaceFactory());
+
+    // The "default" MojoRendererFactory can be wrapped by a
+    // DecryptingRendererFactory without changing any behavior.
+    // TODO(tguilbert/xhwang): Add "FactoryType::DECRYPTING" if ever we need to
+    // distinguish between a "pure" and "decrypting" MojoRenderer.
     factory_selector->AddFactory(
         media::RendererFactorySelector::FactoryType::MOJO,
-        std::make_unique<media::MojoRendererFactory>(
-            media_log, media::mojom::HostedRendererType::kDefault,
-            base::Bind(&RenderThreadImpl::GetGpuFactories,
-                       base::Unretained(render_thread)),
-            GetMediaInterfaceFactory()));
+        std::make_unique<media::DecryptingRendererFactory>(
+            media_log, std::move(mojo_renderer_factory)));
 
     factory_selector->SetBaseFactoryType(
         media::RendererFactorySelector::FactoryType::MOJO);
