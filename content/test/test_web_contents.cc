@@ -50,7 +50,8 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
       delegate_view_override_(nullptr),
       expect_set_history_offset_and_length_(false),
       expect_set_history_offset_and_length_history_length_(0),
-      pause_subresource_loading_called_(false) {
+      pause_subresource_loading_called_(false),
+      audio_group_id_(base::UnguessableToken::Create()) {
   if (!RenderProcessHostImpl::get_render_process_host_factory_for_testing()) {
     // Most unit tests should prefer to create a generic MockRenderProcessHost
     // (instead of a real RenderProcessHostImpl).  Tests that need to use a
@@ -471,6 +472,10 @@ void TestWebContents::SetPageImportanceSignals(PageImportanceSignals signals) {
 
 void TestWebContents::SetLastActiveTime(base::TimeTicks last_active_time) {
   last_active_time_ = last_active_time;
+}
+
+base::UnguessableToken TestWebContents::GetAudioGroupId() {
+  return audio_group_id_;
 }
 
 }  // namespace content
