@@ -71,6 +71,9 @@ class QUIC_EXPORT_PRIVATE PendingStream
   // If the final offset violates flow control, the connection will be closed.
   void OnRstStreamFrame(const QuicRstStreamFrame& frame);
 
+  // Returns the number of bytes read on this stream.
+  uint64_t stream_bytes_read() { return stream_bytes_read_; }
+
  private:
   friend class QuicStream;
 

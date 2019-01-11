@@ -1404,14 +1404,16 @@ void QuicChromiumClientSession::SendRstStream(
     quic::QuicStreamId id,
     quic::QuicRstStreamErrorCode error,
     quic::QuicStreamOffset bytes_written) {
-  quic::QuicStream* stream = GetOrCreateStream(id);
-  if (stream) {
-    if (quic::QuicUtils::IsServerInitiatedStreamId(
-            connection()->transport_version(), id)) {
-      // Stream with even stream is initiated by server for PUSH.
-      bytes_pushed_count_ += stream->stream_bytes_read();
+  if (quic::QuicUtils::IsServerInitiatedStreamId(
+          connection()->transport_version(), id)) {
+    StreamHandler handler = GetOrCreateStreamImpl(id, /*may_buffer=*/true);
+    if (handler.is_pending) {
+      bytes_pushed_count_ += handler.pending->stream_bytes_read();
+    } else if (handler.stream) {
+      bytes_pushed_count_ += handler.stream->stream_bytes_read();
     }
   }
+
   quic::QuicSpdySession::SendRstStream(id, error, bytes_written);
 }
 
